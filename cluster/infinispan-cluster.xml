@@ -48,6 +48,23 @@
         </security-realm>
       </security-realms>
     </security>
-    <endpoints socket-binding="default" security-realm="default"/>
+    <!--
+      O conector Hot Rod anuncia para o cliente um endereco externo
+      (external-host/external-port) em vez do IP interno do container
+      (10.89.x.x), que e inalcancavel a partir do host Windows/WSL2. Sem
+      isso, o cliente recebe a topologia com os IPs internos dos owners e
+      falha com ISPN004015 (Failed adding new server 10.89.x.x), gerando
+      ERROR_TRANSPORT em ~2/3 das chaves. Os valores sao parametrizados por
+      propriedade de sistema, definida por no no podman-compose.yml:
+        isn1 -> 127.0.0.1:11222, isn2 -> 127.0.0.1:11223, isn3 -> 127.0.0.1:11224
+    -->
+    <endpoints>
+      <endpoint socket-binding="default" security-realm="default">
+        <hotrod-connector
+            external-host="${infinispan.hotrod.external-host:127.0.0.1}"
+            external-port="${infinispan.hotrod.external-port:11222}"/>
+        <rest-connector/>
+      </endpoint>
+    </endpoints>
   </server>
 </infinispan>

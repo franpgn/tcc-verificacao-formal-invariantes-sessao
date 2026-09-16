@@ -24,6 +24,12 @@
 (*     do plano e "Mudança 2b" no relatório da rodada), para que uma       *)
 (*     escrita local nunca sobrescreva incondicionalmente um valor de      *)
 (*     prioridade maior já aplicado por uma mensagem remota.               *)
+(*   - Mudança 3a (docs/plano-fix-cascata-bloqueio-2026-09-16.md): a       *)
+(*     mensagem ID_BLOQUEIA carrega sessoesAfetadas (o cascade de          *)
+(*     invalidação que Block computa na origem), reaplicado por sessão em  *)
+(*     EntregaMensagem, gateado independentemente por sessoesTS/motivosTS  *)
+(*     -- corrige o "Bug B": antes, só status era propagado; sessoes/      *)
+(*     motivos das sessões afetadas pelo bloqueio nunca convergiam.        *)
 (*   - Invariantes I1..I6 declarados conforme Cap. 3 §3.3.3.               *)
 (*                                                                         *)
 (* Falhas explícitas (crash, partição, atraso/jitter) ficam para TCC-II,   *)
@@ -99,7 +105,9 @@ Mensagem ==
    valor: 0..LIMITE,   \* usado so por CONTADOR_INC/CONTADOR_RESET; demais tipos usam 0
    ts: Nat,            \* tick logico da replica de origem no instante do envio
    origem: REPLICAS,   \* replica que produziu a mensagem (rastreabilidade/depuracao)
-   prio: Nat]           \* Prio(ts, origem), pre-computado para comparacao O(1) na entrega
+   prio: Nat,           \* Prio(ts, origem), pre-computado para comparacao O(1) na entrega
+   sessoesAfetadas: SUBSET SIDS]  \* usado so por ID_BLOQUEIA: cascade do Block calculado
+                                   \* na origem (Mudanca 3a); demais tipos usam {}.
 
 TypeOK ==
   /\ sessoes  \in [REPLICAS -> [SIDS -> Estados]]
@@ -162,7 +170,7 @@ Login(r, id, s) ==
   LET novoTS == relogio[r] + 1
       p == Prio(novoTS, r)
       msg == [tipo |-> "SESSAO_VALIDA", chave |-> s, payload |-> id, valor |-> 0,
-               ts |-> novoTS, origem |-> r, prio |-> p]
+               ts |-> novoTS, origem |-> r, prio |-> p, sessoesAfetadas |-> {}]
   IN
   /\ status[r][id] = "OPEN"
   /\ sessoes[r][s] = "NONE"
@@ -188,7 +196,7 @@ Logout(r, s) ==
   LET novoTS == relogio[r] + 1
       p == Prio(novoTS, r)
       msg == [tipo |-> "SESSAO_INVALIDA", chave |-> s, payload |-> "LOGOUT", valor |-> 0,
-               ts |-> novoTS, origem |-> r, prio |-> p]
+               ts |-> novoTS, origem |-> r, prio |-> p, sessoesAfetadas |-> {}]
   IN
   /\ sessoes[r][s] = "VALID"
   /\ relogio' = [relogio EXCEPT ![r] = novoTS]
@@ -214,7 +222,7 @@ IncrementFailure(r, id) ==
       novoTS  == relogio[r] + 1
       p == Prio(novoTS, r)
       msg == [tipo |-> "CONTADOR_INC", chave |-> id, payload |-> "", valor |-> novo,
-               ts |-> novoTS, origem |-> r, prio |-> p]
+               ts |-> novoTS, origem |-> r, prio |-> p, sessoesAfetadas |-> {}]
   IN
   /\ contador[r][id] < LIMITE
   /\ relogio' = [relogio EXCEPT ![r] = novoTS]
@@ -242,7 +250,7 @@ ResetFailures(r, id) ==
   LET novoTS == relogio[r] + 1
       p == Prio(novoTS, r)
       msg == [tipo |-> "CONTADOR_RESET", chave |-> id, payload |-> "", valor |-> 0,
-               ts |-> novoTS, origem |-> r, prio |-> p]
+               ts |-> novoTS, origem |-> r, prio |-> p, sessoesAfetadas |-> {}]
   IN
   /\ contador[r][id] # 0
   /\ relogio' = [relogio EXCEPT ![r] = novoTS]
@@ -266,7 +274,8 @@ Block(r, id) ==
       p == Prio(novoTS, r)
       Afetado(s) == sessaoDe[r][s] = id /\ sessoes[r][s] = "VALID"
       msg == [tipo |-> "ID_BLOQUEIA", chave |-> id, payload |-> "", valor |-> 0,
-               ts |-> novoTS, origem |-> r, prio |-> p]
+               ts |-> novoTS, origem |-> r, prio |-> p,
+               sessoesAfetadas |-> {s \in SIDS : Afetado(s)}]
   IN
   /\ status[r][id] = "OPEN"
   /\ relogio' = [relogio EXCEPT ![r] = novoTS]
@@ -298,7 +307,7 @@ Unblock(r, id) ==
   LET novoTS == relogio[r] + 1
       p == Prio(novoTS, r)
       msg == [tipo |-> "ID_DESBLOQUEIA", chave |-> id, payload |-> "", valor |-> 0,
-               ts |-> novoTS, origem |-> r, prio |-> p]
+               ts |-> novoTS, origem |-> r, prio |-> p, sessoesAfetadas |-> {}]
   IN
   /\ status[r][id] = "BLOCKED"
   /\ relogio' = [relogio EXCEPT ![r] = novoTS]
@@ -390,14 +399,34 @@ EntregaMensagem(r) ==
                                      sessoesTS, motivosTS, sessaoDeTS,
                                      contadorTS, statusTS >>
           [] m.tipo = "ID_BLOQUEIA" ->
-                IF m.prio > statusTS[r][m.chave]
-                  THEN /\ status'   = [status   EXCEPT ![r][m.chave] = "BLOCKED"]
-                       /\ statusTS' = [statusTS EXCEPT ![r][m.chave] = m.prio]
-                       /\ UNCHANGED << sessoes, motivos, sessaoDe, contador,
-                                        sessoesTS, motivosTS, sessaoDeTS, contadorTS >>
-                  ELSE UNCHANGED << sessoes, motivos, sessaoDe, contador, status,
-                                     sessoesTS, motivosTS, sessaoDeTS,
-                                     contadorTS, statusTS >>
+                (* status e o cascade de sessoes/motivos sao registradores    *)
+                (* LWW INDEPENDENTES (mesmo padrao D-1 de SESSAO_VALIDA/      *)
+                (* SESSAO_INVALIDA, Mudanca 2c): o gate de status NAO         *)
+                (* condiciona o gate de sessoes/motivos, e vice-versa.        *)
+                (* m.sessoesAfetadas carrega o cascade BRUTO calculado na     *)
+                (* origem (Afetado(s) no momento do Block) -- cabe a CADA     *)
+                (* replica decidir, por sessao, se aceita esse fato,          *)
+                (* comparando m.prio contra o proprio TS local de cada campo  *)
+                (* (Mudanca 3a, corrige o "Bug B": antes, o cascade de        *)
+                (* invalidacao do Block nunca era propagado a replicas        *)
+                (* remotas, so o status). *)
+                /\ IF m.prio > statusTS[r][m.chave]
+                     THEN /\ status'   = [status   EXCEPT ![r][m.chave] = "BLOCKED"]
+                          /\ statusTS' = [statusTS EXCEPT ![r][m.chave] = m.prio]
+                     ELSE /\ status' = status /\ statusTS' = statusTS
+                /\ sessoes' = [sessoes EXCEPT ![r] =
+                                [s \in SIDS |-> IF s \in m.sessoesAfetadas /\ m.prio > sessoesTS[r][s]
+                                                THEN "INVALID" ELSE @[s]]]
+                /\ motivos' = [motivos EXCEPT ![r] =
+                                [s \in SIDS |-> IF s \in m.sessoesAfetadas /\ m.prio > motivosTS[r][s]
+                                                THEN "ADMIN_BLOCK" ELSE @[s]]]
+                /\ sessoesTS' = [sessoesTS EXCEPT ![r] =
+                                  [s \in SIDS |-> IF s \in m.sessoesAfetadas /\ m.prio > sessoesTS[r][s]
+                                                  THEN m.prio ELSE @[s]]]
+                /\ motivosTS' = [motivosTS EXCEPT ![r] =
+                                  [s \in SIDS |-> IF s \in m.sessoesAfetadas /\ m.prio > motivosTS[r][s]
+                                                  THEN m.prio ELSE @[s]]]
+                /\ UNCHANGED << sessaoDe, sessaoDeTS, contador, contadorTS >>
           [] m.tipo = "ID_DESBLOQUEIA" ->
                 /\ IF m.prio > statusTS[r][m.chave]
                      THEN /\ status'   = [status   EXCEPT ![r][m.chave] = "OPEN"]

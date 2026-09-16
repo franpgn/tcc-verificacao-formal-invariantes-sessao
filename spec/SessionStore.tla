@@ -30,6 +30,12 @@
 (*     EntregaMensagem, gateado independentemente por sessoesTS/motivosTS  *)
 (*     -- corrige o "Bug B": antes, só status era propagado; sessoes/      *)
 (*     motivos das sessões afetadas pelo bloqueio nunca convergiam.        *)
+(*   - Mudança 3b / Rota (c) (mesmo plano, §3): em EntregaMensagem, o      *)
+(*     case CONTADOR_INC desacopla o gate de status do gate de contador    *)
+(*     (dois IF independentes, cada um comparando m.prio ao TS do PRÓPRIO  *)
+(*     campo) -- corrige o "status órfão" de I6, sem alterar em nada       *)
+(*     ResetFailures/CONTADOR_RESET (regra O5: "sem alterar a marca de     *)
+(*     bloqueio", Cap. 3 de Metodologia.tex).                              *)
 (*   - Invariantes I1..I6 declarados conforme Cap. 3 §3.3.3.               *)
 (*                                                                         *)
 (* Falhas explícitas (crash, partição, atraso/jitter) ficam para TCC-II,   *)
@@ -376,19 +382,32 @@ EntregaMensagem(r) ==
                 /\ UNCHANGED << sessaoDe, sessaoDeTS, contador,
                                  contadorTS, status, statusTS >>
           [] m.tipo = "CONTADOR_INC" ->
-                IF m.prio > contadorTS[r][m.chave]
-                  THEN /\ contador'   = [contador   EXCEPT ![r][m.chave] = m.valor]
-                       /\ contadorTS' = [contadorTS EXCEPT ![r][m.chave] = m.prio]
-                       /\ IF m.valor >= LIMITE /\ m.prio > statusTS[r][m.chave]
-                            THEN /\ status'   = [status   EXCEPT ![r][m.chave] = "BLOCKED"]
-                                 /\ statusTS' = [statusTS EXCEPT ![r][m.chave] = m.prio]
-                            ELSE /\ status'   = status
-                                 /\ statusTS' = statusTS
-                       /\ UNCHANGED << sessoes, motivos, sessaoDe,
-                                        sessoesTS, motivosTS, sessaoDeTS >>
-                  ELSE UNCHANGED << sessoes, motivos, sessaoDe, contador, status,
-                                     sessoesTS, motivosTS, sessaoDeTS,
-                                     contadorTS, statusTS >>
+                (* contador e status sao registradores LWW INDEPENDENTES     *)
+                (* (Mudanca 3b / Rota (c), docs/plano-fix-cascata-bloqueio-   *)
+                (* 2026-09-16.md §3): o gate de status NAO fica mais aninhado *)
+                (* dentro do gate de contador -- m.prio e comparado contra    *)
+                (* statusTS por seus PROPRIOS termos, mesmo padrao ja usado   *)
+                (* por ID_BLOQUEIA/ID_DESBLOQUEIA. Isto e seguro no caso      *)
+                (* REMOTO (mas nao no caso local de IncrementFailure, que     *)
+                (* continua acoplado de proposito) porque m.valor/m.prio sao  *)
+                (* um fato historico ja consumado na origem, independente de  *)
+                (* esta replica aceitar ou nao esse valor para o SEU campo    *)
+                (* contador local. Corrige o "status orfao" de I6: antes, um  *)
+                (* CONTADOR_INC descartado por LWW (contador de prioridade    *)
+                (* menor) tambem descartava o efeito BLOCKED, mesmo quando     *)
+                (* esse efeito, por seus proprios termos de statusTS, deveria  *)
+                (* ser aceito. ResetFailures/CONTADOR_RESET continuam sem      *)
+                (* tocar status, em nenhuma via (regra O5 da monografia: "sem  *)
+                (* alterar a marca de bloqueio").                             *)
+                /\ IF m.prio > contadorTS[r][m.chave]
+                     THEN /\ contador'   = [contador   EXCEPT ![r][m.chave] = m.valor]
+                          /\ contadorTS' = [contadorTS EXCEPT ![r][m.chave] = m.prio]
+                     ELSE /\ contador' = contador /\ contadorTS' = contadorTS
+                /\ IF m.valor >= LIMITE /\ m.prio > statusTS[r][m.chave]
+                     THEN /\ status'   = [status   EXCEPT ![r][m.chave] = "BLOCKED"]
+                          /\ statusTS' = [statusTS EXCEPT ![r][m.chave] = m.prio]
+                     ELSE /\ status' = status /\ statusTS' = statusTS
+                /\ UNCHANGED << sessoes, motivos, sessaoDe, sessoesTS, motivosTS, sessaoDeTS >>
           [] m.tipo = "CONTADOR_RESET" ->
                 IF m.prio > contadorTS[r][m.chave]
                   THEN /\ contador'   = [contador   EXCEPT ![r][m.chave] = 0]
@@ -516,15 +535,18 @@ I6 ==
       /\ status[r1][id]   = status[r2][id]
 
 (***************************************************************************)
-(* THEOREM: apos a correcao de broadcast por replica e a resolucao de      *)
-(* conflito LWW via relogio logico de Lamport, espera-se que o TLC         *)
+(* THEOREM: apos a correcao de broadcast por replica, a resolucao de       *)
+(* conflito LWW via relogio logico de Lamport, e as Mudancas 3a/3b         *)
+(* (propagacao do cascade de Block via sessoesAfetadas; gate de status     *)
+(* desacoplado do gate de contador em CONTADOR_INC), espera-se que o TLC   *)
 (* verifique TypeOK /\ I3 /\ I4 sem contraexemplo, e que I5/I6 fechem sem  *)
 (* contraexemplo sob quiescencia nas cardinalidades em que a busca         *)
-(* exaustiva for tratavel (ver docs/relatorio-tlc-<data>.md). I1 e I2,     *)
-(* por construcao, continuam violados no fluxo nominal: sao propriedades  *)
-(* de seguranca *cross-replica* nao condicionadas a quiescencia, e o        *)
-(* modelo captura atraso de propagacao real -- ficam para refinamento em  *)
-(* TCC-II (Apendice B, etapas 3-4), junto com falhas explicitas            *)
-(* (crash/particao/jitter).                                                 *)
+(* exaustiva for tratavel (ver docs/relatorio-tlc-<data>.md) -- ja nao     *)
+(* mais como "causas residuais documentadas", e sim como correcoes         *)
+(* verificadas pelo TLC. I1 e I2, por construcao, continuam violados no    *)
+(* fluxo nominal: sao propriedades de seguranca *cross-replica* nao         *)
+(* condicionadas a quiescencia, e o modelo captura atraso de propagacao    *)
+(* real -- ficam para refinamento em TCC-II (Apendice B, etapas 3-4),      *)
+(* junto com falhas explicitas (crash/particao/jitter).                    *)
 (***************************************************************************)
 =============================================================================

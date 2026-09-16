@@ -1,5 +1,5 @@
 TLC2 Version 2.19 of 08 August 2024 (rev: 5a47802)
-Running breadth-first search Model-Checking with fp 33 and seed -4494298331592304574 with 20 workers on 20 cores with 7237MB heap and 64MB offheap memory [pid: 3148] (Windows 11 10.0 amd64, Oracle Corporation 22.0.2 x86_64, MSBDiskFPSet, DiskStateQueue).
+Running breadth-first search Model-Checking with fp 76 and seed 5078823809520636182 with 20 workers on 20 cores with 7237MB heap and 64MB offheap memory [pid: 18408] (Windows 11 10.0 amd64, Oracle Corporation 22.0.2 x86_64, MSBDiskFPSet, DiskStateQueue).
 Parsing file C:\Users\Francesco\Development\tcc\tcc-desenvolvimento\spec\MCSession.tla
 Parsing file C:\Users\Francesco\Development\tcc\tcc-desenvolvimento\spec\SessionStore.tla
 Parsing file C:\Users\Francesco\AppData\Local\Temp\TLC.tla
@@ -12,16 +12,16 @@ Semantic processing of module FiniteSets
 Semantic processing of module SessionStore
 Semantic processing of module TLC
 Semantic processing of module MCSession
-Starting... (2026-09-16 01:36:58)
+Starting... (2026-09-16 10:26:32)
 Computing initial states...
-Finished computing initial states: 1 distinct state generated at 2026-09-16 01:36:58.
-Progress(13) at 2026-09-16 01:37:01: 3,240,035 states generated (3,240,035 s/min), 384,393 distinct states found (384,393 ds/min), 185,561 states left on queue.
+Finished computing initial states: 1 distinct state generated at 2026-09-16 10:26:32.
+Progress(13) at 2026-09-16 10:26:35: 3,231,480 states generated (3,231,480 s/min), 389,183 distinct states found (389,183 ds/min), 194,171 states left on queue.
 Model checking completed. No error has been found.
   Estimates of the probability that TLC did not check all reachable states
   because two distinct states had the same fingerprint:
   calculated (optimistic):  val = 3.4E-7
-  based on the actual fingerprints:  val = 2.0E-8
-10365187 states generated, 650615 distinct states found, 0 states left on queue.
+  based on the actual fingerprints:  val = 2.7E-7
+10258929 states generated, 644013 distinct states found, 0 states left on queue.
 The depth of the complete state graph search is 13.
 The average outdegree of the complete state graph is 1 (minimum is 0, the maximum 13 and the 95th percentile is 4).
-Finished in 07s at (2026-09-16 01:37:05)
+Finished in 07s at (2026-09-16 10:26:39)

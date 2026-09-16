@@ -190,6 +190,38 @@
   Gestor antes de propor uma quarta correção, por instrução explícita de não
   encadear correções sem validação.
 
+## 2026-09-16 (rodada 3) — Mudança 4: broadcast fantasma de `CONTADOR_INC`
+
+### P-15 (resolução) — mensagem `CONTADOR_INC` "fantasma" corrigida
+
+- **Causa:** ver descrição completa acima (mesma seção P-15) — em
+  `IncrementFailure(r,id)`, `canal' = Broadcast(r, msg)` executava
+  incondicionalmente, fora do `IF p > contadorTS[r][id]` que decide a
+  escrita local. Uma escrita local rejeitada por LWW ainda assim propagava
+  a mensagem `CONTADOR_INC` com o valor rejeitado, que um gate remoto
+  independente (`status`, Rota c/Mudança 3b) podia aceitar mesmo sem
+  `contador` jamais ter vencido em réplica alguma.
+- **Correção:** `canal' = Broadcast(r, msg)` movido para **dentro** dos
+  dois ramos do `IF p > contadorTS[r][id]` já existente em
+  `IncrementFailure` — `Broadcast` só no ramo aceito, `canal' = canal`
+  (nenhuma mudança) no ramo rejeitado. Análise estrutural prévia (plano
+  `docs/plano-fix-broadcast-fantasma-2026-09-16.md` §2) mostrou que essa é
+  a **única** ação de escrita com o ingrediente que causa esse tipo de bug
+  (um gate que lê o *valor*, não só a prioridade, de um campo diferente do
+  que está protegendo); as outras 5 ações (`Login`, `Logout`,
+  `ResetFailures`, `Block`, `Unblock`) não precisaram de mudança de
+  comportamento, só de comentário documentando a análise. Commit
+  `b6e0ec4`, branch `fix/broadcast-fantasma-contador-inc`.
+- **Resultado:** `I6` fecha exaustivamente em `tiny` (32.129 estados),
+  `small` (644.013 estados) e `medium` (1.671.294 estados) — sem
+  contraexemplo em nenhuma das três. Em `full`, `I6` fica inconclusivo
+  dentro do timebox de 20 min (mesma classe de intratabilidade que já
+  afeta `TypeOK`/`I3`/`I4`/`I5` nessa cardinalidade), mas **sem nenhum
+  contraexemplo** em 1,12 bilhão de estados gerados — antes desta correção,
+  `I6` violava em `full` com apenas 10 estados. Sem regressão em
+  `TypeOK`/`I1`..`I5`. Nenhuma quinta correção foi necessária. Detalhes
+  completos em `docs/relatorio-tlc-2026-09-16-mudanca4.md`.
+
 ## Observação de modelagem (não é defeito)
 
 Com 8 *threads* = 8 identidades fixas (`user-<tid>`), `incrementFailure`

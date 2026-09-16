@@ -1,5 +1,5 @@
 TLC2 Version 2.19 of 08 August 2024 (rev: 5a47802)
-Running breadth-first search Model-Checking with fp 100 and seed -4228381991403740198 with 20 workers on 20 cores with 7237MB heap and 64MB offheap memory [pid: 11884] (Windows 11 10.0 amd64, Oracle Corporation 22.0.2 x86_64, MSBDiskFPSet, DiskStateQueue).
+Running breadth-first search Model-Checking with fp 70 and seed 618609175572661916 with 20 workers on 20 cores with 7237MB heap and 64MB offheap memory [pid: 9604] (Windows 11 10.0 amd64, Oracle Corporation 22.0.2 x86_64, MSBDiskFPSet, DiskStateQueue).
 Parsing file C:\Users\Francesco\Development\tcc\tcc-desenvolvimento\spec\MCSession.tla
 Parsing file C:\Users\Francesco\Development\tcc\tcc-desenvolvimento\spec\SessionStore.tla
 Parsing file C:\Users\Francesco\AppData\Local\Temp\TLC.tla
@@ -12,165 +12,16 @@ Semantic processing of module FiniteSets
 Semantic processing of module SessionStore
 Semantic processing of module TLC
 Semantic processing of module MCSession
-Starting... (2026-09-16 01:39:16)
+Starting... (2026-09-16 10:29:09)
 Computing initial states...
-Finished computing initial states: 1 distinct state generated at 2026-09-16 01:39:17.
-Error: Invariant I6 is violated.
-Error: The behavior up to this point is:
-State 1: <Initial predicate>
-/\ sessoes = ( r1 :> (s1 :> "NONE" @@ s2 :> "NONE" @@ s3 :> "NONE") @@
-  r2 :> (s1 :> "NONE" @@ s2 :> "NONE" @@ s3 :> "NONE") )
-/\ canal = (r1 :> <<>> @@ r2 :> <<>>)
-/\ sessoesTS = (r1 :> (s1 :> 0 @@ s2 :> 0 @@ s3 :> 0) @@ r2 :> (s1 :> 0 @@ s2 :> 0 @@ s3 :> 0))
-/\ motivos = ( r1 :> (s1 :> "NONE" @@ s2 :> "NONE" @@ s3 :> "NONE") @@
-  r2 :> (s1 :> "NONE" @@ s2 :> "NONE" @@ s3 :> "NONE") )
-/\ relogio = (r1 :> 0 @@ r2 :> 0)
-/\ contador = (r1 :> (u1 :> 0 @@ u2 :> 0 @@ u3 :> 0) @@ r2 :> (u1 :> 0 @@ u2 :> 0 @@ u3 :> 0))
-/\ motivosTS = (r1 :> (s1 :> 0 @@ s2 :> 0 @@ s3 :> 0) @@ r2 :> (s1 :> 0 @@ s2 :> 0 @@ s3 :> 0))
-/\ sessaoDeTS = (r1 :> (s1 :> 0 @@ s2 :> 0 @@ s3 :> 0) @@ r2 :> (s1 :> 0 @@ s2 :> 0 @@ s3 :> 0))
-/\ sessaoDe = ( r1 :> (s1 :> "NONE" @@ s2 :> "NONE" @@ s3 :> "NONE") @@
-  r2 :> (s1 :> "NONE" @@ s2 :> "NONE" @@ s3 :> "NONE") )
-/\ contadorTS = (r1 :> (u1 :> 0 @@ u2 :> 0 @@ u3 :> 0) @@ r2 :> (u1 :> 0 @@ u2 :> 0 @@ u3 :> 0))
-/\ status = ( r1 :> (u1 :> "OPEN" @@ u2 :> "OPEN" @@ u3 :> "OPEN") @@
-  r2 :> (u1 :> "OPEN" @@ u2 :> "OPEN" @@ u3 :> "OPEN") )
-/\ statusTS = (r1 :> (u1 :> 0 @@ u2 :> 0 @@ u3 :> 0) @@ r2 :> (u1 :> 0 @@ u2 :> 0 @@ u3 :> 0))
-
-State 2: <IncrementFailure line 233, col 3 to line 250, col 36 of module SessionStore>
-/\ sessoes = ( r1 :> (s1 :> "NONE" @@ s2 :> "NONE" @@ s3 :> "NONE") @@
-  r2 :> (s1 :> "NONE" @@ s2 :> "NONE" @@ s3 :> "NONE") )
-/\ canal = ( r1 :> <<>> @@
-  r2 :>
-      << [ ts |-> 1,
-           tipo |-> "CONTADOR_INC",
-           chave |-> u1,
-           payload |-> "",
-           valor |-> 1,
-           origem |-> r1,
-           prio |-> 4,
-           sessoesAfetadas |-> {} ] >> )
-/\ sessoesTS = (r1 :> (s1 :> 0 @@ s2 :> 0 @@ s3 :> 0) @@ r2 :> (s1 :> 0 @@ s2 :> 0 @@ s3 :> 0))
-/\ motivos = ( r1 :> (s1 :> "NONE" @@ s2 :> "NONE" @@ s3 :> "NONE") @@
-  r2 :> (s1 :> "NONE" @@ s2 :> "NONE" @@ s3 :> "NONE") )
-/\ relogio = (r1 :> 1 @@ r2 :> 0)
-/\ contador = (r1 :> (u1 :> 1 @@ u2 :> 0 @@ u3 :> 0) @@ r2 :> (u1 :> 0 @@ u2 :> 0 @@ u3 :> 0))
-/\ motivosTS = (r1 :> (s1 :> 0 @@ s2 :> 0 @@ s3 :> 0) @@ r2 :> (s1 :> 0 @@ s2 :> 0 @@ s3 :> 0))
-/\ sessaoDeTS = (r1 :> (s1 :> 0 @@ s2 :> 0 @@ s3 :> 0) @@ r2 :> (s1 :> 0 @@ s2 :> 0 @@ s3 :> 0))
-/\ sessaoDe = ( r1 :> (s1 :> "NONE" @@ s2 :> "NONE" @@ s3 :> "NONE") @@
-  r2 :> (s1 :> "NONE" @@ s2 :> "NONE" @@ s3 :> "NONE") )
-/\ contadorTS = (r1 :> (u1 :> 4 @@ u2 :> 0 @@ u3 :> 0) @@ r2 :> (u1 :> 0 @@ u2 :> 0 @@ u3 :> 0))
-/\ status = ( r1 :> (u1 :> "OPEN" @@ u2 :> "OPEN" @@ u3 :> "OPEN") @@
-  r2 :> (u1 :> "OPEN" @@ u2 :> "OPEN" @@ u3 :> "OPEN") )
-/\ statusTS = (r1 :> (u1 :> 0 @@ u2 :> 0 @@ u3 :> 0) @@ r2 :> (u1 :> 0 @@ u2 :> 0 @@ u3 :> 0))
-
-State 3: <EntregaMensagem line 346, col 3 to line 462, col 60 of module SessionStore>
-/\ sessoes = ( r1 :> (s1 :> "NONE" @@ s2 :> "NONE" @@ s3 :> "NONE") @@
-  r2 :> (s1 :> "NONE" @@ s2 :> "NONE" @@ s3 :> "NONE") )
-/\ canal = (r1 :> <<>> @@ r2 :> <<>>)
-/\ sessoesTS = (r1 :> (s1 :> 0 @@ s2 :> 0 @@ s3 :> 0) @@ r2 :> (s1 :> 0 @@ s2 :> 0 @@ s3 :> 0))
-/\ motivos = ( r1 :> (s1 :> "NONE" @@ s2 :> "NONE" @@ s3 :> "NONE") @@
-  r2 :> (s1 :> "NONE" @@ s2 :> "NONE" @@ s3 :> "NONE") )
-/\ relogio = (r1 :> 1 @@ r2 :> 0)
-/\ contador = (r1 :> (u1 :> 1 @@ u2 :> 0 @@ u3 :> 0) @@ r2 :> (u1 :> 1 @@ u2 :> 0 @@ u3 :> 0))
-/\ motivosTS = (r1 :> (s1 :> 0 @@ s2 :> 0 @@ s3 :> 0) @@ r2 :> (s1 :> 0 @@ s2 :> 0 @@ s3 :> 0))
-/\ sessaoDeTS = (r1 :> (s1 :> 0 @@ s2 :> 0 @@ s3 :> 0) @@ r2 :> (s1 :> 0 @@ s2 :> 0 @@ s3 :> 0))
-/\ sessaoDe = ( r1 :> (s1 :> "NONE" @@ s2 :> "NONE" @@ s3 :> "NONE") @@
-  r2 :> (s1 :> "NONE" @@ s2 :> "NONE" @@ s3 :> "NONE") )
-/\ contadorTS = (r1 :> (u1 :> 4 @@ u2 :> 0 @@ u3 :> 0) @@ r2 :> (u1 :> 4 @@ u2 :> 0 @@ u3 :> 0))
-/\ status = ( r1 :> (u1 :> "OPEN" @@ u2 :> "OPEN" @@ u3 :> "OPEN") @@
-  r2 :> (u1 :> "OPEN" @@ u2 :> "OPEN" @@ u3 :> "OPEN") )
-/\ statusTS = (r1 :> (u1 :> 0 @@ u2 :> 0 @@ u3 :> 0) @@ r2 :> (u1 :> 0 @@ u2 :> 0 @@ u3 :> 0))
-
-State 4: <IncrementFailure line 233, col 3 to line 250, col 36 of module SessionStore>
-/\ sessoes = ( r1 :> (s1 :> "NONE" @@ s2 :> "NONE" @@ s3 :> "NONE") @@
-  r2 :> (s1 :> "NONE" @@ s2 :> "NONE" @@ s3 :> "NONE") )
-/\ canal = ( r1 :> <<>> @@
-  r2 :>
-      << [ ts |-> 2,
-           tipo |-> "CONTADOR_INC",
-           chave |-> u1,
-           payload |-> "",
-           valor |-> 2,
-           origem |-> r1,
-           prio |-> 7,
-           sessoesAfetadas |-> {} ] >> )
-/\ sessoesTS = (r1 :> (s1 :> 0 @@ s2 :> 0 @@ s3 :> 0) @@ r2 :> (s1 :> 0 @@ s2 :> 0 @@ s3 :> 0))
-/\ motivos = ( r1 :> (s1 :> "NONE" @@ s2 :> "NONE" @@ s3 :> "NONE") @@
-  r2 :> (s1 :> "NONE" @@ s2 :> "NONE" @@ s3 :> "NONE") )
-/\ relogio = (r1 :> 2 @@ r2 :> 0)
-/\ contador = (r1 :> (u1 :> 2 @@ u2 :> 0 @@ u3 :> 0) @@ r2 :> (u1 :> 1 @@ u2 :> 0 @@ u3 :> 0))
-/\ motivosTS = (r1 :> (s1 :> 0 @@ s2 :> 0 @@ s3 :> 0) @@ r2 :> (s1 :> 0 @@ s2 :> 0 @@ s3 :> 0))
-/\ sessaoDeTS = (r1 :> (s1 :> 0 @@ s2 :> 0 @@ s3 :> 0) @@ r2 :> (s1 :> 0 @@ s2 :> 0 @@ s3 :> 0))
-/\ sessaoDe = ( r1 :> (s1 :> "NONE" @@ s2 :> "NONE" @@ s3 :> "NONE") @@
-  r2 :> (s1 :> "NONE" @@ s2 :> "NONE" @@ s3 :> "NONE") )
-/\ contadorTS = (r1 :> (u1 :> 7 @@ u2 :> 0 @@ u3 :> 0) @@ r2 :> (u1 :> 4 @@ u2 :> 0 @@ u3 :> 0))
-/\ status = ( r1 :> (u1 :> "OPEN" @@ u2 :> "OPEN" @@ u3 :> "OPEN") @@
-  r2 :> (u1 :> "OPEN" @@ u2 :> "OPEN" @@ u3 :> "OPEN") )
-/\ statusTS = (r1 :> (u1 :> 0 @@ u2 :> 0 @@ u3 :> 0) @@ r2 :> (u1 :> 0 @@ u2 :> 0 @@ u3 :> 0))
-
-State 5: <EntregaMensagem line 346, col 3 to line 462, col 60 of module SessionStore>
-/\ sessoes = ( r1 :> (s1 :> "NONE" @@ s2 :> "NONE" @@ s3 :> "NONE") @@
-  r2 :> (s1 :> "NONE" @@ s2 :> "NONE" @@ s3 :> "NONE") )
-/\ canal = (r1 :> <<>> @@ r2 :> <<>>)
-/\ sessoesTS = (r1 :> (s1 :> 0 @@ s2 :> 0 @@ s3 :> 0) @@ r2 :> (s1 :> 0 @@ s2 :> 0 @@ s3 :> 0))
-/\ motivos = ( r1 :> (s1 :> "NONE" @@ s2 :> "NONE" @@ s3 :> "NONE") @@
-  r2 :> (s1 :> "NONE" @@ s2 :> "NONE" @@ s3 :> "NONE") )
-/\ relogio = (r1 :> 2 @@ r2 :> 0)
-/\ contador = (r1 :> (u1 :> 2 @@ u2 :> 0 @@ u3 :> 0) @@ r2 :> (u1 :> 2 @@ u2 :> 0 @@ u3 :> 0))
-/\ motivosTS = (r1 :> (s1 :> 0 @@ s2 :> 0 @@ s3 :> 0) @@ r2 :> (s1 :> 0 @@ s2 :> 0 @@ s3 :> 0))
-/\ sessaoDeTS = (r1 :> (s1 :> 0 @@ s2 :> 0 @@ s3 :> 0) @@ r2 :> (s1 :> 0 @@ s2 :> 0 @@ s3 :> 0))
-/\ sessaoDe = ( r1 :> (s1 :> "NONE" @@ s2 :> "NONE" @@ s3 :> "NONE") @@
-  r2 :> (s1 :> "NONE" @@ s2 :> "NONE" @@ s3 :> "NONE") )
-/\ contadorTS = (r1 :> (u1 :> 7 @@ u2 :> 0 @@ u3 :> 0) @@ r2 :> (u1 :> 7 @@ u2 :> 0 @@ u3 :> 0))
-/\ status = ( r1 :> (u1 :> "OPEN" @@ u2 :> "OPEN" @@ u3 :> "OPEN") @@
-  r2 :> (u1 :> "OPEN" @@ u2 :> "OPEN" @@ u3 :> "OPEN") )
-/\ statusTS = (r1 :> (u1 :> 0 @@ u2 :> 0 @@ u3 :> 0) @@ r2 :> (u1 :> 0 @@ u2 :> 0 @@ u3 :> 0))
-
-State 6: <IncrementFailure line 233, col 3 to line 250, col 36 of module SessionStore>
-/\ sessoes = ( r1 :> (s1 :> "NONE" @@ s2 :> "NONE" @@ s3 :> "NONE") @@
-  r2 :> (s1 :> "NONE" @@ s2 :> "NONE" @@ s3 :> "NONE") )
-/\ canal = ( r1 :>
-      << [ ts |-> 1,
-           tipo |-> "CONTADOR_INC",
-           chave |-> u1,
-           payload |-> "",
-           valor |-> 3,
-           origem |-> r2,
-           prio |-> 5,
-           sessoesAfetadas |-> {} ] >> @@
-  r2 :> <<>> )
-/\ sessoesTS = (r1 :> (s1 :> 0 @@ s2 :> 0 @@ s3 :> 0) @@ r2 :> (s1 :> 0 @@ s2 :> 0 @@ s3 :> 0))
-/\ motivos = ( r1 :> (s1 :> "NONE" @@ s2 :> "NONE" @@ s3 :> "NONE") @@
-  r2 :> (s1 :> "NONE" @@ s2 :> "NONE" @@ s3 :> "NONE") )
-/\ relogio = (r1 :> 2 @@ r2 :> 1)
-/\ contador = (r1 :> (u1 :> 2 @@ u2 :> 0 @@ u3 :> 0) @@ r2 :> (u1 :> 2 @@ u2 :> 0 @@ u3 :> 0))
-/\ motivosTS = (r1 :> (s1 :> 0 @@ s2 :> 0 @@ s3 :> 0) @@ r2 :> (s1 :> 0 @@ s2 :> 0 @@ s3 :> 0))
-/\ sessaoDeTS = (r1 :> (s1 :> 0 @@ s2 :> 0 @@ s3 :> 0) @@ r2 :> (s1 :> 0 @@ s2 :> 0 @@ s3 :> 0))
-/\ sessaoDe = ( r1 :> (s1 :> "NONE" @@ s2 :> "NONE" @@ s3 :> "NONE") @@
-  r2 :> (s1 :> "NONE" @@ s2 :> "NONE" @@ s3 :> "NONE") )
-/\ contadorTS = (r1 :> (u1 :> 7 @@ u2 :> 0 @@ u3 :> 0) @@ r2 :> (u1 :> 7 @@ u2 :> 0 @@ u3 :> 0))
-/\ status = ( r1 :> (u1 :> "OPEN" @@ u2 :> "OPEN" @@ u3 :> "OPEN") @@
-  r2 :> (u1 :> "OPEN" @@ u2 :> "OPEN" @@ u3 :> "OPEN") )
-/\ statusTS = (r1 :> (u1 :> 0 @@ u2 :> 0 @@ u3 :> 0) @@ r2 :> (u1 :> 0 @@ u2 :> 0 @@ u3 :> 0))
-
-State 7: <EntregaMensagem line 346, col 3 to line 462, col 60 of module SessionStore>
-/\ sessoes = ( r1 :> (s1 :> "NONE" @@ s2 :> "NONE" @@ s3 :> "NONE") @@
-  r2 :> (s1 :> "NONE" @@ s2 :> "NONE" @@ s3 :> "NONE") )
-/\ canal = (r1 :> <<>> @@ r2 :> <<>>)
-/\ sessoesTS = (r1 :> (s1 :> 0 @@ s2 :> 0 @@ s3 :> 0) @@ r2 :> (s1 :> 0 @@ s2 :> 0 @@ s3 :> 0))
-/\ motivos = ( r1 :> (s1 :> "NONE" @@ s2 :> "NONE" @@ s3 :> "NONE") @@
-  r2 :> (s1 :> "NONE" @@ s2 :> "NONE" @@ s3 :> "NONE") )
-/\ relogio = (r1 :> 2 @@ r2 :> 1)
-/\ contador = (r1 :> (u1 :> 2 @@ u2 :> 0 @@ u3 :> 0) @@ r2 :> (u1 :> 2 @@ u2 :> 0 @@ u3 :> 0))
-/\ motivosTS = (r1 :> (s1 :> 0 @@ s2 :> 0 @@ s3 :> 0) @@ r2 :> (s1 :> 0 @@ s2 :> 0 @@ s3 :> 0))
-/\ sessaoDeTS = (r1 :> (s1 :> 0 @@ s2 :> 0 @@ s3 :> 0) @@ r2 :> (s1 :> 0 @@ s2 :> 0 @@ s3 :> 0))
-/\ sessaoDe = ( r1 :> (s1 :> "NONE" @@ s2 :> "NONE" @@ s3 :> "NONE") @@
-  r2 :> (s1 :> "NONE" @@ s2 :> "NONE" @@ s3 :> "NONE") )
-/\ contadorTS = (r1 :> (u1 :> 7 @@ u2 :> 0 @@ u3 :> 0) @@ r2 :> (u1 :> 7 @@ u2 :> 0 @@ u3 :> 0))
-/\ status = ( r1 :> (u1 :> "BLOCKED" @@ u2 :> "OPEN" @@ u3 :> "OPEN") @@
-  r2 :> (u1 :> "OPEN" @@ u2 :> "OPEN" @@ u3 :> "OPEN") )
-/\ statusTS = (r1 :> (u1 :> 5 @@ u2 :> 0 @@ u3 :> 0) @@ r2 :> (u1 :> 0 @@ u2 :> 0 @@ u3 :> 0))
-
-195336 states generated, 26736 distinct states found, 18735 states left on queue.
-The depth of the complete state graph search is 10.
-The average outdegree of the complete state graph is 3 (minimum is 0, the maximum 15 and the 95th percentile is 11).
-Finished in 01s at (2026-09-16 01:39:18)
+Finished computing initial states: 1 distinct state generated at 2026-09-16 10:29:10.
+Progress(12) at 2026-09-16 10:29:13: 2,564,629 states generated (2,564,629 s/min), 293,221 distinct states found (293,221 ds/min), 182,403 states left on queue.
+Model checking completed. No error has been found.
+  Estimates of the probability that TLC did not check all reachable states
+  because two distinct states had the same fingerprint:
+  calculated (optimistic):  val = 3.3E-6
+  based on the actual fingerprints:  val = 8.9E-8
+37706147 states generated, 1671294 distinct states found, 0 states left on queue.
+The depth of the complete state graph search is 13.
+The average outdegree of the complete state graph is 1 (minimum is 0, the maximum 18 and the 95th percentile is 3).
+Finished in 26s at (2026-09-16 10:29:36)

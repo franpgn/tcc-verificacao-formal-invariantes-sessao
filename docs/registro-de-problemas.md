@@ -46,6 +46,87 @@
 - **Causa:** `WarmupPolicy.padrao` usava o piso fixo de 60s de warm-up (`max(60, 10%*dur)`), consumindo toda uma execução curta; `--warmup-min-sec` da CLI não era repassado.
 - **Correção:** *overload* `WarmupPolicy.padrao(..., warmupMinimoSeg, clock)` e fiação de `cli.warmupMinimoSeg` no `WorkloadMain`. O *default* de 60s permanece para as baterias reais. Commit `feat(workload): wire --warmup-min-sec`.
 
+## 2026-09-16 — Correção de broadcast + LWW em `SessionStore.tla`
+
+### P-08 — `EntregaMensagem` entregava a uma única réplica, nunca *broadcast*
+
+- **Sintoma:** `I5`/`I6` (convergência sob quiescência) violavam mesmo com o
+  canal vazio (achado da rodada de 07/09).
+- **Causa:** `canal` era uma `Seq(Mensagem)` **global**; `EntregaMensagem(r)`
+  escolhia um índice arbitrário e entregava a mensagem a **uma única**
+  réplica `r`, removendo-a do canal — nunca havia *broadcast* a todas as
+  réplicas destino.
+- **Correção:** `canal` passou a `[REPLICAS -> Seq(Mensagem)]`; novo operador
+  `Broadcast(origem, msg)` enfileira a mensagem em todas as filas exceto a de
+  origem. Commit `7ce78ca`, branch `fix/canal-broadcast-por-replica`.
+
+### P-09 — `TypeOK` violava após incluir `canal` (tipo de `Mensagem.payload` incorreto)
+
+- **Sintoma:** ao adicionar `canal \in [REPLICAS -> Seq(Mensagem)]` a `TypeOK`
+  (necessário para a Mudança 2), o TLC violou `TypeOK` em 2 estados.
+- **Causa:** `Mensagem` declarava `payload: STRING`, mas mensagens
+  `SESSAO_VALIDA` sempre carregam uma identidade (`IDS`), não uma *string* —
+  inconsistência já presente na spec original, nunca exposta porque `canal`
+  nunca fizera parte de `TypeOK` antes.
+- **Correção:** `payload: STRING \cup IDS`. Commit `aefe391`.
+
+### P-10 — gate LWW compartilhado incorretamente entre dois registradores independentes
+
+- **Sintoma:** após implementar LWW via relógio lógico (Mudança 2 completa),
+  `I5` ainda violava em `tiny`.
+- **Causa:** em `EntregaMensagem`, os *cases* `SESSAO_VALIDA`/`SESSAO_INVALIDA`
+  escreviam dois registradores LWW independentes (`sessoes`+`sessaoDe`;
+  `sessoes`+`motivos`) sob um único `IF m.prio > sessoesTS[...]`. Como
+  `Logout`/`Block` avançam `sessoesTS` sem tocar `sessaoDeTS`, os dois podiam
+  divergir, e o gate único descartava indevidamente escritas que deveriam
+  valer para o campo com TS mais atrasado.
+- **Correção:** gate independente por campo (`sessaoDe` por `sessaoDeTS`,
+  `motivos` por `motivosTS`), mesmo padrão já usado em `CONTADOR_INC`/
+  `ID_DESBLOQUEIA`. Commit `a5622f2`, branch
+  `fix/lww-gate-por-campo-independente`.
+
+### P-11 — escrita local sobrescrevia incondicionalmente valor remoto de prioridade maior
+
+- **Sintoma:** mesmo após P-10, `I5` violava; um teste diagnóstico (`Block`/
+  `Unblock` temporariamente removidos de `Next`) confirmou que o problema
+  ocorria mesmo sem `Block` envolvido.
+- **Causa:** as 6 ações de escrita local sobrescreviam campo+TS de forma
+  incondicional, sem comparar com o TS local já armazenado — assimetria com
+  `EntregaMensagem`, que é condicional. Uma réplica podia receber (via
+  mensagem) um valor de prioridade alta, e depois "desfazê-lo" com uma
+  escrita local de prioridade mais baixa (relógio local atrasado).
+- **Correção:** cada ação local aplica a mesma regra de comparação LWW que
+  `EntregaMensagem` usa (aplica a própria mensagem a si mesma pela mesma
+  função de *merge*). Commit `f8e9e02`, branch `fix/lww-gating-escrita-local`.
+
+### P-12 — cascata de `Block` não propagada a réplicas remotas (não corrigido nesta rodada)
+
+- **Sintoma:** mesmo após P-08 a P-11, `I5` ainda viola em todas as
+  cardinalidades testadas.
+- **Causa:** `Block(r,id)` invalida localmente, na própria réplica, todas as
+  sessões `s` com `sessaoDe[r][s]=id ∧ sessoes[r][s]=VALID` (efeito cascata).
+  A mensagem `ID_BLOQUEIA` propagada só carrega `chave=id`; o *case*
+  `ID_BLOQUEIA` de `EntregaMensagem` só atualiza `status` na réplica destino,
+  nunca reaplica esse cascade sobre `sessoes`/`motivos`.
+- **Estado:** documentado com contraexemplo completo em
+  `docs/relatorio-tlc-2026-09-16.md` §3.2; correção requer decisão de projeto
+  nova (fora do escopo desta execução) — candidato a "Mudança 3".
+
+### P-13 — bloqueio por limite de tentativas não revertido por reset de prioridade maior (não corrigido)
+
+- **Sintoma:** `I6` viola em todas as cardinalidades testadas mesmo após
+  P-08 a P-11.
+- **Causa:** manifestação do trade-off já sinalizado pela decisão D-2 do
+  plano (`contador` como LWW-register de valor absoluto, não CRDT
+  *op-based*): um `status=BLOCKED` disparado localmente por um valor de
+  `contador` que é depois superado por LWW por um `CONTADOR_RESET` de
+  prioridade maior não é revertido, porque `CONTADOR_RESET` nunca toca
+  `status` — mesma semântica local que já existia antes desta rodada
+  (`ResetFailures` local também nunca desbloqueia).
+- **Estado:** documentado com contraexemplo completo em
+  `docs/relatorio-tlc-2026-09-16.md` §3.3; aceito como limitação do
+  LWW-register escolhido para `contador`, ou candidato a "Mudança 3".
+
 ## Observação de modelagem (não é defeito)
 
 Com 8 *threads* = 8 identidades fixas (`user-<tid>`), `incrementFailure`

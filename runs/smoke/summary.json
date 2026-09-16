@@ -1,0 +1,51 @@
+{
+  "cenario": "smoke",
+  "execucoes": 1,
+  "operacoes": {
+    "IncrementFailure": {
+      "n": 54494,
+      "media_ns": 1600988.3455059272,
+      "p50_ns": 1406600,
+      "p95_ns": 2405100,
+      "p99_ns": 5512600,
+      "p99_9_ns": null,
+      "taxa_erro": 0.0
+    },
+    "Login": {
+      "n": 135092,
+      "media_ns": 576246.6482101086,
+      "p50_ns": 462100,
+      "p95_ns": 946500,
+      "p99_ns": 2632700,
+      "p99_9_ns": null,
+      "taxa_erro": 0.0
+    },
+    "Logout": {
+      "n": 53829,
+      "media_ns": 503701.917182188,
+      "p50_ns": 408800,
+      "p95_ns": 845200,
+      "p99_ns": 2012000,
+      "p99_9_ns": null,
+      "taxa_erro": 0.0
+    },
+    "ResetFailures": {
+      "n": 27150,
+      "media_ns": 1612680.1583793738,
+      "p50_ns": 1408600,
+      "p95_ns": 2404100,
+      "p99_ns": 5860600,
+      "p99_9_ns": null,
+      "taxa_erro": 0.0
+    },
+    "Validate": {
+      "n": 270134,
+      "media_ns": 505535.964373237,
+      "p50_ns": 409300,
+      "p95_ns": 841700,
+      "p99_ns": 1996200,
+      "p99_9_ns": null,
+      "taxa_erro": 0.0
+    }
+  }
+}

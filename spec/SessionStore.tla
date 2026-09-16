@@ -145,6 +145,19 @@ Broadcast(origem, msg) ==
 (***************************************************************************)
 
 (* O1, login: cria sessão para id se a identidade está OPEN e a sid livre. *)
+(* Mudanca 2b (achado real via TLC, fora do plano original): cada acao de  *)
+(* escrita local aplica a MESMA regra de comparacao LWW que EntregaMensagem *)
+(* usa para mensagens remotas -- e como se a replica aplicasse a propria    *)
+(* mensagem a si mesma pela mesma funcao de merge. Sem isso, uma escrita    *)
+(* local pode sobrescrever incondicionalmente um valor de prioridade maior  *)
+(* ja aplicado por uma mensagem remota (contraexemplo real: EntregaMensagem *)
+(* aplica SESSAO_VALIDA de prio alta vinda de outra replica; a replica      *)
+(* entao dispara Logout localmente com prio PROPRIA mais baixa -- porque    *)
+(* seu relogio nunca avancou -- e o Logout sobrescrevia sessoes/sessoesTS   *)
+(* sem checar isso, "desfazendo" a escrita remota vencedora). O relogio     *)
+(* SEMPRE avanca quando a acao local dispara, independente de o valor do    *)
+(* campo ter sido efetivamente atualizado; a PRECONDICAO continua avaliada  *)
+(* normalmente sobre o estado local atual.                                  *)
 Login(r, id, s) ==
   LET novoTS == relogio[r] + 1
       p == Prio(novoTS, r)
@@ -153,11 +166,15 @@ Login(r, id, s) ==
   IN
   /\ status[r][id] = "OPEN"
   /\ sessoes[r][s] = "NONE"
-  /\ relogio'    = [relogio    EXCEPT ![r] = novoTS]
-  /\ sessoes'    = [sessoes    EXCEPT ![r][s] = "VALID"]
-  /\ sessaoDe'   = [sessaoDe   EXCEPT ![r][s] = id]
-  /\ sessoesTS'  = [sessoesTS  EXCEPT ![r][s] = p]
-  /\ sessaoDeTS' = [sessaoDeTS EXCEPT ![r][s] = p]
+  /\ relogio' = [relogio EXCEPT ![r] = novoTS]
+  /\ IF p > sessoesTS[r][s]
+       THEN /\ sessoes'   = [sessoes   EXCEPT ![r][s] = "VALID"]
+            /\ sessoesTS' = [sessoesTS EXCEPT ![r][s] = p]
+       ELSE /\ sessoes' = sessoes /\ sessoesTS' = sessoesTS
+  /\ IF p > sessaoDeTS[r][s]
+       THEN /\ sessaoDe'   = [sessaoDe   EXCEPT ![r][s] = id]
+            /\ sessaoDeTS' = [sessaoDeTS EXCEPT ![r][s] = p]
+       ELSE /\ sessaoDe' = sessaoDe /\ sessaoDeTS' = sessaoDeTS
   /\ motivos'    = motivos
   /\ motivosTS'  = motivosTS
   /\ contador'   = contador
@@ -174,11 +191,15 @@ Logout(r, s) ==
                ts |-> novoTS, origem |-> r, prio |-> p]
   IN
   /\ sessoes[r][s] = "VALID"
-  /\ relogio'   = [relogio   EXCEPT ![r] = novoTS]
-  /\ sessoes'   = [sessoes   EXCEPT ![r][s] = "INVALID"]
-  /\ motivos'   = [motivos   EXCEPT ![r][s] = "LOGOUT"]
-  /\ sessoesTS' = [sessoesTS EXCEPT ![r][s] = p]
-  /\ motivosTS' = [motivosTS EXCEPT ![r][s] = p]
+  /\ relogio' = [relogio EXCEPT ![r] = novoTS]
+  /\ IF p > sessoesTS[r][s]
+       THEN /\ sessoes'   = [sessoes   EXCEPT ![r][s] = "INVALID"]
+            /\ sessoesTS' = [sessoesTS EXCEPT ![r][s] = p]
+       ELSE /\ sessoes' = sessoes /\ sessoesTS' = sessoesTS
+  /\ IF p > motivosTS[r][s]
+       THEN /\ motivos'   = [motivos   EXCEPT ![r][s] = "LOGOUT"]
+            /\ motivosTS' = [motivosTS EXCEPT ![r][s] = p]
+       ELSE /\ motivos' = motivos /\ motivosTS' = motivosTS
   /\ sessaoDe'    = sessaoDe
   /\ sessaoDeTS'  = sessaoDeTS
   /\ contador'    = contador
@@ -196,14 +217,16 @@ IncrementFailure(r, id) ==
                ts |-> novoTS, origem |-> r, prio |-> p]
   IN
   /\ contador[r][id] < LIMITE
-  /\ relogio'    = [relogio    EXCEPT ![r] = novoTS]
-  /\ contador'   = [contador   EXCEPT ![r][id] = novo]
-  /\ contadorTS' = [contadorTS EXCEPT ![r][id] = p]
-  /\ IF novo >= LIMITE
-       THEN /\ status'   = [status   EXCEPT ![r][id] = "BLOCKED"]
-            /\ statusTS' = [statusTS EXCEPT ![r][id] = p]
-       ELSE /\ status'   = status
-            /\ statusTS' = statusTS
+  /\ relogio' = [relogio EXCEPT ![r] = novoTS]
+  /\ IF p > contadorTS[r][id]
+       THEN /\ contador'   = [contador   EXCEPT ![r][id] = novo]
+            /\ contadorTS' = [contadorTS EXCEPT ![r][id] = p]
+            /\ IF novo >= LIMITE /\ p > statusTS[r][id]
+                 THEN /\ status'   = [status   EXCEPT ![r][id] = "BLOCKED"]
+                      /\ statusTS' = [statusTS EXCEPT ![r][id] = p]
+                 ELSE /\ status' = status /\ statusTS' = statusTS
+       ELSE /\ contador' = contador /\ contadorTS' = contadorTS
+            /\ status' = status /\ statusTS' = statusTS
   /\ sessoes'    = sessoes
   /\ sessoesTS'  = sessoesTS
   /\ motivos'    = motivos
@@ -222,9 +245,11 @@ ResetFailures(r, id) ==
                ts |-> novoTS, origem |-> r, prio |-> p]
   IN
   /\ contador[r][id] # 0
-  /\ relogio'    = [relogio    EXCEPT ![r] = novoTS]
-  /\ contador'   = [contador   EXCEPT ![r][id] = 0]
-  /\ contadorTS' = [contadorTS EXCEPT ![r][id] = p]
+  /\ relogio' = [relogio EXCEPT ![r] = novoTS]
+  /\ IF p > contadorTS[r][id]
+       THEN /\ contador'   = [contador   EXCEPT ![r][id] = 0]
+            /\ contadorTS' = [contadorTS EXCEPT ![r][id] = p]
+       ELSE /\ contador' = contador /\ contadorTS' = contadorTS
   /\ sessoes'    = sessoes
   /\ sessoesTS'  = sessoesTS
   /\ motivos'    = motivos
@@ -244,17 +269,23 @@ Block(r, id) ==
                ts |-> novoTS, origem |-> r, prio |-> p]
   IN
   /\ status[r][id] = "OPEN"
-  /\ relogio'  = [relogio EXCEPT ![r] = novoTS]
-  /\ status'   = [status  EXCEPT ![r][id] = "BLOCKED"]
-  /\ statusTS' = [statusTS EXCEPT ![r][id] = p]
+  /\ relogio' = [relogio EXCEPT ![r] = novoTS]
+  /\ IF p > statusTS[r][id]
+       THEN /\ status'   = [status   EXCEPT ![r][id] = "BLOCKED"]
+            /\ statusTS' = [statusTS EXCEPT ![r][id] = p]
+       ELSE /\ status' = status /\ statusTS' = statusTS
   /\ sessoes' = [sessoes EXCEPT ![r] =
-                  [s \in SIDS |-> IF Afetado(s) THEN "INVALID" ELSE @[s]]]
+                  [s \in SIDS |-> IF Afetado(s) /\ p > sessoesTS[r][s]
+                                  THEN "INVALID" ELSE @[s]]]
   /\ motivos' = [motivos EXCEPT ![r] =
-                  [s \in SIDS |-> IF Afetado(s) THEN "ADMIN_BLOCK" ELSE @[s]]]
+                  [s \in SIDS |-> IF Afetado(s) /\ p > motivosTS[r][s]
+                                  THEN "ADMIN_BLOCK" ELSE @[s]]]
   /\ sessoesTS' = [sessoesTS EXCEPT ![r] =
-                    [s \in SIDS |-> IF Afetado(s) THEN p ELSE @[s]]]
+                    [s \in SIDS |-> IF Afetado(s) /\ p > sessoesTS[r][s]
+                                    THEN p ELSE @[s]]]
   /\ motivosTS' = [motivosTS EXCEPT ![r] =
-                    [s \in SIDS |-> IF Afetado(s) THEN p ELSE @[s]]]
+                    [s \in SIDS |-> IF Afetado(s) /\ p > motivosTS[r][s]
+                                    THEN p ELSE @[s]]]
   /\ sessaoDe'   = sessaoDe
   /\ sessaoDeTS' = sessaoDeTS
   /\ contador'   = contador
@@ -270,11 +301,15 @@ Unblock(r, id) ==
                ts |-> novoTS, origem |-> r, prio |-> p]
   IN
   /\ status[r][id] = "BLOCKED"
-  /\ relogio'    = [relogio    EXCEPT ![r] = novoTS]
-  /\ status'     = [status     EXCEPT ![r][id] = "OPEN"]
-  /\ statusTS'   = [statusTS   EXCEPT ![r][id] = p]
-  /\ contador'   = [contador   EXCEPT ![r][id] = 0]
-  /\ contadorTS' = [contadorTS EXCEPT ![r][id] = p]
+  /\ relogio' = [relogio EXCEPT ![r] = novoTS]
+  /\ IF p > statusTS[r][id]
+       THEN /\ status'   = [status   EXCEPT ![r][id] = "OPEN"]
+            /\ statusTS' = [statusTS EXCEPT ![r][id] = p]
+       ELSE /\ status' = status /\ statusTS' = statusTS
+  /\ IF p > contadorTS[r][id]
+       THEN /\ contador'   = [contador   EXCEPT ![r][id] = 0]
+            /\ contadorTS' = [contadorTS EXCEPT ![r][id] = p]
+       ELSE /\ contador' = contador /\ contadorTS' = contadorTS
   /\ sessoes'    = sessoes
   /\ sessoesTS'  = sessoesTS
   /\ motivos'    = motivos

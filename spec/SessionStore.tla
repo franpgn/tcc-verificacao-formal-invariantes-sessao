@@ -299,27 +299,38 @@ EntregaMensagem(r) ==
        /\ canal' = [canal EXCEPT ![r] = SubSeq(@, 1, i-1) \o SubSeq(@, i+1, Len(@))]
        /\ UNCHANGED relogio
        /\ CASE m.tipo = "SESSAO_VALIDA" ->
-                IF m.prio > sessoesTS[r][m.chave]
-                  THEN /\ sessoes'    = [sessoes    EXCEPT ![r][m.chave] = "VALID"]
-                       /\ sessaoDe'   = [sessaoDe   EXCEPT ![r][m.chave] = m.payload]
-                       /\ sessoesTS'  = [sessoesTS  EXCEPT ![r][m.chave] = m.prio]
-                       /\ sessaoDeTS' = [sessaoDeTS EXCEPT ![r][m.chave] = m.prio]
-                       /\ UNCHANGED << motivos, motivosTS, contador, contadorTS,
-                                        status, statusTS >>
-                  ELSE UNCHANGED << sessoes, motivos, sessaoDe, contador, status,
-                                     sessoesTS, motivosTS, sessaoDeTS,
-                                     contadorTS, statusTS >>
+                (* sessoes e sessaoDe sao registradores LWW INDEPENDENTES  *)
+                (* (decisao D-1): cada um so e escrito se m.prio superar o *)
+                (* TS do SEU PROPRIO campo, nao o do outro. Logout/Block   *)
+                (* avancam sessoesTS sem tocar sessaoDeTS, entao os dois   *)
+                (* podem divergir com o tempo -- gatear ambos por          *)
+                (* sessoesTS (como numa versao anterior) quebra a          *)
+                (* convergencia de sessaoDe quando isso acontece.          *)
+                /\ IF m.prio > sessoesTS[r][m.chave]
+                     THEN /\ sessoes'   = [sessoes   EXCEPT ![r][m.chave] = "VALID"]
+                          /\ sessoesTS' = [sessoesTS EXCEPT ![r][m.chave] = m.prio]
+                     ELSE /\ sessoes' = sessoes /\ sessoesTS' = sessoesTS
+                /\ IF m.prio > sessaoDeTS[r][m.chave]
+                     THEN /\ sessaoDe'   = [sessaoDe   EXCEPT ![r][m.chave] = m.payload]
+                          /\ sessaoDeTS' = [sessaoDeTS EXCEPT ![r][m.chave] = m.prio]
+                     ELSE /\ sessaoDe' = sessaoDe /\ sessaoDeTS' = sessaoDeTS
+                /\ UNCHANGED << motivos, motivosTS, contador, contadorTS,
+                                 status, statusTS >>
           [] m.tipo = "SESSAO_INVALIDA" ->
-                IF m.prio > sessoesTS[r][m.chave]
-                  THEN /\ sessoes'   = [sessoes   EXCEPT ![r][m.chave] = "INVALID"]
-                       /\ motivos'   = [motivos   EXCEPT ![r][m.chave] = m.payload]
-                       /\ sessoesTS' = [sessoesTS EXCEPT ![r][m.chave] = m.prio]
-                       /\ motivosTS' = [motivosTS EXCEPT ![r][m.chave] = m.prio]
-                       /\ UNCHANGED << sessaoDe, sessaoDeTS, contador,
-                                        contadorTS, status, statusTS >>
-                  ELSE UNCHANGED << sessoes, motivos, sessaoDe, contador, status,
-                                     sessoesTS, motivosTS, sessaoDeTS,
-                                     contadorTS, statusTS >>
+                (* sessoes e motivos sao registradores LWW INDEPENDENTES   *)
+                (* pelo mesmo motivo acima -- gatear ambos por sessoesTS   *)
+                (* apenas quebraria a convergencia de motivos quando os    *)
+                (* dois TS divergirem.                                     *)
+                /\ IF m.prio > sessoesTS[r][m.chave]
+                     THEN /\ sessoes'   = [sessoes   EXCEPT ![r][m.chave] = "INVALID"]
+                          /\ sessoesTS' = [sessoesTS EXCEPT ![r][m.chave] = m.prio]
+                     ELSE /\ sessoes' = sessoes /\ sessoesTS' = sessoesTS
+                /\ IF m.prio > motivosTS[r][m.chave]
+                     THEN /\ motivos'   = [motivos   EXCEPT ![r][m.chave] = m.payload]
+                          /\ motivosTS' = [motivosTS EXCEPT ![r][m.chave] = m.prio]
+                     ELSE /\ motivos' = motivos /\ motivosTS' = motivosTS
+                /\ UNCHANGED << sessaoDe, sessaoDeTS, contador,
+                                 contadorTS, status, statusTS >>
           [] m.tipo = "CONTADOR_INC" ->
                 IF m.prio > contadorTS[r][m.chave]
                   THEN /\ contador'   = [contador   EXCEPT ![r][m.chave] = m.valor]

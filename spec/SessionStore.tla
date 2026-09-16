@@ -36,6 +36,14 @@
 (*     campo) -- corrige o "status órfão" de I6, sem alterar em nada       *)
 (*     ResetFailures/CONTADOR_RESET (regra O5: "sem alterar a marca de     *)
 (*     bloqueio", Cap. 3 de Metodologia.tex).                              *)
+(*   - Mudança 4 (docs/plano-fix-broadcast-fantasma-2026-09-16.md): a      *)
+(*     Rota (c) expôs uma causa nova (P-15) -- IncrementFailure só faz     *)
+(*     Broadcast da mensagem CONTADOR_INC quando a própria escrita local   *)
+(*     de contador vence seu gate LWW (evita propagar um valor "fantasma"  *)
+(*     que nunca se tornou contador real em réplica alguma). As outras 5   *)
+(*     ações de escrita foram analisadas e não têm o mesmo ingrediente     *)
+(*     estrutural (gate de um campo lendo o VALOR de outro campo) -- ver   *)
+(*     comentários pontuais em cada uma e §2 do plano.                     *)
 (*   - Invariantes I1..I6 declarados conforme Cap. 3 §3.3.3.               *)
 (*                                                                         *)
 (* Falhas explícitas (crash, partição, atraso/jitter) ficam para TCC-II,   *)
@@ -198,6 +206,9 @@ Login(r, id, s) ==
   /\ canal'      = Broadcast(r, msg)
 
 (* O3, logout: marca sessão como INVALID com motivo LOGOUT. Idempotente. *)
+(* Mudanca 4: canal' permanece incondicional aqui -- seguro por construcao, *)
+(* SESSAO_INVALIDA nao tem acoplamento de valor entre campos, ver           *)
+(* docs/plano-fix-broadcast-fantasma-2026-09-16.md §2.2/§2.4. *)
 Logout(r, s) ==
   LET novoTS == relogio[r] + 1
       p == Prio(novoTS, r)
@@ -222,7 +233,18 @@ Logout(r, s) ==
   /\ statusTS'    = statusTS
   /\ canal'       = Broadcast(r, msg)
 
-(* O4, incrementFailure: incrementa contador, bloqueia se atingir LIMITE. *)
+(* O4, incrementFailure: incrementa contador, bloqueia se atingir LIMITE.          *)
+(* Mudanca 4 (fix, P-15): canal' so faz Broadcast quando a PROPRIA escrita local   *)
+(* de contador venceu seu gate LWW (p > contadorTS[r][id]) -- mesma condicao que   *)
+(* ja gateia contador'/contadorTS'/status'/statusTS' nesta acao. Racional: se a    *)
+(* escrita local perde sua propria corrida de prioridade, "novo" nunca se torna    *)
+(* contador real em replica nenhuma (nem aqui); propagar essa mensagem seria       *)
+(* transmitir um valor fantasma que um gate remoto INDEPENDENTE (Rota c, Mudanca   *)
+(* 3b, case CONTADOR_INC de EntregaMensagem) poderia aceitar para `status` mesmo   *)
+(* sem `contador` jamais ter vencido em lugar nenhum -- exatamente o contraexemplo *)
+(* de P-15 (docs/relatorio-tlc-2026-09-16-mudanca3.md §3.3). Ver justificativa     *)
+(* completa (por que so esta acao precisa desta guarda, entre as 6) em             *)
+(* docs/plano-fix-broadcast-fantasma-2026-09-16.md.                                *)
 IncrementFailure(r, id) ==
   LET novo    == contador[r][id] + 1
       novoTS  == relogio[r] + 1
@@ -239,19 +261,24 @@ IncrementFailure(r, id) ==
                  THEN /\ status'   = [status   EXCEPT ![r][id] = "BLOCKED"]
                       /\ statusTS' = [statusTS EXCEPT ![r][id] = p]
                  ELSE /\ status' = status /\ statusTS' = statusTS
+            /\ canal' = Broadcast(r, msg)
        ELSE /\ contador' = contador /\ contadorTS' = contadorTS
             /\ status' = status /\ statusTS' = statusTS
+            /\ canal' = canal
   /\ sessoes'    = sessoes
   /\ sessoesTS'  = sessoesTS
   /\ motivos'    = motivos
   /\ motivosTS'  = motivosTS
   /\ sessaoDe'   = sessaoDe
   /\ sessaoDeTS' = sessaoDeTS
-  /\ canal'      = Broadcast(r, msg)
 
 (* O5, resetFailures: zera o contador de id na réplica r.                  *)
 (*    Precondição operacional: tipicamente após Login bem-sucedido em      *)
 (*    janela, mas o modelo aceita a redefinição como ação livre.           *)
+(* Mudanca 4: canal' permanece incondicional aqui -- seguro por construcao, *)
+(* CONTADOR_RESET so toca contador (nunca status, regra O5), sem acoplamento*)
+(* de valor entre campos, ver docs/plano-fix-broadcast-fantasma-2026-09-16.md*)
+(* §2.2/§2.4. *)
 ResetFailures(r, id) ==
   LET novoTS == relogio[r] + 1
       p == Prio(novoTS, r)
@@ -275,6 +302,12 @@ ResetFailures(r, id) ==
   /\ canal'      = Broadcast(r, msg)
 
 (* O6, block: marca identidade como BLOCKED e invalida sessões VALID. *)
+(* Mudanca 4: canal' permanece incondicional aqui -- decisao Rota (b),      *)
+(* nenhuma mudanca. status/sessoes/motivos escritos por Block sao valores   *)
+(* constantes/absolutos (nao computados a partir do valor anterior do       *)
+(* proprio campo, diferente de IncrementFailure); nenhum dos tres gates     *)
+(* locais le o VALOR de outro campo -- sem o ingrediente estrutural de      *)
+(* P-15. Ver docs/plano-fix-broadcast-fantasma-2026-09-16.md §2.2/§3.       *)
 Block(r, id) ==
   LET novoTS == relogio[r] + 1
       p == Prio(novoTS, r)
@@ -309,6 +342,10 @@ Block(r, id) ==
 
 (* O7, unblock: remove a marca BLOCKED e zera o contador.                  *)
 (*    Não recria sessões previamente invalidadas pelo bloqueio.            *)
+(* Mudanca 4: canal' permanece incondicional aqui -- seguro por construcao, *)
+(* ID_DESBLOQUEIA escreve status e contador com valores fixos ("OPEN"/0),   *)
+(* gates independentes por prioridade so, sem acoplamento de valor entre    *)
+(* campos, ver docs/plano-fix-broadcast-fantasma-2026-09-16.md §2.2/§2.4.   *)
 Unblock(r, id) ==
   LET novoTS == relogio[r] + 1
       p == Prio(novoTS, r)
@@ -390,15 +427,21 @@ EntregaMensagem(r) ==
                 (* por ID_BLOQUEIA/ID_DESBLOQUEIA. Isto e seguro no caso      *)
                 (* REMOTO (mas nao no caso local de IncrementFailure, que     *)
                 (* continua acoplado de proposito) porque m.valor/m.prio sao  *)
-                (* um fato historico ja consumado na origem, independente de  *)
-                (* esta replica aceitar ou nao esse valor para o SEU campo    *)
-                (* contador local. Corrige o "status orfao" de I6: antes, um  *)
-                (* CONTADOR_INC descartado por LWW (contador de prioridade    *)
-                (* menor) tambem descartava o efeito BLOCKED, mesmo quando     *)
-                (* esse efeito, por seus proprios termos de statusTS, deveria  *)
-                (* ser aceito. ResetFailures/CONTADOR_RESET continuam sem      *)
-                (* tocar status, em nenhuma via (regra O5 da monografia: "sem  *)
-                (* alterar a marca de bloqueio").                             *)
+                (* um fato historico ja consumado na origem, GARANTIDO POR    *)
+                (* CONSTRUCAO desde a Mudanca 4 (docs/plano-fix-broadcast-     *)
+                (* fantasma-2026-09-16.md): IncrementFailure so faz Broadcast  *)
+                (* quando a propria escrita local de contador venceu seu gate  *)
+                (* LWW -- antes da Mudanca 4 essa premissa era apenas presumida*)
+                (* (P-15: uma mensagem "fantasma" podia carregar um m.valor    *)
+                (* que nunca venceu em replica alguma, nem na origem); agora   *)
+                (* toda mensagem CONTADOR_INC que chega aqui satisfaz a        *)
+                (* premissa por construcao. Corrige o "status orfao" de I6:    *)
+                (* antes, um CONTADOR_INC descartado por LWW (contador de      *)
+                (* prioridade menor) tambem descartava o efeito BLOCKED, mesmo *)
+                (* quando esse efeito, por seus proprios termos de statusTS,   *)
+                (* deveria ser aceito. ResetFailures/CONTADOR_RESET continuam  *)
+                (* sem tocar status, em nenhuma via (regra O5 da monografia:   *)
+                (* "sem alterar a marca de bloqueio").                        *)
                 /\ IF m.prio > contadorTS[r][m.chave]
                      THEN /\ contador'   = [contador   EXCEPT ![r][m.chave] = m.valor]
                           /\ contadorTS' = [contadorTS EXCEPT ![r][m.chave] = m.prio]

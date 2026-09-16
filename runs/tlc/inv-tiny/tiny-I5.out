@@ -1,5 +1,5 @@
 TLC2 Version 2.19 of 08 August 2024 (rev: 5a47802)
-Running breadth-first search Model-Checking with fp 23 and seed 5922524544142320216 with 20 workers on 20 cores with 7237MB heap and 64MB offheap memory [pid: 39340] (Windows 11 10.0 amd64, Oracle Corporation 22.0.2 x86_64, MSBDiskFPSet, DiskStateQueue).
+Running breadth-first search Model-Checking with fp 129 and seed 8621359030130930951 with 20 workers on 20 cores with 7237MB heap and 64MB offheap memory [pid: 16312] (Windows 11 10.0 amd64, Oracle Corporation 22.0.2 x86_64, MSBDiskFPSet, DiskStateQueue).
 Parsing file C:\Users\Francesco\Development\tcc\tcc-desenvolvimento\spec\MCSession.tla
 Parsing file C:\Users\Francesco\Development\tcc\tcc-desenvolvimento\spec\SessionStore.tla
 Parsing file C:\Users\Francesco\AppData\Local\Temp\TLC.tla
@@ -12,36 +12,62 @@ Semantic processing of module FiniteSets
 Semantic processing of module SessionStore
 Semantic processing of module TLC
 Semantic processing of module MCSession
-Starting... (2026-07-09 23:55:10)
+Starting... (2026-09-16 00:22:02)
 Computing initial states...
-Finished computing initial states: 1 distinct state generated at 2026-07-09 23:55:10.
+Finished computing initial states: 1 distinct state generated at 2026-09-16 00:22:02.
 Error: Invariant I5 is violated.
 Error: The behavior up to this point is:
 State 1: <Initial predicate>
 /\ sessoes = (r1 :> (s1 :> "NONE" @@ s2 :> "NONE") @@ r2 :> (s1 :> "NONE" @@ s2 :> "NONE"))
-/\ canal = <<>>
+/\ canal = (r1 :> <<>> @@ r2 :> <<>>)
 /\ motivos = (r1 :> (s1 :> "NONE" @@ s2 :> "NONE") @@ r2 :> (s1 :> "NONE" @@ s2 :> "NONE"))
 /\ contador = (r1 :> (u1 :> 0) @@ r2 :> (u1 :> 0))
 /\ sessaoDe = (r1 :> (s1 :> "NONE" @@ s2 :> "NONE") @@ r2 :> (s1 :> "NONE" @@ s2 :> "NONE"))
 /\ status = (r1 :> (u1 :> "OPEN") @@ r2 :> (u1 :> "OPEN"))
 
-State 2: <Login line 77, col 3 to line 84, col 87 of module SessionStore>
+State 2: <Login line 87, col 3 to line 94, col 86 of module SessionStore>
 /\ sessoes = (r1 :> (s1 :> "VALID" @@ s2 :> "NONE") @@ r2 :> (s1 :> "NONE" @@ s2 :> "NONE"))
-/\ canal = <<[tipo |-> "SESSAO_VALIDA", chave |-> s1, payload |-> u1]>>
+/\ canal = ( r1 :> <<>> @@
+  r2 :> <<[tipo |-> "SESSAO_VALIDA", chave |-> s1, payload |-> u1]>> )
 /\ motivos = (r1 :> (s1 :> "NONE" @@ s2 :> "NONE") @@ r2 :> (s1 :> "NONE" @@ s2 :> "NONE"))
 /\ contador = (r1 :> (u1 :> 0) @@ r2 :> (u1 :> 0))
 /\ sessaoDe = (r1 :> (s1 :> u1 @@ s2 :> "NONE") @@ r2 :> (s1 :> "NONE" @@ s2 :> "NONE"))
 /\ status = (r1 :> (u1 :> "OPEN") @@ r2 :> (u1 :> "OPEN"))
 
-State 3: <EntregaMensagem line 151, col 3 to line 177, col 84 of module SessionStore>
-/\ sessoes = (r1 :> (s1 :> "VALID" @@ s2 :> "NONE") @@ r2 :> (s1 :> "NONE" @@ s2 :> "NONE"))
-/\ canal = <<>>
-/\ motivos = (r1 :> (s1 :> "NONE" @@ s2 :> "NONE") @@ r2 :> (s1 :> "NONE" @@ s2 :> "NONE"))
+State 3: <Block line 133, col 3 to line 143, col 85 of module SessionStore>
+/\ sessoes = ( r1 :> (s1 :> "INVALID" @@ s2 :> "NONE") @@
+  r2 :> (s1 :> "NONE" @@ s2 :> "NONE") )
+/\ canal = ( r1 :> <<>> @@
+  r2 :>
+      << [tipo |-> "SESSAO_VALIDA", chave |-> s1, payload |-> u1],
+         [tipo |-> "ID_BLOQUEIA", chave |-> u1, payload |-> ""] >> )
+/\ motivos = ( r1 :> (s1 :> "ADMIN_BLOCK" @@ s2 :> "NONE") @@
+  r2 :> (s1 :> "NONE" @@ s2 :> "NONE") )
 /\ contador = (r1 :> (u1 :> 0) @@ r2 :> (u1 :> 0))
 /\ sessaoDe = (r1 :> (s1 :> u1 @@ s2 :> "NONE") @@ r2 :> (s1 :> "NONE" @@ s2 :> "NONE"))
-/\ status = (r1 :> (u1 :> "OPEN") @@ r2 :> (u1 :> "OPEN"))
+/\ status = (r1 :> (u1 :> "BLOCKED") @@ r2 :> (u1 :> "OPEN"))
 
-1368 states generated, 449 distinct states found, 302 states left on queue.
-The depth of the complete state graph search is 6.
-The average outdegree of the complete state graph is 3 (minimum is 0, the maximum 11 and the 95th percentile is 8).
-Finished in 00s at (2026-07-09 23:55:10)
+State 4: <EntregaMensagem line 161, col 3 to line 187, col 84 of module SessionStore>
+/\ sessoes = ( r1 :> (s1 :> "INVALID" @@ s2 :> "NONE") @@
+  r2 :> (s1 :> "VALID" @@ s2 :> "NONE") )
+/\ canal = (r1 :> <<>> @@ r2 :> <<[tipo |-> "ID_BLOQUEIA", chave |-> u1, payload |-> ""]>>)
+/\ motivos = ( r1 :> (s1 :> "ADMIN_BLOCK" @@ s2 :> "NONE") @@
+  r2 :> (s1 :> "NONE" @@ s2 :> "NONE") )
+/\ contador = (r1 :> (u1 :> 0) @@ r2 :> (u1 :> 0))
+/\ sessaoDe = (r1 :> (s1 :> u1 @@ s2 :> "NONE") @@ r2 :> (s1 :> u1 @@ s2 :> "NONE"))
+/\ status = (r1 :> (u1 :> "BLOCKED") @@ r2 :> (u1 :> "OPEN"))
+
+State 5: <EntregaMensagem line 161, col 3 to line 187, col 84 of module SessionStore>
+/\ sessoes = ( r1 :> (s1 :> "INVALID" @@ s2 :> "NONE") @@
+  r2 :> (s1 :> "VALID" @@ s2 :> "NONE") )
+/\ canal = (r1 :> <<>> @@ r2 :> <<>>)
+/\ motivos = ( r1 :> (s1 :> "ADMIN_BLOCK" @@ s2 :> "NONE") @@
+  r2 :> (s1 :> "NONE" @@ s2 :> "NONE") )
+/\ contador = (r1 :> (u1 :> 0) @@ r2 :> (u1 :> 0))
+/\ sessaoDe = (r1 :> (s1 :> u1 @@ s2 :> "NONE") @@ r2 :> (s1 :> u1 @@ s2 :> "NONE"))
+/\ status = (r1 :> (u1 :> "BLOCKED") @@ r2 :> (u1 :> "BLOCKED"))
+
+5720 states generated, 1740 distinct states found, 1156 states left on queue.
+The depth of the complete state graph search is 8.
+The average outdegree of the complete state graph is 3 (minimum is 0, the maximum 8 and the 95th percentile is 6).
+Finished in 00s at (2026-09-16 00:22:02)

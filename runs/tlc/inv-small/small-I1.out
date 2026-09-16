@@ -1,0 +1,72 @@
+TLC2 Version 2.19 of 08 August 2024 (rev: 5a47802)
+Running breadth-first search Model-Checking with fp 87 and seed -4102417181377955802 with 20 workers on 20 cores with 7237MB heap and 64MB offheap memory [pid: 4620] (Windows 11 10.0 amd64, Oracle Corporation 22.0.2 x86_64, MSBDiskFPSet, DiskStateQueue).
+Parsing file C:\Users\Francesco\Development\tcc\tcc-desenvolvimento\spec\MCSession.tla
+Parsing file C:\Users\Francesco\Development\tcc\tcc-desenvolvimento\spec\SessionStore.tla
+Parsing file C:\Users\Francesco\AppData\Local\Temp\TLC.tla
+Parsing file C:\Users\Francesco\AppData\Local\Temp\Naturals.tla
+Parsing file C:\Users\Francesco\AppData\Local\Temp\Sequences.tla
+Parsing file C:\Users\Francesco\AppData\Local\Temp\FiniteSets.tla
+Semantic processing of module Naturals
+Semantic processing of module Sequences
+Semantic processing of module FiniteSets
+Semantic processing of module SessionStore
+Semantic processing of module TLC
+Semantic processing of module MCSession
+Starting... (2026-09-16 00:35:02)
+Computing initial states...
+Finished computing initial states: 1 distinct state generated at 2026-09-16 00:35:03.
+Error: Invariant I1 is violated.
+Error: The behavior up to this point is:
+State 1: <Initial predicate>
+/\ sessoes = ( r1 :> (s1 :> "NONE" @@ s2 :> "NONE" @@ s3 :> "NONE") @@
+  r2 :> (s1 :> "NONE" @@ s2 :> "NONE" @@ s3 :> "NONE") )
+/\ canal = (r1 :> <<>> @@ r2 :> <<>>)
+/\ motivos = ( r1 :> (s1 :> "NONE" @@ s2 :> "NONE" @@ s3 :> "NONE") @@
+  r2 :> (s1 :> "NONE" @@ s2 :> "NONE" @@ s3 :> "NONE") )
+/\ contador = (r1 :> (u1 :> 0 @@ u2 :> 0) @@ r2 :> (u1 :> 0 @@ u2 :> 0))
+/\ sessaoDe = ( r1 :> (s1 :> "NONE" @@ s2 :> "NONE" @@ s3 :> "NONE") @@
+  r2 :> (s1 :> "NONE" @@ s2 :> "NONE" @@ s3 :> "NONE") )
+/\ status = (r1 :> (u1 :> "OPEN" @@ u2 :> "OPEN") @@ r2 :> (u1 :> "OPEN" @@ u2 :> "OPEN"))
+
+State 2: <Login line 87, col 3 to line 94, col 86 of module SessionStore>
+/\ sessoes = ( r1 :> (s1 :> "VALID" @@ s2 :> "NONE" @@ s3 :> "NONE") @@
+  r2 :> (s1 :> "NONE" @@ s2 :> "NONE" @@ s3 :> "NONE") )
+/\ canal = ( r1 :> <<>> @@
+  r2 :> <<[tipo |-> "SESSAO_VALIDA", chave |-> s1, payload |-> u1]>> )
+/\ motivos = ( r1 :> (s1 :> "NONE" @@ s2 :> "NONE" @@ s3 :> "NONE") @@
+  r2 :> (s1 :> "NONE" @@ s2 :> "NONE" @@ s3 :> "NONE") )
+/\ contador = (r1 :> (u1 :> 0 @@ u2 :> 0) @@ r2 :> (u1 :> 0 @@ u2 :> 0))
+/\ sessaoDe = ( r1 :> (s1 :> u1 @@ s2 :> "NONE" @@ s3 :> "NONE") @@
+  r2 :> (s1 :> "NONE" @@ s2 :> "NONE" @@ s3 :> "NONE") )
+/\ status = (r1 :> (u1 :> "OPEN" @@ u2 :> "OPEN") @@ r2 :> (u1 :> "OPEN" @@ u2 :> "OPEN"))
+
+State 3: <Login line 87, col 3 to line 94, col 86 of module SessionStore>
+/\ sessoes = ( r1 :> (s1 :> "VALID" @@ s2 :> "NONE" @@ s3 :> "NONE") @@
+  r2 :> (s1 :> "VALID" @@ s2 :> "NONE" @@ s3 :> "NONE") )
+/\ canal = ( r1 :> <<[tipo |-> "SESSAO_VALIDA", chave |-> s1, payload |-> u2]>> @@
+  r2 :> <<[tipo |-> "SESSAO_VALIDA", chave |-> s1, payload |-> u1]>> )
+/\ motivos = ( r1 :> (s1 :> "NONE" @@ s2 :> "NONE" @@ s3 :> "NONE") @@
+  r2 :> (s1 :> "NONE" @@ s2 :> "NONE" @@ s3 :> "NONE") )
+/\ contador = (r1 :> (u1 :> 0 @@ u2 :> 0) @@ r2 :> (u1 :> 0 @@ u2 :> 0))
+/\ sessaoDe = ( r1 :> (s1 :> u1 @@ s2 :> "NONE" @@ s3 :> "NONE") @@
+  r2 :> (s1 :> u2 @@ s2 :> "NONE" @@ s3 :> "NONE") )
+/\ status = (r1 :> (u1 :> "OPEN" @@ u2 :> "OPEN") @@ r2 :> (u1 :> "OPEN" @@ u2 :> "OPEN"))
+
+State 4: <Logout line 98, col 3 to line 104, col 94 of module SessionStore>
+/\ sessoes = ( r1 :> (s1 :> "INVALID" @@ s2 :> "NONE" @@ s3 :> "NONE") @@
+  r2 :> (s1 :> "VALID" @@ s2 :> "NONE" @@ s3 :> "NONE") )
+/\ canal = ( r1 :> <<[tipo |-> "SESSAO_VALIDA", chave |-> s1, payload |-> u2]>> @@
+  r2 :>
+      << [tipo |-> "SESSAO_VALIDA", chave |-> s1, payload |-> u1],
+         [tipo |-> "SESSAO_INVALIDA", chave |-> s1, payload |-> "LOGOUT"] >> )
+/\ motivos = ( r1 :> (s1 :> "LOGOUT" @@ s2 :> "NONE" @@ s3 :> "NONE") @@
+  r2 :> (s1 :> "NONE" @@ s2 :> "NONE" @@ s3 :> "NONE") )
+/\ contador = (r1 :> (u1 :> 0 @@ u2 :> 0) @@ r2 :> (u1 :> 0 @@ u2 :> 0))
+/\ sessaoDe = ( r1 :> (s1 :> u1 @@ s2 :> "NONE" @@ s3 :> "NONE") @@
+  r2 :> (s1 :> u2 @@ s2 :> "NONE" @@ s3 :> "NONE") )
+/\ status = (r1 :> (u1 :> "OPEN" @@ u2 :> "OPEN") @@ r2 :> (u1 :> "OPEN" @@ u2 :> "OPEN"))
+
+392 states generated, 167 distinct states found, 129 states left on queue.
+The depth of the complete state graph search is 5.
+The average outdegree of the complete state graph is 10 (minimum is 3, the maximum 16 and the 95th percentile is 16).
+Finished in 25s at (2026-09-16 00:35:03)

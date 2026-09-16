@@ -1,5 +1,5 @@
 TLC2 Version 2.19 of 08 August 2024 (rev: 5a47802)
-Running breadth-first search Model-Checking with fp 99 and seed -2055892795010914717 with 20 workers on 20 cores with 7237MB heap and 64MB offheap memory [pid: 7260] (Windows 11 10.0 amd64, Oracle Corporation 22.0.2 x86_64, MSBDiskFPSet, DiskStateQueue).
+Running breadth-first search Model-Checking with fp 0 and seed 4155702130649625441 with 20 workers on 20 cores with 7237MB heap and 64MB offheap memory [pid: 9056] (Windows 11 10.0 amd64, Oracle Corporation 22.0.2 x86_64, MSBDiskFPSet, DiskStateQueue).
 Parsing file C:\Users\Francesco\Development\tcc\tcc-desenvolvimento\spec\MCSession.tla
 Parsing file C:\Users\Francesco\Development\tcc\tcc-desenvolvimento\spec\SessionStore.tla
 Parsing file C:\Users\Francesco\AppData\Local\Temp\TLC.tla
@@ -12,15 +12,16 @@ Semantic processing of module FiniteSets
 Semantic processing of module SessionStore
 Semantic processing of module TLC
 Semantic processing of module MCSession
-Starting... (2026-07-09 23:55:06)
+Starting... (2026-09-16 00:21:49)
 Computing initial states...
-Finished computing initial states: 1 distinct state generated at 2026-07-09 23:55:06.
+Finished computing initial states: 1 distinct state generated at 2026-09-16 00:21:49.
+Progress(17) at 2026-09-16 00:21:52: 5,914,720 states generated (5,914,720 s/min), 925,812 distinct states found (925,812 ds/min), 317,823 states left on queue.
 Model checking completed. No error has been found.
   Estimates of the probability that TLC did not check all reachable states
   because two distinct states had the same fingerprint:
-  calculated (optimistic):  val = 8.7E-8
-  based on the actual fingerprints:  val = 4.7E-9
-4210488 states generated, 424398 distinct states found, 0 states left on queue.
-The depth of the complete state graph search is 30.
-The average outdegree of the complete state graph is 1 (minimum is 0, the maximum 11 and the 95th percentile is 4).
-Finished in 03s at (2026-07-09 23:55:09)
+  calculated (optimistic):  val = 5.4E-6
+  based on the actual fingerprints:  val = 2.8E-7
+33207769 states generated, 3348778 distinct states found, 0 states left on queue.
+The depth of the complete state graph search is 43.
+The average outdegree of the complete state graph is 1 (minimum is 0, the maximum 9 and the 95th percentile is 3).
+Finished in 12s at (2026-09-16 00:22:01)

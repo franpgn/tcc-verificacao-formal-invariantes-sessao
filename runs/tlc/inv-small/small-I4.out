@@ -1,5 +1,5 @@
 TLC2 Version 2.19 of 08 August 2024 (rev: 5a47802)
-Running breadth-first search Model-Checking with fp 108 and seed 5528985359575303510 with 20 workers on 20 cores with 7237MB heap and 64MB offheap memory [pid: 7992] (Windows 11 10.0 amd64, Oracle Corporation 22.0.2 x86_64, MSBDiskFPSet, DiskStateQueue).
+Running breadth-first search Model-Checking with fp 8 and seed -623172302543238926 with 20 workers on 20 cores with 7237MB heap and 64MB offheap memory [pid: 12528] (Windows 11 10.0 amd64, Oracle Corporation 22.0.2 x86_64, MSBDiskFPSet, DiskStateQueue).
 Parsing file C:\Users\Francesco\Development\tcc\tcc-desenvolvimento\spec\MCSession.tla
 Parsing file C:\Users\Francesco\Development\tcc\tcc-desenvolvimento\spec\SessionStore.tla
 Parsing file C:\Users\Francesco\AppData\Local\Temp\TLC.tla
@@ -12,7 +12,16 @@ Semantic processing of module FiniteSets
 Semantic processing of module SessionStore
 Semantic processing of module TLC
 Semantic processing of module MCSession
-Starting... (2026-09-16 00:35:31)
+Starting... (2026-09-16 00:57:38)
 Computing initial states...
-Finished computing initial states: 1 distinct state generated at 2026-09-16 00:35:32.
-Progress(12) at 2026-09-16 00:35:35: 2,800,583 states generated (2,800,583 s/min), 435,765 distinct states found (435,765 ds/min), 279,958 states left on queue.
+Finished computing initial states: 1 distinct state generated at 2026-09-16 00:57:39.
+Progress(13) at 2026-09-16 00:57:42: 2,276,125 states generated (2,276,125 s/min), 291,892 distinct states found (291,892 ds/min), 153,535 states left on queue.
+Model checking completed. No error has been found.
+  Estimates of the probability that TLC did not check all reachable states
+  because two distinct states had the same fingerprint:
+  calculated (optimistic):  val = 3.6E-7
+  based on the actual fingerprints:  val = 4.2E-8
+10667112 states generated, 666056 distinct states found, 0 states left on queue.
+The depth of the complete state graph search is 13.
+The average outdegree of the complete state graph is 1 (minimum is 0, the maximum 12 and the 95th percentile is 4).
+Finished in 15s at (2026-09-16 00:57:53)

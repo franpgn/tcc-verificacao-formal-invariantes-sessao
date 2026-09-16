@@ -127,6 +127,69 @@
   `docs/relatorio-tlc-2026-09-16.md` §3.3; aceito como limitação do
   LWW-register escolhido para `contador`, ou candidato a "Mudança 3".
 
+## 2026-09-16 (rodada 2) — Mudança 3: cascata de `Block` + gate de status em `CONTADOR_INC`
+
+### P-14 — cascata de `Block` não propagada a réplicas remotas (resolve P-12)
+
+- **Sintoma:** P-12 (`I5` viola: `status` converge sob quiescência, mas
+  `sessoes`/`motivos` das sessões invalidadas por `Block` não convergem).
+- **Causa:** confirmada como descrita em P-12 — a mensagem `ID_BLOQUEIA` só
+  carregava `chave=id`, nunca o cascade de invalidação.
+- **Correção:** `Mensagem` ganhou o campo `sessoesAfetadas: SUBSET SIDS`;
+  `Block` passa a computar `{s \in SIDS : Afetado(s)}` (o mesmo `Afetado(s)`
+  já usado para a escrita local) e embuti-lo na mensagem; `EntregaMensagem`,
+  *case* `ID_BLOQUEIA`, reaplica o cascade por sessão, gateado
+  independentemente por `sessoesTS`/`motivosTS` (mesmo padrão de P-10).
+  Commit `b9c46e2`, branch `fix/cascata-bloqueio-sessoes-afetadas`. **`I5`
+  fecha exaustivamente em `tiny`/`small`/`medium` após esta correção** (ver
+  `docs/relatorio-tlc-2026-09-16-mudanca3.md`).
+
+### P-13 (atualização) — causa original fechada pela Rota (c); ver P-15 para a causa nova exposta
+
+- A causa original de P-13 (`ResetFailures`/`CONTADOR_RESET` de prioridade
+  maior deixando um `status=BLOCKED` "preso") foi retraçada manualmente
+  contra a Rota (c) (ver `docs/plano-fix-cascata-bloqueio-2026-09-16.md`
+  §3.4) e confirmada fechada por essa correção. **Mas `I6` continua violando
+  em todas as cardinalidades** — por uma causa nova e diferente, nunca
+  antes observada porque ficava mascarada pelo gate acoplado que a própria
+  Rota (c) removeu. Ver P-15.
+
+### P-15 — mensagem `CONTADOR_INC` "fantasma": broadcast incondicional de um valor de `contador` cuja própria escrita local foi rejeitada por LWW (achado real, não corrigido)
+
+- **Sintoma:** mesmo após P-14 e a Rota (c) (desacoplamento do gate de
+  `status` em `CONTADOR_INC`), `I6` ainda viola em `tiny`/`small`/`medium`/
+  `full` — agora com um contraexemplo **diferente** do de P-13.
+- **Causa:** em `IncrementFailure(r,id)`, a mensagem `msg == [tipo |->
+  "CONTADOR_INC", ..., valor |-> novo, ..., prio |-> p]` é **sempre**
+  construída e enviada via `Broadcast(r, msg)`, **independentemente** de o
+  `IF p > contadorTS[r][id]` que decide a escrita local ter aceitado ou
+  rejeitado `novo` (spec/SessionStore.tla, ação `IncrementFailure`, linhas
+  226–239). Quando essa escrita local perde sua própria corrida de LWW
+  (réplica com relógio atrasado frente a um valor já recebido de outra
+  réplica), `novo` nunca se torna `contador` real em réplica nenhuma — mas a
+  mensagem "fantasma" com esse `valor`/`prio` ainda é propagada. Antes da
+  Rota (c), essa mensagem fantasma era inofensiva: o gate único
+  (`m.prio > contadorTS[...]`) descartava o `case` inteiro, `status`
+  incluído. **Depois** da Rota (c), o gate de `status` passou a ser avaliado
+  por seus próprios termos (`m.prio > statusTS[...]`, independente de
+  `contadorTS`) — e pode vencer essa corrida **mesmo quando a corrida de
+  `contador` foi perdida**, aplicando `BLOCKED` numa réplica remota a partir
+  de um valor de `contador` que nunca existiu de fato em réplica alguma.
+  `contador` continua convergindo corretamente (LWW funciona); é `status`
+  que diverge, ficando preso em `BLOCKED` numa réplica que nunca teve
+  `contador` real atingindo `LIMITE`.
+- **Por que não é a mesma causa de P-13:** P-13 envolvia um valor de
+  `contador` que **foi real** em algum momento (aplicado localmente,
+  cruzou `LIMITE`) e foi depois **superado** por um `CONTADOR_RESET` de
+  prioridade maior. P-15 envolve um valor que **nunca foi real em réplica
+  nenhuma** — a mensagem é fantasma desde a origem, não apenas superada
+  depois.
+- **Estado:** documentado com contraexemplo completo em
+  `docs/relatorio-tlc-2026-09-16-mudanca3.md` (achado em `tiny`, confirmado
+  em `small`/`medium`/`full`); **não corrigido nesta rodada** — reportado ao
+  Gestor antes de propor uma quarta correção, por instrução explícita de não
+  encadear correções sem validação.
+
 ## Observação de modelagem (não é defeito)
 
 Com 8 *threads* = 8 identidades fixas (`user-<tid>`), `incrementFailure`

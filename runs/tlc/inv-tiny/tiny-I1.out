@@ -1,5 +1,5 @@
 TLC2 Version 2.19 of 08 August 2024 (rev: 5a47802)
-Running breadth-first search Model-Checking with fp 82 and seed -5743202871386448235 with 20 workers on 20 cores with 7237MB heap and 64MB offheap memory [pid: 9976] (Windows 11 10.0 amd64, Oracle Corporation 22.0.2 x86_64, MSBDiskFPSet, DiskStateQueue).
+Running breadth-first search Model-Checking with fp 47 and seed 5744570079877742629 with 20 workers on 20 cores with 7237MB heap and 64MB offheap memory [pid: 540] (Windows 11 10.0 amd64, Oracle Corporation 22.0.2 x86_64, MSBDiskFPSet, DiskStateQueue).
 Parsing file C:\Users\Francesco\Development\tcc\tcc-desenvolvimento\spec\MCSession.tla
 Parsing file C:\Users\Francesco\Development\tcc\tcc-desenvolvimento\spec\SessionStore.tla
 Parsing file C:\Users\Francesco\AppData\Local\Temp\TLC.tla
@@ -12,11 +12,11 @@ Semantic processing of module FiniteSets
 Semantic processing of module SessionStore
 Semantic processing of module TLC
 Semantic processing of module MCSession
-Starting... (2026-09-16 00:55:15)
+Starting... (2026-09-16 01:35:36)
 Warning: The set IDS has been defined to be a symmetry set but contains less than two elements.
 (Use the -nowarning option to disable this warning.)
 Computing initial states...
-Finished computing initial states: 1 distinct state generated at 2026-09-16 00:55:15.
+Finished computing initial states: 1 distinct state generated at 2026-09-16 01:35:36.
 Error: Invariant I1 is violated.
 Error: The behavior up to this point is:
 State 1: <Initial predicate>
@@ -33,7 +33,7 @@ State 1: <Initial predicate>
 /\ status = (r1 :> (u1 :> "OPEN") @@ r2 :> (u1 :> "OPEN"))
 /\ statusTS = (r1 :> (u1 :> 0) @@ r2 :> (u1 :> 0))
 
-State 2: <Login line 167, col 3 to line 184, col 36 of module SessionStore>
+State 2: <Login line 181, col 3 to line 198, col 36 of module SessionStore>
 /\ sessoes = (r1 :> (s1 :> "VALID" @@ s2 :> "NONE") @@ r2 :> (s1 :> "NONE" @@ s2 :> "NONE"))
 /\ canal = ( r1 :> <<>> @@
   r2 :>
@@ -43,7 +43,8 @@ State 2: <Login line 167, col 3 to line 184, col 36 of module SessionStore>
            payload |-> u1,
            valor |-> 0,
            origem |-> r1,
-           prio |-> 4 ] >> )
+           prio |-> 4,
+           sessoesAfetadas |-> {} ] >> )
 /\ sessoesTS = (r1 :> (s1 :> 4 @@ s2 :> 0) @@ r2 :> (s1 :> 0 @@ s2 :> 0))
 /\ motivos = (r1 :> (s1 :> "NONE" @@ s2 :> "NONE") @@ r2 :> (s1 :> "NONE" @@ s2 :> "NONE"))
 /\ relogio = (r1 :> 1 @@ r2 :> 0)
@@ -55,7 +56,7 @@ State 2: <Login line 167, col 3 to line 184, col 36 of module SessionStore>
 /\ status = (r1 :> (u1 :> "OPEN") @@ r2 :> (u1 :> "OPEN"))
 /\ statusTS = (r1 :> (u1 :> 0) @@ r2 :> (u1 :> 0))
 
-State 3: <Login line 167, col 3 to line 184, col 36 of module SessionStore>
+State 3: <Login line 181, col 3 to line 198, col 36 of module SessionStore>
 /\ sessoes = (r1 :> (s1 :> "VALID" @@ s2 :> "NONE") @@ r2 :> (s1 :> "VALID" @@ s2 :> "NONE"))
 /\ canal = ( r1 :>
       << [ ts |-> 1,
@@ -64,7 +65,8 @@ State 3: <Login line 167, col 3 to line 184, col 36 of module SessionStore>
            payload |-> u1,
            valor |-> 0,
            origem |-> r2,
-           prio |-> 5 ] >> @@
+           prio |-> 5,
+           sessoesAfetadas |-> {} ] >> @@
   r2 :>
       << [ ts |-> 1,
            tipo |-> "SESSAO_VALIDA",
@@ -72,7 +74,8 @@ State 3: <Login line 167, col 3 to line 184, col 36 of module SessionStore>
            payload |-> u1,
            valor |-> 0,
            origem |-> r1,
-           prio |-> 4 ] >> )
+           prio |-> 4,
+           sessoesAfetadas |-> {} ] >> )
 /\ sessoesTS = (r1 :> (s1 :> 4 @@ s2 :> 0) @@ r2 :> (s1 :> 5 @@ s2 :> 0))
 /\ motivos = (r1 :> (s1 :> "NONE" @@ s2 :> "NONE") @@ r2 :> (s1 :> "NONE" @@ s2 :> "NONE"))
 /\ relogio = (r1 :> 1 @@ r2 :> 1)
@@ -84,7 +87,7 @@ State 3: <Login line 167, col 3 to line 184, col 36 of module SessionStore>
 /\ status = (r1 :> (u1 :> "OPEN") @@ r2 :> (u1 :> "OPEN"))
 /\ statusTS = (r1 :> (u1 :> 0) @@ r2 :> (u1 :> 0))
 
-State 4: <Logout line 193, col 3 to line 209, col 37 of module SessionStore>
+State 4: <Logout line 207, col 3 to line 223, col 37 of module SessionStore>
 /\ sessoes = ( r1 :> (s1 :> "INVALID" @@ s2 :> "NONE") @@
   r2 :> (s1 :> "VALID" @@ s2 :> "NONE") )
 /\ canal = ( r1 :>
@@ -94,7 +97,8 @@ State 4: <Logout line 193, col 3 to line 209, col 37 of module SessionStore>
            payload |-> u1,
            valor |-> 0,
            origem |-> r2,
-           prio |-> 5 ] >> @@
+           prio |-> 5,
+           sessoesAfetadas |-> {} ] >> @@
   r2 :>
       << [ ts |-> 1,
            tipo |-> "SESSAO_VALIDA",
@@ -102,14 +106,16 @@ State 4: <Logout line 193, col 3 to line 209, col 37 of module SessionStore>
            payload |-> u1,
            valor |-> 0,
            origem |-> r1,
-           prio |-> 4 ],
+           prio |-> 4,
+           sessoesAfetadas |-> {} ],
          [ ts |-> 2,
            tipo |-> "SESSAO_INVALIDA",
            chave |-> s1,
            payload |-> "LOGOUT",
            valor |-> 0,
            origem |-> r1,
-           prio |-> 7 ] >> )
+           prio |-> 7,
+           sessoesAfetadas |-> {} ] >> )
 /\ sessoesTS = (r1 :> (s1 :> 7 @@ s2 :> 0) @@ r2 :> (s1 :> 5 @@ s2 :> 0))
 /\ motivos = (r1 :> (s1 :> "LOGOUT" @@ s2 :> "NONE") @@ r2 :> (s1 :> "NONE" @@ s2 :> "NONE"))
 /\ relogio = (r1 :> 2 @@ r2 :> 1)
@@ -121,7 +127,7 @@ State 4: <Logout line 193, col 3 to line 209, col 37 of module SessionStore>
 /\ status = (r1 :> (u1 :> "OPEN") @@ r2 :> (u1 :> "OPEN"))
 /\ statusTS = (r1 :> (u1 :> 0) @@ r2 :> (u1 :> 0))
 
-412 states generated, 146 distinct states found, 77 states left on queue.
+251 states generated, 86 distinct states found, 36 states left on queue.
 The depth of the complete state graph search is 6.
 The average outdegree of the complete state graph is 3 (minimum is 1, the maximum 6 and the 95th percentile is 6).
-Finished in 00s at (2026-09-16 00:55:15)
+Finished in 00s at (2026-09-16 01:35:36)

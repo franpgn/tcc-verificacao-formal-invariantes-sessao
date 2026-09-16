@@ -1,5 +1,5 @@
 TLC2 Version 2.19 of 08 August 2024 (rev: 5a47802)
-Running breadth-first search Model-Checking with fp 81 and seed -9122147872696920205 with 20 workers on 20 cores with 7237MB heap and 64MB offheap memory [pid: 484] (Windows 11 10.0 amd64, Oracle Corporation 22.0.2 x86_64, MSBDiskFPSet, DiskStateQueue).
+Running breadth-first search Model-Checking with fp 33 and seed -4494298331592304574 with 20 workers on 20 cores with 7237MB heap and 64MB offheap memory [pid: 3148] (Windows 11 10.0 amd64, Oracle Corporation 22.0.2 x86_64, MSBDiskFPSet, DiskStateQueue).
 Parsing file C:\Users\Francesco\Development\tcc\tcc-desenvolvimento\spec\MCSession.tla
 Parsing file C:\Users\Francesco\Development\tcc\tcc-desenvolvimento\spec\SessionStore.tla
 Parsing file C:\Users\Francesco\AppData\Local\Temp\TLC.tla
@@ -12,115 +12,16 @@ Semantic processing of module FiniteSets
 Semantic processing of module SessionStore
 Semantic processing of module TLC
 Semantic processing of module MCSession
-Starting... (2026-09-16 00:57:54)
+Starting... (2026-09-16 01:36:58)
 Computing initial states...
-Finished computing initial states: 1 distinct state generated at 2026-09-16 00:57:54.
-Error: Invariant I5 is violated.
-Error: The behavior up to this point is:
-State 1: <Initial predicate>
-/\ sessoes = ( r1 :> (s1 :> "NONE" @@ s2 :> "NONE" @@ s3 :> "NONE") @@
-  r2 :> (s1 :> "NONE" @@ s2 :> "NONE" @@ s3 :> "NONE") )
-/\ canal = (r1 :> <<>> @@ r2 :> <<>>)
-/\ sessoesTS = (r1 :> (s1 :> 0 @@ s2 :> 0 @@ s3 :> 0) @@ r2 :> (s1 :> 0 @@ s2 :> 0 @@ s3 :> 0))
-/\ motivos = ( r1 :> (s1 :> "NONE" @@ s2 :> "NONE" @@ s3 :> "NONE") @@
-  r2 :> (s1 :> "NONE" @@ s2 :> "NONE" @@ s3 :> "NONE") )
-/\ relogio = (r1 :> 0 @@ r2 :> 0)
-/\ contador = (r1 :> (u1 :> 0 @@ u2 :> 0) @@ r2 :> (u1 :> 0 @@ u2 :> 0))
-/\ motivosTS = (r1 :> (s1 :> 0 @@ s2 :> 0 @@ s3 :> 0) @@ r2 :> (s1 :> 0 @@ s2 :> 0 @@ s3 :> 0))
-/\ sessaoDeTS = (r1 :> (s1 :> 0 @@ s2 :> 0 @@ s3 :> 0) @@ r2 :> (s1 :> 0 @@ s2 :> 0 @@ s3 :> 0))
-/\ sessaoDe = ( r1 :> (s1 :> "NONE" @@ s2 :> "NONE" @@ s3 :> "NONE") @@
-  r2 :> (s1 :> "NONE" @@ s2 :> "NONE" @@ s3 :> "NONE") )
-/\ contadorTS = (r1 :> (u1 :> 0 @@ u2 :> 0) @@ r2 :> (u1 :> 0 @@ u2 :> 0))
-/\ status = (r1 :> (u1 :> "OPEN" @@ u2 :> "OPEN") @@ r2 :> (u1 :> "OPEN" @@ u2 :> "OPEN"))
-/\ statusTS = (r1 :> (u1 :> 0 @@ u2 :> 0) @@ r2 :> (u1 :> 0 @@ u2 :> 0))
-
-State 2: <Login line 167, col 3 to line 184, col 36 of module SessionStore>
-/\ sessoes = ( r1 :> (s1 :> "VALID" @@ s2 :> "NONE" @@ s3 :> "NONE") @@
-  r2 :> (s1 :> "NONE" @@ s2 :> "NONE" @@ s3 :> "NONE") )
-/\ canal = ( r1 :> <<>> @@
-  r2 :>
-      << [ ts |-> 1,
-           tipo |-> "SESSAO_VALIDA",
-           chave |-> s1,
-           payload |-> u1,
-           valor |-> 0,
-           origem |-> r1,
-           prio |-> 4 ] >> )
-/\ sessoesTS = (r1 :> (s1 :> 4 @@ s2 :> 0 @@ s3 :> 0) @@ r2 :> (s1 :> 0 @@ s2 :> 0 @@ s3 :> 0))
-/\ motivos = ( r1 :> (s1 :> "NONE" @@ s2 :> "NONE" @@ s3 :> "NONE") @@
-  r2 :> (s1 :> "NONE" @@ s2 :> "NONE" @@ s3 :> "NONE") )
-/\ relogio = (r1 :> 1 @@ r2 :> 0)
-/\ contador = (r1 :> (u1 :> 0 @@ u2 :> 0) @@ r2 :> (u1 :> 0 @@ u2 :> 0))
-/\ motivosTS = (r1 :> (s1 :> 0 @@ s2 :> 0 @@ s3 :> 0) @@ r2 :> (s1 :> 0 @@ s2 :> 0 @@ s3 :> 0))
-/\ sessaoDeTS = (r1 :> (s1 :> 4 @@ s2 :> 0 @@ s3 :> 0) @@ r2 :> (s1 :> 0 @@ s2 :> 0 @@ s3 :> 0))
-/\ sessaoDe = ( r1 :> (s1 :> u1 @@ s2 :> "NONE" @@ s3 :> "NONE") @@
-  r2 :> (s1 :> "NONE" @@ s2 :> "NONE" @@ s3 :> "NONE") )
-/\ contadorTS = (r1 :> (u1 :> 0 @@ u2 :> 0) @@ r2 :> (u1 :> 0 @@ u2 :> 0))
-/\ status = (r1 :> (u1 :> "OPEN" @@ u2 :> "OPEN") @@ r2 :> (u1 :> "OPEN" @@ u2 :> "OPEN"))
-/\ statusTS = (r1 :> (u1 :> 0 @@ u2 :> 0) @@ r2 :> (u1 :> 0 @@ u2 :> 0))
-
-State 3: <EntregaMensagem line 331, col 3 to line 414, col 60 of module SessionStore>
-/\ sessoes = ( r1 :> (s1 :> "VALID" @@ s2 :> "NONE" @@ s3 :> "NONE") @@
-  r2 :> (s1 :> "VALID" @@ s2 :> "NONE" @@ s3 :> "NONE") )
-/\ canal = (r1 :> <<>> @@ r2 :> <<>>)
-/\ sessoesTS = (r1 :> (s1 :> 4 @@ s2 :> 0 @@ s3 :> 0) @@ r2 :> (s1 :> 4 @@ s2 :> 0 @@ s3 :> 0))
-/\ motivos = ( r1 :> (s1 :> "NONE" @@ s2 :> "NONE" @@ s3 :> "NONE") @@
-  r2 :> (s1 :> "NONE" @@ s2 :> "NONE" @@ s3 :> "NONE") )
-/\ relogio = (r1 :> 1 @@ r2 :> 0)
-/\ contador = (r1 :> (u1 :> 0 @@ u2 :> 0) @@ r2 :> (u1 :> 0 @@ u2 :> 0))
-/\ motivosTS = (r1 :> (s1 :> 0 @@ s2 :> 0 @@ s3 :> 0) @@ r2 :> (s1 :> 0 @@ s2 :> 0 @@ s3 :> 0))
-/\ sessaoDeTS = (r1 :> (s1 :> 4 @@ s2 :> 0 @@ s3 :> 0) @@ r2 :> (s1 :> 4 @@ s2 :> 0 @@ s3 :> 0))
-/\ sessaoDe = ( r1 :> (s1 :> u1 @@ s2 :> "NONE" @@ s3 :> "NONE") @@
-  r2 :> (s1 :> u1 @@ s2 :> "NONE" @@ s3 :> "NONE") )
-/\ contadorTS = (r1 :> (u1 :> 0 @@ u2 :> 0) @@ r2 :> (u1 :> 0 @@ u2 :> 0))
-/\ status = (r1 :> (u1 :> "OPEN" @@ u2 :> "OPEN") @@ r2 :> (u1 :> "OPEN" @@ u2 :> "OPEN"))
-/\ statusTS = (r1 :> (u1 :> 0 @@ u2 :> 0) @@ r2 :> (u1 :> 0 @@ u2 :> 0))
-
-State 4: <Block line 271, col 3 to line 293, col 36 of module SessionStore>
-/\ sessoes = ( r1 :> (s1 :> "VALID" @@ s2 :> "NONE" @@ s3 :> "NONE") @@
-  r2 :> (s1 :> "INVALID" @@ s2 :> "NONE" @@ s3 :> "NONE") )
-/\ canal = ( r1 :>
-      << [ ts |-> 1,
-           tipo |-> "ID_BLOQUEIA",
-           chave |-> u1,
-           payload |-> "",
-           valor |-> 0,
-           origem |-> r2,
-           prio |-> 5 ] >> @@
-  r2 :> <<>> )
-/\ sessoesTS = (r1 :> (s1 :> 4 @@ s2 :> 0 @@ s3 :> 0) @@ r2 :> (s1 :> 5 @@ s2 :> 0 @@ s3 :> 0))
-/\ motivos = ( r1 :> (s1 :> "NONE" @@ s2 :> "NONE" @@ s3 :> "NONE") @@
-  r2 :> (s1 :> "ADMIN_BLOCK" @@ s2 :> "NONE" @@ s3 :> "NONE") )
-/\ relogio = (r1 :> 1 @@ r2 :> 1)
-/\ contador = (r1 :> (u1 :> 0 @@ u2 :> 0) @@ r2 :> (u1 :> 0 @@ u2 :> 0))
-/\ motivosTS = (r1 :> (s1 :> 0 @@ s2 :> 0 @@ s3 :> 0) @@ r2 :> (s1 :> 5 @@ s2 :> 0 @@ s3 :> 0))
-/\ sessaoDeTS = (r1 :> (s1 :> 4 @@ s2 :> 0 @@ s3 :> 0) @@ r2 :> (s1 :> 4 @@ s2 :> 0 @@ s3 :> 0))
-/\ sessaoDe = ( r1 :> (s1 :> u1 @@ s2 :> "NONE" @@ s3 :> "NONE") @@
-  r2 :> (s1 :> u1 @@ s2 :> "NONE" @@ s3 :> "NONE") )
-/\ contadorTS = (r1 :> (u1 :> 0 @@ u2 :> 0) @@ r2 :> (u1 :> 0 @@ u2 :> 0))
-/\ status = ( r1 :> (u1 :> "OPEN" @@ u2 :> "OPEN") @@
-  r2 :> (u1 :> "BLOCKED" @@ u2 :> "OPEN") )
-/\ statusTS = (r1 :> (u1 :> 0 @@ u2 :> 0) @@ r2 :> (u1 :> 5 @@ u2 :> 0))
-
-State 5: <EntregaMensagem line 331, col 3 to line 414, col 60 of module SessionStore>
-/\ sessoes = ( r1 :> (s1 :> "VALID" @@ s2 :> "NONE" @@ s3 :> "NONE") @@
-  r2 :> (s1 :> "INVALID" @@ s2 :> "NONE" @@ s3 :> "NONE") )
-/\ canal = (r1 :> <<>> @@ r2 :> <<>>)
-/\ sessoesTS = (r1 :> (s1 :> 4 @@ s2 :> 0 @@ s3 :> 0) @@ r2 :> (s1 :> 5 @@ s2 :> 0 @@ s3 :> 0))
-/\ motivos = ( r1 :> (s1 :> "NONE" @@ s2 :> "NONE" @@ s3 :> "NONE") @@
-  r2 :> (s1 :> "ADMIN_BLOCK" @@ s2 :> "NONE" @@ s3 :> "NONE") )
-/\ relogio = (r1 :> 1 @@ r2 :> 1)
-/\ contador = (r1 :> (u1 :> 0 @@ u2 :> 0) @@ r2 :> (u1 :> 0 @@ u2 :> 0))
-/\ motivosTS = (r1 :> (s1 :> 0 @@ s2 :> 0 @@ s3 :> 0) @@ r2 :> (s1 :> 5 @@ s2 :> 0 @@ s3 :> 0))
-/\ sessaoDeTS = (r1 :> (s1 :> 4 @@ s2 :> 0 @@ s3 :> 0) @@ r2 :> (s1 :> 4 @@ s2 :> 0 @@ s3 :> 0))
-/\ sessaoDe = ( r1 :> (s1 :> u1 @@ s2 :> "NONE" @@ s3 :> "NONE") @@
-  r2 :> (s1 :> u1 @@ s2 :> "NONE" @@ s3 :> "NONE") )
-/\ contadorTS = (r1 :> (u1 :> 0 @@ u2 :> 0) @@ r2 :> (u1 :> 0 @@ u2 :> 0))
-/\ status = ( r1 :> (u1 :> "BLOCKED" @@ u2 :> "OPEN") @@
-  r2 :> (u1 :> "BLOCKED" @@ u2 :> "OPEN") )
-/\ statusTS = (r1 :> (u1 :> 5 @@ u2 :> 0) @@ r2 :> (u1 :> 5 @@ u2 :> 0))
-
-3304 states generated, 593 distinct states found, 413 states left on queue.
-The depth of the complete state graph search is 7.
-The average outdegree of the complete state graph is 3 (minimum is 1, the maximum 12 and the 95th percentile is 10).
-Finished in 00s at (2026-09-16 00:57:54)
+Finished computing initial states: 1 distinct state generated at 2026-09-16 01:36:58.
+Progress(13) at 2026-09-16 01:37:01: 3,240,035 states generated (3,240,035 s/min), 384,393 distinct states found (384,393 ds/min), 185,561 states left on queue.
+Model checking completed. No error has been found.
+  Estimates of the probability that TLC did not check all reachable states
+  because two distinct states had the same fingerprint:
+  calculated (optimistic):  val = 3.4E-7
+  based on the actual fingerprints:  val = 2.0E-8
+10365187 states generated, 650615 distinct states found, 0 states left on queue.
+The depth of the complete state graph search is 13.
+The average outdegree of the complete state graph is 1 (minimum is 0, the maximum 13 and the 95th percentile is 4).
+Finished in 07s at (2026-09-16 01:37:05)

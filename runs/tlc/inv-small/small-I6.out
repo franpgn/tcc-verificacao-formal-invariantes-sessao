@@ -1,5 +1,5 @@
 TLC2 Version 2.19 of 08 August 2024 (rev: 5a47802)
-Running breadth-first search Model-Checking with fp 2 and seed -585035161799318046 with 20 workers on 20 cores with 7237MB heap and 64MB offheap memory [pid: 15600] (Windows 11 10.0 amd64, Oracle Corporation 22.0.2 x86_64, MSBDiskFPSet, DiskStateQueue).
+Running breadth-first search Model-Checking with fp 116 and seed 8782011856514454126 with 20 workers on 20 cores with 7237MB heap and 64MB offheap memory [pid: 10168] (Windows 11 10.0 amd64, Oracle Corporation 22.0.2 x86_64, MSBDiskFPSet, DiskStateQueue).
 Parsing file C:\Users\Francesco\Development\tcc\tcc-desenvolvimento\spec\MCSession.tla
 Parsing file C:\Users\Francesco\Development\tcc\tcc-desenvolvimento\spec\SessionStore.tla
 Parsing file C:\Users\Francesco\AppData\Local\Temp\TLC.tla
@@ -12,9 +12,9 @@ Semantic processing of module FiniteSets
 Semantic processing of module SessionStore
 Semantic processing of module TLC
 Semantic processing of module MCSession
-Starting... (2026-09-16 00:57:55)
+Starting... (2026-09-16 01:37:05)
 Computing initial states...
-Finished computing initial states: 1 distinct state generated at 2026-09-16 00:57:55.
+Finished computing initial states: 1 distinct state generated at 2026-09-16 01:37:06.
 Error: Invariant I6 is violated.
 Error: The behavior up to this point is:
 State 1: <Initial predicate>
@@ -34,251 +34,137 @@ State 1: <Initial predicate>
 /\ status = (r1 :> (u1 :> "OPEN" @@ u2 :> "OPEN") @@ r2 :> (u1 :> "OPEN" @@ u2 :> "OPEN"))
 /\ statusTS = (r1 :> (u1 :> 0 @@ u2 :> 0) @@ r2 :> (u1 :> 0 @@ u2 :> 0))
 
-State 2: <Login line 167, col 3 to line 184, col 36 of module SessionStore>
-/\ sessoes = ( r1 :> (s1 :> "VALID" @@ s2 :> "NONE" @@ s3 :> "NONE") @@
+State 2: <IncrementFailure line 233, col 3 to line 250, col 36 of module SessionStore>
+/\ sessoes = ( r1 :> (s1 :> "NONE" @@ s2 :> "NONE" @@ s3 :> "NONE") @@
   r2 :> (s1 :> "NONE" @@ s2 :> "NONE" @@ s3 :> "NONE") )
 /\ canal = ( r1 :> <<>> @@
   r2 :>
       << [ ts |-> 1,
-           tipo |-> "SESSAO_VALIDA",
-           chave |-> s1,
-           payload |-> u1,
-           valor |-> 0,
+           tipo |-> "CONTADOR_INC",
+           chave |-> u1,
+           payload |-> "",
+           valor |-> 1,
            origem |-> r1,
-           prio |-> 4 ] >> )
-/\ sessoesTS = (r1 :> (s1 :> 4 @@ s2 :> 0 @@ s3 :> 0) @@ r2 :> (s1 :> 0 @@ s2 :> 0 @@ s3 :> 0))
+           prio |-> 4,
+           sessoesAfetadas |-> {} ] >> )
+/\ sessoesTS = (r1 :> (s1 :> 0 @@ s2 :> 0 @@ s3 :> 0) @@ r2 :> (s1 :> 0 @@ s2 :> 0 @@ s3 :> 0))
 /\ motivos = ( r1 :> (s1 :> "NONE" @@ s2 :> "NONE" @@ s3 :> "NONE") @@
   r2 :> (s1 :> "NONE" @@ s2 :> "NONE" @@ s3 :> "NONE") )
 /\ relogio = (r1 :> 1 @@ r2 :> 0)
-/\ contador = (r1 :> (u1 :> 0 @@ u2 :> 0) @@ r2 :> (u1 :> 0 @@ u2 :> 0))
+/\ contador = (r1 :> (u1 :> 1 @@ u2 :> 0) @@ r2 :> (u1 :> 0 @@ u2 :> 0))
 /\ motivosTS = (r1 :> (s1 :> 0 @@ s2 :> 0 @@ s3 :> 0) @@ r2 :> (s1 :> 0 @@ s2 :> 0 @@ s3 :> 0))
-/\ sessaoDeTS = (r1 :> (s1 :> 4 @@ s2 :> 0 @@ s3 :> 0) @@ r2 :> (s1 :> 0 @@ s2 :> 0 @@ s3 :> 0))
-/\ sessaoDe = ( r1 :> (s1 :> u1 @@ s2 :> "NONE" @@ s3 :> "NONE") @@
+/\ sessaoDeTS = (r1 :> (s1 :> 0 @@ s2 :> 0 @@ s3 :> 0) @@ r2 :> (s1 :> 0 @@ s2 :> 0 @@ s3 :> 0))
+/\ sessaoDe = ( r1 :> (s1 :> "NONE" @@ s2 :> "NONE" @@ s3 :> "NONE") @@
   r2 :> (s1 :> "NONE" @@ s2 :> "NONE" @@ s3 :> "NONE") )
-/\ contadorTS = (r1 :> (u1 :> 0 @@ u2 :> 0) @@ r2 :> (u1 :> 0 @@ u2 :> 0))
+/\ contadorTS = (r1 :> (u1 :> 4 @@ u2 :> 0) @@ r2 :> (u1 :> 0 @@ u2 :> 0))
 /\ status = (r1 :> (u1 :> "OPEN" @@ u2 :> "OPEN") @@ r2 :> (u1 :> "OPEN" @@ u2 :> "OPEN"))
 /\ statusTS = (r1 :> (u1 :> 0 @@ u2 :> 0) @@ r2 :> (u1 :> 0 @@ u2 :> 0))
 
-State 3: <IncrementFailure line 219, col 3 to line 236, col 36 of module SessionStore>
-/\ sessoes = ( r1 :> (s1 :> "VALID" @@ s2 :> "NONE" @@ s3 :> "NONE") @@
+State 3: <EntregaMensagem line 346, col 3 to line 462, col 60 of module SessionStore>
+/\ sessoes = ( r1 :> (s1 :> "NONE" @@ s2 :> "NONE" @@ s3 :> "NONE") @@
   r2 :> (s1 :> "NONE" @@ s2 :> "NONE" @@ s3 :> "NONE") )
-/\ canal = ( r1 :>
-      << [ ts |-> 1,
-           tipo |-> "CONTADOR_INC",
-           chave |-> u2,
-           payload |-> "",
-           valor |-> 1,
-           origem |-> r2,
-           prio |-> 5 ] >> @@
-  r2 :>
-      << [ ts |-> 1,
-           tipo |-> "SESSAO_VALIDA",
-           chave |-> s1,
-           payload |-> u1,
-           valor |-> 0,
-           origem |-> r1,
-           prio |-> 4 ] >> )
-/\ sessoesTS = (r1 :> (s1 :> 4 @@ s2 :> 0 @@ s3 :> 0) @@ r2 :> (s1 :> 0 @@ s2 :> 0 @@ s3 :> 0))
-/\ motivos = ( r1 :> (s1 :> "NONE" @@ s2 :> "NONE" @@ s3 :> "NONE") @@
-  r2 :> (s1 :> "NONE" @@ s2 :> "NONE" @@ s3 :> "NONE") )
-/\ relogio = (r1 :> 1 @@ r2 :> 1)
-/\ contador = (r1 :> (u1 :> 0 @@ u2 :> 0) @@ r2 :> (u1 :> 0 @@ u2 :> 1))
-/\ motivosTS = (r1 :> (s1 :> 0 @@ s2 :> 0 @@ s3 :> 0) @@ r2 :> (s1 :> 0 @@ s2 :> 0 @@ s3 :> 0))
-/\ sessaoDeTS = (r1 :> (s1 :> 4 @@ s2 :> 0 @@ s3 :> 0) @@ r2 :> (s1 :> 0 @@ s2 :> 0 @@ s3 :> 0))
-/\ sessaoDe = ( r1 :> (s1 :> u1 @@ s2 :> "NONE" @@ s3 :> "NONE") @@
-  r2 :> (s1 :> "NONE" @@ s2 :> "NONE" @@ s3 :> "NONE") )
-/\ contadorTS = (r1 :> (u1 :> 0 @@ u2 :> 0) @@ r2 :> (u1 :> 0 @@ u2 :> 5))
-/\ status = (r1 :> (u1 :> "OPEN" @@ u2 :> "OPEN") @@ r2 :> (u1 :> "OPEN" @@ u2 :> "OPEN"))
-/\ statusTS = (r1 :> (u1 :> 0 @@ u2 :> 0) @@ r2 :> (u1 :> 0 @@ u2 :> 0))
-
-State 4: <EntregaMensagem line 331, col 3 to line 414, col 60 of module SessionStore>
-/\ sessoes = ( r1 :> (s1 :> "VALID" @@ s2 :> "NONE" @@ s3 :> "NONE") @@
-  r2 :> (s1 :> "VALID" @@ s2 :> "NONE" @@ s3 :> "NONE") )
-/\ canal = ( r1 :>
-      << [ ts |-> 1,
-           tipo |-> "CONTADOR_INC",
-           chave |-> u2,
-           payload |-> "",
-           valor |-> 1,
-           origem |-> r2,
-           prio |-> 5 ] >> @@
-  r2 :> <<>> )
-/\ sessoesTS = (r1 :> (s1 :> 4 @@ s2 :> 0 @@ s3 :> 0) @@ r2 :> (s1 :> 4 @@ s2 :> 0 @@ s3 :> 0))
-/\ motivos = ( r1 :> (s1 :> "NONE" @@ s2 :> "NONE" @@ s3 :> "NONE") @@
-  r2 :> (s1 :> "NONE" @@ s2 :> "NONE" @@ s3 :> "NONE") )
-/\ relogio = (r1 :> 1 @@ r2 :> 1)
-/\ contador = (r1 :> (u1 :> 0 @@ u2 :> 0) @@ r2 :> (u1 :> 0 @@ u2 :> 1))
-/\ motivosTS = (r1 :> (s1 :> 0 @@ s2 :> 0 @@ s3 :> 0) @@ r2 :> (s1 :> 0 @@ s2 :> 0 @@ s3 :> 0))
-/\ sessaoDeTS = (r1 :> (s1 :> 4 @@ s2 :> 0 @@ s3 :> 0) @@ r2 :> (s1 :> 4 @@ s2 :> 0 @@ s3 :> 0))
-/\ sessaoDe = ( r1 :> (s1 :> u1 @@ s2 :> "NONE" @@ s3 :> "NONE") @@
-  r2 :> (s1 :> u1 @@ s2 :> "NONE" @@ s3 :> "NONE") )
-/\ contadorTS = (r1 :> (u1 :> 0 @@ u2 :> 0) @@ r2 :> (u1 :> 0 @@ u2 :> 5))
-/\ status = (r1 :> (u1 :> "OPEN" @@ u2 :> "OPEN") @@ r2 :> (u1 :> "OPEN" @@ u2 :> "OPEN"))
-/\ statusTS = (r1 :> (u1 :> 0 @@ u2 :> 0) @@ r2 :> (u1 :> 0 @@ u2 :> 0))
-
-State 5: <EntregaMensagem line 331, col 3 to line 414, col 60 of module SessionStore>
-/\ sessoes = ( r1 :> (s1 :> "VALID" @@ s2 :> "NONE" @@ s3 :> "NONE") @@
-  r2 :> (s1 :> "VALID" @@ s2 :> "NONE" @@ s3 :> "NONE") )
 /\ canal = (r1 :> <<>> @@ r2 :> <<>>)
-/\ sessoesTS = (r1 :> (s1 :> 4 @@ s2 :> 0 @@ s3 :> 0) @@ r2 :> (s1 :> 4 @@ s2 :> 0 @@ s3 :> 0))
+/\ sessoesTS = (r1 :> (s1 :> 0 @@ s2 :> 0 @@ s3 :> 0) @@ r2 :> (s1 :> 0 @@ s2 :> 0 @@ s3 :> 0))
 /\ motivos = ( r1 :> (s1 :> "NONE" @@ s2 :> "NONE" @@ s3 :> "NONE") @@
   r2 :> (s1 :> "NONE" @@ s2 :> "NONE" @@ s3 :> "NONE") )
-/\ relogio = (r1 :> 1 @@ r2 :> 1)
-/\ contador = (r1 :> (u1 :> 0 @@ u2 :> 1) @@ r2 :> (u1 :> 0 @@ u2 :> 1))
+/\ relogio = (r1 :> 1 @@ r2 :> 0)
+/\ contador = (r1 :> (u1 :> 1 @@ u2 :> 0) @@ r2 :> (u1 :> 1 @@ u2 :> 0))
 /\ motivosTS = (r1 :> (s1 :> 0 @@ s2 :> 0 @@ s3 :> 0) @@ r2 :> (s1 :> 0 @@ s2 :> 0 @@ s3 :> 0))
-/\ sessaoDeTS = (r1 :> (s1 :> 4 @@ s2 :> 0 @@ s3 :> 0) @@ r2 :> (s1 :> 4 @@ s2 :> 0 @@ s3 :> 0))
-/\ sessaoDe = ( r1 :> (s1 :> u1 @@ s2 :> "NONE" @@ s3 :> "NONE") @@
-  r2 :> (s1 :> u1 @@ s2 :> "NONE" @@ s3 :> "NONE") )
-/\ contadorTS = (r1 :> (u1 :> 0 @@ u2 :> 5) @@ r2 :> (u1 :> 0 @@ u2 :> 5))
+/\ sessaoDeTS = (r1 :> (s1 :> 0 @@ s2 :> 0 @@ s3 :> 0) @@ r2 :> (s1 :> 0 @@ s2 :> 0 @@ s3 :> 0))
+/\ sessaoDe = ( r1 :> (s1 :> "NONE" @@ s2 :> "NONE" @@ s3 :> "NONE") @@
+  r2 :> (s1 :> "NONE" @@ s2 :> "NONE" @@ s3 :> "NONE") )
+/\ contadorTS = (r1 :> (u1 :> 4 @@ u2 :> 0) @@ r2 :> (u1 :> 4 @@ u2 :> 0))
 /\ status = (r1 :> (u1 :> "OPEN" @@ u2 :> "OPEN") @@ r2 :> (u1 :> "OPEN" @@ u2 :> "OPEN"))
 /\ statusTS = (r1 :> (u1 :> 0 @@ u2 :> 0) @@ r2 :> (u1 :> 0 @@ u2 :> 0))
 
-State 6: <IncrementFailure line 219, col 3 to line 236, col 36 of module SessionStore>
-/\ sessoes = ( r1 :> (s1 :> "VALID" @@ s2 :> "NONE" @@ s3 :> "NONE") @@
-  r2 :> (s1 :> "VALID" @@ s2 :> "NONE" @@ s3 :> "NONE") )
+State 4: <IncrementFailure line 233, col 3 to line 250, col 36 of module SessionStore>
+/\ sessoes = ( r1 :> (s1 :> "NONE" @@ s2 :> "NONE" @@ s3 :> "NONE") @@
+  r2 :> (s1 :> "NONE" @@ s2 :> "NONE" @@ s3 :> "NONE") )
 /\ canal = ( r1 :> <<>> @@
   r2 :>
       << [ ts |-> 2,
            tipo |-> "CONTADOR_INC",
-           chave |-> u2,
+           chave |-> u1,
            payload |-> "",
            valor |-> 2,
            origem |-> r1,
-           prio |-> 7 ] >> )
-/\ sessoesTS = (r1 :> (s1 :> 4 @@ s2 :> 0 @@ s3 :> 0) @@ r2 :> (s1 :> 4 @@ s2 :> 0 @@ s3 :> 0))
+           prio |-> 7,
+           sessoesAfetadas |-> {} ] >> )
+/\ sessoesTS = (r1 :> (s1 :> 0 @@ s2 :> 0 @@ s3 :> 0) @@ r2 :> (s1 :> 0 @@ s2 :> 0 @@ s3 :> 0))
 /\ motivos = ( r1 :> (s1 :> "NONE" @@ s2 :> "NONE" @@ s3 :> "NONE") @@
   r2 :> (s1 :> "NONE" @@ s2 :> "NONE" @@ s3 :> "NONE") )
-/\ relogio = (r1 :> 2 @@ r2 :> 1)
-/\ contador = (r1 :> (u1 :> 0 @@ u2 :> 2) @@ r2 :> (u1 :> 0 @@ u2 :> 1))
+/\ relogio = (r1 :> 2 @@ r2 :> 0)
+/\ contador = (r1 :> (u1 :> 2 @@ u2 :> 0) @@ r2 :> (u1 :> 1 @@ u2 :> 0))
 /\ motivosTS = (r1 :> (s1 :> 0 @@ s2 :> 0 @@ s3 :> 0) @@ r2 :> (s1 :> 0 @@ s2 :> 0 @@ s3 :> 0))
-/\ sessaoDeTS = (r1 :> (s1 :> 4 @@ s2 :> 0 @@ s3 :> 0) @@ r2 :> (s1 :> 4 @@ s2 :> 0 @@ s3 :> 0))
-/\ sessaoDe = ( r1 :> (s1 :> u1 @@ s2 :> "NONE" @@ s3 :> "NONE") @@
-  r2 :> (s1 :> u1 @@ s2 :> "NONE" @@ s3 :> "NONE") )
-/\ contadorTS = (r1 :> (u1 :> 0 @@ u2 :> 7) @@ r2 :> (u1 :> 0 @@ u2 :> 5))
+/\ sessaoDeTS = (r1 :> (s1 :> 0 @@ s2 :> 0 @@ s3 :> 0) @@ r2 :> (s1 :> 0 @@ s2 :> 0 @@ s3 :> 0))
+/\ sessaoDe = ( r1 :> (s1 :> "NONE" @@ s2 :> "NONE" @@ s3 :> "NONE") @@
+  r2 :> (s1 :> "NONE" @@ s2 :> "NONE" @@ s3 :> "NONE") )
+/\ contadorTS = (r1 :> (u1 :> 7 @@ u2 :> 0) @@ r2 :> (u1 :> 4 @@ u2 :> 0))
 /\ status = (r1 :> (u1 :> "OPEN" @@ u2 :> "OPEN") @@ r2 :> (u1 :> "OPEN" @@ u2 :> "OPEN"))
 /\ statusTS = (r1 :> (u1 :> 0 @@ u2 :> 0) @@ r2 :> (u1 :> 0 @@ u2 :> 0))
 
-State 7: <EntregaMensagem line 331, col 3 to line 414, col 60 of module SessionStore>
-/\ sessoes = ( r1 :> (s1 :> "VALID" @@ s2 :> "NONE" @@ s3 :> "NONE") @@
-  r2 :> (s1 :> "VALID" @@ s2 :> "NONE" @@ s3 :> "NONE") )
+State 5: <EntregaMensagem line 346, col 3 to line 462, col 60 of module SessionStore>
+/\ sessoes = ( r1 :> (s1 :> "NONE" @@ s2 :> "NONE" @@ s3 :> "NONE") @@
+  r2 :> (s1 :> "NONE" @@ s2 :> "NONE" @@ s3 :> "NONE") )
 /\ canal = (r1 :> <<>> @@ r2 :> <<>>)
-/\ sessoesTS = (r1 :> (s1 :> 4 @@ s2 :> 0 @@ s3 :> 0) @@ r2 :> (s1 :> 4 @@ s2 :> 0 @@ s3 :> 0))
+/\ sessoesTS = (r1 :> (s1 :> 0 @@ s2 :> 0 @@ s3 :> 0) @@ r2 :> (s1 :> 0 @@ s2 :> 0 @@ s3 :> 0))
 /\ motivos = ( r1 :> (s1 :> "NONE" @@ s2 :> "NONE" @@ s3 :> "NONE") @@
   r2 :> (s1 :> "NONE" @@ s2 :> "NONE" @@ s3 :> "NONE") )
-/\ relogio = (r1 :> 2 @@ r2 :> 1)
-/\ contador = (r1 :> (u1 :> 0 @@ u2 :> 2) @@ r2 :> (u1 :> 0 @@ u2 :> 2))
+/\ relogio = (r1 :> 2 @@ r2 :> 0)
+/\ contador = (r1 :> (u1 :> 2 @@ u2 :> 0) @@ r2 :> (u1 :> 2 @@ u2 :> 0))
 /\ motivosTS = (r1 :> (s1 :> 0 @@ s2 :> 0 @@ s3 :> 0) @@ r2 :> (s1 :> 0 @@ s2 :> 0 @@ s3 :> 0))
-/\ sessaoDeTS = (r1 :> (s1 :> 4 @@ s2 :> 0 @@ s3 :> 0) @@ r2 :> (s1 :> 4 @@ s2 :> 0 @@ s3 :> 0))
-/\ sessaoDe = ( r1 :> (s1 :> u1 @@ s2 :> "NONE" @@ s3 :> "NONE") @@
-  r2 :> (s1 :> u1 @@ s2 :> "NONE" @@ s3 :> "NONE") )
-/\ contadorTS = (r1 :> (u1 :> 0 @@ u2 :> 7) @@ r2 :> (u1 :> 0 @@ u2 :> 7))
+/\ sessaoDeTS = (r1 :> (s1 :> 0 @@ s2 :> 0 @@ s3 :> 0) @@ r2 :> (s1 :> 0 @@ s2 :> 0 @@ s3 :> 0))
+/\ sessaoDe = ( r1 :> (s1 :> "NONE" @@ s2 :> "NONE" @@ s3 :> "NONE") @@
+  r2 :> (s1 :> "NONE" @@ s2 :> "NONE" @@ s3 :> "NONE") )
+/\ contadorTS = (r1 :> (u1 :> 7 @@ u2 :> 0) @@ r2 :> (u1 :> 7 @@ u2 :> 0))
 /\ status = (r1 :> (u1 :> "OPEN" @@ u2 :> "OPEN") @@ r2 :> (u1 :> "OPEN" @@ u2 :> "OPEN"))
 /\ statusTS = (r1 :> (u1 :> 0 @@ u2 :> 0) @@ r2 :> (u1 :> 0 @@ u2 :> 0))
 
-State 8: <IncrementFailure line 219, col 3 to line 236, col 36 of module SessionStore>
-/\ sessoes = ( r1 :> (s1 :> "VALID" @@ s2 :> "NONE" @@ s3 :> "NONE") @@
-  r2 :> (s1 :> "VALID" @@ s2 :> "NONE" @@ s3 :> "NONE") )
+State 6: <IncrementFailure line 233, col 3 to line 250, col 36 of module SessionStore>
+/\ sessoes = ( r1 :> (s1 :> "NONE" @@ s2 :> "NONE" @@ s3 :> "NONE") @@
+  r2 :> (s1 :> "NONE" @@ s2 :> "NONE" @@ s3 :> "NONE") )
 /\ canal = ( r1 :>
-      << [ ts |-> 2,
+      << [ ts |-> 1,
            tipo |-> "CONTADOR_INC",
-           chave |-> u2,
+           chave |-> u1,
            payload |-> "",
            valor |-> 3,
            origem |-> r2,
-           prio |-> 8 ] >> @@
+           prio |-> 5,
+           sessoesAfetadas |-> {} ] >> @@
   r2 :> <<>> )
-/\ sessoesTS = (r1 :> (s1 :> 4 @@ s2 :> 0 @@ s3 :> 0) @@ r2 :> (s1 :> 4 @@ s2 :> 0 @@ s3 :> 0))
+/\ sessoesTS = (r1 :> (s1 :> 0 @@ s2 :> 0 @@ s3 :> 0) @@ r2 :> (s1 :> 0 @@ s2 :> 0 @@ s3 :> 0))
 /\ motivos = ( r1 :> (s1 :> "NONE" @@ s2 :> "NONE" @@ s3 :> "NONE") @@
   r2 :> (s1 :> "NONE" @@ s2 :> "NONE" @@ s3 :> "NONE") )
-/\ relogio = (r1 :> 2 @@ r2 :> 2)
-/\ contador = (r1 :> (u1 :> 0 @@ u2 :> 2) @@ r2 :> (u1 :> 0 @@ u2 :> 3))
+/\ relogio = (r1 :> 2 @@ r2 :> 1)
+/\ contador = (r1 :> (u1 :> 2 @@ u2 :> 0) @@ r2 :> (u1 :> 2 @@ u2 :> 0))
 /\ motivosTS = (r1 :> (s1 :> 0 @@ s2 :> 0 @@ s3 :> 0) @@ r2 :> (s1 :> 0 @@ s2 :> 0 @@ s3 :> 0))
-/\ sessaoDeTS = (r1 :> (s1 :> 4 @@ s2 :> 0 @@ s3 :> 0) @@ r2 :> (s1 :> 4 @@ s2 :> 0 @@ s3 :> 0))
-/\ sessaoDe = ( r1 :> (s1 :> u1 @@ s2 :> "NONE" @@ s3 :> "NONE") @@
-  r2 :> (s1 :> u1 @@ s2 :> "NONE" @@ s3 :> "NONE") )
-/\ contadorTS = (r1 :> (u1 :> 0 @@ u2 :> 7) @@ r2 :> (u1 :> 0 @@ u2 :> 8))
-/\ status = ( r1 :> (u1 :> "OPEN" @@ u2 :> "OPEN") @@
-  r2 :> (u1 :> "OPEN" @@ u2 :> "BLOCKED") )
-/\ statusTS = (r1 :> (u1 :> 0 @@ u2 :> 0) @@ r2 :> (u1 :> 0 @@ u2 :> 8))
-
-State 9: <ResetFailures line 247, col 3 to line 261, col 36 of module SessionStore>
-/\ sessoes = ( r1 :> (s1 :> "VALID" @@ s2 :> "NONE" @@ s3 :> "NONE") @@
-  r2 :> (s1 :> "VALID" @@ s2 :> "NONE" @@ s3 :> "NONE") )
-/\ canal = ( r1 :>
-      << [ ts |-> 2,
-           tipo |-> "CONTADOR_INC",
-           chave |-> u2,
-           payload |-> "",
-           valor |-> 3,
-           origem |-> r2,
-           prio |-> 8 ] >> @@
-  r2 :>
-      << [ ts |-> 3,
-           tipo |-> "CONTADOR_RESET",
-           chave |-> u2,
-           payload |-> "",
-           valor |-> 0,
-           origem |-> r1,
-           prio |-> 10 ] >> )
-/\ sessoesTS = (r1 :> (s1 :> 4 @@ s2 :> 0 @@ s3 :> 0) @@ r2 :> (s1 :> 4 @@ s2 :> 0 @@ s3 :> 0))
-/\ motivos = ( r1 :> (s1 :> "NONE" @@ s2 :> "NONE" @@ s3 :> "NONE") @@
+/\ sessaoDeTS = (r1 :> (s1 :> 0 @@ s2 :> 0 @@ s3 :> 0) @@ r2 :> (s1 :> 0 @@ s2 :> 0 @@ s3 :> 0))
+/\ sessaoDe = ( r1 :> (s1 :> "NONE" @@ s2 :> "NONE" @@ s3 :> "NONE") @@
   r2 :> (s1 :> "NONE" @@ s2 :> "NONE" @@ s3 :> "NONE") )
-/\ relogio = (r1 :> 3 @@ r2 :> 2)
-/\ contador = (r1 :> (u1 :> 0 @@ u2 :> 0) @@ r2 :> (u1 :> 0 @@ u2 :> 3))
-/\ motivosTS = (r1 :> (s1 :> 0 @@ s2 :> 0 @@ s3 :> 0) @@ r2 :> (s1 :> 0 @@ s2 :> 0 @@ s3 :> 0))
-/\ sessaoDeTS = (r1 :> (s1 :> 4 @@ s2 :> 0 @@ s3 :> 0) @@ r2 :> (s1 :> 4 @@ s2 :> 0 @@ s3 :> 0))
-/\ sessaoDe = ( r1 :> (s1 :> u1 @@ s2 :> "NONE" @@ s3 :> "NONE") @@
-  r2 :> (s1 :> u1 @@ s2 :> "NONE" @@ s3 :> "NONE") )
-/\ contadorTS = (r1 :> (u1 :> 0 @@ u2 :> 10) @@ r2 :> (u1 :> 0 @@ u2 :> 8))
-/\ status = ( r1 :> (u1 :> "OPEN" @@ u2 :> "OPEN") @@
-  r2 :> (u1 :> "OPEN" @@ u2 :> "BLOCKED") )
-/\ statusTS = (r1 :> (u1 :> 0 @@ u2 :> 0) @@ r2 :> (u1 :> 0 @@ u2 :> 8))
+/\ contadorTS = (r1 :> (u1 :> 7 @@ u2 :> 0) @@ r2 :> (u1 :> 7 @@ u2 :> 0))
+/\ status = (r1 :> (u1 :> "OPEN" @@ u2 :> "OPEN") @@ r2 :> (u1 :> "OPEN" @@ u2 :> "OPEN"))
+/\ statusTS = (r1 :> (u1 :> 0 @@ u2 :> 0) @@ r2 :> (u1 :> 0 @@ u2 :> 0))
 
-State 10: <EntregaMensagem line 331, col 3 to line 414, col 60 of module SessionStore>
-/\ sessoes = ( r1 :> (s1 :> "VALID" @@ s2 :> "NONE" @@ s3 :> "NONE") @@
-  r2 :> (s1 :> "VALID" @@ s2 :> "NONE" @@ s3 :> "NONE") )
-/\ canal = ( r1 :>
-      << [ ts |-> 2,
-           tipo |-> "CONTADOR_INC",
-           chave |-> u2,
-           payload |-> "",
-           valor |-> 3,
-           origem |-> r2,
-           prio |-> 8 ] >> @@
-  r2 :> <<>> )
-/\ sessoesTS = (r1 :> (s1 :> 4 @@ s2 :> 0 @@ s3 :> 0) @@ r2 :> (s1 :> 4 @@ s2 :> 0 @@ s3 :> 0))
-/\ motivos = ( r1 :> (s1 :> "NONE" @@ s2 :> "NONE" @@ s3 :> "NONE") @@
+State 7: <EntregaMensagem line 346, col 3 to line 462, col 60 of module SessionStore>
+/\ sessoes = ( r1 :> (s1 :> "NONE" @@ s2 :> "NONE" @@ s3 :> "NONE") @@
   r2 :> (s1 :> "NONE" @@ s2 :> "NONE" @@ s3 :> "NONE") )
-/\ relogio = (r1 :> 3 @@ r2 :> 2)
-/\ contador = (r1 :> (u1 :> 0 @@ u2 :> 0) @@ r2 :> (u1 :> 0 @@ u2 :> 0))
-/\ motivosTS = (r1 :> (s1 :> 0 @@ s2 :> 0 @@ s3 :> 0) @@ r2 :> (s1 :> 0 @@ s2 :> 0 @@ s3 :> 0))
-/\ sessaoDeTS = (r1 :> (s1 :> 4 @@ s2 :> 0 @@ s3 :> 0) @@ r2 :> (s1 :> 4 @@ s2 :> 0 @@ s3 :> 0))
-/\ sessaoDe = ( r1 :> (s1 :> u1 @@ s2 :> "NONE" @@ s3 :> "NONE") @@
-  r2 :> (s1 :> u1 @@ s2 :> "NONE" @@ s3 :> "NONE") )
-/\ contadorTS = (r1 :> (u1 :> 0 @@ u2 :> 10) @@ r2 :> (u1 :> 0 @@ u2 :> 10))
-/\ status = ( r1 :> (u1 :> "OPEN" @@ u2 :> "OPEN") @@
-  r2 :> (u1 :> "OPEN" @@ u2 :> "BLOCKED") )
-/\ statusTS = (r1 :> (u1 :> 0 @@ u2 :> 0) @@ r2 :> (u1 :> 0 @@ u2 :> 8))
-
-State 11: <EntregaMensagem line 331, col 3 to line 414, col 60 of module SessionStore>
-/\ sessoes = ( r1 :> (s1 :> "VALID" @@ s2 :> "NONE" @@ s3 :> "NONE") @@
-  r2 :> (s1 :> "VALID" @@ s2 :> "NONE" @@ s3 :> "NONE") )
 /\ canal = (r1 :> <<>> @@ r2 :> <<>>)
-/\ sessoesTS = (r1 :> (s1 :> 4 @@ s2 :> 0 @@ s3 :> 0) @@ r2 :> (s1 :> 4 @@ s2 :> 0 @@ s3 :> 0))
+/\ sessoesTS = (r1 :> (s1 :> 0 @@ s2 :> 0 @@ s3 :> 0) @@ r2 :> (s1 :> 0 @@ s2 :> 0 @@ s3 :> 0))
 /\ motivos = ( r1 :> (s1 :> "NONE" @@ s2 :> "NONE" @@ s3 :> "NONE") @@
   r2 :> (s1 :> "NONE" @@ s2 :> "NONE" @@ s3 :> "NONE") )
-/\ relogio = (r1 :> 3 @@ r2 :> 2)
-/\ contador = (r1 :> (u1 :> 0 @@ u2 :> 0) @@ r2 :> (u1 :> 0 @@ u2 :> 0))
+/\ relogio = (r1 :> 2 @@ r2 :> 1)
+/\ contador = (r1 :> (u1 :> 2 @@ u2 :> 0) @@ r2 :> (u1 :> 2 @@ u2 :> 0))
 /\ motivosTS = (r1 :> (s1 :> 0 @@ s2 :> 0 @@ s3 :> 0) @@ r2 :> (s1 :> 0 @@ s2 :> 0 @@ s3 :> 0))
-/\ sessaoDeTS = (r1 :> (s1 :> 4 @@ s2 :> 0 @@ s3 :> 0) @@ r2 :> (s1 :> 4 @@ s2 :> 0 @@ s3 :> 0))
-/\ sessaoDe = ( r1 :> (s1 :> u1 @@ s2 :> "NONE" @@ s3 :> "NONE") @@
-  r2 :> (s1 :> u1 @@ s2 :> "NONE" @@ s3 :> "NONE") )
-/\ contadorTS = (r1 :> (u1 :> 0 @@ u2 :> 10) @@ r2 :> (u1 :> 0 @@ u2 :> 10))
-/\ status = ( r1 :> (u1 :> "OPEN" @@ u2 :> "OPEN") @@
-  r2 :> (u1 :> "OPEN" @@ u2 :> "BLOCKED") )
-/\ statusTS = (r1 :> (u1 :> 0 @@ u2 :> 0) @@ r2 :> (u1 :> 0 @@ u2 :> 8))
+/\ sessaoDeTS = (r1 :> (s1 :> 0 @@ s2 :> 0 @@ s3 :> 0) @@ r2 :> (s1 :> 0 @@ s2 :> 0 @@ s3 :> 0))
+/\ sessaoDe = ( r1 :> (s1 :> "NONE" @@ s2 :> "NONE" @@ s3 :> "NONE") @@
+  r2 :> (s1 :> "NONE" @@ s2 :> "NONE" @@ s3 :> "NONE") )
+/\ contadorTS = (r1 :> (u1 :> 7 @@ u2 :> 0) @@ r2 :> (u1 :> 7 @@ u2 :> 0))
+/\ status = ( r1 :> (u1 :> "BLOCKED" @@ u2 :> "OPEN") @@
+  r2 :> (u1 :> "OPEN" @@ u2 :> "OPEN") )
+/\ statusTS = (r1 :> (u1 :> 5 @@ u2 :> 0) @@ r2 :> (u1 :> 0 @@ u2 :> 0))
 
-1186731 states generated, 166373 distinct states found, 95812 states left on queue.
-The depth of the complete state graph search is 12.
-The average outdegree of the complete state graph is 2 (minimum is 0, the maximum 12 and the 95th percentile is 8).
-Finished in 02s at (2026-09-16 00:57:57)
+87073 states generated, 14885 distinct states found, 9952 states left on queue.
+The depth of the complete state graph search is 10.
+The average outdegree of the complete state graph is 3 (minimum is 0, the maximum 11 and the 95th percentile is 8).
+Finished in 00s at (2026-09-16 01:37:06)

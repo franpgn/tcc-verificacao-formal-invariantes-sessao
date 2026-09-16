@@ -1,5 +1,5 @@
 TLC2 Version 2.19 of 08 August 2024 (rev: 5a47802)
-Running breadth-first search Model-Checking with fp 2 and seed 8283353458481031216 with 20 workers on 20 cores with 7237MB heap and 64MB offheap memory [pid: 22824] (Windows 11 10.0 amd64, Oracle Corporation 22.0.2 x86_64, MSBDiskFPSet, DiskStateQueue).
+Running breadth-first search Model-Checking with fp 40 and seed 8509027505894085754 with 20 workers on 20 cores with 7237MB heap and 64MB offheap memory [pid: 3372] (Windows 11 10.0 amd64, Oracle Corporation 22.0.2 x86_64, MSBDiskFPSet, DiskStateQueue).
 Parsing file C:\Users\Francesco\Development\tcc\tcc-desenvolvimento\spec\MCSession.tla
 Parsing file C:\Users\Francesco\Development\tcc\tcc-desenvolvimento\spec\SessionStore.tla
 Parsing file C:\Users\Francesco\AppData\Local\Temp\TLC.tla
@@ -12,9 +12,9 @@ Semantic processing of module FiniteSets
 Semantic processing of module SessionStore
 Semantic processing of module TLC
 Semantic processing of module MCSession
-Starting... (2026-09-16 00:59:33)
+Starting... (2026-09-16 01:37:51)
 Computing initial states...
-Finished computing initial states: 1 distinct state generated at 2026-09-16 00:59:33.
+Finished computing initial states: 1 distinct state generated at 2026-09-16 01:37:51.
 Error: Invariant I2 is violated.
 Error: The behavior up to this point is:
 State 1: <Initial predicate>
@@ -35,7 +35,7 @@ State 1: <Initial predicate>
   r2 :> (u1 :> "OPEN" @@ u2 :> "OPEN" @@ u3 :> "OPEN") )
 /\ statusTS = (r1 :> (u1 :> 0 @@ u2 :> 0 @@ u3 :> 0) @@ r2 :> (u1 :> 0 @@ u2 :> 0 @@ u3 :> 0))
 
-State 2: <Login line 167, col 3 to line 184, col 36 of module SessionStore>
+State 2: <Login line 181, col 3 to line 198, col 36 of module SessionStore>
 /\ sessoes = ( r1 :> (s1 :> "VALID" @@ s2 :> "NONE" @@ s3 :> "NONE") @@
   r2 :> (s1 :> "NONE" @@ s2 :> "NONE" @@ s3 :> "NONE") )
 /\ canal = ( r1 :> <<>> @@
@@ -46,7 +46,8 @@ State 2: <Login line 167, col 3 to line 184, col 36 of module SessionStore>
            payload |-> u1,
            valor |-> 0,
            origem |-> r1,
-           prio |-> 4 ] >> )
+           prio |-> 4,
+           sessoesAfetadas |-> {} ] >> )
 /\ sessoesTS = (r1 :> (s1 :> 4 @@ s2 :> 0 @@ s3 :> 0) @@ r2 :> (s1 :> 0 @@ s2 :> 0 @@ s3 :> 0))
 /\ motivos = ( r1 :> (s1 :> "NONE" @@ s2 :> "NONE" @@ s3 :> "NONE") @@
   r2 :> (s1 :> "NONE" @@ s2 :> "NONE" @@ s3 :> "NONE") )
@@ -61,7 +62,7 @@ State 2: <Login line 167, col 3 to line 184, col 36 of module SessionStore>
   r2 :> (u1 :> "OPEN" @@ u2 :> "OPEN" @@ u3 :> "OPEN") )
 /\ statusTS = (r1 :> (u1 :> 0 @@ u2 :> 0 @@ u3 :> 0) @@ r2 :> (u1 :> 0 @@ u2 :> 0 @@ u3 :> 0))
 
-State 3: <Login line 167, col 3 to line 184, col 36 of module SessionStore>
+State 3: <Login line 181, col 3 to line 198, col 36 of module SessionStore>
 /\ sessoes = ( r1 :> (s1 :> "VALID" @@ s2 :> "NONE" @@ s3 :> "NONE") @@
   r2 :> (s1 :> "VALID" @@ s2 :> "NONE" @@ s3 :> "NONE") )
 /\ canal = ( r1 :>
@@ -71,7 +72,8 @@ State 3: <Login line 167, col 3 to line 184, col 36 of module SessionStore>
            payload |-> u1,
            valor |-> 0,
            origem |-> r2,
-           prio |-> 5 ] >> @@
+           prio |-> 5,
+           sessoesAfetadas |-> {} ] >> @@
   r2 :>
       << [ ts |-> 1,
            tipo |-> "SESSAO_VALIDA",
@@ -79,7 +81,8 @@ State 3: <Login line 167, col 3 to line 184, col 36 of module SessionStore>
            payload |-> u1,
            valor |-> 0,
            origem |-> r1,
-           prio |-> 4 ] >> )
+           prio |-> 4,
+           sessoesAfetadas |-> {} ] >> )
 /\ sessoesTS = (r1 :> (s1 :> 4 @@ s2 :> 0 @@ s3 :> 0) @@ r2 :> (s1 :> 5 @@ s2 :> 0 @@ s3 :> 0))
 /\ motivos = ( r1 :> (s1 :> "NONE" @@ s2 :> "NONE" @@ s3 :> "NONE") @@
   r2 :> (s1 :> "NONE" @@ s2 :> "NONE" @@ s3 :> "NONE") )
@@ -94,7 +97,7 @@ State 3: <Login line 167, col 3 to line 184, col 36 of module SessionStore>
   r2 :> (u1 :> "OPEN" @@ u2 :> "OPEN" @@ u3 :> "OPEN") )
 /\ statusTS = (r1 :> (u1 :> 0 @@ u2 :> 0 @@ u3 :> 0) @@ r2 :> (u1 :> 0 @@ u2 :> 0 @@ u3 :> 0))
 
-State 4: <Block line 271, col 3 to line 293, col 36 of module SessionStore>
+State 4: <Block line 286, col 3 to line 308, col 36 of module SessionStore>
 /\ sessoes = ( r1 :> (s1 :> "INVALID" @@ s2 :> "NONE" @@ s3 :> "NONE") @@
   r2 :> (s1 :> "VALID" @@ s2 :> "NONE" @@ s3 :> "NONE") )
 /\ canal = ( r1 :>
@@ -104,7 +107,8 @@ State 4: <Block line 271, col 3 to line 293, col 36 of module SessionStore>
            payload |-> u1,
            valor |-> 0,
            origem |-> r2,
-           prio |-> 5 ] >> @@
+           prio |-> 5,
+           sessoesAfetadas |-> {} ] >> @@
   r2 :>
       << [ ts |-> 1,
            tipo |-> "SESSAO_VALIDA",
@@ -112,14 +116,16 @@ State 4: <Block line 271, col 3 to line 293, col 36 of module SessionStore>
            payload |-> u1,
            valor |-> 0,
            origem |-> r1,
-           prio |-> 4 ],
+           prio |-> 4,
+           sessoesAfetadas |-> {} ],
          [ ts |-> 2,
            tipo |-> "ID_BLOQUEIA",
            chave |-> u1,
            payload |-> "",
            valor |-> 0,
            origem |-> r1,
-           prio |-> 7 ] >> )
+           prio |-> 7,
+           sessoesAfetadas |-> {s1} ] >> )
 /\ sessoesTS = (r1 :> (s1 :> 7 @@ s2 :> 0 @@ s3 :> 0) @@ r2 :> (s1 :> 5 @@ s2 :> 0 @@ s3 :> 0))
 /\ motivos = ( r1 :> (s1 :> "ADMIN_BLOCK" @@ s2 :> "NONE" @@ s3 :> "NONE") @@
   r2 :> (s1 :> "NONE" @@ s2 :> "NONE" @@ s3 :> "NONE") )
@@ -134,7 +140,7 @@ State 4: <Block line 271, col 3 to line 293, col 36 of module SessionStore>
   r2 :> (u1 :> "OPEN" @@ u2 :> "OPEN" @@ u3 :> "OPEN") )
 /\ statusTS = (r1 :> (u1 :> 7 @@ u2 :> 0 @@ u3 :> 0) @@ r2 :> (u1 :> 0 @@ u2 :> 0 @@ u3 :> 0))
 
-695 states generated, 112 distinct states found, 77 states left on queue.
+538 states generated, 81 distinct states found, 50 states left on queue.
 The depth of the complete state graph search is 5.
-The average outdegree of the complete state graph is 7 (minimum is 1, the maximum 13 and the 95th percentile is 13).
-Finished in 00s at (2026-09-16 00:59:33)
+The average outdegree of the complete state graph is 5 (minimum is 2, the maximum 7 and the 95th percentile is 7).
+Finished in 00s at (2026-09-16 01:37:51)

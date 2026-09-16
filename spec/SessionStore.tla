@@ -8,7 +8,9 @@
 (*   - Estado por réplica: sessoes (função SIDS -> Estados),               *)
 (*     motivos (SIDS -> MotivosT), sessaoDe (SIDS -> IDS),                 *)
 (*     contador (IDS -> 0..LIMITE), status (IDS -> StatusT).               *)
-(*   - Canal assíncrono como sequência de mensagens pendentes (multiset).  *)
+(*   - Canal assíncrono por réplica: fila de mensagens pendentes por       *)
+(*     réplica destino (broadcast real a todas as réplicas exceto a        *)
+(*     origem, que já aplicou o efeito localmente).                        *)
 (*   - Operações O1, O3, O4, O5, O6, O7 conforme Cap. 3 §3.3.1 da          *)
 (*     monografia. O2 (Validate) é leitura pura e não altera o estado      *)
 (*     do modelo, portanto não tem ação dedicada.                          *)
@@ -32,7 +34,7 @@ VARIABLES sessoes,       \* [r \in REPLICAS |-> [s \in SIDS |-> "NONE" \/ "VALID
           sessaoDe,      \* [r \in REPLICAS |-> [s \in SIDS |-> "NONE" \/ IDS]]
           contador,      \* [r \in REPLICAS |-> [id \in IDS |-> 0..LIMITE]]
           status,        \* [r \in REPLICAS |-> [id \in IDS |-> "OPEN" \/ "BLOCKED"]]
-          canal          \* sequência de mensagens pendentes
+          canal          \* [r \in REPLICAS |-> Seq(Mensagem)] -- fila de entrada por replica (broadcast)
 
 vars == << sessoes, motivos, sessaoDe, contador, status, canal >>
 
@@ -66,7 +68,15 @@ Init ==
   /\ sessaoDe = [r \in REPLICAS |-> [s \in SIDS |-> "NONE"]]
   /\ contador = [r \in REPLICAS |-> [id \in IDS |-> 0]]
   /\ status   = [r \in REPLICAS |-> [id \in IDS |-> "OPEN"]]
-  /\ canal    = << >>
+  /\ canal    = [r \in REPLICAS |-> << >>]
+
+(***************************************************************************)
+(* Enfileira msg nas filas de TODAS as replicas exceto a de origem, que ja *)
+(* aplicou o efeito localmente e nao precisa entregar a mensagem a si      *)
+(* mesma.                                                                   *)
+(***************************************************************************)
+Broadcast(origem, msg) ==
+  [r2 \in REPLICAS |-> IF r2 = origem THEN canal[r2] ELSE Append(canal[r2], msg)]
 
 (***************************************************************************)
 (* Operações executadas em uma réplica r.                                   *)
@@ -81,7 +91,7 @@ Login(r, id, s) ==
   /\ motivos'  = motivos
   /\ contador' = contador
   /\ status'   = status
-  /\ canal'    = Append(canal, [tipo |-> "SESSAO_VALIDA", chave |-> s, payload |-> id])
+  /\ canal'    = Broadcast(r, [tipo |-> "SESSAO_VALIDA", chave |-> s, payload |-> id])
 
 (* O3, logout: marca sessão como INVALID com motivo LOGOUT. Idempotente. *)
 Logout(r, s) ==
@@ -91,7 +101,7 @@ Logout(r, s) ==
   /\ sessaoDe' = sessaoDe
   /\ contador' = contador
   /\ status'   = status
-  /\ canal'    = Append(canal, [tipo |-> "SESSAO_INVALIDA", chave |-> s, payload |-> "LOGOUT"])
+  /\ canal'    = Broadcast(r, [tipo |-> "SESSAO_INVALIDA", chave |-> s, payload |-> "LOGOUT"])
 
 (* O4, incrementFailure: incrementa contador, bloqueia se atingir LIMITE. *)
 IncrementFailure(r, id) ==
@@ -104,7 +114,7 @@ IncrementFailure(r, id) ==
   /\ sessoes'  = sessoes
   /\ motivos'  = motivos
   /\ sessaoDe' = sessaoDe
-  /\ canal'    = Append(canal, [tipo |-> "CONTADOR_INC", chave |-> id, payload |-> ""])
+  /\ canal'    = Broadcast(r, [tipo |-> "CONTADOR_INC", chave |-> id, payload |-> ""])
 
 (* O5, resetFailures: zera o contador de id na réplica r.                  *)
 (*    Precondição operacional: tipicamente após Login bem-sucedido em      *)
@@ -116,7 +126,7 @@ ResetFailures(r, id) ==
   /\ motivos'  = motivos
   /\ sessaoDe' = sessaoDe
   /\ status'   = status
-  /\ canal'    = Append(canal, [tipo |-> "CONTADOR_RESET", chave |-> id, payload |-> ""])
+  /\ canal'    = Broadcast(r, [tipo |-> "CONTADOR_RESET", chave |-> id, payload |-> ""])
 
 (* O6, block: marca identidade como BLOCKED e invalida sessões VALID. *)
 Block(r, id) ==
@@ -130,7 +140,7 @@ Block(r, id) ==
                                   THEN "ADMIN_BLOCK" ELSE @[s] ] ]
   /\ sessaoDe' = sessaoDe
   /\ contador' = contador
-  /\ canal'    = Append(canal, [tipo |-> "ID_BLOQUEIA", chave |-> id, payload |-> ""])
+  /\ canal'    = Broadcast(r, [tipo |-> "ID_BLOQUEIA", chave |-> id, payload |-> ""])
 
 (* O7, unblock: remove a marca BLOCKED e zera o contador.                  *)
 (*    Não recria sessões previamente invalidadas pelo bloqueio.            *)
@@ -141,17 +151,17 @@ Unblock(r, id) ==
   /\ sessoes'  = sessoes
   /\ motivos'  = motivos
   /\ sessaoDe' = sessaoDe
-  /\ canal'    = Append(canal, [tipo |-> "ID_DESBLOQUEIA", chave |-> id, payload |-> ""])
+  /\ canal'    = Broadcast(r, [tipo |-> "ID_DESBLOQUEIA", chave |-> id, payload |-> ""])
 
 (***************************************************************************)
 (* Entrega de uma mensagem qualquer do canal a uma réplica destino r.      *)
 (* Captura atraso não determinístico e reordenação.                        *)
 (***************************************************************************)
 EntregaMensagem(r) ==
-  /\ Len(canal) > 0
-  /\ \E i \in 1..Len(canal):
-       LET m == canal[i] IN
-       /\ canal' = SubSeq(canal, 1, i-1) \o SubSeq(canal, i+1, Len(canal))
+  /\ Len(canal[r]) > 0
+  /\ \E i \in 1..Len(canal[r]):
+       LET m == canal[r][i] IN
+       /\ canal' = [canal EXCEPT ![r] = SubSeq(@, 1, i-1) \o SubSeq(@, i+1, Len(@))]
        /\ CASE m.tipo = "SESSAO_VALIDA" ->
                 /\ sessoes'  = [sessoes  EXCEPT ![r][m.chave] = "VALID"]
                 /\ sessaoDe' = [sessaoDe EXCEPT ![r][m.chave] = m.payload]
@@ -194,7 +204,7 @@ Spec == Init /\ [][Next]_vars
 (* Predicado de quiescência: canal vazio (todas as mensagens entregues).   *)
 (* Invariantes I5 e I6 são propriedades condicionadas a este predicado.    *)
 (***************************************************************************)
-Quiescent == Len(canal) = 0
+Quiescent == \A r \in REPLICAS: Len(canal[r]) = 0
 
 (***************************************************************************)
 (* Invariantes (Cap. 3 §3.3.3 da monografia).                               *)

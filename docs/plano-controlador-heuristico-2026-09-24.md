@@ -57,10 +57,15 @@ tarefa) e comparou com `main`. O resultado é relevante o bastante para registra
 não só na seção de validação:
 
 **`main` (local, sincronizado com `origin/main`, HEAD `14de422`) está muito atrás do
-estado prático real do projeto.** Não é um caso de "`main` só precisa de um merge";
-`git merge-base --is-ancestor` confirma que `main` e `fix/broadcast-fantasma-contador-inc`
-**não têm relação de ancestralidade em nenhuma direção** — são históricos que
-divergiram cedo e nunca foram reconciliados. Concretamente, `main` **não contém**:
+estado prático real do projeto.** As duas branches têm, sim, um ancestral comum real —
+`git merge-base main fix/broadcast-fantasma-contador-inc` resolve para `0df5383`
+("feat: padroniza códigos de retorno O1-O7 com OpResult (B-05)", 2026-05-27) — não é um
+caso de históricos não relacionados. O que aconteceu é divergência simples e comum: a
+partir desse ponto, `main` recebeu só 3 commits (documentação/merges de PR), enquanto
+`fix/broadcast-fantasma-contador-inc` acumulou **37 commits** de trabalho real (toda a
+série de especificação TLA+, LWW, *broadcast*, P-15) nunca mergeados de volta. Ou seja:
+é um backlog grande de integração pendente, corrigível com um merge/rebase normal —
+não uma corrupção de histórico. Concretamente, `main` **não contém**:
 
 - A especificação TLA+ pós-LWW/pós-P-15 (`main` tem a versão de `9ce2f15`, anterior a
   toda a série de correções de *broadcast*/LWW de 2026-09-16 documentada em

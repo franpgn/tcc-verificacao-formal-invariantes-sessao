@@ -189,6 +189,12 @@ rodar_rep() {
     else
         log "  AVISO: rep ${rep} nao gerou CSV (ver rep-${nnn}.stdout.log)"
     fi
+    # B-23/B-24 (2026-10-02): preserva o CSV de violacoes I1-I6 por repeticao,
+    # gravado por InvariantAuditor.dumpCsv via WorkloadMain. Ausencia nao e
+    # erro -- workloads anteriores a B-23/B-24 nao o produziam.
+    if [[ -f "${scratch}/violacoes-rep-001.csv" ]]; then
+        mv -f "${scratch}/violacoes-rep-001.csv" "${destino}/violacoes-rep-${nnn}.csv"
+    fi
     rm -rf "${scratch}"
 
     if [[ -n "${fault_pid}" ]]; then

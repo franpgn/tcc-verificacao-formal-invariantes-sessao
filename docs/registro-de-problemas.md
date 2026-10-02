@@ -372,6 +372,90 @@
 - **Diagnóstico/validação:** aplicar o `netem` **a partir do host**, entrando no *namespace de rede* do container via `nsenter`, funciona (exit 0; `qdisc netem ... delay 20ms 13ms` aplicado no `eth0` do container e removido limpo). Comandos validados manualmente: `PID=$(podman inspect -f '{{.State.Pid}}' isn2)`; `sudo nsenter -t $PID -n tc qdisc add dev eth0 root netem delay 20ms 13ms distribution normal`; `... qdisc show`; `... qdisc del dev eth0 root`.
 - **Correção:** `scripts/inject-jitter.sh` e `verificar_sem_netem()` em `scripts/run-baseline.sh` migrados de `podman exec` para `sudo nsenter -t <pid> -n tc ...`, com o PID resolvido por `podman inspect` antes de registrar o `trap` de cleanup (cleanup idempotente em EXIT/INT/TERM mesmo se o `add` falhar). Dependências da execução real agora incluem `nsenter` (util-linux) e `sudo` no host (container não precisa de `tc`/`NET_ADMIN`); `--dry-run` segue sem dependências. Exit codes preservados (3 dependência ausente, 4 container/PID, 5 netem rejeitado). Recomenda-se `sudo` sem senha para a bateria (cache do sudo expira em ~15 min). Detalhe em `docs/implementacao.md` TD-007. Commit `fix(f3): aplica netem via nsenter host-side`.
 
+## 2026-10-02 (rodada 2) — B-23/B-24: auditoria real de I1/I4 e leitores multi-réplica de I5/I6
+
+> Contexto: `docs/plano-consolidacao-b21-b23-b24-2026-10-02.md` §3.2/§3.3. Branch
+> `feature/b23-auditoria-i1-i4`, a partir de `feature/b21-consolidacao-base`
+> (`8836e95`).
+
+### P-19 — `ClientIntelligence.BASIC` não restringe `RemoteCache#entrySet()` a dados locais do nó (achado confirmado contra a API real, impacta B-24)
+
+- **Contexto:** B-24 propunha abrir um `RemoteCacheManager` dedicado por nó,
+  com `ClientIntelligence.BASIC`, para que cada leitor enxergasse "o que
+  aquele nó vê localmente agora" — necessário para I5/I6 detectarem
+  divergência real entre réplicas. O próprio plano do Senior marcava isso
+  como "candidato a confirmar contra a lib real", não como certeza.
+- **Verificação feita (não suposição):** com o cluster real de 3 nós
+  (`cluster/podman-compose.yml`) rodando, escrevi 200 chaves via um
+  `RemoteCacheManager` principal (topology-aware), depois abri 3
+  `RemoteCacheManager` **distintos**, um por porta (11222/11223/11224),
+  cada um com `clientIntelligence(ClientIntelligence.BASIC)` e um único
+  servidor configurado, e chamei `entrySet()` em cada um.
+- **Resultado (reproduzido 2x):** os **três** retornaram a contagem
+  **completa** (200/200) das chaves escritas — não uma fração local por nó,
+  como se esperava. `ClientIntelligence.BASIC` afeta **apenas** o roteamento
+  de comandos de **chave única** (impede o cliente de descobrir/redirecionar
+  para o *owner* real via topologia) — **não** afeta operações de leitura em
+  massa (`entrySet()`/iteração), que o Infinispan coordena no lado do
+  **servidor**, cluster inteiro, independentemente do que o cliente sabe
+  sobre a topologia. Ou seja, `entrySet()` sempre devolve a visão **já
+  convergida** do cluster, nunca a visão local/potencialmente divergente de
+  um nó específico.
+- **Impacto:** a infraestrutura de leitores multi-réplica de B-24
+  (`WorkloadMain.abrirLeitoresMultiReplica`) está corretamente conectada
+  (sem exceção, testada contra o cluster real de 3 nós) e serve como base
+  útil, mas **não cumpre o objetivo original** de ler o estado local por nó
+  — uma divergência real entre réplicas tende a **não ser detectada** por
+  este mecanismo, mesmo quando existe, porque a leitura em si já reflete o
+  valor convergido. Isso também significa que o resultado "I5/I6 = 0
+  violações" da bateria F1 real desta rodada (ver P-20) **não é evidência
+  forte de convergência real** — pode ser convergência de fato, ou pode ser
+  um artefato deste mecanismo de leitura, que não tem como diferenciar os
+  dois casos.
+- **Estado:** **não corrigido nesta rodada** — reportado ao Gestor/Senior,
+  por instrução explícita de não redesenhar sem validação. Candidatos para
+  rodada futura (não implementados, não avaliados em profundidade):
+  iteração restrita a segmentos localmente possuídos por cada nó
+  (`RemoteCache#entrySet(IntSet segments)`, exigiria saber quais segmentos
+  cada nó possui, o que por sua vez exige alguma forma de consciência de
+  topologia — tensão a resolver); ou uma API diferente (REST/JMX por nó)
+  para inspeção de estado local, fora do protocolo Hot Rod de aplicação.
+
+### P-20 — primeira bateria F1 real pós-B-23/B-24: 0 violações detectadas, consistente com o Achado E (não é ausência de teste, é o resultado real)
+
+- **O que foi executado:** cluster real de 3 nós subido
+  (`podman-compose up -d`, `size=3 HEALTHY` confirmado via REST); jar
+  empacotado (`mvn package`); duas execuções curtas via invocação direta do
+  workload (não via `scripts/run-baseline.sh`, para não sobrescrever os
+  dados históricos de `runs/S1-{none,F1}/` já committados pela Cadeia 2 —
+  saída redirecionada para `runs/S1-{none,F1}-b23b24-smoke/`):
+  - **`none`** (sem falha): cenário S1, 90s, warm-up 10s, 8 threads, seed
+    2001 — 2.170.083 operações, **0 violações** (I1-I6).
+  - **`F1`** (crash real): mesma configuração, seed 3001, com
+    `scripts/inject-crash.sh --node isn2 --duration 30` disparado em +15s
+    (dentro da janela de medição). O log do cliente Hot Rod confirma a
+    falha real: `ISPN004006: Server sent new topology view ... containing 2
+    addresses` (isn2/porta 11223 caiu), seguido ~37s depois por `containing
+    3 addresses` (isn2 reentrou, `New server added`). Cluster voltou a
+    `size=3 HEALTHY` ao final. 2.103.454 operações, **0 violações** (I1-I6).
+- **Leitura correta deste resultado (nuance importante, ver P-19):** para
+  **I1-I4** (detectados via instrumentação direta em `SessionOps`, não via
+  `entrySet()`), 0 violações é um resultado forte e significativo — bate
+  exatamente com o que as Fases 1-3 (Achado E) já haviam estabelecido a
+  partir do código-fonte real do Infinispan: F1 (1 de 3 réplicas cai,
+  `owners=2`) nunca ativa modo `DEGRADED`/`merge-policy`, é só
+  `state-transfer`/rebalanceamento — não há mecanismo algum, nesta falha,
+  que deveria produzir uma invalidação revertida (I1) ou um motivo
+  inconsistente (I4). Para **I5/I6** (via `entrySet()` multi-réplica), 0
+  violações **não pode ser lido com a mesma confiança** por causa de P-19 —
+  o mecanismo de leitura não teria detectado uma divergência real mesmo que
+  ela tivesse ocorrido brevemente durante a janela de `state-transfer`.
+- **Estado:** primeiro dado real para o catálogo operação×falha×invariante
+  do plano de 24/09 (§3.2, hoje PENDENTE) — registra o resultado real,
+  **sem forçar nenhuma expectativa**, incluindo a ressalva de P-19. CSVs
+  brutos em `runs/S1-none-b23b24-smoke/` e `runs/S1-F1-b23b24-smoke/`
+  (`rep-001.csv`, `violacoes-rep-001.csv`, `inject-crash.log`).
+
 ## Observação de modelagem (não é defeito)
 
 Com 8 *threads* = 8 identidades fixas (`user-<tid>`), `incrementFailure`

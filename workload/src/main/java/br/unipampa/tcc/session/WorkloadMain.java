@@ -185,8 +185,30 @@ public final class WorkloadMain {
      * confirmado contra infinispan-client-hotrod-15.0.0.Final-sources.jar nesta
      * sessao). Isso evita que o cliente seja redirecionado pelo roteamento
      * consciente de hash/topologia do {@link RemoteCacheManager} padrao (usado por
-     * {@code ops}, que PRECISA desse roteamento para desempenho) -- aqui queremos
-     * o oposto: ler o que CADA no enxerga localmente, pinado por conexao.
+     * {@code ops}, que PRECISA desse roteamento para desempenho).
+     *
+     * <p><b>LIMITACAO CONFIRMADA EMPIRICAMENTE (nao implementar em torno dela sem
+     * validacao do Senior/Gestor -- ver docs/registro-de-problemas.md P-19):</b>
+     * {@code ClientIntelligence.BASIC} so afeta QUAL servidor recebe o comando
+     * (impede redirecionamento automatico para o owner real em operacoes de
+     * chave unica); NAO restringe {@code RemoteCache#entrySet()}/iteracao em
+     * massa a dados LOCAIS do no conectado. Testado diretamente contra o
+     * cluster real desta sessao (200 chaves escritas via RCM principal,
+     * lidas via 3 RemoteCacheManager BASIC distintos, um por porta/no): os
+     * TRES retornaram a mesma contagem completa (200/200), nao uma fracao
+     * local por no. Ou seja, a iteracao em massa do Hot Rod/Infinispan 15
+     * coordena o cluster inteiro no lado do SERVIDOR independentemente da
+     * inteligencia do cliente -- {@code entrySet()} sempre devolve a visao
+     * JA CONVERGIDA do cluster, nunca a visao local/potencialmente
+     * divergente de um no especifico. Consequencia pratica: a leitura
+     * abaixo esta corretamente conectada (nao lanca excecao, funciona contra
+     * o cluster real de 3 nos) e permanece util como INFRAESTRUTURA para
+     * I5/I6, mas NAO cumpre o objetivo original de "ler o que a replica X
+     * enxerga agora" -- uma divergencia real entre replicas tende a nao ser
+     * detectada por este mecanismo mesmo quando existe. Ver achado completo,
+     * reproducao e alternativas candidatas (iteracao restrita a segmentos
+     * locais, ou outra API) em docs/registro-de-problemas.md P-19 --
+     * redesenho fica para rodada futura, fora do escopo desta.</p>
      *
      * <p>Cada {@link Supplier} materializa {@code RemoteCache#entrySet()} (mesmo
      * metodo ja usado por {@link SessionOps#block}) num {@link HashMap} simples a

@@ -11,18 +11,23 @@
 (*    (state constraint), o que finitiza o modelo. E parametro do          *)
 (*    experimento.                                                         *)
 (*                                                                         *)
-(*  - LimiteRelogio: relogio[r], para cada replica r, e um Nat sem teto;    *)
-(*    cada acao local o incrementa em 1, tornando o espaco de estados       *)
+(*  - LimiteRelogio: relogio[r], para cada replica r, e um Nat sem teto,    *)
+(*    analogo ao campo `versao` de SessionState.java/IdentityState.java;   *)
+(*    cada acao local o incrementa em 1, tornando o espaco de estados      *)
 (*    infinito tambem por essa via. LimiteRelogio impoe                    *)
 (*    relogio[r] =< MaxRelogio para toda r (state constraint).             *)
 (*                                                                         *)
-(*  - Simetria: IDS e SIDS permanecem intercambiaveis na especificacao.    *)
-(*    REPLICAS NAO MAIS, pois a partir da resolucao de conflito LWW        *)
-(*    (SessionStore.tla, RepIndex/Prio), a identidade da replica de        *)
-(*    origem passa a influenciar o resultado do desempate -- a             *)
-(*    especificacao deixou de ser simetrica em REPLICAS. Remover           *)
-(*    Permutations(REPLICAS) preserva a SOUNDNESS da reducao (ver          *)
-(*    docs/plano-fix-broadcast-lww-2026-09-16.md, decisao D-3).            *)
+(*  - Simetria: a partir da revisao de 2026-10-02 (Achado E -- colapso de  *)
+(*    sessoes/identidades em registro unico por chave, ver                *)
+(*    docs/revisao-mecanismo-conflito-infinispan-2026-10-02.md), REPLICAS  *)
+(*    volta a ser um conjunto simetrico. O "relogio logico de Lamport com  *)
+(*    desempate deterministico por identidade de replica" (RepIndex/Prio) *)
+(*    que quebrava essa simetria na versao anterior (2026-09-16) foi       *)
+(*    removido: o gate de EntregaMensagem agora compara apenas `ts`        *)
+(*    (contador de versao local, sem nenhum termo dependente de QUAL       *)
+(*    replica originou a escrita), entao permutar REPLICAS permuta um      *)
+(*    comportamento valido em outro comportamento valido. IDS e SIDS       *)
+(*    permanecem intercambiaveis como antes.                               *)
 (*                                                                         *)
 (* Uso (a partir de spec/):                                                *)
 (*   java -cp tla2tools.jar tlc2.TLC -config <arquivo>.cfg \               *)
@@ -31,16 +36,10 @@
 EXTENDS SessionStore, TLC
 
 CONSTANT MaxCanal,    \* teto para o comprimento de CADA fila canal[r]
-         MaxRelogio   \* teto para o valor de CADA relogio logico relogio[r]
+         MaxRelogio   \* teto para o valor de CADA contador de versao relogio[r]
 
 LimiteCanal   == \A r \in REPLICAS: Len(canal[r]) =< MaxCanal
 LimiteRelogio == \A r \in REPLICAS: relogio[r] =< MaxRelogio
 
-(* IDS e SIDS permanecem intercambiaveis; REPLICAS NAO MAIS, pois a partir  *)
-(* da resolucao de conflito LWW (SessionStore.tla, RepIndex/Prio), a       *)
-(* identidade da replica de origem passa a influenciar o resultado do      *)
-(* desempate -- a especificacao deixou de ser simetrica em REPLICAS.       *)
-(* Remover Permutations(REPLICAS) preserva a SOUNDNESS da reducao (ver     *)
-(* docs/plano-fix-broadcast-lww-2026-09-16.md, decisao D-3).               *)
-Simetria == Permutations(IDS) \cup Permutations(SIDS)
+Simetria == Permutations(IDS) \cup Permutations(SIDS) \cup Permutations(REPLICAS)
 ==========================================================================

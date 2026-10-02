@@ -22,6 +22,11 @@
 set -euo pipefail
 
 NOME="$(basename "$0")"
+# Binario do podman. Override para cluster ROOTFUL (VM Hyper-V/Ubuntu):
+#   PODMAN="sudo podman" bash scripts/inject-crash.sh ...
+# Necessario para o re-smoke F1 no rootful, onde 'podman' (rootless) nao
+# enxerga os containers iniciados via 'sudo podman'.
+PODMAN="${PODMAN:-podman}"
 NODE_PADRAO="isn2"
 DURACAO_PADRAO=60
 TIMESTAMP="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
@@ -40,8 +45,13 @@ Opcoes:
   --dry-run              Imprime o plano e sai sem executar.
   --help                 Mostra esta mensagem.
 
+Variavel de ambiente:
+  PODMAN  Binario do podman. Padrao: 'podman' (rootless). Para cluster
+          ROOTFUL (VM Hyper-V), prefixe: PODMAN="sudo podman" ${NOME} ...
+
 Exemplos:
   ${NOME} --node isn1 --duration 90
+  PODMAN="sudo podman" ${NOME} --node isn1 --duration 90   # cluster rootful
   ${NOME} --dry-run
 EOF
 }
@@ -87,36 +97,36 @@ log "Plano: NODE=${NODE} DURACAO=${DURACAO}s DRY_RUN=${DRY_RUN}"
 
 if [[ "${DRY_RUN}" -eq 1 ]]; then
     log "Comandos previstos:"
-    log "  podman stop ${NODE}"
+    log "  ${PODMAN} stop ${NODE}"
     log "  sleep ${DURACAO}"
-    log "  podman start ${NODE}"
+    log "  ${PODMAN} start ${NODE}"
     log "dry-run: nada executado"
     exit 0
 fi
 
-if ! command -v podman >/dev/null 2>&1; then
-    echo "Erro: 'podman' nao encontrado no PATH" >&2
+if ! command -v ${PODMAN} >/dev/null 2>&1; then
+    echo "Erro: '${PODMAN}' nao encontrado no PATH" >&2
     exit 3
 fi
 
-if ! podman inspect "${NODE}" >/dev/null 2>&1; then
+if ! ${PODMAN} inspect "${NODE}" >/dev/null 2>&1; then
     echo "Erro: container '${NODE}' nao encontrado" >&2
     exit 4
 fi
 
-ESTADO="$(podman inspect -f '{{.State.Status}}' "${NODE}")"
+ESTADO="$(${PODMAN} inspect -f '{{.State.Status}}' "${NODE}")"
 if [[ "${ESTADO}" != "running" ]]; then
     echo "Erro: container '${NODE}' nao esta running (estado='${ESTADO}')" >&2
     exit 4
 fi
 
-log "podman stop ${NODE}"
-podman stop "${NODE}"
+log "${PODMAN} stop ${NODE}"
+${PODMAN} stop "${NODE}"
 
 log "aguardando ${DURACAO}s"
 sleep "${DURACAO}"
 
-log "podman start ${NODE}"
-podman start "${NODE}"
+log "${PODMAN} start ${NODE}"
+${PODMAN} start "${NODE}"
 
 log "OK: F1 (crash) injetada e reentrada de ${NODE} acionada"

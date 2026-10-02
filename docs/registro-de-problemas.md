@@ -222,6 +222,106 @@
   `TypeOK`/`I1`..`I5`. Nenhuma quinta correção foi necessária. Detalhes
   completos em `docs/relatorio-tlc-2026-09-16-mudanca4.md`.
 
+## 2026-10-02 — Revisão do mecanismo de conflito (Achado E): registro único por chave
+
+> Contexto completo em `docs/revisao-mecanismo-conflito-infinispan-2026-10-02.md`
+> (plano, Fases 1–5) e nos comentários de `spec/SessionStore.tla`. Esta rodada
+> executou as Fases 1–3 (spike de confirmação contra o código-fonte real do
+> Infinispan 15.0.21.Final; redesenho de `SessionStore.tla`/`MCSession.tla`
+> para registro único por chave; reverificação TLC em `tiny`/`small`/`medium`).
+> As Fases 4–5 (ação de partição F2 real) ficam para rodada futura, por
+> instrução explícita do Gestor.
+
+### Fase 1 — confirmado contra código-fonte real (não suposição)
+
+- `org.infinispan.conflict.MergePolicy.PREFERRED_NON_NULL` (fonte real,
+  `infinispan-core-15.0.21.Final-sources.jar`, Maven Central) é regra
+  **posicional** (`preferredEntry` = réplica primária da partição com mais
+  nós; empate por maior `topologyId`), **sem nenhuma comparação de
+  timestamp** — confirma A.1 do documento de revisão.
+- `org.infinispan.interceptors.locking.NonTransactionalLockingInterceptor` +
+  `org.infinispan.interceptors.distribution.{NonTxDistributionInterceptor,
+  BaseDistributionInterceptor}` (fontes reais): escrita não-transacional
+  adquire *lock* no *owner* primário da chave (`lockAndRecord` em
+  `AbstractLockingInterceptor.visitNonTxDataWriteCommand`), aplica
+  localmente, e replica **sincronamente** (`rpcManager.getSyncRpcOptions()`,
+  aguardando `invokeCommand(...)`) aos *backup owners* antes de liberar o
+  *lock* e retornar — confirma A.4 (sem janela de reordenação a resolver em
+  operação nominal).
+- `org.infinispan.partitionhandling.impl.PreferConsistencyStrategy.
+  onClusterViewChange` (fonte real): `isMinorityPartition(stable, lost) ==
+  lost.size() >= Math.ceil(stable.size()/2d)`. Para F1 (3 réplicas estáveis,
+  1 perdida): `1 >= Math.ceil(1.5) = 2` é **falso** — não é partição
+  minoritária; com `owners=2 < 3` réplicas, nenhum segmento perde todos os
+  seus *owners* (`lostDataCheck`), então o modo DEGRADED **não ativa** e
+  `merge-policy` **não é invocado** para F1. Confirma A.3 com leitura direta
+  do código (não só do javadoc) — a hipótese do Gestor estava certa.
+- **Achado adicional (vai além do documento de 02/10):**
+  `PartitionHandlingConfiguration.resolveConflictsOnMerge()` depende só de
+  `mergePolicy() != NONE`, **não** de `whenSplit()` — ou seja,
+  `merge-policy` *pode* disparar sob `DENY_READ_WRITES` (configuração deste
+  projeto) também, não só sob `ALLOW_READ_WRITES` como o javadoc de
+  `EntryMergePolicy` sugere à primeira leitura; a condição real é "houve um
+  evento de *merge* de partição E o estado pós-merge voltou a ser
+  AVAILABLE" (`PreferConsistencyStrategy.onPartitionMerge`), independente de
+  `whenSplit`. Não muda a conclusão sobre F1 (que nunca chega a
+  `onPartitionMerge`, por não haver partição), mas é relevante para o
+  desenho da Fase 4 (F2) futura.
+
+### P-16 — colapso em registro único remove by-construction P-10/P-15-like bugs, mas expõe um NOVO empate de `ts` sem desempate por réplica (I5/I6 regridem em `tiny`/`small`/`medium`)
+
+- **Mudança:** `spec/SessionStore.tla` passou de 5 variáveis de sessão + 2 de
+  identidade (cada uma com relógio LWW por campo + `RepIndex`/`Prio` para
+  desempate determinístico por réplica) para 2 variáveis compostas
+  (`sessoes: SessaoRec`, `identidades: IdentRec`), cada uma com um único
+  campo `ts`, espelhando `SessionState.java`/`IdentityState.java`. O
+  desempate por identidade de réplica (`RepIndex`/`Prio`) foi removido junto
+  com a decomposição por campo — `relogio[r]` voltou a ser um contador de
+  versão local simples, sem termo dependente de qual réplica escreveu.
+- **Efeito OK (esperado, por construção):** `TypeOK`/`I3`/`I4` continuam
+  fechando exaustivamente em `tiny` (6.472 estados, `MaxCanal=1,
+  MaxRelogio=3`), `small` (113.213 estados) e `medium` (287.114 estados);
+  `I1`/`I2` continuam violando por construção (propriedades *cross-réplica*
+  não condicionadas a quiescência, mesmo padrão de sempre). O espaço de
+  estados ficou **menor**: `small`/`TypeOK` tinha 644.013 estados distintos
+  no modelo anterior (mesmos parâmetros `MaxCanal=1,MaxRelogio=3`,
+  `git diff runs/tlc/inv-small/small-TypeOK.out`) e passou a 113.213 — cerca
+  de 5,7× menos, consistente com menos dimensões de relógio independentes.
+- **Sintoma NOVO:** `I5` e `I6`, que fechavam exaustivamente sob os mesmos
+  parâmetros no modelo anterior (commit `ddf9dfc`: `small`/`I6` = 644.013
+  estados, "No error has been found"), agora **violam** em `tiny` (5
+  estados), `small` (5 estados) e `medium` (5 estados) — mesmo padrão nas
+  três cardinalidades.
+- **Causa:** sem `RepIndex`/`Prio`, dois replicas podem alcançar o **mesmo**
+  valor de `ts` escrevendo **localmente e concorrentemente** em campos
+  diferentes do mesmo registro (ex.: `r1` faz `Block(u1)` e `r2` faz
+  `IncrementFailure(u1)`, ambos partindo de `relogio=0`, ambos chegando a
+  `ts=1`). Cada réplica aceita sua própria escrita local (passa seu próprio
+  gate `novoTS > ts local`), e quando a mensagem da outra réplica chega, o
+  gate `m.ts > ts local` falha por **empate** (`1 > 1` é falso) — a mensagem
+  remota é descartada nos dois sentidos, e as réplicas divergem
+  **permanentemente** mesmo sob quiescência. No modelo anterior, esse
+  cenário específico não produzia divergência porque `status`/`contador`
+  eram campos com relógios (`statusTS`/`contadorTS`) **independentes**: as
+  duas escritas não competiam pelo mesmo `ts`. Ao colapsar em um único
+  registro atômico (fidelidade ao `put()` real do Java, que substitui o
+  objeto inteiro), as duas escritas concorrentes **passam a competir pelo
+  mesmo `ts`** — e sem desempate por réplica, o empate é possível e não é
+  resolvido.
+- **Estado:** **não corrigido nesta rodada** — reportado ao Gestor/Senior
+  antes de decidir. Trade-off explícito: reintroduzir um desempate
+  determinístico (ex.: o próprio `RepIndex`/`Prio` anterior, agora a nível
+  de registro, não de campo) resolveria o empate e provavelmente restauraria
+  I5/I6, mas reintroduz exatamente o tipo de mecanismo ("resolução por
+  timestamp com desempate por identidade de réplica") que o Achado E (A.1,
+  A.4) mostrou não corresponder a nenhum mecanismo real do Infinispan —
+  mesmo como dispositivo de modelagem interno, não como afirmação sobre o
+  sistema real. Decisão sobre se/como fechar isso (aceitar a violação
+  documentada, reintroduzir desempate, ou remover a reordenação não-FIFO do
+  canal) cabe ao Gestor/Senior. Evidência completa (contraexemplos de 4–9
+  estados, `TypeOK`/`I1`-`I6` nas três cardinalidades) em
+  `runs/tlc/inv-{tiny,small,medium}/`.
+
 ## Observação de modelagem (não é defeito)
 
 Com 8 *threads* = 8 identidades fixas (`user-<tid>`), `incrementFailure`

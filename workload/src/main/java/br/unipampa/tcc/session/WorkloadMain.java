@@ -1,11 +1,18 @@
 package br.unipampa.tcc.session;
 
+import org.infinispan.client.hotrod.RemoteCache;
 import org.infinispan.client.hotrod.RemoteCacheManager;
+import org.infinispan.client.hotrod.configuration.ClientIntelligence;
 import org.infinispan.client.hotrod.configuration.ConfigurationBuilder;
 
 import picocli.CommandLine;
 
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.function.Supplier;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -95,7 +102,8 @@ public final class WorkloadMain {
         cb.marshaller(new org.infinispan.commons.marshall.JavaSerializationMarshaller());
         cb.addJavaSerialAllowList("br.unipampa.tcc.session.*", "java.time.*");
 
-        try (RemoteCacheManager rcm = new RemoteCacheManager(cb.build())) {
+        try (RemoteCacheManager rcm = new RemoteCacheManager(cb.build());
+             LeitoresMultiReplica leitores = abrirLeitoresMultiReplica(cli)) {
             long inicioMs = System.currentTimeMillis();
             WarmupPolicy politica = WarmupPolicy.padrao(
                     inicioMs, cli.duracaoSeg, cli.warmupMinimoSeg,
@@ -129,6 +137,13 @@ public final class WorkloadMain {
             pool.shutdown();
             pool.awaitTermination(cli.duracaoSeg + 30, TimeUnit.SECONDS);
 
+            // B-24: checagem de I5/I6 (convergencia sob quiescencia) feita UMA VEZ,
+            // logo apos as threads geradoras de carga pararem de emitir operacoes --
+            // aproximacao mais direta de "quiescencia" disponivel sem W_quiesc
+            // (janela deslizante), que fica para o controlador (B-26). Ver
+            // docs/plano-consolidacao-b21-b23-b24-2026-10-02.md SS3.3.
+            auditor.rodadaUnica(leitores.leitoresSessao(), leitores.leitoresIdentidade());
+
             System.out.printf("Total de operacoes: %d%n", totalOps.get());
             System.out.println("Violacoes detectadas: " + auditor.total());
             latency.snapshot().forEach((op, h) ->
@@ -150,6 +165,86 @@ public final class WorkloadMain {
                 System.out.printf(
                         "Eventos gravados em %s (registrados=%d, descartados_warmup=%d)%n",
                         destino, eventos.totalRegistrados(), eventos.descartadosWarmup());
+
+                // B-23: persistencia das violacoes I1-I6 detectadas nesta repeticao.
+                Path violacoesDestino = Path.of(cli.csvDir,
+                        String.format("violacoes-rep-%03d.csv", rep));
+                auditor.dumpCsv(violacoesDestino);
+                System.out.printf("Violacoes gravadas em %s (total=%d)%n",
+                        violacoesDestino, auditor.total());
+            }
+        }
+    }
+
+    /**
+     * B-24 (ver docs/plano-consolidacao-b21-b23-b24-2026-10-02.md SS3.3): abre um
+     * {@link RemoteCacheManager} DEDICADO por servidor listado em {@code
+     * cli.servidores}, cada um com {@link ClientIntelligence#BASIC} -- "o cliente
+     * nao lida com mudancas de topologia do servidor e portanto so usa a lista de
+     * servidores fornecida na configuracao" (javadoc real de ClientIntelligence,
+     * confirmado contra infinispan-client-hotrod-15.0.0.Final-sources.jar nesta
+     * sessao). Isso evita que o cliente seja redirecionado pelo roteamento
+     * consciente de hash/topologia do {@link RemoteCacheManager} padrao (usado por
+     * {@code ops}, que PRECISA desse roteamento para desempenho) -- aqui queremos
+     * o oposto: ler o que CADA no enxerga localmente, pinado por conexao.
+     *
+     * <p>Cada {@link Supplier} materializa {@code RemoteCache#entrySet()} (mesmo
+     * metodo ja usado por {@link SessionOps#block}) num {@link HashMap} simples a
+     * cada chamada -- sem cache local, sempre uma leitura fresca no momento em que
+     * {@link InvariantAuditor#rodadaUnica} for invocado.</p>
+     */
+    private static LeitoresMultiReplica abrirLeitoresMultiReplica(Cli cli) {
+        List<RemoteCacheManager> gerenciadores = new ArrayList<>();
+        List<Supplier<Map<String, SessionState>>> leitoresSessao = new ArrayList<>();
+        List<Supplier<Map<String, IdentityState>>> leitoresIdentidade = new ArrayList<>();
+        for (String s : cli.servidores.split(",")) {
+            String[] hp = s.split(":");
+            ConfigurationBuilder cb = new ConfigurationBuilder();
+            cb.addServer().host(hp[0].trim()).port(Integer.parseInt(hp[1].trim()));
+            cb.clientIntelligence(ClientIntelligence.BASIC);
+            cb.security().authentication()
+                    .enable()
+                    .username(cli.usuario)
+                    .password(cli.senha);
+            cb.marshaller(new org.infinispan.commons.marshall.JavaSerializationMarshaller());
+            cb.addJavaSerialAllowList("br.unipampa.tcc.session.*", "java.time.*");
+
+            RemoteCacheManager rcmNo = new RemoteCacheManager(cb.build());
+            gerenciadores.add(rcmNo);
+            RemoteCache<String, SessionState> sessoesNo = rcmNo.getCache("sessions");
+            RemoteCache<String, IdentityState> identidadesNo = rcmNo.getCache("counters");
+            leitoresSessao.add(() -> materializar(sessoesNo));
+            leitoresIdentidade.add(() -> materializar(identidadesNo));
+        }
+        return new LeitoresMultiReplica(gerenciadores, leitoresSessao, leitoresIdentidade);
+    }
+
+    private static <K, V> Map<K, V> materializar(RemoteCache<K, V> cache) {
+        Map<K, V> out = new HashMap<>();
+        for (Map.Entry<K, V> e : cache.entrySet()) {
+            out.put(e.getKey(), e.getValue());
+        }
+        return out;
+    }
+
+    /**
+     * Agrupa os {@link RemoteCacheManager} dedicados por no (B-24) com os
+     * {@link Supplier}s que leem cada um, para fechamento conjunto via
+     * try-with-resources em {@link #executarRepeticao}.
+     */
+    private record LeitoresMultiReplica(
+            List<RemoteCacheManager> gerenciadores,
+            List<Supplier<Map<String, SessionState>>> leitoresSessao,
+            List<Supplier<Map<String, IdentityState>>> leitoresIdentidade)
+            implements AutoCloseable {
+        @Override
+        public void close() {
+            for (RemoteCacheManager g : gerenciadores) {
+                try {
+                    g.close();
+                } catch (RuntimeException ignored) {
+                    // encerramento best-effort; nao deve mascarar o resultado da repeticao
+                }
             }
         }
     }

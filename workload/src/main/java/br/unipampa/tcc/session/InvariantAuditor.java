@@ -111,6 +111,14 @@ public class InvariantAuditor implements AutoCloseable {
         }
     }
 
+    /**
+     * I6, per spec/SessionStore.tla: convergência do CONTADOR e do STATUS de
+     * identidade sob quiescência -- ambos os campos, não só o contador. (Correção
+     * de B-24: a versão anterior só comparava {@code contadorFalhas()}, deixando
+     * de detectar divergência de {@code status()} sozinha -- lacuna encontrada ao
+     * conectar leitores reais multi-réplica; nenhum teste existente dependia do
+     * comportamento antigo, ver InvariantAuditorTest.)
+     */
     private void verificarI6(List<Supplier<Map<String, IdentityState>>> leitores) {
         if (leitores == null || leitores.size() < 2) return;
         List<Map<String, IdentityState>> snaps = new ArrayList<>(leitores.size());
@@ -118,15 +126,20 @@ public class InvariantAuditor implements AutoCloseable {
         Set<String> chaves = new HashSet<>();
         for (Map<String, IdentityState> m : snaps) chaves.addAll(m.keySet());
         for (String k : chaves) {
-            Long ref = null;
+            Long refContador = null;
+            IdentityState.Status refStatus = null;
             boolean primeira = true;
             for (Map<String, IdentityState> m : snaps) {
                 IdentityState st = m.get(k);
-                Long v = st == null ? null : st.contadorFalhas();
-                if (primeira) { ref = v; primeira = false; continue; }
-                if (!java.util.Objects.equals(ref, v)) {
+                Long contador = st == null ? null : st.contadorFalhas();
+                IdentityState.Status status = st == null ? null : st.status();
+                if (primeira) { refContador = contador; refStatus = status; primeira = false; continue; }
+                boolean divergeContador = !java.util.Objects.equals(refContador, contador);
+                boolean divergeStatus = !java.util.Objects.equals(refStatus, status);
+                if (divergeContador || divergeStatus) {
                     registrarViolacao("I6", k,
-                        "divergencia de contador entre replicas: " + ref + " vs " + v);
+                        "divergencia entre replicas: contador " + refContador + " vs " + contador
+                            + "; status " + refStatus + " vs " + status);
                     break;
                 }
             }

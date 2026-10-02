@@ -4,14 +4,19 @@ import org.infinispan.client.hotrod.RemoteCache;
 import org.infinispan.client.hotrod.RemoteCacheManager;
 import org.infinispan.client.hotrod.configuration.ClientIntelligence;
 import org.infinispan.client.hotrod.configuration.ConfigurationBuilder;
+import org.infinispan.commons.util.IntSet;
+import org.infinispan.commons.util.IntSets;
 
 import picocli.CommandLine;
 
+import java.net.InetSocketAddress;
+import java.net.SocketAddress;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Supplier;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -103,7 +108,7 @@ public final class WorkloadMain {
         cb.addJavaSerialAllowList("br.unipampa.tcc.session.*", "java.time.*");
 
         try (RemoteCacheManager rcm = new RemoteCacheManager(cb.build());
-             LeitoresMultiReplica leitores = abrirLeitoresMultiReplica(cli)) {
+             LeitoresMultiReplica leitores = abrirLeitoresMultiReplica(cli, rcm)) {
             long inicioMs = System.currentTimeMillis();
             WarmupPolicy politica = WarmupPolicy.padrao(
                     inicioMs, cli.duracaoSeg, cli.warmupMinimoSeg,
@@ -177,52 +182,48 @@ public final class WorkloadMain {
     }
 
     /**
-     * B-24 (ver docs/plano-consolidacao-b21-b23-b24-2026-10-02.md SS3.3): abre um
-     * {@link RemoteCacheManager} DEDICADO por servidor listado em {@code
-     * cli.servidores}, cada um com {@link ClientIntelligence#BASIC} -- "o cliente
-     * nao lida com mudancas de topologia do servidor e portanto so usa a lista de
-     * servidores fornecida na configuracao" (javadoc real de ClientIntelligence,
-     * confirmado contra infinispan-client-hotrod-15.0.0.Final-sources.jar nesta
-     * sessao). Isso evita que o cliente seja redirecionado pelo roteamento
-     * consciente de hash/topologia do {@link RemoteCacheManager} padrao (usado por
-     * {@code ops}, que PRECISA desse roteamento para desempenho).
+     * B-24 (ver docs/plano-consolidacao-b21-b23-b24-2026-10-02.md SS3.3, corrigido
+     * conforme docs/validacao-b23-b24-2026-10-02.md SS2/SS4): abre um {@link
+     * RemoteCacheManager} DEDICADO por servidor listado em {@code cli.servidores},
+     * cada um com {@link ClientIntelligence#BASIC} -- "o cliente nao lida com
+     * mudancas de topologia do servidor e portanto so usa a lista de servidores
+     * fornecida na configuracao" (javadoc real de ClientIntelligence, confirmado
+     * contra infinispan-client-hotrod-15.0.0.Final-sources.jar). Isso evita que o
+     * cliente seja redirecionado pelo roteamento consciente de hash/topologia do
+     * {@link RemoteCacheManager} padrao (usado por {@code ops}, que PRECISA desse
+     * roteamento para desempenho).
      *
-     * <p><b>LIMITACAO CONFIRMADA EMPIRICAMENTE (nao implementar em torno dela sem
-     * validacao do Senior/Gestor -- ver docs/registro-de-problemas.md P-19):</b>
-     * {@code ClientIntelligence.BASIC} so afeta QUAL servidor recebe o comando
-     * (impede redirecionamento automatico para o owner real em operacoes de
-     * chave unica); NAO restringe {@code RemoteCache#entrySet()}/iteracao em
-     * massa a dados LOCAIS do no conectado. Testado diretamente contra o
-     * cluster real desta sessao (200 chaves escritas via RCM principal,
-     * lidas via 3 RemoteCacheManager BASIC distintos, um por porta/no): os
-     * TRES retornaram a mesma contagem completa (200/200), nao uma fracao
-     * local por no. Ou seja, a iteracao em massa do Hot Rod/Infinispan 15
-     * coordena o cluster inteiro no lado do SERVIDOR independentemente da
-     * inteligencia do cliente -- {@code entrySet()} sempre devolve a visao
-     * JA CONVERGIDA do cluster, nunca a visao local/potencialmente
-     * divergente de um no especifico. Consequencia pratica: a leitura
-     * abaixo esta corretamente conectada (nao lanca excecao, funciona contra
-     * o cluster real de 3 nos) e permanece util como INFRAESTRUTURA para
-     * I5/I6, mas NAO cumpre o objetivo original de "ler o que a replica X
-     * enxerga agora" -- uma divergencia real entre replicas tende a nao ser
-     * detectada por este mecanismo mesmo quando existe. Ver achado completo,
-     * reproducao e alternativas candidatas (iteracao restrita a segmentos
-     * locais, ou outra API) em docs/registro-de-problemas.md P-19 --
-     * redesenho fica para rodada futura, fora do escopo desta.</p>
+     * <p><b>P-19/correcao (ver docs/registro-de-problemas.md P-19 e P-21):</b>
+     * {@code ClientIntelligence.BASIC} por si so NAO restringe
+     * {@code RemoteCache#entrySet()} a dados locais do no conectado -- confirmado
+     * empiricamente (200 chaves escritas, lidas via 3 managers BASIC distintos,
+     * os tres devolvendo a contagem completa). A leitura correta usa
+     * {@code RemoteCache#entrySet(IntSet)} RESTRITO aos segmentos que aquele
+     * servidor efetivamente possui, obtidos via {@code getCacheTopologyInfo()
+     * .getSegmentsPerServer()} de um cliente TOPOLOGY-AWARE (o {@code rcmPrincipal}
+     * recebido aqui -- nunca de um cliente BASIC, que nao atualiza sua visao de
+     * topologia, por definicao do proprio enum). Confirmado, contra o cluster real
+     * sob uma falha F1 real, que essa combinacao reflete o estado LOCAL de cada no
+     * (ver docs/validacao-b23-b24-2026-10-02.md SS2.3).</p>
      *
-     * <p>Cada {@link Supplier} materializa {@code RemoteCache#entrySet()} (mesmo
-     * metodo ja usado por {@link SessionOps#block}) num {@link HashMap} simples a
-     * cada chamada -- sem cache local, sempre uma leitura fresca no momento em que
-     * {@link InvariantAuditor#rodadaUnica} for invocado.</p>
+     * <p>A topologia e re-obtida A CADA CHAMADA do {@link Supplier} (dentro de
+     * {@link #segmentosDoServidor}), nao capturada uma unica vez na abertura dos
+     * managers -- a posse de segmentos muda apos um rebalance (ex.: apos um F1
+     * real), entao um mapa capturado so no inicio da repeticao ficaria obsoleto
+     * depois do primeiro evento de falha.</p>
      */
-    private static LeitoresMultiReplica abrirLeitoresMultiReplica(Cli cli) {
+    private static LeitoresMultiReplica abrirLeitoresMultiReplica(Cli cli, RemoteCacheManager rcmPrincipal) {
+        RemoteCache<String, SessionState> sessoesPrincipal = rcmPrincipal.getCache("sessions");
+        RemoteCache<String, IdentityState> identidadesPrincipal = rcmPrincipal.getCache("counters");
+
         List<RemoteCacheManager> gerenciadores = new ArrayList<>();
         List<Supplier<Map<String, SessionState>>> leitoresSessao = new ArrayList<>();
         List<Supplier<Map<String, IdentityState>>> leitoresIdentidade = new ArrayList<>();
         for (String s : cli.servidores.split(",")) {
             String[] hp = s.split(":");
+            int porta = Integer.parseInt(hp[1].trim());
             ConfigurationBuilder cb = new ConfigurationBuilder();
-            cb.addServer().host(hp[0].trim()).port(Integer.parseInt(hp[1].trim()));
+            cb.addServer().host(hp[0].trim()).port(porta);
             cb.clientIntelligence(ClientIntelligence.BASIC);
             cb.security().authentication()
                     .enable()
@@ -235,15 +236,42 @@ public final class WorkloadMain {
             gerenciadores.add(rcmNo);
             RemoteCache<String, SessionState> sessoesNo = rcmNo.getCache("sessions");
             RemoteCache<String, IdentityState> identidadesNo = rcmNo.getCache("counters");
-            leitoresSessao.add(() -> materializar(sessoesNo));
-            leitoresIdentidade.add(() -> materializar(identidadesNo));
+            leitoresSessao.add(() ->
+                    materializar(sessoesNo, segmentosDoServidor(sessoesPrincipal, porta)));
+            leitoresIdentidade.add(() ->
+                    materializar(identidadesNo, segmentosDoServidor(identidadesPrincipal, porta)));
         }
         return new LeitoresMultiReplica(gerenciadores, leitoresSessao, leitoresIdentidade);
     }
 
-    private static <K, V> Map<K, V> materializar(RemoteCache<K, V> cache) {
+    /**
+     * Resolve, a partir de um {@code cache} obtido de um cliente TOPOLOGY-AWARE, o
+     * conjunto de segmentos que o servidor na {@code porta} dada efetivamente
+     * possui agora. Casamento por porta (nao por {@link SocketAddress#toString()},
+     * que inclui o host resolvido e pode nao bater byte-a-byte com a config) --
+     * mesma abordagem validada em docs/validacao-b23-b24-2026-10-02.md SS2. Se a
+     * porta nao aparecer no mapa (ex.: no momentaneamente fora do cluster, meio de
+     * um F1), devolve um {@link IntSet} vazio -- a leitura correspondente naquele
+     * ciclo fica vazia, o que e o comportamento correto (nao ha segmento para ler
+     * de um no que a topologia atual nao reconhece).
+     */
+    private static IntSet segmentosDoServidor(RemoteCache<?, ?> cacheTopologyAware, int porta) {
+        Map<SocketAddress, Set<Integer>> porServidor =
+                cacheTopologyAware.getCacheTopologyInfo().getSegmentsPerServer();
+        for (Map.Entry<SocketAddress, Set<Integer>> e : porServidor.entrySet()) {
+            if (e.getKey() instanceof InetSocketAddress isa && isa.getPort() == porta) {
+                return IntSets.from(e.getValue());
+            }
+        }
+        return IntSets.immutableEmptySet();
+    }
+
+    private static <K, V> Map<K, V> materializar(RemoteCache<K, V> cache, IntSet segmentos) {
         Map<K, V> out = new HashMap<>();
-        for (Map.Entry<K, V> e : cache.entrySet()) {
+        if (segmentos.isEmpty()) {
+            return out;
+        }
+        for (Map.Entry<K, V> e : cache.entrySet(segmentos)) {
             out.put(e.getKey(), e.getValue());
         }
         return out;

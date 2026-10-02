@@ -1,5 +1,5 @@
 TLC2 Version 2.19 of 08 August 2024 (rev: 5a47802)
-Running breadth-first search Model-Checking with fp 87 and seed 4283451369063350331 with 20 workers on 20 cores with 7237MB heap and 64MB offheap memory (Windows 11 10.0 amd64, Oracle Corporation 1.8.0_503 x86_64, MSBDiskFPSet, DiskStateQueue).
+Running breadth-first search Model-Checking with fp 71 and seed -282222006924779560 with 20 workers on 20 cores with 7237MB heap and 64MB offheap memory (Windows 11 10.0 amd64, Oracle Corporation 1.8.0_503 x86_64, MSBDiskFPSet, DiskStateQueue).
 Parsing file C:\Users\Francesco\Development\tcc\tcc-desenvolvimento\spec\MCSession.tla
 Parsing file C:\Users\Francesco\Development\tcc\tcc-desenvolvimento\spec\SessionStore.tla
 Parsing file C:\Users\Francesco\AppData\Local\Temp\TLC.tla
@@ -12,9 +12,9 @@ Semantic processing of module FiniteSets
 Semantic processing of module SessionStore
 Semantic processing of module TLC
 Semantic processing of module MCSession
-Starting... (2026-10-02 06:30:23)
+Starting... (2026-10-02 07:11:22)
 Computing initial states...
-Finished computing initial states: 1 distinct state generated at 2026-10-02 06:30:23.
+Finished computing initial states: 1 distinct state generated at 2026-10-02 07:11:22.
 Error: Invariant I2 is violated.
 Error: The behavior up to this point is:
 State 1: <Initial predicate>
@@ -186,7 +186,7 @@ State 4: <Block line 278, col 3 to line 286, col 31 of module SessionStore>
   r2 :> (u1 :> [ts |-> 0, contador |-> 0, status |-> "OPEN"]) )
 /\ relogio = (r1 :> 2 @@ r2 :> 1)
 
-168 states generated, 45 distinct states found, 15 states left on queue.
+146 states generated, 41 distinct states found, 13 states left on queue.
 The depth of the complete state graph search is 5.
 The average outdegree of the complete state graph is 4 (minimum is 1, the maximum 8 and the 95th percentile is 8).
-Finished in 00s at (2026-10-02 06:30:23)
+Finished in 00s at (2026-10-02 07:11:22)

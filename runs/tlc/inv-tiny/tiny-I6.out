@@ -1,5 +1,5 @@
 TLC2 Version 2.19 of 08 August 2024 (rev: 5a47802)
-Running breadth-first search Model-Checking with fp 116 and seed -5074171680442543042 with 20 workers on 20 cores with 7237MB heap and 64MB offheap memory (Windows 11 10.0 amd64, Oracle Corporation 1.8.0_503 x86_64, MSBDiskFPSet, DiskStateQueue).
+Running breadth-first search Model-Checking with fp 32 and seed -4302961295937452608 with 20 workers on 20 cores with 7237MB heap and 64MB offheap memory (Windows 11 10.0 amd64, Oracle Corporation 1.8.0_503 x86_64, MSBDiskFPSet, DiskStateQueue).
 Parsing file C:\Users\Francesco\Development\tcc\tcc-desenvolvimento\spec\MCSession.tla
 Parsing file C:\Users\Francesco\Development\tcc\tcc-desenvolvimento\spec\SessionStore.tla
 Parsing file C:\Users\Francesco\AppData\Local\Temp\TLC.tla
@@ -12,9 +12,9 @@ Semantic processing of module FiniteSets
 Semantic processing of module SessionStore
 Semantic processing of module TLC
 Semantic processing of module MCSession
-Starting... (2026-10-02 06:30:29)
+Starting... (2026-10-02 07:11:27)
 Computing initial states...
-Finished computing initial states: 1 distinct state generated at 2026-10-02 06:30:30.
+Finished computing initial states: 1 distinct state generated at 2026-10-02 07:11:27.
 Error: Invariant I6 is violated.
 Error: The behavior up to this point is:
 State 1: <Initial predicate>
@@ -45,7 +45,7 @@ State 1: <Initial predicate>
   r2 :> (u1 :> [ts |-> 0, contador |-> 0, status |-> "OPEN"]) )
 /\ relogio = (r1 :> 0 @@ r2 :> 0)
 
-State 2: <Block line 278, col 3 to line 286, col 31 of module SessionStore>
+State 2: <IncrementFailure line 234, col 3 to line 241, col 23 of module SessionStore>
 /\ sessoes = ( r1 :>
       ( s1 :>
             [ estado |-> "NONE",
@@ -70,20 +70,20 @@ State 2: <Block line 278, col 3 to line 286, col 31 of module SessionStore>
               ts |-> 0 ] ) )
 /\ canal = ( r1 :> <<>> @@
   r2 :>
-      << [ tipo |-> "ID_BLOQUEIA",
+      << [ tipo |-> "CONTADOR_INC",
            chave |-> u1,
            sessao |->
-               [ estado |-> "INVALID",
-                 motivo |-> "ADMIN_BLOCK",
-                 identidade |-> u1,
-                 ts |-> 1 ],
-           ident |-> [ts |-> 1, contador |-> 0, status |-> "BLOCKED"],
+               [ estado |-> "NONE",
+                 motivo |-> "NONE",
+                 identidade |-> "NONE",
+                 ts |-> 0 ],
+           ident |-> [ts |-> 1, contador |-> 1, status |-> "OPEN"],
            sessoesAfetadas |-> {} ] >> )
-/\ identidades = ( r1 :> (u1 :> [ts |-> 1, contador |-> 0, status |-> "BLOCKED"]) @@
+/\ identidades = ( r1 :> (u1 :> [ts |-> 1, contador |-> 1, status |-> "OPEN"]) @@
   r2 :> (u1 :> [ts |-> 0, contador |-> 0, status |-> "OPEN"]) )
 /\ relogio = (r1 :> 1 @@ r2 :> 0)
 
-State 3: <IncrementFailure line 234, col 3 to line 241, col 23 of module SessionStore>
+State 3: <Block line 278, col 3 to line 286, col 31 of module SessionStore>
 /\ sessoes = ( r1 :>
       ( s1 :>
             [ estado |-> "NONE",
@@ -107,16 +107,6 @@ State 3: <IncrementFailure line 234, col 3 to line 241, col 23 of module Session
               identidade |-> "NONE",
               ts |-> 0 ] ) )
 /\ canal = ( r1 :>
-      << [ tipo |-> "CONTADOR_INC",
-           chave |-> u1,
-           sessao |->
-               [ estado |-> "NONE",
-                 motivo |-> "NONE",
-                 identidade |-> "NONE",
-                 ts |-> 0 ],
-           ident |-> [ts |-> 1, contador |-> 1, status |-> "OPEN"],
-           sessoesAfetadas |-> {} ] >> @@
-  r2 :>
       << [ tipo |-> "ID_BLOQUEIA",
            chave |-> u1,
            sessao |->
@@ -125,9 +115,19 @@ State 3: <IncrementFailure line 234, col 3 to line 241, col 23 of module Session
                  identidade |-> u1,
                  ts |-> 1 ],
            ident |-> [ts |-> 1, contador |-> 0, status |-> "BLOCKED"],
+           sessoesAfetadas |-> {} ] >> @@
+  r2 :>
+      << [ tipo |-> "CONTADOR_INC",
+           chave |-> u1,
+           sessao |->
+               [ estado |-> "NONE",
+                 motivo |-> "NONE",
+                 identidade |-> "NONE",
+                 ts |-> 0 ],
+           ident |-> [ts |-> 1, contador |-> 1, status |-> "OPEN"],
            sessoesAfetadas |-> {} ] >> )
-/\ identidades = ( r1 :> (u1 :> [ts |-> 1, contador |-> 0, status |-> "BLOCKED"]) @@
-  r2 :> (u1 :> [ts |-> 1, contador |-> 1, status |-> "OPEN"]) )
+/\ identidades = ( r1 :> (u1 :> [ts |-> 1, contador |-> 1, status |-> "OPEN"]) @@
+  r2 :> (u1 :> [ts |-> 1, contador |-> 0, status |-> "BLOCKED"]) )
 /\ relogio = (r1 :> 1 @@ r2 :> 1)
 
 State 4: <EntregaMensagem line 320, col 3 to line 361, col 60 of module SessionStore>
@@ -155,17 +155,17 @@ State 4: <EntregaMensagem line 320, col 3 to line 361, col 60 of module SessionS
               ts |-> 0 ] ) )
 /\ canal = ( r1 :> <<>> @@
   r2 :>
-      << [ tipo |-> "ID_BLOQUEIA",
+      << [ tipo |-> "CONTADOR_INC",
            chave |-> u1,
            sessao |->
-               [ estado |-> "INVALID",
-                 motivo |-> "ADMIN_BLOCK",
-                 identidade |-> u1,
-                 ts |-> 1 ],
-           ident |-> [ts |-> 1, contador |-> 0, status |-> "BLOCKED"],
+               [ estado |-> "NONE",
+                 motivo |-> "NONE",
+                 identidade |-> "NONE",
+                 ts |-> 0 ],
+           ident |-> [ts |-> 1, contador |-> 1, status |-> "OPEN"],
            sessoesAfetadas |-> {} ] >> )
-/\ identidades = ( r1 :> (u1 :> [ts |-> 1, contador |-> 0, status |-> "BLOCKED"]) @@
-  r2 :> (u1 :> [ts |-> 1, contador |-> 1, status |-> "OPEN"]) )
+/\ identidades = ( r1 :> (u1 :> [ts |-> 1, contador |-> 1, status |-> "OPEN"]) @@
+  r2 :> (u1 :> [ts |-> 1, contador |-> 0, status |-> "BLOCKED"]) )
 /\ relogio = (r1 :> 1 @@ r2 :> 1)
 
 State 5: <EntregaMensagem line 320, col 3 to line 361, col 60 of module SessionStore>
@@ -192,11 +192,11 @@ State 5: <EntregaMensagem line 320, col 3 to line 361, col 60 of module SessionS
               identidade |-> "NONE",
               ts |-> 0 ] ) )
 /\ canal = (r1 :> <<>> @@ r2 :> <<>>)
-/\ identidades = ( r1 :> (u1 :> [ts |-> 1, contador |-> 0, status |-> "BLOCKED"]) @@
-  r2 :> (u1 :> [ts |-> 1, contador |-> 1, status |-> "OPEN"]) )
+/\ identidades = ( r1 :> (u1 :> [ts |-> 1, contador |-> 1, status |-> "OPEN"]) @@
+  r2 :> (u1 :> [ts |-> 1, contador |-> 0, status |-> "BLOCKED"]) )
 /\ relogio = (r1 :> 1 @@ r2 :> 1)
 
-964 states generated, 303 distinct states found, 192 states left on queue.
+688 states generated, 193 distinct states found, 117 states left on queue.
 The depth of the complete state graph search is 8.
-The average outdegree of the complete state graph is 3 (minimum is 0, the maximum 7 and the 95th percentile is 6).
-Finished in 00s at (2026-10-02 06:30:30)
+The average outdegree of the complete state graph is 3 (minimum is 0, the maximum 8 and the 95th percentile is 6).
+Finished in 00s at (2026-10-02 07:11:27)

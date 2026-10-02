@@ -1,5 +1,5 @@
 TLC2 Version 2.19 of 08 August 2024 (rev: 5a47802)
-Running breadth-first search Model-Checking with fp 42 and seed 5721790078637697028 with 20 workers on 20 cores with 7237MB heap and 64MB offheap memory (Windows 11 10.0 amd64, Oracle Corporation 1.8.0_503 x86_64, MSBDiskFPSet, DiskStateQueue).
+Running breadth-first search Model-Checking with fp 111 and seed -123999513682301775 with 20 workers on 20 cores with 7237MB heap and 64MB offheap memory (Windows 11 10.0 amd64, Oracle Corporation 1.8.0_503 x86_64, MSBDiskFPSet, DiskStateQueue).
 Parsing file C:\Users\Francesco\Development\tcc\tcc-desenvolvimento\spec\MCSession.tla
 Parsing file C:\Users\Francesco\Development\tcc\tcc-desenvolvimento\spec\SessionStore.tla
 Parsing file C:\Users\Francesco\AppData\Local\Temp\TLC.tla
@@ -12,9 +12,9 @@ Semantic processing of module FiniteSets
 Semantic processing of module SessionStore
 Semantic processing of module TLC
 Semantic processing of module MCSession
-Starting... (2026-10-02 06:29:21)
+Starting... (2026-10-02 07:11:34)
 Computing initial states...
-Finished computing initial states: 1 distinct state generated at 2026-10-02 06:29:22.
+Finished computing initial states: 1 distinct state generated at 2026-10-02 07:11:34.
 Error: Invariant I1 is violated.
 Error: The behavior up to this point is:
 State 1: <Initial predicate>
@@ -132,7 +132,7 @@ State 3: <Login line 188, col 3 to line 195, col 31 of module SessionStore>
       ( s1 :>
             [ estado |-> "VALID",
               motivo |-> "NONE",
-              identidade |-> u1,
+              identidade |-> u2,
               ts |-> 1 ] @@
         s2 :>
             [ estado |-> "NONE",
@@ -150,7 +150,7 @@ State 3: <Login line 188, col 3 to line 195, col 31 of module SessionStore>
            sessao |->
                [ estado |-> "VALID",
                  motivo |-> "NONE",
-                 identidade |-> u1,
+                 identidade |-> u2,
                  ts |-> 1 ],
            ident |-> [ts |-> 0, contador |-> 0, status |-> "OPEN"],
            sessoesAfetadas |-> {} ] >> @@
@@ -193,7 +193,7 @@ State 4: <Logout line 208, col 3 to line 214, col 31 of module SessionStore>
       ( s1 :>
             [ estado |-> "VALID",
               motivo |-> "NONE",
-              identidade |-> u1,
+              identidade |-> u2,
               ts |-> 1 ] @@
         s2 :>
             [ estado |-> "NONE",
@@ -211,7 +211,7 @@ State 4: <Logout line 208, col 3 to line 214, col 31 of module SessionStore>
            sessao |->
                [ estado |-> "VALID",
                  motivo |-> "NONE",
-                 identidade |-> u1,
+                 identidade |-> u2,
                  ts |-> 1 ],
            ident |-> [ts |-> 0, contador |-> 0, status |-> "OPEN"],
            sessoesAfetadas |-> {} ] >> @@
@@ -242,7 +242,7 @@ State 4: <Logout line 208, col 3 to line 214, col 31 of module SessionStore>
         u2 :> [ts |-> 0, contador |-> 0, status |-> "OPEN"] ) )
 /\ relogio = (r1 :> 2 @@ r2 :> 1)
 
-201 states generated, 29 distinct states found, 18 states left on queue.
-The depth of the complete state graph search is 4.
-The average outdegree of the complete state graph is 3 (minimum is 1, the maximum 9 and the 95th percentile is 9).
-Finished in 00s at (2026-10-02 06:29:22)
+296 states generated, 44 distinct states found, 21 states left on queue.
+The depth of the complete state graph search is 5.
+The average outdegree of the complete state graph is 3 (minimum is 0, the maximum 9 and the 95th percentile is 9).
+Finished in 00s at (2026-10-02 07:11:34)

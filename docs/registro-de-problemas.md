@@ -456,6 +456,116 @@
   brutos em `runs/S1-none-b23b24-smoke/` e `runs/S1-F1-b23b24-smoke/`
   (`rep-001.csv`, `violacoes-rep-001.csv`, `inject-crash.log`).
 
+## 2026-10-02 (rodada 3) — B-24 corrigido (`entrySet(IntSet)`), I4 cobre `logout`/`block`, bateria F1 real com medição de convergência
+
+> Contexto: `docs/validacao-b23-b24-2026-10-02.md` (Senior refuta a conclusão de
+> impossibilidade estrutural de P-19 e valida `entrySet(IntSet)` +
+> `CacheTopologyInfo.getSegmentsPerServer()`, inclusive sob F1 real, com *cache*
+> ad-hoc). Esta rodada aplica a correção às caches reais do projeto.
+
+### P-19 (resolução) — `entrySet(IntSet)` + segmentos reais substitui `entrySet()`
+
+Ver commit da correção (`WorkloadMain.abrirLeitoresMultiReplica`/`materializar`/
+`segmentosDoServidor`): a topologia é obtida de um cliente topology-aware (o
+`RemoteCacheManager` principal, já existente) e re-obtida a cada chamada do
+`Supplier` (não capturada uma única vez). API confirmada contra
+`infinispan-client-hotrod-15.0.0.Final-sources.jar` e
+`infinispan-commons-15.0.0.Final-sources.jar` antes de codificar.
+
+### P-21 — leitores restritos por segmento expõem bug pré-existente em `verificarI5`/`verificarI6`: ausência por não-posse tratada como divergência (achado real, corrigido)
+
+- **Sintoma:** ao rodar a primeira bateria F1 real pós-correção de P-19 (sem
+  nenhuma falha chegar a ser injetada ainda, por um erro de orquestração do
+  probe de medição — ver abaixo), `WorkloadMain` reportou **198 violações**
+  (190 `I5` + 8 `I6`) numa execução **sem falha alguma**. 190 bate exatamente
+  com o tamanho da *cache* `sessions` (190 chaves) e 8 com `counters` (8
+  identidades) naquele momento — sinal claro de que TODA chave estava sendo
+  contabilizada como violação, não um subconjunto real.
+- **Causa:** `InvariantAuditor.verificarI5`/`verificarI6` foram escritos para
+  a época do `entrySet()` sem filtro (P-19), quando todo leitor via o
+  *dataset* completo e convergido — qualquer ausência de chave num leitor
+  era, de fato, suspeita. Com os leitores agora restritos por segmento
+  (`entrySet(IntSet)`, correção de P-19 acima), **cada réplica só devolve as
+  chaves cujo segmento ela possui** — com `owners=2` de 3 réplicas, uma dada
+  chave aparece em exatamente 2 dos 3 leitores e fica **ausente** (não
+  presente no `Map`, não um valor `null` associado) no terceiro, **sempre,
+  por design, mesmo sem nenhuma falha**. O código antigo tratava essa
+  ausência esperada como `null` e comparava isso contra os valores dos
+  outros leitores como se fosse uma divergência real.
+- **Correção:** `verificarI5`/`verificarI6` agora só comparam, para cada
+  chave, os leitores que **de fato a possuem** (valor não-nulo); um leitor
+  sem a chave é ignorado para aquela chave, não tratado como divergência.
+  Aproveitado para completar `I5` (passa a comparar `estado`+`motivo`+
+  `identidade`, igual à definição de `spec/SessionStore.tla`; antes só
+  comparava `estado`). 3 novos testes em `InvariantAuditorTest` cobrem o
+  cenário que causava o bug.
+- **Observação de processo:** este bug **não foi** encontrado pelo Senior —
+  os probes dele (`SegmentProbe`/`CrashRaceProbe2`) validaram o mecanismo
+  `entrySet(IntSet)` isoladamente, nunca o integraram com a lógica de
+  comparação já existente em `InvariantAuditor`. Só apareceu ao rodar o
+  sistema real, de ponta a ponta, contra o cluster real — reforça o valor de
+  rodar a bateria real a cada mudança, não só validar o mecanismo em
+  isolamento.
+
+### P-22 — correção de I4 em `logout()`/`block()`; bateria F1 real pós-correção; medição de convergência (dado para `W_quiesc`)
+
+- **Correção de I4 (achado do Senior, `docs/validacao-b23-b24-2026-10-02.md`
+  §5):** `logout()` (ramo *no-op*) e `block()` (cascata) liam o estado atual
+  da sessão e sobrescreviam `invalidacoesConfirmadas` incondicionalmente, sem
+  checar divergência primeiro — uma violação real de I1/I4 cuja primeira
+  observação pós-divergência passasse por um desses caminhos (em vez de
+  `validate()`) escapava detecção silenciosamente. Corrigido chamando
+  `verificarI1I4` antes de escrever, nos dois métodos.
+- **Bateria F1 real (3 execuções, após as duas correções acima):** cluster
+  real de 3 nós; jar reempacotado; workload real (`java -jar`, não
+  `scripts/run-baseline.sh`) com 120s, *warm-up* 10s, 8 *threads*, cenário S1,
+  escrevendo em `runs/S1-F1-b24fix-smoke{,2,3}/` (CSVs brutos, *gitignored*
+  como sempre). Em paralelo, uma sonda Java dedicada (`ConvergenceProbe`,
+  fora do repositório, em *scratch*, nunca *commitada* — mesmo padrão do
+  Senior) disparou o crash real (`podman stop isn2`, +~16s, por 20s;
+  `podman start isn2` depois) e mediu convergência via `entrySet(IntSet)`.
+  Resultado das 3 execuções: **2.980.721 / 2.968.590 / 2.898.767 operações,
+  0 violações em todas as três** (I1-I6) — consistente com o Achado E para
+  I1-I4 (F1 nunca ativa `DEGRADED`/`merge-policy`) e, agora sim, confiável
+  para I5/I6 (sem o artefato de P-21).
+- **Medição de convergência (dado para `W_quiesc`, plano de 24/09 §5.2):**
+  medido 2x (execuções 2 e 3), valores quase idênticos entre as duas
+  (diferença <1%):
+  - Do comando `podman start isn2` até a primeira conexão Hot Rod
+    bem-sucedida: **~3,2s** (tempo de inicialização do container/servidor
+    Infinispan, não de replicação).
+  - Do restart até `sessions` convergir (leitura local de isn2, restrita aos
+    segmentos que ele possui, igualar a leitura de referência do cluster,
+    por 3 polls consecutivos a cada ~220ms): **4,1s** — ou seja, menos de 1s
+    de catch-up de replicação depois que a porta volta a aceitar conexão.
+  - Do restart até `counters` "convergir" pela mesma métrica: **~41s** em
+    ambas as execuções — **não confiável, ver ressalva abaixo.**
+- **Ressalva metodológica importante sobre o número de `counters` (achado
+  desta sessão, não do Senior):** inspecionando o log *verbose* da sonda,
+  `counters` tem só 4-8 chaves (identidades), sob escrita CONTÍNUA e muito
+  frequente (8 *threads* fazendo `incrementFailure`/`resetFailures` sem
+  parar — `versao` de cada identidade sobe ~70-120 unidades por *poll* de
+  220ms, centenas de incrementos/segundo para só 4-8 chaves). A sonda lê
+  `local` (isn2) e depois `referencia` (cliente principal) **sequencialmente
+  **, com um intervalo de milissegundos entre as duas chamadas de rede — sob
+  essa taxa de escrita, a leitura `referencia` quase sempre captura uma
+  `versao` 1-4 unidades **maior** que `local` só pelo tempo decorrido entre
+  as duas chamadas, **não** por *replication lag* real de isn2. Isso explica
+  tanto o valor alto (três *polls* iguais consecutivos por coincidência
+  estatística, não por catch-up genuíno) quanto a notável consistência entre
+  as duas execuções (~41s nas duas, plausivelmente um artefato estável da
+  combinação taxa-de-escrita/intervalo-de-*poll*, não um sinal físico do
+  cluster). **Não è usar os 41s para calibrar `W_quiesc`.** O número
+  confiável desta rodada é o de `sessions` (~4,1s, dominado pelo tempo de
+  reinicialização do container, com <1s de catch-up de replicação
+  mensurável) — mas é um único cenário (identidades hot/pequena cardinalidade
+  tendem a se comportar diferente de sessões, mais numerosas e com escrita
+  mais distribuída). **Recomendação para calibração real de `W_quiesc`:**
+  medir com leitura pareada/atômica (uma função administrativa, ou pausar a
+  escrita por um instante antes de comparar) em vez de duas chamadas de rede
+  sequenciais sob carga contínua — não implementado nesta rodada, registrado
+  para decisão futura do Gestor/Senior.
+
 ## Observação de modelagem (não é defeito)
 
 Com 8 *threads* = 8 identidades fixas (`user-<tid>`), `incrementFailure`

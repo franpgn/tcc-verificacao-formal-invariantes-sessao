@@ -322,6 +322,38 @@
   estados, `TypeOK`/`I1`-`I6` nas três cardinalidades) em
   `runs/tlc/inv-{tiny,small,medium}/`.
 
+### P-17 — `IdentityState.desbloquear()` não zerava `contadorFalhas` (O7), divergindo de `Metodologia.tex` e do modelo TLA+
+
+> **Nota de numeração:** o plano de consolidação B-21
+> (`docs/plano-consolidacao-b21-b23-b24-2026-10-02.md` §2.3) já havia reservado
+> "P-16" para a seção P-08 da Cadeia 2 (`netem`/`nsenter`), a renumerar no
+> momento do merge. Como a entrada acima (revisão do mecanismo de conflito)
+> também ficou "P-16" por ter sido feita primeiro nesta mesma branch, e esta
+> aqui é sequencialmente a próxima, a seção da Cadeia 2 passa a virar **P-18**
+> no merge (não P-17 como o Gestor havia instruído antes desta entrada
+> existir) — ajuste necessário, não um desvio da instrução original.
+
+- **Sintoma:** não é um achado de execução/TLC — é uma leitura de código
+  confirmada pelo Senior em `docs/validacao-fases1-3-achado-e-2026-10-02.md`
+  §4.2 contra `tcc-escrita/Metodologia.tex` linha 78 ("O7, desbloqueio... efeito:
+  β'(u).marca = Free, **β'(u).counter = 0**").
+- **Causa:** `IdentityState.desbloquear()` (`workload/src/main/java/.../
+  IdentityState.java`) reconstruía o registro preservando `contadorFalhas`
+  (só `resetar()`, usado por O5, zerava) — divergindo da especificação oficial
+  já aprovada e de `spec/SessionStore.tla`, ação `Unblock`, que **sempre**
+  zerou `contador` (tanto antes quanto depois da revisão do Achado E). O
+  modelo formal estava certo; o código Java tinha o bug.
+- **Correção:** `desbloquear()` passa a zerar `contadorFalhas` (`0L` em vez de
+  preservar o valor atual), mesma assinatura e mesmo padrão de incremento de
+  `versao`. Mudança de 1 linha de efeito (mais javadoc). Nenhum teste
+  existente exercitava `desbloquear()` diretamente (não há
+  `IdentityStateTest.java`/`SessionOpsTest.java` hoje — achado já registrado
+  em `docs/plano-consolidacao-b21-b23-b24-2026-10-02.md` §3.2), então a suíte
+  JUnit completa (49 testes) permanece verde antes e depois da correção, sem
+  necessidade de ajustar nenhum teste. **Relevante para a credibilidade de
+  dado real de O7** gerado por B-23/B-24 (ainda não implementados) — corrigido
+  antes de qualquer execução real que gere esse dado.
+
 ## Observação de modelagem (não é defeito)
 
 Com 8 *threads* = 8 identidades fixas (`user-<tid>`), `incrementFailure`

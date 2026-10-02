@@ -1,5 +1,5 @@
 TLC2 Version 2.19 of 08 August 2024 (rev: 5a47802)
-Running breadth-first search Model-Checking with fp 10 and seed 4175834633044740271 with 20 workers on 20 cores with 7237MB heap and 64MB offheap memory [pid: 16404] (Windows 11 10.0 amd64, Oracle Corporation 22.0.2 x86_64, MSBDiskFPSet, DiskStateQueue).
+Running breadth-first search Model-Checking with fp 93 and seed 6665170552086698159 with 20 workers on 20 cores with 7237MB heap and 64MB offheap memory (Windows 11 10.0 amd64, Oracle Corporation 1.8.0_503 x86_64, MSBDiskFPSet, DiskStateQueue).
 Parsing file C:\Users\Francesco\Development\tcc\tcc-desenvolvimento\spec\MCSession.tla
 Parsing file C:\Users\Francesco\Development\tcc\tcc-desenvolvimento\spec\SessionStore.tla
 Parsing file C:\Users\Francesco\AppData\Local\Temp\TLC.tla
@@ -12,16 +12,261 @@ Semantic processing of module FiniteSets
 Semantic processing of module SessionStore
 Semantic processing of module TLC
 Semantic processing of module MCSession
-Starting... (2026-09-16 10:26:40)
+Starting... (2026-10-02 06:29:32)
 Computing initial states...
-Finished computing initial states: 1 distinct state generated at 2026-09-16 10:26:40.
-Progress(13) at 2026-09-16 10:26:43: 3,313,213 states generated (3,313,213 s/min), 398,357 distinct states found (398,357 ds/min), 196,447 states left on queue.
-Model checking completed. No error has been found.
-  Estimates of the probability that TLC did not check all reachable states
-  because two distinct states had the same fingerprint:
-  calculated (optimistic):  val = 3.4E-7
-  based on the actual fingerprints:  val = 3.1E-8
-10258929 states generated, 644013 distinct states found, 0 states left on queue.
-The depth of the complete state graph search is 13.
-The average outdegree of the complete state graph is 1 (minimum is 0, the maximum 14 and the 95th percentile is 4).
-Finished in 07s at (2026-09-16 10:26:47)
+Finished computing initial states: 1 distinct state generated at 2026-10-02 06:29:32.
+Error: Invariant I6 is violated.
+Error: The behavior up to this point is:
+State 1: <Initial predicate>
+/\ sessoes = ( r1 :>
+      ( s1 :>
+            [ estado |-> "NONE",
+              motivo |-> "NONE",
+              identidade |-> "NONE",
+              ts |-> 0 ] @@
+        s2 :>
+            [ estado |-> "NONE",
+              motivo |-> "NONE",
+              identidade |-> "NONE",
+              ts |-> 0 ] @@
+        s3 :>
+            [ estado |-> "NONE",
+              motivo |-> "NONE",
+              identidade |-> "NONE",
+              ts |-> 0 ] ) @@
+  r2 :>
+      ( s1 :>
+            [ estado |-> "NONE",
+              motivo |-> "NONE",
+              identidade |-> "NONE",
+              ts |-> 0 ] @@
+        s2 :>
+            [ estado |-> "NONE",
+              motivo |-> "NONE",
+              identidade |-> "NONE",
+              ts |-> 0 ] @@
+        s3 :>
+            [ estado |-> "NONE",
+              motivo |-> "NONE",
+              identidade |-> "NONE",
+              ts |-> 0 ] ) )
+/\ canal = (r1 :> <<>> @@ r2 :> <<>>)
+/\ identidades = ( r1 :>
+      ( u1 :> [ts |-> 0, contador |-> 0, status |-> "OPEN"] @@
+        u2 :> [ts |-> 0, contador |-> 0, status |-> "OPEN"] ) @@
+  r2 :>
+      ( u1 :> [ts |-> 0, contador |-> 0, status |-> "OPEN"] @@
+        u2 :> [ts |-> 0, contador |-> 0, status |-> "OPEN"] ) )
+/\ relogio = (r1 :> 0 @@ r2 :> 0)
+
+State 2: <Block line 278, col 3 to line 286, col 31 of module SessionStore>
+/\ sessoes = ( r1 :>
+      ( s1 :>
+            [ estado |-> "NONE",
+              motivo |-> "NONE",
+              identidade |-> "NONE",
+              ts |-> 0 ] @@
+        s2 :>
+            [ estado |-> "NONE",
+              motivo |-> "NONE",
+              identidade |-> "NONE",
+              ts |-> 0 ] @@
+        s3 :>
+            [ estado |-> "NONE",
+              motivo |-> "NONE",
+              identidade |-> "NONE",
+              ts |-> 0 ] ) @@
+  r2 :>
+      ( s1 :>
+            [ estado |-> "NONE",
+              motivo |-> "NONE",
+              identidade |-> "NONE",
+              ts |-> 0 ] @@
+        s2 :>
+            [ estado |-> "NONE",
+              motivo |-> "NONE",
+              identidade |-> "NONE",
+              ts |-> 0 ] @@
+        s3 :>
+            [ estado |-> "NONE",
+              motivo |-> "NONE",
+              identidade |-> "NONE",
+              ts |-> 0 ] ) )
+/\ canal = ( r1 :> <<>> @@
+  r2 :>
+      << [ tipo |-> "ID_BLOQUEIA",
+           chave |-> u1,
+           sessao |->
+               [ estado |-> "INVALID",
+                 motivo |-> "ADMIN_BLOCK",
+                 identidade |-> u1,
+                 ts |-> 1 ],
+           ident |-> [ts |-> 1, contador |-> 0, status |-> "BLOCKED"],
+           sessoesAfetadas |-> {} ] >> )
+/\ identidades = ( r1 :>
+      ( u1 :> [ts |-> 1, contador |-> 0, status |-> "BLOCKED"] @@
+        u2 :> [ts |-> 0, contador |-> 0, status |-> "OPEN"] ) @@
+  r2 :>
+      ( u1 :> [ts |-> 0, contador |-> 0, status |-> "OPEN"] @@
+        u2 :> [ts |-> 0, contador |-> 0, status |-> "OPEN"] ) )
+/\ relogio = (r1 :> 1 @@ r2 :> 0)
+
+State 3: <IncrementFailure line 234, col 3 to line 241, col 23 of module SessionStore>
+/\ sessoes = ( r1 :>
+      ( s1 :>
+            [ estado |-> "NONE",
+              motivo |-> "NONE",
+              identidade |-> "NONE",
+              ts |-> 0 ] @@
+        s2 :>
+            [ estado |-> "NONE",
+              motivo |-> "NONE",
+              identidade |-> "NONE",
+              ts |-> 0 ] @@
+        s3 :>
+            [ estado |-> "NONE",
+              motivo |-> "NONE",
+              identidade |-> "NONE",
+              ts |-> 0 ] ) @@
+  r2 :>
+      ( s1 :>
+            [ estado |-> "NONE",
+              motivo |-> "NONE",
+              identidade |-> "NONE",
+              ts |-> 0 ] @@
+        s2 :>
+            [ estado |-> "NONE",
+              motivo |-> "NONE",
+              identidade |-> "NONE",
+              ts |-> 0 ] @@
+        s3 :>
+            [ estado |-> "NONE",
+              motivo |-> "NONE",
+              identidade |-> "NONE",
+              ts |-> 0 ] ) )
+/\ canal = ( r1 :>
+      << [ tipo |-> "CONTADOR_INC",
+           chave |-> u1,
+           sessao |->
+               [ estado |-> "NONE",
+                 motivo |-> "NONE",
+                 identidade |-> "NONE",
+                 ts |-> 0 ],
+           ident |-> [ts |-> 1, contador |-> 1, status |-> "OPEN"],
+           sessoesAfetadas |-> {} ] >> @@
+  r2 :>
+      << [ tipo |-> "ID_BLOQUEIA",
+           chave |-> u1,
+           sessao |->
+               [ estado |-> "INVALID",
+                 motivo |-> "ADMIN_BLOCK",
+                 identidade |-> u1,
+                 ts |-> 1 ],
+           ident |-> [ts |-> 1, contador |-> 0, status |-> "BLOCKED"],
+           sessoesAfetadas |-> {} ] >> )
+/\ identidades = ( r1 :>
+      ( u1 :> [ts |-> 1, contador |-> 0, status |-> "BLOCKED"] @@
+        u2 :> [ts |-> 0, contador |-> 0, status |-> "OPEN"] ) @@
+  r2 :>
+      ( u1 :> [ts |-> 1, contador |-> 1, status |-> "OPEN"] @@
+        u2 :> [ts |-> 0, contador |-> 0, status |-> "OPEN"] ) )
+/\ relogio = (r1 :> 1 @@ r2 :> 1)
+
+State 4: <EntregaMensagem line 320, col 3 to line 361, col 60 of module SessionStore>
+/\ sessoes = ( r1 :>
+      ( s1 :>
+            [ estado |-> "NONE",
+              motivo |-> "NONE",
+              identidade |-> "NONE",
+              ts |-> 0 ] @@
+        s2 :>
+            [ estado |-> "NONE",
+              motivo |-> "NONE",
+              identidade |-> "NONE",
+              ts |-> 0 ] @@
+        s3 :>
+            [ estado |-> "NONE",
+              motivo |-> "NONE",
+              identidade |-> "NONE",
+              ts |-> 0 ] ) @@
+  r2 :>
+      ( s1 :>
+            [ estado |-> "NONE",
+              motivo |-> "NONE",
+              identidade |-> "NONE",
+              ts |-> 0 ] @@
+        s2 :>
+            [ estado |-> "NONE",
+              motivo |-> "NONE",
+              identidade |-> "NONE",
+              ts |-> 0 ] @@
+        s3 :>
+            [ estado |-> "NONE",
+              motivo |-> "NONE",
+              identidade |-> "NONE",
+              ts |-> 0 ] ) )
+/\ canal = ( r1 :>
+      << [ tipo |-> "CONTADOR_INC",
+           chave |-> u1,
+           sessao |->
+               [ estado |-> "NONE",
+                 motivo |-> "NONE",
+                 identidade |-> "NONE",
+                 ts |-> 0 ],
+           ident |-> [ts |-> 1, contador |-> 1, status |-> "OPEN"],
+           sessoesAfetadas |-> {} ] >> @@
+  r2 :> <<>> )
+/\ identidades = ( r1 :>
+      ( u1 :> [ts |-> 1, contador |-> 0, status |-> "BLOCKED"] @@
+        u2 :> [ts |-> 0, contador |-> 0, status |-> "OPEN"] ) @@
+  r2 :>
+      ( u1 :> [ts |-> 1, contador |-> 1, status |-> "OPEN"] @@
+        u2 :> [ts |-> 0, contador |-> 0, status |-> "OPEN"] ) )
+/\ relogio = (r1 :> 1 @@ r2 :> 1)
+
+State 5: <EntregaMensagem line 320, col 3 to line 361, col 60 of module SessionStore>
+/\ sessoes = ( r1 :>
+      ( s1 :>
+            [ estado |-> "NONE",
+              motivo |-> "NONE",
+              identidade |-> "NONE",
+              ts |-> 0 ] @@
+        s2 :>
+            [ estado |-> "NONE",
+              motivo |-> "NONE",
+              identidade |-> "NONE",
+              ts |-> 0 ] @@
+        s3 :>
+            [ estado |-> "NONE",
+              motivo |-> "NONE",
+              identidade |-> "NONE",
+              ts |-> 0 ] ) @@
+  r2 :>
+      ( s1 :>
+            [ estado |-> "NONE",
+              motivo |-> "NONE",
+              identidade |-> "NONE",
+              ts |-> 0 ] @@
+        s2 :>
+            [ estado |-> "NONE",
+              motivo |-> "NONE",
+              identidade |-> "NONE",
+              ts |-> 0 ] @@
+        s3 :>
+            [ estado |-> "NONE",
+              motivo |-> "NONE",
+              identidade |-> "NONE",
+              ts |-> 0 ] ) )
+/\ canal = (r1 :> <<>> @@ r2 :> <<>>)
+/\ identidades = ( r1 :>
+      ( u1 :> [ts |-> 1, contador |-> 0, status |-> "BLOCKED"] @@
+        u2 :> [ts |-> 0, contador |-> 0, status |-> "OPEN"] ) @@
+  r2 :>
+      ( u1 :> [ts |-> 1, contador |-> 1, status |-> "OPEN"] @@
+        u2 :> [ts |-> 0, contador |-> 0, status |-> "OPEN"] ) )
+/\ relogio = (r1 :> 1 @@ r2 :> 1)
+
+3440 states generated, 663 distinct states found, 477 states left on queue.
+The depth of the complete state graph search is 8.
+The average outdegree of the complete state graph is 4 (minimum is 0, the maximum 12 and the 95th percentile is 9).
+Finished in 00s at (2026-10-02 06:29:32)

@@ -1,5 +1,5 @@
 TLC2 Version 2.19 of 08 August 2024 (rev: 5a47802)
-Running breadth-first search Model-Checking with fp 4 and seed 5892909862391264872 with 20 workers on 20 cores with 7237MB heap and 64MB offheap memory [pid: 17764] (Windows 11 10.0 amd64, Oracle Corporation 22.0.2 x86_64, MSBDiskFPSet, DiskStateQueue).
+Running breadth-first search Model-Checking with fp 125 and seed 4175156903326539407 with 20 workers on 20 cores with 7237MB heap and 64MB offheap memory (Windows 11 10.0 amd64, Oracle Corporation 1.8.0_503 x86_64, MSBDiskFPSet, DiskStateQueue).
 Parsing file C:\Users\Francesco\Development\tcc\tcc-desenvolvimento\spec\MCSession.tla
 Parsing file C:\Users\Francesco\Development\tcc\tcc-desenvolvimento\spec\SessionStore.tla
 Parsing file C:\Users\Francesco\AppData\Local\Temp\TLC.tla
@@ -12,17 +12,14 @@ Semantic processing of module FiniteSets
 Semantic processing of module SessionStore
 Semantic processing of module TLC
 Semantic processing of module MCSession
-Starting... (2026-09-16 10:25:55)
-Warning: The set IDS has been defined to be a symmetry set but contains less than two elements.
-(Use the -nowarning option to disable this warning.)
+Starting... (2026-10-02 06:30:26)
 Computing initial states...
-Finished computing initial states: 1 distinct state generated at 2026-09-16 10:25:56.
+Finished computing initial states: 1 distinct state generated at 2026-10-02 06:30:26.
 Model checking completed. No error has been found.
   Estimates of the probability that TLC did not check all reachable states
   because two distinct states had the same fingerprint:
-  calculated (optimistic):  val = 3.8E-10
-  based on the actual fingerprints:  val = 5.7E-11
-248463 states generated, 32129 distinct states found, 0 states left on queue.
+  calculated (optimistic):  val = 1.6E-11
+50819 states generated, 6472 distinct states found, 0 states left on queue.
 The depth of the complete state graph search is 13.
-The average outdegree of the complete state graph is 1 (minimum is 0, the maximum 8 and the 95th percentile is 4).
-Finished in 00s at (2026-09-16 10:25:56)
+The average outdegree of the complete state graph is 1 (minimum is 0, the maximum 8 and the 95th percentile is 3).
+Finished in 01s at (2026-10-02 06:30:27)

@@ -1,5 +1,5 @@
 TLC2 Version 2.19 of 08 August 2024 (rev: 5a47802)
-Running breadth-first search Model-Checking with fp 87 and seed -7366232584828593851 with 20 workers on 20 cores with 7237MB heap and 64MB offheap memory [pid: 22032] (Windows 11 10.0 amd64, Oracle Corporation 22.0.2 x86_64, MSBDiskFPSet, DiskStateQueue).
+Running breadth-first search Model-Checking with fp 13 and seed 1045555170069631631 with 20 workers on 20 cores with 7237MB heap and 64MB offheap memory (Windows 11 10.0 amd64, Oracle Corporation 1.8.0_503 x86_64, MSBDiskFPSet, DiskStateQueue).
 Parsing file C:\Users\Francesco\Development\tcc\tcc-desenvolvimento\spec\MCSession.tla
 Parsing file C:\Users\Francesco\Development\tcc\tcc-desenvolvimento\spec\SessionStore.tla
 Parsing file C:\Users\Francesco\AppData\Local\Temp\TLC.tla
@@ -12,16 +12,15 @@ Semantic processing of module FiniteSets
 Semantic processing of module SessionStore
 Semantic processing of module TLC
 Semantic processing of module MCSession
-Starting... (2026-09-16 10:26:24)
+Starting... (2026-10-02 06:29:27)
 Computing initial states...
-Finished computing initial states: 1 distinct state generated at 2026-09-16 10:26:24.
-Progress(13) at 2026-09-16 10:26:27: 2,913,370 states generated (2,913,370 s/min), 356,182 distinct states found (356,182 ds/min), 179,425 states left on queue.
+Finished computing initial states: 1 distinct state generated at 2026-10-02 06:29:27.
 Model checking completed. No error has been found.
   Estimates of the probability that TLC did not check all reachable states
   because two distinct states had the same fingerprint:
-  calculated (optimistic):  val = 3.4E-7
-  based on the actual fingerprints:  val = 1.1E-8
-10258929 states generated, 644013 distinct states found, 0 states left on queue.
+  calculated (optimistic):  val = 1.1E-8
+  based on the actual fingerprints:  val = 9.2E-10
+1861557 states generated, 113213 distinct states found, 0 states left on queue.
 The depth of the complete state graph search is 13.
-The average outdegree of the complete state graph is 1 (minimum is 0, the maximum 14 and the 95th percentile is 4).
-Finished in 07s at (2026-09-16 10:26:31)
+The average outdegree of the complete state graph is 1 (minimum is 0, the maximum 12 and the 95th percentile is 5).
+Finished in 02s at (2026-10-02 06:29:29)

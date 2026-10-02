@@ -4,6 +4,7 @@ import org.infinispan.client.hotrod.RemoteCache;
 import org.infinispan.client.hotrod.RemoteCacheManager;
 import java.time.Instant;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Operações O1 a O7 do protocolo de estado de sessão, conforme Seção 4.1 da monografia.
@@ -18,6 +19,18 @@ import java.util.UUID;
  *
  * Cada operação retorna um {@link OpResult} e registra timestamps de início e fim em
  * {@link LatencyRegistry}.
+ *
+ * <p><b>B-23 — detecção de I1/I4 (ver docs/plano-consolidacao-b21-b23-b24-2026-10-02.md
+ * §3.2):</b> {@link #invalidacoesConfirmadas} rastreia, por {@code sid}, o último motivo
+ * de invalidação que esta instância observou localmente (via {@link #logout}, {@link
+ * #block} ou a primeira leitura de {@link #validate} que encontra a sessão já INVALID).
+ * {@link #validate} compara cada leitura nova contra esse registro para detectar I1
+ * (uma invalidação confirmada "ressuscitando" para VALID) e I4 (o motivo lido divergindo
+ * do motivo confirmado). <b>Limitação de escopo, não é defeito:</b> este rastreamento só
+ * vale <i>dentro de uma repetição</i> — {@code WorkloadMain.executarRepeticao} cria um
+ * {@code SessionOps}/{@code InvariantAuditor} novos a cada repetição, então o mapa
+ * começa vazio a cada uma; isso é consistente com o isolamento entre repetições já
+ * existente no desenho atual.</p>
  */
 public class SessionOps {
 
@@ -37,6 +50,10 @@ public class SessionOps {
     private final EventCsvWriter eventos;
     private final EpochClock relogio;
     private final String replica;
+
+    /** B-23: ver javadoc da classe. Chave = sid; valor = motivo confirmado. */
+    private final ConcurrentHashMap<String, SessionState.Motivo> invalidacoesConfirmadas =
+            new ConcurrentHashMap<>();
 
     /**
      * Construtor sem trilha de eventos (mantém compatibilidade com testes
@@ -102,6 +119,37 @@ public class SessionOps {
                 key);
     }
 
+    /**
+     * B-23: verifica I1 (irreversibilidade da invalidação) e I4 (unicidade do
+     * motivo), comparando a leitura corrente contra {@link #invalidacoesConfirmadas}.
+     * Chamado de {@link #validate(String)} após cada leitura bem-sucedida.
+     *
+     * <p>Se {@code sid} ainda não foi observado como inválido por esta instância,
+     * e a leitura corrente já é INVALID, a primeira observação é registrada (cobre
+     * o caso de uma invalidação originada por outra thread/réplica, não só pela
+     * própria chamada local de {@link #logout}/{@link #block}). Caso já exista um
+     * motivo confirmado: I1 dispara se a leitura corrente voltou a VALID; I4
+     * dispara se a leitura corrente é INVALID com um motivo diferente do
+     * confirmado.</p>
+     */
+    private void verificarI1I4(String sid, SessionState atual) {
+        SessionState.Motivo confirmado = invalidacoesConfirmadas.get(sid);
+        if (confirmado == null) {
+            if (atual.estado() == SessionState.Estado.INVALID) {
+                invalidacoesConfirmadas.putIfAbsent(sid, atual.motivo());
+            }
+            return;
+        }
+        if (atual.estado() == SessionState.Estado.VALID) {
+            auditor.registrarViolacao("I1", sid,
+                    "invalidacao confirmada (" + confirmado + ") revertida para VALID");
+        } else if (atual.estado() == SessionState.Estado.INVALID
+                && !confirmado.equals(atual.motivo())) {
+            auditor.registrarViolacao("I4", sid,
+                    "motivo inconsistente: confirmado " + confirmado + ", lido " + atual.motivo());
+        }
+    }
+
     /** O1, login. */
     public OpResult login(String identidade, String credencial) {
         long t0 = System.nanoTime();
@@ -149,6 +197,7 @@ public class SessionOps {
                     && s.estado() == SessionState.Estado.VALID) {
                 auditor.registrarViolacao("I2", sid, "valida sob bloqueio");
             }
+            verificarI1I4(sid, s);
             OpResult r = OpResult.okValidate(s.estado());
             emitir(OP_VALIDATE, t0, System.nanoTime(), r, sid);
             return r;
@@ -172,6 +221,7 @@ public class SessionOps {
                 return r;
             }
             if (s.estado() == SessionState.Estado.INVALID) {
+                invalidacoesConfirmadas.put(sid, s.motivo());
                 latency.record("logout_noop", t0);
                 OpResult r = OpResult.okNoop();
                 emitir(OP_LOGOUT, t0, System.nanoTime(), r, sid);
@@ -179,6 +229,7 @@ public class SessionOps {
             }
             SessionState atual = s.invalidar(SessionState.Motivo.LOGOUT, Instant.now());
             sessions.put(sid, atual);
+            invalidacoesConfirmadas.put(sid, atual.motivo());
             latency.record("logout_ok", t0);
             OpResult r = OpResult.okNoop();
             emitir(OP_LOGOUT, t0, System.nanoTime(), r, sid);
@@ -252,8 +303,9 @@ public class SessionOps {
         sessions.entrySet().forEach(e -> {
             if (e.getValue().identidade().equals(identidade)
                     && e.getValue().estado() == SessionState.Estado.VALID) {
-                sessions.put(e.getKey(),
-                        e.getValue().invalidar(SessionState.Motivo.ADMIN_BLOCK, Instant.now()));
+                SessionState atual = e.getValue().invalidar(SessionState.Motivo.ADMIN_BLOCK, Instant.now());
+                sessions.put(e.getKey(), atual);
+                invalidacoesConfirmadas.put(e.getKey(), atual.motivo());
             }
         });
         latency.record("block_ok", t0);

@@ -89,6 +89,70 @@ class InvariantAuditorTest {
         assertEquals(0, a.total());
     }
 
+    /**
+     * Regressão de P-21 (docs/registro-de-problemas.md): com leitores REAIS
+     * restritos por segmento (B-24, entrySet(IntSet)), cada réplica só devolve as
+     * chaves cujo segmento ela possui -- owners=2 de 3 réplicas, então é NORMAL e
+     * ESPERADO que uma chave apareça em só um subconjunto dos leitores. Uma chave
+     * ausente (não presente no Map) de um leitor NÃO é divergência; só é
+     * divergência quando dois leitores QUE POSSUEM a mesma chave discordam do
+     * valor. Antes da correção, esta chamada registrava uma violação I5 fantasma
+     * (comparava "VALID" contra "null" como se fossem valores divergentes).
+     */
+    @Test
+    void rodadaUnicaNaoRegistraI5ParaChaveAusenteEmApenasUmaReplica() {
+        InvariantAuditor a = new InvariantAuditor();
+        Instant t = Instant.now();
+        SessionState s = SessionState.criar("sid-1", "alice", t);
+
+        // replicaA possui sid-1 (segmento dela); replicaB nao possui esse
+        // segmento -- Map sem a chave, nao um valor null associado a ela.
+        Map<String, SessionState> replicaA = Map.of("sid-1", s);
+        Map<String, SessionState> replicaB = Map.of();
+
+        a.rodadaUnica(List.of(() -> replicaA, () -> replicaB), List.of());
+
+        assertEquals(0, a.total(), "chave presente em so uma replica (nao-owner na outra) nao e divergencia de I5");
+    }
+
+    /** Mesma regressão de P-21, para I6 (ver teste acima). */
+    @Test
+    void rodadaUnicaNaoRegistraI6ParaChaveAusenteEmApenasUmaReplica() {
+        InvariantAuditor a = new InvariantAuditor();
+        Instant t = Instant.now();
+        IdentityState i = IdentityState.criar("alice", t);
+
+        Map<String, IdentityState> idA = Map.of("alice", i);
+        Map<String, IdentityState> idB = Map.of();
+
+        a.rodadaUnica(List.of(), List.of(() -> idA, () -> idB));
+
+        assertEquals(0, a.total(), "chave presente em so uma replica (nao-owner na outra) nao e divergencia de I6");
+    }
+
+    /**
+     * I5 com 3 réplicas restritas por segmento: duas possuem a chave (owners=2)
+     * e divergem entre si; a terceira não possui a chave (Map vazio para ela).
+     * Deve detectar a divergência real entre as duas que possuem a chave, e
+     * continuar ignorando a terceira.
+     */
+    @Test
+    void rodadaUnicaDetectaI5ComTresReplicasEUmaNaoOwner() {
+        InvariantAuditor a = new InvariantAuditor();
+        Instant t = Instant.now();
+        SessionState valida = SessionState.criar("sid-1", "alice", t);
+        SessionState invalida = valida.invalidar(SessionState.Motivo.LOGOUT, t);
+
+        Map<String, SessionState> replicaA = Map.of("sid-1", valida);
+        Map<String, SessionState> replicaB = Map.of("sid-1", invalida);
+        Map<String, SessionState> replicaC = Map.of(); // nao-owner deste segmento
+
+        a.rodadaUnica(List.of(() -> replicaA, () -> replicaB, () -> replicaC), List.of());
+
+        assertEquals(1, a.total());
+        assertEquals("I5", a.drenar().get(0).invariante());
+    }
+
     @Test
     void dumpCsvProduzCabecalhoELinhas(@TempDir Path tmp) throws IOException {
         InvariantAuditor a = new InvariantAuditor();

@@ -89,6 +89,18 @@ public class InvariantAuditor implements AutoCloseable {
         verificarI6(leitoresIdentidade);
     }
 
+    /**
+     * I5, per spec/SessionStore.tla: convergência de ESTADO, MOTIVO e IDENTIDADE
+     * sob quiescência. (Correção de B-24, ver docs/registro-de-problemas.md P-21:
+     * desde que os leitores passaram a ser RESTRITOS POR SEGMENTO -- cada réplica
+     * só devolve as chaves cujo segmento ela possui, `owners=2` de 3 -- uma chave
+     * ausente num leitor (`null`) deixou de significar "divergência"; passou a
+     * significar, na maioria das vezes, "esta réplica não é owner desse
+     * segmento", o que é normal e esperado, não um defeito. A comparação agora só
+     * considera, para cada chave, os leitores que de fato a possuem (valor
+     * não-nulo) -- um leitor que não possui a chave é simplesmente ignorado para
+     * aquela chave, não comparado como se fosse um valor "ausente" divergente.)
+     */
     private void verificarI5(List<Supplier<Map<String, SessionState>>> leitores) {
         if (leitores == null || leitores.size() < 2) return;
         List<Map<String, SessionState>> snaps = new ArrayList<>(leitores.size());
@@ -96,15 +108,18 @@ public class InvariantAuditor implements AutoCloseable {
         Set<String> chaves = new HashSet<>();
         for (Map<String, SessionState> m : snaps) chaves.addAll(m.keySet());
         for (String k : chaves) {
-            SessionState.Estado ref = null;
-            boolean primeira = true;
+            SessionState ref = null;
             for (Map<String, SessionState> m : snaps) {
                 SessionState s = m.get(k);
-                SessionState.Estado e = s == null ? null : s.estado();
-                if (primeira) { ref = e; primeira = false; continue; }
-                if (!java.util.Objects.equals(ref, e)) {
+                if (s == null) continue; // esta replica nao possui o segmento desta chave -- nao e divergencia
+                if (ref == null) { ref = s; continue; }
+                if (s.estado() != ref.estado()
+                        || !java.util.Objects.equals(s.motivo(), ref.motivo())
+                        || !java.util.Objects.equals(s.identidade(), ref.identidade())) {
                     registrarViolacao("I5", k,
-                        "divergencia de estado entre replicas: " + ref + " vs " + e);
+                        "divergencia entre replicas: estado " + ref.estado() + " vs " + s.estado()
+                            + "; motivo " + ref.motivo() + " vs " + s.motivo()
+                            + "; identidade " + ref.identidade() + " vs " + s.identidade());
                     break;
                 }
             }
@@ -118,6 +133,11 @@ public class InvariantAuditor implements AutoCloseable {
      * de detectar divergência de {@code status()} sozinha -- lacuna encontrada ao
      * conectar leitores reais multi-réplica; nenhum teste existente dependia do
      * comportamento antigo, ver InvariantAuditorTest.)
+     *
+     * <p>Mesma correção de leitores restritos por segmento que {@link #verificarI5}
+     * (ver P-21): uma chave ausente (`null`) num leitor significa "esta réplica
+     * não possui este segmento", não divergência -- só compara leitores que de
+     * fato possuem a chave.</p>
      */
     private void verificarI6(List<Supplier<Map<String, IdentityState>>> leitores) {
         if (leitores == null || leitores.size() < 2) return;
@@ -126,20 +146,17 @@ public class InvariantAuditor implements AutoCloseable {
         Set<String> chaves = new HashSet<>();
         for (Map<String, IdentityState> m : snaps) chaves.addAll(m.keySet());
         for (String k : chaves) {
-            Long refContador = null;
-            IdentityState.Status refStatus = null;
-            boolean primeira = true;
+            IdentityState ref = null;
             for (Map<String, IdentityState> m : snaps) {
                 IdentityState st = m.get(k);
-                Long contador = st == null ? null : st.contadorFalhas();
-                IdentityState.Status status = st == null ? null : st.status();
-                if (primeira) { refContador = contador; refStatus = status; primeira = false; continue; }
-                boolean divergeContador = !java.util.Objects.equals(refContador, contador);
-                boolean divergeStatus = !java.util.Objects.equals(refStatus, status);
+                if (st == null) continue; // esta replica nao possui o segmento desta chave -- nao e divergencia
+                if (ref == null) { ref = st; continue; }
+                boolean divergeContador = ref.contadorFalhas() != st.contadorFalhas();
+                boolean divergeStatus = ref.status() != st.status();
                 if (divergeContador || divergeStatus) {
                     registrarViolacao("I6", k,
-                        "divergencia entre replicas: contador " + refContador + " vs " + contador
-                            + "; status " + refStatus + " vs " + status);
+                        "divergencia entre replicas: contador " + ref.contadorFalhas() + " vs " + st.contadorFalhas()
+                            + "; status " + ref.status() + " vs " + st.status());
                     break;
                 }
             }

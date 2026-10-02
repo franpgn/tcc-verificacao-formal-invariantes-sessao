@@ -221,12 +221,22 @@ public class SessionOps {
                 return r;
             }
             if (s.estado() == SessionState.Estado.INVALID) {
-                invalidacoesConfirmadas.put(sid, s.motivo());
+                // B-23 (correcao, ver docs/validacao-b23-b24-2026-10-02.md SS5):
+                // antes sobrescrevia invalidacoesConfirmadas incondicionalmente,
+                // escapando a checagem de I4 quando a primeira leitura pos-
+                // divergencia passava por este caminho em vez de validate().
+                verificarI1I4(sid, s);
                 latency.record("logout_noop", t0);
                 OpResult r = OpResult.okNoop();
                 emitir(OP_LOGOUT, t0, System.nanoTime(), r, sid);
                 return r;
             }
+            // A sessao esta VALID nesta leitura -- se ja houver um motivo
+            // confirmado para este sid (de uma invalidacao observada antes por
+            // esta instancia), isso e uma violacao de I1 (irreversibilidade),
+            // nao so um caso a sobrescrever. Checa ANTES de escrever a nova
+            // invalidacao abaixo.
+            verificarI1I4(sid, s);
             SessionState atual = s.invalidar(SessionState.Motivo.LOGOUT, Instant.now());
             sessions.put(sid, atual);
             invalidacoesConfirmadas.put(sid, atual.motivo());
@@ -303,6 +313,10 @@ public class SessionOps {
         sessions.entrySet().forEach(e -> {
             if (e.getValue().identidade().equals(identidade)
                     && e.getValue().estado() == SessionState.Estado.VALID) {
+                // B-23 (correcao, mesma razao de logout() acima): checa I1 contra
+                // um motivo ja confirmado para esta sid ANTES de escrever a nova
+                // invalidacao por cascata de bloqueio.
+                verificarI1I4(e.getKey(), e.getValue());
                 SessionState atual = e.getValue().invalidar(SessionState.Motivo.ADMIN_BLOCK, Instant.now());
                 sessions.put(e.getKey(), atual);
                 invalidacoesConfirmadas.put(e.getKey(), atual.motivo());

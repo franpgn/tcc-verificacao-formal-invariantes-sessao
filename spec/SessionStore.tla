@@ -124,12 +124,14 @@
 (*     `Simetria`. `Mesclar` copia o REGISTRO INTEIRO do lado vencedor para  *)
 (*     o perdedor -- literalmente `PREFERRED_NON_NULL`/`PREFERRED_ALWAYS`   *)
 (*     real, nunca uma comparação de `ts` (esse gate é exclusivo de         *)
-(*     `EntregaMensagem`). F1 e F2 são mutuamente exclusivos nesta rodada    *)
-(*     (`Particionar` exige todas as réplicas vivas) -- a combinação dos    *)
-(*     dois fica para rodada futura. Sob Opção A (decidida pelo Gestor), o  *)
-(*     achado P-16 (empate de `ts` entre escritas locais concorrentes no    *)
-(*     regime nominal) NÃO é resolvido aqui -- `canal`/`Broadcast`/         *)
-(*     `EntregaMensagem` permanecem exatamente como estavam.                *)
+(*     `EntregaMensagem`). F1 e F2 são mutuamente exclusivos nesta rodada,   *)
+(*     nas DUAS direções (P-24, correção de 2026-10-03 rodada 2):           *)
+(*     `Particionar` exige todas as réplicas vivas, E `Cair` exige          *)
+(*     `~particaoAtiva` -- a combinação dos dois fica para rodada futura.   *)
+(*     Sob Opção A (decidida pelo Gestor), o achado P-16 (empate de `ts`    *)
+(*     entre escritas locais concorrentes no regime nominal) NÃO é          *)
+(*     resolvido aqui -- `canal`/`Broadcast`/`EntregaMensagem` permanecem    *)
+(*     exatamente como estavam.                                            *)
 (***************************************************************************)
 EXTENDS Naturals, Sequences, FiniteSets
 
@@ -417,9 +419,22 @@ Unblock(r, id) ==
 (* verifica vivo), e ao reviver ela as drena uma a uma pela mesma lógica de *)
 (* gate por ts que já existe -- convergindo ao mesmo estado final que um    *)
 (* state-transfer produziria, sem precisar modelar snapshot.                *)
+(*                                                                         *)
+(* P-24 (2026-10-03 rodada 2, correção pedida pelo Senior/Gestor após       *)
+(* `docs/validacao-b22-f2-2026-10-03.md` §2): `Cair` agora também exige     *)
+(* `~particaoAtiva` -- antes só `Particionar` garantia a exclusão mútua     *)
+(* F1/F2 (exigindo todas vivas para COMEÇAR uma partição), mas nada          *)
+(* impedia `Cair` de disparar DURANTE uma partição já ativa, contradizendo  *)
+(* o texto que descreve a exclusão como mútua/bidirecional. A interação     *)
+(* "um nó cai enquanto particionado" nunca foi analisada (ex.: `Mesclar`    *)
+(* poderia copiar de um `rf` morto sem que isso fosse uma decisão           *)
+(* deliberada) -- corrige o código em vez do texto, custo de uma linha.     *)
+(* `Reviver` não precisa do mesmo gate: reverter um `Cair` já ocorrido não  *)
+(* envolve nenhuma leitura nova de `rf`, não cria a mesma ambiguidade.      *)
 (***************************************************************************)
 Cair(r) ==
   /\ vivo[r] = TRUE
+  /\ ~particaoAtiva   \* P-24: exclusão mútua F1/F2 também nesta direção
   /\ vivo' = [vivo EXCEPT ![r] = FALSE]
   /\ quedas' = quedas + 1
   /\ UNCHANGED <<sessoes, identidades, canal, relogio, particaoAtiva, ladoDe>>

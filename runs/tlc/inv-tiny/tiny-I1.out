@@ -1,5 +1,5 @@
 TLC2 Version 2.19 of 08 August 2024 (rev: 5a47802)
-Running breadth-first search Model-Checking with fp 50 and seed -6954015072836500693 with 20 workers on 20 cores with 7237MB heap and 64MB offheap memory (Windows 11 10.0 amd64, Oracle Corporation 1.8.0_503 x86_64, MSBDiskFPSet, DiskStateQueue).
+Running breadth-first search Model-Checking with fp 41 and seed -6735731645895809929 with 20 workers on 20 cores with 7237MB heap and 64MB offheap memory (Windows 11 10.0 amd64, Oracle Corporation 1.8.0_503 x86_64, MSBDiskFPSet, DiskStateQueue).
 Parsing file C:\Users\Francesco\Development\tcc\tcc-desenvolvimento\spec\MCSession.tla
 Parsing file C:\Users\Francesco\Development\tcc\tcc-desenvolvimento\spec\SessionStore.tla
 Parsing file C:\Users\Francesco\AppData\Local\Temp\TLC.tla
@@ -12,9 +12,9 @@ Semantic processing of module FiniteSets
 Semantic processing of module SessionStore
 Semantic processing of module TLC
 Semantic processing of module MCSession
-Starting... (2026-10-02 07:11:21)
+Starting... (2026-10-03 12:41:08)
 Computing initial states...
-Finished computing initial states: 1 distinct state generated at 2026-10-02 07:11:21.
+Finished computing initial states: 1 distinct state generated at 2026-10-03 12:41:08.
 Error: Invariant I1 is violated.
 Error: The behavior up to this point is:
 State 1: <Initial predicate>
@@ -41,11 +41,13 @@ State 1: <Initial predicate>
               identidade |-> "NONE",
               ts |-> 0 ] ) )
 /\ canal = (r1 :> <<>> @@ r2 :> <<>>)
+/\ quedas = 0
 /\ identidades = ( r1 :> (u1 :> [ts |-> 0, contador |-> 0, status |-> "OPEN"]) @@
   r2 :> (u1 :> [ts |-> 0, contador |-> 0, status |-> "OPEN"]) )
 /\ relogio = (r1 :> 0 @@ r2 :> 0)
+/\ vivo = (r1 :> TRUE @@ r2 :> TRUE)
 
-State 2: <Login line 188, col 3 to line 195, col 31 of module SessionStore>
+State 2: <Login line 219, col 3 to line 228, col 31 of module SessionStore>
 /\ sessoes = ( r1 :>
       ( s1 :>
             [ estado |-> "VALID",
@@ -79,11 +81,13 @@ State 2: <Login line 188, col 3 to line 195, col 31 of module SessionStore>
                  ts |-> 1 ],
            ident |-> [ts |-> 0, contador |-> 0, status |-> "OPEN"],
            sessoesAfetadas |-> {} ] >> )
+/\ quedas = 0
 /\ identidades = ( r1 :> (u1 :> [ts |-> 0, contador |-> 0, status |-> "OPEN"]) @@
   r2 :> (u1 :> [ts |-> 0, contador |-> 0, status |-> "OPEN"]) )
 /\ relogio = (r1 :> 1 @@ r2 :> 0)
+/\ vivo = (r1 :> TRUE @@ r2 :> TRUE)
 
-State 3: <Login line 188, col 3 to line 195, col 31 of module SessionStore>
+State 3: <Login line 219, col 3 to line 228, col 31 of module SessionStore>
 /\ sessoes = ( r1 :>
       ( s1 :>
             [ estado |-> "VALID",
@@ -126,11 +130,13 @@ State 3: <Login line 188, col 3 to line 195, col 31 of module SessionStore>
                  ts |-> 1 ],
            ident |-> [ts |-> 0, contador |-> 0, status |-> "OPEN"],
            sessoesAfetadas |-> {} ] >> )
+/\ quedas = 0
 /\ identidades = ( r1 :> (u1 :> [ts |-> 0, contador |-> 0, status |-> "OPEN"]) @@
   r2 :> (u1 :> [ts |-> 0, contador |-> 0, status |-> "OPEN"]) )
 /\ relogio = (r1 :> 1 @@ r2 :> 1)
+/\ vivo = (r1 :> TRUE @@ r2 :> TRUE)
 
-State 4: <Logout line 208, col 3 to line 214, col 31 of module SessionStore>
+State 4: <Logout line 241, col 3 to line 249, col 31 of module SessionStore>
 /\ sessoes = ( r1 :>
       ( s1 :>
             [ estado |-> "INVALID",
@@ -182,11 +188,13 @@ State 4: <Logout line 208, col 3 to line 214, col 31 of module SessionStore>
                  ts |-> 2 ],
            ident |-> [ts |-> 0, contador |-> 0, status |-> "OPEN"],
            sessoesAfetadas |-> {} ] >> )
+/\ quedas = 0
 /\ identidades = ( r1 :> (u1 :> [ts |-> 0, contador |-> 0, status |-> "OPEN"]) @@
   r2 :> (u1 :> [ts |-> 0, contador |-> 0, status |-> "OPEN"]) )
 /\ relogio = (r1 :> 2 @@ r2 :> 1)
+/\ vivo = (r1 :> TRUE @@ r2 :> TRUE)
 
-205 states generated, 68 distinct states found, 33 states left on queue.
-The depth of the complete state graph search is 7.
-The average outdegree of the complete state graph is 3 (minimum is 1, the maximum 6 and the 95th percentile is 5).
-Finished in 00s at (2026-10-02 07:11:21)
+194 states generated, 75 distinct states found, 48 states left on queue.
+The depth of the complete state graph search is 5.
+The average outdegree of the complete state graph is 4 (minimum is 1, the maximum 8 and the 95th percentile is 8).
+Finished in 00s at (2026-10-03 12:41:08)

@@ -221,7 +221,7 @@ CAND-052 §4).
 | F1 (*crash*) | I1 (irreversibilidade do logout) | O3 (Logout) seguido de O1 (Login) ou leitura em réplica que não recebeu `SESSAO_INVALIDA` antes do *crash* | Réplica cai após aplicar `Logout` localmente mas antes de propagar `SESSAO_INVALIDA`; na recuperação, *state transfer* pode não reconciliar corretamente se uma escrita concorrente de prioridade LWW inferior "resgatar" o estado antigo | Evento pontual: `Validate`/`Login` retorna `VALID`/`OK` para uma `sid` com `Logout` previamente confirmado (`return_code=OK` num evento anterior no CSV, mesma `key`), dentro da janela `[crash_start, crash_end + W_recovery]` | **PENDENTE** — Etapas 3-4 não executadas |
 | F1 (*crash*) | I2 (bloqueio consistente) | O6 (Block) concorrente com O1/O2 em réplica que cai antes de aplicar `ID_BLOQUEIA` | Réplica que caiu detém `status=OPEN` obsoleto; nós sobreviventes já aplicaram o bloqueio; leitura servida pela réplica em recuperação, antes do *state transfer* concluir, pode aceitar sessão de identidade já bloqueada | Evento pontual: `Login`/`Validate` retorna sucesso para uma identidade com `Block` confirmado em outra réplica na mesma janela de *crash* | **PENDENTE** |
 | F1 (*crash*) | I4 (motivo único) | O3/O6 concorrentes (Logout vs. Block na mesma sessão) atravessando o *crash* | Corrida entre dois motivos de invalidação (`LOGOUT` vs. `ADMIN_BLOCK`) resolvida de forma diferente pré/pós-recuperação | Evento pontual: mesma `sid` reporta `motivo` diferente em leituras antes/depois da janela de recuperação | **PENDENTE** |
-| F2 (partição) | I1/I2/I4 | mesmas operações acima, mas com **ambos** os subconjuntos aceitando escritas (risco de *split-brain*, distinto de F1 onde um nó simplesmente para de responder) | Divergência sustentada durante `[part_start, part_end]`, sem garantia de que o lado minoritário pare de aceitar escrita | Mesmo formato de evento pontual, mas com `partition_side` como dimensão adicional do observável | **PENDENTE (dobrado: sem modelo formal e sem injetor experimental — ver B-22/B-29)** |
+| F2 (partição) | I1/I2/I4 | O1/O3/O6 (Login/Logout/Block) na réplica que fica isolada como **minoria** pouco antes da partição ser detectada, seguidos de leitura em qualquer réplica após o *merge* | **Atualização 2026-10-03 (B-22, Fases 4-5 implementadas e verificadas pelo TLC — corrige a hipótese original desta linha):** o mecanismo **não** é "ambos os subconjuntos aceitando escritas" — isso presumia `ALLOW_READ_WRITES`; a configuração real é `DENY_READ_WRITES` (Achado E, confirmado contra o código-fonte do Infinispan), então só a **maioria** continua escrevendo, a minoria congela. O mecanismo real, já **confirmado** pelo TLC para I5/I6 (ver nota abaixo) e plausível por analogia direta para I1/I2/I4 (ainda não encontrado pela busca): uma escrita local confirmada pela réplica que está prestes a ficar isolada é **descartada** no `Mesclar` (que copia o registro inteiro do lado vencedor, nunca compara `ts`) sempre que o representante (`rf`) escolhido do lado vencedor ainda não tinha, ele mesmo, convergido com os demais membros do seu próprio lado | Evento pontual: `Validate`/`Login` retorna um `estado`/`motivo` que diverge do que o próprio cliente já havia recebido como confirmado antes da partição, numa sessão cujo registro foi sobrescrito pelo `Mesclar` | **PENDENTE para I1/I2/I4 especificamente** — modelo formal de F2 já existe e foi verificado (`spec/SessionStore.tla`, ações `Particionar`/`Mesclar`; `runs/tlc/inv-{tiny,small,medium,full}/`), mas nenhum contraexemplo genuíno de F2 foi encontrado ainda para estes três invariantes (os contraexemplos obtidos nessas execuções são o achado P-16 pré-existente, sem nenhuma ação de partição no traço — confirmado em `docs/validacao-b22-f2-2026-10-03.md` §1). Injetor experimental real (`inject-partition.sh`, B-29) também continua sem existir em nenhuma branch. **F2 × I5/I6, em contraste, já está CONFIRMADO — ver nota abaixo, não confundir os dois.** |
 | F3 (*jitter*) | I1/I2/I4 | qualquer operação cuja mensagem de propagação sofra atraso suficiente para inverter a ordem de entrega em relação a uma operação concorrente | Já parcialmente coberto pela abstração de `EntregaMensagem` não-determinística no TLA+ (reordenação já é modelada sem F3 precisar ser uma ação dedicada) — o papel de F3 no modelo é **aumentar a probabilidade**, não introduzir um novo tipo de comportamento | Correlação entre janela de p99 elevado (já mensurável — `runs/S1-F3/comparacao.json` real, delta de até +108 ms) e qualquer evento pontual de violação na mesma janela | **PENDENTE quanto a violação; a correlação de latência já é computável hoje com dados reais (Achado C)** |
 
 **Nota sobre I5/I6 (convergência):** não entram na tabela acima porque sua forma de
@@ -233,6 +233,62 @@ exaustivamente em `tiny`/`small`/`medium` no fluxo nominal (sem falha —
 `docs/relatorio-tlc-2026-09-16-mudanca4.md`), a expectativa é que, sob falha, a
 convergência ainda ocorra, só que depois de um atraso mensurável — essa é uma hipótese
 a testar, não um resultado.
+
+**Atualização 2026-10-03 (B-22, Fase 5 — F2 × I5/I6: CONFIRMADO, refutando a hipótese
+acima para esta falha especificamente).** A hipótese de "atraso mensurável, convergência
+eventual" foi testada pelo TLC para F2 (partição) e **não se confirmou** — o resultado
+real é mais severo: **divergência permanente**, não um atraso. Contraexemplo completo em
+`runs/tlc/inv-full/full-I6.out` (6 estados; mesmo mecanismo confirmado também em
+`runs/tlc/inv-tiny/tiny-I5.out` e `runs/tlc/inv-small/small-I6.out`; reconstrução
+estado-a-estado em `docs/validacao-b22-f2-2026-10-03.md` §1.1):
+
+1. Uma réplica (`r1`) executa `IncrementFailure` localmente (`contador=1,ts=1`) e
+   enfileira a mensagem `CONTADOR_INC` correspondente para as demais réplicas — ainda
+   não entregue.
+2. `Particionar` isola `r1` como lado **minoritário** (1 réplica) contra as outras duas
+   (lado majoritário), pouco depois da escrita local, antes de qualquer entrega.
+3. **Antes** do `Mesclar`, uma das réplicas do lado majoritário já processou a mensagem
+   de `r1` (via `EntregaMensagem`) e já está correta (`contador=1,ts=1`) — mas a outra
+   réplica do mesmo lado ainda não.
+4. `Mesclar` resolve a favor do lado majoritário (maioria vence, registro **inteiro**,
+   nunca por comparação de `ts` — `PREFERRED_NON_NULL`/`PREFERRED_ALWAYS` real, Achado
+   E) copiando para `r1` (o lado perdedor) o registro de um representante
+   **escolhido não-deterministicamente dentro do lado vencedor** — e, nesta execução,
+   o representante escolhido é precisamente a réplica que **ainda não tinha
+   convergido** internamente com sua própria parceira de lado. `r1` herda, portanto,
+   um valor desatualizado (`contador=0,ts=0`), descartando sua própria escrita
+   confirmada.
+5. A mensagem original de `r1`, já enfileirada antes da partição, continua sendo
+   entregue normalmente depois do *merge* (não é removida retroativamente) — mas só
+   alcança a réplica majoritária que ainda não a tinha processado, trazendo-a também
+   para `contador=1,ts=1`. **`r1` nunca recebe de volta a própria escrita**, porque o
+   seu próprio *broadcast* já foi consumido pelas outras réplicas, não por ela mesma.
+6. Em quiescência plena (canal vazio, sem partição ativa): `r1.contador=0`,
+   demais réplicas `.contador=1` — **divergência permanente, não um atraso**. Nada
+   resta na fila para reconciliar `r1`.
+
+**Mecanismo preciso (não a generalização "mensagem entregue depois do merge"):** o
+fator decisivo não é a ordem entrega-vs-merge por si só (uma das duas réplicas do lado
+vencedor já havia recebido a mensagem **antes** do `Mesclar`, no passo 3) — é
+`Mesclar` escolher, como representante do lado vencedor, uma réplica que **ainda não
+convergiu internamente com seu próprio lado**. Se o representante escolhido tivesse
+sido a réplica já atualizada, não haveria perda por este caminho.
+
+**Por que isso não se aplica a F1/F3:** `Cair`/`Reviver` (F1) não produziram nenhum
+contraexemplo de I5/I6 ligado a eles (`docs/validacao-b22-f1-2026-10-03.md`) — a
+hipótese de "convergência com atraso, não permanente" permanece válida e não
+contrariada para F1, e, por extensão (mesmo canal/`EntregaMensagem`, inalterados sob
+F3), também para F3. A divergência permanente é exclusiva de F2 porque `Mesclar` é o
+único mecanismo do modelo que descarta um valor por **posição/tamanho de partição**,
+nunca por comparação de `ts` — o gate de `EntregaMensagem`, que governa toda
+convergência sob F1/F3, sempre favorece o valor mais recente e por isso nunca perde um
+*update* já confirmado.
+
+**F2 × I1/I2/I4 permanece PENDENTE** (ver linha da tabela acima) — o mecanismo acima é
+plausível por analogia direta (a mesma escolha de `rf` não-convergido poderia, em
+tese, descartar uma invalidação de sessão em vez de um incremento de contador), mas
+**isso ainda não foi encontrado pelo TLC para I1, I2 ou I4 especificamente** — não
+presumir que já está confirmado para esses três só porque está confirmado para I5/I6.
 
 ### 3.3 Por que o catálogo fica com status PENDENTE, e por que isso é a decisão correta
 

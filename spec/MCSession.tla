@@ -41,15 +41,24 @@
 (*    F1 isolado).                                                         *)
 (*                                                                         *)
 (*  - F2 (B-22, 2026-10-03, Particionar/Mesclar -- ver                     *)
-(*    docs/plano-b22-falhas-explicitas-2026-10-03.md SS2) NAO precisou de   *)
-(*    uma state constraint nova: particaoAtiva (BOOLEAN) e ladoDe          *)
-(*    ([REPLICAS -> {1,2}]) tem dominio FINITO por construcao (diferente   *)
-(*    de quedas/relogio, que sao Nat sem teto) -- Particionar/Mesclar       *)
-(*    podem repetir indefinidamente sem tornar o espaco de estados          *)
-(*    infinito por essa via. LimiteEventosFalha permanece so `quedas =<    *)
-(*    MaxEventosFalha` nesta rodada (nao ganhou "+ particoes") -- decisao   *)
-(*    de escopo explicita, nao um esquecimento; reavaliar se a             *)
-(*    tratabilidade exigir no futuro.                                       *)
+(*    docs/plano-b22-falhas-explicitas-2026-10-03.md SS2): particaoAtiva    *)
+(*    (BOOLEAN) e ladoDe ([REPLICAS -> {1,2}]) tem dominio FINITO por       *)
+(*    construcao (diferente de quedas/relogio, que sao Nat sem teto) --    *)
+(*    isso FINITIZA o espaco por essa via, mas nao o torna TRATAVEL: nada   *)
+(*    limita quantos CICLOS Particionar->Mesclar o TLC explora por          *)
+(*    comportamento, e cada ciclo pode levar sessoes/identidades/relogio a  *)
+(*    uma combinacao nova. A primeira rodada (commit dc64154) decidiu nao   *)
+(*    adicionar "+ particoes" por esse raciocinio de finitizacao -- decisao *)
+(*    REVISADA numa segunda rodada (2026-10-03, apos                        *)
+(*    docs/validacao-b22-f2-2026-10-03.md SS3, Senior): a pergunta certa    *)
+(*    nao e "o espaco e finito", e "o espaco e TRATAVEL" -- confirmado       *)
+(*    empiricamente que nao era (TypeOK/I3/I4 deixaram de fechar exaustivo  *)
+(*    em tiny/small/medium sob F2, que antes fechavam em 0-18s; ver          *)
+(*    docs/registro-de-problemas.md P-25). Nova variavel `particoes: Nat`   *)
+(*    (incrementada em Particionar, nunca decrementada, mesmo espirito de   *)
+(*    `quedas`) e LimiteEventosFalha estendida para                        *)
+(*    `quedas + particoes =< MaxEventosFalha` abaixo -- exatamente a        *)
+(*    formula que o plano original ja antecipava (SS4.2).                   *)
 (*                                                                         *)
 (*  - Simetria preservada sem alteracao tambem sob F2: Particionar explora *)
 (*    TODOS os subconjuntos nao-triviais de REPLICAS simetricamente, e     *)
@@ -64,11 +73,11 @@ EXTENDS SessionStore, TLC
 
 CONSTANT MaxCanal,         \* teto para o comprimento de CADA fila canal[r]
          MaxRelogio,       \* teto para o valor de CADA contador de versao relogio[r]
-         MaxEventosFalha   \* teto para o total de eventos de queda (B-22, F1)
+         MaxEventosFalha   \* teto para o total de eventos de queda + particao (B-22, F1+F2)
 
 LimiteCanal        == \A r \in REPLICAS: Len(canal[r]) =< MaxCanal
 LimiteRelogio      == \A r \in REPLICAS: relogio[r] =< MaxRelogio
-LimiteEventosFalha == quedas =< MaxEventosFalha
+LimiteEventosFalha == quedas + particoes =< MaxEventosFalha
 
 Simetria == Permutations(IDS) \cup Permutations(SIDS) \cup Permutations(REPLICAS)
 ==========================================================================

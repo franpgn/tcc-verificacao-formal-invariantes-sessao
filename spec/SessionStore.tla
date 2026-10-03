@@ -85,8 +85,33 @@
 (*     a revisão troca a representação do estado, não o que cada           *)
 (*     invariante afirma.                                                  *)
 (*                                                                         *)
-(* Falhas explícitas (crash, partição, atraso/jitter) ficam para TCC-II,   *)
-(* conforme Apêndice B, etapas 3 e 4 (Fases 4-5 do plano de revisão).      *)
+(*   - F1 (B-22, 2026-10-03 -- ver docs/plano-b22-falhas-explicitas-        *)
+(*     2026-10-03.md §1): ações `Cair(r)`/`Reviver(r)` tornam uma réplica   *)
+(*     temporariamente incapaz de agir (nem ações locais, nem               *)
+(*     `EntregaMensagem`), via nova variável `vivo: [REPLICAS -> BOOLEAN]`. *)
+(*     Mínima, SEM mecanismo de merge/snapshot: mensagens endereçadas à     *)
+(*     réplica caída continuam se acumulando normalmente em `canal[r]`      *)
+(*     (`Broadcast` não verifica `vivo`); ao reviver, a réplica volta a     *)
+(*     drenar seu acúmulo via `EntregaMensagem`, uma mensagem por vez, pela *)
+(*     mesma lógica de gate por `ts` que já existe -- convergindo ao mesmo  *)
+(*     estado final que um *state-transfer* produziria (o gate por `ts` já *)
+(*     garante que o valor mais recente vence, independente da ordem de    *)
+(*     entrega). Não adicionada para capturar um risco que se espera        *)
+(*     encontrar (o Achado E já prevê que não há violação aqui, já que F1   *)
+(*     nunca ativa DEGRADED/merge-policy no Infinispan real) -- adicionada  *)
+(*     para que o TLC de fato EXPLORE o cenário de indisponibilidade        *)
+(*     temporária, transformando "F1 nunca viola" de presunção em resultado *)
+(*     verificado (princípio de falsificabilidade, Wieringa CAND-019).      *)
+(*     Nova variável auxiliar `quedas: Nat` conta o número total de         *)
+(*     eventos `Cair` já ocorridos no comportamento (nunca decrementada por *)
+(*     `Reviver`) -- usada só por `MCSession.tla` (`LimiteEventosFalha`)    *)
+(*     para finitizar o espaço de estados, mesmo espírito de `relogio`/     *)
+(*     `LimiteRelogio`. Não quebra `Simetria`: `Cair`/`Reviver` tratam toda  *)
+(*     réplica igualmente, sem termo dependente de qual réplica é qual.     *)
+(*                                                                         *)
+(* F2 (partição real, `Particionar`/`Mesclar`) e a combinação F1+F2 ficam   *)
+(* para rodada futura (docs/plano-b22-falhas-explicitas-2026-10-03.md §2),  *)
+(* fora do escopo desta versão.                                            *)
 (***************************************************************************)
 EXTENDS Naturals, Sequences, FiniteSets
 
@@ -101,10 +126,12 @@ ASSUME /\ LIMITE \in Nat /\ LIMITE > 0
 VARIABLES sessoes,       \* [REPLICAS -> [SIDS -> SessaoRec]] -- registro único por sessão
           identidades,   \* [REPLICAS -> [IDS  -> IdentRec]]  -- registro único por identidade
           canal,         \* [REPLICAS -> Seq(Mensagem)] -- fila de entrada por réplica (broadcast)
-          relogio        \* [REPLICAS -> Nat] -- contador de versão local (análogo a `versao`
+          relogio,       \* [REPLICAS -> Nat] -- contador de versão local (análogo a `versao`
                           \* de SessionState.java/IdentityState.java), avança só em escrita local
+          vivo,          \* [REPLICAS -> BOOLEAN] -- F1 (B-22): FALSE enquanto a réplica está "caída"
+          quedas         \* Nat -- F1 (B-22): total de eventos Cair já ocorridos (nunca decrementa)
 
-vars == << sessoes, identidades, canal, relogio >>
+vars == << sessoes, identidades, canal, relogio, vivo, quedas >>
 
 Estados   == {"NONE", "VALID", "INVALID"}
 MotivosT  == {"NONE", "LOGOUT", "EXPIRADA", "ADMIN_BLOCK"}
@@ -149,6 +176,8 @@ TypeOK ==
   /\ identidades \in [REPLICAS -> [IDS -> IdentRec]]
   /\ canal       \in [REPLICAS -> Seq(Mensagem)]
   /\ relogio     \in [REPLICAS -> Nat]
+  /\ vivo        \in [REPLICAS -> BOOLEAN]
+  /\ quedas      \in Nat
 
 (***************************************************************************)
 (* Estado inicial.                                                          *)
@@ -158,6 +187,8 @@ Init ==
   /\ identidades = [r \in REPLICAS |-> [id \in IDS |-> IdentVazia]]
   /\ canal       = [r \in REPLICAS |-> << >>]
   /\ relogio     = [r \in REPLICAS |-> 0]
+  /\ vivo        = [r \in REPLICAS |-> TRUE]
+  /\ quedas      = 0
 
 (***************************************************************************)
 (* Enfileira msg nas filas de TODAS as réplicas exceto a de origem, que já *)
@@ -185,6 +216,7 @@ Login(r, id, s) ==
       msg == [tipo |-> "SESSAO_VALIDA", chave |-> s,
               sessao |-> candidato, ident |-> IdentVazia, sessoesAfetadas |-> {}]
   IN
+  /\ vivo[r] = TRUE   \* F1 (B-22): réplica caída não executa nenhuma ação local
   /\ identidades[r][id].status = "OPEN"
   /\ sessoes[r][s].estado = "NONE"
   /\ relogio' = [relogio EXCEPT ![r] = novoTS]
@@ -193,6 +225,7 @@ Login(r, id, s) ==
        ELSE sessoes' = sessoes
   /\ canal' = Broadcast(r, msg)
   /\ identidades' = identidades
+  /\ UNCHANGED <<vivo, quedas>>
 
 (* O3, logout: marca sessão como INVALID com motivo LOGOUT. Idempotente   *)
 (* (precondição exige VALID). `identidade` é preservada do registro atual *)
@@ -205,6 +238,7 @@ Logout(r, s) ==
       msg == [tipo |-> "SESSAO_INVALIDA", chave |-> s,
               sessao |-> candidato, ident |-> IdentVazia, sessoesAfetadas |-> {}]
   IN
+  /\ vivo[r] = TRUE   \* F1 (B-22)
   /\ sessoes[r][s].estado = "VALID"
   /\ relogio' = [relogio EXCEPT ![r] = novoTS]
   /\ IF novoTS > sessoes[r][s].ts
@@ -212,6 +246,7 @@ Logout(r, s) ==
        ELSE sessoes' = sessoes
   /\ canal' = Broadcast(r, msg)
   /\ identidades' = identidades
+  /\ UNCHANGED <<vivo, quedas>>
 
 (* O4, incrementFailure: incrementa contador, bloqueia se atingir LIMITE. *)
 (* Única ação cujo broadcast é CONDICIONAL ao próprio gate local: `novo`  *)
@@ -231,6 +266,7 @@ IncrementFailure(r, id) ==
       msg == [tipo |-> "CONTADOR_INC", chave |-> id,
               sessao |-> SessaoVazia, ident |-> candidato, sessoesAfetadas |-> {}]
   IN
+  /\ vivo[r] = TRUE   \* F1 (B-22)
   /\ identidades[r][id].contador < LIMITE
   /\ relogio' = [relogio EXCEPT ![r] = novoTS]
   /\ IF novoTS > identidades[r][id].ts
@@ -239,6 +275,7 @@ IncrementFailure(r, id) ==
        ELSE /\ identidades' = identidades
             /\ canal' = canal
   /\ sessoes' = sessoes
+  /\ UNCHANGED <<vivo, quedas>>
 
 (* O5, resetFailures: zera o contador de id na réplica r. `status` é      *)
 (* preservado do registro atual -- mesma semântica de                     *)
@@ -249,6 +286,7 @@ ResetFailures(r, id) ==
       msg == [tipo |-> "CONTADOR_RESET", chave |-> id,
               sessao |-> SessaoVazia, ident |-> candidato, sessoesAfetadas |-> {}]
   IN
+  /\ vivo[r] = TRUE   \* F1 (B-22)
   /\ identidades[r][id].contador # 0
   /\ relogio' = [relogio EXCEPT ![r] = novoTS]
   /\ IF novoTS > identidades[r][id].ts
@@ -256,6 +294,7 @@ ResetFailures(r, id) ==
        ELSE identidades' = identidades
   /\ canal' = Broadcast(r, msg)
   /\ sessoes' = sessoes
+  /\ UNCHANGED <<vivo, quedas>>
 
 (* O6, block: marca identidade como BLOCKED e invalida sessões VALID da   *)
 (* identidade (cascata, mesma regra de negócio de SessionOps.block(), que *)
@@ -275,6 +314,7 @@ Block(r, id) ==
       msg == [tipo |-> "ID_BLOQUEIA", chave |-> id,
               sessao |-> candidatoSessao, ident |-> candidatoId, sessoesAfetadas |-> afetadas]
   IN
+  /\ vivo[r] = TRUE   \* F1 (B-22)
   /\ identidades[r][id].status = "OPEN"
   /\ relogio' = [relogio EXCEPT ![r] = novoTS]
   /\ IF novoTS > identidades[r][id].ts
@@ -284,6 +324,7 @@ Block(r, id) ==
                   [s \in SIDS |-> IF s \in afetadas /\ novoTS > @[s].ts
                                   THEN candidatoSessao ELSE @[s]]]
   /\ canal' = Broadcast(r, msg)
+  /\ UNCHANGED <<vivo, quedas>>
 
 (* O7, unblock: remove a marca BLOCKED e zera o contador. Não recria      *)
 (* sessões previamente invalidadas pelo bloqueio. NOTA (achado lateral,   *)
@@ -298,6 +339,7 @@ Unblock(r, id) ==
       msg == [tipo |-> "ID_DESBLOQUEIA", chave |-> id,
               sessao |-> SessaoVazia, ident |-> candidato, sessoesAfetadas |-> {}]
   IN
+  /\ vivo[r] = TRUE   \* F1 (B-22)
   /\ identidades[r][id].status = "BLOCKED"
   /\ relogio' = [relogio EXCEPT ![r] = novoTS]
   /\ IF novoTS > identidades[r][id].ts
@@ -305,6 +347,28 @@ Unblock(r, id) ==
        ELSE identidades' = identidades
   /\ canal' = Broadcast(r, msg)
   /\ sessoes' = sessoes
+  /\ UNCHANGED <<vivo, quedas>>
+
+(***************************************************************************)
+(* F1 (B-22, 2026-10-03): Cair/Reviver -- ver docs/plano-b22-falhas-        *)
+(* explicitas-2026-10-03.md §1.3. Ação mínima, sem mecanismo de merge: uma  *)
+(* réplica "caída" simplesmente não executa nenhuma ação local nem          *)
+(* EntregaMensagem (processo parado não roda nada); mensagens endereçadas a *)
+(* ela continuam se acumulando normalmente em canal[r] (Broadcast não       *)
+(* verifica vivo), e ao reviver ela as drena uma a uma pela mesma lógica de *)
+(* gate por ts que já existe -- convergindo ao mesmo estado final que um    *)
+(* state-transfer produziria, sem precisar modelar snapshot.                *)
+(***************************************************************************)
+Cair(r) ==
+  /\ vivo[r] = TRUE
+  /\ vivo' = [vivo EXCEPT ![r] = FALSE]
+  /\ quedas' = quedas + 1
+  /\ UNCHANGED <<sessoes, identidades, canal, relogio>>
+
+Reviver(r) ==
+  /\ vivo[r] = FALSE
+  /\ vivo' = [vivo EXCEPT ![r] = TRUE]
+  /\ UNCHANGED <<sessoes, identidades, canal, relogio, quedas>>
 
 (***************************************************************************)
 (* Entrega de uma mensagem qualquer do canal a uma réplica destino r.      *)
@@ -317,11 +381,12 @@ Unblock(r, id) ==
 (* em EntregaMensagem (sem merge-on-receive, mesma decisão D-4 anterior).  *)
 (***************************************************************************)
 EntregaMensagem(r) ==
+  /\ vivo[r] = TRUE   \* F1 (B-22): réplica caída não processa nem a propria fila
   /\ Len(canal[r]) > 0
   /\ \E i \in 1..Len(canal[r]):
        LET m == canal[r][i] IN
        /\ canal' = [canal EXCEPT ![r] = SubSeq(@, 1, i-1) \o SubSeq(@, i+1, Len(@))]
-       /\ UNCHANGED relogio
+       /\ UNCHANGED <<relogio, vivo, quedas>>
        /\ CASE m.tipo = "SESSAO_VALIDA" ->
                 /\ IF m.sessao.ts > sessoes[r][m.chave].ts
                      THEN sessoes' = [sessoes EXCEPT ![r][m.chave] = m.sessao]
@@ -371,6 +436,8 @@ Next ==
   \/ \E r \in REPLICAS, id \in IDS:             Block(r, id)
   \/ \E r \in REPLICAS, id \in IDS:             Unblock(r, id)
   \/ \E r \in REPLICAS:                          EntregaMensagem(r)
+  \/ \E r \in REPLICAS:                          Cair(r)       \* F1 (B-22)
+  \/ \E r \in REPLICAS:                          Reviver(r)    \* F1 (B-22)
 
 Spec == Init /\ [][Next]_vars
 
@@ -445,10 +512,15 @@ I6 ==
 (* real desta versão. I1 e I2, por construção, continuam violados no       *)
 (* fluxo nominal: são propriedades de segurança *cross-réplica* não        *)
 (* condicionadas a quiescência, e o modelo captura atraso de propagação    *)
-(* real -- ficam para refinamento em TCC-II (Apêndice B, etapas 3-4),      *)
-(* junto com falhas explícitas (crash/partição/jitter) e a ação de         *)
-(* partição real (F2, Fases 4-5 do plano de revisão), que substituirá o    *)
-(* gate por `ts` em EntregaMensagem, no caminho de partição, pela regra    *)
-(* real de maioria vence/registro inteiro (Achado E, itens A.1-A.2).       *)
+(* real -- ficam para refinamento em TCC-II (Apêndice B, etapas 3-4).      *)
+(*                                                                         *)
+(* F1 (B-22, 2026-10-03, Cair/Reviver/vivo/quedas): a expectativa teórica   *)
+(* (Achado E, A.3 -- F1 nunca ativa DEGRADED/merge-policy no Infinispan     *)
+(* real) é que I1-I6 NÃO mudem de veredito com F1 isolado. Isso é uma       *)
+(* expectativa a TESTAR pelo TLC, não um resultado a presumir -- ver        *)
+(* docs/plano-b22-falhas-explicitas-2026-10-03.md §1.4/§4.1 e o veredito    *)
+(* real registrado nas mensagens de commit da branch                      *)
+(* feature/b22-f1-cair-reviver. F2 (partição real, Particionar/Mesclar) e   *)
+(* a combinação F1+F2 ficam para rodada futura (mesmo documento, §2).       *)
 (***************************************************************************)
 =============================================================================

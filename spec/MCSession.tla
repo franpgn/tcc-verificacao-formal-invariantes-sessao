@@ -27,7 +27,21 @@
 (*    (contador de versao local, sem nenhum termo dependente de QUAL       *)
 (*    replica originou a escrita), entao permutar REPLICAS permuta um      *)
 (*    comportamento valido em outro comportamento valido. IDS e SIDS       *)
-(*    permanecem intercambiaveis como antes.                               *)
+(*    permanecem intercambiaveis como antes. Cair/Reviver (B-22, F1) nao   *)
+(*    alteram isso -- tratam toda replica igualmente.                      *)
+(*                                                                         *)
+(*  - LimiteEventosFalha (B-22, 2026-10-03, F1 -- ver                      *)
+(*    docs/plano-b22-falhas-explicitas-2026-10-03.md SS4.2): quedas e um    *)
+(*    Nat sem teto (incrementado a cada Cair), tornando o espaco de        *)
+(*    estados infinito tambem por essa via (o TLC exploraria sequencias    *)
+(*    arbitrarias de queda->recuperacao->queda->...). LimiteEventosFalha   *)
+(*    impoe quedas =< MaxEventosFalha (state constraint). Valor inicial    *)
+(*    recomendado: MaxEventosFalha = 1 (um unico evento de queda por       *)
+(*    comportamento, suficiente para a primeira rodada de verificacao de   *)
+(*    F1 isolado). Formula parcial por desenho: quando F2 (Particionar)    *)
+(*    for implementado numa rodada futura, esta formula passa a ser        *)
+(*    `quedas + particoes =< MaxEventosFalha`, somando o contador de       *)
+(*    particoes ainda nao existente.                                       *)
 (*                                                                         *)
 (* Uso (a partir de spec/):                                                *)
 (*   java -cp tla2tools.jar tlc2.TLC -config <arquivo>.cfg \               *)
@@ -35,11 +49,13 @@
 (***************************************************************************)
 EXTENDS SessionStore, TLC
 
-CONSTANT MaxCanal,    \* teto para o comprimento de CADA fila canal[r]
-         MaxRelogio   \* teto para o valor de CADA contador de versao relogio[r]
+CONSTANT MaxCanal,         \* teto para o comprimento de CADA fila canal[r]
+         MaxRelogio,       \* teto para o valor de CADA contador de versao relogio[r]
+         MaxEventosFalha   \* teto para o total de eventos de queda (B-22, F1)
 
-LimiteCanal   == \A r \in REPLICAS: Len(canal[r]) =< MaxCanal
-LimiteRelogio == \A r \in REPLICAS: relogio[r] =< MaxRelogio
+LimiteCanal        == \A r \in REPLICAS: Len(canal[r]) =< MaxCanal
+LimiteRelogio      == \A r \in REPLICAS: relogio[r] =< MaxRelogio
+LimiteEventosFalha == quedas =< MaxEventosFalha
 
 Simetria == Permutations(IDS) \cup Permutations(SIDS) \cup Permutations(REPLICAS)
 ==========================================================================

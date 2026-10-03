@@ -109,9 +109,27 @@
 (*     `LimiteRelogio`. Não quebra `Simetria`: `Cair`/`Reviver` tratam toda  *)
 (*     réplica igualmente, sem termo dependente de qual réplica é qual.     *)
 (*                                                                         *)
-(* F2 (partição real, `Particionar`/`Mesclar`) e a combinação F1+F2 ficam   *)
-(* para rodada futura (docs/plano-b22-falhas-explicitas-2026-10-03.md §2),  *)
-(* fora do escopo desta versão.                                            *)
+(*   - F2 (B-22, 2026-10-03 -- ver docs/plano-b22-falhas-explicitas-        *)
+(*     2026-10-03.md §2, Opção A): ações `Particionar`/`Mesclar` modelam    *)
+(*     partição real. `Particionar` escolhe não-deterministicamente P1/P2   *)
+(*     (não-vazios, disjuntos); novas variáveis `particaoAtiva: BOOLEAN` e  *)
+(*     `ladoDe: [REPLICAS -> {1,2}]`. Enquanto particionada, `PodeAgir(r)`  *)
+(*     (generaliza o gate de `vivo` de F1) bloqueia as 6 ações locais e      *)
+(*     `EntregaMensagem` para o lado MINORITÁRIO (fiel a `DENY_READ_WRITES`,*)
+(*     a configuração real do projeto) -- sem chamar `Cair`/`Reviver`       *)
+(*     (evento logicamente distinto: F1 é o processo parar, F2 é a rede     *)
+(*     cortar). `Vencedor` decide maioria/minoria por TAMANHO (nunca por    *)
+(*     timestamp, Achado E A.1); em empate (só possível com 2 réplicas),    *)
+(*     ambos os lados são explorados não-deterministicamente, preservando   *)
+(*     `Simetria`. `Mesclar` copia o REGISTRO INTEIRO do lado vencedor para  *)
+(*     o perdedor -- literalmente `PREFERRED_NON_NULL`/`PREFERRED_ALWAYS`   *)
+(*     real, nunca uma comparação de `ts` (esse gate é exclusivo de         *)
+(*     `EntregaMensagem`). F1 e F2 são mutuamente exclusivos nesta rodada    *)
+(*     (`Particionar` exige todas as réplicas vivas) -- a combinação dos    *)
+(*     dois fica para rodada futura. Sob Opção A (decidida pelo Gestor), o  *)
+(*     achado P-16 (empate de `ts` entre escritas locais concorrentes no    *)
+(*     regime nominal) NÃO é resolvido aqui -- `canal`/`Broadcast`/         *)
+(*     `EntregaMensagem` permanecem exatamente como estavam.                *)
 (***************************************************************************)
 EXTENDS Naturals, Sequences, FiniteSets
 
@@ -129,9 +147,13 @@ VARIABLES sessoes,       \* [REPLICAS -> [SIDS -> SessaoRec]] -- registro único
           relogio,       \* [REPLICAS -> Nat] -- contador de versão local (análogo a `versao`
                           \* de SessionState.java/IdentityState.java), avança só em escrita local
           vivo,          \* [REPLICAS -> BOOLEAN] -- F1 (B-22): FALSE enquanto a réplica está "caída"
-          quedas         \* Nat -- F1 (B-22): total de eventos Cair já ocorridos (nunca decrementa)
+          quedas,        \* Nat -- F1 (B-22): total de eventos Cair já ocorridos (nunca decrementa)
+          particaoAtiva, \* BOOLEAN -- F2 (B-22): TRUE entre Particionar e Mesclar
+          ladoDe         \* [REPLICAS -> {1, 2}] -- F2 (B-22): lado de cada réplica durante a partição
+                          \* (valor irrelevante enquanto ~particaoAtiva)
 
-vars == << sessoes, identidades, canal, relogio, vivo, quedas >>
+vars == << sessoes, identidades, canal, relogio, vivo, quedas,
+           particaoAtiva, ladoDe >>
 
 Estados   == {"NONE", "VALID", "INVALID"}
 MotivosT  == {"NONE", "LOGOUT", "EXPIRADA", "ADMIN_BLOCK"}
@@ -178,6 +200,8 @@ TypeOK ==
   /\ relogio     \in [REPLICAS -> Nat]
   /\ vivo        \in [REPLICAS -> BOOLEAN]
   /\ quedas      \in Nat
+  /\ particaoAtiva \in BOOLEAN
+  /\ ladoDe        \in [REPLICAS -> {1, 2}]
 
 (***************************************************************************)
 (* Estado inicial.                                                          *)
@@ -189,6 +213,8 @@ Init ==
   /\ relogio     = [r \in REPLICAS |-> 0]
   /\ vivo        = [r \in REPLICAS |-> TRUE]
   /\ quedas      = 0
+  /\ particaoAtiva = FALSE
+  /\ ladoDe        = [r \in REPLICAS |-> 1]   \* irrelevante enquanto ~particaoAtiva
 
 (***************************************************************************)
 (* Enfileira msg nas filas de TODAS as réplicas exceto a de origem, que já *)
@@ -198,6 +224,39 @@ Init ==
 (***************************************************************************)
 Broadcast(origem, msg) ==
   [r2 \in REPLICAS |-> IF r2 = origem THEN canal[r2] ELSE Append(canal[r2], msg)]
+
+(***************************************************************************)
+(* F2 (B-22, 2026-10-03): maioria/minoria sob partição -- ver               *)
+(* docs/plano-b22-falhas-explicitas-2026-10-03.md §2.2/§2.3. `Lado(n)` é o  *)
+(* subconjunto de réplicas atualmente do lado `n`. `Vencedor(P1, P2)`       *)
+(* devolve o(s) lado(s) vencedor(es) por TAMANHO -- sem noção de            *)
+(* `topologyId`, fiel ao Achado E (A.1: a regra real é posicional, não por  *)
+(* timestamp). Em empate (só possível com 2 réplicas, já que com 3 réplicas *)
+(* todo split é 1-contra-2), devolve AMBOS os lados -- o TLC explora as     *)
+(* duas resoluções possíveis, em vez de um desempate fixo que               *)
+(* reintroduziria um mecanismo sem correspondência real e quebraria         *)
+(* `Simetria` (mesma razão de design que já eliminou `RepIndex`/`Prio` na   *)
+(* revisão do Achado E). `PodeAgir(r)` generaliza o gate de `vivo` de F1:    *)
+(* uma réplica só age se estiver viva E (não há partição ativa OU seu lado  *)
+(* está entre os vencedores) -- sob `DENY_READ_WRITES` (configuração real,  *)
+(* `cluster/infinispan-cluster.xml`), o lado minoritário simplesmente não   *)
+(* processa nada, mesma semântica de "não pode agir" que `Cair` já modela,  *)
+(* mas por um motivo logicamente distinto (rede particionada, não processo  *)
+(* parado) -- por isso não reutiliza `Cair`/`Reviver`, só o mesmo padrão de *)
+(* gate.                                                                     *)
+(***************************************************************************)
+Lado(n) == {r \in REPLICAS : ladoDe[r] = n}
+
+Vencedor(P1, P2) ==
+  IF Cardinality(P1) > Cardinality(P2) THEN {P1}
+  ELSE IF Cardinality(P2) > Cardinality(P1) THEN {P2}
+  ELSE {P1, P2}   \* empate -- ambas as possibilidades exploradas, não uma fixa
+
+PodeAgir(r) ==
+  /\ vivo[r] = TRUE
+  /\ \/ ~particaoAtiva
+     \/ LET meuLado == Lado(ladoDe[r]) IN
+          meuLado \in Vencedor(Lado(1), Lado(2))
 
 (***************************************************************************)
 (* Operações executadas em uma réplica r. Cada ação local calcula um novo  *)
@@ -216,7 +275,7 @@ Login(r, id, s) ==
       msg == [tipo |-> "SESSAO_VALIDA", chave |-> s,
               sessao |-> candidato, ident |-> IdentVazia, sessoesAfetadas |-> {}]
   IN
-  /\ vivo[r] = TRUE   \* F1 (B-22): réplica caída não executa nenhuma ação local
+  /\ PodeAgir(r)   \* F1+F2 (B-22): réplica caída ou do lado minoritário não executa nenhuma ação local
   /\ identidades[r][id].status = "OPEN"
   /\ sessoes[r][s].estado = "NONE"
   /\ relogio' = [relogio EXCEPT ![r] = novoTS]
@@ -225,7 +284,7 @@ Login(r, id, s) ==
        ELSE sessoes' = sessoes
   /\ canal' = Broadcast(r, msg)
   /\ identidades' = identidades
-  /\ UNCHANGED <<vivo, quedas>>
+  /\ UNCHANGED <<vivo, quedas, particaoAtiva, ladoDe>>
 
 (* O3, logout: marca sessão como INVALID com motivo LOGOUT. Idempotente   *)
 (* (precondição exige VALID). `identidade` é preservada do registro atual *)
@@ -238,7 +297,7 @@ Logout(r, s) ==
       msg == [tipo |-> "SESSAO_INVALIDA", chave |-> s,
               sessao |-> candidato, ident |-> IdentVazia, sessoesAfetadas |-> {}]
   IN
-  /\ vivo[r] = TRUE   \* F1 (B-22)
+  /\ PodeAgir(r)   \* F1+F2 (B-22)
   /\ sessoes[r][s].estado = "VALID"
   /\ relogio' = [relogio EXCEPT ![r] = novoTS]
   /\ IF novoTS > sessoes[r][s].ts
@@ -246,7 +305,7 @@ Logout(r, s) ==
        ELSE sessoes' = sessoes
   /\ canal' = Broadcast(r, msg)
   /\ identidades' = identidades
-  /\ UNCHANGED <<vivo, quedas>>
+  /\ UNCHANGED <<vivo, quedas, particaoAtiva, ladoDe>>
 
 (* O4, incrementFailure: incrementa contador, bloqueia se atingir LIMITE. *)
 (* Única ação cujo broadcast é CONDICIONAL ao próprio gate local: `novo`  *)
@@ -266,7 +325,7 @@ IncrementFailure(r, id) ==
       msg == [tipo |-> "CONTADOR_INC", chave |-> id,
               sessao |-> SessaoVazia, ident |-> candidato, sessoesAfetadas |-> {}]
   IN
-  /\ vivo[r] = TRUE   \* F1 (B-22)
+  /\ PodeAgir(r)   \* F1+F2 (B-22)
   /\ identidades[r][id].contador < LIMITE
   /\ relogio' = [relogio EXCEPT ![r] = novoTS]
   /\ IF novoTS > identidades[r][id].ts
@@ -275,7 +334,7 @@ IncrementFailure(r, id) ==
        ELSE /\ identidades' = identidades
             /\ canal' = canal
   /\ sessoes' = sessoes
-  /\ UNCHANGED <<vivo, quedas>>
+  /\ UNCHANGED <<vivo, quedas, particaoAtiva, ladoDe>>
 
 (* O5, resetFailures: zera o contador de id na réplica r. `status` é      *)
 (* preservado do registro atual -- mesma semântica de                     *)
@@ -286,7 +345,7 @@ ResetFailures(r, id) ==
       msg == [tipo |-> "CONTADOR_RESET", chave |-> id,
               sessao |-> SessaoVazia, ident |-> candidato, sessoesAfetadas |-> {}]
   IN
-  /\ vivo[r] = TRUE   \* F1 (B-22)
+  /\ PodeAgir(r)   \* F1+F2 (B-22)
   /\ identidades[r][id].contador # 0
   /\ relogio' = [relogio EXCEPT ![r] = novoTS]
   /\ IF novoTS > identidades[r][id].ts
@@ -294,7 +353,7 @@ ResetFailures(r, id) ==
        ELSE identidades' = identidades
   /\ canal' = Broadcast(r, msg)
   /\ sessoes' = sessoes
-  /\ UNCHANGED <<vivo, quedas>>
+  /\ UNCHANGED <<vivo, quedas, particaoAtiva, ladoDe>>
 
 (* O6, block: marca identidade como BLOCKED e invalida sessões VALID da   *)
 (* identidade (cascata, mesma regra de negócio de SessionOps.block(), que *)
@@ -314,7 +373,7 @@ Block(r, id) ==
       msg == [tipo |-> "ID_BLOQUEIA", chave |-> id,
               sessao |-> candidatoSessao, ident |-> candidatoId, sessoesAfetadas |-> afetadas]
   IN
-  /\ vivo[r] = TRUE   \* F1 (B-22)
+  /\ PodeAgir(r)   \* F1+F2 (B-22)
   /\ identidades[r][id].status = "OPEN"
   /\ relogio' = [relogio EXCEPT ![r] = novoTS]
   /\ IF novoTS > identidades[r][id].ts
@@ -324,7 +383,7 @@ Block(r, id) ==
                   [s \in SIDS |-> IF s \in afetadas /\ novoTS > @[s].ts
                                   THEN candidatoSessao ELSE @[s]]]
   /\ canal' = Broadcast(r, msg)
-  /\ UNCHANGED <<vivo, quedas>>
+  /\ UNCHANGED <<vivo, quedas, particaoAtiva, ladoDe>>
 
 (* O7, unblock: remove a marca BLOCKED e zera o contador. Não recria      *)
 (* sessões previamente invalidadas pelo bloqueio. NOTA (achado lateral,   *)
@@ -339,7 +398,7 @@ Unblock(r, id) ==
       msg == [tipo |-> "ID_DESBLOQUEIA", chave |-> id,
               sessao |-> SessaoVazia, ident |-> candidato, sessoesAfetadas |-> {}]
   IN
-  /\ vivo[r] = TRUE   \* F1 (B-22)
+  /\ PodeAgir(r)   \* F1+F2 (B-22)
   /\ identidades[r][id].status = "BLOCKED"
   /\ relogio' = [relogio EXCEPT ![r] = novoTS]
   /\ IF novoTS > identidades[r][id].ts
@@ -347,7 +406,7 @@ Unblock(r, id) ==
        ELSE identidades' = identidades
   /\ canal' = Broadcast(r, msg)
   /\ sessoes' = sessoes
-  /\ UNCHANGED <<vivo, quedas>>
+  /\ UNCHANGED <<vivo, quedas, particaoAtiva, ladoDe>>
 
 (***************************************************************************)
 (* F1 (B-22, 2026-10-03): Cair/Reviver -- ver docs/plano-b22-falhas-        *)
@@ -363,12 +422,58 @@ Cair(r) ==
   /\ vivo[r] = TRUE
   /\ vivo' = [vivo EXCEPT ![r] = FALSE]
   /\ quedas' = quedas + 1
-  /\ UNCHANGED <<sessoes, identidades, canal, relogio>>
+  /\ UNCHANGED <<sessoes, identidades, canal, relogio, particaoAtiva, ladoDe>>
 
 Reviver(r) ==
   /\ vivo[r] = FALSE
   /\ vivo' = [vivo EXCEPT ![r] = TRUE]
-  /\ UNCHANGED <<sessoes, identidades, canal, relogio, quedas>>
+  /\ UNCHANGED <<sessoes, identidades, canal, relogio, quedas, particaoAtiva, ladoDe>>
+
+(***************************************************************************)
+(* F2 (B-22, 2026-10-03): Particionar/Mesclar -- ver                       *)
+(* docs/plano-b22-falhas-explicitas-2026-10-03.md §2. F1 e F2 são           *)
+(* mutuamente exclusivos nesta rodada (§2.5): Particionar exige que TODAS   *)
+(* as réplicas estejam vivas. `P1` é escolhido não-deterministicamente      *)
+(* entre TODOS os subconjuntos não-vazios e não-totais de REPLICAS (o TLC   *)
+(* explora todas as formas de dividir o cluster, não uma hipotética fixa);  *)
+(* `P2 == REPLICAS \ P1` é o resto, disjunto e não-vazio por construção.    *)
+(***************************************************************************)
+Particionar ==
+  /\ ~particaoAtiva
+  /\ \A r \in REPLICAS: vivo[r] = TRUE
+  /\ \E P1 \in SUBSET REPLICAS \ {{}, REPLICAS} :
+       LET P2 == REPLICAS \ P1 IN
+       /\ particaoAtiva' = TRUE
+       /\ ladoDe' = [r \in REPLICAS |-> IF r \in P1 THEN 1 ELSE 2]
+       /\ UNCHANGED <<sessoes, identidades, canal, relogio, vivo, quedas>>
+
+(* Mesclar: o lado VENCEDOR (por tamanho, Vencedor/§2.2) tem seu registro   *)
+(* INTEIRO copiado para cada réplica do lado perdedor -- nunca uma          *)
+(* comparação por `ts` (esse gate é exclusivo de EntregaMensagem). É        *)
+(* literalmente `PREFERRED_NON_NULL`/`PREFERRED_ALWAYS` real (Achado E,     *)
+(* A.1-A.2): "o valor da partição com mais réplicas vence", mesmo que       *)
+(* descarte uma escrita genuinamente mais nova que tenha ocorrido no lado   *)
+(* minoritário antes da partição ser detectada. `relogio` também é          *)
+(* copiado -- sem isso, a réplica perdedora poderia calcular, após o        *)
+(* Mesclar, um `ts` novo menor que o já recebido por cópia, perdendo o      *)
+(* gate contra si mesma (artefato de modelagem, não comportamento real a    *)
+(* preservar). `rf` (o "coordenador" do merge) é escolhido não-             *)
+(* deterministicamente dentro do lado vencedor -- se esse lado ainda não    *)
+(* tiver convergido internamente via EntregaMensagem normal, o TLC explora  *)
+(* os dois resultados possíveis, expondo essa como uma pergunta aberta, não *)
+(* decidida a priori (ver §2.4 do plano). Em empate (2 réplicas),           *)
+(* `Vencedor` devolve os dois lados possíveis -- ambos explorados aqui      *)
+(* também, via o `\E ladoVencedor` externo.                                 *)
+Mesclar ==
+  /\ particaoAtiva
+  /\ \E ladoVencedor \in Vencedor(Lado(1), Lado(2)) :
+     \E rf \in ladoVencedor :
+       LET perdedores == REPLICAS \ ladoVencedor IN
+       /\ sessoes'     = [r \in REPLICAS |-> IF r \in perdedores THEN sessoes[rf]     ELSE sessoes[r]]
+       /\ identidades' = [r \in REPLICAS |-> IF r \in perdedores THEN identidades[rf] ELSE identidades[r]]
+       /\ relogio'      = [r \in REPLICAS |-> IF r \in perdedores THEN relogio[rf]     ELSE relogio[r]]
+       /\ particaoAtiva' = FALSE
+       /\ UNCHANGED <<canal, vivo, quedas, ladoDe>>
 
 (***************************************************************************)
 (* Entrega de uma mensagem qualquer do canal a uma réplica destino r.      *)
@@ -381,12 +486,12 @@ Reviver(r) ==
 (* em EntregaMensagem (sem merge-on-receive, mesma decisão D-4 anterior).  *)
 (***************************************************************************)
 EntregaMensagem(r) ==
-  /\ vivo[r] = TRUE   \* F1 (B-22): réplica caída não processa nem a propria fila
+  /\ PodeAgir(r)   \* F1+F2 (B-22): réplica caída ou do lado minoritário não processa nem a propria fila
   /\ Len(canal[r]) > 0
   /\ \E i \in 1..Len(canal[r]):
        LET m == canal[r][i] IN
        /\ canal' = [canal EXCEPT ![r] = SubSeq(@, 1, i-1) \o SubSeq(@, i+1, Len(@))]
-       /\ UNCHANGED <<relogio, vivo, quedas>>
+       /\ UNCHANGED <<relogio, vivo, quedas, particaoAtiva, ladoDe>>
        /\ CASE m.tipo = "SESSAO_VALIDA" ->
                 /\ IF m.sessao.ts > sessoes[r][m.chave].ts
                      THEN sessoes' = [sessoes EXCEPT ![r][m.chave] = m.sessao]
@@ -438,6 +543,8 @@ Next ==
   \/ \E r \in REPLICAS:                          EntregaMensagem(r)
   \/ \E r \in REPLICAS:                          Cair(r)       \* F1 (B-22)
   \/ \E r \in REPLICAS:                          Reviver(r)    \* F1 (B-22)
+  \/ Particionar                                               \* F2 (B-22)
+  \/ Mesclar                                                   \* F2 (B-22)
 
 Spec == Init /\ [][Next]_vars
 
@@ -516,11 +623,23 @@ I6 ==
 (*                                                                         *)
 (* F1 (B-22, 2026-10-03, Cair/Reviver/vivo/quedas): a expectativa teórica   *)
 (* (Achado E, A.3 -- F1 nunca ativa DEGRADED/merge-policy no Infinispan     *)
-(* real) é que I1-I6 NÃO mudem de veredito com F1 isolado. Isso é uma       *)
-(* expectativa a TESTAR pelo TLC, não um resultado a presumir -- ver        *)
+(* real) é que I1-I6 NÃO mudem de veredito com F1 isolado. Isso foi         *)
+(* TESTADO, não presumido, e confirmado -- ver                             *)
 (* docs/plano-b22-falhas-explicitas-2026-10-03.md §1.4/§4.1 e o veredito    *)
 (* real registrado nas mensagens de commit da branch                      *)
-(* feature/b22-f1-cair-reviver. F2 (partição real, Particionar/Mesclar) e   *)
-(* a combinação F1+F2 ficam para rodada futura (mesmo documento, §2).       *)
+(* feature/b22-f1-cair-reviver (nenhuma violação nova ligada a Cair/        *)
+(* Reviver).                                                                *)
+(*                                                                         *)
+(* F2 (B-22, 2026-10-03, Particionar/Mesclar/particaoAtiva/ladoDe, Opção A  *)
+(* para P-16): ao contrário de F1, a expectativa teórica (mesmo documento,  *)
+(* §4.1) é que F2 DEVE produzir os primeiros contraexemplos reais de       *)
+(* I1/I2/I4 do catálogo operação×falha×invariante -- ligados à janela de   *)
+(* partição (escrita no lado minoritário antes da detecção, depois         *)
+(* Mesclar descarta essa escrita por posição, não por timestamp). I5/I6     *)
+(* devem continuar fechando após Mesclar + convergência intra-lado via     *)
+(* EntregaMensagem -- também a TESTAR, não presumir. Ver veredito real nas  *)
+(* mensagens de commit da branch feature/b22-f2-particao. A combinação     *)
+(* F1+F2 e o esboço de scripts/inject-partition.sh (B-29) ficam para        *)
+(* rodada futura (mesmo documento, §2.5/§3).                                *)
 (***************************************************************************)
 =============================================================================

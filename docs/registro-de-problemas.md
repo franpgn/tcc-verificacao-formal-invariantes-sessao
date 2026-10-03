@@ -677,6 +677,78 @@ Ver commit da correção (`WorkloadMain.abrirLeitoresMultiReplica`/`materializar
   inconclusivos em todas as cardinalidades como limitação documentada desta rodada de
   F2 (mesmo padrão já aceito para `full` desde antes de B-22).
 
+## 2026-10-03 (rodada 3) — B-22 F2: validação do Senior + correção de P-24 + experimento de P-25
+
+> Continua a rodada 2 acima. O Senior validou o trabalho (`docs/validacao-b22-f2-
+> 2026-10-03.md`, commit `81d2071`, branch `docs/validacao-b22-f2`): confirmou a
+> recaracterização de P-23 lendo os 16 traços brutos, e refinou o mecanismo exato do
+> achado de I5/I6 (ver nota abaixo). O Gestor aprovou as duas recomendações do Senior:
+> corrigir P-24 no código, e testar a hipótese de P-25 com um experimento concreto
+> antes de aceitar qualquer limitação.
+
+### P-23 (precisão do Senior) — o mecanismo exato de `full-I6` é `Mesclar` escolher `rf` não-convergido, não "mensagem entregue depois do merge" em geral
+
+Reconstruindo os 6 estados do traço de `full-I6` valor a valor (não só a lista de
+ações), o Senior identificou que `EntregaMensagem(r2)` (Estado 4) acontece **antes**
+de `Mesclar` (Estado 5) — nesse ponto `r2` **já estava correto**. O fator decisivo da
+violação não é "a entrega sempre acontece depois do merge" — é que `Mesclar` escolheu
+`rf = r3` (membro do lado vencedor que **ainda não tinha convergido** internamente,
+sua própria mensagem ainda na fila) em vez de `rf = r2` (que já tinha o valor certo).
+Se tivesse escolhido `rf = r2`, não haveria violação por este caminho. É a resposta
+empírica à "pergunta aberta" que o plano original já previa (§2.4). Comentário
+correspondente adicionado em `Mesclar` (`spec/SessionStore.tla`, commit `b7d8e0a`).
+
+### P-24 (resolução) — `Cair` agora exige `~particaoAtiva`
+
+- **Correção:** adicionada a pré-condição `/\ ~particaoAtiva` em `Cair(r)`
+  (`spec/SessionStore.tla`, commit `96fcf3c`) — mesmo padrão que `Particionar` já usava
+  na direção oposta (`\A r: vivo[r] = TRUE`). `Reviver` não precisou da mesma correção
+  (reverter um `Cair` já ocorrido não envolve leitura nova de `rf`, não cria a mesma
+  ambiguidade que motivou a correção).
+- **Decisão (Senior, aprovada pelo Gestor): corrigir o código, não o texto.** A
+  interação "um nó cai durante uma partição" nunca tinha sido analisada (`Mesclar`
+  poderia copiar de um `rf` morto sem que isso fosse uma decisão deliberada); custo da
+  correção mínimo (uma linha); declarar "modelado" sem essa análise protegeria a lacuna
+  em vez de corrigi-la.
+- **Confirmado, antes e depois da correção:** nenhum dos 16 traços de I1/I2/I5/I6 já
+  obtidos (rodada 2) combinava `Cair`/`Reviver` com `Particionar`/`Mesclar` — nenhum
+  veredito já reportado fica invalidado.
+
+### P-25 (resultado do experimento) — `particoes`/`LimiteEventosFalha` estendida recupera fechamento exaustivo em `tiny`, mas **não** em `small`/`medium` dentro de 300s
+
+- **Experimento:** nova variável `particoes: Nat` (incrementada em `Particionar`,
+  nunca decrementada) e `LimiteEventosFalha` estendida para
+  `quedas + particoes =< MaxEventosFalha` em `MCSession.tla`
+  (`spec/SessionStore.tla`/`spec/MCSession.tla`, commit `b7d8e0a`) — exatamente a
+  fórmula que o plano original já antecipava (§4.2). Re-rodado `tiny`/`small`/`medium`
+  (`MaxCanal=1, MaxRelogio=3, MaxEventosFalha=1`, timeout 300s/invariante).
+- **Resultado real, não presumido — misto, não confirma nem refuta por completo:**
+  - **`tiny`: RECUPERA fechamento exaustivo rápido** — `TypeOK`/I3/I4 fecham em
+    570.089 estados distintos (11.243.221 gerados), 6-7s cada, "0 estados na fila"
+    (antes da correção: inconclusivo em 300s, 340+ milhões gerados/36,6 milhões
+    distintos). Maior que o *baseline* F1-only pré-F2 (25.517 estados, 0s), mas
+    plenamente tratável.
+  - **`small`/`medium`: AJUDA mas NÃO recupera fechamento em 300s.** Comparando o
+    estado da busca exatamente no corte de 300s, antes vs. depois da correção:
+    `small`/`TypeOK` antes = 241.672.302 gerados/22.250.191 distintos/13.327.354 na
+    fila; depois = 323.039.430 gerados/**14.634.296 distintos**/**5.759.450 na
+    fila** — ~34% menos estados distintos encontrados e ~57% menos na fila no mesmo
+    tempo, mas ainda inconclusivo. `medium`/`TypeOK` antes = 173.918.677
+    gerados/13.894.296 distintos/9.270.857 na fila; depois = 214.433.349
+    gerados/**10.467.191 distintos**/**5.831.269 na fila** — mesma redução
+    proporcional (~25% menos distintos, ~37% menos na fila), ainda inconclusivo.
+  - **Leitura honesta:** a hipótese do Senior (ciclos repetidos de
+    `Particionar`→`Mesclar` são causa dominante) é **parcialmente confirmada** —
+    reduz substancialmente o espaço alcançável (evidenciado pela fila menor e menos
+    estados distintos no mesmo tempo), mas para `small`/`medium` o espaço restante
+    (`MaxCanal=1, MaxRelogio=3`, mais o não-determinismo de escolher `P1` e `rf` já
+    sem repetição) ainda é grande demais para fechar em 300s. Não é dado suficiente
+    para decidir entre "aumentar o *timebox*" e "reduzir mais alguma constante" —
+    fica para o Senior/Gestor decidirem com este dado real em mãos.
+  - I1/I2/I5/I6 continuam `VIOLADO` nas 3 cardinalidades, sem mudança de veredito
+    (contraexemplos rasos, não dependem de busca exaustiva).
+- **JUnit:** 58/58 verde, não afetado (confirmado de novo após as duas correções).
+
 ## Observação de modelagem (não é defeito)
 
 Com 8 *threads* = 8 identidades fixas (`user-<tid>`), `incrementFailure`

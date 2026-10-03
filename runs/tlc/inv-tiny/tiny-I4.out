@@ -1,7 +1,7 @@
 TLC2 Version 2.19 of 08 August 2024 (rev: 5a47802)
-Running breadth-first search Model-Checking with fp 111 and seed 2997253198453480281 with 20 workers on 20 cores with 7237MB heap and 64MB offheap memory (Windows 11 10.0 amd64, Oracle Corporation 1.8.0_503 x86_64, MSBDiskFPSet, DiskStateQueue).
-Parsing file C:\Users\Francesco\Development\tcc\tcc-desenvolvimento\spec\MCSession.tla
-Parsing file C:\Users\Francesco\Development\tcc\tcc-desenvolvimento\spec\SessionStore.tla
+Running breadth-first search Model-Checking with fp 17 and seed 7535115584857768633 with 20 workers on 20 cores with 7237MB heap and 64MB offheap memory (Windows 11 10.0 amd64, Oracle Corporation 1.8.0_503 x86_64, MSBDiskFPSet, DiskStateQueue).
+Parsing file C:\Users\Francesco\AppData\Local\Temp\claude\C--Users-Francesco-Development-tcc\64f2f0ed-2c1a-4a78-aa04-ac0ed83dcafc\scratchpad\worktree-f2\spec\MCSession.tla
+Parsing file C:\Users\Francesco\AppData\Local\Temp\claude\C--Users-Francesco-Development-tcc\64f2f0ed-2c1a-4a78-aa04-ac0ed83dcafc\scratchpad\worktree-f2\spec\SessionStore.tla
 Parsing file C:\Users\Francesco\AppData\Local\Temp\TLC.tla
 Parsing file C:\Users\Francesco\AppData\Local\Temp\Naturals.tla
 Parsing file C:\Users\Francesco\AppData\Local\Temp\Sequences.tla
@@ -12,11 +12,16 @@ Semantic processing of module FiniteSets
 Semantic processing of module SessionStore
 Semantic processing of module TLC
 Semantic processing of module MCSession
-Starting... (2026-10-03 18:04:52)
+Starting... (2026-10-03 19:04:15)
 Computing initial states...
-Finished computing initial states: 1 distinct state generated at 2026-10-03 18:04:53.
-Progress(14) at 2026-10-03 18:04:56: 3,289,993 states generated (3,289,993 s/min), 482,606 distinct states found (482,606 ds/min), 261,931 states left on queue.
-Progress(19) at 2026-10-03 18:05:56: 80,683,854 states generated (77,393,861 s/min), 9,578,555 distinct states found (9,095,949 ds/min), 3,836,702 states left on queue.
-Progress(20) at 2026-10-03 18:06:56: 183,438,426 states generated (102,754,572 s/min), 20,694,008 distinct states found (11,115,453 ds/min), 7,457,013 states left on queue.
-Progress(21) at 2026-10-03 18:07:56: 282,090,209 states generated (98,651,783 s/min), 30,888,869 distinct states found (10,194,861 ds/min), 10,370,655 states left on queue.
-Progress(22) at 2026-10-03 18:08:56: 383,899,170 states generated (101,808,961 s/min), 41,168,222 distinct states found (10,279,353 ds/min), 12,918,814 states left on queue.
+Finished computing initial states: 1 distinct state generated at 2026-10-03 19:04:15.
+Progress(16) at 2026-10-03 19:04:18: 3,893,849 states generated (3,893,849 s/min), 288,588 distinct states found (288,588 ds/min), 89,532 states left on queue.
+Model checking completed. No error has been found.
+  Estimates of the probability that TLC did not check all reachable states
+  because two distinct states had the same fingerprint:
+  calculated (optimistic):  val = 3.3E-7
+  based on the actual fingerprints:  val = 1.6E-8
+11243221 states generated, 570089 distinct states found, 0 states left on queue.
+The depth of the complete state graph search is 21.
+The average outdegree of the complete state graph is 1 (minimum is 0, the maximum 11 and the 95th percentile is 4).
+Finished in 07s at (2026-10-03 19:04:22)

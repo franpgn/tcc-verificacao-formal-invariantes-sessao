@@ -1,7 +1,7 @@
 TLC2 Version 2.19 of 08 August 2024 (rev: 5a47802)
-Running breadth-first search Model-Checking with fp 66 and seed -3981690840991987916 with 20 workers on 20 cores with 7237MB heap and 64MB offheap memory (Windows 11 10.0 amd64, Oracle Corporation 1.8.0_503 x86_64, MSBDiskFPSet, DiskStateQueue).
-Parsing file C:\Users\Francesco\Development\tcc\tcc-desenvolvimento\spec\MCSession.tla
-Parsing file C:\Users\Francesco\Development\tcc\tcc-desenvolvimento\spec\SessionStore.tla
+Running breadth-first search Model-Checking with fp 70 and seed 3529269803898149835 with 20 workers on 20 cores with 7237MB heap and 64MB offheap memory (Windows 11 10.0 amd64, Oracle Corporation 1.8.0_503 x86_64, MSBDiskFPSet, DiskStateQueue).
+Parsing file C:\Users\Francesco\AppData\Local\Temp\claude\C--Users-Francesco-Development-tcc\64f2f0ed-2c1a-4a78-aa04-ac0ed83dcafc\scratchpad\worktree-f2\spec\MCSession.tla
+Parsing file C:\Users\Francesco\AppData\Local\Temp\claude\C--Users-Francesco-Development-tcc\64f2f0ed-2c1a-4a78-aa04-ac0ed83dcafc\scratchpad\worktree-f2\spec\SessionStore.tla
 Parsing file C:\Users\Francesco\AppData\Local\Temp\TLC.tla
 Parsing file C:\Users\Francesco\AppData\Local\Temp\Naturals.tla
 Parsing file C:\Users\Francesco\AppData\Local\Temp\Sequences.tla
@@ -12,9 +12,9 @@ Semantic processing of module FiniteSets
 Semantic processing of module SessionStore
 Semantic processing of module TLC
 Semantic processing of module MCSession
-Starting... (2026-10-03 18:14:56)
+Starting... (2026-10-03 19:09:26)
 Computing initial states...
-Finished computing initial states: 1 distinct state generated at 2026-10-03 18:14:56.
+Finished computing initial states: 1 distinct state generated at 2026-10-03 19:09:26.
 Error: Invariant I1 is violated.
 Error: The behavior up to this point is:
 State 1: <Initial predicate>
@@ -61,9 +61,10 @@ State 1: <Initial predicate>
 /\ ladoDe = (r1 :> 1 @@ r2 :> 1)
 /\ relogio = (r1 :> 0 @@ r2 :> 0)
 /\ particaoAtiva = FALSE
+/\ particoes = 0
 /\ vivo = (r1 :> TRUE @@ r2 :> TRUE)
 
-State 2: <Login line 278, col 3 to line 287, col 54 of module SessionStore>
+State 2: <Login line 291, col 3 to line 300, col 65 of module SessionStore>
 /\ sessoes = ( r1 :>
       ( s1 :>
             [ estado |-> "VALID",
@@ -117,9 +118,10 @@ State 2: <Login line 278, col 3 to line 287, col 54 of module SessionStore>
 /\ ladoDe = (r1 :> 1 @@ r2 :> 1)
 /\ relogio = (r1 :> 1 @@ r2 :> 0)
 /\ particaoAtiva = FALSE
+/\ particoes = 0
 /\ vivo = (r1 :> TRUE @@ r2 :> TRUE)
 
-State 3: <Login line 278, col 3 to line 287, col 54 of module SessionStore>
+State 3: <Login line 291, col 3 to line 300, col 65 of module SessionStore>
 /\ sessoes = ( r1 :>
       ( s1 :>
             [ estado |-> "VALID",
@@ -182,9 +184,10 @@ State 3: <Login line 278, col 3 to line 287, col 54 of module SessionStore>
 /\ ladoDe = (r1 :> 1 @@ r2 :> 1)
 /\ relogio = (r1 :> 1 @@ r2 :> 1)
 /\ particaoAtiva = FALSE
+/\ particoes = 0
 /\ vivo = (r1 :> TRUE @@ r2 :> TRUE)
 
-State 4: <Logout line 300, col 3 to line 308, col 54 of module SessionStore>
+State 4: <Logout line 313, col 3 to line 321, col 65 of module SessionStore>
 /\ sessoes = ( r1 :>
       ( s1 :>
             [ estado |-> "INVALID",
@@ -256,9 +259,10 @@ State 4: <Logout line 300, col 3 to line 308, col 54 of module SessionStore>
 /\ ladoDe = (r1 :> 1 @@ r2 :> 1)
 /\ relogio = (r1 :> 2 @@ r2 :> 1)
 /\ particaoAtiva = FALSE
+/\ particoes = 0
 /\ vivo = (r1 :> TRUE @@ r2 :> TRUE)
 
-600 states generated, 82 distinct states found, 60 states left on queue.
+587 states generated, 74 distinct states found, 51 states left on queue.
 The depth of the complete state graph search is 5.
-The average outdegree of the complete state graph is 6 (minimum is 2, the maximum 13 and the 95th percentile is 13).
-Finished in 00s at (2026-10-03 18:14:56)
+The average outdegree of the complete state graph is 5 (minimum is 0, the maximum 13 and the 95th percentile is 13).
+Finished in 00s at (2026-10-03 19:09:26)

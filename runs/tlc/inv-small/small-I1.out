@@ -1,7 +1,7 @@
 TLC2 Version 2.19 of 08 August 2024 (rev: 5a47802)
-Running breadth-first search Model-Checking with fp 70 and seed 3529269803898149835 with 20 workers on 20 cores with 7237MB heap and 64MB offheap memory (Windows 11 10.0 amd64, Oracle Corporation 1.8.0_503 x86_64, MSBDiskFPSet, DiskStateQueue).
-Parsing file C:\Users\Francesco\AppData\Local\Temp\claude\C--Users-Francesco-Development-tcc\64f2f0ed-2c1a-4a78-aa04-ac0ed83dcafc\scratchpad\worktree-f2\spec\MCSession.tla
-Parsing file C:\Users\Francesco\AppData\Local\Temp\claude\C--Users-Francesco-Development-tcc\64f2f0ed-2c1a-4a78-aa04-ac0ed83dcafc\scratchpad\worktree-f2\spec\SessionStore.tla
+Running breadth-first search Model-Checking with fp 11 and seed -4299111920486933141 with 20 workers on 20 cores with 7237MB heap and 64MB offheap memory (Windows 11 10.0 amd64, Oracle Corporation 1.8.0_503 x86_64, MSBDiskFPSet, DiskStateQueue).
+Parsing file C:\Users\Francesco\AppData\Local\Temp\claude\C--Users-Francesco-Development-tcc\64f2f0ed-2c1a-4a78-aa04-ac0ed83dcafc\scratchpad\worktree-f2-600s\spec\MCSession.tla
+Parsing file C:\Users\Francesco\AppData\Local\Temp\claude\C--Users-Francesco-Development-tcc\64f2f0ed-2c1a-4a78-aa04-ac0ed83dcafc\scratchpad\worktree-f2-600s\spec\SessionStore.tla
 Parsing file C:\Users\Francesco\AppData\Local\Temp\TLC.tla
 Parsing file C:\Users\Francesco\AppData\Local\Temp\Naturals.tla
 Parsing file C:\Users\Francesco\AppData\Local\Temp\Sequences.tla
@@ -12,9 +12,9 @@ Semantic processing of module FiniteSets
 Semantic processing of module SessionStore
 Semantic processing of module TLC
 Semantic processing of module MCSession
-Starting... (2026-10-03 19:09:26)
+Starting... (2026-10-03 19:54:29)
 Computing initial states...
-Finished computing initial states: 1 distinct state generated at 2026-10-03 19:09:26.
+Finished computing initial states: 1 distinct state generated at 2026-10-03 19:54:29.
 Error: Invariant I1 is violated.
 Error: The behavior up to this point is:
 State 1: <Initial predicate>
@@ -262,7 +262,7 @@ State 4: <Logout line 313, col 3 to line 321, col 65 of module SessionStore>
 /\ particoes = 0
 /\ vivo = (r1 :> TRUE @@ r2 :> TRUE)
 
-587 states generated, 74 distinct states found, 51 states left on queue.
+395 states generated, 50 distinct states found, 36 states left on queue.
 The depth of the complete state graph search is 5.
-The average outdegree of the complete state graph is 5 (minimum is 0, the maximum 13 and the 95th percentile is 13).
-Finished in 00s at (2026-10-03 19:09:26)
+The average outdegree of the complete state graph is 6 (minimum is 2, the maximum 13 and the 95th percentile is 13).
+Finished in 00s at (2026-10-03 19:54:29)

@@ -749,6 +749,64 @@ correspondente adicionado em `Mesclar` (`spec/SessionStore.tla`, commit `b7d8e0a
     (contraexemplos rasos, não dependem de busca exaustiva).
 - **JUnit:** 58/58 verde, não afetado (confirmado de novo após as duas correções).
 
+## 2026-10-03 (rodada 4) — B-22 F2: teste de 600s em `small`/`medium`, encerramento da rodada
+
+> O Senior, lendo os `.out` reais, confirmou de forma independente os números de P-24/
+> P-25 (rodada 3) sem ressalva, e notou que a fila (*states left on queue*) reduz
+> sistematicamente mais que os estados distintos em `small`/`medium` — consistente com
+> `particoes` eliminando especificamente os ramos de busca mais profundos (vários
+> ciclos `Particionar`→`Mesclar` em sequência), não só reduzindo o tamanho geral da
+> busca. O Gestor rejeitou reduzir `MaxCanal`/`MaxRelogio` (sacrificaria a fidelidade
+> que `tiny` já demonstra não precisar sacrificar) e, observando que a taxa de
+> descoberta de estados novos por minuto em `small` caía monotonicamente nos 4
+> intervalos registrados até então, pediu um teste final com `TIMEOUT_SECS=600`
+> (dobro de 300s) antes de decidir se B-22 fecha nesta rodada.
+
+### P-25 (fechamento) — `TypeOK`/I3/I4 continuam inconclusivos em `small`/`medium` mesmo a 600s; sinal de convergência não se confirma ao olhar a série completa
+
+- **Resultado real, sem presumir:** com `TIMEOUT_SECS=600`, `TypeOK`/I3/I4 de `small` e
+  `medium` **continuam inconclusivos** — nenhum fecha exaustivo dentro do dobro do
+  tempo. `tiny` não foi re-testado (já fechava em 6-7s desde a rodada 3, não havia
+  razão para re-rodar).
+- **Comparando 300s (rodada 3, commit `32af7f8`) com 600s (esta rodada) no mesmo
+  invariante — crescimento aproximadamente LINEAR com o tempo, não desacelerando:**
+
+  | Invariante | Estados distintos a 300s | Estados distintos a 600s | Razão | Fila a 300s | Fila a 600s | Razão |
+  |---|---|---|---|---|---|---|
+  | small/TypeOK | 14.634.296 | 28.836.454 | 1,97× | 5.759.450 | 9.510.590 | 1,65× |
+  | small/I3 | 15.258.857 | 30.474.782 | 2,00× | 6.110.688 | 10.142.480 | 1,66× |
+  | small/I4 | 15.100.624 | 31.134.111 | 2,06× | 6.322.224 | 10.469.154 | 1,66× |
+  | medium/TypeOK | 10.467.191 | 21.056.435 | 2,01× | 5.831.269 | 10.589.528 | 1,82× |
+  | medium/I3 | 11.489.140 | 23.710.038 | 2,06× | 6.779.509 | 12.949.002 | 1,91× |
+  | medium/I4 | 11.079.515 | 23.446.569 | 2,12× | 6.312.927 | 12.305.697 | 1,95× |
+- **Olhando a série completa de `Progress` dentro desta própria execução de 600s (10
+  pontos, não só os 4 citados na decisão do Gestor), a fila (*states left on queue*)
+  **cresce monotonicamente do início ao fim, sem nenhum sinal de platô**, tanto em
+  `small`/TypeOK (147K → 2,28M → 3,74M → 4,95M → 5,89M → 6,82M → 7,30M → 7,68M → 8,71M
+  → 9,51M) quanto em `medium`/TypeOK (111K → 1,79M → 3,21M → 4,71M → 6,04M → 7,01M →
+  7,75M → 8,67M → 9,76M → 10,59M). A taxa de descoberta (`ds/min`) de `small`/TypeOK,
+  olhando os 10 intervalos completos (não só os 4 da decisão do Gestor), não é
+  monotonicamente decrescente — oscila (4,32M → 3,66M → 3,34M → 3,16M → 3,21M → 2,09M
+  → 2,68M → 3,26M → 2,88M): desacelera no começo, mas depois oscila em torno de
+  2,5-3,5M/min sem tendência clara de queda contínua até o corte. **Correção honesta à
+  leitura inicial do Gestor:** com a janela maior, o sinal de "convergindo" não se
+  confirma com a mesma força — nem se refuta (o crescimento é levemente sublinear em
+  `small`, não claramente linear nem claramente convergente). **Dado real, não
+  interpretação forçada em nenhuma direção.**
+- **Decisão (regra pré-acordada com o Gestor antes deste teste, válida para qualquer
+  resultado): isso FECHA B-22 nesta rodada.** `TypeOK`/I3/I4 não fechar exaustivo em
+  `small`/`medium` nunca foi critério de aceite isolado do plano original
+  (`docs/plano-b22-falhas-explicitas-2026-10-03.md` §5) — é limitação documentada,
+  mesmo padrão já aceito para `full` desde antes de B-22. Os critérios de aceite reais
+  (F1 mínimo testado não presumido, F2 com `Particionar`/`Mesclar` fiéis ao Achado E,
+  exclusão mútua F1/F2 bidirecional corrigida — P-24 —, catálogo operação×falha×
+  invariante atualizado com o achado real de I5/I6) estão todos satisfeitos.
+- **B-22 ENCERRADO nesta rodada.** Trabalho futuro (não aprovado aqui, decisão do
+  Gestor): combinação F1+F2 no mesmo comportamento, `scripts/inject-partition.sh`
+  (B-29), ou aumentar ainda mais o *timebox*/reduzir cardinalidade de `small`/`medium`
+  se o catálogo precisar de TypeOK/I3/I4 fechados nessas cardinalidades no futuro.
+- **JUnit:** 58/58 verde, confirmado uma última vez nesta rodada.
+
 ## Observação de modelagem (não é defeito)
 
 Com 8 *threads* = 8 identidades fixas (`user-<tid>`), `incrementFailure`

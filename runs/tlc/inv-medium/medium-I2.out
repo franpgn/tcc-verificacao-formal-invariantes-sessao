@@ -1,7 +1,7 @@
 TLC2 Version 2.19 of 08 August 2024 (rev: 5a47802)
-Running breadth-first search Model-Checking with fp 17 and seed 5362231381096109084 with 20 workers on 20 cores with 7237MB heap and 64MB offheap memory (Windows 11 10.0 amd64, Oracle Corporation 1.8.0_503 x86_64, MSBDiskFPSet, DiskStateQueue).
-Parsing file C:\Users\Francesco\AppData\Local\Temp\claude\C--Users-Francesco-Development-tcc\64f2f0ed-2c1a-4a78-aa04-ac0ed83dcafc\scratchpad\worktree-f2\spec\MCSession.tla
-Parsing file C:\Users\Francesco\AppData\Local\Temp\claude\C--Users-Francesco-Development-tcc\64f2f0ed-2c1a-4a78-aa04-ac0ed83dcafc\scratchpad\worktree-f2\spec\SessionStore.tla
+Running breadth-first search Model-Checking with fp 46 and seed -1522351247276160151 with 20 workers on 20 cores with 7237MB heap and 64MB offheap memory (Windows 11 10.0 amd64, Oracle Corporation 1.8.0_503 x86_64, MSBDiskFPSet, DiskStateQueue).
+Parsing file C:\Users\Francesco\AppData\Local\Temp\claude\C--Users-Francesco-Development-tcc\64f2f0ed-2c1a-4a78-aa04-ac0ed83dcafc\scratchpad\worktree-f2-600s\spec\MCSession.tla
+Parsing file C:\Users\Francesco\AppData\Local\Temp\claude\C--Users-Francesco-Development-tcc\64f2f0ed-2c1a-4a78-aa04-ac0ed83dcafc\scratchpad\worktree-f2-600s\spec\SessionStore.tla
 Parsing file C:\Users\Francesco\AppData\Local\Temp\TLC.tla
 Parsing file C:\Users\Francesco\AppData\Local\Temp\Naturals.tla
 Parsing file C:\Users\Francesco\AppData\Local\Temp\Sequences.tla
@@ -12,9 +12,9 @@ Semantic processing of module FiniteSets
 Semantic processing of module SessionStore
 Semantic processing of module TLC
 Semantic processing of module MCSession
-Starting... (2026-10-03 19:24:33)
+Starting... (2026-10-03 20:24:38)
 Computing initial states...
-Finished computing initial states: 1 distinct state generated at 2026-10-03 19:24:34.
+Finished computing initial states: 1 distinct state generated at 2026-10-03 20:24:39.
 Error: Invariant I2 is violated.
 Error: The behavior up to this point is:
 State 1: <Initial predicate>
@@ -144,15 +144,15 @@ State 3: <Login line 291, col 3 to line 300, col 65 of module SessionStore>
               ts |-> 0 ] ) @@
   r2 :>
       ( s1 :>
-            [ estado |-> "NONE",
-              motivo |-> "NONE",
-              identidade |-> "NONE",
-              ts |-> 0 ] @@
-        s2 :>
             [ estado |-> "VALID",
               motivo |-> "NONE",
               identidade |-> u1,
               ts |-> 1 ] @@
+        s2 :>
+            [ estado |-> "NONE",
+              motivo |-> "NONE",
+              identidade |-> "NONE",
+              ts |-> 0 ] @@
         s3 :>
             [ estado |-> "NONE",
               motivo |-> "NONE",
@@ -160,7 +160,7 @@ State 3: <Login line 291, col 3 to line 300, col 65 of module SessionStore>
               ts |-> 0 ] ) )
 /\ canal = ( r1 :>
       << [ tipo |-> "SESSAO_VALIDA",
-           chave |-> s2,
+           chave |-> s1,
            sessao |->
                [ estado |-> "VALID",
                  motivo |-> "NONE",
@@ -212,15 +212,15 @@ State 4: <Block line 389, col 3 to line 399, col 65 of module SessionStore>
               ts |-> 0 ] ) @@
   r2 :>
       ( s1 :>
-            [ estado |-> "NONE",
-              motivo |-> "NONE",
-              identidade |-> "NONE",
-              ts |-> 0 ] @@
-        s2 :>
             [ estado |-> "VALID",
               motivo |-> "NONE",
               identidade |-> u1,
               ts |-> 1 ] @@
+        s2 :>
+            [ estado |-> "NONE",
+              motivo |-> "NONE",
+              identidade |-> "NONE",
+              ts |-> 0 ] @@
         s3 :>
             [ estado |-> "NONE",
               motivo |-> "NONE",
@@ -228,7 +228,7 @@ State 4: <Block line 389, col 3 to line 399, col 65 of module SessionStore>
               ts |-> 0 ] ) )
 /\ canal = ( r1 :>
       << [ tipo |-> "SESSAO_VALIDA",
-           chave |-> s2,
+           chave |-> s1,
            sessao |->
                [ estado |-> "VALID",
                  motivo |-> "NONE",
@@ -270,7 +270,7 @@ State 4: <Block line 389, col 3 to line 399, col 65 of module SessionStore>
 /\ particoes = 0
 /\ vivo = (r1 :> TRUE @@ r2 :> TRUE)
 
-511 states generated, 30 distinct states found, 18 states left on queue.
+446 states generated, 22 distinct states found, 12 states left on queue.
 The depth of the complete state graph search is 3.
 The average outdegree of the complete state graph is 7 (minimum is 5, the maximum 9 and the 95th percentile is 9).
-Finished in 00s at (2026-10-03 19:24:34)
+Finished in 00s at (2026-10-03 20:24:39)

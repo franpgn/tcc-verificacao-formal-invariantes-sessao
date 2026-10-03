@@ -566,6 +566,117 @@ Ver commit da correção (`WorkloadMain.abrirLeitoresMultiReplica`/`materializar
   sequenciais sob carga contínua — não implementado nesta rodada, registrado
   para decisão futura do Gestor/Senior.
 
+## 2026-10-03 (rodada 2) — B-22 F2 (`Particionar`/`Mesclar`): primeira bateria TLC completa
+
+> Continua a rodada de F1 (`feature/b22-f1-cair-reviver`, commits `0d997f5`/`f96a08a`).
+> Implementação de `Particionar`/`Mesclar`/`particaoAtiva`/`ladoDe`/`Vencedor`/`PodeAgir`
+> em `spec/SessionStore.tla` conforme `docs/plano-b22-falhas-explicitas-2026-10-03.md`
+> §2 (commit `b9acd56`). Bateria: `tiny`/`small`/`medium`/`full` (`MaxCanal=1`,
+> `MaxRelogio=3`, `MaxEventosFalha=1`) + baseline `full`/`MaxEventosFalha=0`, timeout de
+> 300s por invariante (`spec/run-tlc-invariantes.sh`).
+
+### P-23 — a maioria dos contraexemplos de I1/I2/I5/I6 "sob F2" é o achado pré-existente (P-16/"violado por construção"), **não** um achado novo; mas um subconjunto de I5/I6 expõe um mecanismo F2 genuíno e mais severo
+
+- **Sintoma aparente:** nas 4 cardinalidades, I1 e I2 aparecem como `VIOLADO` com
+  contraexemplos curtos (3-5 estados) logo após a implementação de F2 entrar em
+  `Next` — fácil de ler como "primeiro contraexemplo real do catálogo
+  operação×falha×invariante ligado à janela de partição" (expectativa do plano,
+  `docs/plano-b22-falhas-explicitas-2026-10-03.md` §4.1).
+- **Verificação contra os logs brutos (não presumir a leitura do resumo):**
+  inspecionando `runs/tlc/inv-{full,tiny,small,medium}/{full,tiny,small,medium}-I1.out`
+  e `-I2.out`, **nenhum** dos 8 contraexemplos contém `Particionar`, `Mesclar`, `Cair`
+  ou `Reviver` no traço — `particaoAtiva` permanece `FALSE` do início ao fim, `vivo`
+  permanece todo `TRUE`. É a mesma propriedade *cross-réplica* sem condição de
+  quiescência que já violava I1/I2 "por construção" antes de B-22 existir
+  (`docs/validacao-fases1-3-achado-e-2026-10-02.md` §2) — **confirmado** comparando
+  com o *checkpoint* F1-only anterior (`git show f96a08a:runs/tlc/inv-full/full-I1.out`
+  já violava, depth 6/38 estados distintos, sem nenhuma ação de F1/F2). Adicionar F2 a
+  `Next` só deu ao TLC mais ações concorrentes por estado, então a busca em largura
+  encontra o mesmo contraexemplo antigo por um caminho mais curto (depth 5 em vez de 6
+  em `full`) — **não é um achado novo, é o mesmo P-16/pré-B-22 encontrado mais rápido.**
+- **O que é, de fato, novo e genuíno:** em 3 das 8 execuções de I5/I6
+  (`full-I6.out`, `tiny-I5.out`, `small-I6.out`), o traço **contém**
+  `Particionar`/`Mesclar`. Traço completo de `full-I6` (o mais informativo, 6
+  estados): `r1` faz `IncrementFailure(r1,u1)` localmente (`identidades[r1][u1]`:
+  ts=1,contador=1) e enfileira `CONTADOR_INC` para `r2`/`r3` (ainda não entregue) →
+  `Particionar` escolhe `P1={r1}`/`P2={r2,r3}` (todas vivas, pré-condição ok) →
+  `Mesclar` resolve `r1` como perdedor (1 contra 2) e copia o registro de um membro de
+  `P2` (ainda em ts=0,contador=0, pois a mensagem de `r1` segue na fila) **para `r1`**
+  — a própria escrita local de `r1` é apagada, sem nunca ter sido comparada por `ts`
+  (fiel ao desenho, §2.4) → as mensagens `CONTADOR_INC` que já estavam na fila de
+  `r2`/`r3` **antes da partição são entregues normalmente depois do merge** (§2.3, "não
+  removidas retroativamente") e, pelo gate `m.ts > ts local`, `r2`/`r3` **aplicam** o
+  valor original de `r1` (ts=1,contador=1) — estado final (quiescente, `canal` vazio,
+  sem partição ativa): `r1` com `contador=0`, `r2`/`r3` com `contador=1`,
+  **divergência permanente** (nada mais na fila para reconciliar `r1`). É exatamente a
+  janela que a documentação do Infinispan descreve ("escrita no nó isolado pode ser
+  perdida"), mas demonstrada aqui de forma mais severa do que o texto sugere: o nó que
+  perde sua própria escrita **também não recebe de volta** a versão que seus pares
+  aceitaram a partir do próprio *broadcast* dele — o modelo captura uma divergência
+  *pós-quiescência* detectável por I6, não só uma perda transitória.
+- **Por que isso não invalida nenhum resultado já obtido:** os 5 contraexemplos de
+  I5/I6 restantes (`full-I5`, `tiny-I6`, `small-I5`, `medium-I5`, `medium-I6`) **não**
+  envolvem F1/F2 — mesmo padrão P-16 de sempre. O TLC relata só o primeiro
+  contraexemplo encontrado por invariante; qual mecanismo "ganha a corrida" depende da
+  cardinalidade/ordem de exploração, não é determinístico entre mecanismo antigo e
+  novo.
+- **Ação, nenhuma correção de código aqui** (é comportamento correto, fiel ao
+  `PREFERRED_NON_NULL`/`PREFERRED_ALWAYS` real) — registro para corrigir a leitura do
+  catálogo operação×falha×invariante antes de reportar ao Cap. 5: a entrada real de
+  F2 no catálogo é o mecanismo de `full-I6`/`tiny-I5`/`small-I6` acima (I5/I6, não
+  I1/I2), e deve ser descrita com o traço completo, não só "VIOLADO".
+
+### P-24 — `Cair`/`Reviver` não verificam `~particaoAtiva`: a exclusão mútua F1↔F2 é unidirecional, não bidirecional como o texto do plano/comentários descreve
+
+- **Sintoma:** `docs/plano-b22-falhas-explicitas-2026-10-03.md` §2.5 e o comentário em
+  `spec/SessionStore.tla` (bloco F2) afirmam que "F1 e F2 são mutuamente exclusivos
+  nesta rodada" e que "a interação 'um nó cai durante uma partição' não é modelada".
+  Isso só é verdade em uma direção: `Particionar` de fato exige `\A r \in REPLICAS:
+  vivo[r] = TRUE` (confirmado, linha correspondente em `SessionStore.tla`), então uma
+  partição não pode **começar** enquanto alguém está caído. Mas `Cair(r)` e
+  `Reviver(r)` (ambos ainda com a pré-condição original de F1, sem `~particaoAtiva`)
+  **não** são bloqueados enquanto `particaoAtiva = TRUE` — nada no código impede
+  `Cair(r)` de disparar **durante** uma partição já ativa, contradizendo o texto que
+  diz que esse cenário "não é modelado".
+- **Por que não invalida os resultados desta rodada:** nenhum dos contraexemplos
+  obtidos (I1/I2/I5/I6, nas 4 cardinalidades) contém `Cair`/`Reviver` combinado com
+  `Particionar`/`Mesclar` no mesmo traço (verificado via *grep* em todos os `.out`) —
+  a lacuna existe no espaço de estados explorado (tornando a explosão de P-25 ainda
+  maior do que o necessário), mas não contaminou nenhum veredito já reportado.
+- **Não corrigido nesta rodada** (mudança de desenho, não bug pontual de
+  implementação — decisão sobre se `Cair`/`Reviver` devem ganhar a pré-condição
+  `~particaoAtiva`, ou se o texto do plano/comentário deve ser ajustado para descrever
+  o comportamento real, **pertence ao Senior/Gestor**, não ao Worker unilateralmente).
+
+### P-25 — `TypeOK`/I3/I4 deixam de fechar exaustivo em `tiny`/`small`/`medium` sob F2 (antes fechavam em 0-18s); `full`/`MaxEventosFalha=0` confirma que a explosão é dominada por F2, não por F1
+
+- **Sintoma:** no *checkpoint* F1-only anterior (commit `f96a08a`), `TypeOK`/I3/I4
+  fechavam exaustivo e rápido em `tiny` (25.517 estados distintos, 0s), `small`
+  (444.826 estados, 4-5s) e `medium` (1.125.864 estados, 16-18s) — só `full` já era
+  inconclusivo (padrão histórico, documentado antes de B-22). Com F2 em `Next`, **as
+  3 cardinalidades menores também passam a ser inconclusivas** dentro do *timebox* de
+  300s usado nesta rodada — `tiny`/`TypeOK` chega a 340 milhões de estados gerados/36,6
+  milhões de estados distintos em 300s sem terminar; `small` e `medium` na mesma
+  ordem de grandeza. Confirma, empiricamente, o risco que o próprio plano já havia
+  sinalizado (§4.2: "o produto combinado `vivo × particaoAtiva × ladoDe` ... pode
+  multiplicar o tempo de verificação significativamente").
+- **Baseline `full`/`MaxEventosFalha=0` (`runs/tlc/inv-full-f0/full-f0-TypeOK.out`),
+  pedido pelo Gestor para isolar a contribuição de F1:** também inconclusivo em 300s
+  (87,7 milhões de estados gerados/4,8 milhões distintos) — na **mesma ordem de
+  grandeza** do `full`/`MaxEventosFalha=1` (81,4 milhões gerados/5,6 milhões
+  distintos). Como `MaxEventosFalha` só limita `quedas` (eventos `Cair`), não
+  `Particionar`/`Mesclar` (decisão de escopo documentada em `MCSession.tla`), este
+  baseline não desliga F2 — mas o fato de zerar a contribuição de F1 não reduzir a
+  ordem de grandeza da explosão **indica que a explosão é dominada por F2
+  (`particaoAtiva`/`ladoDe`/o não-determinismo de `Particionar` sobre `SUBSET
+  REPLICAS`), não pela dimensão de F1.**
+- **Não é regressão de bug, é característica do espaço de estados** — nenhuma ação
+  corretiva de código aqui; registrado para o Senior/Gestor decidirem se vale a pena
+  (a) aumentar o *timebox* além de 300s para `tiny`/`small`/`medium`, (b) reduzir mais
+  alguma constante (`MaxCanal`/`MaxRelogio`), ou (c) aceitar `TypeOK`/I3/I4
+  inconclusivos em todas as cardinalidades como limitação documentada desta rodada de
+  F2 (mesmo padrão já aceito para `full` desde antes de B-22).
+
 ## Observação de modelagem (não é defeito)
 
 Com 8 *threads* = 8 identidades fixas (`user-<tid>`), `incrementFailure`

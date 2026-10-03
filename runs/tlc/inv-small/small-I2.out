@@ -1,5 +1,5 @@
 TLC2 Version 2.19 of 08 August 2024 (rev: 5a47802)
-Running breadth-first search Model-Checking with fp 38 and seed 6409115751549696538 with 20 workers on 20 cores with 7237MB heap and 64MB offheap memory (Windows 11 10.0 amd64, Oracle Corporation 1.8.0_503 x86_64, MSBDiskFPSet, DiskStateQueue).
+Running breadth-first search Model-Checking with fp 115 and seed 1770563691146277924 with 20 workers on 20 cores with 7237MB heap and 64MB offheap memory (Windows 11 10.0 amd64, Oracle Corporation 1.8.0_503 x86_64, MSBDiskFPSet, DiskStateQueue).
 Parsing file C:\Users\Francesco\Development\tcc\tcc-desenvolvimento\spec\MCSession.tla
 Parsing file C:\Users\Francesco\Development\tcc\tcc-desenvolvimento\spec\SessionStore.tla
 Parsing file C:\Users\Francesco\AppData\Local\Temp\TLC.tla
@@ -12,9 +12,9 @@ Semantic processing of module FiniteSets
 Semantic processing of module SessionStore
 Semantic processing of module TLC
 Semantic processing of module MCSession
-Starting... (2026-10-03 12:41:31)
+Starting... (2026-10-03 18:14:57)
 Computing initial states...
-Finished computing initial states: 1 distinct state generated at 2026-10-03 12:41:31.
+Finished computing initial states: 1 distinct state generated at 2026-10-03 18:14:57.
 Error: Invariant I2 is violated.
 Error: The behavior up to this point is:
 State 1: <Initial predicate>
@@ -58,10 +58,12 @@ State 1: <Initial predicate>
   r2 :>
       ( u1 :> [ts |-> 0, contador |-> 0, status |-> "OPEN"] @@
         u2 :> [ts |-> 0, contador |-> 0, status |-> "OPEN"] ) )
+/\ ladoDe = (r1 :> 1 @@ r2 :> 1)
 /\ relogio = (r1 :> 0 @@ r2 :> 0)
+/\ particaoAtiva = FALSE
 /\ vivo = (r1 :> TRUE @@ r2 :> TRUE)
 
-State 2: <Login line 219, col 3 to line 228, col 31 of module SessionStore>
+State 2: <Login line 278, col 3 to line 287, col 54 of module SessionStore>
 /\ sessoes = ( r1 :>
       ( s1 :>
             [ estado |-> "VALID",
@@ -112,10 +114,12 @@ State 2: <Login line 219, col 3 to line 228, col 31 of module SessionStore>
   r2 :>
       ( u1 :> [ts |-> 0, contador |-> 0, status |-> "OPEN"] @@
         u2 :> [ts |-> 0, contador |-> 0, status |-> "OPEN"] ) )
+/\ ladoDe = (r1 :> 1 @@ r2 :> 1)
 /\ relogio = (r1 :> 1 @@ r2 :> 0)
+/\ particaoAtiva = FALSE
 /\ vivo = (r1 :> TRUE @@ r2 :> TRUE)
 
-State 3: <Login line 219, col 3 to line 228, col 31 of module SessionStore>
+State 3: <Login line 278, col 3 to line 287, col 54 of module SessionStore>
 /\ sessoes = ( r1 :>
       ( s1 :>
             [ estado |-> "VALID",
@@ -175,10 +179,12 @@ State 3: <Login line 219, col 3 to line 228, col 31 of module SessionStore>
   r2 :>
       ( u1 :> [ts |-> 0, contador |-> 0, status |-> "OPEN"] @@
         u2 :> [ts |-> 0, contador |-> 0, status |-> "OPEN"] ) )
+/\ ladoDe = (r1 :> 1 @@ r2 :> 1)
 /\ relogio = (r1 :> 1 @@ r2 :> 1)
+/\ particaoAtiva = FALSE
 /\ vivo = (r1 :> TRUE @@ r2 :> TRUE)
 
-State 4: <Block line 317, col 3 to line 327, col 31 of module SessionStore>
+State 4: <Block line 376, col 3 to line 386, col 54 of module SessionStore>
 /\ sessoes = ( r1 :>
       ( s1 :>
             [ estado |-> "INVALID",
@@ -247,10 +253,12 @@ State 4: <Block line 317, col 3 to line 327, col 31 of module SessionStore>
   r2 :>
       ( u1 :> [ts |-> 0, contador |-> 0, status |-> "OPEN"] @@
         u2 :> [ts |-> 0, contador |-> 0, status |-> "OPEN"] ) )
+/\ ladoDe = (r1 :> 1 @@ r2 :> 1)
 /\ relogio = (r1 :> 2 @@ r2 :> 1)
+/\ particaoAtiva = FALSE
 /\ vivo = (r1 :> TRUE @@ r2 :> TRUE)
 
-248 states generated, 30 distinct states found, 14 states left on queue.
+401 states generated, 33 distinct states found, 19 states left on queue.
 The depth of the complete state graph search is 4.
-The average outdegree of the complete state graph is 4 (minimum is 1, the maximum 8 and the 95th percentile is 8).
-Finished in 00s at (2026-10-03 12:41:31)
+The average outdegree of the complete state graph is 5 (minimum is 1, the maximum 9 and the 95th percentile is 9).
+Finished in 00s at (2026-10-03 18:14:57)

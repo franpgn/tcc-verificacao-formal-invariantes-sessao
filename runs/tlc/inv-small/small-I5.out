@@ -1,5 +1,5 @@
 TLC2 Version 2.19 of 08 August 2024 (rev: 5a47802)
-Running breadth-first search Model-Checking with fp 83 and seed -5700102430380329859 with 20 workers on 20 cores with 7237MB heap and 64MB offheap memory (Windows 11 10.0 amd64, Oracle Corporation 1.8.0_503 x86_64, MSBDiskFPSet, DiskStateQueue).
+Running breadth-first search Model-Checking with fp 68 and seed -901128350216098788 with 20 workers on 20 cores with 7237MB heap and 64MB offheap memory (Windows 11 10.0 amd64, Oracle Corporation 1.8.0_503 x86_64, MSBDiskFPSet, DiskStateQueue).
 Parsing file C:\Users\Francesco\Development\tcc\tcc-desenvolvimento\spec\MCSession.tla
 Parsing file C:\Users\Francesco\Development\tcc\tcc-desenvolvimento\spec\SessionStore.tla
 Parsing file C:\Users\Francesco\AppData\Local\Temp\TLC.tla
@@ -12,9 +12,9 @@ Semantic processing of module FiniteSets
 Semantic processing of module SessionStore
 Semantic processing of module TLC
 Semantic processing of module MCSession
-Starting... (2026-10-03 12:41:43)
+Starting... (2026-10-03 18:25:00)
 Computing initial states...
-Finished computing initial states: 1 distinct state generated at 2026-10-03 12:41:43.
+Finished computing initial states: 1 distinct state generated at 2026-10-03 18:25:00.
 Error: Invariant I5 is violated.
 Error: The behavior up to this point is:
 State 1: <Initial predicate>
@@ -58,10 +58,12 @@ State 1: <Initial predicate>
   r2 :>
       ( u1 :> [ts |-> 0, contador |-> 0, status |-> "OPEN"] @@
         u2 :> [ts |-> 0, contador |-> 0, status |-> "OPEN"] ) )
+/\ ladoDe = (r1 :> 1 @@ r2 :> 1)
 /\ relogio = (r1 :> 0 @@ r2 :> 0)
+/\ particaoAtiva = FALSE
 /\ vivo = (r1 :> TRUE @@ r2 :> TRUE)
 
-State 2: <Login line 219, col 3 to line 228, col 31 of module SessionStore>
+State 2: <Login line 278, col 3 to line 287, col 54 of module SessionStore>
 /\ sessoes = ( r1 :>
       ( s1 :>
             [ estado |-> "VALID",
@@ -112,10 +114,12 @@ State 2: <Login line 219, col 3 to line 228, col 31 of module SessionStore>
   r2 :>
       ( u1 :> [ts |-> 0, contador |-> 0, status |-> "OPEN"] @@
         u2 :> [ts |-> 0, contador |-> 0, status |-> "OPEN"] ) )
+/\ ladoDe = (r1 :> 1 @@ r2 :> 1)
 /\ relogio = (r1 :> 1 @@ r2 :> 0)
+/\ particaoAtiva = FALSE
 /\ vivo = (r1 :> TRUE @@ r2 :> TRUE)
 
-State 3: <Login line 219, col 3 to line 228, col 31 of module SessionStore>
+State 3: <Login line 278, col 3 to line 287, col 54 of module SessionStore>
 /\ sessoes = ( r1 :>
       ( s1 :>
             [ estado |-> "VALID",
@@ -175,10 +179,12 @@ State 3: <Login line 219, col 3 to line 228, col 31 of module SessionStore>
   r2 :>
       ( u1 :> [ts |-> 0, contador |-> 0, status |-> "OPEN"] @@
         u2 :> [ts |-> 0, contador |-> 0, status |-> "OPEN"] ) )
+/\ ladoDe = (r1 :> 1 @@ r2 :> 1)
 /\ relogio = (r1 :> 1 @@ r2 :> 1)
+/\ particaoAtiva = FALSE
 /\ vivo = (r1 :> TRUE @@ r2 :> TRUE)
 
-State 4: <EntregaMensagem line 384, col 3 to line 426, col 60 of module SessionStore>
+State 4: <EntregaMensagem line 489, col 3 to line 531, col 60 of module SessionStore>
 /\ sessoes = ( r1 :>
       ( s1 :>
             [ estado |-> "VALID",
@@ -229,10 +235,12 @@ State 4: <EntregaMensagem line 384, col 3 to line 426, col 60 of module SessionS
   r2 :>
       ( u1 :> [ts |-> 0, contador |-> 0, status |-> "OPEN"] @@
         u2 :> [ts |-> 0, contador |-> 0, status |-> "OPEN"] ) )
+/\ ladoDe = (r1 :> 1 @@ r2 :> 1)
 /\ relogio = (r1 :> 1 @@ r2 :> 1)
+/\ particaoAtiva = FALSE
 /\ vivo = (r1 :> TRUE @@ r2 :> TRUE)
 
-State 5: <EntregaMensagem line 384, col 3 to line 426, col 60 of module SessionStore>
+State 5: <EntregaMensagem line 489, col 3 to line 531, col 60 of module SessionStore>
 /\ sessoes = ( r1 :>
       ( s1 :>
             [ estado |-> "VALID",
@@ -273,10 +281,12 @@ State 5: <EntregaMensagem line 384, col 3 to line 426, col 60 of module SessionS
   r2 :>
       ( u1 :> [ts |-> 0, contador |-> 0, status |-> "OPEN"] @@
         u2 :> [ts |-> 0, contador |-> 0, status |-> "OPEN"] ) )
+/\ ladoDe = (r1 :> 1 @@ r2 :> 1)
 /\ relogio = (r1 :> 1 @@ r2 :> 1)
+/\ particaoAtiva = FALSE
 /\ vivo = (r1 :> TRUE @@ r2 :> TRUE)
 
-1127 states generated, 280 distinct states found, 217 states left on queue.
-The depth of the complete state graph search is 8.
-The average outdegree of the complete state graph is 4 (minimum is 0, the maximum 13 and the 95th percentile is 11).
-Finished in 00s at (2026-10-03 12:41:43)
+1995 states generated, 323 distinct states found, 267 states left on queue.
+The depth of the complete state graph search is 6.
+The average outdegree of the complete state graph is 6 (minimum is 0, the maximum 15 and the 95th percentile is 13).
+Finished in 00s at (2026-10-03 18:25:00)

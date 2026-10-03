@@ -1,5 +1,5 @@
 TLC2 Version 2.19 of 08 August 2024 (rev: 5a47802)
-Running breadth-first search Model-Checking with fp 71 and seed 4491331535192498109 with 20 workers on 20 cores with 7237MB heap and 64MB offheap memory (Windows 11 10.0 amd64, Oracle Corporation 1.8.0_503 x86_64, MSBDiskFPSet, DiskStateQueue).
+Running breadth-first search Model-Checking with fp 118 and seed 5354857383566829484 with 20 workers on 20 cores with 7237MB heap and 64MB offheap memory (Windows 11 10.0 amd64, Oracle Corporation 1.8.0_503 x86_64, MSBDiskFPSet, DiskStateQueue).
 Parsing file C:\Users\Francesco\Development\tcc\tcc-desenvolvimento\spec\MCSession.tla
 Parsing file C:\Users\Francesco\Development\tcc\tcc-desenvolvimento\spec\SessionStore.tla
 Parsing file C:\Users\Francesco\AppData\Local\Temp\TLC.tla
@@ -12,9 +12,9 @@ Semantic processing of module FiniteSets
 Semantic processing of module SessionStore
 Semantic processing of module TLC
 Semantic processing of module MCSession
-Starting... (2026-10-03 12:58:01)
+Starting... (2026-10-03 17:54:44)
 Computing initial states...
-Finished computing initial states: 1 distinct state generated at 2026-10-03 12:58:02.
+Finished computing initial states: 1 distinct state generated at 2026-10-03 17:54:44.
 Error: Invariant I5 is violated.
 Error: The behavior up to this point is:
 State 1: <Initial predicate>
@@ -80,10 +80,12 @@ State 1: <Initial predicate>
       ( u1 :> [ts |-> 0, contador |-> 0, status |-> "OPEN"] @@
         u2 :> [ts |-> 0, contador |-> 0, status |-> "OPEN"] @@
         u3 :> [ts |-> 0, contador |-> 0, status |-> "OPEN"] ) )
+/\ ladoDe = (r1 :> 1 @@ r2 :> 1 @@ r3 :> 1)
 /\ relogio = (r1 :> 0 @@ r2 :> 0 @@ r3 :> 0)
+/\ particaoAtiva = FALSE
 /\ vivo = (r1 :> TRUE @@ r2 :> TRUE @@ r3 :> TRUE)
 
-State 2: <Login line 219, col 3 to line 228, col 31 of module SessionStore>
+State 2: <Login line 278, col 3 to line 287, col 54 of module SessionStore>
 /\ sessoes = ( r1 :>
       ( s1 :>
             [ estado |-> "VALID",
@@ -166,10 +168,12 @@ State 2: <Login line 219, col 3 to line 228, col 31 of module SessionStore>
       ( u1 :> [ts |-> 0, contador |-> 0, status |-> "OPEN"] @@
         u2 :> [ts |-> 0, contador |-> 0, status |-> "OPEN"] @@
         u3 :> [ts |-> 0, contador |-> 0, status |-> "OPEN"] ) )
+/\ ladoDe = (r1 :> 1 @@ r2 :> 1 @@ r3 :> 1)
 /\ relogio = (r1 :> 1 @@ r2 :> 0 @@ r3 :> 0)
+/\ particaoAtiva = FALSE
 /\ vivo = (r1 :> TRUE @@ r2 :> TRUE @@ r3 :> TRUE)
 
-State 3: <EntregaMensagem line 384, col 3 to line 426, col 60 of module SessionStore>
+State 3: <EntregaMensagem line 489, col 3 to line 531, col 60 of module SessionStore>
 /\ sessoes = ( r1 :>
       ( s1 :>
             [ estado |-> "VALID",
@@ -243,10 +247,12 @@ State 3: <EntregaMensagem line 384, col 3 to line 426, col 60 of module SessionS
       ( u1 :> [ts |-> 0, contador |-> 0, status |-> "OPEN"] @@
         u2 :> [ts |-> 0, contador |-> 0, status |-> "OPEN"] @@
         u3 :> [ts |-> 0, contador |-> 0, status |-> "OPEN"] ) )
+/\ ladoDe = (r1 :> 1 @@ r2 :> 1 @@ r3 :> 1)
 /\ relogio = (r1 :> 1 @@ r2 :> 0 @@ r3 :> 0)
+/\ particaoAtiva = FALSE
 /\ vivo = (r1 :> TRUE @@ r2 :> TRUE @@ r3 :> TRUE)
 
-State 4: <Login line 219, col 3 to line 228, col 31 of module SessionStore>
+State 4: <Login line 278, col 3 to line 287, col 54 of module SessionStore>
 /\ sessoes = ( r1 :>
       ( s1 :>
             [ estado |-> "VALID",
@@ -338,10 +344,12 @@ State 4: <Login line 219, col 3 to line 228, col 31 of module SessionStore>
       ( u1 :> [ts |-> 0, contador |-> 0, status |-> "OPEN"] @@
         u2 :> [ts |-> 0, contador |-> 0, status |-> "OPEN"] @@
         u3 :> [ts |-> 0, contador |-> 0, status |-> "OPEN"] ) )
+/\ ladoDe = (r1 :> 1 @@ r2 :> 1 @@ r3 :> 1)
 /\ relogio = (r1 :> 1 @@ r2 :> 0 @@ r3 :> 1)
+/\ particaoAtiva = FALSE
 /\ vivo = (r1 :> TRUE @@ r2 :> TRUE @@ r3 :> TRUE)
 
-State 5: <EntregaMensagem line 384, col 3 to line 426, col 60 of module SessionStore>
+State 5: <EntregaMensagem line 489, col 3 to line 531, col 60 of module SessionStore>
 /\ sessoes = ( r1 :>
       ( s1 :>
             [ estado |-> "VALID",
@@ -390,7 +398,8 @@ State 5: <EntregaMensagem line 384, col 3 to line 426, col 60 of module SessionS
               motivo |-> "NONE",
               identidade |-> "NONE",
               ts |-> 0 ] ) )
-/\ canal = ( r1 :>
+/\ canal = ( r1 :> <<>> @@
+  r2 :>
       << [ tipo |-> "SESSAO_VALIDA",
            chave |-> s1,
            sessao |->
@@ -400,7 +409,6 @@ State 5: <EntregaMensagem line 384, col 3 to line 426, col 60 of module SessionS
                  ts |-> 1 ],
            ident |-> [ts |-> 0, contador |-> 0, status |-> "OPEN"],
            sessoesAfetadas |-> {} ] >> @@
-  r2 :> <<>> @@
   r3 :>
       << [ tipo |-> "SESSAO_VALIDA",
            chave |-> s1,
@@ -424,10 +432,12 @@ State 5: <EntregaMensagem line 384, col 3 to line 426, col 60 of module SessionS
       ( u1 :> [ts |-> 0, contador |-> 0, status |-> "OPEN"] @@
         u2 :> [ts |-> 0, contador |-> 0, status |-> "OPEN"] @@
         u3 :> [ts |-> 0, contador |-> 0, status |-> "OPEN"] ) )
+/\ ladoDe = (r1 :> 1 @@ r2 :> 1 @@ r3 :> 1)
 /\ relogio = (r1 :> 1 @@ r2 :> 0 @@ r3 :> 1)
+/\ particaoAtiva = FALSE
 /\ vivo = (r1 :> TRUE @@ r2 :> TRUE @@ r3 :> TRUE)
 
-State 6: <EntregaMensagem line 384, col 3 to line 426, col 60 of module SessionStore>
+State 6: <EntregaMensagem line 489, col 3 to line 531, col 60 of module SessionStore>
 /\ sessoes = ( r1 :>
       ( s1 :>
             [ estado |-> "VALID",
@@ -476,7 +486,8 @@ State 6: <EntregaMensagem line 384, col 3 to line 426, col 60 of module SessionS
               motivo |-> "NONE",
               identidade |-> "NONE",
               ts |-> 0 ] ) )
-/\ canal = ( r1 :>
+/\ canal = ( r1 :> <<>> @@
+  r2 :>
       << [ tipo |-> "SESSAO_VALIDA",
            chave |-> s1,
            sessao |->
@@ -486,7 +497,6 @@ State 6: <EntregaMensagem line 384, col 3 to line 426, col 60 of module SessionS
                  ts |-> 1 ],
            ident |-> [ts |-> 0, contador |-> 0, status |-> "OPEN"],
            sessoesAfetadas |-> {} ] >> @@
-  r2 :> <<>> @@
   r3 :> <<>> )
 /\ quedas = 0
 /\ identidades = ( r1 :>
@@ -501,10 +511,12 @@ State 6: <EntregaMensagem line 384, col 3 to line 426, col 60 of module SessionS
       ( u1 :> [ts |-> 0, contador |-> 0, status |-> "OPEN"] @@
         u2 :> [ts |-> 0, contador |-> 0, status |-> "OPEN"] @@
         u3 :> [ts |-> 0, contador |-> 0, status |-> "OPEN"] ) )
+/\ ladoDe = (r1 :> 1 @@ r2 :> 1 @@ r3 :> 1)
 /\ relogio = (r1 :> 1 @@ r2 :> 0 @@ r3 :> 1)
+/\ particaoAtiva = FALSE
 /\ vivo = (r1 :> TRUE @@ r2 :> TRUE @@ r3 :> TRUE)
 
-State 7: <EntregaMensagem line 384, col 3 to line 426, col 60 of module SessionStore>
+State 7: <EntregaMensagem line 489, col 3 to line 531, col 60 of module SessionStore>
 /\ sessoes = ( r1 :>
       ( s1 :>
             [ estado |-> "VALID",
@@ -567,10 +579,12 @@ State 7: <EntregaMensagem line 384, col 3 to line 426, col 60 of module SessionS
       ( u1 :> [ts |-> 0, contador |-> 0, status |-> "OPEN"] @@
         u2 :> [ts |-> 0, contador |-> 0, status |-> "OPEN"] @@
         u3 :> [ts |-> 0, contador |-> 0, status |-> "OPEN"] ) )
+/\ ladoDe = (r1 :> 1 @@ r2 :> 1 @@ r3 :> 1)
 /\ relogio = (r1 :> 1 @@ r2 :> 0 @@ r3 :> 1)
+/\ particaoAtiva = FALSE
 /\ vivo = (r1 :> TRUE @@ r2 :> TRUE @@ r3 :> TRUE)
 
-4743 states generated, 396 distinct states found, 269 states left on queue.
+17400 states generated, 1501 distinct states found, 1157 states left on queue.
 The depth of the complete state graph search is 8.
-The average outdegree of the complete state graph is 3 (minimum is 0, the maximum 15 and the 95th percentile is 9).
-Finished in 00s at (2026-10-03 12:58:02)
+The average outdegree of the complete state graph is 4 (minimum is 0, the maximum 21 and the 95th percentile is 11).
+Finished in 01s at (2026-10-03 17:54:45)

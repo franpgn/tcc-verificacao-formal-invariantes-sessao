@@ -1,0 +1,546 @@
+TLC2 Version 2.19 of 08 August 2024 (rev: 5a47802)
+Running breadth-first search Model-Checking with fp 30 and seed 3701318038805979520 with 4 workers on 20 cores with 2731MB heap and 64MB offheap memory [pid: 8520] (Windows 11 10.0 amd64, Oracle Corporation 17.0.2 x86_64, MSBDiskFPSet, DiskStateQueue).
+Parsing file C:\Users\Francesco\Development\tcc\wt-b32\spec\MCSession.tla
+Parsing file C:\Users\Francesco\Development\tcc\wt-b32\spec\SessionStore.tla
+Parsing file C:\Users\Francesco\AppData\Local\Temp\TLC.tla
+Parsing file C:\Users\Francesco\AppData\Local\Temp\Naturals.tla
+Parsing file C:\Users\Francesco\AppData\Local\Temp\Sequences.tla
+Parsing file C:\Users\Francesco\AppData\Local\Temp\FiniteSets.tla
+Semantic processing of module Naturals
+Semantic processing of module Sequences
+Semantic processing of module FiniteSets
+Semantic processing of module SessionStore
+Semantic processing of module TLC
+Semantic processing of module MCSession
+Starting... (2026-10-09 13:38:30)
+Computing initial states...
+Finished computing initial states: 1 distinct state generated at 2026-10-09 13:38:31.
+Error: Action property I4F is violated.
+Error: The behavior up to this point is:
+State 1: <Initial predicate>
+/\ sessoes = ( r1 :>
+      ( s1 :>
+            [ estado |-> "VALID",
+              motivo |-> "NONE",
+              identidade |-> u1,
+              ts |-> 1 ] @@
+        s2 :>
+            [ estado |-> "VALID",
+              motivo |-> "NONE",
+              identidade |-> u1,
+              ts |-> 1 ] ) @@
+  r2 :>
+      ( s1 :>
+            [ estado |-> "VALID",
+              motivo |-> "NONE",
+              identidade |-> u1,
+              ts |-> 1 ] @@
+        s2 :>
+            [ estado |-> "VALID",
+              motivo |-> "NONE",
+              identidade |-> u1,
+              ts |-> 1 ] ) @@
+  r3 :>
+      ( s1 :>
+            [ estado |-> "VALID",
+              motivo |-> "NONE",
+              identidade |-> u1,
+              ts |-> 1 ] @@
+        s2 :>
+            [ estado |-> "VALID",
+              motivo |-> "NONE",
+              identidade |-> u1,
+              ts |-> 1 ] ) )
+/\ canal = (r1 :> <<>> @@ r2 :> <<>> @@ r3 :> <<>>)
+/\ quedas = 0
+/\ identidades = ( r1 :> (u1 :> [status |-> "OPEN", ts |-> 1, contador |-> 0]) @@
+  r2 :> (u1 :> [status |-> "OPEN", ts |-> 1, contador |-> 0]) @@
+  r3 :> (u1 :> [status |-> "OPEN", ts |-> 1, contador |-> 0]) )
+/\ ladoDe = (r1 :> 1 @@ r2 :> 1 @@ r3 :> 1)
+/\ relogio = (r1 :> 1 @@ r2 :> 1 @@ r3 :> 1)
+/\ particaoAtiva = FALSE
+/\ particoes = 0
+/\ vivo = (r1 :> TRUE @@ r2 :> TRUE @@ r3 :> TRUE)
+
+State 2: <Logout line 313, col 3 to line 321, col 65 of module SessionStore>
+/\ sessoes = ( r1 :>
+      ( s1 :>
+            [ estado |-> "INVALID",
+              motivo |-> "LOGOUT",
+              identidade |-> u1,
+              ts |-> 2 ] @@
+        s2 :>
+            [ estado |-> "VALID",
+              motivo |-> "NONE",
+              identidade |-> u1,
+              ts |-> 1 ] ) @@
+  r2 :>
+      ( s1 :>
+            [ estado |-> "VALID",
+              motivo |-> "NONE",
+              identidade |-> u1,
+              ts |-> 1 ] @@
+        s2 :>
+            [ estado |-> "VALID",
+              motivo |-> "NONE",
+              identidade |-> u1,
+              ts |-> 1 ] ) @@
+  r3 :>
+      ( s1 :>
+            [ estado |-> "VALID",
+              motivo |-> "NONE",
+              identidade |-> u1,
+              ts |-> 1 ] @@
+        s2 :>
+            [ estado |-> "VALID",
+              motivo |-> "NONE",
+              identidade |-> u1,
+              ts |-> 1 ] ) )
+/\ canal = ( r1 :> <<>> @@
+  r2 :>
+      << [ tipo |-> "SESSAO_INVALIDA",
+           chave |-> s1,
+           sessao |->
+               [ estado |-> "INVALID",
+                 motivo |-> "LOGOUT",
+                 identidade |-> u1,
+                 ts |-> 2 ],
+           ident |-> [status |-> "OPEN", ts |-> 0, contador |-> 0],
+           sessoesAfetadas |-> {} ] >> @@
+  r3 :>
+      << [ tipo |-> "SESSAO_INVALIDA",
+           chave |-> s1,
+           sessao |->
+               [ estado |-> "INVALID",
+                 motivo |-> "LOGOUT",
+                 identidade |-> u1,
+                 ts |-> 2 ],
+           ident |-> [status |-> "OPEN", ts |-> 0, contador |-> 0],
+           sessoesAfetadas |-> {} ] >> )
+/\ quedas = 0
+/\ identidades = ( r1 :> (u1 :> [status |-> "OPEN", ts |-> 1, contador |-> 0]) @@
+  r2 :> (u1 :> [status |-> "OPEN", ts |-> 1, contador |-> 0]) @@
+  r3 :> (u1 :> [status |-> "OPEN", ts |-> 1, contador |-> 0]) )
+/\ ladoDe = (r1 :> 1 @@ r2 :> 1 @@ r3 :> 1)
+/\ relogio = (r1 :> 2 @@ r2 :> 1 @@ r3 :> 1)
+/\ particaoAtiva = FALSE
+/\ particoes = 0
+/\ vivo = (r1 :> TRUE @@ r2 :> TRUE @@ r3 :> TRUE)
+
+State 3: <Logout line 313, col 3 to line 321, col 65 of module SessionStore>
+/\ sessoes = ( r1 :>
+      ( s1 :>
+            [ estado |-> "INVALID",
+              motivo |-> "LOGOUT",
+              identidade |-> u1,
+              ts |-> 2 ] @@
+        s2 :>
+            [ estado |-> "VALID",
+              motivo |-> "NONE",
+              identidade |-> u1,
+              ts |-> 1 ] ) @@
+  r2 :>
+      ( s1 :>
+            [ estado |-> "INVALID",
+              motivo |-> "LOGOUT",
+              identidade |-> u1,
+              ts |-> 2 ] @@
+        s2 :>
+            [ estado |-> "VALID",
+              motivo |-> "NONE",
+              identidade |-> u1,
+              ts |-> 1 ] ) @@
+  r3 :>
+      ( s1 :>
+            [ estado |-> "VALID",
+              motivo |-> "NONE",
+              identidade |-> u1,
+              ts |-> 1 ] @@
+        s2 :>
+            [ estado |-> "VALID",
+              motivo |-> "NONE",
+              identidade |-> u1,
+              ts |-> 1 ] ) )
+/\ canal = ( r1 :>
+      << [ tipo |-> "SESSAO_INVALIDA",
+           chave |-> s1,
+           sessao |->
+               [ estado |-> "INVALID",
+                 motivo |-> "LOGOUT",
+                 identidade |-> u1,
+                 ts |-> 2 ],
+           ident |-> [status |-> "OPEN", ts |-> 0, contador |-> 0],
+           sessoesAfetadas |-> {} ] >> @@
+  r2 :>
+      << [ tipo |-> "SESSAO_INVALIDA",
+           chave |-> s1,
+           sessao |->
+               [ estado |-> "INVALID",
+                 motivo |-> "LOGOUT",
+                 identidade |-> u1,
+                 ts |-> 2 ],
+           ident |-> [status |-> "OPEN", ts |-> 0, contador |-> 0],
+           sessoesAfetadas |-> {} ] >> @@
+  r3 :>
+      << [ tipo |-> "SESSAO_INVALIDA",
+           chave |-> s1,
+           sessao |->
+               [ estado |-> "INVALID",
+                 motivo |-> "LOGOUT",
+                 identidade |-> u1,
+                 ts |-> 2 ],
+           ident |-> [status |-> "OPEN", ts |-> 0, contador |-> 0],
+           sessoesAfetadas |-> {} ],
+         [ tipo |-> "SESSAO_INVALIDA",
+           chave |-> s1,
+           sessao |->
+               [ estado |-> "INVALID",
+                 motivo |-> "LOGOUT",
+                 identidade |-> u1,
+                 ts |-> 2 ],
+           ident |-> [status |-> "OPEN", ts |-> 0, contador |-> 0],
+           sessoesAfetadas |-> {} ] >> )
+/\ quedas = 0
+/\ identidades = ( r1 :> (u1 :> [status |-> "OPEN", ts |-> 1, contador |-> 0]) @@
+  r2 :> (u1 :> [status |-> "OPEN", ts |-> 1, contador |-> 0]) @@
+  r3 :> (u1 :> [status |-> "OPEN", ts |-> 1, contador |-> 0]) )
+/\ ladoDe = (r1 :> 1 @@ r2 :> 1 @@ r3 :> 1)
+/\ relogio = (r1 :> 2 @@ r2 :> 2 @@ r3 :> 1)
+/\ particaoAtiva = FALSE
+/\ particoes = 0
+/\ vivo = (r1 :> TRUE @@ r2 :> TRUE @@ r3 :> TRUE)
+
+State 4: <Logout line 313, col 3 to line 321, col 65 of module SessionStore>
+/\ sessoes = ( r1 :>
+      ( s1 :>
+            [ estado |-> "INVALID",
+              motivo |-> "LOGOUT",
+              identidade |-> u1,
+              ts |-> 2 ] @@
+        s2 :>
+            [ estado |-> "INVALID",
+              motivo |-> "LOGOUT",
+              identidade |-> u1,
+              ts |-> 3 ] ) @@
+  r2 :>
+      ( s1 :>
+            [ estado |-> "INVALID",
+              motivo |-> "LOGOUT",
+              identidade |-> u1,
+              ts |-> 2 ] @@
+        s2 :>
+            [ estado |-> "VALID",
+              motivo |-> "NONE",
+              identidade |-> u1,
+              ts |-> 1 ] ) @@
+  r3 :>
+      ( s1 :>
+            [ estado |-> "VALID",
+              motivo |-> "NONE",
+              identidade |-> u1,
+              ts |-> 1 ] @@
+        s2 :>
+            [ estado |-> "VALID",
+              motivo |-> "NONE",
+              identidade |-> u1,
+              ts |-> 1 ] ) )
+/\ canal = ( r1 :>
+      << [ tipo |-> "SESSAO_INVALIDA",
+           chave |-> s1,
+           sessao |->
+               [ estado |-> "INVALID",
+                 motivo |-> "LOGOUT",
+                 identidade |-> u1,
+                 ts |-> 2 ],
+           ident |-> [status |-> "OPEN", ts |-> 0, contador |-> 0],
+           sessoesAfetadas |-> {} ] >> @@
+  r2 :>
+      << [ tipo |-> "SESSAO_INVALIDA",
+           chave |-> s1,
+           sessao |->
+               [ estado |-> "INVALID",
+                 motivo |-> "LOGOUT",
+                 identidade |-> u1,
+                 ts |-> 2 ],
+           ident |-> [status |-> "OPEN", ts |-> 0, contador |-> 0],
+           sessoesAfetadas |-> {} ],
+         [ tipo |-> "SESSAO_INVALIDA",
+           chave |-> s2,
+           sessao |->
+               [ estado |-> "INVALID",
+                 motivo |-> "LOGOUT",
+                 identidade |-> u1,
+                 ts |-> 3 ],
+           ident |-> [status |-> "OPEN", ts |-> 0, contador |-> 0],
+           sessoesAfetadas |-> {} ] >> @@
+  r3 :>
+      << [ tipo |-> "SESSAO_INVALIDA",
+           chave |-> s1,
+           sessao |->
+               [ estado |-> "INVALID",
+                 motivo |-> "LOGOUT",
+                 identidade |-> u1,
+                 ts |-> 2 ],
+           ident |-> [status |-> "OPEN", ts |-> 0, contador |-> 0],
+           sessoesAfetadas |-> {} ],
+         [ tipo |-> "SESSAO_INVALIDA",
+           chave |-> s1,
+           sessao |->
+               [ estado |-> "INVALID",
+                 motivo |-> "LOGOUT",
+                 identidade |-> u1,
+                 ts |-> 2 ],
+           ident |-> [status |-> "OPEN", ts |-> 0, contador |-> 0],
+           sessoesAfetadas |-> {} ],
+         [ tipo |-> "SESSAO_INVALIDA",
+           chave |-> s2,
+           sessao |->
+               [ estado |-> "INVALID",
+                 motivo |-> "LOGOUT",
+                 identidade |-> u1,
+                 ts |-> 3 ],
+           ident |-> [status |-> "OPEN", ts |-> 0, contador |-> 0],
+           sessoesAfetadas |-> {} ] >> )
+/\ quedas = 0
+/\ identidades = ( r1 :> (u1 :> [status |-> "OPEN", ts |-> 1, contador |-> 0]) @@
+  r2 :> (u1 :> [status |-> "OPEN", ts |-> 1, contador |-> 0]) @@
+  r3 :> (u1 :> [status |-> "OPEN", ts |-> 1, contador |-> 0]) )
+/\ ladoDe = (r1 :> 1 @@ r2 :> 1 @@ r3 :> 1)
+/\ relogio = (r1 :> 3 @@ r2 :> 2 @@ r3 :> 1)
+/\ particaoAtiva = FALSE
+/\ particoes = 0
+/\ vivo = (r1 :> TRUE @@ r2 :> TRUE @@ r3 :> TRUE)
+
+State 5: <Block line 389, col 3 to line 399, col 65 of module SessionStore>
+/\ sessoes = ( r1 :>
+      ( s1 :>
+            [ estado |-> "INVALID",
+              motivo |-> "LOGOUT",
+              identidade |-> u1,
+              ts |-> 2 ] @@
+        s2 :>
+            [ estado |-> "INVALID",
+              motivo |-> "LOGOUT",
+              identidade |-> u1,
+              ts |-> 3 ] ) @@
+  r2 :>
+      ( s1 :>
+            [ estado |-> "INVALID",
+              motivo |-> "LOGOUT",
+              identidade |-> u1,
+              ts |-> 2 ] @@
+        s2 :>
+            [ estado |-> "VALID",
+              motivo |-> "NONE",
+              identidade |-> u1,
+              ts |-> 1 ] ) @@
+  r3 :>
+      ( s1 :>
+            [ estado |-> "INVALID",
+              motivo |-> "ADMIN_BLOCK",
+              identidade |-> u1,
+              ts |-> 2 ] @@
+        s2 :>
+            [ estado |-> "INVALID",
+              motivo |-> "ADMIN_BLOCK",
+              identidade |-> u1,
+              ts |-> 2 ] ) )
+/\ canal = ( r1 :>
+      << [ tipo |-> "SESSAO_INVALIDA",
+           chave |-> s1,
+           sessao |->
+               [ estado |-> "INVALID",
+                 motivo |-> "LOGOUT",
+                 identidade |-> u1,
+                 ts |-> 2 ],
+           ident |-> [status |-> "OPEN", ts |-> 0, contador |-> 0],
+           sessoesAfetadas |-> {} ],
+         [ tipo |-> "ID_BLOQUEIA",
+           chave |-> u1,
+           sessao |->
+               [ estado |-> "INVALID",
+                 motivo |-> "ADMIN_BLOCK",
+                 identidade |-> u1,
+                 ts |-> 2 ],
+           ident |-> [status |-> "BLOCKED", ts |-> 2, contador |-> 0],
+           sessoesAfetadas |-> {s1, s2} ] >> @@
+  r2 :>
+      << [ tipo |-> "SESSAO_INVALIDA",
+           chave |-> s1,
+           sessao |->
+               [ estado |-> "INVALID",
+                 motivo |-> "LOGOUT",
+                 identidade |-> u1,
+                 ts |-> 2 ],
+           ident |-> [status |-> "OPEN", ts |-> 0, contador |-> 0],
+           sessoesAfetadas |-> {} ],
+         [ tipo |-> "SESSAO_INVALIDA",
+           chave |-> s2,
+           sessao |->
+               [ estado |-> "INVALID",
+                 motivo |-> "LOGOUT",
+                 identidade |-> u1,
+                 ts |-> 3 ],
+           ident |-> [status |-> "OPEN", ts |-> 0, contador |-> 0],
+           sessoesAfetadas |-> {} ],
+         [ tipo |-> "ID_BLOQUEIA",
+           chave |-> u1,
+           sessao |->
+               [ estado |-> "INVALID",
+                 motivo |-> "ADMIN_BLOCK",
+                 identidade |-> u1,
+                 ts |-> 2 ],
+           ident |-> [status |-> "BLOCKED", ts |-> 2, contador |-> 0],
+           sessoesAfetadas |-> {s1, s2} ] >> @@
+  r3 :>
+      << [ tipo |-> "SESSAO_INVALIDA",
+           chave |-> s1,
+           sessao |->
+               [ estado |-> "INVALID",
+                 motivo |-> "LOGOUT",
+                 identidade |-> u1,
+                 ts |-> 2 ],
+           ident |-> [status |-> "OPEN", ts |-> 0, contador |-> 0],
+           sessoesAfetadas |-> {} ],
+         [ tipo |-> "SESSAO_INVALIDA",
+           chave |-> s1,
+           sessao |->
+               [ estado |-> "INVALID",
+                 motivo |-> "LOGOUT",
+                 identidade |-> u1,
+                 ts |-> 2 ],
+           ident |-> [status |-> "OPEN", ts |-> 0, contador |-> 0],
+           sessoesAfetadas |-> {} ],
+         [ tipo |-> "SESSAO_INVALIDA",
+           chave |-> s2,
+           sessao |->
+               [ estado |-> "INVALID",
+                 motivo |-> "LOGOUT",
+                 identidade |-> u1,
+                 ts |-> 3 ],
+           ident |-> [status |-> "OPEN", ts |-> 0, contador |-> 0],
+           sessoesAfetadas |-> {} ] >> )
+/\ quedas = 0
+/\ identidades = ( r1 :> (u1 :> [status |-> "OPEN", ts |-> 1, contador |-> 0]) @@
+  r2 :> (u1 :> [status |-> "OPEN", ts |-> 1, contador |-> 0]) @@
+  r3 :> (u1 :> [status |-> "BLOCKED", ts |-> 2, contador |-> 0]) )
+/\ ladoDe = (r1 :> 1 @@ r2 :> 1 @@ r3 :> 1)
+/\ relogio = (r1 :> 3 @@ r2 :> 2 @@ r3 :> 2)
+/\ particaoAtiva = FALSE
+/\ particoes = 0
+/\ vivo = (r1 :> TRUE @@ r2 :> TRUE @@ r3 :> TRUE)
+
+State 6: <EntregaMensagem line 536, col 3 to line 578, col 60 of module SessionStore>
+/\ sessoes = ( r1 :>
+      ( s1 :>
+            [ estado |-> "INVALID",
+              motivo |-> "LOGOUT",
+              identidade |-> u1,
+              ts |-> 2 ] @@
+        s2 :>
+            [ estado |-> "INVALID",
+              motivo |-> "LOGOUT",
+              identidade |-> u1,
+              ts |-> 3 ] ) @@
+  r2 :>
+      ( s1 :>
+            [ estado |-> "INVALID",
+              motivo |-> "LOGOUT",
+              identidade |-> u1,
+              ts |-> 2 ] @@
+        s2 :>
+            [ estado |-> "VALID",
+              motivo |-> "NONE",
+              identidade |-> u1,
+              ts |-> 1 ] ) @@
+  r3 :>
+      ( s1 :>
+            [ estado |-> "INVALID",
+              motivo |-> "ADMIN_BLOCK",
+              identidade |-> u1,
+              ts |-> 2 ] @@
+        s2 :>
+            [ estado |-> "INVALID",
+              motivo |-> "LOGOUT",
+              identidade |-> u1,
+              ts |-> 3 ] ) )
+/\ canal = ( r1 :>
+      << [ tipo |-> "SESSAO_INVALIDA",
+           chave |-> s1,
+           sessao |->
+               [ estado |-> "INVALID",
+                 motivo |-> "LOGOUT",
+                 identidade |-> u1,
+                 ts |-> 2 ],
+           ident |-> [status |-> "OPEN", ts |-> 0, contador |-> 0],
+           sessoesAfetadas |-> {} ],
+         [ tipo |-> "ID_BLOQUEIA",
+           chave |-> u1,
+           sessao |->
+               [ estado |-> "INVALID",
+                 motivo |-> "ADMIN_BLOCK",
+                 identidade |-> u1,
+                 ts |-> 2 ],
+           ident |-> [status |-> "BLOCKED", ts |-> 2, contador |-> 0],
+           sessoesAfetadas |-> {s1, s2} ] >> @@
+  r2 :>
+      << [ tipo |-> "SESSAO_INVALIDA",
+           chave |-> s1,
+           sessao |->
+               [ estado |-> "INVALID",
+                 motivo |-> "LOGOUT",
+                 identidade |-> u1,
+                 ts |-> 2 ],
+           ident |-> [status |-> "OPEN", ts |-> 0, contador |-> 0],
+           sessoesAfetadas |-> {} ],
+         [ tipo |-> "SESSAO_INVALIDA",
+           chave |-> s2,
+           sessao |->
+               [ estado |-> "INVALID",
+                 motivo |-> "LOGOUT",
+                 identidade |-> u1,
+                 ts |-> 3 ],
+           ident |-> [status |-> "OPEN", ts |-> 0, contador |-> 0],
+           sessoesAfetadas |-> {} ],
+         [ tipo |-> "ID_BLOQUEIA",
+           chave |-> u1,
+           sessao |->
+               [ estado |-> "INVALID",
+                 motivo |-> "ADMIN_BLOCK",
+                 identidade |-> u1,
+                 ts |-> 2 ],
+           ident |-> [status |-> "BLOCKED", ts |-> 2, contador |-> 0],
+           sessoesAfetadas |-> {s1, s2} ] >> @@
+  r3 :>
+      << [ tipo |-> "SESSAO_INVALIDA",
+           chave |-> s1,
+           sessao |->
+               [ estado |-> "INVALID",
+                 motivo |-> "LOGOUT",
+                 identidade |-> u1,
+                 ts |-> 2 ],
+           ident |-> [status |-> "OPEN", ts |-> 0, contador |-> 0],
+           sessoesAfetadas |-> {} ],
+         [ tipo |-> "SESSAO_INVALIDA",
+           chave |-> s1,
+           sessao |->
+               [ estado |-> "INVALID",
+                 motivo |-> "LOGOUT",
+                 identidade |-> u1,
+                 ts |-> 2 ],
+           ident |-> [status |-> "OPEN", ts |-> 0, contador |-> 0],
+           sessoesAfetadas |-> {} ] >> )
+/\ quedas = 0
+/\ identidades = ( r1 :> (u1 :> [status |-> "OPEN", ts |-> 1, contador |-> 0]) @@
+  r2 :> (u1 :> [status |-> "OPEN", ts |-> 1, contador |-> 0]) @@
+  r3 :> (u1 :> [status |-> "BLOCKED", ts |-> 2, contador |-> 0]) )
+/\ ladoDe = (r1 :> 1 @@ r2 :> 1 @@ r3 :> 1)
+/\ relogio = (r1 :> 3 @@ r2 :> 2 @@ r3 :> 2)
+/\ particaoAtiva = FALSE
+/\ particoes = 0
+/\ vivo = (r1 :> TRUE @@ r2 :> TRUE @@ r3 :> TRUE)
+
+1979 states generated, 366 distinct states found, 309 states left on queue.
+The depth of the complete state graph search is 7.
+The average outdegree of the complete state graph is 7 (minimum is 2, the maximum 16 and the 95th percentile is 13).
+Finished in 00s at (2026-10-09 13:38:31)

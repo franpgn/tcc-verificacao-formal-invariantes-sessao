@@ -1,0 +1,9 @@
+semeado	sem	r3	I1F	SEM_VIOLACAO_ATE_AQUI	limite_de_tempo_600s	222726728	18273465	601s
+semeado	sem	r3	I4F	VIOLADA	traco_de_6_estados	1979	366	1s
+semeado	sem	r3	I2Fb	VIOLADA	traco_de_5_estados	378	76	1s
+semeado	sem	r3	I2Fa	SEM_VIOLACAO_ATE_AQUI	limite_de_tempo_60s	835264	94862	61s
+semeado	sem	r3	I1M	SEM_VIOLACAO_ATE_AQUI	limite_de_tempo_60s	888357	98970	60s
+semeado	sem	r3	I4M	SEM_VIOLACAO_ATE_AQUI	limite_de_tempo_60s	974562	109115	60s
+semeado	sem	r3	I1P	SEM_VIOLACAO_ATE_AQUI	limite_de_tempo_120s	16618334	1600887	120s
+semeado	sem	r3	I4Fp	VIOLADA	traco_de_6_estados	2151	422	2s
+semeado	sem	r3	I4Mp	SEM_VIOLACAO_ATE_AQUI	limite_de_tempo_300s	76614049	7061453	301s

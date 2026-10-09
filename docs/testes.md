@@ -205,3 +205,9 @@ bash scripts/inject-partition.test.sh     # 99-101 PASS (T-par-6 e T-par-15 pode
 # 8. testes sem-VM do inject-netdegrade (F4; shims, qualquer host; ~4 min no Git Bash)
 bash scripts/inject-netdegrade.test.sh    # 284-292 PASS (T-nd-21 e SKIP onde nao ha flock)
 ```
+
+## B-32: propriedades operacionais no TLC (2026-10-09)
+
+`spec/run-tlc-propriedades.sh` roda `I1F`, `I4F`, `I2Fa`, `I2Fb`, `I1M`, `I4M` (mais `I4Fp`, `I4Mp`, `I1P`, `MesclarPerdeChave`) sobre o cenário
+semeado (`SpecSemeada`) ou o modelo livre, isolando falha (`SemFalha`/`SoQueda`/`SoParticao`). Resultados e limites em
+`docs/relatorio-b32-tlc-propriedades-2026-10-09.md`; logs brutos em `runs/tlc/prop-*/`. Requer `tla2tools.jar` (variável `TLA_TOOLS`) e Java 11+.

@@ -132,3 +132,9 @@ bash scripts/run-baseline.sh --faults "none F3" --reps 3 --duration 120 --warmup
 # 6. testes sem-VM do inject-jitter (rodam em qualquer host)
 bash scripts/inject-jitter.test.sh        # 31 PASS
 ```
+
+## B-32: propriedades operacionais no TLC (2026-10-09)
+
+`spec/run-tlc-propriedades.sh` roda `I1F`, `I4F`, `I2Fa`, `I2Fb`, `I1M`, `I4M` (mais `I4Fp`, `I4Mp`, `I1P`, `MesclarPerdeChave`) sobre o cenário
+semeado (`SpecSemeada`) ou o modelo livre, isolando falha (`SemFalha`/`SoQueda`/`SoParticao`). Resultados e limites em
+`docs/relatorio-b32-tlc-propriedades-2026-10-09.md`; logs brutos em `runs/tlc/prop-*/`. Requer `tla2tools.jar` (variável `TLA_TOOLS`) e Java 11+.

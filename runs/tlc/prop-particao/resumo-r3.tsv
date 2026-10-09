@@ -1,0 +1,9 @@
+semeado	particao	r3	I1F	VIOLADA	traco_de_5_estados	1119	317	1s
+semeado	particao	r3	I4F	VIOLADA	traco_de_5_estados	1054	305	2s
+semeado	particao	r3	I2Fb	VIOLADA	traco_de_5_estados	384	119	1s
+semeado	particao	r3	I2Fa	VIOLADA	traco_de_6_estados	7197	2039	1s
+semeado	particao	r3	I1M	VIOLADA	traco_de_4_estados	1066	306	1s
+semeado	particao	r3	I4M	VIOLADA	traco_de_4_estados	1277	377	1s
+semeado	particao	r3	I1P	SEM_VIOLACAO_ATE_AQUI	limite_de_tempo_120s	11911646	2417880	120s
+semeado	particao	r3	I4Fp	VIOLADA	traco_de_6_estados	2002	598	0s
+semeado	particao	r3	I4Mp	VIOLADA	traco_de_5_estados	7676	2147	1s

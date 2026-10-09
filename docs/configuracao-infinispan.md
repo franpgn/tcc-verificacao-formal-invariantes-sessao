@@ -27,7 +27,44 @@ A inicialização ocorre via `cd cluster && podman-compose up -d`. O *health che
 
 ## Partition Handling
 
-A configuração adota `<partition-handling when-split="DENY_READ_WRITES" merge-policy="PREFERRED_NON_NULL"/>`. Sob partição, a partição minoritária recusa leituras e escritas, e a reconciliação após o merge prefere o valor não-nulo mais recente. Essa escolha alinha-se com o escopo de TCC-I: F2 (partição) está reservado para TCC-II (Decisão 011 ponto 11) e, portanto, esta política funciona como salvaguarda passiva caso o experimento gere partição involuntária.
+A configuração adota `<partition-handling when-split="DENY_READ_WRITES" merge-policy="PREFERRED_NON_NULL"/>` nos dois *caches* (`sessions` e `counters`). Sob partição, depois que o detector de falhas (`FD_ALL3`, até ~40 s, mais 1 s de `VERIFY_SUSPECT2`) muda a vista, a partição minoritária entra em modo DEGRADED e recusa leituras e escritas, enquanto a maioria segue AVAILABLE. Após a cura, o `MERGE3` (10 a 30 s) percebe a outra vista e a reconciliação segue `PREFERRED_NON_NULL` (regra posicional: vale o valor da partição preferida; só se for nulo, o primeiro não nulo das demais). Esses tempos são **estimativas derivadas dos parâmetros, não medições**; a medição é objeto dos gates reais G-3 e G-4.
+
+Esta política deixou de ser uma "salvaguarda passiva": F2 (partição de rede) agora é **injetável** por `scripts/inject-partition.sh` (B-29), de modo que `DENY_READ_WRITES` e a fusão passam a ser exercitados deliberadamente. O XML não muda; a decisão registrada é manter `PREFERRED_NON_NULL` (configuração real do projeto) e não oferecer *flag* para simular `ALLOW_READ_WRITES` (fora de escopo).
+
+### Falha F2 — partição de rede (`scripts/inject-partition.sh`)
+
+Mecanismo (opção (a2) do plano de 2026-10-09): disciplina `clsact` do `tc` com um filtro `u32` por IP de par e ação `drop`, nos dois sentidos, aplicada **só no nó isolado** a partir do host via `sudo nsenter -t <pid> -n tc ...`. O tráfego Hot Rod do cliente não é afetado (origem no gateway da *bridge*, não em IP de par) e a fila raiz fica livre para o `netem` de F3. Plano B (só se o gate G-0 falhar): `iptables`/`nftables` via `nsenter`, sem implementar agora; `podman network disconnect` foi descartado (remove o nó também para o cliente e muda IP/interface).
+
+```mermaid
+%%{init: {'theme':'base','themeVariables':{'background':'#ffffff','primaryColor':'#ffffff','primaryTextColor':'#000000','primaryBorderColor':'#000000','lineColor':'#000000','secondaryColor':'#ffffff','tertiaryColor':'#ffffff','clusterBkg':'#ffffff','clusterBorder':'#000000','titleColor':'#000000','edgeLabelBackground':'#ffffff','fontFamily':'Arial'}}}%%
+flowchart TB
+    INJ["inject-partition.sh<br/>sudo nsenter -t PID -n tc ..."]
+    subgraph MAJ["maioria (2 nos) - AVAILABLE"]
+        N1["isn1"]
+        N2["isn2"]
+    end
+    subgraph MIN["minoria (1 no) - DEGRADED apos deteccao"]
+        N3["isn3<br/>clsact: drop src/dst isn1 e isn2"]
+    end
+    N1 <-->|"JGroups 7800: intacto"| N2
+    N1 -. "descartado nos 2 sentidos" .- N3
+    N2 -. "descartado nos 2 sentidos" .- N3
+    WL["workload Hot Rod"] -->|"portas publicadas: nao afetadas"| N3
+    INJ --> N3
+```
+
+| Opção | Semântica |
+|---|---|
+| `--minority <no[,no]>` | Nó(s) isolado(s); estritamente menos da metade de `--nodes` (3 nós: só 1), senão exit 2 |
+| `--nodes` | padrão `isn1,isn2,isn3`; IPs dos pares resolvidos por `podman inspect`, nunca fixos |
+| `--duration` | padrão 90 s; abaixo de 45 s avisa que é "atraso severo", não partição |
+| `--marker` | acrescenta `fault=F2 node=<no> event=start` ou `event=end` com `t_epoch_ns=<n>` (formato de B-25) |
+| `--heal` | só remove `clsact` remanescente (após `SIGKILL`); sem `--minority`, limpa todos os nós |
+| `--dry-run` | imprime o plano; sem podman, sudo, nsenter ou tc |
+
+Códigos de saída: 0 ok; 1 genérico (inclui lock ocupado e resíduo); 2 argumento; 3 dependência ausente; 4 nó ausente/parado; 5 kernel rejeitou `clsact`/`u32`/`drop`; **6 a partição não se efetivou** (conexão TCP ainda possível a um par, ou contadores de descarte zerados no fim da janela). Dependências no host da VM: `podman`, `nsenter`, `tc`, `sudo`, `flock`, `timeout` e os módulos `sch_clsact`, `cls_u32`, `act_gact`.
+
+Os testes sem VM estão em `docs/testes.md`; o aceite real (G-0 a G-6) está **pendente** na VM.
 
 ## Locking e *state transfer*
 

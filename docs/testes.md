@@ -112,6 +112,32 @@ exercitados na VM.
 A execução real exige a VM porque o kernel do WSL2 não traz `sch_netem`
 (motivo da migração para Hyper-V/Ubuntu).
 
+## Critérios de aceite do B-29 (falha F2 — partição de rede, `inject-partition.sh`)
+
+Sem VM (rodam em qualquer host; `bash scripts/inject-partition.test.sh`). T-par-7 a T-par-15 usam *shims* de `podman`, `sudo`, `nsenter`, `tc` e `flock` no `PATH`, que só registram as chamadas e simulam o estado de um `clsact` por PID. Eles verificam a **lógica** (ordem, limpeza, códigos, sinais), **não** que o kernel aceita `clsact`/`u32`/`drop` (isso é o gate G-0).
+
+| ID | Teste | Esperado |
+|---|---|---|
+| T-par-1 | `--help` | exit 0, documenta todas as flags e o exit 6 |
+| T-par-2 | `--dry-run` com `PATH` sem podman | exit 0, plano com `nsenter`, `clsact`, filtros ingress/egress por par, `qdisc del clsact`, sem `podman exec` |
+| T-par-3 | `--dry-run`, 5 nós, `--minority isn1`, `--duration`, `--marker` | 4 filtros ingress e 4 egress; minoria de 2 em 5 aceita |
+| T-par-4 | argumentos inválidos (sem `--minority`, nó fora de `--nodes`, maioria, metade, `--duration 0`, flag desconhecida, flag sem valor, nome com `;`) | exit 2 |
+| T-par-5 | `--duration 20` | aviso "atraso severo" e plano normal |
+| T-par-6 | `run-baseline.sh --faults "none F2" --dry-run` | **SKIP até B-29.1** (o baseline ainda não integra F2) |
+| T-par-7 | execução completa com *shims* (`--duration 1`) | sequência resolve, pré-limpeza, sonda, add, filtros por par, show, del; marcadores start/end; só toca o PID do nó isolado |
+| T-par-8 | `tc` falha na sonda / `clsact` rejeitado | exit 5 e limpeza chamada |
+| T-par-9 | `SIGTERM` durante a janela | exit 143, `qdisc del clsact` antes de sair, marcador `end` gravado |
+| T-par-10 | `--heal` | só `qdisc del clsact` (sem add/filter); tolera nó ausente |
+| T-par-11 | conexão ao par ainda possível | exit 6 e limpeza |
+| T-par-12 | contadores zerados no fim da janela | exit 6 e limpeza |
+| T-par-13 | nó isolado/par inexistente ou parado | exit 4, nada alterado |
+| T-par-14 | `PODMAN="sudo podman"` | reflete no plano e funciona na execução |
+| T-par-15 | `flock` real: segunda injeção no mesmo nó | exit 1 (SKIP onde não há `flock`, p.ex. Git Bash) |
+
+Resultado desta rodada: Git Bash (Windows) 99 PASS / 0 FAIL / 2 SKIP; Ubuntu (WSL) com `flock` real 101 PASS / 0 FAIL / 1 SKIP.
+
+**Gate real na VM (pendente)**: G-0 (kernel aceita `clsact` + `u32` + `drop`), G-1 (contadores > 0 nos dois sentidos, conexão a `IP_par:7800` falha, Hot Rod a isn3 responde com erro e não com *timeout*), G-2 (sem resíduo), G-3 (vistas 2 e 1; isn3 DEGRADED em `sessions` e `counters`), G-4 (fusão e tempo), G-5 (`SIGTERM` e `SIGKILL`+`--heal`), G-6 (coexistência com F3). Comandos no relatório `docs/relatorio-b29-implementacao-2026-10-09.md`. Resultados reais **ainda não registrados**.
+
 ## Como reproduzir
 
 ```bash
@@ -131,4 +157,6 @@ bash scripts/run-baseline.sh --reps 3 --duration 120 --warmup-min 20
 bash scripts/run-baseline.sh --faults "none F3" --reps 3 --duration 120 --warmup-min 20
 # 6. testes sem-VM do inject-jitter (rodam em qualquer host)
 bash scripts/inject-jitter.test.sh        # 31 PASS
+# 7. testes sem-VM do inject-partition (F2; shims, qualquer host)
+bash scripts/inject-partition.test.sh     # 99-101 PASS (T-par-6 e T-par-15 podem ser SKIP)
 ```

@@ -52,7 +52,7 @@
 #   4  no (alvo ou par) nao encontrado, nao-running, sem PID ou sem IP
 #   5  kernel rejeitou prio/netem/u32 (modulo ausente ou parametro invalido)
 #   6  a degradacao NAO se efetivou (taxa de perda observada incompativel com
-#      a configurada, contador 'Sent' zerado ou perda sem descartes)
+#      a configurada, Sent+dropped zerados ou perda sem descartes)
 #   7  raiz ocupada: qdisc raiz alheia (F3) ou clsact (F2) ou lock de F2 num
 #      no que seria tocado; nada foi alterado
 #

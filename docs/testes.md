@@ -168,7 +168,8 @@ Sem VM (rodam em qualquer host; `bash scripts/inject-netdegrade.test.sh`). Os te
 | T-nd-12 | kernel rejeita (filtro na sonda, `prio`, `netem`, gemodel, filtro na aplicação, filtro num par) | exit 5, regra parcial removida pelo `trap`, sem marcador quando a falha nem começou |
 | T-nd-13 | `SIGTERM` durante a janela (3 nós), `SIGHUP`, `SIGTERM` durante o ping | exit 143/129, `del root` nos 3 nós após o sinal, marcador `end` uma só vez, sem resíduo. `SIGINT` **não** é testável aqui: o bash ignora INT em jobs assíncronos não interativos |
 | T-nd-14 | `--heal` | só `del root` nos nós com `prio 1:` (alvo e pares); **não** apaga a raiz de F3; tolera nó ausente; idempotente; `--dry-run` |
-| T-nd-15 | exit 6 | perda observada 0%/40%/50% contra a esperada; 25% e 100% (N5) dentro da tolerância; `Sent` zerado; perda sem `dropped` (≥ 10 esperados → erro; amostra pequena → aviso); só atraso com `Sent` zerado |
+| T-nd-15 | exit 6 | perda observada 0%/40%/50% contra a esperada; 25% e 100% (N5) dentro da tolerância; `Sent`+`dropped` zerados; N5 com `Sent` 0 e `dropped` > 0 passa (T-nd-15l/m); perda sem `dropped` (≥ 10 esperados → erro; amostra pequena → aviso); só atraso com `Sent` zerado |
+| T-nd-15n..r | guarda de netns (R4) | alvo ou par com o mesmo netns do PID 1, ou netns ilegível → exit 4 sem nenhum `tc`; `--heal` não toca nó em rede do host |
 | T-nd-16 | exit 4 | alvo ou par inexistente; contêiner não `running`; nada alterado |
 | T-nd-17 | exit 3 | `PODMAN` inexistente |
 | T-nd-18 | exit 7 | raiz de F3 no alvo ou num par (`in`); `clsact` de F2 no mesmo nó; nada alterado nem removido (raiz alheia intacta); F3/F2 em nó **não tocado** coexistem; `--heal` respeita a raiz alheia |

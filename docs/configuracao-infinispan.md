@@ -82,7 +82,7 @@ Perda (aleatória ou em rajada), atraso com jitter, duplicação, reordenação 
 | `--heal` | remove a `prio 1:` do injetor em todos os nós; nunca toca raiz alheia |
 | `--dry-run`, `--ping-count` | plano sem executar; pings por par para medir a perda no fio (0 desliga) |
 
-Códigos de saída: 0 ok; 1 genérico (lock, resíduo); 2 argumento; 3 dependência ausente; 4 nó ausente/parado; 5 kernel rejeitou `prio`/`netem`/`u32`; **6 a degradação não se efetivou** (perda no fio fora de 3 σ binomiais, contador `Sent` zerado ou perda sem descarte); **7 raiz ocupada** (F3, `clsact`/lock de F2). Dependências no host da VM: `podman`, `nsenter`, `tc`, `sudo`, `flock`, `ping` e os módulos `sch_prio`, `sch_netem`, `cls_u32`. Os testes sem VM estão em `docs/testes.md`; o aceite real (gate L-0 a L-6, T-C2) está **pendente** e nada foi executado na VM.
+Códigos de saída: 0 ok; 1 genérico (lock, resíduo); 2 argumento; 3 dependência ausente; 4 nó ausente/parado; 5 kernel rejeitou `prio`/`netem`/`u32`; **6 a degradação não se efetivou** (perda no fio fora de 3 σ binomiais, `Sent`+`dropped` zerados (nenhum pacote casou o filtro) ou perda sem descarte); **7 raiz ocupada** (F3, `clsact`/lock de F2). Dependências no host da VM: `podman`, `nsenter`, `tc`, `sudo`, `flock`, `ping` e os módulos `sch_prio`, `sch_netem`, `cls_u32`. Os testes sem VM estão em `docs/testes.md`; o aceite real (gate L-0 a L-6, T-C2) está **pendente** e nada foi executado na VM.
 
 ## Locking e *state transfer*
 

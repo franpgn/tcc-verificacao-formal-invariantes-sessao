@@ -1,0 +1,9 @@
+semeado	p1	mp0	queda	r2	I5	VIOLADA	traco_de_5_estados	2158	486	1s	PerderNaVista=0:0
+semeado	p1	mp0	queda	r2	I6	VIOLADA	traco_de_5_estados	4182	856	1s	PerderNaVista=0:0
+semeado	p1	mp0	queda	r2	I1P	SEM_VIOLACAO	exaustivo	195239	15690	4s	PerderNaVista=0:0
+semeado	p1	mp0	queda	r2	I1F	SEM_VIOLACAO	exaustivo	195239	15690	4s	PerderNaVista=0:0
+semeado	p1	mp0	queda	r2	I4F	VIOLADA	traco_de_5_estados	537	156	2s	PerderNaVista=0:0
+semeado	p1	mp0	queda	r2	I2Fa	SEM_VIOLACAO	exaustivo	195239	15690	3s	PerderNaVista=0:0
+semeado	p1	mp0	queda	r2	I1M	SEM_VIOLACAO	exaustivo	195239	15690	3s	PerderNaVista=0:0
+semeado	p1	mp0	queda	r2	I4M	SEM_VIOLACAO	exaustivo	195239	15690	4s	PerderNaVista=0:0
+semeado	p1	mp0	queda	r2	I2Fb	VIOLADA	traco_de_3_estados	117	33	2s	PerderNaVista=0:0

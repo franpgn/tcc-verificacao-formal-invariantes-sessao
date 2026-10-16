@@ -6,6 +6,7 @@
 #      menos `canal` (mesmo conjunto, sem repeticao), e cada acao tem `perdas' = perdas + 1` e `perdas < MaxPerdas`;
 #  (3) P1 tem o guard `~PodeAgir(r)` e P0 NAO tem (distincao dos sabores);
 #  (4) NextP0/NextP1 sao Next com UNCHANGED perdas, mais a respectiva acao de perda e nada mais;
+#  (4b/4c) forma exata dos quantificadores, Init com perdas = 0, varsP, PerdasOK e das quatro Spec*;
 #  (5) SessionStore.tla e MCSession.tla sem diferenca no git (se estiver num repo e GIT_CHECK != 0).
 # Uso: spec/check-variante-perda.sh   (sai com 0 se fiel, 1 se diverge)
 # Variaveis: ORIG (SessionStore.tla), VAR (MCPerda.tla), GIT_CHECK=0 desliga (5).
@@ -51,6 +52,26 @@ corpo "$VAR" "PerderQualquer ==" | grep -qF 'PodeAgir' && falha "PerderQualquer 
 for P in "NextP0 PerderQualquer" "NextP1 PerderNaVista"; do set -- $P
   N="$(corpo "$VAR" "$1 ==" | tr -d '\n' | sed -e 's/[[:space:]]\+/ /g')"
   [[ "$N" == "$1 == (Next /\ UNCHANGED perdas) \/ $2" ]] || falha "$1 inesperado: '$N'"
+done
+# (4b) forma exata do quantificador (B-35.1 validacao SS2: P1 invertido, indice fora, filtro em P0)
+colapsa() { tr -d '\r' | sed -E -e 's/^[[:space:]]+//' -e 's/[[:space:]]+/ /g' -e 's/[[:space:]]$//'; }
+Q0='/\ \E r \in REPLICAS : \E i \in 1..Len(canal[r]) : RemoverMsg(r, i)'
+Q1='/\ \E r \in REPLICAS : \E i \in 1..Len(canal[r]) : ~PodeAgir(r) /\ RemoverMsg(r, i)'
+[[ "$(corpo "$VAR" 'PerderQualquer ==' | colapsa | grep -cxF -e "$Q0")" -eq 1 ]] || falha "PerderQualquer: quantificador diferente de: $Q0"
+[[ "$(corpo "$VAR" 'PerderNaVista ==' | colapsa | grep -cxF -e "$Q1")" -eq 1 ]] || falha "PerderNaVista: quantificador diferente de: $Q1"
+# (4c) Init com perdas = 0, varsP, PerdasOK e as quatro Spec* (cada uma com o Init e o Next certos)
+linha() { tr -d '\r' < "$VAR" | grep -E "^$1 *==" | colapsa; }
+declare -A ESPERADO=(
+  [varsP]='varsP == << vars, perdas >>'
+  [PerdasOK]='PerdasOK == perdas \in 0..MaxPerdas'
+  [InitP]='InitP == Init /\ perdas = 0'
+  [InitSemeadoP]='InitSemeadoP == InitSemeado /\ perdas = 0'
+  [SpecPerda0Semeada]='SpecPerda0Semeada == InitSemeadoP /\ [][NextP0]_varsP'
+  [SpecPerda1Semeada]='SpecPerda1Semeada == InitSemeadoP /\ [][NextP1]_varsP'
+  [SpecPerda0Livre]='SpecPerda0Livre == InitP /\ [][NextP0]_varsP'
+  [SpecPerda1Livre]='SpecPerda1Livre == InitP /\ [][NextP1]_varsP' )
+for K in "${!ESPERADO[@]}"; do
+  [[ "$(linha "$K")" == "${ESPERADO[$K]}" ]] || falha "$K inesperado: '$(linha "$K")' (esperado '${ESPERADO[$K]}')"
 done
 # (5)
 if [[ "${GIT_CHECK:-1}" != 0 ]] && git -C "$AQUI" rev-parse --git-dir >/dev/null 2>&1; then

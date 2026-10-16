@@ -1,0 +1,17 @@
+
+****** SANY2 Version 2.1 created 24 February 2014
+
+Parsing file C:\Users\Francesco\AppData\Local\Temp\tmp.bw3WEXpDEz\MCPerda.tla
+Parsing file C:\Users\Francesco\AppData\Local\Temp\tmp.bw3WEXpDEz\MCSession.tla
+Parsing file C:\Users\Francesco\AppData\Local\Temp\tmp.bw3WEXpDEz\SessionStore.tla
+Parsing file C:\Users\Francesco\AppData\Local\Temp\TLC.tla
+Parsing file C:\Users\Francesco\AppData\Local\Temp\Naturals.tla
+Parsing file C:\Users\Francesco\AppData\Local\Temp\Sequences.tla
+Parsing file C:\Users\Francesco\AppData\Local\Temp\FiniteSets.tla
+Semantic processing of module Naturals
+Semantic processing of module Sequences
+Semantic processing of module FiniteSets
+Semantic processing of module SessionStore
+Semantic processing of module TLC
+Semantic processing of module MCSession
+Semantic processing of module MCPerda

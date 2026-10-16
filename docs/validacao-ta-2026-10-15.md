@@ -38,3 +38,9 @@ Script corrigido de `wt-ta`, saída em diretório temporário, 3 execuções sim
 | queda, I4Mp | fechou, 15.690 distintos (195.239 gerados) | 0:11.928 | **0:0** |
 | partição, I2Fa (controle positivo) | violada, 4 estados | 41:48 | **11:14** |
 `Particionar 0:3976` significa que a ação gera sucessores, todos barrados pela restrição (`distintos` 0); `Mesclar 0:0` significa nunca habilitada. Catálogo (seção 6) distingue `vácuo-verificado` (r2, r3 c2r3 sem falha, r2 queda, r3 queda c2r3 só I2Fa) de `vácuo-estrutural` (cotas do plano, TLC não fechou). A distinção está correta e honesta.
+
+## Item 5. `rc=150`
+Script antigo (`git show 48d1571:spec/run-tlc-propriedades.sh`) versus corrigido, cópias isoladas de `spec/` em diretório temporário; `semeado particao r3 I2Fb`, MaxCanal=3, 1 worker, 5 rodadas de 20 execuções simultâneas (100 por variante).
+- Antigo: **2 de 100** `ERRO rc=150` (98 VIOLADA, 3 estados); a assinatura no `.out` é a do relatório (falha de parse / Module-Table lookup).
+- Corrigido: **0 de 100** (100 VIOLADA, 3 estados).
+- Observação: um único lote de 20 execuções *longas* (r2, ~1 s cada) não reproduziu o erro (0 de 20 nas duas variantes); a janela é a extração de `TLC.tla` etc. para `java.io.tmpdir` no início da JVM, então exige muitas partidas curtas concorrentes. A taxa é baixa (2% aqui; 5/80 e 4/80 no Worker). A correção (tmpdir por execução) é consistente com o mecanismo; evidência do Worker (0 de 120) mais a minha (0 de 100) sustentam eliminação, **sem** prova absoluta (a ausência de erro é amostral).

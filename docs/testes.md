@@ -135,7 +135,9 @@ Sem VM (rodam em qualquer host; `bash scripts/inject-partition.test.sh`). T-par-
 | T-par-15 | `flock` real: segunda injeção no mesmo nó | exit 1 (SKIP onde não há `flock`, p.ex. Git Bash) |
 | T-par-18 | Guarda de netns: alvo/par/--heal com netns == PID 1 ou ilegivel -> exit 4 sem nsenter/tc (--heal limpa os demais) | A2 de V-B |
 
-Resultado desta rodada: Git Bash (Windows) 99 PASS / 0 FAIL / 2 SKIP; Ubuntu (WSL) com `flock` real 101 PASS / 0 FAIL / 1 SKIP.
+Resultado desta rodada: Git Bash (Windows) 113 PASS / 0 FAIL / 2 SKIP; Ubuntu (WSL) com `flock` real 115 PASS / 0 FAIL / 1 SKIP.
+
+Nota de TDD (A2 de V-B): o vermelho `946a2f6` (T-par-18) tem 11 asserts FAIL (Git Bash e WSL), nao 9 como constava no relatorio de entrega (contagem defasada; numero de asserts, nao de testes).
 
 **Gate real na VM (pendente)**: G-0 (kernel aceita `clsact` + `u32` + `drop`), G-1 (contadores > 0 nos dois sentidos, conexão a `IP_par:7800` falha, Hot Rod a isn3 responde com erro e não com *timeout*), G-2 (sem resíduo), G-3 (vistas 2 e 1; isn3 DEGRADED em `sessions` e `counters`), G-4 (fusão e tempo), G-5 (`SIGTERM` e `SIGKILL`+`--heal`), G-6 (coexistência com F3). Comandos no relatório `docs/relatorio-b29-implementacao-2026-10-09.md`. Resultados reais **ainda não registrados**.
 

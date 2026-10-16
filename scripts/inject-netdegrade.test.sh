@@ -691,6 +691,14 @@ reset_shims
 export SHIM_SENT=0 SHIM_DROPPED=0
 roda_shim --target isn3 --delay 50ms --duration 1 --ping-count 0
 ok "T-nd-15k so atraso mas 'Sent' 0: exit" "6" "${RC}"
+reset_shims
+export SHIM_PING_LOSS=100 SHIM_SENT=0 SHIM_DROPPED=500
+roda_shim --target isn3 --severity N5 --duration 1
+ok "T-nd-15l N5: Sent 0 mas dropped 500 (filtro casou, tudo descartado) nao e exit 6: exit" "0" "${RC}"
+reset_shims
+export SHIM_SENT=0 SHIM_DROPPED=500
+roda_shim --target isn3 --loss 20 --duration 1 --ping-count 0
+ok "T-nd-15m Sent 0 e dropped 500 com perda 20%: exit" "0" "${RC}"
 
 echo "== T-nd-16: exit 4 -- no ausente, parado ou sem IP =="
 reset_shims

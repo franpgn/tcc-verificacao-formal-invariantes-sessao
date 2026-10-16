@@ -1,0 +1,1 @@
+P-8: 100 .cfg conferidos contra o nome do diretorio (c2r3/ev1/lim6/falha), PROPERTY vs INVARIANTS e SYMMETRY; inconsistencias: 0

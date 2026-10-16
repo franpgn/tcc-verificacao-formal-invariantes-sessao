@@ -1,0 +1,32 @@
+dir	arquivo	prop	workers	card	MaxCanal	MaxRelogio	MaxEventosFalha	LIMITE	restricao	SYMMETRY	secao	resultado_do_out	gerados	distintos	fila	duracao_out	fonte_numeros	estados_do_traco	tsv_resultado	tsv_duracao	tsv_n_linhas	diverge_tsv	detalhe_divergencia
+ctrl-nosym-lim6-particao	r3-I2Fb.out	I2Fb	1	r3	3	5	2	6	SoParticao	NAO	INVARIANTS	VIOLADA	850	417	388	00s	linha_final	4	VIOLADA:traco_de_4_estados	2s	1	nao	
+ctrl-nosym-lim6-queda	r3-I2Fb.out	I2Fb	1	r3	3	5	2	6	SoQueda	NAO	INVARIANTS	VIOLADA	847	352	326	00s	linha_final	4	VIOLADA:traco_de_4_estados	1s	1	nao	
+ctrl-nosym-lim6-sem	r3-I2Fb.out	I2Fb	1	r3	3	5	2	6	SemFalha	NAO	INVARIANTS	VIOLADA	790	285	262	00s	linha_final	4	VIOLADA:traco_de_4_estados	1s	1	nao	
+ctrl-nosym-livre-particao	r3-I1F.out	I1F	1	r3	3	5	2	2	SoParticao	NAO	PROPERTY	VIOLADA	11763	4633	4260	01s	linha_final	5	VIOLADA:traco_de_5_estados	2s	1	nao	
+ctrl-nosym-livre-particao	r3-I1M.out	I1M	1	r3	3	5	2	2	SoParticao	NAO	PROPERTY	VIOLADA	11763	4633	4260	00s	linha_final	5	VIOLADA:traco_de_5_estados	1s	1	nao	
+ctrl-nosym-livre-particao	r3-I1P.out	I1P	1	r3	3	5	2	2	SoParticao	NAO	PROPERTY	VIOLADA	1027	505	472	00s	linha_final	4	VIOLADA:traco_de_4_estados	1s	1	nao	
+ctrl-nosym-livre-particao	r3-I2Fa.out	I2Fa	1	r3	3	5	2	2	SoParticao	NAO	PROPERTY	VIOLADA	6399	2848	2641	00s	linha_final	4	VIOLADA:traco_de_4_estados	1s	1	nao	
+ctrl-nosym-livre-particao	r3-MesclarPerdeChave.out	MesclarPerdeChave	1	r3	3	5	2	2	SoParticao	NAO	PROPERTY	VIOLADA	1097	522	487	00s	linha_final	4	VIOLADA:traco_de_4_estados	2s	1	nao	
+ctrl-nosym-livre-queda	r3-I1F.out	I1F	1	r3	3	5	2	2	SoQueda	NAO	PROPERTY	VIOLADA	1071153	182656	154507	09s	linha_final	7	VIOLADA:traco_de_7_estados	10s	1	nao	
+ctrl-nosym-livre-queda	r3-I1P.out	I1P	1	r3	3	5	2	2	SoQueda	NAO	PROPERTY	VIOLADA	1024	428	398	00s	linha_final	4	VIOLADA:traco_de_4_estados	1s	1	nao	
+ctrl-nosym-livre-sem	r3-I1F.out	I1F	1	r3	3	5	2	2	SemFalha	NAO	PROPERTY	VIOLADA	866727	112577	92728	07s	linha_final	7	VIOLADA:traco_de_7_estados	9s	1	nao	
+ctrl-nosym-livre-sem	r3-I1P.out	I1P	1	r3	3	5	2	2	SemFalha	NAO	PROPERTY	VIOLADA	967	349	322	00s	linha_final	4	VIOLADA:traco_de_4_estados	2s	1	nao	
+ctrl-nosym-particao	r3-I1F.out	I1F	1	r3	3	5	2	2	SoParticao	NAO	PROPERTY	VIOLADA	1008	478	444	00s	linha_final	4	VIOLADA:traco_de_4_estados	1s	1	nao	
+ctrl-nosym-particao	r3-I1M.out	I1M	1	r3	3	5	2	2	SoParticao	NAO	PROPERTY	VIOLADA	1008	478	444	00s	linha_final	4	VIOLADA:traco_de_4_estados	2s	1	nao	
+ctrl-nosym-particao	r3-I2Fa.out	I2Fa	1	r3	3	5	2	2	SoParticao	NAO	PROPERTY	VIOLADA	5889	2608	2407	00s	linha_final	4	VIOLADA:traco_de_4_estados	1s	1	nao	
+ctrl-nosym-particao	r3-I2Fb.out	I2Fb	1	r3	3	5	2	2	SoParticao	NAO	INVARIANTS	VIOLADA	257	134	125	00s	linha_final	3	VIOLADA:traco_de_3_estados	1s	1	nao	
+ctrl-nosym-particao	r3-I4F.out	I4F	1	r3	3	5	2	2	SoParticao	NAO	PROPERTY	VIOLADA	1008	478	444	00s	linha_final	4	VIOLADA:traco_de_4_estados	2s	1	nao	
+ctrl-nosym-particao	r3-I4Fp.out	I4Fp	1	r3	3	5	2	2	SoParticao	NAO	PROPERTY	VIOLADA	8410	3508	3217	00s	linha_final	5	VIOLADA:traco_de_5_estados	1s	1	nao	
+ctrl-nosym-particao	r3-I4M.out	I4M	1	r3	3	5	2	2	SoParticao	NAO	PROPERTY	VIOLADA	1008	478	444	01s	linha_final	4	VIOLADA:traco_de_4_estados	2s	1	nao	
+ctrl-nosym-particao	r3-I4Mp.out	I4Mp	1	r3	3	5	2	2	SoParticao	NAO	PROPERTY	VIOLADA	13113	5073	4633	01s	linha_final	5	VIOLADA:traco_de_5_estados	1s	1	nao	
+ctrl-nosym-queda	r3-I2Fb.out	I2Fb	1	r3	3	5	2	2	SoQueda	NAO	INVARIANTS	VIOLADA	257	113	104	00s	linha_final	3	VIOLADA:traco_de_3_estados	1s	1	nao	
+ctrl-nosym-queda	r3-I4F.out	I4F	1	r3	3	5	2	2	SoQueda	NAO	PROPERTY	VIOLADA	8257	2816	2572	00s	linha_final	5	VIOLADA:traco_de_5_estados	2s	1	nao	
+ctrl-nosym-queda	r3-I4Fp.out	I4Fp	1	r3	3	5	2	2	SoQueda	NAO	PROPERTY	VIOLADA	8257	2816	2572	00s	linha_final	5	VIOLADA:traco_de_5_estados	2s	1	nao	
+ctrl-nosym-queda-c2r3	r2-I1F.out	I1F	1	r2	2	3	2	2	SoQueda	NAO	PROPERTY	FECHOU	641661	51840	0	06s	linha_final		SEM_VIOLACAO:exaustivo	8s	2	nao	
+ctrl-nosym-sem	r3-I2Fb.out	I2Fb	1	r3	3	5	2	2	SemFalha	NAO	INVARIANTS	VIOLADA	257	92	83	00s	linha_final	3	VIOLADA:traco_de_3_estados	1s	1	nao	
+ctrl-nosym-sem	r3-I4F.out	I4F	1	r3	3	5	2	2	SemFalha	NAO	PROPERTY	VIOLADA	7260	2174	1979	00s	linha_final	5	VIOLADA:traco_de_5_estados	1s	1	nao	
+ctrl-nosym-sem	r3-I4Fp.out	I4Fp	1	r3	3	5	2	2	SemFalha	NAO	PROPERTY	VIOLADA	7260	2174	1979	01s	linha_final	5	VIOLADA:traco_de_5_estados	2s	1	nao	
+ctrl-nosym-sem-c2r3-I1F	r3-I1F.out	I1F	1	r3	2	3	2	2	SemFalha	NAO	PROPERTY	FECHOU	569296936	17315129	0	01h 04min	linha_final		SEM_VIOLACAO:exaustivo	3854s	1	nao	
+ctrl-nosym-sem-c2r3-I1P	r3-I1P.out	I1P	1	r3	2	3	2	2	SemFalha	NAO	PROPERTY	FECHOU	569296936	17315129	0	01h 13min	linha_final		SEM_VIOLACAO:exaustivo	4400s	1	nao	
+ctrl-nosym-sem-r2	r2-I1F.out	I1F	1	r2	3	5	2	2	SemFalha	NAO	PROPERTY	FECHOU	237340561	11115255	0	33min 29s	linha_final		SEM_VIOLACAO:exaustivo	2011s	1	nao	
+ctrl-sym-particao-w1	r3-I4Mp.out	I4Mp	1	r3	3	5	2	2	SoParticao	SIM	PROPERTY	VIOLADA	4562	1423	1274	00s	linha_final	5	VIOLADA:traco_de_5_estados	1s	1	nao	

@@ -1,0 +1,28 @@
+dir	arquivo	estados	sequencia	passo_local_rejeitado_por_ts	depende_D4
+ctrl-nosym-lim6-particao	r3-I2Fb.out	4	Init>Logout>Block>EntregaMensagem	-	NAO
+ctrl-nosym-lim6-queda	r3-I2Fb.out	4	Init>Logout>Block>EntregaMensagem	-	NAO
+ctrl-nosym-lim6-sem	r3-I2Fb.out	4	Init>Logout>Block>EntregaMensagem	-	NAO
+ctrl-nosym-livre-particao	r3-I1F.out	5	Init>Login>Logout>Particionar>Mesclar	-	NAO
+ctrl-nosym-livre-particao	r3-I1M.out	5	Init>Login>Logout>Particionar>Mesclar	-	NAO
+ctrl-nosym-livre-particao	r3-I1P.out	4	Init>Login>EntregaMensagem>Logout	estado 4 (Logout)	SIM
+ctrl-nosym-livre-particao	r3-I2Fa.out	4	Init>Block>Particionar>Mesclar	-	NAO
+ctrl-nosym-livre-particao	r3-MesclarPerdeChave.out	4	Init>Login>Particionar>Mesclar	-	NAO
+ctrl-nosym-livre-queda	r3-I1F.out	7	Init>Login>Login>EntregaMensagem>Logout>EntregaMensagem>EntregaMensagem	estado 5 (Logout)	SIM
+ctrl-nosym-livre-queda	r3-I1P.out	4	Init>Login>EntregaMensagem>Logout	estado 4 (Logout)	SIM
+ctrl-nosym-livre-sem	r3-I1F.out	7	Init>Login>Login>EntregaMensagem>Logout>EntregaMensagem>EntregaMensagem	estado 5 (Logout)	SIM
+ctrl-nosym-livre-sem	r3-I1P.out	4	Init>Login>EntregaMensagem>Logout	estado 4 (Logout)	SIM
+ctrl-nosym-particao	r3-I1F.out	4	Init>Logout>Particionar>Mesclar	-	NAO
+ctrl-nosym-particao	r3-I1M.out	4	Init>Logout>Particionar>Mesclar	-	NAO
+ctrl-nosym-particao	r3-I2Fa.out	4	Init>Block>Particionar>Mesclar	-	NAO
+ctrl-nosym-particao	r3-I2Fb.out	3	Init>IncrementFailure>IncrementFailure	-	NAO
+ctrl-nosym-particao	r3-I4F.out	4	Init>Logout>Particionar>Mesclar	-	NAO
+ctrl-nosym-particao	r3-I4Fp.out	5	Init>Logout>Logout>Block>EntregaMensagem	-	NAO
+ctrl-nosym-particao	r3-I4M.out	4	Init>Logout>Particionar>Mesclar	-	NAO
+ctrl-nosym-particao	r3-I4Mp.out	5	Init>Logout>Block>Particionar>Mesclar	-	NAO
+ctrl-nosym-queda	r3-I2Fb.out	3	Init>IncrementFailure>IncrementFailure	-	NAO
+ctrl-nosym-queda	r3-I4F.out	5	Init>Logout>Logout>Block>EntregaMensagem	-	NAO
+ctrl-nosym-queda	r3-I4Fp.out	5	Init>Logout>Logout>Block>EntregaMensagem	-	NAO
+ctrl-nosym-sem	r3-I2Fb.out	3	Init>IncrementFailure>IncrementFailure	-	NAO
+ctrl-nosym-sem	r3-I4F.out	5	Init>Logout>Logout>Block>EntregaMensagem	-	NAO
+ctrl-nosym-sem	r3-I4Fp.out	5	Init>Logout>Logout>Block>EntregaMensagem	-	NAO
+ctrl-sym-particao-w1	r3-I4Mp.out	5	Init>Logout>Block>Particionar>Mesclar	-	NAO

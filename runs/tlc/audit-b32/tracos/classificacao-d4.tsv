@@ -1,0 +1,78 @@
+dir	arquivo	estados	sequencia	passo_local_rejeitado_por_ts	depende_D4
+prop-livre-particao-n2m-sim	r3-I1F.out	5	Init>Login>Logout>Particionar>Mesclar	-	NAO
+prop-livre-particao-n2m-sim	r3-I1P.out	5	Init>Login>EntregaMensagem>Login>Logout	estado 5 (Logout)	SIM
+prop-livre-particao-n2m-sim	r3-I2Fb.out	4	Init>Block>Login>EntregaMensagem	-	NAO
+prop-livre-particao-n2m-sim	r3-I4F.out	6	Init>Login>Logout>Login>Particionar>Mesclar	-	NAO
+prop-livre-particao-w1	r3-I1F.out	5	Init>Login>Logout>Particionar>Mesclar	-	NAO
+prop-livre-particao-w1	r3-I1M.out	5	Init>Login>Logout>Particionar>Mesclar	-	NAO
+prop-livre-particao-w1	r3-I1P.out	4	Init>Login>EntregaMensagem>Logout	estado 4 (Logout)	SIM
+prop-livre-particao-w1	r3-I2Fa.out	4	Init>Block>Particionar>Mesclar	-	NAO
+prop-livre-particao-w1	r3-I2Fb.out	4	Init>Login>IncrementFailure>IncrementFailure	-	NAO
+prop-livre-particao-w1	r3-I4F.out	5	Init>Login>Logout>Particionar>Mesclar	-	NAO
+prop-livre-particao-w1	r3-I4M.out	5	Init>Login>Logout>Particionar>Mesclar	-	NAO
+prop-livre-particao-w1	r3-MesclarPerdeChave.out	4	Init>Login>Particionar>Mesclar	-	NAO
+prop-livre-particao	r3-I1F.out	5	Init>Login>Logout>Particionar>Mesclar	-	NAO
+prop-livre-particao	r3-I1M.out	6	Init>Login>Login>Logout>Particionar>Mesclar	-	NAO
+prop-livre-particao	r3-I1P.out	5	Init>Login>Login>EntregaMensagem>Logout	estado 5 (Logout)	SIM
+prop-livre-particao	r3-I2Fa.out	4	Init>Block>Particionar>Mesclar	-	NAO
+prop-livre-particao	r3-I2Fb.out	4	Init>Login>IncrementFailure>IncrementFailure	-	NAO
+prop-livre-particao	r3-I4F.out	7	Init>Login>Login>Login>Logout>Particionar>Mesclar	-	NAO
+prop-livre-particao	r3-I4M.out	7	Init>Login>Login>Login>Logout>Particionar>Mesclar	-	NAO
+prop-livre-particao	r3-MesclarPerdeChave.out	4	Init>Login>Particionar>Mesclar	-	NAO
+prop-livre-queda-n2m-sim	r3-I1F.out	10	Init>Login>EntregaMensagem>IncrementFailure>Login>EntregaMensagem>Login>Block>IncrementFailure>EntregaMensagem	estado 9 (IncrementFailure)	SIM
+prop-livre-queda-n2m-sim	r3-I1P.out	6	Init>Cair>Login>EntregaMensagem>IncrementFailure>Logout	estado 6 (Logout)	SIM
+prop-livre-queda-n2m-sim	r3-I2Fb.out	6	Init>Cair>IncrementFailure>Login>Cair>IncrementFailure	-	NAO
+prop-livre-queda-n2m-sim	r3-I4F.out	17	Init>Login>IncrementFailure>Cair>EntregaMensagem>Block>Login>Cair>EntregaMensagem>Reviver>EntregaMensagem>EntregaMensagem>Reviver>EntregaMensagem>Logout>Login>EntregaMensagem	-	NAO
+prop-livre-queda-w1	r3-I1F.out	7	Init>Login>Login>EntregaMensagem>Logout>EntregaMensagem>EntregaMensagem	estado 5 (Logout)	SIM
+prop-livre-queda-w1	r3-I1P.out	4	Init>Login>EntregaMensagem>Logout	estado 4 (Logout)	SIM
+prop-livre-queda-w1	r3-I2Fb.out	4	Init>Login>IncrementFailure>IncrementFailure	-	NAO
+prop-livre-queda-w1	r3-I4F.out	7	Init>Login>Login>EntregaMensagem>Logout>EntregaMensagem>EntregaMensagem	estado 5 (Logout)	SIM
+prop-livre-queda	r3-I1F.out	8	Init>Login>Login>Login>EntregaMensagem>Logout>EntregaMensagem>EntregaMensagem	estado 6 (Logout)	SIM
+prop-livre-queda	r3-I1P.out	4	Init>Login>EntregaMensagem>Logout	estado 4 (Logout)	SIM
+prop-livre-queda	r3-I2Fb.out	5	Init>Login>Login>IncrementFailure>IncrementFailure	-	NAO
+prop-livre-queda	r3-I4F.out	8	Init>Login>Login>Login>EntregaMensagem>Logout>EntregaMensagem>EntregaMensagem	estado 6 (Logout)	SIM
+prop-livre-sem-n2m-sim	r3-I1F.out	10	Init>Login>IncrementFailure>EntregaMensagem>EntregaMensagem>EntregaMensagem>Login>Login>Logout>EntregaMensagem	-	NAO
+prop-livre-sem-n2m-sim	r3-I1P.out	4	Init>Login>EntregaMensagem>Logout	estado 4 (Logout)	SIM
+prop-livre-sem-n2m-sim	r3-I2Fb.out	6	Init>Login>IncrementFailure>Login>EntregaMensagem>IncrementFailure	-	NAO
+prop-livre-sem-n2m-sim	r3-I4F.out	8	Init>Login>EntregaMensagem>Block>Block>EntregaMensagem>Logout>EntregaMensagem	-	NAO
+prop-livre-sem-w1	r3-I1F.out	7	Init>Login>Login>EntregaMensagem>Logout>EntregaMensagem>EntregaMensagem	estado 5 (Logout)	SIM
+prop-livre-sem-w1	r3-I1P.out	4	Init>Login>EntregaMensagem>Logout	estado 4 (Logout)	SIM
+prop-livre-sem-w1	r3-I2Fb.out	4	Init>Login>IncrementFailure>IncrementFailure	-	NAO
+prop-livre-sem-w1	r3-I4F.out	7	Init>Login>Login>EntregaMensagem>Logout>EntregaMensagem>EntregaMensagem	estado 5 (Logout)	SIM
+prop-livre-sem	r3-I1F.out	8	Init>Login>Login>Login>EntregaMensagem>Logout>EntregaMensagem>EntregaMensagem	estado 6 (Logout)	SIM
+prop-livre-sem	r3-I1P.out	4	Init>Login>EntregaMensagem>Logout	estado 4 (Logout)	SIM
+prop-livre-sem	r3-I2Fb.out	5	Init>Login>Login>IncrementFailure>IncrementFailure	-	NAO
+prop-livre-sem	r3-I4F.out	8	Init>Login>Login>Login>EntregaMensagem>Logout>EntregaMensagem>EntregaMensagem	estado 6 (Logout)	SIM
+prop-particao-lim6-w1	r3-I2Fb.out	4	Init>Logout>Block>EntregaMensagem	-	NAO
+prop-particao-lim6	r3-I2Fb.out	4	Init>Logout>Block>EntregaMensagem	-	NAO
+prop-particao-w1	r3-I1F.out	4	Init>Logout>Particionar>Mesclar	-	NAO
+prop-particao-w1	r3-I1M.out	4	Init>Logout>Particionar>Mesclar	-	NAO
+prop-particao-w1	r3-I2Fa.out	4	Init>Block>Particionar>Mesclar	-	NAO
+prop-particao-w1	r3-I2Fb.out	3	Init>IncrementFailure>IncrementFailure	-	NAO
+prop-particao-w1	r3-I4F.out	4	Init>Logout>Particionar>Mesclar	-	NAO
+prop-particao-w1	r3-I4Fp.out	5	Init>Logout>Logout>Block>EntregaMensagem	-	NAO
+prop-particao-w1	r3-I4M.out	4	Init>Logout>Particionar>Mesclar	-	NAO
+prop-particao	r3-I1F.out	5	Init>Logout>Logout>Particionar>Mesclar	-	NAO
+prop-particao	r3-I1M.out	4	Init>Logout>Particionar>Mesclar	-	NAO
+prop-particao	r3-I2Fa.out	6	Init>Logout>Logout>Block>Particionar>Mesclar	-	NAO
+prop-particao	r3-I2Fb.out	5	Init>Logout>Logout>IncrementFailure>IncrementFailure	-	NAO
+prop-particao	r3-I4F.out	5	Init>Logout>Logout>Particionar>Mesclar	-	NAO
+prop-particao	r3-I4Fp.out	6	Init>Logout>Logout>Logout>Block>EntregaMensagem	-	NAO
+prop-particao	r3-I4M.out	4	Init>Logout>Particionar>Mesclar	-	NAO
+prop-particao	r3-I4Mp.out	5	Init>Logout>Block>Particionar>Mesclar	-	NAO
+prop-queda-lim6-w1	r3-I2Fb.out	4	Init>Logout>Block>EntregaMensagem	-	NAO
+prop-queda-lim6	r3-I2Fb.out	5	Init>Logout>Logout>Block>EntregaMensagem	-	NAO
+prop-queda-w1	r3-I2Fb.out	3	Init>IncrementFailure>IncrementFailure	-	NAO
+prop-queda-w1	r3-I4F.out	5	Init>Logout>Logout>Block>EntregaMensagem	-	NAO
+prop-queda-w1	r3-I4Fp.out	5	Init>Logout>Logout>Block>EntregaMensagem	-	NAO
+prop-queda	r3-I2Fb.out	4	Init>Logout>IncrementFailure>IncrementFailure	-	NAO
+prop-queda	r3-I4F.out	5	Init>Logout>Logout>Block>EntregaMensagem	-	NAO
+prop-queda	r3-I4Fp.out	6	Init>Logout>Logout>Logout>Block>EntregaMensagem	-	NAO
+prop-sem-lim6-w1	r3-I2Fb.out	4	Init>Logout>Block>EntregaMensagem	-	NAO
+prop-sem-lim6	r3-I2Fb.out	4	Init>Logout>Block>EntregaMensagem	-	NAO
+prop-sem-w1	r3-I2Fb.out	3	Init>IncrementFailure>IncrementFailure	-	NAO
+prop-sem-w1	r3-I4F.out	5	Init>Logout>Logout>Block>EntregaMensagem	-	NAO
+prop-sem-w1	r3-I4Fp.out	5	Init>Logout>Logout>Block>EntregaMensagem	-	NAO
+prop-sem	r3-I2Fb.out	5	Init>Logout>Logout>IncrementFailure>IncrementFailure	-	NAO
+prop-sem	r3-I4F.out	6	Init>Logout>Logout>Logout>Block>EntregaMensagem	-	NAO
+prop-sem	r3-I4Fp.out	6	Init>Logout>Logout>Logout>Block>EntregaMensagem	-	NAO

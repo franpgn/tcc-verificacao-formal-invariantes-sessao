@@ -151,12 +151,12 @@ class SessionOpsBlockTest {
     @DisplayName("as demais operacoes usam o classificador (indisponivel -> ERROR_UNAVAILABLE)")
     void demaisOperacoesClassificam() {
         sessoes.antes = (op, k) -> {
-            throw new HotRodClientException("Cache 'sessions' is DEGRADED");
+            throw new HotRodClientException("org.infinispan.partitionhandling.AvailabilityException: ISPN000305: Cluster is operating in degraded mode because of node failures.");
         };
         assertEquals(OpResult.Code.ERROR_UNAVAILABLE, ops.validate("s1").code());
         assertEquals(OpResult.Code.ERROR_UNAVAILABLE, ops.logout("s1").code());
         identidades.antes = (op, k) -> {
-            throw new HotRodClientException("Cache 'counters' is DEGRADED");
+            throw new HotRodClientException("org.infinispan.partitionhandling.AvailabilityException: ISPN000305: Cluster is operating in degraded mode because of node failures.");
         };
         assertEquals(OpResult.Code.ERROR_UNAVAILABLE, ops.login("u1", "c").code());
         assertEquals(OpResult.Code.ERROR_UNAVAILABLE, ops.incrementFailure("u1").code());

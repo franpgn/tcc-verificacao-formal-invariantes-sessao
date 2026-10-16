@@ -52,6 +52,8 @@ public class SessionOps {
     private final EventCsvWriter eventos;
     private final EpochClock relogio;
     private final String replica;
+    /** B-33 (Q-10): rastro de operacoes confirmadas no cliente; {@code null} = desligado. */
+    private final RastroCliente rastro;
 
     /** B-23: ver javadoc da classe. Chave = sid; valor = motivo confirmado. */
     private final ConcurrentHashMap<String, SessionState.Motivo> invalidacoesConfirmadas =
@@ -78,9 +80,16 @@ public class SessionOps {
     public SessionOps(RemoteCacheManager rcm, LatencyRegistry latency,
                       InvariantAuditor auditor, EventCsvWriter eventos,
                       EpochClock relogio) {
+        this(rcm, latency, auditor, eventos, relogio, null);
+    }
+
+    /** B-33: como o anterior, com o rastro de cliente (Q-10) alimentado a cada evento. */
+    public SessionOps(RemoteCacheManager rcm, LatencyRegistry latency,
+                      InvariantAuditor auditor, EventCsvWriter eventos,
+                      EpochClock relogio, RastroCliente rastro) {
         this(Armazem.de(rcm.<String, SessionState>getCache("sessions")),
                 Armazem.de(rcm.<String, IdentityState>getCache("counters")),
-                latency, auditor, eventos, relogio, resolverReplica(rcm));
+                latency, auditor, eventos, relogio, resolverReplica(rcm), rastro);
     }
 
     /**
@@ -92,6 +101,15 @@ public class SessionOps {
                Armazem<IdentityState> identities,
                LatencyRegistry latency, InvariantAuditor auditor,
                EventCsvWriter eventos, EpochClock relogio, String replica) {
+        this(sessions, identities, latency, auditor, eventos, relogio, replica, null);
+    }
+
+    SessionOps(Armazem<SessionState> sessions,
+               Armazem<IdentityState> identities,
+               LatencyRegistry latency, InvariantAuditor auditor,
+               EventCsvWriter eventos, EpochClock relogio, String replica,
+               RastroCliente rastro) {
+        this.rastro = rastro;
         this.sessions = sessions;
         this.identities = identities;
         this.latency = latency;
@@ -123,6 +141,12 @@ public class SessionOps {
      */
     private void emitir(String operation, long startMono, long endMono,
                         OpResult result, String key) {
+        if (rastro != null) {
+            rastro.registrar(operation,
+                    relogio != null ? relogio.paraEpochNanos(startMono) : startMono,
+                    relogio != null ? relogio.paraEpochNanos(endMono) : endMono,
+                    result, key);
+        }
         if (eventos == null || relogio == null) {
             return;
         }
@@ -164,6 +188,14 @@ public class SessionOps {
             auditor.registrarViolacao("I4", sid,
                     "motivo inconsistente: confirmado " + confirmado + ", lido " + atual.motivo());
         }
+    }
+
+    /**
+     * B-33: copia das invalidacoes confirmadas (sid para motivo) por esta instancia,
+     * usada pela varredura final global (I1/I4).
+     */
+    public java.util.Map<String, SessionState.Motivo> invalidacoesConfirmadasSnapshot() {
+        return new java.util.HashMap<>(invalidacoesConfirmadas);
     }
 
     /** O1, login. */

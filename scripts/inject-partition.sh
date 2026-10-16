@@ -41,7 +41,8 @@
 #   1  erro generico (inclui lock ocupado e residuo de clsact apos a limpeza)
 #   2  argumento invalido ou --help
 #   3  dependencia ausente (podman, nsenter, sudo, flock, timeout)
-#   4  no (isolado ou par) nao encontrado, nao-running, sem PID ou sem IP
+#   4  no (isolado ou par) nao encontrado, nao-running, sem PID ou sem IP, ou
+#      netns igual ao do PID 1 / ilegivel (guarda de netns; --heal tambem)
 #   5  kernel rejeitou clsact/u32/drop (modulo ausente)
 #   6  a particao NAO se efetivou (conexao ainda possivel a um par, ou
 #      contadores de descarte zerados ao fim da janela)
@@ -280,6 +281,20 @@ resolver_pid() {
     [[ "${estado}" == "running" ]] || return 1
     pid="$(${PODMAN} inspect -f '{{.State.Pid}}' "${no}" 2>/dev/null || true)"
     [[ -n "${pid}" && "${pid}" != "0" ]] || return 1
+    # Guarda de netns (A2 de V-B): um container em rede do host (--network=host)
+    # tem o mesmo netns do PID 1; clsact+drop ali cortaria a NIC da VM (e o
+    # SSH). Ilegivel tambem recusa. Retorno 2 = recusa por seguranca.
+    local ns_alvo ns_host
+    ns_alvo="$(sudo readlink "/proc/${pid}/ns/net" 2>/dev/null || true)"
+    ns_host="$(sudo readlink /proc/1/ns/net 2>/dev/null || true)"
+    if [[ -z "${ns_alvo}" || -z "${ns_host}" ]]; then
+        echo "Erro: nao foi possivel ler o netns de '${no}' (pid ${pid}) ou do PID 1; recusando por seguranca" >&2
+        return 2
+    fi
+    if [[ "${ns_alvo}" == "${ns_host}" ]]; then
+        echo "Erro: '${no}' (pid ${pid}) compartilha o netns do host (${ns_host}); recusando para nao cortar a NIC da VM" >&2
+        return 2
+    fi
     echo "${pid}"
 }
 
@@ -292,30 +307,38 @@ nstc() {
 # ------------------------------------------------------------------ heal
 if [[ "${HEAL}" -eq 1 ]]; then
     log "Heal: removendo clsact em ${MIN[*]} (iface ${IFACE})"
+    RECUSADOS=0
     for m in "${MIN[@]}"; do
-        if pid="$(resolver_pid "${m}")"; then
+        rc=0; pid="$(resolver_pid "${m}")" || rc=$?
+        if [[ "${rc}" -eq 0 ]]; then
             nstc "${pid}" qdisc del dev "${IFACE}" clsact >/dev/null 2>&1 || true
             log "  ${m} (pid ${pid}): clsact removido (ou ja ausente)"
+        elif [[ "${rc}" -eq 2 ]]; then
+            log "  ${m}: netns do host ou ilegivel; NAO tocado"
+            RECUSADOS=1
         else
             log "  ${m}: container ausente/parado; netns some junto com a regra (nada a fazer)"
         fi
     done
+    [[ "${RECUSADOS}" -eq 0 ]] || exit 4
     exit 0
 fi
 
 # ------------------------------------------------- resolucao (antes de tudo)
 declare -A PID_DE IP_DE
 for m in "${MIN[@]}"; do
-    if ! PID_DE["${m}"]="$(resolver_pid "${m}")"; then
-        echo "Erro: container '${m}' nao encontrado, nao esta running ou sem PID" >&2
+    rc=0; PID_DE["${m}"]="$(resolver_pid "${m}")" || rc=$?
+    if [[ "${rc}" -ne 0 ]]; then
+        [[ "${rc}" -eq 2 ]] || echo "Erro: container '${m}' nao encontrado, nao esta running ou sem PID" >&2
         exit 4
     fi
     log "PID do container ${m}: ${PID_DE[${m}]}"
 done
 for p in "${PARES[@]}"; do
     # Garante par running (um par parado nao particiona nada).
-    if ! resolver_pid "${p}" >/dev/null; then
-        echo "Erro: par '${p}' nao encontrado ou nao esta running" >&2
+    rc=0; resolver_pid "${p}" >/dev/null || rc=$?
+    if [[ "${rc}" -ne 0 ]]; then
+        [[ "${rc}" -eq 2 ]] || echo "Erro: par '${p}' nao encontrado ou nao esta running" >&2
         exit 4
     fi
     ip="$(${PODMAN} inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}} {{end}}' "${p}" 2>/dev/null | awk '{print $1}' || true)"

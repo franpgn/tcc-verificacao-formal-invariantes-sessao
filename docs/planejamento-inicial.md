@@ -1,10 +1,22 @@
 # Planejamento Inicial do Desenvolvimento Prático do TCC
 
 > Primeira entrega do fluxo de desenvolvimento prático, produzida em 2026-05-25. A execução de qualquer tarefa técnica depende da aprovação prévia do autor.
+>
+> **Nota de revisão (2026-06-14):** o §"Objetivo do projeto prático", o §"Estado atual do repositório", o §"Backlog inicial" e o §"Pontos que precisam de validação do autor" foram atualizados após a discussão entre os agentes Senior e Worker registrada em `/workspace/memoria-tcc/24-discussao-senior-worker-objetivo-2026-06-14.md` (Rodada 6) e após a entrada em vigor da política de *push* aprovada pelo autor na mesma data: nada vai para o repositório remoto sem aprovação explícita. O diagrama de arquitetura também foi convertido de ASCII-art para Mermaid. O texto original de cada seção alterada está preservado em `/workspace/memoria-tcc/24-discussao-senior-worker-objetivo-2026-06-14.md` (Rodada 1).
 
 ## Objetivo do projeto prático
 
-Construir o artefato experimental descrito no Capítulo 4 da monografia, capaz de **(a)** instanciar um *cluster* Infinispan em três nós com replicação assíncrona, **(b)** executar um *workload* parametrizado que gera as operações de sessão O1 a O7 sobre os *caches* `sessions` e `counters`, **(c)** injetar de forma reproduzível as falhas F1 (*crash* silencioso) e F3 (atraso e *jitter* de mensagens), **(d)** coletar latência por operação e taxa de violação dos invariantes I1 a I6 declarados no Cap. 3 §3.3.3, e **(e)** disponibilizar, lado a lado, a especificação TLA+ correspondente para *model checking* incremental. A meta para TCC-I é o ***baseline* parcial sob F1 e F3** previsto para as Semanas 9 e 10 do cronograma.
+Construir e disponibilizar os artefatos executáveis e reproduzíveis que sustentam o Capítulo 4 da monografia, com cinco entregas mutuamente dependentes:
+
+1. **Especificação formal:** *spec* TLA+ `SessionStore.tla` cobrindo as operações O1-O7 e os invariantes I1-I6, verificada pelo TLC nas três configurações T21 da Tabela 1 do Cap. 3 §3.3.5.
+2. **Infraestrutura experimental:** *cluster* Infinispan parametrizado por T1-T4, T15 e T16 da Tabela 1, admitindo execução nos modos `DIST_SYNC` e `DIST_ASYNC`.
+3. **Programa de carga:** *workload* Java sobre Hot Rod com O1-O7, auditor de invariantes (I1-I4 com checagem imediata, I5-I6 com auditoria periódica em quiescência) e instrumentação de latência via HdrHistogram.
+4. **Pipeline de análise:** *scripts* Python para p50/p95/p99, IC *bootstrap* e Mann-Whitney, validados em dados sintéticos.
+5. **Scripts de injeção de falha:** F1 e F3 escritos e revisados, com execução condicionada a ambiente com Podman e `NET_ADMIN` disponíveis.
+
+A **meta TCC-I** é o conjunto (1) a (4) executado e os *scripts* (5) prontos para revisão. O ***baseline* experimental F1+F3 com dados reais** é entregável condicional, com duas saídas: execução pelo autor em infraestrutura própria com incorporação à monografia em revisão posterior, ou reposicionamento para a primeira etapa de TCC-II (Apêndice B da monografia).
+
+**Histórico:** a formulação original (2026-05-25) previa o *baseline* F1+F3 como entregável obrigatório de TCC-I. A revisão de 2026-06-14 ajustou esse ponto após constatação operacional de que o *sandbox* de execução não admite Podman nem `tc-netem`. A frente formal (item 1) foi executada com cinco rodadas do TLC e a sonda na configuração `MC-full` explorou aproximadamente 91 milhões de estados sem violação para I3 e I4; contraexemplos curtos foram registrados para I1, I2, I5 e I6.
 
 ## Relação com o TCC
 
@@ -23,10 +35,16 @@ A consequência operacional: a Tabela 1 do Cap. 3 §3.3.5 é o **especificação
 
 ## Estado atual do repositório
 
-- *Checkout* local em `/workspace/tcc-desenvolvimento/` — diretório criado, remoto HTTPS reconfigurado (`origin = https://github.com/franpgn/tcc-desenvolvimento.git`).
-- Remoto GitHub: **vazio** (zero refs; nenhum *commit*, nenhuma *branch*, nenhuma *tag*).
-- Conteúdo local antes desta entrega: somente `.git/`. Após esta entrega: este arquivo `docs/planejamento-inicial.md`.
-- *Branch* corrente (HEAD): `main` (configurada em `.git/config`, ainda sem *commit* inicial).
+Atualizado em 2026-06-14.
+
+- *Checkout* local em `/workspace/tcc-desenvolvimento/`. Remoto: `origin = https://github.com/franpgn/tcc-desenvolvimento.git`.
+- Política de *push* desde 2026-06-14: **nada vai para `origin/*` sem aprovação explícita do autor** (D-006 do §"Pontos que precisam de validação do autor" rejeitada nesta data).
+- **Sete PRs já no remoto** (mergidos antes da revisão de política): #1 (B-02 cluster SYNC), #2 (B-03 cluster ASYNC), #3 (B-14 spec TLA+), #4 (B-04 workload skeleton), #5 (MC rodada 1), #6 (MC rodadas 2-5), #7 (B-16/17/18 análise Python).
+- **Um PR aberto no remoto** (sob política antiga, antes de 2026-06-14): PR #8 (B-05 `OpResult`), aguardando revisão e *merge* do autor.
+- **Três** ***branches*** **locais sem** ***push***: `feature/workload-operations` (B-05, espelho do PR #8), `feature/workload-latency` (B-05+B-06), `feature/workload-auditor` (B-05+B-06+B-07). Cada uma adiciona um *commit* sobre a anterior; servem como cadeia de *stacked PRs* quando o autor liberar *push*.
+- ***Branch*** **corrente (HEAD):** `docs/objetivo-revisao` (esta revisão do planejamento).
+- **Frente formal:** executada. Cinco rodadas do TLC concluídas; resultados em `runs/tlc/`.
+- ***Sandbox*** **operacional:** OpenJDK Temurin 17, Maven 3.9.9, TLA+ tools, Python 3.11 + numpy + scipy em `~/tools/`. **Não disponível no** ***sandbox:*** Podman (impossibilidade de `unshare(CLONE_NEWUSER)`), `tc-netem` com `NET_ADMIN`, imagem `quay.io/infinispan/server:15.0`. Atividades dependentes ficam para a máquina do autor.
 
 ## Esqueleto pré-existente em `/workspace/prototipo/` (referência, não modificar)
 
@@ -63,41 +81,34 @@ O Cap. 4 §4.4 da monografia declara como entregue ao fim da Semana 8 um esquele
 
 ## Arquitetura inicial proposta
 
-```
-┌──────────────────────────────────────────────────────────────────┐
-│  Host (Linux + Podman)                                           │
-│                                                                  │
-│  ┌─────────────────────────────────────────────────────────────┐ │
-│  │  Rede bridge `infinispan-net`                              │ │
-│  │                                                            │ │
-│  │  ┌──────┐    ┌──────┐    ┌──────┐                          │ │
-│  │  │ isn1 │    │ isn2 │    │ isn3 │  Infinispan 15.0         │ │
-│  │  │ HotRod│   │ HotRod│   │ HotRod│  caches: sessions,      │ │
-│  │  │11222 │    │11222 │    │11222 │           counters       │ │
-│  │  └──────┘    └──────┘    └──────┘  modo: SYNC|ASYNC        │ │
-│  └─────────────────────────────────────────────────────────────┘ │
-│         ▲           ▲           ▲                                │
-│         │           │           │  Hot Rod                       │
-│         └───────────┼───────────┘                                │
-│                     │                                            │
-│  ┌──────────────────────────────────┐  ┌──────────────────────┐  │
-│  │  workload (Java 17)              │  │ scripts/             │  │
-│  │  - SessionOps O1..O7             │  │  inject-crash.sh F1  │  │
-│  │  - LatencyRegistry (ns)          │  │  inject-jitter.sh F3 │  │
-│  │  - InvariantAuditor I1..I6       │  │  collect-metrics.sh  │  │
-│  │  - WorkloadMain (CLI)            │  └──────────────────────┘  │
-│  └──────────────────────────────────┘                            │
-│                                                                  │
-│  ┌──────────────────────────────────┐  ┌──────────────────────┐  │
-│  │  spec/ (TLA+ + TLC)              │  │ analysis/ (Python)   │  │
-│  │  - SessionStore.tla              │  │  - parse_logs.py     │  │
-│  │  - SessionStore.cfg              │  │  - percentis.py      │  │
-│  │  - run-tlc.sh                    │  │  - bootstrap_ic.py   │  │
-│  └──────────────────────────────────┘  └──────────────────────┘  │
-└──────────────────────────────────────────────────────────────────┘
+A arquitetura é **horizontal** sobre o servidor Infinispan (três nós comunicando-se em *cluster* via JGroups) e **vertical** entre três camadas de software: especificação formal, execução experimental e análise estatística. A integração entre as três camadas é assíncrona e baseada em arquivos.
+
+```mermaid
+flowchart TB
+    subgraph host["Host Linux com Podman"]
+        subgraph net["Rede bridge infinispan-net"]
+            isn1["isn1<br/>Infinispan 15.0<br/>HotRod :11222<br/>caches sessions / counters<br/>modo SYNC ou ASYNC"]
+            isn2["isn2<br/>Infinispan 15.0<br/>HotRod :11223<br/>caches sessions / counters<br/>modo SYNC ou ASYNC"]
+            isn3["isn3<br/>Infinispan 15.0<br/>HotRod :11224<br/>caches sessions / counters<br/>modo SYNC ou ASYNC"]
+        end
+
+        workload["workload (Java 17)<br/>SessionOps O1-O7<br/>LatencyRegistry HdrHistogram<br/>InvariantAuditor I1-I6<br/>WorkloadMain CLI"]
+        scripts["scripts/<br/>inject-crash.sh (F1)<br/>inject-jitter.sh (F3)<br/>collect-metrics.sh"]
+        spec["spec/ (TLA+ + TLC)<br/>SessionStore.tla<br/>MC-small/medium/full.cfg<br/>run-tlc.sh"]
+        analysis["analysis/ (Python)<br/>percentis.py<br/>bootstrap_ic.py<br/>compare_scenarios.py"]
+        runs[("runs/<br/>latencies.csv<br/>violations.csv<br/>errors.csv<br/>summary.json<br/>tlc/output.txt")]
+    end
+
+    workload -- Hot Rod --> isn1
+    workload -- Hot Rod --> isn2
+    workload -- Hot Rod --> isn3
+    scripts -. podman stop / tc-netem .-> net
+    workload --> runs
+    spec --> runs
+    runs --> analysis
 ```
 
-A arquitetura é **horizontal** sobre o servidor Infinispan e **vertical** entre as três camadas (especificação formal, execução experimental, análise estatística). A integração entre as três camadas é assíncrona e baseada em arquivos: o *workload* escreve `runs/<scenario>/<rep>/{latencies.csv, violations.csv, errors.csv}`; o `analysis/` consome esses arquivos e produz `runs/<scenario>/summary.json` com p50, p95, p99, IC *bootstrap* e M2; o `spec/` produz separadamente `runs/tlc/<config>/output.txt` com o veredito do *model checker*.
+A integração entre camadas materializa-se em arquivos: o *workload* escreve `runs/<scenario>/<rep>/{latencies.csv, violations.csv, errors.csv}`; o `analysis/` consome esses arquivos e produz `runs/<scenario>/summary.json` com p50, p95, p99, IC *bootstrap* e taxa de violação por invariante (M2); o `spec/` produz separadamente `runs/tlc/<config>/output.txt` com o veredito do *model checker* e os contraexemplos quando existirem.
 
 ## Módulos previstos
 
@@ -174,37 +185,37 @@ Critérios específicos por *feature* são detalhados em `docs/criterios-de-acei
 | R-04: TLC explode espaço de estados em configuração 3-3-3 | Média | Médio (afeta B-15) | Cardinalidades em escada (REF-018); aceitar `3-3-2` como teto se 3-3-3 ultrapassar 30 min |
 | R-05: Volume de saída do *workload* (10⁶ ops × 30 reps × N cenários) | Média | Médio | Compactação LZ4 ou *streaming aggregation* dentro do `LatencyRegistry`; descartar latências brutas após agregação |
 | R-06: tempo de execução total acima do disponível | Média | Alto | Reduzir repetições para piloto (5) antes da rodada final (30); cenários executados sob fim de semana |
-| R-07: `git push` exige autenticação para o GitHub | Alta | Baixo (o autor executa) | Documentar; nunca tentar `push` no fluxo automatizado |
+| R-07: política de *push* desde 2026-06-14 exige aprovação explícita do autor a cada *push* (D-006 rejeitada) | Alta | Baixo (o autor executa) | Pedir aprovação ao autor por entrega individual ou em lote por *branch*; nunca tentar `push` no fluxo automatizado |
 
 ## Pontos que precisam de validação do autor
 
-- **D-001.** Aprovar a migração do esqueleto `/workspace/prototipo/ → /workspace/tcc-desenvolvimento/` versus *bootstrap* limpo.
-- **D-002.** Aprovar Java 17 + Maven como *toolchain* obrigatório do *workload* (mantém o que está no `prototipo/`).
-- **D-003.** Aprovar Python (SciPy/Matplotlib) como *toolchain* da camada `analysis/`. Alternativa: R.
-- **D-004.** Aprovar o fluxo de *branch* — `main` como linha de entrega e *feature branches* por item do *backlog*; sem *develop* intermediária (P-A5).
-- **D-005.** Autorizar (ou não) o uso de Git LFS / extensão para versionar saídas em `runs/`. Alternativa: `runs/` em `.gitignore` e produzir apenas `summary.json` versionado.
-- **D-006.** Autorizar criação do *commit* inicial e do *push* para `origin/main` após aprovação deste documento. Sem aprovação, tudo permanece local.
-- **D-007.** Confirmar que **B-01 pode iniciar** assim que houver aprovação, ou ajustar a ordem.
-- **D-008.** Confirmar se a análise estatística (B-16 a B-18) é entregável de TCC-I ou pode escorrer para TCC-II caso o cronograma aperte (escolha entre escopo e profundidade).
-- **D-009.** Definir a política de tratamento das variantes `DIST_SYNC` vs `DIST_ASYNC`: ambas no *baseline* de TCC-I ou apenas `DIST_ASYNC` (alvo) com `DIST_SYNC` apenas como controle de sanidade?
+Status consolidado em 2026-06-14.
+
+- ✅ **D-001 (aprovada).** Migração do esqueleto `/workspace/prototipo/ → /workspace/tcc-desenvolvimento/` em vez de *bootstrap* limpo.
+- ✅ **D-002 (aprovada).** Java 17 + Maven como *toolchain* obrigatório do *workload*.
+- ✅ **D-003 (aprovada).** Python (NumPy + SciPy) como *toolchain* da camada `analysis/`. Matplotlib opcional.
+- ✅ **D-004 (aprovada).** `main` como linha de entrega; *feature branches* por item do *backlog*; sem *develop* intermediária.
+- ✅ **D-005 (aprovada).** `runs/` em `.gitignore` com agregados (`summary.json`) versionados; sem Git LFS.
+- ❌ **D-006 (rejeitada em 2026-06-14).** O *push* para `origin/*` requer aprovação explícita do autor a cada vez, por entrega individual ou em lote por *branch* trabalhada, como o Senior achar melhor. Os PRs #1 a #8 já no remoto datam da política anterior (Decisão 014 de 2026-05-25) e ficam como histórico. Daqui em diante, qualquer *commit*, *branch* ou PR fica local até pedido + aprovação.
+- ✅ **D-007 (aprovada e executada).** B-01 iniciado e concluído em 2026-05-26.
+- ✅ **D-008 (aprovada).** Análise estatística (B-16 a B-18) é entregável de TCC-I; executada e validada em dados sintéticos.
+- ✅ **D-009 (aprovada).** Ambas as variantes (`DIST_SYNC` e `DIST_ASYNC`) entram no *baseline* de TCC-I quando este for executado; o modo alvo é `DIST_ASYNC`, e `DIST_SYNC` serve como controle de sanidade.
 
 ## Próxima tarefa técnica
 
-Após aprovação deste planejamento, executar **B-01 — *Bootstrap* do repositório** na *branch* `feature/bootstrap-repo`, com o seguinte escopo:
+A próxima tarefa do *backlog* é **B-08, Gerador de carga Zipfian**, na *branch* `feature/workload-load` (a criar a partir de `feature/workload-auditor`), com o seguinte escopo:
 
-1. Criar `README.md` na raiz, com seções: visão geral, vínculo com o TCC, estrutura de pastas, *quickstart* (subir *cluster*, rodar *workload*, rodar TLC), tabela de cobertura T1-T22.
-2. Criar `.gitignore` cobrindo `target/`, `runs/`, `*.log`, `.idea/`, `.vscode/`, `*.class`.
-3. Criar `LICENSE` (MIT ou alinhada ao orientador — autor decide; *default* MIT).
-4. Criar `CONTRIBUTING.md` curto descrevendo o fluxo de planejamento, execução, revisão e validação, além do padrão de commits e *branches*.
-5. Criar diretórios vazios com `.gitkeep`: `cluster/`, `workload/`, `scripts/`, `spec/`, `analysis/`, `runs/`, `docs/resumos-para-tcc/`.
-6. Manter este `docs/planejamento-inicial.md` na raiz de `docs/`.
-7. *Commit* inicial: `chore: bootstrap inicial do repositório`.
-8. **Não fazer *push*** — preparar PR-template em `docs/pull-request-template.md` para uso futuro.
-9. Reportar a entrega no formato estabelecido (objetivo, *branch* utilizada, implementação, arquivos alterados, testes, problemas, documentação, pontos pendentes, próximo passo).
+1. Implementar um gerador de chaves Zipfian com parâmetro $\rho = 0{,}99$, conforme T6 da Tabela 1 do Cap. 3 §3.3.5.
+2. Universo de 100\,000 chaves distintas (T8), com nomes determinísticos para reprodução exata entre rodadas (`sid-000001` a `sid-100000`).
+3. *Payload* fixo de 1\,KiB por entrada (T5), composto por *string* determinística (não aleatória) para evitar dependência de entropia entre rodadas.
+4. Mistura de operações configurável: cenário **S1** = 50/50 *reads*/*writes*; cenário **S2** = 95/5 (T7).
+5. Integração com `WorkloadMain.rodarCliente()` via parâmetro CLI `--scenario` (preparando a CLI completa de B-10).
+6. Testes JUnit para: (a) distribuição empírica em $10^6$ amostras com erro relativo abaixo de 5\,% nos primeiros 100 *bins*, (b) reprodutibilidade entre dois `KeyGenerator` com mesma seed, (c) cobertura efetiva do universo de chaves em $10^6$ amostras.
+7. ***Commit*** **local apenas.** Sem *push*. Aprovação para *push* é pedida ao autor após o término de B-08 (e, opcionalmente, junto com B-09 e B-10 em lote).
 
-**Critérios de aceite específicos de B-01:**
+**Critérios de aceite específicos de B-08:**
 
-- `git status` na *branch* `feature/bootstrap-repo` retorna *working tree clean* após o *commit*.
-- `tree -L 2` (ou `find . -maxdepth 2 -not -path './.git*'`) mostra a estrutura acima.
-- `README.md` cita explicitamente `Cap. 3 §3.3.5` e a Tabela 1.
-- Nenhum arquivo dentro de `/workspace/prototipo/` ou `/workspace/*.tex` foi alterado.
+- `mvn test` passa para os três testes acima na *branch* `feature/workload-load`.
+- `mvn package` produz o *jar* combinado com a nova classe `KeyGenerator`.
+- A `KeyGenerator` documenta a seleção de parâmetros em comentário JavaDoc remetendo a T5, T6 e T8 da Tabela 1.
+- Nenhum efeito colateral em `/workspace/prototipo/`, `/workspace/*.tex` ou nas três *branches* prévias.

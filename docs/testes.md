@@ -135,6 +135,7 @@ Sem VM (rodam em qualquer host; `bash scripts/inject-partition.test.sh`). T-par-
 | T-par-15 | `flock` real: segunda injeção no mesmo nó | exit 1 (SKIP onde não há `flock`, p.ex. Git Bash) |
 | T-par-16 | Contadores por sentido: `at 12` = ingress, `at 16` = egress; um sentido 0 avisa "um so sentido" (exit 0); ambos 0 = exit 6 | A1 de V-B |
 | T-par-17 | `log()` recalcula o timestamp a cada chamada | primeira e ultima linha diferem |
+| T-par-18 | Guarda de netns: alvo/par/--heal com netns == PID 1 ou ilegivel -> exit 4 sem nsenter/tc (--heal limpa os demais) | A2 de V-B |
 
 Resultado desta rodada: Git Bash (Windows) 111 PASS / 0 FAIL / 2 SKIP; Ubuntu (WSL) com `flock` real 113 PASS / 0 FAIL / 1 SKIP.
 

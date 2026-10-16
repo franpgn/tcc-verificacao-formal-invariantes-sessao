@@ -133,6 +133,8 @@ Sem VM (rodam em qualquer host; `bash scripts/inject-partition.test.sh`). T-par-
 | T-par-13 | nó isolado/par inexistente ou parado | exit 4, nada alterado |
 | T-par-14 | `PODMAN="sudo podman"` | reflete no plano e funciona na execução |
 | T-par-15 | `flock` real: segunda injeção no mesmo nó | exit 1 (SKIP onde não há `flock`, p.ex. Git Bash) |
+| T-par-16 | Contadores por sentido: `at 12` = ingress, `at 16` = egress; um sentido 0 avisa "um so sentido" (exit 0); ambos 0 = exit 6 | A1 de V-B |
+| T-par-17 | `log()` recalcula o timestamp a cada chamada | primeira e ultima linha diferem |
 
 Resultado desta rodada: Git Bash (Windows) 99 PASS / 0 FAIL / 2 SKIP; Ubuntu (WSL) com `flock` real 101 PASS / 0 FAIL / 1 SKIP.
 

@@ -1,6 +1,5 @@
 package br.unipampa.tcc.session;
 
-import org.infinispan.client.hotrod.RemoteCache;
 import org.infinispan.client.hotrod.RemoteCacheManager;
 import java.time.Instant;
 import java.util.UUID;
@@ -42,9 +41,12 @@ public class SessionOps {
     public static final String OP_LOGOUT = "Logout";            // O3
     public static final String OP_INCREMENT_FAILURE = "IncrementFailure"; // O4
     public static final String OP_RESET_FAILURES = "ResetFailures";       // O5
+    /** B-33: O6 e O7 passam a emitir evento no CSV (antes nao emitiam). */
+    public static final String OP_BLOCK = "Block";              // O6
+    public static final String OP_UNBLOCK = "Unblock";          // O7
 
-    private final RemoteCache<String, SessionState> sessions;
-    private final RemoteCache<String, IdentityState> identities;
+    private final Armazem<SessionState> sessions;
+    private final Armazem<IdentityState> identities;
     private final LatencyRegistry latency;
     private final InvariantAuditor auditor;
     private final EventCsvWriter eventos;
@@ -76,13 +78,27 @@ public class SessionOps {
     public SessionOps(RemoteCacheManager rcm, LatencyRegistry latency,
                       InvariantAuditor auditor, EventCsvWriter eventos,
                       EpochClock relogio) {
-        this.sessions = rcm.getCache("sessions");
-        this.identities = rcm.getCache("counters");
+        this(Armazem.de(rcm.<String, SessionState>getCache("sessions")),
+                Armazem.de(rcm.<String, IdentityState>getCache("counters")),
+                latency, auditor, eventos, relogio, resolverReplica(rcm));
+    }
+
+    /**
+     * B-33: construtor de composicao (armazens ja resolvidos), usado pelo
+     * construtor publico e por testes sem cluster (dubles de {@link Armazem}).
+     * Nao altera nenhuma regra de dominio.
+     */
+    SessionOps(Armazem<SessionState> sessions,
+               Armazem<IdentityState> identities,
+               LatencyRegistry latency, InvariantAuditor auditor,
+               EventCsvWriter eventos, EpochClock relogio, String replica) {
+        this.sessions = sessions;
+        this.identities = identities;
         this.latency = latency;
         this.auditor = auditor;
         this.eventos = eventos;
         this.relogio = relogio;
-        this.replica = resolverReplica(rcm);
+        this.replica = replica;
     }
 
     /**
@@ -174,7 +190,7 @@ public class SessionOps {
             return r;
         } catch (RuntimeException e) {
             latency.record("login_err", t0);
-            OpResult r = OpResult.errorTransport();
+            OpResult r = ClassificadorDeErro.classificar(e);
             emitir(OP_LOGIN, t0, System.nanoTime(), r, identidade);
             return r;
         }
@@ -203,7 +219,7 @@ public class SessionOps {
             return r;
         } catch (RuntimeException e) {
             latency.record("validate", t0);
-            OpResult r = OpResult.errorTransport();
+            OpResult r = ClassificadorDeErro.classificar(e);
             emitir(OP_VALIDATE, t0, System.nanoTime(), r, sid);
             return r;
         }
@@ -246,7 +262,7 @@ public class SessionOps {
             return r;
         } catch (RuntimeException e) {
             latency.record("logout_noop", t0);
-            OpResult r = OpResult.errorTransport();
+            OpResult r = ClassificadorDeErro.classificar(e);
             emitir(OP_LOGOUT, t0, System.nanoTime(), r, sid);
             return r;
         }
@@ -272,7 +288,7 @@ public class SessionOps {
             return r;
         } catch (RuntimeException e) {
             latency.record("inc_failure", t0);
-            OpResult r = OpResult.errorTransport();
+            OpResult r = ClassificadorDeErro.classificar(e);
             emitir(OP_INCREMENT_FAILURE, t0, System.nanoTime(), r, identidade);
             return r;
         }
@@ -296,46 +312,70 @@ public class SessionOps {
             return r;
         } catch (RuntimeException e) {
             latency.record("reset_noop", t0);
-            OpResult r = OpResult.errorTransport();
+            OpResult r = ClassificadorDeErro.classificar(e);
             emitir(OP_RESET_FAILURES, t0, System.nanoTime(), r, identidade);
             return r;
         }
     }
 
-    /** O6, block. */
+    /**
+     * O6, block. B-33: com try/catch e emitir, como as demais operacoes. A cascata
+     * parcial de um block() interrompido NAO e reparada (e comportamento real a
+     * observar); o resultado fica registrado como erro.
+     */
     public OpResult block(String identidade) {
         long t0 = System.nanoTime();
-        IdentityState st = identities.get(identidade);
-        if (st == null) {
-            st = IdentityState.criar(identidade, Instant.now());
-        }
-        identities.put(identidade, st.bloquear(Instant.now()));
-        sessions.entrySet().forEach(e -> {
-            if (e.getValue().identidade().equals(identidade)
-                    && e.getValue().estado() == SessionState.Estado.VALID) {
-                // B-23 (correcao, mesma razao de logout() acima): checa I1 contra
-                // um motivo ja confirmado para esta sid ANTES de escrever a nova
-                // invalidacao por cascata de bloqueio.
-                verificarI1I4(e.getKey(), e.getValue());
-                SessionState atual = e.getValue().invalidar(SessionState.Motivo.ADMIN_BLOCK, Instant.now());
-                sessions.put(e.getKey(), atual);
-                invalidacoesConfirmadas.put(e.getKey(), atual.motivo());
+        try {
+            IdentityState st = identities.get(identidade);
+            if (st == null) {
+                st = IdentityState.criar(identidade, Instant.now());
             }
-        });
-        latency.record("block_ok", t0);
-        return OpResult.okNoop();
+            identities.put(identidade, st.bloquear(Instant.now()));
+            sessions.entrySet().forEach(e -> {
+                if (e.getValue().identidade().equals(identidade)
+                        && e.getValue().estado() == SessionState.Estado.VALID) {
+                    // B-23 (correcao, mesma razao de logout() acima): checa I1 contra
+                    // um motivo ja confirmado para esta sid ANTES de escrever a nova
+                    // invalidacao por cascata de bloqueio.
+                    verificarI1I4(e.getKey(), e.getValue());
+                    SessionState atual = e.getValue().invalidar(SessionState.Motivo.ADMIN_BLOCK, Instant.now());
+                    sessions.put(e.getKey(), atual);
+                    invalidacoesConfirmadas.put(e.getKey(), atual.motivo());
+                }
+            });
+            latency.record("block_ok", t0);
+            OpResult r = OpResult.okNoop();
+            emitir(OP_BLOCK, t0, System.nanoTime(), r, identidade);
+            return r;
+        } catch (RuntimeException e) {
+            latency.record("block_err", t0);
+            OpResult r = ClassificadorDeErro.classificar(e);
+            emitir(OP_BLOCK, t0, System.nanoTime(), r, identidade);
+            return r;
+        }
     }
 
-    /** O7, unblock. */
+    /** O7, unblock. B-33: com try/catch e emitir. */
     public OpResult unblock(String identidade) {
         long t0 = System.nanoTime();
-        IdentityState st = identities.get(identidade);
-        if (st == null) {
-            latency.record("unblock_noop", t0);
-            return OpResult.notFound();
+        try {
+            IdentityState st = identities.get(identidade);
+            if (st == null) {
+                latency.record("unblock_noop", t0);
+                OpResult r = OpResult.notFound();
+                emitir(OP_UNBLOCK, t0, System.nanoTime(), r, identidade);
+                return r;
+            }
+            identities.put(identidade, st.desbloquear(Instant.now()));
+            latency.record("unblock_ok", t0);
+            OpResult r = OpResult.okNoop();
+            emitir(OP_UNBLOCK, t0, System.nanoTime(), r, identidade);
+            return r;
+        } catch (RuntimeException e) {
+            latency.record("unblock_err", t0);
+            OpResult r = ClassificadorDeErro.classificar(e);
+            emitir(OP_UNBLOCK, t0, System.nanoTime(), r, identidade);
+            return r;
         }
-        identities.put(identidade, st.desbloquear(Instant.now()));
-        latency.record("unblock_ok", t0);
-        return OpResult.okNoop();
     }
 }

@@ -821,7 +821,7 @@ echo "== T-nd-21: flock real -- duas injecoes no mesmo no; F2 e F4 se excluem ==
 if command -v flock >/dev/null 2>&1; then
     # PATH sem o shim de flock para usar o flock real do host.
     SHIMDIR2="${TMP}/shims-semflock"; mkdir -p "${SHIMDIR2}"
-    for s in podman sudo nsenter tc ping; do cp "${SHIMDIR}/${s}" "${SHIMDIR2}/${s}"; done
+    for s in podman sudo nsenter tc ping readlink; do cp "${SHIMDIR}/${s}" "${SHIMDIR2}/${s}"; done
     FLOCK_DIR="$(dirname "$(command -v flock)")"
     reset_shims
     PATH="${SHIMDIR2}:${FLOCK_DIR}:${PATH_SEM_PODMAN}" bash "${ND}" --target isn3 --loss 20 --duration 5 --ping-count 0 >/dev/null 2>&1 &

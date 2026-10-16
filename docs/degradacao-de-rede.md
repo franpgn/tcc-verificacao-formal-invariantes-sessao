@@ -99,9 +99,9 @@ flowchart TB
 | 1 | erro genérico: lock de F4 ocupado; resíduo de `prio 1:` após a limpeza |
 | 2 | argumento inválido (inclui `--reorder` sem `--delay`, `--loss-in` com `--direction out`, gemodel inviável) |
 | 3 | dependência ausente (`podman`, `nsenter`, `sudo`, `flock`, `ping` se houver verificação) |
-| 4 | nó (alvo ou par) inexistente, parado, sem PID ou sem IP |
+| 4 | nó (alvo ou par) inexistente, parado, sem PID ou sem IP; ou netns igual ao do PID 1 (rede do host), recusado por seguranca |
 | 5 | kernel rejeitou `prio`/`netem`/`u32` ou um parâmetro (sonda com parâmetros reais, ou aplicação) |
-| 6 | a degradação **não se efetivou**: perda observada fora de 3 σ binomiais da esperada; contador `Sent` zerado; perda configurada sem descarte (só quando se esperavam ≥ 10); contadores ilegíveis |
+| 6 | a degradação **não se efetivou**: perda observada fora de 3 σ binomiais da esperada; `Sent` + `dropped` zerados (com perda ~100% `Sent` sozinho pode ser 0); perda configurada sem descarte (só quando se esperavam ≥ 10); contadores ilegíveis |
 | 7 | raiz ocupada: qdisc raiz alheia (F3) ou `clsact`/lock de F2 em nó que seria tocado; **nada foi alterado** |
 | 129/130/143 | `SIGHUP`/`SIGINT`/`SIGTERM`: o `trap` limpa e propaga |
 
@@ -112,7 +112,7 @@ flowchart TB
 | Combinação | Resultado |
 |---|---|
 | F4 e F3 no **mesmo** nó | **exit 7** (F3 ocupa a raiz com `netem` sem filtro) |
-| F4 e F3 em nós **diferentes** | coexistem (F4 só toca os nós da sua direção) |
+| F4 e F3 em nós **diferentes** | coexistem **apenas com `--direction out`** (com `in`/`both` F4 toca todos os pares: exit 7 se algum tem F3) |
 | F4 e F2 no mesmo nó | **exit 7**: o plano admite tecnicamente a convivência (`clsact` não ocupa a raiz), mas misturar partição total e perda parcial no mesmo nó invalida a leitura do experimento; o injetor toma também o lock de F2 do nó, de modo que o `inject-partition.sh` iniciado depois também é recusado (exit 1 dele) |
 | duas execuções de F4 no mesmo nó | exit 1 (lock) |
 

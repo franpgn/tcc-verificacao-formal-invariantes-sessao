@@ -91,4 +91,13 @@ ok "T-g1-6 rc != 0" "1" "$([ "$RC" != 0 ] && echo 1 || echo 0)"
 contem "T-g1-6 mensagem" "cluster fora de size=3" "$SAIDA"
 ok "T-g1-6 nada armado nem injetado" "0" "$(grep -cE '^(systemd-run|INJ)|qdisc add' "$SHIM_LOG" || true)"
 
+echo "== T-g1-7: G1_LOG_SAUDE_S=0 desliga o log (REP=4 sem coleta extra) =="
+reset_shims
+export REP=3 G1_DUR=4 G1_AMOSTRAS="1 3" G1_MERGE_LIM=30 G1_LOG_SAUDE_S=0
+roda "GO" "$G1"
+ok "T-g1-7 rc 0" "0" "$RC"
+ok "T-g1-7 sem saude-log.csv" "nao" "$([ -e "$R1/saude-log.csv" ] && echo sim || echo nao)"
+contem "T-g1-7 mensagem final" "G-1 concluido (REP=3)" "$SAIDA"
+nao_contem "T-g1-7 sem mensagem de log de saude" "log de saude" "$SAIDA"
+
 resumo_final

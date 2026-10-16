@@ -2,7 +2,7 @@
 # runs/gate-b29/g1.sh -- G-1..G-4 numa janela real de 90 s em isn3. PROPOSTA: NAO executar sem o "go" do Gestor.
 set -euo pipefail
 # v3 (V-B2): log de saude a cada 2 s em $OUT/saude-log.csv (timestamp, porta, http, status, size); go via exigir_go (g56-lib).
-# Variaveis (teste com shims; padrao = REP=1/2): G1_DUR (90), G1_AMOSTRAS ("8 25 45 65 82"), G1_MERGE_LIM (600), G1_LOG_SAUDE_S (2).
+# Variaveis (teste com shims; padrao = REP=1/2): G1_DUR (90), G1_AMOSTRAS ("8 25 45 65 82"), G1_MERGE_LIM (600), G1_LOG_SAUDE_S (2; 0 = sem log).
 source "$(dirname "$0")/g56-lib.sh"
 DUR="${G1_DUR:-90}"; AMOSTRAS="${G1_AMOSTRAS:-8 25 45 65 82}"; MERGE_LIM="${G1_MERGE_LIM:-600}"; SAUDE_S="${G1_LOG_SAUDE_S:-2}"
 exigir_go "G-1 (REP=${REP:-1}, janela de ${DUR} s em isn3)"
@@ -13,7 +13,7 @@ IP1=$($PODMAN inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end
 IP2=$($PODMAN inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' isn2)
 health | tee "$OUT/saude-antes.txt"; grep -c 'number_of_nodes":3' "$OUT/saude-antes.txt" | grep -qx 3 || { echo "ABORTAR: cluster fora de size=3" >&2; exit 1; }
 sem_clsact isn3
-iniciar_log_saude "$OUT/saude-log.csv" "$SAUDE_S"   # antes da injecao: linha de base
+[ "$SAUDE_S" = 0 ] || iniciar_log_saude "$OUT/saude-log.csv" "$SAUDE_S"   # antes da injecao: linha de base (G1_LOG_SAUDE_S=0 desliga)
 armar "$DUR"        # dead-man: --heal em DUR+90 = 180 s, por injecao
 T3() { sudo nsenter -t "$PID3" -n "$@"; }
 # contadores por filtro (o 'show ingress' e o 'show egress' listam OS DOIS filtros neste kernel; separar por offset: at 12 = src/ingress, at 16 = dst/egress)
@@ -53,4 +53,4 @@ health | tee "$OUT/saude-depois.txt"
 # log-completo-* guarda tudo desde t0-5; log-vista-* e o filtro de mensagens de vista.
 extrair_logs
 parar_log_saude
-echo "G-1 concluido (REP=$N); log de saude: $(( $(wc -l < "$OUT/saude-log.csv") - 1 )) linhas em $OUT/saude-log.csv"
+echo "G-1 concluido (REP=$N)"; [ ! -f "$OUT/saude-log.csv" ] || echo "log de saude: $(( $(wc -l < "$OUT/saude-log.csv") - 1 )) linhas em $OUT/saude-log.csv"

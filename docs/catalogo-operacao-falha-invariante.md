@@ -6,7 +6,7 @@
 > (`docs/plano-fechamento-etapa-formal-2026-10-15.md` §4.1) e por A.1 a A.6 de T-A. Auditoria completa:
 > `docs/relatorio-b32-auditoria-2026-10-15.md`. **Validação V-A concluída em 2026-10-16: veredito
 > aprovada com ressalvas** (`docs/validacao-ta-2026-10-15.md`, worktree `wt-validacao-ta`). As ressalvas estão em "Limites da evidência"
-> (§7). Os vereditos abaixo valem **apenas para o modelo TLA+**; as colunas de **sistema real** seguem **PENDENTES** (B-34, F1, F3).
+> (§8). Os vereditos abaixo valem **apenas para o modelo TLA+**; as colunas de **sistema real** seguem **PENDENTES** (B-34, F1, F3).
 
 ## 1. Como ler
 
@@ -181,6 +181,9 @@ Status: `VACUA` nas configurações da tabela; **na cota do plano (r3, `3/5/2`) 
 ## 8. Limites da evidência (ressalvas da V-A)
 
 - **Ressalva 2 (marca):** `vácuo-verificado` vale somente nas cotas reduzidas da §6 (`MaxCanal=2`, `MaxRelogio=3`); nas cotas do plano segue `vácuo-estrutural`.
-- **Ressalva 3:** os timeboxes de 60 s e 120 s são evidência fraca; busca interrompida por tempo não sustenta ausência de violação, só "não-fechado até aqui".
-- **Ressalva 4:** o `rc=150` (eliminação amostral) tem contagem 0/100 e 0/120 violações; é amostragem, não prova de ausência.
+- **Ressalva 1 (cabeçalho):** os status deixaram de ser "provisórios"; valem só para o modelo TLA+, e as colunas de sistema real seguem `PENDENTE`.
+- **Ressalva 3:** os timeboxes de 60 s (`I2Fa`, `I1M`, `I4M` em sem falha e em queda) e de 120 s (`I1P` em queda) são evidência fraca; busca interrompida por tempo não sustenta ausência de violação, só "não-fechado até aqui". Não promover a `PRESERVADA-ATE-COTAS`.
+- **Ressalva 4:** o `ERRO rc=150` (falha de extração de `TLC.tla` para `java.io.tmpdir`; não é violação de propriedade) ocorreu em 2 de 100 execuções simultâneas com o script antigo (V-A) e em 5/80 e 4/80 (Worker); com o script corrigido (tmpdir por execução) foi 0/100 (V-A) e 0/120 (Worker). A eliminação é amostral, coerente com o mecanismo, sem prova absoluta.
 - **Ressalva 5:** o critério mecânico de D-4 inclui `IncrementFailure`, que o plano não listava; a leitura do critério é mais ampla que a do plano.
+- **Nota de leitura (V-A):** nos traços de partição a origem (r1) nunca recebe a própria mensagem (o `Broadcast` exclui a origem); após o `Mesclar` revertido ela não se recupera sozinha. É o mecanismo da divergência permanente (I5/I6); não muda nenhum veredito.
+- **Q-5 (recomendação da V-A):** não alterar `SessionStore.tla`; manter P-26 `ABERTO-ACEITO`. Se o Gestor quiser, uma variante em módulo separado com `relogio' = max(relogio, ts da mensagem)`, rodando só `I1P`/`I1F` livre sem falha com 1 worker, transformaria a classificação "defeito de modelagem" de leitura em evidência. Não bloqueia T-F.

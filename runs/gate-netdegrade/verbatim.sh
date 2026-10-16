@@ -13,7 +13,7 @@ extrair() { # extrair <doc> <regex>
     st==0 && /^### / && $0 ~ re { st=1; next }
     st==1 && /^```/            { st=2; next }
     st==1 && /^### /           { exit 3 }          # outro titulo antes de achar o bloco
-    st==2 && /^```/            { st=3; exit }
+    st==2 && /^```/            { st=3; next }       # sem exit: consome o resto da entrada (exit cedo faz o `tr` morrer por SIGPIPE, 141, sob pipefail no Linux)
     st==2                      { print }
     END { if (st!=3 && st!=2) exit 3; if (st==2) exit 4 }'   # 3: bloco ausente; 4: bloco sem fechamento
 }

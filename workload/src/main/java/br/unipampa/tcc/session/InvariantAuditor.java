@@ -232,9 +232,29 @@ public class InvariantAuditor implements AutoCloseable {
 
     /** Escreve as violacoes correntes em CSV: instante,invariante,chave,mensagem. */
     public void dumpCsv(Path destino) throws IOException {
+        dumpCsv(destino, null, List.of());
+    }
+
+    /** B-33: coluna adicional derivada de cada violacao (p.ex. classificacao do I2). */
+    public record Coluna(String nome, java.util.function.Function<Violacao, String> valor) {}
+
+    /** B-33: igual a {@link #dumpCsv(Path)} mais a coluna {@code fase} (rotulo pelos marcadores). */
+    public void dumpCsv(Path destino, Marcadores marcadores) throws IOException {
+        dumpCsv(destino, marcadores, List.of());
+    }
+
+    /**
+     * B-33: grava as violacoes; com {@code marcadores} nao nulo acrescenta a coluna
+     * {@code fase}; {@code extras} acrescentam colunas depois dela. Sem ambos o
+     * formato e o historico {@code instante,invariante,chave,mensagem}.
+     */
+    public void dumpCsv(Path destino, Marcadores marcadores, List<Coluna> extras) throws IOException {
         Files.createDirectories(destino.getParent() == null ? Path.of(".") : destino.getParent());
         try (BufferedWriter w = Files.newBufferedWriter(destino, StandardCharsets.UTF_8)) {
-            w.write("instante,invariante,chave,mensagem");
+            StringBuilder cab = new StringBuilder("instante,invariante,chave,mensagem");
+            if (marcadores != null) cab.append(",fase");
+            for (Coluna c : extras) cab.append(',').append(c.nome());
+            w.write(cab.toString());
             w.newLine();
             for (Violacao v : registros) {
                 w.write(v.em().toString());
@@ -244,9 +264,22 @@ public class InvariantAuditor implements AutoCloseable {
                 w.write(escapar(v.chave()));
                 w.write(",");
                 w.write(escapar(v.mensagem()));
+                if (marcadores != null) {
+                    w.write(",");
+                    w.write(marcadores.rotuloDe(epochNs(v.em())));
+                }
+                for (Coluna c : extras) {
+                    w.write(",");
+                    w.write(escapar(c.valor().apply(v)));
+                }
                 w.newLine();
             }
         }
+    }
+
+    /** Instant para epoch-ns (mesma base de {@link EpochClock}). */
+    static long epochNs(Instant t) {
+        return t.getEpochSecond() * 1_000_000_000L + t.getNano();
     }
 
     private static String escapar(String s) {

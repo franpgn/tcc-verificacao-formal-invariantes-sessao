@@ -1,0 +1,1 @@
+instante,invariante,chave,mensagem

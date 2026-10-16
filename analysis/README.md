@@ -37,6 +37,12 @@ Convenção: `start_ns` e `end_ns` em nanossegundos desde a *epoch*; `latencia =
 
 Códigos de retorno reconhecidos como sucesso: `OK`, `VALID`, `INVALID`, `COUNTED`, `ALREADY_INVALID`, `BLOCKED`, `ALREADY_BLOCKED`, `NOT_BLOCKED`, `NONE`. Qualquer outro código é contado como erro (entra em `taxa_erro`).
 
+**B-33 (Q-9).** Dois códigos de erro são conhecidos: `ERROR_TRANSPORT` (falha de transporte: timeout, conexão) e `ERROR_UNAVAILABLE` (recusa por indisponibilidade, p. ex. cache `DEGRADED` sob `DENY_READ_WRITES`). Ambos entram em `taxa_erro`. Quando há ao menos um `ERROR_UNAVAILABLE`, `summary.json` ganha `taxa_indisponivel` por operação; sem ele o resumo é idêntico ao anterior. Execuções sem falha de partição nunca emitem o novo código.
+
+O workload passa a emitir também as operações `Block` e `Unblock`. Com `--marker`, o CSV de eventos ganha uma coluna final opcional `phase` (`antes`, `durante`, `durante-pre-split`, `durante-pos-split`, `recuperacao`, `pos-convergencia`); colunas extras são aceitas. `percentis.py` só conta como execução os CSVs cujo cabeçalho tem as colunas de evento: `violacoes-rep-*.csv`, `convergencia-rep-*.csv` e `varredura-*.csv`, gravados no mesmo diretório, não entram em `execucoes`.
+
+O contrato Java x Python é verificado por `test_contrato_csv.py` (`python -m unittest discover -s analysis -p "test_*.py"`, da raiz do repositório).
+
 ## Pipeline ponta a ponta (com dados sintéticos)
 
 Para validar o pipeline sem depender do *cluster*:

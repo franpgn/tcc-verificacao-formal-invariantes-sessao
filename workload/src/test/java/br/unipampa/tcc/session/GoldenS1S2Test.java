@@ -21,12 +21,13 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
  */
 class GoldenS1S2Test {
 
+    private static final String CRLF = "" + (char) 13 + (char) 10;
+    private static final String LF = "" + (char) 10;
+
     private static String recurso(String nome) throws Exception {
         try (InputStream in = GoldenS1S2Test.class.getResourceAsStream("/golden-8e2e815/" + nome)) {
             // separador de linha da plataforma (newLine) nao faz parte do contrato: normaliza CRLF
-            return new String(in.readAllBytes(), StandardCharsets.UTF_8).replace("
-", "
-");
+            return new String(in.readAllBytes(), StandardCharsets.UTF_8).replace(CRLF, LF);
         }
     }
 
@@ -60,9 +61,7 @@ class GoldenS1S2Test {
         Path tmp = Files.createTempFile("golden-ev", ".csv");
         try {
             w.flush(tmp);
-            String atual = normalizarOpId(Files.readString(tmp, StandardCharsets.UTF_8).replace("
-", "
-"));
+            String atual = normalizarOpId(Files.readString(tmp, StandardCharsets.UTF_8).replace(CRLF, LF));
             assertEquals(recurso("eventos-sem-marcadores.csv"), atual);
         } finally {
             Files.deleteIfExists(tmp);

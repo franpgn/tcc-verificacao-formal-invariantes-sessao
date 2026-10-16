@@ -68,6 +68,8 @@ Parada obrigatória e retorno ao Senior: exit 5 em L-0 (módulo ou sintaxe), IPv
 
 ```bash
 ssh server1@192.168.137.150
+# ATENCAO: NAO colar o B0 inteiro de uma vez; o 'tmux new' abre outro shell e as linhas seguintes seriam perdidas/digitadas fora do lugar.
+#   Colar so ate o 'tmux new' e o restante DENTRO da sessao tmux.
 # exclusividade da VM: o flock envolve a sessao tmux; o servidor tmux herda o fd e o lock so e liberado quando a sessao encerra
 sudo -n true && flock /var/lock/tcc-vm.lock tmux new -s l-gate      # sessao INTERATIVA (o Ctrl-C de L-5 precisa dela)
 cd ~/tcc-desenvolvimento             # ajustar
@@ -138,11 +140,11 @@ rodar_inj() {
   desarmar
 }
 # contadores da banda 3 de um no: imprime "Sent dropped" (vazio se o no nao tem prio)
-cont() { local p; p=$(pid_de "$1")
+cont() { local p; p=$(pid_de "$1") || return 1
          sudo nsenter -t "$p" -n tc -s qdisc show dev eth0 \
            | awk '/^qdisc netem 30:/{f=1;next} f&&/Sent/{gsub(",","",$7); print $4, $7; exit}'; }
 # falha (aborta) se ainda houver prio/netem no no
-sem_prio() { local p out; p=$(pid_de "$1")
+sem_prio() { local p out; p=$(pid_de "$1") || return 1
              out=$(sudo nsenter -t "$p" -n tc qdisc show dev eth0)
              if printf '%s\n' "$out" | grep -Eq 'prio|netem'; then echo "RESIDUO em $1" >&2; return 1; fi
              echo "ok sem prio em $1"; }
@@ -158,7 +160,7 @@ espera_saudavel() {
     ok=1
     for n in isn1 isn2 isn3; do
       ip=$($PODMAN inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' "$n")
-      j=$(curl -s -m 5 -u admin:infinispan "http://$ip:11222/rest/v2/cache-managers/default/health" | tr -d ' \n' || true)
+      j=$(curl -s -m 5 --digest -u admin:infinispan "http://$ip:11222/rest/v2/cache-managers/default/health" | tr -d ' \n' || true)
       case "$j" in
         *'"health_status":"HEALTHY"'*'"number_of_nodes":3'*|*'"number_of_nodes":3'*'"health_status":"HEALTHY"'*) ;;
         *) ok=0 ;;
@@ -212,7 +214,7 @@ PID=$(pid_de isn3)
 rodar_inj 60 0 "$LOG/L1.log" --target isn3 --loss 20 --duration 60 --ping-count 300 --marker "$LOG/marcadores.txt"
 # durante a janela, em outro pane (gravar em $LOG):
 #   sudo nsenter -t $PID -n tc -s qdisc show dev eth0 ; sudo nsenter -t $PID -n tc -s filter show dev eth0
-#   curl -s -o /dev/null -w '%{time_total}\n' -u admin:infinispan http://127.0.0.1:11222/rest/v2/cache-managers/default/health   # comparar com a linha de base SEM F4
+#   curl -s -o /dev/null -w '%{time_total}\n' --digest -u admin:infinispan http://127.0.0.1:11222/rest/v2/cache-managers/default/health   # comparar com a linha de base SEM F4
 #   ping -c 50 -i 0.2 <ip-isn3-host>    # sem degradacao esperada (Hot Rod/SSH poupados)
 #   registrar dropped/(Sent+dropped) dos contadores, alem do ping
 # esperado: exit 0, perda observada dentro de 3 sigma de 20%, dropped > 0
@@ -230,12 +232,12 @@ set -euo pipefail
 source "$(dirname "$0")/l-lib.sh"
 exigir_go "L-3"
 sub() {   # sub <rotulo> <nos a ler...> -- <args do injetor>
-  local rotulo="$1" nos=() rc=0 P n; shift
+  local rotulo="$1" nos=() rc=0 P n c; shift
   while [ "$1" != -- ]; do nos+=("$1"); shift; done; shift
   armar 60
   $INJ "$@" --duration 60 --ping-count 0 >"$LOG/L3-$rotulo.log" 2>&1 & P=$!
   sleep 25                                   # esperar sondagem/aplicacao antes de medir
-  for n in "${nos[@]}"; do echo "$rotulo $n: $(cont "$n")" | tee -a "$LOG/L3-$rotulo.cont"; done
+  for n in "${nos[@]}"; do c=$(cont "$n") || exit 1; echo "$rotulo $n: $c" | tee -a "$LOG/L3-$rotulo.cont"; done
   wait "$P" || rc=$?; echo "rc=$rc" | tee -a "$LOG/L3-$rotulo.log"
   [ "$rc" = 0 ] || { echo "ABORTAR: rc=$rc; dead-man's $DMS armado" >&2; exit 1; }
   desarmar; esperar_locks
@@ -351,10 +353,10 @@ $IPART --minority isn3 --duration 90 & F=$!
 sleep 10; ret 7 $INJ --target isn3 --loss 20 --duration 60
 bg_wait "$F"; desarmar; desarmar_part; esperar_locks
 
-# L-6e: F2 em isn2 + F4 em isn3 com --direction out: coexistem, exit 0
+# L-6e (flag conferida em inject-netdegrade.sh: --ping-count <n>, 0 desliga): F2 em isn2 + F4 em isn3 com --direction out: coexistem, exit 0
 armar 100; armar_part 90 isn2
 $IPART --minority isn2 --duration 90 & F=$!
-sleep 10; ret 0 $INJ --target isn3 --direction out --loss 20 --duration 60
+sleep 10; ret 0 $INJ --target isn3 --direction out --loss 20 --duration 60 --ping-count 0   # F2 descarta todo IP (inclui ICMP): ping padrao daria ~100% de perda e exit 6 falso
 bg_wait "$F"; desarmar; desarmar_part; esperar_locks
 echo "L-6 concluido"
 ```

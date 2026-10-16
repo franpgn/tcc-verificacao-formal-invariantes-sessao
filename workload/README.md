@@ -64,6 +64,14 @@ Todas as opções abaixo vêm **desligadas**; sem elas a execução, o CSV de ev
 
 Códigos de retorno novos: operações `Block`/`Unblock` entram no CSV; `ERROR_UNAVAILABLE` distingue recusa por indisponibilidade de `ERROR_TRANSPORT`. A classificação do motivo do bloqueio (limite × administrativo) é feita por rastro no cliente (`RastroCliente`), sem alterar `IdentityState`. Esquemas e decisões em `docs/relatorio-b33-2026-10-15.md`.
 
+## Cenário S3 (B-33, parte E2)
+
+`--scenario S3` liga uma **simulação de ciclo de vida de sessão** (fora do enum `Scenario`; S1/S2 não mudam): usuários virtuais (pool U: `Login`, páginas com `Validate`, `Logout` ou abandono silencioso, "botão voltar"), contas com senha errada (pool L: `IncrementFailure`, `ResetFailures`, `Login`, `Unblock` de suporte) e um administrador (`Block`, `Unblock`). Os pools de identidades são disjuntos (`s3-u-NNN`, `s3-l-NNN`). Sem reparo, sem reconciliação e sem retentativa infinita (até 2 retentativas de aplicação, 500 ms e 1 s). Uma thread por ator; `--threads` não vale.
+
+Ligação ao cluster (`--client-mode pinned`, padrão): um `RemoteCacheManager` por nó de `--servers`, cada um só com o seu nó e `ClientIntelligence.BASIC`; mais um console apontado a `--admin-node` (`isnK` = K-ésimo de `--servers`, ou `host:porta`; deve ser nó da maioria). `--client-mode topology` usa um cliente topology-aware (contraste). Timeouts: `--hotrod-timeout-ms` (2000; é também o padrão da biblioteca) e `--hotrod-retries` (1; o padrão da biblioteca é 3).
+
+Parâmetros (todos por CLI, padrões do plano): `--s3-users 20`, `--s3-limit-accounts 10`, `--s3-think-ms 1000`, `--s3-session-median-sec 20`, `--s3-logout-prob 0.7`, `--s3-idle-timeout-sec 30`, `--s3-back-window-sec 10`, `--s3-admin-mean-sec 15`, `--s3-admin-hold-min-sec 20`, `--s3-l-support-delay-sec 60`, `--s3-app-retries 2`, `--s3-backoff-ms 500`, entre outros (`--help`). Determinismo pela semente `--seed` (e a repetição). Saídas extras em `--csv-dir`: `s3-acoes-rep-NNN.csv` (ação de aplicação colapsada: resultado, tentativas, falha percebida; distingue `Validate` que viu `INVALID`) e `s3-resumo-rep-NNN.json`. Detalhes e limites em `docs/relatorio-b33-2026-10-15.md`, parte E2.
+
 ## Próximas tarefas previstas
 
 - **B-05** — Implementação efetiva de O1-O7 com Hot Rod, códigos de retorno conforme Cap. 3 §3.3.1.

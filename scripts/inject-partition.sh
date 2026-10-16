@@ -61,7 +61,6 @@ DURACAO_PADRAO=90
 DURACAO_AVISO=45
 PORTA_JGROUPS=7800
 PROBE_IP="192.0.2.1"   # TEST-NET-1 (RFC 5737): nunca roteado, so para a sonda
-TIMESTAMP="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
 
 usage() {
     cat <<EOF
@@ -203,7 +202,7 @@ if [[ "${HEAL}" -eq 0 ]]; then
 fi
 
 log() {
-    echo "[${TIMESTAMP}] ${NOME}: $*"
+    echo "[$(date -u +%Y-%m-%dT%H:%M:%SZ)] ${NOME}: $*"
 }
 
 if [[ "${HEAL}" -eq 0 && "${DURACAO}" -lt "${DURACAO_AVISO}" ]]; then
@@ -448,10 +447,17 @@ for m in "${MIN[@]}"; do
     log "OK: ${m} nao conecta a nenhum par em :${PORTA_JGROUPS}"
 done
 
-# soma_pkts <pid> <ingress|egress>: soma dos pacotes descartados nos filtros.
+# soma_pkts <pid> <ingress|egress> <12|16>: soma dos pacotes descartados pelos
+# filtros cujo "match ... at <offset>" e o dado. O kernel lista os DOIS filtros
+# (src em at 12, dst em at 16) tanto em 'show ingress' quanto em 'show egress'
+# (G-0b); so o filtro do sentido que morde acumula. Sentido de entrada = ip src
+# (at 12); sentido de saida = ip dst (at 16). Somar tudo contaria o mesmo total
+# nos dois sentidos e esconderia a particao unidirecional.
 soma_pkts() {
-    nstc "$1" -s filter show dev "${IFACE}" "$2" 2>/dev/null \
-        | grep -oE 'Sent [0-9]+ bytes [0-9]+ pkt' | awk '{s += $4} END {print s + 0}'
+    nstc "$1" -s filter show dev "${IFACE}" "$2" 2>/dev/null         | awk -v off="$3" '
+            /match .* at [0-9]+/ { atual = $NF; next }
+            /Sent [0-9]+ bytes [0-9]+ pkt/ { if (atual == off) s += $4 }
+            END { print s + 0 }'
 }
 
 log "aguardando ${DURACAO}s com F2 ativa"
@@ -463,8 +469,8 @@ SLEEP_PID=""
 # 2) Contadores de descarte ANTES de remover (prova de que "mordeu").
 for m in "${MIN[@]}"; do
     pid="${PID_DE[${m}]}"
-    ING="$(soma_pkts "${pid}" ingress)"
-    EGR="$(soma_pkts "${pid}" egress)"
+    ING="$(soma_pkts "${pid}" ingress 12)"
+    EGR="$(soma_pkts "${pid}" egress 16)"
     log "contadores de descarte em ${m}: ingress=${ING} pkt, egress=${EGR} pkt"
     nstc "${pid}" -s filter show dev "${IFACE}" ingress 2>/dev/null | sed 's/^/    ingress: /' || true
     nstc "${pid}" -s filter show dev "${IFACE}" egress 2>/dev/null | sed 's/^/    egress:  /' || true

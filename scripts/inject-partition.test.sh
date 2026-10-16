@@ -151,6 +151,7 @@ case "${args}" in
             n16="${SHIM_PKTS_DST:-${SHIM_PKTS:-7}}"
             echo "filter protocol ip pref 1 u32 chain 0 "
             for par in 2 3; do
+                n="${n16}"
                 echo "filter protocol ip pref 1 u32 chain 0 fh 801::80$((par - 2)) order 2048 key ht 801 bkt 0 terminal flowid not_in_hw "
                 echo "  match 0a59010${par}/ffffffff at 16"
                 echo "        action order 1: gact action drop"

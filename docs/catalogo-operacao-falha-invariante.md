@@ -4,8 +4,9 @@
 > do plano do controlador (`docs/plano-controlador-heuristico-2026-09-24.md`, branch `docs/plano-controlador-heuristico`). Este
 > arquivo é a versão viva do catálogo: cada linha só entra com veredito que passou pelo protocolo de autenticidade
 > (`docs/plano-fechamento-etapa-formal-2026-10-15.md` §4.1) e por A.1 a A.6 de T-A. Auditoria completa:
-> `docs/relatorio-b32-auditoria-2026-10-15.md`. **Todos os status abaixo são provisórios até a validação V-A do Senior** (leitura de
-> cada traço, P-7); onde aparece `CONFIRMADO-NO-MODELO`, falta apenas essa leitura humana.
+> `docs/relatorio-b32-auditoria-2026-10-15.md`. **Validação V-A concluída em 2026-10-16: veredito
+> aprovada com ressalvas** (`docs/validacao-ta-2026-10-15.md`, worktree `wt-validacao-ta`). As ressalvas estão em "Limites da evidência"
+> (§7). Os vereditos abaixo valem **apenas para o modelo TLA+**; as colunas de **sistema real** seguem **PENDENTES** (B-34, F1, F3).
 
 ## 1. Como ler
 
@@ -16,7 +17,7 @@
 
 **Marca (pedida pelo Gestor):** `confirmado` (traço de violação reproduzido) · `não-fechado` (busca não terminou; nada a afirmar além do
 "até aqui") · `vácuo-estrutural` (a propriedade só restringe passos `Mesclar`, que é inalcançável por construção na coluna; é
-argumento, não verificação) · `vácuo-verificado` (idem, com contagem da ação `Mesclar` = 0 por `-coverage` em configuração que fecha). Também
+argumento, não verificação) · `vácuo-verificado` (idem, com contagem da ação `Mesclar` = 0 por `-coverage` em configuração que fecha; **vale só nas cotas reduzidas da §6, não nas cotas do plano, que seguem `vácuo-estrutural`**). Também
 aparecem `violada-por-construção` e `artefato-do-modelo`, que não são vereditos de falha.
 
 **Cenário e cotas padrão (as do plano B-32, salvo quando a célula disser outra coisa):** cenário **semeado** (`SpecSemeada`, `IDS={u1}`,
@@ -43,13 +44,13 @@ todas as colunas "real" ficam `PENDENTE` até B-34.
 | Propriedade (tipo) | Sem falha (atraso) | Só queda | Só partição |
 |---|---|---|---|
 | **I1F** (ação) | **não-fechado** · `SEM-VIOLACAO-ATE-AQUI` (601 s, 18.273.465 distintos, 12.793.143 na fila). Fechou só em cotas menores: ver 4.1 | **não-fechado** · `SEM-VIOLACAO-ATE-AQUI` (601 s, 22.377.840 distintos, 16.358.832 na fila). Fechou só em cotas menores: ver 4.1 | **confirmado** · `CONFIRMADO-NO-MODELO` · 4 estados |
-| **I2Fa** (ação, só `Mesclar`) | **vácuo-verificado** · `VACUA` (`Mesclar` 0:0 em r2 e r3, `MaxCanal=2`, `MaxRelogio=3`; na cota do plano o argumento é estrutural, o TLC não fechou) | **vácuo-verificado** · `VACUA` (`Mesclar` 0:0 em r2, `MaxCanal=2`, `MaxRelogio=3`; na cota do plano, estrutural) | **confirmado** · `CONFIRMADO-NO-MODELO` · 4 estados |
+| **I2Fa** (ação, só `Mesclar`) | **vácuo-verificado (cotas reduzidas)** · `VACUA` (`Mesclar` 0:0 em r2 e r3, `MaxCanal=2`, `MaxRelogio=3`; na cota do plano o argumento é estrutural, o TLC não fechou) | **vácuo-verificado (cotas reduzidas)** · `VACUA` (`Mesclar` 0:0 em r2, `MaxCanal=2`, `MaxRelogio=3`; na cota do plano, estrutural) | **confirmado** · `CONFIRMADO-NO-MODELO` · 4 estados |
 | **I2Fb** (invariante) | **violada-por-construção** · `VIOLADA-POR-CONSTRUCAO` · 3 estados (mecanismo a); `LIMITE=6`: 4 estados (mecanismo b) | **violada-por-construção** · `VIOLADA-POR-CONSTRUCAO` · 3 (a); `LIMITE=6`: 4 (b) | **violada-por-construção** · `VIOLADA-POR-CONSTRUCAO` · 3 (a); `LIMITE=6`: 4 (b) |
 | **I4F** (ação) | **violada-por-construção** · `VIOLADA-POR-CONSTRUCAO` · 5 estados | **violada-por-construção** · `VIOLADA-POR-CONSTRUCAO` · 5 estados | **violada-por-construção** · `VIOLADA-POR-CONSTRUCAO` · 4 estados (reversão do I1F; já violada sem falha) |
 | **I4Fp** (ação, "pura") | **violada-por-construção** · `VIOLADA-POR-CONSTRUCAO` · 5 estados | **violada-por-construção** · `VIOLADA-POR-CONSTRUCAO` · 5 estados | **violada-por-construção** · `VIOLADA-POR-CONSTRUCAO` · 5 estados (o mesmo traço sem falha; não é efeito da partição) |
-| **I1M** (ação, só `Mesclar`) | **vácuo-verificado** · `VACUA` (idem I2Fa) | **vácuo-verificado** · `VACUA` (idem I2Fa) | **confirmado** · `CONFIRMADO-NO-MODELO` · 4 estados |
-| **I4M** (ação, só `Mesclar`) | **vácuo-verificado** · `VACUA` (idem I2Fa) | **vácuo-verificado** · `VACUA` (idem I2Fa) | **confirmado** · `CONFIRMADO-NO-MODELO` · 4 estados |
-| **I4Mp** (ação, só `Mesclar`) | **vácuo-verificado** · `VACUA` (idem I2Fa) | **vácuo-verificado** · `VACUA` (idem I2Fa) | **confirmado** · `CONFIRMADO-NO-MODELO` · 5 estados; ressalva em 4.4: o passo violador é `Mesclar`, mas a pré-condição existe sem falha |
+| **I1M** (ação, só `Mesclar`) | **vácuo-verificado (cotas reduzidas)** · `VACUA` (idem I2Fa) | **vácuo-verificado (cotas reduzidas)** · `VACUA` (idem I2Fa) | **confirmado** · `CONFIRMADO-NO-MODELO` · 4 estados |
+| **I4M** (ação, só `Mesclar`) | **vácuo-verificado (cotas reduzidas)** · `VACUA` (idem I2Fa) | **vácuo-verificado (cotas reduzidas)** · `VACUA` (idem I2Fa) | **confirmado** · `CONFIRMADO-NO-MODELO` · 4 estados |
+| **I4Mp** (ação, só `Mesclar`) | **vácuo-verificado (cotas reduzidas)** · `VACUA` (idem I2Fa) | **vácuo-verificado (cotas reduzidas)** · `VACUA` (idem I2Fa) | **confirmado** · `CONFIRMADO-NO-MODELO` · 5 estados; ressalva em 4.4: o passo violador é `Mesclar`, mas a pré-condição existe sem falha |
 | **I1P** (ação, `Logout` efetivo) | **fechou nas cotas reduzidas** · `PRESERVADA-ATE-COTAS` (r3, `MaxCanal=2`, `MaxRelogio=3`, `MaxEventosFalha=2`: 1.627.731 distintos, fechou; sem simetria também fechou: 17.315.129 distintos) | **não-fechado** · `SEM-VIOLACAO-ATE-AQUI` (120 s, 1.972.331 distintos) | **não-fechado** · `SEM-VIOLACAO-ATE-AQUI` (r3, `MaxCanal=2`, `MaxRelogio=3`: 600 s, 33.038.740 distintos, 21.076.524 na fila) |
 
 Fontes e comandos de cada célula: seção 4. Linhas que dependem do artefato do relógio (P-26) estão separadas na seção 5.
@@ -174,4 +175,12 @@ Status: `VACUA` nas configurações da tabela; **na cota do plano (r3, `3/5/2`) 
 - `I2Fb`: pergunta Q-3 (auto-bloqueio sem cascata é intencional no domínio?).
 - P-26: pergunta Q-5 (corrigir o relógio em variante do modelo e reverificar?).
 - Controle sem simetria **não** cobre `ev1` e `ev2-longo` de `I1F` em queda (≈ 12× os estados): ficam `PRESERVADA-ATE-COTAS (sob simetria; sem controle sem simetria)`.
-- 2026-10-15: criação (T-A). Próxima revisão: após V-A.
+- 2026-10-15: criação (T-A).
+- 2026-10-16: V-A concluída, aprovada com ressalvas; cabeçalho e marcas ajustados (documental, sem novas execuções).
+
+## 8. Limites da evidência (ressalvas da V-A)
+
+- **Ressalva 2 (marca):** `vácuo-verificado` vale somente nas cotas reduzidas da §6 (`MaxCanal=2`, `MaxRelogio=3`); nas cotas do plano segue `vácuo-estrutural`.
+- **Ressalva 3:** os timeboxes de 60 s e 120 s são evidência fraca; busca interrompida por tempo não sustenta ausência de violação, só "não-fechado até aqui".
+- **Ressalva 4:** o `rc=150` (eliminação amostral) tem contagem 0/100 e 0/120 violações; é amostragem, não prova de ausência.
+- **Ressalva 5:** o critério mecânico de D-4 inclui `IncrementFailure`, que o plano não listava; a leitura do critério é mais ampla que a do plano.

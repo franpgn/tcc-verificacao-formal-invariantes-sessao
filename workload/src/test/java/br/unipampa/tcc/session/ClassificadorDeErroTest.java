@@ -32,10 +32,11 @@ class ClassificadorDeErroTest {
     }
 
     @Test
-    @DisplayName("mensagem de cache DEGRADED na cadeia de causas e indisponibilidade")
+    @DisplayName("ISPN000305 (degraded mode) na cadeia de causas e indisponibilidade")
     void causaAninhadaDegradedEhIndisponivel() {
         RuntimeException e = new RuntimeException("falha",
-                new HotRodClientException("Cache 'sessions' is in DEGRADED mode"));
+                new HotRodClientException("org.infinispan.partitionhandling.AvailabilityException: ISPN000305: "
+                        + "Cluster is operating in degraded mode because of node failures."));
         assertTrue(ClassificadorDeErro.indisponivel(e));
     }
 

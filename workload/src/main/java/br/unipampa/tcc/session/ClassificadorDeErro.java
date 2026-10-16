@@ -24,20 +24,38 @@ import java.util.concurrent.TimeoutException;
  * "not available"; as demais sao indisponibilidade se o nome da classe ou a
  * mensagem casar com {@link #MARCAS_DE_INDISPONIBILIDADE}.</p>
  *
- * <p><b>Pendente (G-3, T-B):</b> as marcas abaixo vem do que o Infinispan documenta
- * ({@code AvailabilityException}, ISPN000306); as mensagens reais que o cliente
- * Hot Rod recebe de um no em DEGRADED serao confirmadas no gate G-3 da VM e esta
- * lista ajustada com um teste de regressao.</p>
+ * <p>Uma excecao cuja cadeia de causas (abaixo dela) contem uma excecao de transporte
+ * e um involucro do timeout e <b>nao</b> e avaliada pela propria mensagem: na captura real o
+ * {@code entrySet} devolve {@code RuntimeException("java.net.SocketTimeoutException: ...")} com
+ * causa {@code SocketTimeoutException}, e o texto do involucro repete o da causa.</p>
+ *
+ * <p>As marcas abaixo vem da captura real do G-4 (sonda Hot Rod, REP=2 e REP=3, 2026-10-16,
+ * Infinispan 15.0.0.Final; fixtures em {@code CapturasReais}, RAST-G3-1/C-2).</p>
  */
 public final class ClassificadorDeErro {
 
-    /** Trechos de nome de classe ou mensagem que indicam recusa por indisponibilidade. */
+    /**
+     * Trechos de nome de classe ou mensagem que indicam recusa por indisponibilidade. Fontes, todas
+     * em {@code sonda-isn3.csv} (REP=3: runs/gate-b29/g1-rep3/hotrod; REP=2: g1-rep2/hotrod), coluna
+     * {@code mensagem} de {@code HotRodClientException} sem causas:
+     * <ul>
+     *   <li>{@code AvailabilityException}: prefixo {@code org.infinispan.partitionhandling.AvailabilityException:}
+     *       das duas mensagens (REP=3 linhas 18 e 20);</li>
+     *   <li>{@code ISPN000306}: "Key '...' is not available. Not all owners are in this partition"
+     *       (put/get/remove, REP=3 linha 18);</li>
+     *   <li>{@code ISPN000305}: "Cluster is operating in degraded mode because of node failures."
+     *       (entrySet, REP=3 linha 20);</li>
+     *   <li>{@code degraded mode}: a mesma frase do ISPN000305.</li>
+     * </ul>
+     * Removidas por nao virem da captura como excecao de cliente: {@code DEGRADED} (so aparece no
+     * JSON de saude e no log do servidor) e {@code is not available} (generica; todas as capturas em
+     * que aparece ja casam por {@code AvailabilityException}/{@code ISPN000306}).
+     */
     static final List<String> MARCAS_DE_INDISPONIBILIDADE = List.of(
             "AvailabilityException",
             "ISPN000306",
-            "DEGRADED",
-            "degraded mode",
-            "is not available");
+            "ISPN000305",
+            "degraded mode");
 
     private ClassificadorDeErro() { /* utilitario */ }
 
@@ -49,10 +67,21 @@ public final class ClassificadorDeErro {
     public static boolean indisponivel(Throwable t) {
         Set<Throwable> vistos = java.util.Collections.newSetFromMap(new IdentityHashMap<>());
         for (Throwable c = t; c != null && vistos.add(c); c = c.getCause()) {
-            if (ehTransporte(c)) {
+            if (ehTransporte(c) || temCausaDeTransporte(c)) {
                 continue;
             }
             if (casa(c.getClass().getName()) || casa(c.getMessage())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static boolean temCausaDeTransporte(Throwable t) {
+        Set<Throwable> vistos = java.util.Collections.newSetFromMap(new IdentityHashMap<>());
+        vistos.add(t);
+        for (Throwable c = t.getCause(); c != null && vistos.add(c); c = c.getCause()) {
+            if (ehTransporte(c)) {
                 return true;
             }
         }

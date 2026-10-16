@@ -807,6 +807,63 @@ correspondente adicionado em `Mesclar` (`spec/SessionStore.tla`, commit `b7d8e0a
   se o catálogo precisar de TypeOK/I3/I4 fechados nessas cardinalidades no futuro.
 - **JUnit:** 58/58 verde, confirmado uma última vez nesta rodada.
 
+## 2026-10-15 — T-A: auditoria do B-32 (`test/b32-auditoria-controle`, base `48d1571`)
+
+> Auditoria dos vereditos de `docs/relatorio-b32-tlc-propriedades-2026-10-09.md` contra os `.out` brutos
+> (protocolo de autenticidade, `docs/plano-fechamento-etapa-formal-2026-10-15.md` §4.1). Relatório:
+> `docs/relatorio-b32-auditoria-2026-10-15.md`. `spec/SessionStore.tla` e `spec/MCSession.tla` não foram alterados.
+
+### P-26 — `EntregaMensagem` não atualiza `relogio`: no modelo livre, `Logout` aceito e perdido sem falha (`I1P`, 4 estados) e ressurreição por reordenação (`I1F`, 7 estados)
+
+- **Contexto.** Decisão de modelagem D-4 (`spec/SessionStore.tla`, comentário de `EntregaMensagem`: "`relogio` nunca muda em
+  `EntregaMensagem`, sem *merge-on-receive*"). Cada ação local calcula `novoTS = relogio[r] + 1` e só escreve se `novoTS` superar o
+  `ts` do registro local. Uma réplica que recebeu um registro com `ts` maior continua com `relogio` baixo, e sua próxima escrita
+  local sobre aquele registro é rejeitada pelo gate, embora a mensagem correspondente seja transmitida às outras réplicas.
+- **Evidência bruta (todas reproduzidas com 1 worker, com e sem `SYMMETRY`, mesmos tamanhos de traço).**
+  - `I1P` violada sem falha em 4 estados: `Login(r1,s1)` (ts 1), `EntregaMensagem` leva o registro a r2 (`relogio[r2]` fica 0),
+    `Logout(r2,s1)` calcula `novoTS = 1`, não supera o `ts` local (1): a escrita local é rejeitada e a mensagem emitida (ts 1) é
+    descartada por r1 e r3. Arquivos: `runs/tlc/prop-livre-sem-w1/r3-I1P.out` (com simetria) e
+    `runs/tlc/audit-b32/ctrl-nosym-livre-sem/r3-I1P.out` (sem simetria); mesmo traço em `queda` e `particao`.
+  - `I1F` violada sem falha em 7 estados (modelo livre): `Login(s1)`, `Login(s2)`, entrega, `Logout` rejeitado localmente,
+    r3 recebe o `Logout` antes do `Login` e este o ressuscita. `runs/tlc/prop-livre-sem-w1/r3-I1F.out` e
+    `runs/tlc/audit-b32/ctrl-nosym-livre-sem/r3-I1F.out`.
+  - Classificação mecânica de todos os traços de violação: `runs/tlc/audit-b32/tracos/classificacao-d4.tsv` (coluna `depende_D4`).
+    Dos 77 traços de `prop-*`, 18 têm a assinatura (passo local que incrementa `relogio` e não altera nenhum registro); todos
+    pertencem ao modelo **livre** (`I1P`, `I1F`, `I4F` em `sem`/`queda`, mais traços de `-simulate`). **Nenhum** traço do cenário
+    **semeado** tem a assinatura.
+- **Classificação.** **Defeito de modelagem (decisão D-4), não do sistema.** No código real, `SessionState.invalidar` usa
+  `versao + 1` do registro lido (`workload/.../SessionState.java`), então a versão do logout sempre supera a do registro lido.
+- **Consequência para as conclusões.** Os vereditos do modelo **livre** (`prop-livre-*`) que dependem do artefato (`I1P`, `I1F`,
+  `I4F` em `sem`/`queda`) **não servem como evidência do sistema** e entram no catálogo como `ARTEFATO-DO-MODELO`. Os vereditos
+  do cenário **semeado** são independentes do artefato nos traços de violação (A.6), mas a ausência de violação do semeado em
+  `queda`/`partição` não exclui que o artefato apareça além das cotas verificadas.
+- **Status:** `ABERTO-ACEITO` (sem alterar `SessionStore.tla`). Pergunta ao Gestor (Q-5): corrigir em variante do modelo
+  (`relogio' = max(relogio, ts recebido)` em `EntregaMensagem`) e reverificar, ou manter o artefato documentado?
+
+### P-27 — `I2Fb` é violada por construção (sem falha): auto-bloqueio por limite sem cascata (comportamento do código) e cascata `sessoesAfetadas` calculada na origem (artefato do modelo)
+
+- **Contexto.** B-32 previu `I2Fb` (`BLOCKED` na réplica implica nenhuma sessão `VALID` da identidade na mesma réplica) preservada
+  nas três colunas de falha; o TLC a violou em todas. Decisão do Gestor (D1, 2026-10-15): aceitar como "violada por construção";
+  `I2Fa` (escopo `Mesclar`) é a propriedade que isola a partição.
+- **Mecanismo (a), `comportamento do código`.** Auto-bloqueio por limite: `IncrementFailure` leva `contador >= LIMITE` e a
+  identidade a `BLOCKED` **sem invalidar** as sessões `VALID` da mesma réplica. Traço de 3 estados (`LIMITE=2`):
+  `IncrementFailure`, `IncrementFailure`. O código real faz o mesmo: `SessionOps.incrementFailure` chama
+  `IdentityState.incrementar(LIMITE_TENTATIVAS, ...)` e grava só a identidade (`workload/.../SessionOps.java`, linhas 256 a 276);
+  apenas `block()` varre `sessions` (linhas 306 a 325; conferido nesta auditoria).
+  Evidência: `runs/tlc/prop-{sem,queda,particao}-w1/r3-I2Fb.out` (3 estados) e
+  `runs/tlc/audit-b32/ctrl-nosym-{sem,queda,particao}/r3-I2Fb.out` (sem simetria, 3 estados).
+- **Mecanismo (b), `artefato do modelo`.** Com `LIMITE=6` o auto-bloqueio é inalcançável e a violação cai para 4 estados:
+  `Logout(r1,s1)`; `Block(r1,u1)` (a cascata `sessoesAfetadas` calculada na origem contém só `s2`, pois `s1` já estava `INVALID` em
+  r1); entrega do `ID_BLOQUEIA` a r2, que ainda vê `s1` `VALID`: r2 fica com identidade `BLOCKED` e `s1` `VALID`. Efeito do canal
+  assíncrono e do modelo de cópias locais; o sistema real tem um único registro por chave num cache distribuído e provavelmente
+  não o reproduz do mesmo modo (leitura, não evidência). Evidência: `runs/tlc/prop-{sem,queda,particao}-lim6-w1/r3-I2Fb.out` e
+  `runs/tlc/audit-b32/ctrl-nosym-lim6-{sem,queda,particao}/r3-I2Fb.out`.
+- **Consequências.** (1) `I2Fb` **não discrimina** a coluna de falha; status `VIOLADA-POR-CONSTRUCAO` nas três colunas.
+  (2) O mecanismo (a) é uma **propriedade do sistema real**: uma varredura global de I2 no auditor real acusará violação em toda
+  execução com bloqueio por limite, com ou sem falha; B-33 precisa separar bloqueio por limite de bloqueio administrativo.
+  (3) Pergunta aberta Q-3: isso é intencional no domínio?
+- **Status:** `ACEITO` (D1); registrado no catálogo `docs/catalogo-operacao-falha-invariante.md`.
+
 ## Observação de modelagem (não é defeito)
 
 Com 8 *threads* = 8 identidades fixas (`user-<tid>`), `incrementFailure`

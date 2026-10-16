@@ -60,4 +60,38 @@ PATH="$T/bin:$PATH" TCC_DIR="$T/tcc" REP=2 INTERVALO_S=1 POS_FIM_S=1 ESPERA_STAR
 rc2=$?
 checa "sem event=start aborta (rc!=0) e nao cria CSV" '[ "$rc2" != 0 ] && [ ! -e "$H/sonda-isn3.csv" ]'
 
+# ---- COLETA=minima (V-B2 3.2): so /health nas 3 portas + sondas; sem /caches, ?action=stats, ?action=get-availability
+printf 'fault=F2 node=isn3 event=start t_epoch_ns=%s
+' "$(date +%s%N)" > "$M"
+printf 'fault=F2 node=isn3 event=end t_epoch_ns=%s
+' "$(( $(date +%s%N) + 1000000000 ))" >> "$M"
+rm -rf "$H"
+PATH="$T/bin:$PATH" TCC_DIR="$T/tcc" REP=2 COLETA=minima INTERVALO_S=1 POS_FIM_S=1 ESPERA_START_S=5   bash "$G1B" > "$T/saida3.txt" 2>&1
+rc3=$?
+checa "minima: execucao termina com rc=0" '[ "$rc3" = 0 ]'
+checa "minima: saude das tres portas salva" 'ls "$H"/saude-11222-*.json "$H"/saude-11223-*.json "$H"/saude-11224-*.json >/dev/null 2>&1'
+checa "minima: NENHUM caches/stats/avail salvo" '! ls "$H"/caches-* "$H"/stats-* "$H"/avail-* >/dev/null 2>&1'
+checa "minima: indice so tem o recurso health" '[ "$(tail -n +2 "$H/indice.csv" | cut -d, -f3 | sort -u)" = health ]'
+checa "minima: nenhuma URL de /caches nem ?action= solicitada" '! grep -rlE "caches|action=" "$H" --include="*.json" >/dev/null 2>&1'
+checa "minima: indice tem uma linha por porta e ciclo" '[ "$(tail -n +2 "$H/indice.csv" | wc -l)" -ge 3 ]'
+checa "minima: as DUAS sondas seguem ligadas (isn3 e isn1, sessions,counters)" 'grep -q -- "--no isn3=127.0.0.1:11224" "$H/sonda-isn3.err" && grep -q -- "--no isn1=127.0.0.1:11222" "$H/sonda-isn1.err" && grep -q -- "--caches sessions,counters" "$H/sonda-isn3.err"'
+checa "minima: resumo registra coleta=minima" 'grep -q "^coleta=minima" "$H/resumo.txt"'
+checa "minima: sem sonda orfa" '! pgrep -f "SondaHotrod" >/dev/null 2>&1 || true'
+
+# valor invalido de COLETA aborta antes de qualquer coisa
+rm -rf "$H"
+PATH="$T/bin:$PATH" TCC_DIR="$T/tcc" REP=2 COLETA=qualquer INTERVALO_S=1 POS_FIM_S=1 ESPERA_START_S=2 bash "$G1B" > "$T/saida4.txt" 2>&1
+rc4=$?
+checa "COLETA invalida aborta (rc!=0) sem criar CSV" '[ "$rc4" != 0 ] && [ ! -e "$H/sonda-isn3.csv" ] && grep -q "COLETA" "$T/saida4.txt"'
+
+# padrao (sem COLETA) continua completo: caches/stats/avail presentes e coleta=completa no resumo
+printf 'fault=F2 node=isn3 event=start t_epoch_ns=%s
+' "$(date +%s%N)" > "$M"
+printf 'fault=F2 node=isn3 event=end t_epoch_ns=%s
+' "$(( $(date +%s%N) + 1000000000 ))" >> "$M"
+rm -rf "$H"
+PATH="$T/bin:$PATH" TCC_DIR="$T/tcc" REP=2 INTERVALO_S=1 POS_FIM_S=1 ESPERA_START_S=5 bash "$G1B" > "$T/saida5.txt" 2>&1
+checa "padrao permanece completa: caches e stats presentes" 'ls "$H"/caches-11224-*.json "$H"/stats-sessions-11224-*.json "$H"/avail-counters-11224-*.json >/dev/null 2>&1'
+checa "padrao permanece completa: resumo coleta=completa" 'grep -q "^coleta=completa" "$H/resumo.txt"'
+
 echo "falhas=$falhas"; [ "$falhas" = 0 ]

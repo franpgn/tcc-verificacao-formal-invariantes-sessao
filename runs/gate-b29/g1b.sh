@@ -12,7 +12,10 @@
 #   - para POS_FIM_S (75) s depois de 'event=end' (cobre a fusao, ~46-48 s) ou em MAX_S, o que vier antes.
 # Saidas: runs/gate-b29/g1-rep$REP/hotrod/ (sonda-<no>.csv, sonda-<no>.err, saude-*.json, caches-*.json,
 # stats-*.json, avail-*.json, indice.csv, resumo.txt).
-# Variaveis: REP (obrigatoria), TCC_DIR (~/tcc-gate), SONDA_JAR, INTERVALO_S, POS_FIM_S, MAX_S,
+# COLETA=minima (REP=3, V-B2 3.2): SO o /health nas tres portas (curl --digest) + as duas sondas; NAO pede /caches,
+# ?action=stats nem ?action=get-availability (remove H2: carga REST extra sobre isn3 durante a particao). Padrao: COLETA=completa
+# (estrato da REP=2). O resumo.txt registra coleta=<modo>.
+# Variaveis: COLETA (completa|minima), REP (obrigatoria), TCC_DIR (~/tcc-gate), SONDA_JAR, INTERVALO_S, POS_FIM_S, MAX_S,
 # ESPERA_START_S (600), SONDA_USUARIO/SONDA_SENHA (admin/infinispan, credencial do laboratorio).
 set -uo pipefail
 
@@ -22,6 +25,8 @@ INTERVALO_S="${INTERVALO_S:-5}"
 POS_FIM_S="${POS_FIM_S:-75}"
 MAX_S="${MAX_S:-400}"
 ESPERA_START_S="${ESPERA_START_S:-600}"
+COLETA="${COLETA:-completa}"
+case "$COLETA" in completa|minima) ;; *) echo "ABORTAR: COLETA='$COLETA' invalida (use completa ou minima)" >&2; exit 1;; esac
 USUARIO="${SONDA_USUARIO:-admin}"
 export SONDA_SENHA="${SONDA_SENHA:-infinispan}"
 OUT="runs/gate-b29/g1-rep$REP"
@@ -48,7 +53,7 @@ while [ -z "$START_NS" ]; do
   [ $(( $(date +%s) - t_ini )) -lt "$ESPERA_START_S" ] || { echo "ABORTAR: sem event=start em $MARC apos ${ESPERA_START_S}s" >&2; exit 2; }
   sleep 1
 done
-echo "g1b: janela iniciada (start_ns=$START_NS); sondas e coleta ligadas $(date -Is)"
+echo "g1b: janela iniciada (start_ns=$START_NS); sondas e coleta ($COLETA) ligadas $(date -Is)"
 
 # 2) sondas: uma JVM por no (cliente pinado em UM no cada)
 PIDS=()
@@ -80,6 +85,7 @@ busca() { # porta recurso url arquivo
 coleta_porta() {
   local p="$1" c
   busca "$p" health "$BASE:$p/rest/v2/cache-managers/default/health" "saude-$p"
+  [ "$COLETA" = minima ] && return 0     # minima: so o /health acima
   busca "$p" caches "$BASE:$p/rest/v2/cache-managers/default/caches" "caches-$p"
   for c in sessions counters; do
     busca "$p" "stats-$c" "$BASE:$p/rest/v2/caches/$c?action=stats" "stats-$c-$p"
@@ -105,6 +111,7 @@ parar_sondas
 trap - EXIT INT TERM
 {
   echo "rep=$REP"
+  echo "coleta=$COLETA"
   echo "start_ns=$START_NS"
   echo "end_ns=$(marca end)"
   echo "amostras_de_saude=$n intervalo_s=$INTERVALO_S pos_fim_s=$POS_FIM_S"

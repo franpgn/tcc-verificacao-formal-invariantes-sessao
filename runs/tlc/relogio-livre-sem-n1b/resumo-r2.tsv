@@ -1,0 +1,5 @@
+livre	sem	r2	I1P	SEM_VIOLACAO_ATE_AQUI	limite_de_tempo_600s	90820078	11394153	601s
+livre	sem	r2	I1F	VIOLADA	traco_de_7_estados	63664	13652	2s
+livre	sem	r2	I4F	VIOLADA	traco_de_7_estados	46446	10223	3s
+livre	sem	r2	I2Fb	VIOLADA	traco_de_4_estados	296	97	1s
+livre	sem	r2	RelogioDomina	SEM_VIOLACAO_ATE_AQUI	limite_de_tempo_600s	110014415	13272600	600s

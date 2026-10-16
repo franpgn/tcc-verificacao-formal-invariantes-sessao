@@ -1,0 +1,5 @@
+livre	particao	r2	I1P	SEM_VIOLACAO_ATE_AQUI	limite_de_tempo_600s	65139502	7424564	600s
+livre	particao	r2	I1F	VIOLADA	traco_de_5_estados	2314	646	1s
+livre	particao	r2	I4F	VIOLADA	traco_de_5_estados	2314	646	2s
+livre	particao	r2	I2Fb	VIOLADA	traco_de_4_estados	316	115	1s
+livre	particao	r2	RelogioDomina	SEM_VIOLACAO_ATE_AQUI	limite_de_tempo_600s	106537915	11101276	600s

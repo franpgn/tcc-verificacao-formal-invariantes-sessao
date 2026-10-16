@@ -1,0 +1,5 @@
+livre	queda	r2	I1P	SEM_VIOLACAO	exaustivo	22930847	1614264	158s
+livre	queda	r2	I1F	VIOLADA	traco_de_8_estados	193717	36272	3s
+livre	queda	r2	I4F	VIOLADA	traco_de_7_estados	44979	9684	1s
+livre	queda	r2	I2Fb	VIOLADA	traco_de_4_estados	316	115	1s
+livre	queda	r2	RelogioDomina	SEM_VIOLACAO	exaustivo	22930847	1614264	129s

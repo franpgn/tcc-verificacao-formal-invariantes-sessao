@@ -1,0 +1,5 @@
+livre	sem	r2	I1P	SEM_VIOLACAO	exaustivo	4505457	201783	35s
+livre	sem	r2	I1F	VIOLADA	traco_de_8_estados	145551	20019	3s
+livre	sem	r2	I4F	VIOLADA	traco_de_7_estados	35315	5872	2s
+livre	sem	r2	I2Fb	VIOLADA	traco_de_4_estados	296	87	1s
+livre	sem	r2	RelogioDomina	SEM_VIOLACAO	exaustivo	4505457	201783	23s

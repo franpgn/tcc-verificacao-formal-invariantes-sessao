@@ -1,0 +1,4 @@
+livre	sem	r3	I1P	SEM_VIOLACAO_ATE_AQUI	limite_de_tempo_1800s	293709729	16096582	1800s
+livre	sem	r3	I1F	VIOLADA	traco_de_8_estados	461197	41948	3s
+livre	sem	r3	I4F	VIOLADA	traco_de_8_estados	461197	41948	4s
+livre	sem	r3	RelogioDomina	SEM_VIOLACAO_ATE_AQUI	limite_de_tempo_1800s	377819350	19625662	1800s

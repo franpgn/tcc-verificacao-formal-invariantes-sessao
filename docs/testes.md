@@ -143,6 +143,8 @@ Nota de TDD (A1/A3 de V-B): o vermelho `bc4a16f` (T-par-16/17) tinha defeito no 
 
 Nota de TDD (A2 de V-B): o vermelho `946a2f6` (T-par-18) tem 11 asserts FAIL (Git Bash e WSL), nao 9 como constava no relatorio de entrega (contagem defasada; numero de asserts, nao de testes).
 
+Rodada de retomada (2026-10-16, Worker-3): severidades renomeadas S1..S5 -> N1..N5 (T-nd-6g: o nome antigo S3 e rejeitado com exit 2). Git Bash 285 PASS / 0 FAIL / 1 SKIP; WSL Ubuntu 293 PASS / 0 FAIL / 0 SKIP. Mutantes novos (Git Bash), todos mortos: sem nenhum `trap` -> falhas em T-nd-12/13 (residuo, sem marcador end); checagem de raiz alheia desativada -> 6 FAIL (T-nd-18a/b, exit 5 em vez de 7); checagem de `clsact` desativada -> 3 FAIL (T-nd-18d); marcador `fault=F4` trocado por F3 -> 4 FAIL (T-nd-5n, T-nd-9); `remover_degradacao` neutralizada no cleanup -> falhas em T-nd-9/10 (residuo).
+
 **Gate real na VM (pendente)**: G-0 (kernel aceita `clsact` + `u32` + `drop`), G-1 (contadores > 0 nos dois sentidos, conexão a `IP_par:7800` falha, Hot Rod a isn3 responde com erro e não com *timeout*), G-2 (sem resíduo), G-3 (vistas 2 e 1; isn3 DEGRADED em `sessions` e `counters`), G-4 (fusão e tempo), G-5 (`SIGTERM` e `SIGKILL`+`--heal`), G-6 (coexistência com F3). Comandos no relatório `docs/relatorio-b29-implementacao-2026-10-09.md`. Resultados reais **ainda não registrados**.
 
 ## Critérios de aceite do B-29.2 (falha F4 — degradação parcial de rede, `inject-netdegrade.sh`)

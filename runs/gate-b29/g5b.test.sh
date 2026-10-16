@@ -125,7 +125,10 @@ RES="$(cat "$RA/resultado.txt" 2>/dev/null)"
 ok "T-b-6c MergeView de 2 membros (nao 3): rc != 0" "1" "$(nao_zero "$RC")"; contem "T-b-6c FAIL MergeView de 3" "FAIL MergeView de 3 membros nao apareceu" "$RES"
 
 reset_shims_v4; cenario_curto; export G5B_LIMITE_S=6
-( espera_cond 90 test -e "$RA/heal.log" && echo nodes2 > "$SHIM_STATE/health.mode" ) & VIGIA=$!
+# o cluster fica em size=2 DESDE o KILL (antes de qualquer consulta de saude do g5b.sh): gatilhar em heal.log/journal-unit.txt era
+# corrida (no Linux o 1o `health` do espera_saudavel sai ~30 ms depois do heal, antes do vigia de 0,2 s escrever nodes2 -> o g5b.sh via
+# HEALTHY e dava PASS). Nada consulta `health` entre o KILL e o heal/disparo, entao o efeito e o mesmo, sem depender de velocidade.
+( espera_cond 90 grep -q "rc_injetor=" "$RA/estado.txt" && echo nodes2 > "$SHIM_STATE/health.mode" ) & VIGIA=$!
 roda "GO" "$G5B" A; wait "$VIGIA"
 RES="$(cat "$RA/resultado.txt" 2>/dev/null)"
 ok "T-b-6d cluster nao volta a size=3 depois do heal: rc != 0" "1" "$(nao_zero "$RC")"; contem "T-b-6d FAIL cluster nao voltou" "FAIL cluster nao voltou a size=3 HEALTHY" "$RES"
@@ -176,7 +179,8 @@ RES="$(cat "$RB/resultado.txt" 2>/dev/null)"
 ok "T-b-8e cura antes do prazo (intervencao externa): rc != 0" "1" "$(nao_zero "$RC")"; contem "T-b-8e FAIL clsact sumiu" "FAIL clsact SUMIU" "$RES"
 
 reset_shims_v4; cenario_curto; export G5B_LIMITE_S=6
-( espera_cond 90 test -e "$RB/journal-unit.txt" && echo nodes2 > "$SHIM_STATE/health.mode" ) & VIGIA=$!
+# idem 6d: size=2 desde o KILL, nao desde o journal (corrida no Linux)
+( espera_cond 90 grep -q "rc_injetor=" "$RB/estado.txt" && echo nodes2 > "$SHIM_STATE/health.mode" ) & VIGIA=$!
 roda "GO" "$G5B" B; wait "$VIGIA"
 RES="$(cat "$RB/resultado.txt" 2>/dev/null)"
 ok "T-b-8f cluster nao volta a size=3 depois do disparo: rc != 0" "1" "$(nao_zero "$RC")"; contem "T-b-8f FAIL cluster nao voltou" "FAIL cluster nao voltou a size=3 HEALTHY" "$RES"

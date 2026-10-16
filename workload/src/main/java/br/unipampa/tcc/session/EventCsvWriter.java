@@ -41,6 +41,9 @@ public final class EventCsvWriter {
     public static final String HEADER =
             "op_id,operation,start_ns,end_ns,replica,return_code,key";
 
+    /** B-33: cabecalho com a coluna de fase, usado so quando ha marcadores de falha. */
+    public static final String HEADER_COM_FASE = HEADER + ",phase";
+
     /** Contador global de op_id, compartilhado entre repetições. */
     private static final AtomicLong OP_ID_SEQ = new AtomicLong(0L);
 
@@ -115,6 +118,15 @@ public final class EventCsvWriter {
      * diretórios pais se necessário. Mantém a ordem de inserção.
      */
     public void flush(Path destino) throws IOException {
+        flush(destino, null);
+    }
+
+    /**
+     * B-33: como {@link #flush(Path)}, mas com {@code marcadores} nao nulo acrescenta
+     * a coluna {@code phase} (fase do {@code start_ns} do evento). Sem marcadores o
+     * arquivo e identico ao formato historico consumido por {@code analysis/}.
+     */
+    public void flush(Path destino, Marcadores marcadores) throws IOException {
         Path pai = destino.getParent();
         if (pai != null) {
             Files.createDirectories(pai);
@@ -124,7 +136,7 @@ public final class EventCsvWriter {
             copia = new ArrayList<>(eventos);
         }
         try (BufferedWriter w = Files.newBufferedWriter(destino, StandardCharsets.UTF_8)) {
-            w.write(HEADER);
+            w.write(marcadores == null ? HEADER : HEADER_COM_FASE);
             w.newLine();
             for (Event e : copia) {
                 w.write(Long.toString(e.opId));
@@ -140,6 +152,10 @@ public final class EventCsvWriter {
                 w.write(e.returnCode);
                 w.write(',');
                 w.write(e.key);
+                if (marcadores != null) {
+                    w.write(',');
+                    w.write(marcadores.rotuloDe(e.startNs));
+                }
                 w.newLine();
             }
         }

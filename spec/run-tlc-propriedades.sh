@@ -21,6 +21,9 @@
 #   MAXCANAL (3)  MAXRELOGIO (5)  MAXEVENTOSFALHA (2)  LIMITE (2)
 #   SIMULATE    se definido (ex.: 20000), usa `-simulate num=$SIMULATE -depth ${DEPTH:-80}`
 #               em vez de busca exaustiva (serve para ACHAR traco, nunca para afirmar ausencia)
+#   SEM_SIMETRIA se definido (qualquer valor), omite a linha `SYMMETRY Simetria` do .cfg (T-A/A.3:
+#               controle sem reducao por simetria; recomenda-se WORKERS=1)
+#   COVERAGE    se definido (minutos, ex.: 1), acrescenta `-coverage $COVERAGE` (T-A/A.4: contagem por acao)
 #   TAG         sufixo do diretorio de saida (ex.: TAG=lim6 -> runs/tlc/prop-particao-lim6)
 #   OUTDIR      default runs/tlc/prop-<falha> (semeado) | prop-livre-<falha> (livre);
 #               com SIMULATE, sufixo -sim
@@ -52,6 +55,11 @@ mkdir -p "$OUTDIR"
 RESUMO="$OUTDIR/resumo-${CARD}.tsv"
 echo "Config: modo=$MODO falha=$FALHA card=$CARD REPLICAS=$REPS MaxCanal=$MAXCANAL MaxRelogio=$MAXRELOGIO MaxEventosFalha=$MAXEVENTOSFALHA timebox=${TIMEOUT_SECS}s workers=$WORKERS ${SIMULATE:+simulate=$SIMULATE}"
 
+SYMLINE="SYMMETRY Simetria
+"; [[ -n "${SEM_SIMETRIA:-}" ]] && SYMLINE=""
+COVOPT=(); [[ -n "${COVERAGE:-}" ]] && COVOPT=(-coverage "$COVERAGE")
+winpath() { if command -v cygpath >/dev/null 2>&1; then cygpath -w "$1"; else printf '%s' "$1"; fi; }
+
 cd "$AQUI"
 for P in "${PROPS[@]}"; do
   if [[ "$P" == I2Fb ]]; then SEC="INVARIANTS"; else SEC="PROPERTY"; fi
@@ -66,8 +74,7 @@ CONSTANTS
     MaxCanal   = $MAXCANAL
     MaxRelogio = $MAXRELOGIO
     MaxEventosFalha = $MAXEVENTOSFALHA
-SYMMETRY Simetria
-CONSTRAINT
+${SYMLINE}CONSTRAINT
     LimiteCanal
     LimiteRelogio
     LimiteEventosFalha
@@ -78,10 +85,13 @@ CFGEOF
   MODOTLC=(-workers "$WORKERS")
   [[ -n "${SIMULATE:-}" ]] && MODOTLC=(-simulate "num=$SIMULATE" -depth "${DEPTH:-80}")
   META="$(mktemp -d "${TMPDIR:-/tmp}/tlc-meta-XXXXXX")"   # metadir proprio: evita colisao entre execucoes paralelas
+  # T-A/A.5: o TLC extrai TLC.tla/Naturals.tla/... para java.io.tmpdir; execucoes simultaneas
+  # colidiam ali (ERRO rc=150 "Module-Table lookup failure"). Diretorio temporario proprio por execucao.
+  JTMP="$(mktemp -d "${TMPDIR:-/tmp}/tlc-jtmp-XXXXXX")"
   T0=$SECONDS
-  timeout "${TIMEOUT_SECS}s" "$JAVA" -Xmx"$XMX" -XX:+UseParallelGC -cp "$TLA_TOOLS" tlc2.TLC \
-      -config "$CFG" "${MODOTLC[@]}" -metadir "$META" -cleanup MCSession.tla > "$LOG" 2>&1
-  RC=$?; DT=$((SECONDS - T0)); rm -rf "$META"
+  timeout "${TIMEOUT_SECS}s" "$JAVA" -Xmx"$XMX" -XX:+UseParallelGC -Djava.io.tmpdir="$(winpath "$JTMP")" -cp "$TLA_TOOLS" tlc2.TLC \
+      -config "$CFG" "${MODOTLC[@]}" "${COVOPT[@]}" -metadir "$META" -cleanup MCSession.tla > "$LOG" 2>&1
+  RC=$?; DT=$((SECONDS - T0)); rm -rf "$META" "$JTMP"
   SEMVIRG="$(tr -d ',' < "$LOG")"   # Progress(...) imprime numeros com separador de milhar
   GERADOS=$(grep -oE '[0-9]+ states generated' <<<"$SEMVIRG" | tail -1 | grep -oE '^[0-9]+')
   DIST=$(grep -oE '[0-9]+ distinct states found' <<<"$SEMVIRG" | tail -1 | grep -oE '^[0-9]+')
@@ -94,7 +104,7 @@ CFGEOF
   elif [[ $RC -eq 124 ]]; then
     RES="SEM_VIOLACAO_ATE_AQUI"; DET="limite_de_tempo_${TIMEOUT_SECS}s"
   else
-    RES="ERRO"; DET="rc=$RC"
+    RES="ERRO"; DET="rc=$RC"   # rc validos: 0 (sem erro), 12 (violacao), 124 (timeout); qualquer outro e ERRO
   fi
   printf "%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n" "$MODO" "$FALHA" "$CARD" "$P" "$RES" "$DET" "${GERADOS:-?}" "${DIST:-?}" "${DT}s" | tee -a "$RESUMO"
 done

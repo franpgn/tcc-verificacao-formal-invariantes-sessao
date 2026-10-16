@@ -2,9 +2,9 @@
 # runs/gate-b29/g5.sh -- G-5 (sinais): kill -TERM e depois kill -KILL do inject-partition.sh em isn3, janela curta.
 # PROPOSTA: NAO executar sem o "go" do Gestor. Execucao unica por go. `--dry-run` imprime o plano e sai sem tocar em nada.
 # Esperado: TERM -> o trap remove a regra e ha marcador end; KILL -> a regra FICA ate o --heal manual; o --heal a remove.
-# Variaveis (teste com shims): G5_DUR (40), G5_T_KILL (15), G5_LIMITE_S (150), TCC_DIR, LOCK_DIR.
+# Variaveis (teste com shims): G5_DUR (40), G5_T_KILL (15), G5_LIMITE_S (150), G5_ESPERA_START (40), TCC_DIR, LOCK_DIR.
 set -euo pipefail
-DUR="${G5_DUR:-40}"; T_KILL="${G5_T_KILL:-15}"; LIM="${G5_LIMITE_S:-150}"
+DUR="${G5_DUR:-40}"; T_KILL="${G5_T_KILL:-15}"; LIM="${G5_LIMITE_S:-150}"; ESPERA_START="${G5_ESPERA_START:-40}"
 if [ "${1:-}" = "--dry-run" ]; then
   cat <<PLANO
 G-5 (dry-run; nada executado): duracao=${DUR}s kill em +${T_KILL}s, limite de reforma=${LIM}s
@@ -42,7 +42,7 @@ fase() {
   date -Is > "$OUT/t0-$sig.txt"; date +%s > "$OUT/t0s-$sig.txt"
   armar "$DUR"
   set +e; $INJ --minority isn3 --duration "$DUR" --marker "$M" > "$OUT/inj-$sig.log" 2>&1 & P=$!; set -e
-  espera_marcador "$M" start 40 || falha "$sig: sem event=start em 40 s"
+  espera_marcador "$M" start "$ESPERA_START" || falha "$sig: sem event=start em ${ESPERA_START} s"
   sleep "$T_KILL"
   { echo "=== antes do kill -${sig^^} $(date -Is)"; T "$PID3" tc qdisc show dev eth0
     echo "-- contadores por filtro"; cont_filtros_pid "$PID3" || true
@@ -50,7 +50,8 @@ fase() {
   tem_clsact || falha "$sig: clsact ausente ANTES do sinal (injecao nao ativa)"
   SPID=$(pgrep -P "$P" 2>/dev/null | tr '\n' ' ' || true); echo "filhos do injetor: ${SPID:-<nenhum>}" >> "$OUT/estado-$sig.txt"
   echo "t_sinal_ns=$(date +%s%N) sinal=$sig" | tee -a "$OUT/estado-$sig.txt"
-  kill -"${sig^^}" "$P"
+  # se o injetor ja terminou por conta propria, o sinal nao e entregue: segue para o rc real (falha na checagem)
+  kill -"${sig^^}" "$P" 2>/dev/null || echo "aviso: sinal ${sig^^} nao entregue (injetor ja havia terminado)" | tee -a "$OUT/estado-$sig.txt"
   set +e; wait "$P"; RC=$?; set -e; P=
   echo "rc_injetor=$RC" | tee -a "$OUT/estado-$sig.txt"
   sleep 2

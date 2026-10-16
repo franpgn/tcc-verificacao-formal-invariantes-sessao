@@ -55,9 +55,13 @@ public class SessionOps {
     /** B-33 (Q-10): rastro de operacoes confirmadas no cliente; {@code null} = desligado. */
     private final RastroCliente rastro;
 
-    /** B-23: ver javadoc da classe. Chave = sid; valor = motivo confirmado. */
-    private final ConcurrentHashMap<String, SessionState.Motivo> invalidacoesConfirmadas =
-            new ConcurrentHashMap<>();
+    /**
+     * B-23: ver javadoc da classe. Chave = sid; valor = motivo confirmado. B-33 (E2): no S3 os
+     * varios servidores de aplicacao e o console administrativo compartilham este mapa (e o
+     * observador do experimento, nao estado da aplicacao): uma invalidacao confirmada por um
+     * deles e comparada com as leituras de todos.
+     */
+    private final ConcurrentHashMap<String, SessionState.Motivo> invalidacoesConfirmadas;
 
     /**
      * Construtor sem trilha de eventos (mantém compatibilidade com testes
@@ -109,6 +113,17 @@ public class SessionOps {
                LatencyRegistry latency, InvariantAuditor auditor,
                EventCsvWriter eventos, EpochClock relogio, String replica,
                RastroCliente rastro) {
+        this(sessions, identities, latency, auditor, eventos, relogio, replica, rastro, null);
+    }
+
+    SessionOps(Armazem<SessionState> sessions,
+               Armazem<IdentityState> identities,
+               LatencyRegistry latency, InvariantAuditor auditor,
+               EventCsvWriter eventos, EpochClock relogio, String replica,
+               RastroCliente rastro,
+               ConcurrentHashMap<String, SessionState.Motivo> invalidacoesCompartilhadas) {
+        this.invalidacoesConfirmadas = invalidacoesCompartilhadas != null
+                ? invalidacoesCompartilhadas : new ConcurrentHashMap<>();
         this.rastro = rastro;
         this.sessions = sessions;
         this.identities = identities;
@@ -117,6 +132,22 @@ public class SessionOps {
         this.eventos = eventos;
         this.relogio = relogio;
         this.replica = replica;
+    }
+
+    /**
+     * B-33 (E2): como o construtor com rastro, mas com mapa de invalidacoes confirmadas
+     * compartilhado entre instancias e rotulo de replica explicito ({@code null} = primeiro
+     * servidor configurado). Usado pelo S3 (um {@code SessionOps} por servidor de aplicacao).
+     */
+    SessionOps(RemoteCacheManager rcm, LatencyRegistry latency,
+               InvariantAuditor auditor, EventCsvWriter eventos,
+               EpochClock relogio, RastroCliente rastro,
+               ConcurrentHashMap<String, SessionState.Motivo> invalidacoesCompartilhadas,
+               String replica) {
+        this(Armazem.de(rcm.<String, SessionState>getCache("sessions")),
+                Armazem.de(rcm.<String, IdentityState>getCache("counters")),
+                latency, auditor, eventos, relogio,
+                replica != null ? replica : resolverReplica(rcm), rastro, invalidacoesCompartilhadas);
     }
 
     /**

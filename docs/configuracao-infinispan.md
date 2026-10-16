@@ -68,7 +68,7 @@ Os testes sem VM estão em `docs/testes.md`; o aceite real (G-0 a G-6) está **p
 
 ### Falha F4 — degradação parcial de rede (`scripts/inject-netdegrade.sh`, B-29.2)
 
-Perda (aleatória ou em rajada), atraso com jitter, duplicação, reordenação e corrupção **entre os nós do cluster**, simétricas ou assimétricas, sem derrubar o nó nem tocar o tráfego Hot Rod do cliente. Mecanismo: disciplina `prio` na **raiz** da interface do contêiner, `netem` na banda 3 e um filtro `u32` por IP de destino do par, sempre por `sudo nsenter -t <pid> -n tc ...` a partir do host (mesmo padrão de F2/F3). A direção de saída é aplicada no alvo; a de entrada, no egress de cada par com destino ao alvo (`--direction out|in|both`, `--loss` e `--loss-in`). Como a raiz fica ocupada, F4 e F3 (`netem` raiz sem filtro) são **mutuamente exclusivos no mesmo nó** (exit 7); F4 também recusa um nó com `clsact` ou com o lock de F2 ativo. Detalhes, diagramas, matriz de severidades S1 a S5 e limites de fidelidade em `docs/degradacao-de-rede.md`.
+Perda (aleatória ou em rajada), atraso com jitter, duplicação, reordenação e corrupção **entre os nós do cluster**, simétricas ou assimétricas, sem derrubar o nó nem tocar o tráfego Hot Rod do cliente. Mecanismo: disciplina `prio` na **raiz** da interface do contêiner, `netem` na banda 3 e um filtro `u32` por IP de destino do par, sempre por `sudo nsenter -t <pid> -n tc ...` a partir do host (mesmo padrão de F2/F3). A direção de saída é aplicada no alvo; a de entrada, no egress de cada par com destino ao alvo (`--direction out|in|both`, `--loss` e `--loss-in`). Como a raiz fica ocupada, F4 e F3 (`netem` raiz sem filtro) são **mutuamente exclusivos no mesmo nó** (exit 7); F4 também recusa um nó com `clsact` ou com o lock de F2 ativo. Detalhes, diagramas, matriz de severidades N1 a N5 e limites de fidelidade em `docs/degradacao-de-rede.md`.
 
 | Opção | Semântica |
 |---|---|
@@ -76,7 +76,7 @@ Perda (aleatória ou em rajada), atraso com jitter, duplicação, reordenação 
 | `--direction out\|in\|both` | padrão `out`; `in` e `both` tocam também os **pares** |
 | `--loss`, `--loss-in`, `--loss-corr`, `--loss-model random\|gemodel`, `--burst` | perda por sentido, correlação, modelo (Gilbert-Elliott) e rajada média |
 | `--delay`, `--jitter`, `--duplicate`, `--reorder`, `--corrupt` | demais degradações (`--reorder` e `--jitter` exigem `--delay`) |
-| `--severity S1..S5` | perda 1%, 5%, 20%, 50%, 99,9% |
+| `--severity N1..N5` | perda 1%, 5%, 20%, 50%, 99,9% |
 | `--duration` | padrão 120 s; abaixo de 45 s avisa |
 | `--marker` | `fault=F4 node=<alvo> event=start\|end t_epoch_ns=<n>` (formato de B-25) |
 | `--heal` | remove a `prio 1:` do injetor em todos os nós; nunca toca raiz alheia |

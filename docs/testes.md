@@ -150,7 +150,7 @@ Sem VM (rodam em qualquer host; `bash scripts/inject-netdegrade.test.sh`). Os te
 | T-nd-3 | `--direction in`/`both`, 5 nós, `--peers` | `in`: um `netem` por par com filtro apontando ao alvo; `both`: alvo + pares; `--peers` restringe |
 | T-nd-4 | perda assimétrica (`--loss-in`) | 20% na saída do alvo e 50% nos pares; `--loss-in 0` deixa só a saída |
 | T-nd-5 | parâmetros do `netem` | `delay`/`jitter`/`distribution normal`, `loss ... corr`, `duplicate`, `reorder r c`, `corrupt`, `gemodel` (p=6,25% r=25% para média 20% e rajada 4), perda fracionária, `--iface`, `--duration`, marcador |
-| T-nd-6 | severidades S1 a S5 | 1%, 5%, 20%, 50%, 99,9%; aviso de equivalência com partição em S5 e `loss ≥ 99`; `--severity` com `--loss` → exit 2 |
+| T-nd-6 | severidades N1 a N5 | 1%, 5%, 20%, 50%, 99,9%; aviso de equivalência com partição em N5 e `loss ≥ 99`; `--severity` com `--loss` → exit 2 |
 | T-nd-7 | `--duration` curta | aviso; 60 s sem aviso |
 | T-nd-8 | 38 argumentos inválidos (loss fora de 0..100, `--reorder` sem `--delay`, `--direction` inválida, nó fora da lista, `--peers` com o alvo, gemodel inviável, nome com `;`, ...) | exit 2, também sem `--dry-run` |
 | T-nd-9 | execução completa com *shims* (`--duration 1`) | sequência resolve, inspeção da raiz, sonda, `del`, aplica (prio, netem, filtros por par), ping, contadores, `del`; nenhum `tc` sem `nsenter`; só toca o PID do alvo; marcadores `fault=F4`; sem resíduo |
@@ -159,7 +159,7 @@ Sem VM (rodam em qualquer host; `bash scripts/inject-netdegrade.test.sh`). Os te
 | T-nd-12 | kernel rejeita (filtro na sonda, `prio`, `netem`, gemodel, filtro na aplicação, filtro num par) | exit 5, regra parcial removida pelo `trap`, sem marcador quando a falha nem começou |
 | T-nd-13 | `SIGTERM` durante a janela (3 nós), `SIGHUP`, `SIGTERM` durante o ping | exit 143/129, `del root` nos 3 nós após o sinal, marcador `end` uma só vez, sem resíduo. `SIGINT` **não** é testável aqui: o bash ignora INT em jobs assíncronos não interativos |
 | T-nd-14 | `--heal` | só `del root` nos nós com `prio 1:` (alvo e pares); **não** apaga a raiz de F3; tolera nó ausente; idempotente; `--dry-run` |
-| T-nd-15 | exit 6 | perda observada 0%/40%/50% contra a esperada; 25% e 100% (S5) dentro da tolerância; `Sent` zerado; perda sem `dropped` (≥ 10 esperados → erro; amostra pequena → aviso); só atraso com `Sent` zerado |
+| T-nd-15 | exit 6 | perda observada 0%/40%/50% contra a esperada; 25% e 100% (N5) dentro da tolerância; `Sent` zerado; perda sem `dropped` (≥ 10 esperados → erro; amostra pequena → aviso); só atraso com `Sent` zerado |
 | T-nd-16 | exit 4 | alvo ou par inexistente; contêiner não `running`; nada alterado |
 | T-nd-17 | exit 3 | `PODMAN` inexistente |
 | T-nd-18 | exit 7 | raiz de F3 no alvo ou num par (`in`); `clsact` de F2 no mesmo nó; nada alterado nem removido (raiz alheia intacta); F3/F2 em nó **não tocado** coexistem; `--heal` respeita a raiz alheia |

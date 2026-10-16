@@ -80,7 +80,7 @@ usage() {
     cat <<EOF
 Uso: ${NOME} --target <no> [--nodes isn1,isn2,isn3] [--peers <no[,no...]>]
             [--direction out|in|both] [--iface eth0] [--duration <seg>]
-            [--severity S1..S5 | --loss <pct>] [--loss-corr <pct>] [--loss-in <pct>]
+            [--severity N1..N5 | --loss <pct>] [--loss-corr <pct>] [--loss-in <pct>]
             [--loss-model random|gemodel] [--burst <pacotes>]
             [--delay <Nms>] [--jitter <Nms>] [--duplicate <pct>]
             [--reorder <pct[,corr]>] [--corrupt <pct>]
@@ -118,7 +118,7 @@ Opcoes:
   --duplicate <pct>      Duplicacao 0..100.
   --reorder <pct[,corr]> Reordenacao 0..100 (exige --delay).
   --corrupt <pct>        Corrupcao 0..100.
-  --severity <S1..S5>    Atalho de perda: S1=1%, S2=5%, S3=20%, S4=50%, S5=99.9%
+  --severity <N1..N5>    Atalho de perda: N1=1%, N2=5%, N3=20%, N4=50%, N5=99.9%
                          (nao combina com --loss).
   --iface <if>           Interface dentro do container. Padrao: ${IFACE_PADRAO}
   --duration <seg>       Janela da degradacao. Padrao: ${DURACAO_PADRAO}. Menos de ${DURACAO_AVISO}: aviso.
@@ -132,7 +132,7 @@ Opcoes:
 
 Variaveis de ambiente:
   PODMAN    Binario do podman. Padrao 'podman'. Cluster ROOTFUL:
-              PODMAN="sudo podman" ${NOME} --target isn3 --severity S3
+              PODMAN="sudo podman" ${NOME} --target isn3 --severity N3
   LOCK_DIR  Diretorio dos arquivos de lock (flock). Padrao /tmp.
 
 Codigos de saida:
@@ -146,12 +146,12 @@ Codigos de saida:
   7  raiz ocupada (F3 ou outra qdisc raiz; clsact/lock de F2) num no a tocar
 
 Exemplos:
-  ${NOME} --target isn3 --severity S3 --direction both --marker runs/marcadores.txt
+  ${NOME} --target isn3 --severity N3 --direction both --marker runs/marcadores.txt
   ${NOME} --target isn3 --direction both --loss 20 --loss-in 50
   ${NOME} --target isn3 --delay 100ms --jitter 50ms --loss 5 --duplicate 1
   ${NOME} --target isn3 --loss 20 --loss-model gemodel --burst 4
   ${NOME} --heal
-  ${NOME} --target isn3 --severity S2 --dry-run
+  ${NOME} --target isn3 --severity N2 --dry-run
 EOF
 }
 
@@ -286,12 +286,12 @@ else
     if [[ -n "${SEVERITY}" ]]; then
         [[ -z "${LOSS}" ]] || erro_arg "--severity e --loss sao mutuamente exclusivos"
         case "${SEVERITY}" in
-            S1) LOSS="1" ;;
-            S2) LOSS="5" ;;
-            S3) LOSS="20" ;;
-            S4) LOSS="50" ;;
-            S5) LOSS="99.9" ;;
-            *)  erro_arg "--severity invalida '${SEVERITY}' (use S1..S5)" ;;
+            N1) LOSS="1" ;;
+            N2) LOSS="5" ;;
+            N3) LOSS="20" ;;
+            N4) LOSS="50" ;;
+            N5) LOSS="99.9" ;;
+            *)  erro_arg "--severity invalida '${SEVERITY}' (use N1..N5)" ;;
         esac
     fi
 

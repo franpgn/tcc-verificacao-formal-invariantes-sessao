@@ -344,22 +344,23 @@ dry --target isn3 --loss 20 --marker /tmp/m.txt
 contem "T-nd-5n marcador citado (fault=F4)" "fault=F4" "${OUT}"
 contem "T-nd-5n marcador citado (arquivo)" "/tmp/m.txt" "${OUT}"
 
-echo "== T-nd-6: severidades S1..S5 =="
+echo "== T-nd-6: severidades N1..N5 =="
 i=0
-for par in "S1 1%" "S2 5%" "S3 20%" "S4 50%" "S5 99.9%"; do
+for par in "N1 1%" "N2 5%" "N3 20%" "N4 50%" "N5 99.9%"; do
     sev="${par%% *}"; perda="${par##* }"
     dry --target isn3 --severity "${sev}" --direction both
     ok "T-nd-6 ${sev} exit" "0" "${RC}"
     contem "T-nd-6 ${sev} -> loss ${perda}" "netem loss ${perda}" "${OUT}"
 done
-contem "T-nd-6 S5 avisa equivalencia com particao" "equivale a particao" "${OUT}"
+contem "T-nd-6 N5 avisa equivalencia com particao" "equivale a particao" "${OUT}"
 dry --target isn3 --loss 99
 contem "T-nd-6b loss >= 99 avisa" "inject-partition.sh" "${OUT}"
 dry --target isn3 --loss 20
 nao_contem "T-nd-6c 20% nao avisa equivalencia" "equivale a particao" "${OUT}"
-dry --target isn3 --severity S3 --loss 20; ok "T-nd-6d --severity junto com --loss" "2" "${RC}"
-dry --target isn3 --severity S6;            ok "T-nd-6e severidade desconhecida" "2" "${RC}"
-dry --target isn3 --severity S2 --loss-model gemodel
+dry --target isn3 --severity N3 --loss 20; ok "T-nd-6d --severity junto com --loss" "2" "${RC}"
+dry --target isn3 --severity N6;            ok "T-nd-6e severidade desconhecida" "2" "${RC}"
+dry --target isn3 --severity S3;            ok "T-nd-6g nome antigo S3 rejeitado (colide com cenario S3)" "2" "${RC}"
+dry --target isn3 --severity N2 --loss-model gemodel
 ok "T-nd-6f severidade com gemodel aceita" "0" "${RC}"
 contem "T-nd-6f gemodel com media 5%" "netem loss gemodel" "${OUT}"
 
@@ -657,12 +658,12 @@ roda_shim --target isn3 --loss 20 --duration 1
 ok "T-nd-15c 25% observado contra 20% esta na tolerancia binomial: exit" "0" "${RC}"
 reset_shims
 export SHIM_PING_LOSS=100
-roda_shim --target isn3 --severity S5 --duration 1
-ok "T-nd-15d S5 com 100% observado (esperado 99,9%): exit" "0" "${RC}"
+roda_shim --target isn3 --severity N5 --duration 1
+ok "T-nd-15d N5 com 100% observado (esperado 99,9%): exit" "0" "${RC}"
 reset_shims
 export SHIM_PING_LOSS=50
-roda_shim --target isn3 --severity S5 --duration 1
-ok "T-nd-15e S5 com 50% observado: exit" "6" "${RC}"
+roda_shim --target isn3 --severity N5 --duration 1
+ok "T-nd-15e N5 com 50% observado: exit" "6" "${RC}"
 reset_shims
 export SHIM_PING_LOSS=0
 roda_shim --target isn3 --loss 20 --duration 1 --ping-count 0

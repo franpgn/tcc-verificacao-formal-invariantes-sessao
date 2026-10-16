@@ -174,6 +174,22 @@ esac
 exit 0
 EOF
 
+# readlink: so /proc/<pid>/ns/net (guarda de netns, A2 de V-B). Cada PID tem
+# netns proprio, exceto os nos em SHIM_HOSTNET (simula --network=host: mesmo
+# netns do PID 1) e SHIM_NO_NS (leitura falha). Igual ao de inject-netdegrade.
+cat >"${SHIMDIR}/readlink" <<'EOF2'
+#!/usr/bin/env bash
+echo "readlink $*" >>"${SHIM_LOG}"
+case "$1" in
+    /proc/1/ns/net) echo "net:[4026531840]" ;;
+    /proc/*/ns/net)
+        p="${1#/proc/}"; p="${p%%/*}"; d=$((p - 4000))
+        case " ${SHIM_NO_NS:-} " in *" isn${d} "*) exit 1 ;; esac
+        case " ${SHIM_HOSTNET:-} " in *" isn${d} "*) echo "net:[4026531840]" ;; *) echo "net:[40265${p}]" ;; esac ;;
+    *) exit 1 ;;
+esac
+EOF2
+
 # flock: sempre concede o lock (o teste de exclusao real e o T-par-15).
 cat >"${SHIMDIR}/flock" <<'EOF'
 #!/usr/bin/env bash
@@ -186,7 +202,7 @@ PATH_SHIMS="${SHIMDIR}:${PATH_SEM_PODMAN}"
 reset_shims() {
     : >"${SHIM_LOG}"
     rm -f "${SHIM_STATE}"/clsact.* "${TMP}/marker" "${TMP}/saida" "${LOCK_DIR}"/* 2>/dev/null || true
-    unset SHIM_MISSING SHIM_STATUS SHIM_CONN_RC SHIM_TC_FAIL_MATCH SHIM_PKTS SHIM_PKTS_SRC SHIM_PKTS_DST SHIM_FAIL_CLSACT
+    unset SHIM_MISSING SHIM_STATUS SHIM_CONN_RC SHIM_TC_FAIL_MATCH SHIM_PKTS SHIM_PKTS_SRC SHIM_PKTS_DST SHIM_HOSTNET SHIM_NO_NS SHIM_FAIL_CLSACT
 }
 
 # roda_shim <args...>: executa o injetor com os shims; saida em $OUT, rc em $RC.
@@ -412,7 +428,7 @@ echo "== T-par-15: flock real impede duas injecoes simultaneas no mesmo no =="
 if command -v flock >/dev/null 2>&1; then
     # PATH sem o shim de flock para usar o flock real do host.
     SHIMDIR2="${TMP}/shims-semflock"; mkdir -p "${SHIMDIR2}"
-    for s in podman sudo nsenter tc; do cp "${SHIMDIR}/${s}" "${SHIMDIR2}/${s}"; done
+    for s in podman sudo nsenter tc readlink; do cp "${SHIMDIR}/${s}" "${SHIMDIR2}/${s}"; done
     FLOCK_DIR="$(dirname "$(command -v flock)")"
     reset_shims
     PATH="${SHIMDIR2}:${FLOCK_DIR}:${PATH_SEM_PODMAN}" bash "${PART}" --minority isn3 --duration 5 >/dev/null 2>&1 &
@@ -457,6 +473,33 @@ if [[ -n "${TS_PRIMEIRO}" && "${TS_PRIMEIRO}" != "${TS_ULTIMO}" ]]; then
 else
     echo "FAIL: T-par-17 timestamps iguais/ausentes (primeiro='${TS_PRIMEIRO}' ultimo='${TS_ULTIMO}')"; FAIL=$((FAIL + 1))
 fi
+
+echo "== T-par-18: guarda de netns (A2 de V-B): nunca tocar o netns do host =="
+reset_shims
+roda_shim --minority isn3 --duration 1
+ok "T-par-18a netns distinto do PID 1: exit" "0" "${RC}"
+contem "T-par-18a consultou o netns do alvo" "readlink /proc/4003/ns/net" "$(cat "${SHIM_LOG}")"
+contem "T-par-18a consultou o netns do PID 1" "readlink /proc/1/ns/net" "$(cat "${SHIM_LOG}")"
+reset_shims
+SHIM_HOSTNET="isn3" roda_shim --minority isn3 --duration 1
+ok "T-par-18b alvo com netns do host: exit 4" "4" "${RC}"
+contem "T-par-18b diagnostico" "netns do host" "${OUT}"
+nao_contem "T-par-18b nenhum nsenter/tc executado" "nsenter" "$(cat "${SHIM_LOG}")"
+reset_shims
+SHIM_HOSTNET="isn1" roda_shim --minority isn3 --duration 1
+ok "T-par-18c par com netns do host: exit 4" "4" "${RC}"
+nao_contem "T-par-18c nenhum nsenter/tc executado" "nsenter" "$(cat "${SHIM_LOG}")"
+reset_shims
+SHIM_NO_NS="isn3" roda_shim --minority isn3 --duration 1
+ok "T-par-18d netns ilegivel: recusa (exit 4)" "4" "${RC}"
+nao_contem "T-par-18d nenhum nsenter/tc executado" "nsenter" "$(cat "${SHIM_LOG}")"
+reset_shims
+SHIM_HOSTNET="isn2" roda_shim --heal
+ok "T-par-18e --heal com um no em netns do host: exit 4" "4" "${RC}"
+LOG="$(cat "${SHIM_LOG}")"
+nao_contem "T-par-18e --heal nao toca no no com netns do host" "nsenter -t 4002" "${LOG}"
+contem "T-par-18e --heal ainda limpa isn1" "nsenter -t 4001 -n tc qdisc del dev eth0 clsact" "${LOG}"
+contem "T-par-18e --heal ainda limpa isn3" "nsenter -t 4003 -n tc qdisc del dev eth0 clsact" "${LOG}"
 reset_shims
 
 echo

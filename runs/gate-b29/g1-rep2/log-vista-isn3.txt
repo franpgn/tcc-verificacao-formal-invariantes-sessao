@@ -1,0 +1,240 @@
+[0m2026-10-16 06:49:03,411 INFO  [o.i.CLUSTER] ISPN000094: Received new cluster view for channel cluster-tcc: [isn3-5889|5] (1) [isn3-5889][m
+[1;31m2026-10-16 06:49:03,413 ERROR [o.i.CLUSTER] [Context=sessions]ISPN000319: After merge (or coordinator change), cache still hasn't recovered all its data and must stay in degraded mode. Current members are [isn3-5889], lost members are [isn2-19096, isn1-47759], stable members are [isn2-19096, isn1-47759, isn3-5889][m
+[0m2026-10-16 06:49:03,413 INFO  [o.i.CLUSTER] [Context=___hotRodTopologyCache_hotrod-default]ISPN100007: After merge (or coordinator change), recovered members [isn2-19096, isn1-47759, isn3-5889] with topology id 21[m
+[0m2026-10-16 06:49:03,413 INFO  [o.i.CLUSTER] [Context=sessions]ISPN100007: After merge (or coordinator change), recovered members [isn2-19096, isn1-47759, isn3-5889] with topology id 22[m
+[0m2026-10-16 06:49:03,413 INFO  [o.i.CLUSTER] [Context=sessions]ISPN100011: Entering availability mode DEGRADED_MODE, topology id 23[m
+[1;31m2026-10-16 06:49:03,414 ERROR [o.i.CLUSTER] [Context=counters]ISPN000319: After merge (or coordinator change), cache still hasn't recovered all its data and must stay in degraded mode. Current members are [isn3-5889], lost members are [isn2-19096, isn1-47759], stable members are [isn2-19096, isn1-47759, isn3-5889][m
+[0m2026-10-16 06:49:03,414 INFO  [o.i.CLUSTER] [Context=counters]ISPN100007: After merge (or coordinator change), recovered members [isn2-19096, isn1-47759, isn3-5889] with topology id 22[m
+[0m2026-10-16 06:49:03,414 INFO  [o.i.CLUSTER] [Context=counters]ISPN100011: Entering availability mode DEGRADED_MODE, topology id 23[m
+[0m2026-10-16 06:49:03,414 INFO  [o.i.CLUSTER] [Context=org.infinispan.CONFIG]ISPN100007: After merge (or coordinator change), recovered members [isn2-19096, isn1-47759, isn3-5889] with topology id 21[m
+[0m2026-10-16 06:49:03,415 INFO  [o.i.CLUSTER] [Context=___protobuf_metadata]ISPN100007: After merge (or coordinator change), recovered members [isn2-19096, isn1-47759, isn3-5889] with topology id 21[m
+[0m2026-10-16 06:49:03,415 INFO  [o.i.CLUSTER] [Context=org.infinispan.COUNTER]ISPN100007: After merge (or coordinator change), recovered members [isn2-19096, isn1-47759, isn3-5889] with topology id 21[m
+[0m2026-10-16 06:49:03,417 INFO  [o.i.CLUSTER] [Context=___script_cache]ISPN100007: After merge (or coordinator change), recovered members [isn2-19096, isn1-47759, isn3-5889] with topology id 21[m
+[0m2026-10-16 06:49:03,417 INFO  [o.i.CLUSTER] [Context=org.infinispan.CLIENT_SERVER_TX_TABLE]ISPN100007: After merge (or coordinator change), recovered members [isn2-19096, isn1-47759, isn3-5889] with topology id 21[m
+[1;31m2026-10-16 06:49:10,021 ERROR [o.i.i.i.InvocationContextInterceptor] ISPN000136: Error executing command GetCacheEntryCommand on Cache 'sessions', writing keys [] org.infinispan.partitionhandling.AvailabilityException: ISPN000306: Key 'WrappedByteArray[ACED0005\t000A\s\o\n\d\a\-\i\s\n\3 (17 bytes)]' is not available. Not all owners are in this partition
+	at org.infinispan.partitionhandling.impl.PartitionHandlingManagerImpl.doCheck(PartitionHandlingManagerImpl.java:267)
+	at org.infinispan.partitionhandling.impl.PartitionHandlingManagerImpl.checkRead(PartitionHandlingManagerImpl.java:104)
+	at org.infinispan.partitionhandling.impl.PartitionHandlingInterceptor.handleDataReadReturn(PartitionHandlingInterceptor.java:158)
+[1;31m2026-10-16 06:49:10,021 ERROR [o.i.s.h.BaseRequestProcessor] ISPN005003: Exception reported org.infinispan.partitionhandling.AvailabilityException: ISPN000306: Key 'WrappedByteArray[ACED0005\t000A\s\o\n\d\a\-\i\s\n\3 (17 bytes)]' is not available. Not all owners are in this partition
+	at org.infinispan.partitionhandling.impl.PartitionHandlingManagerImpl.doCheck(PartitionHandlingManagerImpl.java:267)
+	at org.infinispan.partitionhandling.impl.PartitionHandlingManagerImpl.checkRead(PartitionHandlingManagerImpl.java:104)
+	at org.infinispan.partitionhandling.impl.PartitionHandlingInterceptor.handleDataReadReturn(PartitionHandlingInterceptor.java:158)
+[1;31m2026-10-16 06:49:12,022 ERROR [o.i.i.i.InvocationContextInterceptor] ISPN000136: Error executing command GetCacheEntryCommand on Cache 'sessions', writing keys [] org.infinispan.partitionhandling.AvailabilityException: ISPN000306: Key 'WrappedByteArray[ACED0005\t000A\s\o\n\d\a\-\i\s\n\3 (17 bytes)]' is not available. Not all owners are in this partition
+	at org.infinispan.partitionhandling.impl.PartitionHandlingManagerImpl.doCheck(PartitionHandlingManagerImpl.java:267)
+	at org.infinispan.partitionhandling.impl.PartitionHandlingManagerImpl.checkRead(PartitionHandlingManagerImpl.java:104)
+	at org.infinispan.partitionhandling.impl.PartitionHandlingInterceptor.handleDataReadReturn(PartitionHandlingInterceptor.java:158)
+[1;31m2026-10-16 06:49:12,023 ERROR [o.i.s.h.BaseRequestProcessor] ISPN005003: Exception reported org.infinispan.partitionhandling.AvailabilityException: ISPN000306: Key 'WrappedByteArray[ACED0005\t000A\s\o\n\d\a\-\i\s\n\3 (17 bytes)]' is not available. Not all owners are in this partition
+	at org.infinispan.partitionhandling.impl.PartitionHandlingManagerImpl.doCheck(PartitionHandlingManagerImpl.java:267)
+	at org.infinispan.partitionhandling.impl.PartitionHandlingManagerImpl.checkRead(PartitionHandlingManagerImpl.java:104)
+	at org.infinispan.partitionhandling.impl.PartitionHandlingInterceptor.handleDataReadReturn(PartitionHandlingInterceptor.java:158)
+[1;31m2026-10-16 06:49:16,587 ERROR [o.i.i.i.InvocationContextInterceptor] ISPN000136: Error executing command PutKeyValueCommand on Cache 'sessions', writing keys [WrappedByteArray[ACED0005\t000A\s\o\n\d\a\-\i\s\n\3 (17 bytes)]] org.infinispan.partitionhandling.AvailabilityException: ISPN000306: Key 'WrappedByteArray[ACED0005\t000A\s\o\n\d\a\-\i\s\n\3 (17 bytes)]' is not available. Not all owners are in this partition
+	at org.infinispan.partitionhandling.impl.PartitionHandlingManagerImpl.doCheck(PartitionHandlingManagerImpl.java:267)
+	at org.infinispan.partitionhandling.impl.PartitionHandlingManagerImpl.checkWrite(PartitionHandlingManagerImpl.java:99)
+	at org.infinispan.partitionhandling.impl.PartitionHandlingInterceptor.handleSingleWrite(PartitionHandlingInterceptor.java:90)
+	at org.infinispan.partitionhandling.impl.PartitionHandlingInterceptor.visitPutKeyValueCommand(PartitionHandlingInterceptor.java:55)
+[1;31m2026-10-16 06:49:16,588 ERROR [o.i.s.h.BaseRequestProcessor] ISPN005003: Exception reported org.infinispan.partitionhandling.AvailabilityException: ISPN000306: Key 'WrappedByteArray[ACED0005\t000A\s\o\n\d\a\-\i\s\n\3 (17 bytes)]' is not available. Not all owners are in this partition
+	at org.infinispan.partitionhandling.impl.PartitionHandlingManagerImpl.doCheck(PartitionHandlingManagerImpl.java:267)
+	at org.infinispan.partitionhandling.impl.PartitionHandlingManagerImpl.checkWrite(PartitionHandlingManagerImpl.java:99)
+	at org.infinispan.partitionhandling.impl.PartitionHandlingInterceptor.handleSingleWrite(PartitionHandlingInterceptor.java:90)
+	at org.infinispan.partitionhandling.impl.PartitionHandlingInterceptor.visitPutKeyValueCommand(PartitionHandlingInterceptor.java:55)
+[1;31m2026-10-16 06:49:16,590 ERROR [o.i.i.i.InvocationContextInterceptor] ISPN000136: Error executing command GetCacheEntryCommand on Cache 'sessions', writing keys [] org.infinispan.partitionhandling.AvailabilityException: ISPN000306: Key 'WrappedByteArray[ACED0005\t000A\s\o\n\d\a\-\i\s\n\3 (17 bytes)]' is not available. Not all owners are in this partition
+	at org.infinispan.partitionhandling.impl.PartitionHandlingManagerImpl.doCheck(PartitionHandlingManagerImpl.java:267)
+	at org.infinispan.partitionhandling.impl.PartitionHandlingManagerImpl.checkRead(PartitionHandlingManagerImpl.java:104)
+	at org.infinispan.partitionhandling.impl.PartitionHandlingInterceptor.handleDataReadReturn(PartitionHandlingInterceptor.java:158)
+	at org.infinispan.partitionhandling.impl.PartitionHandlingInterceptor.handleDataReadCommand(PartitionHandlingInterceptor.java:140)
+	at org.infinispan.partitionhandling.impl.PartitionHandlingInterceptor.visitGetCacheEntryCommand(PartitionHandlingInterceptor.java:136)
+[1;31m2026-10-16 06:49:16,590 ERROR [o.i.s.h.BaseRequestProcessor] ISPN005003: Exception reported org.infinispan.partitionhandling.AvailabilityException: ISPN000306: Key 'WrappedByteArray[ACED0005\t000A\s\o\n\d\a\-\i\s\n\3 (17 bytes)]' is not available. Not all owners are in this partition
+	at org.infinispan.partitionhandling.impl.PartitionHandlingManagerImpl.doCheck(PartitionHandlingManagerImpl.java:267)
+	at org.infinispan.partitionhandling.impl.PartitionHandlingManagerImpl.checkRead(PartitionHandlingManagerImpl.java:104)
+	at org.infinispan.partitionhandling.impl.PartitionHandlingInterceptor.handleDataReadReturn(PartitionHandlingInterceptor.java:158)
+	at org.infinispan.partitionhandling.impl.PartitionHandlingInterceptor.handleDataReadCommand(PartitionHandlingInterceptor.java:140)
+	at org.infinispan.partitionhandling.impl.PartitionHandlingInterceptor.visitGetCacheEntryCommand(PartitionHandlingInterceptor.java:136)
+[1;31m2026-10-16 06:49:16,592 ERROR [o.i.s.h.BaseRequestProcessor] ISPN005003: Exception reported org.infinispan.partitionhandling.AvailabilityException: ISPN000305: Cluster is operating in degraded mode because of node failures.
+	at org.infinispan.reactive.publisher.impl.PartitionAwareClusterPublisherManager.checkPartitionStatus(PartitionAwareClusterPublisherManager.java:157)
+	at org.infinispan.reactive.publisher.impl.PartitionAwareClusterPublisherManager.entryPublisher(PartitionAwareClusterPublisherManager.java:121)
+[1;31m2026-10-16 06:49:16,610 ERROR [o.i.i.i.InvocationContextInterceptor] ISPN000136: Error executing command RemoveCommand on Cache 'sessions', writing keys [WrappedByteArray[ACED0005\t000A\s\o\n\d\a\-\i\s\n\3 (17 bytes)]] org.infinispan.partitionhandling.AvailabilityException: ISPN000306: Key 'WrappedByteArray[ACED0005\t000A\s\o\n\d\a\-\i\s\n\3 (17 bytes)]' is not available. Not all owners are in this partition
+	at org.infinispan.partitionhandling.impl.PartitionHandlingManagerImpl.doCheck(PartitionHandlingManagerImpl.java:267)
+	at org.infinispan.partitionhandling.impl.PartitionHandlingManagerImpl.checkWrite(PartitionHandlingManagerImpl.java:99)
+	at org.infinispan.partitionhandling.impl.PartitionHandlingInterceptor.handleSingleWrite(PartitionHandlingInterceptor.java:90)
+	at org.infinispan.partitionhandling.impl.PartitionHandlingInterceptor.visitRemoveCommand(PartitionHandlingInterceptor.java:65)
+[1;31m2026-10-16 06:49:16,610 ERROR [o.i.s.h.BaseRequestProcessor] ISPN005003: Exception reported org.infinispan.partitionhandling.AvailabilityException: ISPN000306: Key 'WrappedByteArray[ACED0005\t000A\s\o\n\d\a\-\i\s\n\3 (17 bytes)]' is not available. Not all owners are in this partition
+	at org.infinispan.partitionhandling.impl.PartitionHandlingManagerImpl.doCheck(PartitionHandlingManagerImpl.java:267)
+	at org.infinispan.partitionhandling.impl.PartitionHandlingManagerImpl.checkWrite(PartitionHandlingManagerImpl.java:99)
+	at org.infinispan.partitionhandling.impl.PartitionHandlingInterceptor.handleSingleWrite(PartitionHandlingInterceptor.java:90)
+	at org.infinispan.partitionhandling.impl.PartitionHandlingInterceptor.visitRemoveCommand(PartitionHandlingInterceptor.java:65)
+[1;31m2026-10-16 06:49:30,649 ERROR [o.i.i.i.InvocationContextInterceptor] ISPN000136: Error executing command PutKeyValueCommand on Cache 'sessions', writing keys [WrappedByteArray[ACED0005\t000A\s\o\n\d\a\-\i\s\n\3 (17 bytes)]] org.infinispan.partitionhandling.AvailabilityException: ISPN000306: Key 'WrappedByteArray[ACED0005\t000A\s\o\n\d\a\-\i\s\n\3 (17 bytes)]' is not available. Not all owners are in this partition
+	at org.infinispan.partitionhandling.impl.PartitionHandlingManagerImpl.doCheck(PartitionHandlingManagerImpl.java:267)
+	at org.infinispan.partitionhandling.impl.PartitionHandlingManagerImpl.checkWrite(PartitionHandlingManagerImpl.java:99)
+	at org.infinispan.partitionhandling.impl.PartitionHandlingInterceptor.handleSingleWrite(PartitionHandlingInterceptor.java:90)
+	at org.infinispan.partitionhandling.impl.PartitionHandlingInterceptor.visitPutKeyValueCommand(PartitionHandlingInterceptor.java:55)
+[1;31m2026-10-16 06:49:30,649 ERROR [o.i.s.h.BaseRequestProcessor] ISPN005003: Exception reported org.infinispan.partitionhandling.AvailabilityException: ISPN000306: Key 'WrappedByteArray[ACED0005\t000A\s\o\n\d\a\-\i\s\n\3 (17 bytes)]' is not available. Not all owners are in this partition
+	at org.infinispan.partitionhandling.impl.PartitionHandlingManagerImpl.doCheck(PartitionHandlingManagerImpl.java:267)
+	at org.infinispan.partitionhandling.impl.PartitionHandlingManagerImpl.checkWrite(PartitionHandlingManagerImpl.java:99)
+	at org.infinispan.partitionhandling.impl.PartitionHandlingInterceptor.handleSingleWrite(PartitionHandlingInterceptor.java:90)
+	at org.infinispan.partitionhandling.impl.PartitionHandlingInterceptor.visitPutKeyValueCommand(PartitionHandlingInterceptor.java:55)
+[1;31m2026-10-16 06:49:30,651 ERROR [o.i.i.i.InvocationContextInterceptor] ISPN000136: Error executing command GetCacheEntryCommand on Cache 'sessions', writing keys [] org.infinispan.partitionhandling.AvailabilityException: ISPN000306: Key 'WrappedByteArray[ACED0005\t000A\s\o\n\d\a\-\i\s\n\3 (17 bytes)]' is not available. Not all owners are in this partition
+	at org.infinispan.partitionhandling.impl.PartitionHandlingManagerImpl.doCheck(PartitionHandlingManagerImpl.java:267)
+	at org.infinispan.partitionhandling.impl.PartitionHandlingManagerImpl.checkRead(PartitionHandlingManagerImpl.java:104)
+	at org.infinispan.partitionhandling.impl.PartitionHandlingInterceptor.handleDataReadReturn(PartitionHandlingInterceptor.java:158)
+	at org.infinispan.partitionhandling.impl.PartitionHandlingInterceptor.handleDataReadCommand(PartitionHandlingInterceptor.java:140)
+	at org.infinispan.partitionhandling.impl.PartitionHandlingInterceptor.visitGetCacheEntryCommand(PartitionHandlingInterceptor.java:136)
+[1;31m2026-10-16 06:49:30,651 ERROR [o.i.s.h.BaseRequestProcessor] ISPN005003: Exception reported org.infinispan.partitionhandling.AvailabilityException: ISPN000306: Key 'WrappedByteArray[ACED0005\t000A\s\o\n\d\a\-\i\s\n\3 (17 bytes)]' is not available. Not all owners are in this partition
+	at org.infinispan.partitionhandling.impl.PartitionHandlingManagerImpl.doCheck(PartitionHandlingManagerImpl.java:267)
+	at org.infinispan.partitionhandling.impl.PartitionHandlingManagerImpl.checkRead(PartitionHandlingManagerImpl.java:104)
+	at org.infinispan.partitionhandling.impl.PartitionHandlingInterceptor.handleDataReadReturn(PartitionHandlingInterceptor.java:158)
+	at org.infinispan.partitionhandling.impl.PartitionHandlingInterceptor.handleDataReadCommand(PartitionHandlingInterceptor.java:140)
+	at org.infinispan.partitionhandling.impl.PartitionHandlingInterceptor.visitGetCacheEntryCommand(PartitionHandlingInterceptor.java:136)
+[1;31m2026-10-16 06:49:30,652 ERROR [o.i.s.h.BaseRequestProcessor] ISPN005003: Exception reported org.infinispan.partitionhandling.AvailabilityException: ISPN000305: Cluster is operating in degraded mode because of node failures.
+	at org.infinispan.reactive.publisher.impl.PartitionAwareClusterPublisherManager.checkPartitionStatus(PartitionAwareClusterPublisherManager.java:157)
+	at org.infinispan.reactive.publisher.impl.PartitionAwareClusterPublisherManager.entryPublisher(PartitionAwareClusterPublisherManager.java:121)
+[1;31m2026-10-16 06:49:30,669 ERROR [o.i.i.i.InvocationContextInterceptor] ISPN000136: Error executing command RemoveCommand on Cache 'sessions', writing keys [WrappedByteArray[ACED0005\t000A\s\o\n\d\a\-\i\s\n\3 (17 bytes)]] org.infinispan.partitionhandling.AvailabilityException: ISPN000306: Key 'WrappedByteArray[ACED0005\t000A\s\o\n\d\a\-\i\s\n\3 (17 bytes)]' is not available. Not all owners are in this partition
+	at org.infinispan.partitionhandling.impl.PartitionHandlingManagerImpl.doCheck(PartitionHandlingManagerImpl.java:267)
+	at org.infinispan.partitionhandling.impl.PartitionHandlingManagerImpl.checkWrite(PartitionHandlingManagerImpl.java:99)
+	at org.infinispan.partitionhandling.impl.PartitionHandlingInterceptor.handleSingleWrite(PartitionHandlingInterceptor.java:90)
+	at org.infinispan.partitionhandling.impl.PartitionHandlingInterceptor.visitRemoveCommand(PartitionHandlingInterceptor.java:65)
+[1;31m2026-10-16 06:49:30,669 ERROR [o.i.s.h.BaseRequestProcessor] ISPN005003: Exception reported org.infinispan.partitionhandling.AvailabilityException: ISPN000306: Key 'WrappedByteArray[ACED0005\t000A\s\o\n\d\a\-\i\s\n\3 (17 bytes)]' is not available. Not all owners are in this partition
+	at org.infinispan.partitionhandling.impl.PartitionHandlingManagerImpl.doCheck(PartitionHandlingManagerImpl.java:267)
+	at org.infinispan.partitionhandling.impl.PartitionHandlingManagerImpl.checkWrite(PartitionHandlingManagerImpl.java:99)
+	at org.infinispan.partitionhandling.impl.PartitionHandlingInterceptor.handleSingleWrite(PartitionHandlingInterceptor.java:90)
+	at org.infinispan.partitionhandling.impl.PartitionHandlingInterceptor.visitRemoveCommand(PartitionHandlingInterceptor.java:65)
+[1;31m2026-10-16 06:49:44,707 ERROR [o.i.i.i.InvocationContextInterceptor] ISPN000136: Error executing command PutKeyValueCommand on Cache 'sessions', writing keys [WrappedByteArray[ACED0005\t000A\s\o\n\d\a\-\i\s\n\3 (17 bytes)]] org.infinispan.partitionhandling.AvailabilityException: ISPN000306: Key 'WrappedByteArray[ACED0005\t000A\s\o\n\d\a\-\i\s\n\3 (17 bytes)]' is not available. Not all owners are in this partition
+	at org.infinispan.partitionhandling.impl.PartitionHandlingManagerImpl.doCheck(PartitionHandlingManagerImpl.java:267)
+	at org.infinispan.partitionhandling.impl.PartitionHandlingManagerImpl.checkWrite(PartitionHandlingManagerImpl.java:99)
+	at org.infinispan.partitionhandling.impl.PartitionHandlingInterceptor.handleSingleWrite(PartitionHandlingInterceptor.java:90)
+	at org.infinispan.partitionhandling.impl.PartitionHandlingInterceptor.visitPutKeyValueCommand(PartitionHandlingInterceptor.java:55)
+[1;31m2026-10-16 06:49:44,707 ERROR [o.i.s.h.BaseRequestProcessor] ISPN005003: Exception reported org.infinispan.partitionhandling.AvailabilityException: ISPN000306: Key 'WrappedByteArray[ACED0005\t000A\s\o\n\d\a\-\i\s\n\3 (17 bytes)]' is not available. Not all owners are in this partition
+	at org.infinispan.partitionhandling.impl.PartitionHandlingManagerImpl.doCheck(PartitionHandlingManagerImpl.java:267)
+	at org.infinispan.partitionhandling.impl.PartitionHandlingManagerImpl.checkWrite(PartitionHandlingManagerImpl.java:99)
+	at org.infinispan.partitionhandling.impl.PartitionHandlingInterceptor.handleSingleWrite(PartitionHandlingInterceptor.java:90)
+	at org.infinispan.partitionhandling.impl.PartitionHandlingInterceptor.visitPutKeyValueCommand(PartitionHandlingInterceptor.java:55)
+[1;31m2026-10-16 06:49:44,709 ERROR [o.i.i.i.InvocationContextInterceptor] ISPN000136: Error executing command GetCacheEntryCommand on Cache 'sessions', writing keys [] org.infinispan.partitionhandling.AvailabilityException: ISPN000306: Key 'WrappedByteArray[ACED0005\t000A\s\o\n\d\a\-\i\s\n\3 (17 bytes)]' is not available. Not all owners are in this partition
+	at org.infinispan.partitionhandling.impl.PartitionHandlingManagerImpl.doCheck(PartitionHandlingManagerImpl.java:267)
+	at org.infinispan.partitionhandling.impl.PartitionHandlingManagerImpl.checkRead(PartitionHandlingManagerImpl.java:104)
+	at org.infinispan.partitionhandling.impl.PartitionHandlingInterceptor.handleDataReadReturn(PartitionHandlingInterceptor.java:158)
+	at org.infinispan.partitionhandling.impl.PartitionHandlingInterceptor.handleDataReadCommand(PartitionHandlingInterceptor.java:140)
+	at org.infinispan.partitionhandling.impl.PartitionHandlingInterceptor.visitGetCacheEntryCommand(PartitionHandlingInterceptor.java:136)
+[1;31m2026-10-16 06:49:44,709 ERROR [o.i.s.h.BaseRequestProcessor] ISPN005003: Exception reported org.infinispan.partitionhandling.AvailabilityException: ISPN000306: Key 'WrappedByteArray[ACED0005\t000A\s\o\n\d\a\-\i\s\n\3 (17 bytes)]' is not available. Not all owners are in this partition
+	at org.infinispan.partitionhandling.impl.PartitionHandlingManagerImpl.doCheck(PartitionHandlingManagerImpl.java:267)
+	at org.infinispan.partitionhandling.impl.PartitionHandlingManagerImpl.checkRead(PartitionHandlingManagerImpl.java:104)
+	at org.infinispan.partitionhandling.impl.PartitionHandlingInterceptor.handleDataReadReturn(PartitionHandlingInterceptor.java:158)
+	at org.infinispan.partitionhandling.impl.PartitionHandlingInterceptor.handleDataReadCommand(PartitionHandlingInterceptor.java:140)
+	at org.infinispan.partitionhandling.impl.PartitionHandlingInterceptor.visitGetCacheEntryCommand(PartitionHandlingInterceptor.java:136)
+[1;31m2026-10-16 06:49:44,711 ERROR [o.i.s.h.BaseRequestProcessor] ISPN005003: Exception reported org.infinispan.partitionhandling.AvailabilityException: ISPN000305: Cluster is operating in degraded mode because of node failures.
+	at org.infinispan.reactive.publisher.impl.PartitionAwareClusterPublisherManager.checkPartitionStatus(PartitionAwareClusterPublisherManager.java:157)
+	at org.infinispan.reactive.publisher.impl.PartitionAwareClusterPublisherManager.entryPublisher(PartitionAwareClusterPublisherManager.java:121)
+[1;31m2026-10-16 06:49:44,729 ERROR [o.i.i.i.InvocationContextInterceptor] ISPN000136: Error executing command RemoveCommand on Cache 'sessions', writing keys [WrappedByteArray[ACED0005\t000A\s\o\n\d\a\-\i\s\n\3 (17 bytes)]] org.infinispan.partitionhandling.AvailabilityException: ISPN000306: Key 'WrappedByteArray[ACED0005\t000A\s\o\n\d\a\-\i\s\n\3 (17 bytes)]' is not available. Not all owners are in this partition
+	at org.infinispan.partitionhandling.impl.PartitionHandlingManagerImpl.doCheck(PartitionHandlingManagerImpl.java:267)
+	at org.infinispan.partitionhandling.impl.PartitionHandlingManagerImpl.checkWrite(PartitionHandlingManagerImpl.java:99)
+	at org.infinispan.partitionhandling.impl.PartitionHandlingInterceptor.handleSingleWrite(PartitionHandlingInterceptor.java:90)
+	at org.infinispan.partitionhandling.impl.PartitionHandlingInterceptor.visitRemoveCommand(PartitionHandlingInterceptor.java:65)
+[1;31m2026-10-16 06:49:44,729 ERROR [o.i.s.h.BaseRequestProcessor] ISPN005003: Exception reported org.infinispan.partitionhandling.AvailabilityException: ISPN000306: Key 'WrappedByteArray[ACED0005\t000A\s\o\n\d\a\-\i\s\n\3 (17 bytes)]' is not available. Not all owners are in this partition
+	at org.infinispan.partitionhandling.impl.PartitionHandlingManagerImpl.doCheck(PartitionHandlingManagerImpl.java:267)
+	at org.infinispan.partitionhandling.impl.PartitionHandlingManagerImpl.checkWrite(PartitionHandlingManagerImpl.java:99)
+	at org.infinispan.partitionhandling.impl.PartitionHandlingInterceptor.handleSingleWrite(PartitionHandlingInterceptor.java:90)
+	at org.infinispan.partitionhandling.impl.PartitionHandlingInterceptor.visitRemoveCommand(PartitionHandlingInterceptor.java:65)
+[1;31m2026-10-16 06:49:58,772 ERROR [o.i.i.i.InvocationContextInterceptor] ISPN000136: Error executing command PutKeyValueCommand on Cache 'sessions', writing keys [WrappedByteArray[ACED0005\t000A\s\o\n\d\a\-\i\s\n\3 (17 bytes)]] org.infinispan.partitionhandling.AvailabilityException: ISPN000306: Key 'WrappedByteArray[ACED0005\t000A\s\o\n\d\a\-\i\s\n\3 (17 bytes)]' is not available. Not all owners are in this partition
+	at org.infinispan.partitionhandling.impl.PartitionHandlingManagerImpl.doCheck(PartitionHandlingManagerImpl.java:267)
+	at org.infinispan.partitionhandling.impl.PartitionHandlingManagerImpl.checkWrite(PartitionHandlingManagerImpl.java:99)
+	at org.infinispan.partitionhandling.impl.PartitionHandlingInterceptor.handleSingleWrite(PartitionHandlingInterceptor.java:90)
+	at org.infinispan.partitionhandling.impl.PartitionHandlingInterceptor.visitPutKeyValueCommand(PartitionHandlingInterceptor.java:55)
+[1;31m2026-10-16 06:49:58,772 ERROR [o.i.s.h.BaseRequestProcessor] ISPN005003: Exception reported org.infinispan.partitionhandling.AvailabilityException: ISPN000306: Key 'WrappedByteArray[ACED0005\t000A\s\o\n\d\a\-\i\s\n\3 (17 bytes)]' is not available. Not all owners are in this partition
+	at org.infinispan.partitionhandling.impl.PartitionHandlingManagerImpl.doCheck(PartitionHandlingManagerImpl.java:267)
+	at org.infinispan.partitionhandling.impl.PartitionHandlingManagerImpl.checkWrite(PartitionHandlingManagerImpl.java:99)
+	at org.infinispan.partitionhandling.impl.PartitionHandlingInterceptor.handleSingleWrite(PartitionHandlingInterceptor.java:90)
+	at org.infinispan.partitionhandling.impl.PartitionHandlingInterceptor.visitPutKeyValueCommand(PartitionHandlingInterceptor.java:55)
+[1;31m2026-10-16 06:49:58,773 ERROR [o.i.i.i.InvocationContextInterceptor] ISPN000136: Error executing command GetCacheEntryCommand on Cache 'sessions', writing keys [] org.infinispan.partitionhandling.AvailabilityException: ISPN000306: Key 'WrappedByteArray[ACED0005\t000A\s\o\n\d\a\-\i\s\n\3 (17 bytes)]' is not available. Not all owners are in this partition
+	at org.infinispan.partitionhandling.impl.PartitionHandlingManagerImpl.doCheck(PartitionHandlingManagerImpl.java:267)
+	at org.infinispan.partitionhandling.impl.PartitionHandlingManagerImpl.checkRead(PartitionHandlingManagerImpl.java:104)
+	at org.infinispan.partitionhandling.impl.PartitionHandlingInterceptor.handleDataReadReturn(PartitionHandlingInterceptor.java:158)
+	at org.infinispan.partitionhandling.impl.PartitionHandlingInterceptor.handleDataReadCommand(PartitionHandlingInterceptor.java:140)
+	at org.infinispan.partitionhandling.impl.PartitionHandlingInterceptor.visitGetCacheEntryCommand(PartitionHandlingInterceptor.java:136)
+[1;31m2026-10-16 06:49:58,773 ERROR [o.i.s.h.BaseRequestProcessor] ISPN005003: Exception reported org.infinispan.partitionhandling.AvailabilityException: ISPN000306: Key 'WrappedByteArray[ACED0005\t000A\s\o\n\d\a\-\i\s\n\3 (17 bytes)]' is not available. Not all owners are in this partition
+	at org.infinispan.partitionhandling.impl.PartitionHandlingManagerImpl.doCheck(PartitionHandlingManagerImpl.java:267)
+	at org.infinispan.partitionhandling.impl.PartitionHandlingManagerImpl.checkRead(PartitionHandlingManagerImpl.java:104)
+	at org.infinispan.partitionhandling.impl.PartitionHandlingInterceptor.handleDataReadReturn(PartitionHandlingInterceptor.java:158)
+	at org.infinispan.partitionhandling.impl.PartitionHandlingInterceptor.handleDataReadCommand(PartitionHandlingInterceptor.java:140)
+	at org.infinispan.partitionhandling.impl.PartitionHandlingInterceptor.visitGetCacheEntryCommand(PartitionHandlingInterceptor.java:136)
+[1;31m2026-10-16 06:49:58,775 ERROR [o.i.s.h.BaseRequestProcessor] ISPN005003: Exception reported org.infinispan.partitionhandling.AvailabilityException: ISPN000305: Cluster is operating in degraded mode because of node failures.
+	at org.infinispan.reactive.publisher.impl.PartitionAwareClusterPublisherManager.checkPartitionStatus(PartitionAwareClusterPublisherManager.java:157)
+	at org.infinispan.reactive.publisher.impl.PartitionAwareClusterPublisherManager.entryPublisher(PartitionAwareClusterPublisherManager.java:121)
+[1;31m2026-10-16 06:50:00,799 ERROR [o.i.i.i.InvocationContextInterceptor] ISPN000136: Error executing command RemoveCommand on Cache 'sessions', writing keys [WrappedByteArray[ACED0005\t000A\s\o\n\d\a\-\i\s\n\3 (17 bytes)]] org.infinispan.partitionhandling.AvailabilityException: ISPN000306: Key 'WrappedByteArray[ACED0005\t000A\s\o\n\d\a\-\i\s\n\3 (17 bytes)]' is not available. Not all owners are in this partition
+	at org.infinispan.partitionhandling.impl.PartitionHandlingManagerImpl.doCheck(PartitionHandlingManagerImpl.java:267)
+	at org.infinispan.partitionhandling.impl.PartitionHandlingManagerImpl.checkWrite(PartitionHandlingManagerImpl.java:99)
+	at org.infinispan.partitionhandling.impl.PartitionHandlingInterceptor.handleSingleWrite(PartitionHandlingInterceptor.java:90)
+	at org.infinispan.partitionhandling.impl.PartitionHandlingInterceptor.visitRemoveCommand(PartitionHandlingInterceptor.java:65)
+[1;31m2026-10-16 06:50:00,799 ERROR [o.i.s.h.BaseRequestProcessor] ISPN005003: Exception reported org.infinispan.partitionhandling.AvailabilityException: ISPN000306: Key 'WrappedByteArray[ACED0005\t000A\s\o\n\d\a\-\i\s\n\3 (17 bytes)]' is not available. Not all owners are in this partition
+	at org.infinispan.partitionhandling.impl.PartitionHandlingManagerImpl.doCheck(PartitionHandlingManagerImpl.java:267)
+	at org.infinispan.partitionhandling.impl.PartitionHandlingManagerImpl.checkWrite(PartitionHandlingManagerImpl.java:99)
+	at org.infinispan.partitionhandling.impl.PartitionHandlingInterceptor.handleSingleWrite(PartitionHandlingInterceptor.java:90)
+	at org.infinispan.partitionhandling.impl.PartitionHandlingInterceptor.visitRemoveCommand(PartitionHandlingInterceptor.java:65)
+[1;31m2026-10-16 06:50:14,837 ERROR [o.i.i.i.InvocationContextInterceptor] ISPN000136: Error executing command PutKeyValueCommand on Cache 'sessions', writing keys [WrappedByteArray[ACED0005\t000A\s\o\n\d\a\-\i\s\n\3 (17 bytes)]] org.infinispan.partitionhandling.AvailabilityException: ISPN000306: Key 'WrappedByteArray[ACED0005\t000A\s\o\n\d\a\-\i\s\n\3 (17 bytes)]' is not available. Not all owners are in this partition
+	at org.infinispan.partitionhandling.impl.PartitionHandlingManagerImpl.doCheck(PartitionHandlingManagerImpl.java:267)
+	at org.infinispan.partitionhandling.impl.PartitionHandlingManagerImpl.checkWrite(PartitionHandlingManagerImpl.java:99)
+	at org.infinispan.partitionhandling.impl.PartitionHandlingInterceptor.handleSingleWrite(PartitionHandlingInterceptor.java:90)
+	at org.infinispan.partitionhandling.impl.PartitionHandlingInterceptor.visitPutKeyValueCommand(PartitionHandlingInterceptor.java:55)
+[1;31m2026-10-16 06:50:14,838 ERROR [o.i.s.h.BaseRequestProcessor] ISPN005003: Exception reported org.infinispan.partitionhandling.AvailabilityException: ISPN000306: Key 'WrappedByteArray[ACED0005\t000A\s\o\n\d\a\-\i\s\n\3 (17 bytes)]' is not available. Not all owners are in this partition
+	at org.infinispan.partitionhandling.impl.PartitionHandlingManagerImpl.doCheck(PartitionHandlingManagerImpl.java:267)
+	at org.infinispan.partitionhandling.impl.PartitionHandlingManagerImpl.checkWrite(PartitionHandlingManagerImpl.java:99)
+	at org.infinispan.partitionhandling.impl.PartitionHandlingInterceptor.handleSingleWrite(PartitionHandlingInterceptor.java:90)
+	at org.infinispan.partitionhandling.impl.PartitionHandlingInterceptor.visitPutKeyValueCommand(PartitionHandlingInterceptor.java:55)
+[1;31m2026-10-16 06:50:14,839 ERROR [o.i.i.i.InvocationContextInterceptor] ISPN000136: Error executing command GetCacheEntryCommand on Cache 'sessions', writing keys [] org.infinispan.partitionhandling.AvailabilityException: ISPN000306: Key 'WrappedByteArray[ACED0005\t000A\s\o\n\d\a\-\i\s\n\3 (17 bytes)]' is not available. Not all owners are in this partition
+	at org.infinispan.partitionhandling.impl.PartitionHandlingManagerImpl.doCheck(PartitionHandlingManagerImpl.java:267)
+	at org.infinispan.partitionhandling.impl.PartitionHandlingManagerImpl.checkRead(PartitionHandlingManagerImpl.java:104)
+	at org.infinispan.partitionhandling.impl.PartitionHandlingInterceptor.handleDataReadReturn(PartitionHandlingInterceptor.java:158)
+	at org.infinispan.partitionhandling.impl.PartitionHandlingInterceptor.handleDataReadCommand(PartitionHandlingInterceptor.java:140)
+	at org.infinispan.partitionhandling.impl.PartitionHandlingInterceptor.visitGetCacheEntryCommand(PartitionHandlingInterceptor.java:136)
+[1;31m2026-10-16 06:50:14,839 ERROR [o.i.s.h.BaseRequestProcessor] ISPN005003: Exception reported org.infinispan.partitionhandling.AvailabilityException: ISPN000306: Key 'WrappedByteArray[ACED0005\t000A\s\o\n\d\a\-\i\s\n\3 (17 bytes)]' is not available. Not all owners are in this partition
+	at org.infinispan.partitionhandling.impl.PartitionHandlingManagerImpl.doCheck(PartitionHandlingManagerImpl.java:267)
+	at org.infinispan.partitionhandling.impl.PartitionHandlingManagerImpl.checkRead(PartitionHandlingManagerImpl.java:104)
+	at org.infinispan.partitionhandling.impl.PartitionHandlingInterceptor.handleDataReadReturn(PartitionHandlingInterceptor.java:158)
+	at org.infinispan.partitionhandling.impl.PartitionHandlingInterceptor.handleDataReadCommand(PartitionHandlingInterceptor.java:140)
+	at org.infinispan.partitionhandling.impl.PartitionHandlingInterceptor.visitGetCacheEntryCommand(PartitionHandlingInterceptor.java:136)
+[1;31m2026-10-16 06:50:14,840 ERROR [o.i.s.h.BaseRequestProcessor] ISPN005003: Exception reported org.infinispan.partitionhandling.AvailabilityException: ISPN000305: Cluster is operating in degraded mode because of node failures.
+	at org.infinispan.reactive.publisher.impl.PartitionAwareClusterPublisherManager.checkPartitionStatus(PartitionAwareClusterPublisherManager.java:157)
+	at org.infinispan.reactive.publisher.impl.PartitionAwareClusterPublisherManager.entryPublisher(PartitionAwareClusterPublisherManager.java:121)
+[1;31m2026-10-16 06:50:14,857 ERROR [o.i.i.i.InvocationContextInterceptor] ISPN000136: Error executing command RemoveCommand on Cache 'sessions', writing keys [WrappedByteArray[ACED0005\t000A\s\o\n\d\a\-\i\s\n\3 (17 bytes)]] org.infinispan.partitionhandling.AvailabilityException: ISPN000306: Key 'WrappedByteArray[ACED0005\t000A\s\o\n\d\a\-\i\s\n\3 (17 bytes)]' is not available. Not all owners are in this partition
+	at org.infinispan.partitionhandling.impl.PartitionHandlingManagerImpl.doCheck(PartitionHandlingManagerImpl.java:267)
+	at org.infinispan.partitionhandling.impl.PartitionHandlingManagerImpl.checkWrite(PartitionHandlingManagerImpl.java:99)
+	at org.infinispan.partitionhandling.impl.PartitionHandlingInterceptor.handleSingleWrite(PartitionHandlingInterceptor.java:90)
+	at org.infinispan.partitionhandling.impl.PartitionHandlingInterceptor.visitRemoveCommand(PartitionHandlingInterceptor.java:65)
+[1;31m2026-10-16 06:50:14,857 ERROR [o.i.s.h.BaseRequestProcessor] ISPN005003: Exception reported org.infinispan.partitionhandling.AvailabilityException: ISPN000306: Key 'WrappedByteArray[ACED0005\t000A\s\o\n\d\a\-\i\s\n\3 (17 bytes)]' is not available. Not all owners are in this partition
+	at org.infinispan.partitionhandling.impl.PartitionHandlingManagerImpl.doCheck(PartitionHandlingManagerImpl.java:267)
+	at org.infinispan.partitionhandling.impl.PartitionHandlingManagerImpl.checkWrite(PartitionHandlingManagerImpl.java:99)
+	at org.infinispan.partitionhandling.impl.PartitionHandlingInterceptor.handleSingleWrite(PartitionHandlingInterceptor.java:90)
+	at org.infinispan.partitionhandling.impl.PartitionHandlingInterceptor.visitRemoveCommand(PartitionHandlingInterceptor.java:65)
+[1;31m2026-10-16 06:50:28,895 ERROR [o.i.i.i.InvocationContextInterceptor] ISPN000136: Error executing command PutKeyValueCommand on Cache 'sessions', writing keys [WrappedByteArray[ACED0005\t000A\s\o\n\d\a\-\i\s\n\3 (17 bytes)]] org.infinispan.partitionhandling.AvailabilityException: ISPN000306: Key 'WrappedByteArray[ACED0005\t000A\s\o\n\d\a\-\i\s\n\3 (17 bytes)]' is not available. Not all owners are in this partition
+	at org.infinispan.partitionhandling.impl.PartitionHandlingManagerImpl.doCheck(PartitionHandlingManagerImpl.java:267)
+	at org.infinispan.partitionhandling.impl.PartitionHandlingManagerImpl.checkWrite(PartitionHandlingManagerImpl.java:99)
+	at org.infinispan.partitionhandling.impl.PartitionHandlingInterceptor.handleSingleWrite(PartitionHandlingInterceptor.java:90)
+	at org.infinispan.partitionhandling.impl.PartitionHandlingInterceptor.visitPutKeyValueCommand(PartitionHandlingInterceptor.java:55)
+[1;31m2026-10-16 06:50:28,895 ERROR [o.i.s.h.BaseRequestProcessor] ISPN005003: Exception reported org.infinispan.partitionhandling.AvailabilityException: ISPN000306: Key 'WrappedByteArray[ACED0005\t000A\s\o\n\d\a\-\i\s\n\3 (17 bytes)]' is not available. Not all owners are in this partition
+	at org.infinispan.partitionhandling.impl.PartitionHandlingManagerImpl.doCheck(PartitionHandlingManagerImpl.java:267)
+	at org.infinispan.partitionhandling.impl.PartitionHandlingManagerImpl.checkWrite(PartitionHandlingManagerImpl.java:99)
+	at org.infinispan.partitionhandling.impl.PartitionHandlingInterceptor.handleSingleWrite(PartitionHandlingInterceptor.java:90)
+	at org.infinispan.partitionhandling.impl.PartitionHandlingInterceptor.visitPutKeyValueCommand(PartitionHandlingInterceptor.java:55)
+[1;31m2026-10-16 06:50:28,899 ERROR [o.i.i.i.InvocationContextInterceptor] ISPN000136: Error executing command GetCacheEntryCommand on Cache 'sessions', writing keys [] org.infinispan.partitionhandling.AvailabilityException: ISPN000306: Key 'WrappedByteArray[ACED0005\t000A\s\o\n\d\a\-\i\s\n\3 (17 bytes)]' is not available. Not all owners are in this partition
+	at org.infinispan.partitionhandling.impl.PartitionHandlingManagerImpl.doCheck(PartitionHandlingManagerImpl.java:267)
+	at org.infinispan.partitionhandling.impl.PartitionHandlingManagerImpl.checkRead(PartitionHandlingManagerImpl.java:104)
+	at org.infinispan.partitionhandling.impl.PartitionHandlingInterceptor.handleDataReadReturn(PartitionHandlingInterceptor.java:158)
+	at org.infinispan.partitionhandling.impl.PartitionHandlingInterceptor.handleDataReadCommand(PartitionHandlingInterceptor.java:140)
+	at org.infinispan.partitionhandling.impl.PartitionHandlingInterceptor.visitGetCacheEntryCommand(PartitionHandlingInterceptor.java:136)
+[1;31m2026-10-16 06:50:28,899 ERROR [o.i.s.h.BaseRequestProcessor] ISPN005003: Exception reported org.infinispan.partitionhandling.AvailabilityException: ISPN000306: Key 'WrappedByteArray[ACED0005\t000A\s\o\n\d\a\-\i\s\n\3 (17 bytes)]' is not available. Not all owners are in this partition
+	at org.infinispan.partitionhandling.impl.PartitionHandlingManagerImpl.doCheck(PartitionHandlingManagerImpl.java:267)
+	at org.infinispan.partitionhandling.impl.PartitionHandlingManagerImpl.checkRead(PartitionHandlingManagerImpl.java:104)
+	at org.infinispan.partitionhandling.impl.PartitionHandlingInterceptor.handleDataReadReturn(PartitionHandlingInterceptor.java:158)
+	at org.infinispan.partitionhandling.impl.PartitionHandlingInterceptor.handleDataReadCommand(PartitionHandlingInterceptor.java:140)
+	at org.infinispan.partitionhandling.impl.PartitionHandlingInterceptor.visitGetCacheEntryCommand(PartitionHandlingInterceptor.java:136)
+[1;31m2026-10-16 06:50:28,901 ERROR [o.i.s.h.BaseRequestProcessor] ISPN005003: Exception reported org.infinispan.partitionhandling.AvailabilityException: ISPN000305: Cluster is operating in degraded mode because of node failures.
+	at org.infinispan.reactive.publisher.impl.PartitionAwareClusterPublisherManager.checkPartitionStatus(PartitionAwareClusterPublisherManager.java:157)
+	at org.infinispan.reactive.publisher.impl.PartitionAwareClusterPublisherManager.entryPublisher(PartitionAwareClusterPublisherManager.java:121)
+[1;31m2026-10-16 06:50:28,918 ERROR [o.i.i.i.InvocationContextInterceptor] ISPN000136: Error executing command RemoveCommand on Cache 'sessions', writing keys [WrappedByteArray[ACED0005\t000A\s\o\n\d\a\-\i\s\n\3 (17 bytes)]] org.infinispan.partitionhandling.AvailabilityException: ISPN000306: Key 'WrappedByteArray[ACED0005\t000A\s\o\n\d\a\-\i\s\n\3 (17 bytes)]' is not available. Not all owners are in this partition
+	at org.infinispan.partitionhandling.impl.PartitionHandlingManagerImpl.doCheck(PartitionHandlingManagerImpl.java:267)
+	at org.infinispan.partitionhandling.impl.PartitionHandlingManagerImpl.checkWrite(PartitionHandlingManagerImpl.java:99)
+	at org.infinispan.partitionhandling.impl.PartitionHandlingInterceptor.handleSingleWrite(PartitionHandlingInterceptor.java:90)
+	at org.infinispan.partitionhandling.impl.PartitionHandlingInterceptor.visitRemoveCommand(PartitionHandlingInterceptor.java:65)
+[1;31m2026-10-16 06:50:28,919 ERROR [o.i.s.h.BaseRequestProcessor] ISPN005003: Exception reported org.infinispan.partitionhandling.AvailabilityException: ISPN000306: Key 'WrappedByteArray[ACED0005\t000A\s\o\n\d\a\-\i\s\n\3 (17 bytes)]' is not available. Not all owners are in this partition
+	at org.infinispan.partitionhandling.impl.PartitionHandlingManagerImpl.doCheck(PartitionHandlingManagerImpl.java:267)
+	at org.infinispan.partitionhandling.impl.PartitionHandlingManagerImpl.checkWrite(PartitionHandlingManagerImpl.java:99)
+	at org.infinispan.partitionhandling.impl.PartitionHandlingInterceptor.handleSingleWrite(PartitionHandlingInterceptor.java:90)
+	at org.infinispan.partitionhandling.impl.PartitionHandlingInterceptor.visitRemoveCommand(PartitionHandlingInterceptor.java:65)
+[0m2026-10-16 06:50:38,320 INFO  [o.i.CLUSTER] ISPN000093: Received new, MERGED cluster view for channel cluster-tcc: MergeView::[isn2-19096|6] (3) [isn2-19096, isn1-47759, isn3-5889], 2 subgroups: [isn3-5889|5] (1) [isn3-5889], [isn2-19096|5] (2) [isn2-19096, isn1-47759][m

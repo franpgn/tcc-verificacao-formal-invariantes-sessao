@@ -22,7 +22,9 @@ public final class OpResult {
         OK_NOOP,
         BLOCKED,
         NOT_FOUND,
-        ERROR_TRANSPORT
+        ERROR_TRANSPORT,
+        /** B-33 (Q-9): recusa por indisponibilidade (ex.: cache DEGRADED sob DENY_READ_WRITES). */
+        ERROR_UNAVAILABLE
     }
 
     private final Code code;
@@ -40,6 +42,7 @@ public final class OpResult {
     public static OpResult blocked() { return new OpResult(Code.BLOCKED, null); }
     public static OpResult notFound() { return new OpResult(Code.NOT_FOUND, null); }
     public static OpResult errorTransport() { return new OpResult(Code.ERROR_TRANSPORT, null); }
+    public static OpResult errorUnavailable() { return new OpResult(Code.ERROR_UNAVAILABLE, null); }
 
     public Code code() { return code; }
     public boolean isOk() { return code == Code.OK_LOGIN || code == Code.OK_VALIDATE
@@ -59,11 +62,15 @@ public final class OpResult {
      *   NOT_FOUND       -> NONE
      *   BLOCKED         -> BLOCKED
      *   ERROR_TRANSPORT -> ERROR_TRANSPORT
+     *   ERROR_UNAVAILABLE -> ERROR_UNAVAILABLE   (B-33, Q-9)
      * </pre>
      *
-     * <p>Todos os códigos exceto {@code ERROR_TRANSPORT} pertencem ao
-     * conjunto {@code SUCESSOS} de {@code analysis/percentis.py}, de modo
-     * que a {@code taxa_erro} reflete apenas falhas de transporte.</p>
+     * <p>Todos os códigos exceto {@code ERROR_TRANSPORT} e
+     * {@code ERROR_UNAVAILABLE} pertencem ao conjunto {@code SUCESSOS} de
+     * {@code analysis/percentis.py}, de modo que a {@code taxa_erro} reflete
+     * apenas falhas (de transporte ou de indisponibilidade). Execuções sem
+     * falha de partição nunca emitem {@code ERROR_UNAVAILABLE}, então os CSV
+     * de S1/S2 sem falha seguem byte-compatíveis.</p>
      */
     public String returnCode() {
         switch (code) {
@@ -74,6 +81,7 @@ public final class OpResult {
             case NOT_FOUND:       return "NONE";
             case BLOCKED:         return "BLOCKED";
             case ERROR_TRANSPORT: return "ERROR_TRANSPORT";
+            case ERROR_UNAVAILABLE: return "ERROR_UNAVAILABLE";
             default:              return "ERROR_TRANSPORT";
         }
     }

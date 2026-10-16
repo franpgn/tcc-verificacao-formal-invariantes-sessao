@@ -57,20 +57,31 @@ class OpResultTest {
         assertEquals("ERROR_TRANSPORT", OpResult.errorTransport().returnCode());
     }
 
+    @Test
+    void errorUnavailableMapeiaParaErrorUnavailable() {
+        assertEquals("ERROR_UNAVAILABLE", OpResult.errorUnavailable().returnCode());
+        assertTrue(!OpResult.errorUnavailable().isOk());
+    }
+
     /**
-     * Todo código exceto ERROR_TRANSPORT deve cair no conjunto de
-     * sucessos do pipeline, de modo que taxa_erro reflita apenas falhas
-     * de transporte. Cobre todos os valores de {@link OpResult.Code}.
+     * Todo código exceto os dois de erro (ERROR_TRANSPORT e, desde B-33/Q-9,
+     * ERROR_UNAVAILABLE) deve cair no conjunto de sucessos do pipeline, de
+     * modo que taxa_erro reflita apenas falhas. Cobre todos os valores de
+     * {@link OpResult.Code}.
+     *
+     * <p>B-33: a premissa original ("apenas ERROR_TRANSPORT e erro") foi
+     * ampliada, nao enfraquecida: o novo codigo ERROR_UNAVAILABLE tambem nao
+     * pode ser sucesso.</p>
      */
     @Test
-    void apenasErrorTransportEhContabilizadoComoErro() {
+    void apenasCodigosDeErroSaoContabilizadosComoErro() {
         for (OpResult.Code c : EnumSet.allOf(OpResult.Code.class)) {
             OpResult r = construir(c);
             String rc = r.returnCode();
-            if (c == OpResult.Code.ERROR_TRANSPORT) {
-                assertEquals("ERROR_TRANSPORT", rc);
+            if (c == OpResult.Code.ERROR_TRANSPORT || c == OpResult.Code.ERROR_UNAVAILABLE) {
+                assertEquals(c.name(), rc);
                 assertTrue(!SUCESSOS.contains(rc),
-                        "ERROR_TRANSPORT nao pode ser sucesso");
+                        c + " nao pode ser sucesso");
             } else {
                 assertTrue(SUCESSOS.contains(rc),
                         "Codigo " + c + " -> " + rc + " deveria ser sucesso");
@@ -86,6 +97,7 @@ class OpResultTest {
             case OK_NOOP:     return OpResult.okNoop();
             case BLOCKED:     return OpResult.blocked();
             case NOT_FOUND:   return OpResult.notFound();
+            case ERROR_UNAVAILABLE: return OpResult.errorUnavailable();
             case ERROR_TRANSPORT:
             default:          return OpResult.errorTransport();
         }

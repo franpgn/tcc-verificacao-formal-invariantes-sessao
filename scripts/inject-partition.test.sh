@@ -140,11 +140,34 @@ case "${args}" in
     "qdisc show dev "*)
         [[ -f "${st}" ]] && echo "qdisc clsact ffff: parent ffff:fff1" ;;
     "-s filter show dev "*)
+        # Saida real observada na VM (runs/gate-b29/g0b.log e g1-rep1): o kernel
+        # lista os DOIS filtros (match ... at 12 = ip src; at 16 = ip dst) tanto
+        # em 'ingress' quanto em 'egress'; so o contador do filtro que morde em
+        # cada sentido e > 0. Um filtro por par (isn1, isn2) por offset.
+        # SHIM_PKTS_SRC/SHIM_PKTS_DST (padrao SHIM_PKTS, padrao 7): pacotes por
+        # filtro em at 12 / at 16.
         if [[ -f "${st}" ]]; then
-            n="${SHIM_PKTS:-7}"
-            echo "filter parent ffff: protocol ip pref 1 u32 chain 0"
-            echo "        action order 1: gact action drop"
-            echo "         Sent $((n * 120)) bytes ${n} pkt (dropped ${n}, overlimits 0 requeues 0)"
+            n12="${SHIM_PKTS_SRC:-${SHIM_PKTS:-7}}"
+            n16="${SHIM_PKTS_DST:-${SHIM_PKTS:-7}}"
+            echo "filter protocol ip pref 1 u32 chain 0 "
+            for par in 2 3; do
+                echo "filter protocol ip pref 1 u32 chain 0 fh 801::80$((par - 2)) order 2048 key ht 801 bkt 0 terminal flowid not_in_hw "
+                echo "  match 0a59010${par}/ffffffff at 16"
+                echo "        action order 1: gact action drop"
+                echo "        Action statistics:"
+                echo "        Sent $((n * 120)) bytes ${n} pkt (dropped ${n}, overlimits 0 requeues 0) "
+                echo "        backlog 0b 0p requeues 0"
+            done
+            echo "filter protocol ip pref 1 u32 chain 0 fh 800: ht divisor 1 "
+            for par in 2 3; do
+                n="${n12}"
+                echo "filter protocol ip pref 1 u32 chain 0 fh 800::80$((par - 2)) order 2048 key ht 800 bkt 0 terminal flowid not_in_hw "
+                echo "  match 0a59010${par}/ffffffff at 12"
+                echo "        action order 1: gact action drop"
+                echo "        Action statistics:"
+                echo "        Sent $((n * 120)) bytes ${n} pkt (dropped ${n}, overlimits 0 requeues 0) "
+                echo "        backlog 0b 0p requeues 0"
+            done
         fi ;;
 esac
 exit 0
@@ -162,7 +185,7 @@ PATH_SHIMS="${SHIMDIR}:${PATH_SEM_PODMAN}"
 reset_shims() {
     : >"${SHIM_LOG}"
     rm -f "${SHIM_STATE}"/clsact.* "${TMP}/marker" "${TMP}/saida" "${LOCK_DIR}"/* 2>/dev/null || true
-    unset SHIM_MISSING SHIM_STATUS SHIM_CONN_RC SHIM_TC_FAIL_MATCH SHIM_PKTS SHIM_FAIL_CLSACT
+    unset SHIM_MISSING SHIM_STATUS SHIM_CONN_RC SHIM_TC_FAIL_MATCH SHIM_PKTS SHIM_PKTS_SRC SHIM_PKTS_DST SHIM_FAIL_CLSACT
 }
 
 # roda_shim <args...>: executa o injetor com os shims; saida em $OUT, rc em $RC.
@@ -401,6 +424,39 @@ if command -v flock >/dev/null 2>&1; then
 else
     pulado "T-par-15 (flock real ausente neste host; roda na VM/WSL)"
 fi
+
+echo "== T-par-16: contadores por sentido (A1 de V-B): at 12 = ingress, at 16 = egress =="
+reset_shims
+SHIM_PKTS_SRC=5 SHIM_PKTS_DST=30 roda_shim --minority isn3 --duration 1
+ok "T-par-16a exit code" "0" "${RC}"
+contem "T-par-16a ingress soma so os filtros 'at 12' (2 pares x 5)" "ingress=10 pkt, egress=60 pkt" "${OUT}"
+nao_contem "T-par-16a nao soma os dois filtros em cada sentido" "ingress=70" "${OUT}"
+nao_contem "T-par-16a ambos > 0: sem aviso de um so sentido" "um so sentido" "${OUT}"
+reset_shims
+SHIM_PKTS_SRC=0 SHIM_PKTS_DST=9 roda_shim --minority isn3 --duration 1
+ok "T-par-16b ingress=0 e egress>0 -> exit 0 (nao e falha total)" "0" "${RC}"
+contem "T-par-16b contadores por sentido" "ingress=0 pkt, egress=18 pkt" "${OUT}"
+contem "T-par-16b avisa descarte em um so sentido" "um so sentido" "${OUT}"
+reset_shims
+SHIM_PKTS_SRC=9 SHIM_PKTS_DST=0 roda_shim --minority isn3 --duration 1
+contem "T-par-16c egress=0 tambem avisa" "um so sentido" "${OUT}"
+contem "T-par-16c contadores por sentido" "ingress=18 pkt, egress=0 pkt" "${OUT}"
+reset_shims
+SHIM_PKTS=0 roda_shim --minority isn3 --duration 1
+ok "T-par-16d ambos 0 continua exit 6" "6" "${RC}"
+
+echo "== T-par-17: timestamp do log() calculado a cada chamada (A3 de V-B) =="
+reset_shims
+roda_shim --minority isn3 --duration 2
+ok "T-par-17 exit code" "0" "${RC}"
+TS_PRIMEIRO="$(echo "${OUT}" | grep -m1 '^\[' | cut -d']' -f1)"
+TS_ULTIMO="$(echo "${OUT}" | grep '^\[' | tail -n 1 | cut -d']' -f1)"
+if [[ -n "${TS_PRIMEIRO}" && "${TS_PRIMEIRO}" != "${TS_ULTIMO}" ]]; then
+    echo "PASS: T-par-17 primeira e ultima linha de log tem timestamps distintos"; PASS=$((PASS + 1))
+else
+    echo "FAIL: T-par-17 timestamps iguais/ausentes (primeiro='${TS_PRIMEIRO}' ultimo='${TS_ULTIMO}')"; FAIL=$((FAIL + 1))
+fi
+reset_shims
 
 echo
 echo "==== RESULTADO: ${PASS} PASS, ${FAIL} FAIL, ${SKIP} SKIP ===="

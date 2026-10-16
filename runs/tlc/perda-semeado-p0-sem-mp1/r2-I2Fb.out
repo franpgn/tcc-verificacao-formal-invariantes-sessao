@@ -1,0 +1,510 @@
+TLC2 Version 2.19 of 08 August 2024 (rev: 5a47802)
+Running breadth-first search Model-Checking with fp 43 and seed -3957173249298353845 with 2 workers on 20 cores with 2731MB heap and 64MB offheap memory [pid: 6944] (Windows 11 10.0 amd64, Oracle Corporation 17.0.2 x86_64, MSBDiskFPSet, DiskStateQueue).
+Parsing file C:\Users\Francesco\Development\tcc\wt-b35\spec\MCPerda.tla
+Parsing file C:\Users\Francesco\Development\tcc\wt-b35\spec\MCSession.tla
+Parsing file C:\Users\Francesco\Development\tcc\wt-b35\spec\SessionStore.tla
+Parsing file C:\Users\Francesco\AppData\Local\Temp\tlc-jtmp-cGbZKX\TLC.tla
+Parsing file C:\Users\Francesco\AppData\Local\Temp\tlc-jtmp-cGbZKX\Naturals.tla
+Parsing file C:\Users\Francesco\AppData\Local\Temp\tlc-jtmp-cGbZKX\Sequences.tla
+Parsing file C:\Users\Francesco\AppData\Local\Temp\tlc-jtmp-cGbZKX\FiniteSets.tla
+Semantic processing of module Naturals
+Semantic processing of module Sequences
+Semantic processing of module FiniteSets
+Semantic processing of module SessionStore
+Semantic processing of module TLC
+Semantic processing of module MCSession
+Semantic processing of module MCPerda
+Starting... (2026-10-16 17:04:03)
+Computing initial states...
+Finished computing initial states: 1 distinct state generated at 2026-10-16 17:04:04.
+Error: Invariant I2Fb is violated.
+Error: The behavior up to this point is:
+State 1: <Initial predicate>
+/\ sessoes = ( r1 :>
+      ( s1 :>
+            [ estado |-> "VALID",
+              motivo |-> "NONE",
+              identidade |-> u1,
+              ts |-> 1 ] @@
+        s2 :>
+            [ estado |-> "VALID",
+              motivo |-> "NONE",
+              identidade |-> u1,
+              ts |-> 1 ] ) @@
+  r2 :>
+      ( s1 :>
+            [ estado |-> "VALID",
+              motivo |-> "NONE",
+              identidade |-> u1,
+              ts |-> 1 ] @@
+        s2 :>
+            [ estado |-> "VALID",
+              motivo |-> "NONE",
+              identidade |-> u1,
+              ts |-> 1 ] ) )
+/\ canal = (r1 :> <<>> @@ r2 :> <<>>)
+/\ quedas = 0
+/\ identidades = ( r1 :> (u1 :> [status |-> "OPEN", ts |-> 1, contador |-> 0]) @@
+  r2 :> (u1 :> [status |-> "OPEN", ts |-> 1, contador |-> 0]) )
+/\ ladoDe = (r1 :> 1 @@ r2 :> 1)
+/\ relogio = (r1 :> 1 @@ r2 :> 1)
+/\ particaoAtiva = FALSE
+/\ particoes = 0
+/\ vivo = (r1 :> TRUE @@ r2 :> TRUE)
+/\ perdas = 0
+
+State 2: <NextP0 line 62, col 12 to line 62, col 35 of module MCPerda>
+/\ sessoes = ( r1 :>
+      ( s1 :>
+            [ estado |-> "VALID",
+              motivo |-> "NONE",
+              identidade |-> u1,
+              ts |-> 1 ] @@
+        s2 :>
+            [ estado |-> "VALID",
+              motivo |-> "NONE",
+              identidade |-> u1,
+              ts |-> 1 ] ) @@
+  r2 :>
+      ( s1 :>
+            [ estado |-> "VALID",
+              motivo |-> "NONE",
+              identidade |-> u1,
+              ts |-> 1 ] @@
+        s2 :>
+            [ estado |-> "VALID",
+              motivo |-> "NONE",
+              identidade |-> u1,
+              ts |-> 1 ] ) )
+/\ canal = ( r1 :> <<>> @@
+  r2 :>
+      << [ tipo |-> "CONTADOR_INC",
+           chave |-> u1,
+           sessao |->
+               [ estado |-> "NONE",
+                 motivo |-> "NONE",
+                 identidade |-> "NONE",
+                 ts |-> 0 ],
+           ident |-> [status |-> "OPEN", ts |-> 2, contador |-> 1],
+           sessoesAfetadas |-> {} ] >> )
+/\ quedas = 0
+/\ identidades = ( r1 :> (u1 :> [status |-> "OPEN", ts |-> 2, contador |-> 1]) @@
+  r2 :> (u1 :> [status |-> "OPEN", ts |-> 1, contador |-> 0]) )
+/\ ladoDe = (r1 :> 1 @@ r2 :> 1)
+/\ relogio = (r1 :> 2 @@ r2 :> 1)
+/\ particaoAtiva = FALSE
+/\ particoes = 0
+/\ vivo = (r1 :> TRUE @@ r2 :> TRUE)
+/\ perdas = 0
+
+State 3: <NextP0 line 62, col 12 to line 62, col 35 of module MCPerda>
+/\ sessoes = ( r1 :>
+      ( s1 :>
+            [ estado |-> "VALID",
+              motivo |-> "NONE",
+              identidade |-> u1,
+              ts |-> 1 ] @@
+        s2 :>
+            [ estado |-> "VALID",
+              motivo |-> "NONE",
+              identidade |-> u1,
+              ts |-> 1 ] ) @@
+  r2 :>
+      ( s1 :>
+            [ estado |-> "VALID",
+              motivo |-> "NONE",
+              identidade |-> u1,
+              ts |-> 1 ] @@
+        s2 :>
+            [ estado |-> "VALID",
+              motivo |-> "NONE",
+              identidade |-> u1,
+              ts |-> 1 ] ) )
+/\ canal = ( r1 :> <<>> @@
+  r2 :>
+      << [ tipo |-> "CONTADOR_INC",
+           chave |-> u1,
+           sessao |->
+               [ estado |-> "NONE",
+                 motivo |-> "NONE",
+                 identidade |-> "NONE",
+                 ts |-> 0 ],
+           ident |-> [status |-> "OPEN", ts |-> 2, contador |-> 1],
+           sessoesAfetadas |-> {} ],
+         [ tipo |-> "CONTADOR_INC",
+           chave |-> u1,
+           sessao |->
+               [ estado |-> "NONE",
+                 motivo |-> "NONE",
+                 identidade |-> "NONE",
+                 ts |-> 0 ],
+           ident |-> [status |-> "BLOCKED", ts |-> 3, contador |-> 2],
+           sessoesAfetadas |-> {} ] >> )
+/\ quedas = 0
+/\ identidades = ( r1 :> (u1 :> [status |-> "BLOCKED", ts |-> 3, contador |-> 2]) @@
+  r2 :> (u1 :> [status |-> "OPEN", ts |-> 1, contador |-> 0]) )
+/\ ladoDe = (r1 :> 1 @@ r2 :> 1)
+/\ relogio = (r1 :> 3 @@ r2 :> 1)
+/\ particaoAtiva = FALSE
+/\ particoes = 0
+/\ vivo = (r1 :> TRUE @@ r2 :> TRUE)
+/\ perdas = 0
+
+The coverage statistics at 2026-10-16 17:04:04
+<InitSemeadoP line 61, col 1 to line 61, col 12 of module MCPerda>: 2:2
+  line 61, col 17 to line 61, col 41 of module MCPerda: 2
+<PerderQualquer line 44, col 1 to line 44, col 14 of module MCPerda>: 5:7
+  line 45, col 6 to line 45, col 23 of module MCPerda: 4
+  |line 45, col 6 to line 45, col 11 of module MCPerda: 5
+  |line 45, col 15 to line 45, col 23 of module MCPerda: 5
+  line 46, col 54 to line 46, col 69 of module MCPerda: 7
+  line 46, col 35 to line 46, col 50 of module MCPerda: 10
+  line 46, col 15 to line 46, col 22 of module MCPerda: 5
+  line 47, col 6 to line 47, col 25 of module MCPerda: 7
+  line 48, col 6 to line 48, col 96 of module MCPerda: 7
+<NextP0 line 62, col 1 to line 62, col 6 of module MCPerda (62 12 62 35)>: 25:160
+  line 269, col 6 to line 269, col 19 of module SessionStore: 36
+  line 270, col 9 to line 270, col 22 of module SessionStore: 36
+  line 272, col 11 to line 272, col 48 of module SessionStore: 36
+  |line 272, col 11 to line 272, col 17 of module SessionStore: 36
+  ||line 271, col 24 to line 271, col 38 of module SessionStore: 36
+  |||line 261, col 12 to line 261, col 43 of module SessionStore: 36
+  ||||line 261, col 30 to line 261, col 42 of module SessionStore: 72
+  ||||line 261, col 19 to line 261, col 26 of module SessionStore: 36
+  |||line 271, col 29 to line 271, col 37 of module SessionStore: 36
+  |line 272, col 23 to line 272, col 48 of module SessionStore: 36
+  ||line 264, col 3 to line 266, col 15 of module SessionStore: 36
+  ||line 272, col 32 to line 272, col 38 of module SessionStore: 36
+  |||line 261, col 12 to line 261, col 43 of module SessionStore: 36
+  ||||line 261, col 30 to line 261, col 42 of module SessionStore: 72
+  ||||line 261, col 19 to line 261, col 26 of module SessionStore: 36
+  ||line 272, col 41 to line 272, col 47 of module SessionStore: 36
+  |||line 261, col 12 to line 261, col 43 of module SessionStore: 36
+  ||||line 261, col 30 to line 261, col 42 of module SessionStore: 72
+  ||||line 261, col 19 to line 261, col 26 of module SessionStore: 36
+  line 292, col 6 to line 292, col 39 of module SessionStore: 72
+  line 293, col 6 to line 293, col 34 of module SessionStore: 72
+  line 294, col 6 to line 294, col 46 of module SessionStore: 0
+  line 296, col 13 to line 296, col 59 of module SessionStore: 0
+  line 297, col 13 to line 297, col 30 of module SessionStore: 0
+  line 298, col 6 to line 298, col 31 of module SessionStore: 0
+  line 299, col 6 to line 299, col 31 of module SessionStore: 0
+  line 300, col 6 to line 300, col 65 of module SessionStore: 0
+  line 584, col 55 to line 584, col 55 of module SessionStore: 36
+  line 584, col 58 to line 584, col 59 of module SessionStore: 36
+  line 584, col 62 to line 584, col 62 of module SessionStore: 36
+  line 584, col 15 to line 584, col 22 of module SessionStore: 9
+  line 584, col 32 to line 584, col 34 of module SessionStore: 9
+  line 584, col 43 to line 584, col 46 of module SessionStore: 9
+  line 269, col 6 to line 269, col 19 of module SessionStore: 64
+  |line 269, col 6 to line 269, col 12 of module SessionStore: 36
+  |line 269, col 16 to line 269, col 19 of module SessionStore: 36
+  line 270, col 9 to line 270, col 22 of module SessionStore: 64
+  |line 270, col 10 to line 270, col 22 of module SessionStore: 36
+  line 272, col 11 to line 272, col 48 of module SessionStore: 64
+  |line 272, col 11 to line 272, col 17 of module SessionStore: 36
+  ||line 271, col 24 to line 271, col 38 of module SessionStore: 36
+  |||line 261, col 12 to line 261, col 43 of module SessionStore: 36
+  ||||line 261, col 30 to line 261, col 42 of module SessionStore: 72
+  ||||line 261, col 19 to line 261, col 26 of module SessionStore: 36
+  |||line 271, col 29 to line 271, col 37 of module SessionStore: 36
+  |line 272, col 23 to line 272, col 48 of module SessionStore: 36
+  ||line 264, col 3 to line 266, col 15 of module SessionStore: 36
+  ||line 272, col 32 to line 272, col 38 of module SessionStore: 36
+  |||line 261, col 12 to line 261, col 43 of module SessionStore: 36
+  ||||line 261, col 30 to line 261, col 42 of module SessionStore: 72
+  ||||line 261, col 19 to line 261, col 26 of module SessionStore: 36
+  ||line 272, col 41 to line 272, col 47 of module SessionStore: 36
+  |||line 261, col 12 to line 261, col 43 of module SessionStore: 36
+  ||||line 261, col 30 to line 261, col 42 of module SessionStore: 72
+  ||||line 261, col 19 to line 261, col 26 of module SessionStore: 36
+  line 314, col 6 to line 314, col 35 of module SessionStore: 128
+  |line 314, col 6 to line 314, col 25 of module SessionStore: 72
+  line 315, col 6 to line 315, col 46 of module SessionStore: 56
+  line 316, col 9 to line 316, col 33 of module SessionStore: 56
+  line 317, col 13 to line 317, col 59 of module SessionStore: 56
+  line 318, col 13 to line 318, col 30 of module SessionStore: 0
+  line 319, col 6 to line 319, col 31 of module SessionStore: 56
+  line 320, col 6 to line 320, col 31 of module SessionStore: 56
+  line 321, col 6 to line 321, col 65 of module SessionStore: 56
+  line 585, col 56 to line 585, col 56 of module SessionStore: 36
+  line 585, col 59 to line 585, col 59 of module SessionStore: 36
+  line 585, col 15 to line 585, col 22 of module SessionStore: 9
+  line 585, col 31 to line 585, col 34 of module SessionStore: 9
+  line 269, col 6 to line 269, col 19 of module SessionStore: 30
+  |line 269, col 6 to line 269, col 12 of module SessionStore: 16
+  |line 269, col 16 to line 269, col 19 of module SessionStore: 16
+  line 270, col 9 to line 270, col 22 of module SessionStore: 30
+  |line 270, col 10 to line 270, col 22 of module SessionStore: 16
+  line 272, col 11 to line 272, col 48 of module SessionStore: 28
+  |line 272, col 11 to line 272, col 17 of module SessionStore: 14
+  ||line 271, col 24 to line 271, col 38 of module SessionStore: 14
+  |||line 261, col 12 to line 261, col 43 of module SessionStore: 14
+  ||||line 261, col 30 to line 261, col 42 of module SessionStore: 28
+  ||||line 261, col 19 to line 261, col 26 of module SessionStore: 14
+  |||line 271, col 29 to line 271, col 37 of module SessionStore: 14
+  |line 272, col 23 to line 272, col 48 of module SessionStore: 14
+  ||line 264, col 3 to line 266, col 15 of module SessionStore: 14
+  ||line 272, col 32 to line 272, col 38 of module SessionStore: 14
+  |||line 261, col 12 to line 261, col 43 of module SessionStore: 14
+  ||||line 261, col 30 to line 261, col 42 of module SessionStore: 28
+  ||||line 261, col 19 to line 261, col 26 of module SessionStore: 14
+  ||line 272, col 41 to line 272, col 47 of module SessionStore: 14
+  |||line 261, col 12 to line 261, col 43 of module SessionStore: 14
+  ||||line 261, col 30 to line 261, col 42 of module SessionStore: 28
+  ||||line 261, col 19 to line 261, col 26 of module SessionStore: 14
+  line 342, col 6 to line 342, col 41 of module SessionStore: 28
+  |line 342, col 6 to line 342, col 32 of module SessionStore: 30
+  |line 342, col 36 to line 342, col 41 of module SessionStore: 30
+  line 343, col 6 to line 343, col 46 of module SessionStore: 28
+  |line 343, col 17 to line 343, col 46 of module SessionStore: 30
+  line 344, col 9 to line 344, col 38 of module SessionStore: 30
+  line 345, col 16 to line 345, col 71 of module SessionStore: 28
+  |line 345, col 31 to line 345, col 71 of module SessionStore: 30
+  ||line 345, col 32 to line 345, col 42 of module SessionStore: 30
+  ||line 345, col 51 to line 345, col 70 of module SessionStore: 30
+  ||line 345, col 62 to line 345, col 70 of module SessionStore: 30
+  |||line 337, col 20 to line 337, col 84 of module SessionStore: 30
+  ||||line 337, col 21 to line 337, col 45 of module SessionStore: 30
+  ||||line 337, col 59 to line 337, col 68 of module SessionStore: 30
+  |||||line 336, col 21 to line 336, col 91 of module SessionStore: 30
+  ||||||line 336, col 24 to line 336, col 45 of module SessionStore: 30
+  ||||||line 336, col 67 to line 336, col 91 of module SessionStore: 26
+  ||||line 337, col 71 to line 337, col 83 of module SessionStore: 30
+  line 346, col 16 to line 346, col 41 of module SessionStore: 28
+  |line 346, col 25 to line 346, col 41 of module SessionStore: 30
+  ||line 239, col 3 to line 239, col 81 of module SessionStore: 30:60
+  ||line 346, col 38 to line 346, col 40 of module SessionStore: 30
+  |||line 338, col 14 to line 339, col 82 of module SessionStore: 30
+  ||||line 338, col 40 to line 338, col 51 of module SessionStore: 30
+  ||||line 339, col 15 to line 339, col 36 of module SessionStore: 30
+  ||||line 339, col 49 to line 339, col 57 of module SessionStore: 30
+  |||||line 337, col 20 to line 337, col 84 of module SessionStore: 30
+  ||||||line 337, col 21 to line 337, col 45 of module SessionStore: 30
+  ||||||line 337, col 59 to line 337, col 68 of module SessionStore: 30
+  |||||||line 336, col 21 to line 336, col 91 of module SessionStore: 30
+  ||||||||line 336, col 24 to line 336, col 45 of module SessionStore: 30
+  ||||||||line 336, col 67 to line 336, col 91 of module SessionStore: 26
+  ||||||line 337, col 71 to line 337, col 83 of module SessionStore: 30
+  ||||line 339, col 60 to line 339, col 81 of module SessionStore: 30
+  line 347, col 16 to line 347, col 41 of module SessionStore: 0
+  line 348, col 16 to line 348, col 29 of module SessionStore: 0
+  line 349, col 6 to line 349, col 23 of module SessionStore: 28
+  |line 349, col 17 to line 349, col 23 of module SessionStore: 30
+  line 350, col 6 to line 350, col 65 of module SessionStore: 28
+  line 586, col 66 to line 586, col 66 of module SessionStore: 16
+  line 586, col 69 to line 586, col 70 of module SessionStore: 16
+  line 586, col 15 to line 586, col 22 of module SessionStore: 9
+  line 586, col 32 to line 586, col 34 of module SessionStore: 9
+  line 269, col 6 to line 269, col 19 of module SessionStore: 15
+  |line 269, col 6 to line 269, col 12 of module SessionStore: 14
+  |line 269, col 16 to line 269, col 19 of module SessionStore: 14
+  line 270, col 9 to line 270, col 22 of module SessionStore: 15
+  |line 270, col 10 to line 270, col 22 of module SessionStore: 14
+  line 272, col 11 to line 272, col 48 of module SessionStore: 15
+  |line 272, col 11 to line 272, col 17 of module SessionStore: 14
+  ||line 271, col 24 to line 271, col 38 of module SessionStore: 14
+  |||line 261, col 12 to line 261, col 43 of module SessionStore: 14
+  ||||line 261, col 30 to line 261, col 42 of module SessionStore: 28
+  ||||line 261, col 19 to line 261, col 26 of module SessionStore: 14
+  |||line 271, col 29 to line 271, col 37 of module SessionStore: 14
+  |line 272, col 23 to line 272, col 48 of module SessionStore: 14
+  ||line 264, col 3 to line 266, col 15 of module SessionStore: 14
+  ||line 272, col 32 to line 272, col 38 of module SessionStore: 14
+  |||line 261, col 12 to line 261, col 43 of module SessionStore: 14
+  ||||line 261, col 30 to line 261, col 42 of module SessionStore: 28
+  ||||line 261, col 19 to line 261, col 26 of module SessionStore: 14
+  ||line 272, col 41 to line 272, col 47 of module SessionStore: 14
+  |||line 261, col 12 to line 261, col 43 of module SessionStore: 14
+  ||||line 261, col 30 to line 261, col 42 of module SessionStore: 28
+  ||||line 261, col 19 to line 261, col 26 of module SessionStore: 14
+  line 362, col 6 to line 362, col 36 of module SessionStore: 30
+  |line 362, col 6 to line 362, col 32 of module SessionStore: 28
+  line 363, col 6 to line 363, col 46 of module SessionStore: 2
+  line 364, col 9 to line 364, col 38 of module SessionStore: 2
+  line 365, col 13 to line 365, col 68 of module SessionStore: 2
+  line 366, col 13 to line 366, col 38 of module SessionStore: 0
+  line 367, col 6 to line 367, col 31 of module SessionStore: 2
+  line 368, col 6 to line 368, col 23 of module SessionStore: 2
+  line 369, col 6 to line 369, col 65 of module SessionStore: 2
+  line 587, col 63 to line 587, col 63 of module SessionStore: 14
+  line 587, col 66 to line 587, col 67 of module SessionStore: 14
+  line 587, col 15 to line 587, col 22 of module SessionStore: 7
+  line 587, col 32 to line 587, col 34 of module SessionStore: 7
+  line 269, col 6 to line 269, col 19 of module SessionStore: 28
+  |line 269, col 6 to line 269, col 12 of module SessionStore: 14
+  |line 269, col 16 to line 269, col 19 of module SessionStore: 14
+  line 270, col 9 to line 270, col 22 of module SessionStore: 28
+  |line 270, col 10 to line 270, col 22 of module SessionStore: 14
+  line 272, col 11 to line 272, col 48 of module SessionStore: 28
+  |line 272, col 11 to line 272, col 17 of module SessionStore: 14
+  ||line 271, col 24 to line 271, col 38 of module SessionStore: 14
+  |||line 261, col 12 to line 261, col 43 of module SessionStore: 14
+  ||||line 261, col 30 to line 261, col 42 of module SessionStore: 28
+  ||||line 261, col 19 to line 261, col 26 of module SessionStore: 14
+  |||line 271, col 29 to line 271, col 37 of module SessionStore: 14
+  |line 272, col 23 to line 272, col 48 of module SessionStore: 14
+  ||line 264, col 3 to line 266, col 15 of module SessionStore: 14
+  ||line 272, col 32 to line 272, col 38 of module SessionStore: 14
+  |||line 261, col 12 to line 261, col 43 of module SessionStore: 14
+  ||||line 261, col 30 to line 261, col 42 of module SessionStore: 28
+  ||||line 261, col 19 to line 261, col 26 of module SessionStore: 14
+  ||line 272, col 41 to line 272, col 47 of module SessionStore: 14
+  |||line 261, col 12 to line 261, col 43 of module SessionStore: 14
+  ||||line 261, col 30 to line 261, col 42 of module SessionStore: 28
+  ||||line 261, col 19 to line 261, col 26 of module SessionStore: 14
+  line 390, col 6 to line 390, col 39 of module SessionStore: 56
+  |line 390, col 6 to line 390, col 30 of module SessionStore: 28
+  line 391, col 6 to line 391, col 46 of module SessionStore: 28
+  line 392, col 9 to line 392, col 38 of module SessionStore: 28
+  line 393, col 13 to line 393, col 70 of module SessionStore: 28
+  line 394, col 13 to line 394, col 38 of module SessionStore: 0
+  line 395, col 6 to line 397, col 66 of module SessionStore: 28
+  line 398, col 6 to line 398, col 31 of module SessionStore: 28
+  |line 398, col 15 to line 398, col 31 of module SessionStore: 28
+  ||line 239, col 3 to line 239, col 81 of module SessionStore: 28:56
+  ||line 398, col 28 to line 398, col 30 of module SessionStore: 28
+  |||line 386, col 14 to line 387, col 94 of module SessionStore: 28
+  ||||line 386, col 39 to line 386, col 50 of module SessionStore: 28
+  ||||line 387, col 15 to line 387, col 40 of module SessionStore: 28
+  ||||line 387, col 43 to line 387, col 63 of module SessionStore: 28
+  ||||line 387, col 86 to line 387, col 93 of module SessionStore: 28
+  |||||line 382, col 19 to line 382, col 43 of module SessionStore: 28
+  ||||||line 382, col 33 to line 382, col 42 of module SessionStore: 56
+  ||||||line 382, col 26 to line 382, col 29 of module SessionStore: 28
+  line 399, col 6 to line 399, col 65 of module SessionStore: 28
+  line 588, col 55 to line 588, col 55 of module SessionStore: 14
+  line 588, col 58 to line 588, col 59 of module SessionStore: 14
+  line 588, col 15 to line 588, col 22 of module SessionStore: 7
+  line 588, col 32 to line 588, col 34 of module SessionStore: 7
+  line 269, col 6 to line 269, col 19 of module SessionStore: 14
+  line 270, col 9 to line 270, col 22 of module SessionStore: 14
+  line 272, col 11 to line 272, col 48 of module SessionStore: 14
+  |line 272, col 11 to line 272, col 17 of module SessionStore: 14
+  ||line 271, col 24 to line 271, col 38 of module SessionStore: 14
+  |||line 261, col 12 to line 261, col 43 of module SessionStore: 14
+  ||||line 261, col 30 to line 261, col 42 of module SessionStore: 28
+  ||||line 261, col 19 to line 261, col 26 of module SessionStore: 14
+  |||line 271, col 29 to line 271, col 37 of module SessionStore: 14
+  |line 272, col 23 to line 272, col 48 of module SessionStore: 14
+  ||line 264, col 3 to line 266, col 15 of module SessionStore: 14
+  ||line 272, col 32 to line 272, col 38 of module SessionStore: 14
+  |||line 261, col 12 to line 261, col 43 of module SessionStore: 14
+  ||||line 261, col 30 to line 261, col 42 of module SessionStore: 28
+  ||||line 261, col 19 to line 261, col 26 of module SessionStore: 14
+  ||line 272, col 41 to line 272, col 47 of module SessionStore: 14
+  |||line 261, col 12 to line 261, col 43 of module SessionStore: 14
+  ||||line 261, col 30 to line 261, col 42 of module SessionStore: 28
+  ||||line 261, col 19 to line 261, col 26 of module SessionStore: 14
+  line 415, col 6 to line 415, col 42 of module SessionStore: 28
+  line 416, col 6 to line 416, col 46 of module SessionStore: 0
+  line 418, col 13 to line 418, col 68 of module SessionStore: 0
+  line 419, col 13 to line 419, col 38 of module SessionStore: 0
+  line 420, col 6 to line 420, col 31 of module SessionStore: 0
+  line 421, col 6 to line 421, col 23 of module SessionStore: 0
+  line 422, col 6 to line 422, col 65 of module SessionStore: 0
+  line 589, col 57 to line 589, col 57 of module SessionStore: 14
+  line 589, col 60 to line 589, col 61 of module SessionStore: 14
+  line 589, col 15 to line 589, col 22 of module SessionStore: 7
+  line 589, col 32 to line 589, col 34 of module SessionStore: 7
+  line 269, col 6 to line 269, col 19 of module SessionStore: 21
+  |line 269, col 6 to line 269, col 12 of module SessionStore: 14
+  |line 269, col 16 to line 269, col 19 of module SessionStore: 14
+  line 270, col 9 to line 270, col 22 of module SessionStore: 21
+  |line 270, col 10 to line 270, col 22 of module SessionStore: 14
+  line 272, col 11 to line 272, col 48 of module SessionStore: 21
+  |line 272, col 11 to line 272, col 17 of module SessionStore: 14
+  ||line 271, col 24 to line 271, col 38 of module SessionStore: 14
+  |||line 261, col 12 to line 261, col 43 of module SessionStore: 14
+  ||||line 261, col 30 to line 261, col 42 of module SessionStore: 28
+  ||||line 261, col 19 to line 261, col 26 of module SessionStore: 14
+  |||line 271, col 29 to line 271, col 37 of module SessionStore: 14
+  |line 272, col 23 to line 272, col 48 of module SessionStore: 14
+  ||line 264, col 3 to line 266, col 15 of module SessionStore: 14
+  ||line 272, col 32 to line 272, col 38 of module SessionStore: 14
+  |||line 261, col 12 to line 261, col 43 of module SessionStore: 14
+  ||||line 261, col 30 to line 261, col 42 of module SessionStore: 28
+  ||||line 261, col 19 to line 261, col 26 of module SessionStore: 14
+  ||line 272, col 41 to line 272, col 47 of module SessionStore: 14
+  |||line 261, col 12 to line 261, col 43 of module SessionStore: 14
+  ||||line 261, col 30 to line 261, col 42 of module SessionStore: 28
+  ||||line 261, col 19 to line 261, col 26 of module SessionStore: 14
+  line 537, col 6 to line 537, col 22 of module SessionStore: 14
+  |line 537, col 6 to line 537, col 18 of module SessionStore: 28
+  line 540, col 11 to line 540, col 84 of module SessionStore: 16
+  line 541, col 11 to line 541, col 79 of module SessionStore: 16
+  line 542, col 16 to line 542, col 39 of module SessionStore: 16
+  line 544, col 27 to line 544, col 78 of module SessionStore: 0
+  line 545, col 27 to line 545, col 44 of module SessionStore: 0
+  line 546, col 20 to line 546, col 40 of module SessionStore: 0
+  line 547, col 16 to line 547, col 41 of module SessionStore: 16
+  line 548, col 23 to line 548, col 58 of module SessionStore: 14
+  line 549, col 27 to line 549, col 78 of module SessionStore: 10
+  line 550, col 27 to line 550, col 44 of module SessionStore: 4
+  line 551, col 20 to line 551, col 40 of module SessionStore: 14
+  line 552, col 16 to line 552, col 38 of module SessionStore: 2
+  line 553, col 23 to line 553, col 61 of module SessionStore: 2
+  line 554, col 27 to line 554, col 85 of module SessionStore: 2
+  line 555, col 27 to line 555, col 52 of module SessionStore: 0
+  line 556, col 20 to line 556, col 36 of module SessionStore: 2
+  line 559, col 27 to line 559, col 85 of module SessionStore: 0
+  line 560, col 27 to line 560, col 52 of module SessionStore: 0
+  line 561, col 20 to line 561, col 36 of module SessionStore: 0
+  line 568, col 27 to line 568, col 85 of module SessionStore: 0
+  line 569, col 27 to line 569, col 52 of module SessionStore: 0
+  line 570, col 20 to line 572, col 73 of module SessionStore: 0
+  line 575, col 27 to line 575, col 85 of module SessionStore: 0
+  line 576, col 27 to line 576, col 52 of module SessionStore: 0
+  line 577, col 20 to line 577, col 36 of module SessionStore: 0
+  line 578, col 25 to line 578, col 60 of module SessionStore: 0
+  line 538, col 15 to line 538, col 30 of module SessionStore: 14
+  line 590, col 66 to line 590, col 66 of module SessionStore: 14
+  line 590, col 15 to line 590, col 22 of module SessionStore: 7
+  line 447, col 6 to line 447, col 19 of module SessionStore: 28
+  |line 447, col 6 to line 447, col 12 of module SessionStore: 14
+  |line 447, col 16 to line 447, col 19 of module SessionStore: 14
+  line 448, col 6 to line 448, col 19 of module SessionStore: 28
+  |line 448, col 7 to line 448, col 19 of module SessionStore: 14
+  line 449, col 6 to line 449, col 39 of module SessionStore: 14
+  line 450, col 6 to line 450, col 25 of module SessionStore: 14
+  line 451, col 6 to line 451, col 89 of module SessionStore: 14
+  line 591, col 55 to line 591, col 55 of module SessionStore: 14
+  line 591, col 15 to line 591, col 22 of module SessionStore: 7
+  line 454, col 6 to line 454, col 20 of module SessionStore: 14
+  line 455, col 6 to line 455, col 38 of module SessionStore: 0
+  line 456, col 6 to line 456, col 97 of module SessionStore: 0
+  line 592, col 58 to line 592, col 58 of module SessionStore: 14
+  line 592, col 15 to line 592, col 22 of module SessionStore: 7
+  line 479, col 6 to line 479, col 19 of module SessionStore: 14
+  |line 479, col 7 to line 479, col 19 of module SessionStore: 7
+  line 480, col 25 to line 480, col 38 of module SessionStore: 28
+  |line 480, col 25 to line 480, col 31 of module SessionStore: 14
+  |line 480, col 35 to line 480, col 38 of module SessionStore: 14
+  line 480, col 15 to line 480, col 22 of module SessionStore: 7
+  line 483, col 11 to line 483, col 31 of module SessionStore: 14
+  line 484, col 11 to line 484, col 66 of module SessionStore: 14
+  line 485, col 11 to line 485, col 36 of module SessionStore: 14
+  line 486, col 11 to line 486, col 74 of module SessionStore: 14
+  line 481, col 16 to line 481, col 47 of module SessionStore: 7
+  line 519, col 11 to line 519, col 102 of module SessionStore: 0
+  line 520, col 11 to line 520, col 106 of module SessionStore: 0
+  line 521, col 11 to line 521, col 103 of module SessionStore: 0
+  line 522, col 11 to line 522, col 32 of module SessionStore: 0
+  line 523, col 11 to line 523, col 62 of module SessionStore: 0
+  line 62, col 20 to line 62, col 35 of module MCPerda: 158
+<PerdasOK line 58, col 1 to line 58, col 8 of module MCPerda>
+  line 58, col 13 to line 58, col 35 of module MCPerda: 58
+<I2Fb line 113, col 1 to line 113, col 4 of module MCSession>
+  line 114, col 3 to line 116, col 86 of module MCSession: 58
+  |line 115, col 6 to line 116, col 86 of module MCSession: 114
+  ||line 115, col 6 to line 115, col 42 of module MCSession: 114
+  ||line 116, col 8 to line 116, col 86 of module MCSession: 10
+  |||line 116, col 24 to line 116, col 86 of module MCSession: 19
+  |||line 116, col 17 to line 116, col 20 of module MCSession: 10
+  |line 114, col 12 to line 114, col 19 of module MCSession: 58
+  |line 114, col 29 to line 114, col 31 of module MCSession: 58
+End of statistics.
+124 states generated, 31 distinct states found, 23 states left on queue.
+The depth of the complete state graph search is 4.
+The average outdegree of the complete state graph is 6 (minimum is 3, the maximum 9 and the 95th percentile is 9).
+Finished in 00s at (2026-10-16 17:04:04)

@@ -1,0 +1,9 @@
+semeado	p0	mp1	particao	r2	I5	VIOLADA	traco_de_3_estados	178	61	1s	PerderQualquer=9:12
+semeado	p0	mp1	particao	r2	I6	VIOLADA	traco_de_3_estados	204	73	0s	PerderQualquer=11:14
+semeado	p0	mp1	particao	r2	I1P	SEM_VIOLACAO_ATE_AQUI	limite_de_tempo_600s	115153776	8699414	600s	PerderQualquer=2559771:7217895
+semeado	p0	mp1	particao	r2	I1F	VIOLADA	traco_de_4_estados	292	96	1s	PerderQualquer=15:17
+semeado	p0	mp1	particao	r2	I4F	VIOLADA	traco_de_4_estados	292	96	1s	PerderQualquer=15:17
+semeado	p0	mp1	particao	r2	I2Fa	VIOLADA	traco_de_4_estados	1470	407	1s	PerderQualquer=107:111
+semeado	p0	mp1	particao	r2	I1M	VIOLADA	traco_de_4_estados	292	96	0s	PerderQualquer=15:17
+semeado	p0	mp1	particao	r2	I4M	VIOLADA	traco_de_4_estados	292	96	1s	PerderQualquer=15:17
+semeado	p0	mp1	particao	r2	I2Fb	VIOLADA	traco_de_3_estados	124	38	1s	PerderQualquer=5:7

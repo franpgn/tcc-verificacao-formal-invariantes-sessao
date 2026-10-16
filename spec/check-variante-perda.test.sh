@@ -54,6 +54,11 @@ mutrun() { # $1 id  $2 sed sobre run-tlc-perda.sh ; o runner mutado fica em $AQU
 mutrun "T-p-24 runner sem PerdasOK em INVARIANTS" '/^    PerdasOK$/d; s/INVS="    PerdasOK$/INVS="/; s/else INVS="    PerdasOK"; /else INVS=""; /'
 mutrun "T-p-25 runner sem MaxPerdas no cfg" '/MaxPerdas  = /d'
 mutrun "T-p-26 runner com SPEC trocado (p0 usa SpecPerda1*)" 's/p0) PN=0/p0) PN=1/'
+# MUTACAO=remover-nulo precisa efetivamente alterar a copia (2 linhas diferem) e deixar canal' = canal
+D27="$(mktemp -d "${TMPDIR:-/tmp}/mut-perda-XXXXXX")"
+M27="$(OUTDIR="$D27" MUTACAO=remover-nulo JAVA=true TLA_TOOLS="$AQUI/run-tlc-perda.sh" TIMEOUT_SECS=5 bash "$AQUI/run-tlc-perda.sh" semeado p0 sem r2 I5 2>&1)"
+grep -q "Mutacao: 2 linhas diferem" <<<"$M27" && ! grep -q "mutacao nao aplicada" <<<"$M27" && ok "T-p-27 MUTACAO=remover-nulo altera exatamente 2 linhas" || bad "T-p-27 MUTACAO=remover-nulo altera exatamente 2 linhas"
+rm -rf "$D27"
 # SessionStore alterado (canal' de EntregaMensagem): a copia deixa de ser fiel
 sed "0,/SubSeq(@, 1, i-1)/s//SubSeq(@, 1, i)/" "$AQUI/SessionStore.tla" > "$T/s.tla"
 chk env ORIG="$T/s.tla" && bad "T-p-10 SessionStore divergente recusado" || ok "T-p-10 SessionStore divergente recusado"

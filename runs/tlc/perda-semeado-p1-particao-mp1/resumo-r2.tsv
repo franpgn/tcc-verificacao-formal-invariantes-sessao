@@ -1,0 +1,9 @@
+semeado	p1	mp1	particao	r2	I5	VIOLADA	traco_de_5_estados	1381	364	1s	PerderNaVista=0:0
+semeado	p1	mp1	particao	r2	I6	VIOLADA	traco_de_5_estados	3463	818	1s	PerderNaVista=0:0
+semeado	p1	mp1	particao	r2	I1P	SEM_VIOLACAO_ATE_AQUI	limite_de_tempo_600s	121225784	7424423	600s	PerderNaVista=0:0
+semeado	p1	mp1	particao	r2	I1F	VIOLADA	traco_de_4_estados	265	80	1s	PerderNaVista=0:0
+semeado	p1	mp1	particao	r2	I4F	VIOLADA	traco_de_4_estados	295	89	1s	PerderNaVista=0:0
+semeado	p1	mp1	particao	r2	I2Fa	VIOLADA	traco_de_4_estados	1177	307	1s	PerderNaVista=0:0
+semeado	p1	mp1	particao	r2	I1M	VIOLADA	traco_de_4_estados	275	81	1s	PerderNaVista=0:0
+semeado	p1	mp1	particao	r2	I4M	VIOLADA	traco_de_4_estados	275	81	1s	PerderNaVista=0:0
+semeado	p1	mp1	particao	r2	I2Fb	VIOLADA	traco_de_3_estados	117	33	1s	PerderNaVista=0:0

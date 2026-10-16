@@ -1,0 +1,7 @@
+semeado	particao	r2	I1P	SEM_VIOLACAO	exaustivo	180269215	8850588	486s
+semeado	particao	r2	I1F	VIOLADA	traco_de_4_estados	275	81	0s
+semeado	particao	r2	I4F	VIOLADA	traco_de_4_estados	275	81	1s
+semeado	particao	r2	I2Fa	VIOLADA	traco_de_5_estados	1163	304	1s
+semeado	particao	r2	I1M	VIOLADA	traco_de_4_estados	275	81	1s
+semeado	particao	r2	I4M	VIOLADA	traco_de_4_estados	275	81	1s
+semeado	particao	r2	I2Fb	VIOLADA	traco_de_3_estados	117	33	1s

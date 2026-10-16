@@ -59,7 +59,7 @@ SPECDIR="$AQUI"
 if [[ -n "${MUTACAO:-}" ]]; then
   SPECDIR="$(mktemp -d "${TMPDIR:-/tmp}/tlc-mut-XXXXXX")"
   cp "$AQUI/SessionStore.tla" "$AQUI/MCSession.tla" "$SPECDIR/"
-  sed -E "s/^( *)canal' = \[canal EXCEPT !\[r\] = SubSeq\(@, 1, i-1\) \\o SubSeq\(@, i\+1, Len\(@\)\)\]$/\1canal' = canal/" "$AQUI/MCPerda.tla" > "$SPECDIR/MCPerda.tla"
+  sed -E "s/^( *)canal' = \[canal EXCEPT !\[r\] = SubSeq\(@, 1, i-1\) .o SubSeq\(@, i\+1, Len\(@\)\)\]$/\1canal' = canal/" "$AQUI/MCPerda.tla" > "$SPECDIR/MCPerda.tla"
   grep -qE "^ +canal' = canal$" "$SPECDIR/MCPerda.tla" \
     || { echo "mutacao nao aplicada" >&2; exit 5; }
   echo "Mutacao: $(diff <(tr -d '\r' < "$AQUI/MCPerda.tla") <(tr -d '\r' < "$SPECDIR/MCPerda.tla") | grep -c '^[<>]') linhas diferem (esperado 2)"

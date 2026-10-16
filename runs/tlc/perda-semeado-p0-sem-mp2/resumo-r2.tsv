@@ -1,0 +1,9 @@
+semeado	p0	mp2	sem	r2	I5	VIOLADA	traco_de_3_estados	133	37	0s	PerderQualquer=6:9
+semeado	p0	mp2	sem	r2	I6	VIOLADA	traco_de_3_estados	226	63	1s	PerderQualquer=13:16
+semeado	p0	mp2	sem	r2	I1P	SEM_VIOLACAO	exaustivo	117588	5874	3s	PerderQualquer=3825:7021
+semeado	p0	mp2	sem	r2	I1F	SEM_VIOLACAO	exaustivo	117588	5874	2s	PerderQualquer=3804:7021
+semeado	p0	mp2	sem	r2	I4F	VIOLADA	traco_de_5_estados	648	158	1s	PerderQualquer=43:47
+semeado	p0	mp2	sem	r2	I2Fa	SEM_VIOLACAO	exaustivo	117588	5874	2s	PerderQualquer=3822:7021
+semeado	p0	mp2	sem	r2	I1M	SEM_VIOLACAO	exaustivo	117588	5874	1s	PerderQualquer=3814:7021
+semeado	p0	mp2	sem	r2	I4M	SEM_VIOLACAO	exaustivo	117588	5874	1s	PerderQualquer=3819:7021
+semeado	p0	mp2	sem	r2	I2Fb	VIOLADA	traco_de_3_estados	124	31	1s	PerderQualquer=5:7

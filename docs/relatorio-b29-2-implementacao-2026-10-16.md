@@ -67,18 +67,18 @@ Parada obrigatória e retorno ao Senior: exit 5 em L-0 (módulo ou sintaxe), IPv
 ### B0: preparo (sem alterar a rede)
 
 ```bash
-ssh server1@192.168.137.150
+ssh -i ~/.ssh/id_ed25519_tccf3 -o IdentitiesOnly=yes server1@192.168.137.150   # sem -i o ssh deu 'Permission denied' (relatorio L-0/L-1, 2026-10-16)
 # ATENCAO: NAO colar o B0 inteiro de uma vez; o 'tmux new' abre outro shell e as linhas seguintes seriam perdidas/digitadas fora do lugar.
 #   Colar so ate o 'tmux new' e o restante DENTRO da sessao tmux.
 # exclusividade da VM: o flock envolve a sessao tmux; o servidor tmux herda o fd e o lock so e liberado quando a sessao encerra
 sudo -n true && flock /var/lock/tcc-vm.lock tmux new -s l-gate      # sessao INTERATIVA (o Ctrl-C de L-5 precisa dela)
 cd ~/tcc-desenvolvimento             # ajustar
-git checkout feature/b29-2-inject-netdegrade
+git checkout test/b29-gate-v4        # branch do bundle de S0 (contem feature/b29-2-inject-netdegrade)
 mkdir -p runs/gate-netdegrade
 grep -rlI $'\r' scripts/ | wc -l     # esperado 0
 
 for c in nsenter tc flock sudo ping systemd-run curl awk tmux; do command -v $c >/dev/null || echo "FALTA $c"; done
-tc -V; ls /usr/lib/tc/normal.dist; uname -r          # registro do ambiente (P-11)
+tc -V; ls /usr/lib/x86_64-linux-gnu/tc/normal.dist; uname -r          # registro do ambiente (P-11)
 # um modulo por chamada; modulo embutido no kernel nao aparece em lsmod (conferir tambem /sys/module)
 for m in sch_prio sch_netem cls_u32; do
   sudo modprobe $m || echo "FALHA modprobe $m"

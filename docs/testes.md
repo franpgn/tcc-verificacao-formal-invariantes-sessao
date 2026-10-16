@@ -4,7 +4,7 @@
 
 ## Suíte unitária (JUnit 5)
 
-Execução: `mvn -f workload/pom.xml test`. Estado atual: **49/49 verde**.
+Execução: `mvn -f workload/pom.xml test`. Estado atual: **49/49 verde** nos blocos da tabela abaixo; na branch de integracao `feature/etapa-formal-integracao` (2026-10-16) o Surefire completo mede **184 testes, 0 falhas, 0 erros, 2 skipped** (inclui B-33), e `python -m unittest` em `analysis/` mede 9/9.
 
 | Classe de teste | n | Cobre |
 |---|---|---|
@@ -179,7 +179,7 @@ Sem VM (rodam em qualquer host; `bash scripts/inject-netdegrade.test.sh`). Os te
 
 **O que os *shims* NÃO provam** (todos pendentes do gate L-0 a L-6 na VM, T-C2): que o kernel tem `sch_prio`/`sch_netem`/`cls_u32` e aceita `gemodel`, `reorder` e `corrupt`; que o filtro `u32` casa o tráfego JGroups e deixa Hot Rod e SSH intactos; que o `netem` produz a taxa configurada no fio; o formato real de `tc -s qdisc` e de `ping` (o *parser* foi escrito contra o formato documentado, não contra a VM); o `nsenter` com `sudo` rootful; qualquer efeito sobre TCP, JGroups ou Infinispan.
 
-Resultado desta rodada: Git Bash (Windows, MSYS bash 3.6) 284 PASS / 0 FAIL / 1 SKIP (T-nd-21: sem `flock`); Ubuntu (WSL2, bash 5.1.16, `flock` real) 292 PASS / 0 FAIL / 0 SKIP. Mutação de sanidade (5 mutantes do script, WSL): removida a checagem de `clsact` → 3 FAIL; `eh_nosso` sempre verdadeiro → falhas em T-nd-9/10/11; `--direction in` tocando o alvo → falhas em T-nd-3/10; tolerância do ping ×10 → 3 FAIL (T-nd-15); sem o `trap` explícito de `TERM` → 0 FAIL (mutante equivalente: o bash executa o `trap EXIT` ao morrer por `SIGTERM`).
+Resultado desta rodada: Git Bash (Windows, MSYS bash 3.6) 298 PASS / 0 FAIL / 1 SKIP (T-nd-21: sem `flock`); Ubuntu (WSL2, bash 5.1.16, `flock` real) 306 PASS / 0 FAIL / 0 SKIP (medido na integracao 2026-10-16; a rodada original da branch era 284/292, antes das correcoes R3/R4 e do shim de readlink). Mutação de sanidade (5 mutantes do script, WSL): removida a checagem de `clsact` → 3 FAIL; `eh_nosso` sempre verdadeiro → falhas em T-nd-9/10/11; `--direction in` tocando o alvo → falhas em T-nd-3/10; tolerância do ping ×10 → 3 FAIL (T-nd-15); sem o `trap` explícito de `TERM` → 0 FAIL (mutante equivalente: o bash executa o `trap EXIT` ao morrer por `SIGTERM`).
 
 ## Como reproduzir
 
@@ -211,3 +211,15 @@ bash scripts/inject-netdegrade.test.sh    # 284-292 PASS (T-nd-21 e SKIP onde na
 `spec/run-tlc-propriedades.sh` roda `I1F`, `I4F`, `I2Fa`, `I2Fb`, `I1M`, `I4M` (mais `I4Fp`, `I4Mp`, `I1P`, `MesclarPerdeChave`) sobre o cenário
 semeado (`SpecSemeada`) ou o modelo livre, isolando falha (`SemFalha`/`SoQueda`/`SoParticao`). Resultados e limites em
 `docs/relatorio-b32-tlc-propriedades-2026-10-09.md`; logs brutos em `runs/tlc/prop-*/`. Requer `tla2tools.jar` (variável `TLA_TOOLS`) e Java 11+.
+
+## Integracao local `feature/etapa-formal-integracao` (2026-10-16)
+
+Contagens medidas apos cada fusao (Git Bash PASS/FAIL/SKIP | WSL Ubuntu com `flock` real). Detalhes em `docs/integracao-etapa-formal-2026-10-16.md`.
+
+| Passo | inject-partition | inject-netdegrade | inject-jitter | Outras |
+|---|---|---|---|---|
+| eol + B-29 + gate | 99/0/2 \| 101/0/1 | n/a | 35/0 \| 35/0 | |
+| + fix contadores (A1/A3) | 111/0/2 \| 113/0/1 | n/a | | |
+| + fix netns (A2), conflito resolvido | 125/0/2 \| 127/0/1 | n/a | | |
+| + B-29.2 | 125/0/2 \| 127/0/1 | 298/0/1 \| 306/0/0 | 35/0 \| 35/0 | |
+| + B-32 (+auditoria) + B-33 (final) | 125/0/2 \| 127/0/1 | 298/0/1 \| 306/0/0 | 35/0 \| 35/0 | `mvn test` 184/0/0 (2 skipped); `unittest` analysis 9/9 |

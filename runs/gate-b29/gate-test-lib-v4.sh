@@ -209,6 +209,16 @@ reset_shims_v4() {
         L0C_PRAZO L0C_MIN L0C_MAX L0C_LIMITE G5B_DUR G5B_T_KILL G5B_MARGEM_A G5B_MARGEM_B G5B_ESPERA_SPLIT G5B_PERSISTE_S \
         G5B_LIMITE_S G5B_ESPERA_START G5B_TOL_S G5B_FOLGA_S G5B_ACC SHIM_LOGS_SEM_SPLIT SHIM_LOGS_SEM_MERGE SHIM_MERGE_PREMATURE
 }
+# roda COM LIMITE DE TEMPO por caso (G_CASO_TIMEOUT, padrao 240 s; o caso mais longo leva ~40 s): redefine o `roda` de gate-test-lib.sh.
+# Estouro => rc 124 (as asserções de rc do caso falham, o teste NAO pendura) e aviso em $SAIDA.
+roda() {
+  local entrada="$1"; shift
+  printf '%s
+' "$entrada" | PATH="$PATH_SHIMS" TCC_DIR="$TCC" G_TESTE=1 timeout -k 5 "${G_CASO_TIMEOUT:-240}" bash "$@" > "$TMP/saida.txt" 2>&1; RC=${PIPESTATUS[1]}
+  SAIDA="$(cat "$TMP/saida.txt")"
+  [ "$RC" != 124 ] || { echo "TRAVOU: caso excedeu ${G_CASO_TIMEOUT:-240} s (timeout externo): $*" >&2; SAIDA+=$'
+TRAVOU'; }
+}
 # roda_tty <entrada-stdin> <script> [args...]: como `roda`, mas com [ -t 0 ] verdadeiro (BASH_ENV) e SEM G_TESTE
 roda_tty() {
   local entrada="$1"; shift

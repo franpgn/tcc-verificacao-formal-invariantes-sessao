@@ -72,8 +72,10 @@ roda_um() { # roda_um <indice>   (escreve $RES/<id>.res)
     cmp -s "$d/orig" "$d/${FILES[$i]}" && { echo "NAO_APLICADO" > "$RES/$suite-$id.res"; rm -rf "$d"; return; }
     rm -f "$d/orig"
   fi
-  if [ "$suite" = l ]; then L_DIR="$d" bash "$ND/l-gate.test.sh" > "$RES/$suite-$id.log" 2>&1; rc=$?
-  else G5B_DIR="$d" bash "$AQUI/g5b.test.sh" > "$RES/$suite-$id.log" 2>&1; rc=$?; fi
+  # timeout externo por mutante (MUT_TIMEOUT, padrao 1200 s): um mutante que pendura NAO conta como morto (rc 124 = TRAVOU, anomalia)
+  if [ "$suite" = l ]; then L_DIR="$d" timeout -k 10 "${MUT_TIMEOUT:-1200}" bash "$ND/l-gate.test.sh" > "$RES/$suite-$id.log" 2>&1 </dev/null; rc=$?
+  else G5B_DIR="$d" timeout -k 10 "${MUT_TIMEOUT:-1200}" bash "$AQUI/g5b.test.sh" > "$RES/$suite-$id.log" 2>&1 </dev/null; rc=$?; fi
+  if [ "$rc" = 124 ] || [ "$rc" = 137 ]; then echo "TRAVOU" > "$RES/$suite-$id.res"; rm -rf "$d"; return; fi
   if [ "$id" = baseline ]; then [ "$rc" = 0 ] && echo "PASSOU" || echo "FALHOU"; else [ "$rc" != 0 ] && echo "MORTO" || echo "SOBREVIVEU"; fi > "$RES/$suite-$id.res"
   grep -m3 '^FAIL' "$RES/$suite-$id.log" | cut -c1-110 | tr '\n' '|' >> "$RES/$suite-$id.res"
   rm -rf "$d"

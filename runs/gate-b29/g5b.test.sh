@@ -14,6 +14,10 @@ nenhuma_acao() { grep -cE '^(nsenter|systemd-run|systemctl|tc)|^INJ' "$SHIM_LOG"
 # parametros de teste: janela curta, mesmas relacoes do real (KILL depois do split, persistencia, margem curta no B)
 cenario_curto() { export G5B_DUR=8 G5B_T_KILL=3 G5B_ESPERA_START=4 G5B_ESPERA_SPLIT=7 G5B_PERSISTE_S=2 G5B_LIMITE_S=20 G5B_MARGEM_B=6 G5B_TOL_S=5 G5B_FOLGA_S=3; }
 nao_zero() { [ "$1" != 0 ] && echo 1 || echo 0; }
+# espera_cond <s> <cmd...>: repete cmd a cada 0,2 s por NO MAXIMO <s> segundos (rc 1 se esgotar). Os vigias de segundo plano dos
+# casos T-b-5/6d/8e/8f eram `until ...; do sleep 0.2; done` SEM LIMITE: se o g5b.sh abortava antes de escrever o arquivo esperado
+# (ex.: sem event=start dentro de G5B_ESPERA_START=4 s numa maquina carregada), o vigia girava para sempre e o `wait` pendurava o teste.
+espera_cond() { local t="$1" i=0; shift; until "$@" >/dev/null 2>&1; do i=$((i+1)); [ "$i" -lt $((t*5)) ] || return 1; sleep 0.2; done; }
 
 echo "== T-b-0: sintaxe, uso e dry-run =="
 bash -n "$G5B" 2>/dev/null; ok "T-b-0 bash -n g5b.sh" "0" "$?"
@@ -97,8 +101,8 @@ ok "T-b-4 abort chamou --heal; dead-man armado" "1 1" "$(conta 'INJ heal' "$SHIM
 
 echo "== T-b-5: modo A: o corte NAO persiste (clsact some sozinho apos o KILL) =="
 reset_shims_v4; cenario_curto; export G5B_PERSISTE_S=6
-( until grep -q 'rc_injetor=' "$RA/estado.txt" 2>/dev/null; do sleep 0.2; done; rm -f "$SHIM_STATE"/clsact.4003 ) &
-roda "GO" "$G5B" A; wait
+( espera_cond 90 grep -q 'rc_injetor=' "$RA/estado.txt" && rm -f "$SHIM_STATE"/clsact.4003 ) & VIGIA=$!
+roda "GO" "$G5B" A; wait "$VIGIA"
 RES="$(cat "$RA/resultado.txt" 2>/dev/null)"
 ok "T-b-5 rc != 0" "1" "$(nao_zero "$RC")"; contem "T-b-5 FAIL clsact sumiu" "FAIL clsact SUMIU" "$RES"
 nao_contem "T-b-5 nao chegou ao --heal manual de A" "PASS --heal rc=0" "$RES"
@@ -121,8 +125,8 @@ RES="$(cat "$RA/resultado.txt" 2>/dev/null)"
 ok "T-b-6c MergeView de 2 membros (nao 3): rc != 0" "1" "$(nao_zero "$RC")"; contem "T-b-6c FAIL MergeView de 3" "FAIL MergeView de 3 membros nao apareceu" "$RES"
 
 reset_shims_v4; cenario_curto; export G5B_LIMITE_S=6
-( until [ -e "$RA/heal.log" ]; do sleep 0.2; done; echo nodes2 > "$SHIM_STATE/health.mode" ) &
-roda "GO" "$G5B" A; wait
+( espera_cond 90 test -e "$RA/heal.log" && echo nodes2 > "$SHIM_STATE/health.mode" ) & VIGIA=$!
+roda "GO" "$G5B" A; wait "$VIGIA"
 RES="$(cat "$RA/resultado.txt" 2>/dev/null)"
 ok "T-b-6d cluster nao volta a size=3 depois do heal: rc != 0" "1" "$(nao_zero "$RC")"; contem "T-b-6d FAIL cluster nao voltou" "FAIL cluster nao voltou a size=3 HEALTHY" "$RES"
 ok "T-b-6d nao desarmou (dead-man segue armado)" "0 1" "$(conta 'systemctl stop' "$SHIM_LOG") $(estado_timers)"
@@ -166,14 +170,14 @@ reset_shims_v4; cenario_curto; export STUB_HEAL_RC=1; roda "GO" "$G5B" B; unset 
 RES="$(cat "$RB/resultado.txt" 2>/dev/null)"
 ok "T-b-8d unit limpa mas termina rc != 0: rc != 0" "1" "$(nao_zero "$RC")"; contem "T-b-8d FAIL journal" "FAIL journal" "$RES"
 reset_shims_v4; cenario_curto; export G5B_PERSISTE_S=5
-( until grep -q 'rc_injetor=' "$RB/estado.txt" 2>/dev/null; do sleep 0.2; done; rm -f "$SHIM_STATE"/clsact.4003 ) &
-roda "GO" "$G5B" B; wait
+( espera_cond 90 grep -q 'rc_injetor=' "$RB/estado.txt" && rm -f "$SHIM_STATE"/clsact.4003 ) & VIGIA=$!
+roda "GO" "$G5B" B; wait "$VIGIA"
 RES="$(cat "$RB/resultado.txt" 2>/dev/null)"
 ok "T-b-8e cura antes do prazo (intervencao externa): rc != 0" "1" "$(nao_zero "$RC")"; contem "T-b-8e FAIL clsact sumiu" "FAIL clsact SUMIU" "$RES"
 
 reset_shims_v4; cenario_curto; export G5B_LIMITE_S=6
-( until [ -e "$RB/journal-unit.txt" ]; do sleep 0.2; done; echo nodes2 > "$SHIM_STATE/health.mode" ) &
-roda "GO" "$G5B" B; wait
+( espera_cond 90 test -e "$RB/journal-unit.txt" && echo nodes2 > "$SHIM_STATE/health.mode" ) & VIGIA=$!
+roda "GO" "$G5B" B; wait "$VIGIA"
 RES="$(cat "$RB/resultado.txt" 2>/dev/null)"
 ok "T-b-8f cluster nao volta a size=3 depois do disparo: rc != 0" "1" "$(nao_zero "$RC")"; contem "T-b-8f FAIL cluster nao voltou" "FAIL cluster nao voltou a size=3 HEALTHY" "$RES"
 

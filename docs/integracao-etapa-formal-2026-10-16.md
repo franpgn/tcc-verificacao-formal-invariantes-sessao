@@ -43,3 +43,9 @@ Ver tabela em `docs/testes.md` (secao "Integracao local"). Final: inject-partiti
 - `.gitattributes` (eol=lf) foi aplicado depois de os arquivos ja estarem no worktree; 44 arquivos ficaram CRLF no disco (indice LF), o que quebrava `inject-jitter.test.sh` no WSL (`$'\r': command not found`). Corrigido restaurando esses arquivos a partir do indice (`git checkout`); sem alteracao de conteudo versionado.
 - A linha "Estado atual: 49/49" de `docs/testes.md` foi qualificada com a medicao da integracao; a linha de resultado de `inject-netdegrade` (284/292) foi atualizada para 298/306.
 - `spec/` nao foi tocado por esta tarefa (os arquivos de B-32 vieram intactos da origem). Nenhum push.
+
+## Segunda rodada: gate v3, g1fix e C-2 (2026-10-16)
+
+Aplicada em cima de `e6e5985`, sem push e sem VM. Ordem real: (1) `git merge --ff-only test/b29-gate-v3-g1fix` (confirmado antes com `git merge-base --is-ancestor`; traz vm-v3, execucao, g1fix e a sonda); (2) `git cherry-pick 5573310 4944a5d 0de0476` de `feature/b33-3-c2-fixtures` (sem conflito; novos SHAs 3672d50, c470d5a, a1ba9ba); (3) `git cherry-pick 8394843` de `test/b29-gate-vm` (novo SHA c0b48c9), conflito add/add em `g5.sh`, `g56-lib.sh`, `g6.sh` e `go.log`: mantida a versao de HEAD nos tres scripts (diff contra `test/b29-gate-v3-g1fix` vazio, sem regressao dos scripts corrigidos) e `go.log` unido (as 3 linhas de HEAD; o lado do cherry-pick era vazio). Branches de origem inalteradas (SHAs conferidos antes e depois: g1fix 55caf9f, c2-fixtures 0de0476, gate-vm 8394843). `spec/` intocado.
+
+Revalidacao (uma suite por vez): `mvn test` 275/0/0, 0 skipped; g1 61/0; g1b falhas=0; g5 50/0; g6 70/0; partition 125/0/2 (Git Bash) e 127/0/1 (WSL); netdegrade 298/0/1 e 306/0/0; jitter 35/0 em ambos; `unittest` analysis 9 OK. `git ls-files --eol`: nenhum arquivo `i/crlf` e nenhum `.sh` com `w/crlf`; modos dos scripts preservados.

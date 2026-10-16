@@ -1,0 +1,30 @@
+TLC2 Version 2.19 of 08 August 2024 (rev: 5a47802)
+Running breadth-first search Model-Checking with fp 10 and seed 1431810461010725973 with 4 workers on 20 cores with 2731MB heap and 64MB offheap memory [pid: 27132] (Windows 11 10.0 amd64, Oracle Corporation 17.0.2 x86_64, MSBDiskFPSet, DiskStateQueue).
+Parsing file C:\Users\Francesco\AppData\Local\Temp\tlc-mut-nH5vuH\MCRelogio.tla
+Parsing file C:\Users\Francesco\AppData\Local\Temp\tlc-mut-nH5vuH\MCSession.tla
+Parsing file C:\Users\Francesco\AppData\Local\Temp\tlc-mut-nH5vuH\SessionStore.tla
+Parsing file C:\Users\Francesco\AppData\Local\Temp\tlc-jtmp-Vh8HiJ\TLC.tla
+Parsing file C:\Users\Francesco\AppData\Local\Temp\tlc-jtmp-Vh8HiJ\Naturals.tla
+Parsing file C:\Users\Francesco\AppData\Local\Temp\tlc-jtmp-Vh8HiJ\Sequences.tla
+Parsing file C:\Users\Francesco\AppData\Local\Temp\tlc-jtmp-Vh8HiJ\FiniteSets.tla
+Semantic processing of module Naturals
+Semantic processing of module Sequences
+Semantic processing of module FiniteSets
+Semantic processing of module SessionStore
+Semantic processing of module TLC
+Semantic processing of module MCSession
+Semantic processing of module MCRelogio
+Starting... (2026-10-16 13:22:17)
+Computing initial states...
+Finished computing initial states: 1 distinct state generated at 2026-10-16 13:22:17.
+Progress(11) at 2026-10-16 13:22:20: 964,693 states generated (964,693 s/min), 67,376 distinct states found (67,376 ds/min), 40,690 states left on queue.
+Progress(16) at 2026-10-16 13:23:20: 27,197,147 states generated (26,232,454 s/min), 1,149,331 distinct states found (1,081,955 ds/min), 352,400 states left on queue.
+Model checking completed. No error has been found.
+  Estimates of the probability that TLC did not check all reachable states
+  because two distinct states had the same fingerprint:
+  calculated (optimistic):  val = 4.6E-6
+  based on the actual fingerprints:  val = 2.0E-7
+53541786 states generated, 1627731 distinct states found, 0 states left on queue.
+The depth of the complete state graph search is 19.
+The average outdegree of the complete state graph is 1 (minimum is 0, the maximum 13 and the 95th percentile is 3).
+Finished in 01min 57s at (2026-10-16 13:24:14)

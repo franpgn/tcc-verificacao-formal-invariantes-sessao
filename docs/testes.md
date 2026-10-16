@@ -240,3 +240,19 @@ Contagens medidas (Git Bash | WSL): g5 50/0 | 50/0; g6 70/0 | 70/0; g1 48/0 | 48
 ### Integracao local, segunda rodada (gate v3 + g1fix + C-2 + REP=2)
 
 Medido em `feature/etapa-formal-integracao` apos `ff-only` de `test/b29-gate-v3-g1fix`, cherry-pick de C-2 (3 commits) e de `8394843` (Git Bash | WSL): `mvn test` 275/0/0 (0 skipped); g1 61/0; g1b falhas=0; g5 50/0; g6 70/0; inject-partition 125/0/2 | 127/0/1; inject-netdegrade 298/0/1 | 306/0/0; inject-jitter 35/0 | 35/0; `unittest` analysis 9/9. Estas contagens substituem as de g1 (48) e `mvn` (184 e 205) citadas acima. Detalhes em `docs/integracao-etapa-formal-2026-10-16.md`.
+
+## B-36 / R.1 e R.2: variante `MCRelogio` (max na entrega), controles (2026-10-16)
+
+Branch `test/b36-relogio-max`. `SessionStore.tla`, `MCSession.tla` e `runs/tlc/` preexistente inalterados (`git diff` vazio). Especificacao: `docs/decisoes-senior-2026-10-16.md` secao 1.
+
+```bash
+bash spec/check-variante-relogio.sh        # diff da copia de EntregaMensagem: OK, 44 -> 45 linhas, 1 linha autorizada vira 2
+bash spec/check-variante-relogio.test.sh   # 4 PASS (original aceito; 3 mutacoes recusadas)
+# SANY (jdk-17): java -cp tla2tools.jar tla2sany.SANY spec/MCRelogio.tla  -> sem erros
+# R.2, controles (MUTACAO=1 troca "Max(@, TsMsg(m))" por "@" numa copia temporaria):
+MUTACAO=1 TAG=w1 WORKERS=1 spec/run-tlc-relogio.sh livre sem r3 I1P I1F I4F I2Fb RelogioDomina
+MUTACAO=1 TAG=c2 MAXCANAL=2 MAXRELOGIO=3 WORKERS=4 spec/run-tlc-relogio.sh semeado sem r2 I2Fa I1M I4M I4Mp
+MUTACAO=1 TAG=c2 MAXCANAL=2 MAXRELOGIO=3 WORKERS=4 TIMEOUT_SECS=900 spec/run-tlc-relogio.sh semeado sem r3 I1F I1P
+```
+
+Saidas em `runs/tlc/relogio-livre-sem-mut-w1/` e `runs/tlc/relogio-semeado-sem-mut-c2/` (`resumo-*.tsv` mais `.cfg`/`.out`). Os numeros (gerados/distintos) coincidem com os de `runs/tlc/prop-livre-sem-w1/resumo-r3.tsv`, `runs/tlc/audit-b32/cov-sem-r2/resumo-r2.tsv` e `runs/tlc/prop-sem-c2r3/resumo-r3.tsv`. Os niveis 1, 1b e 2 (variante sem mutacao) sao R.3 e ainda nao foram executados.

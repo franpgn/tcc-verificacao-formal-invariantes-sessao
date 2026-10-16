@@ -115,7 +115,7 @@ ok "T-g1-8 >= 6 linhas HEALTHY/3 apos o end (2 ciclos x 3 portas)" "1" "$([ "$(a
 contem "T-g1-8 t_merge.txt mantem t_merge_s (polling)" "t_merge_s=" "$(cat "$T")"
 ok "T-g1-8 t_merge.txt: t_saude_primeira_ns = 1a amostra HEALTHY/3" "$F3" "$(sed -n 's/^t_saude_primeira_ns=//p' "$T")"
 contem "T-g1-8 t_merge.txt: ISO" "t_saude_primeira_iso=20" "$(cat "$T")"
-ok "T-g1-8 t_merge_saude_s calculado a partir dela" "$(( (F3 - EN) / 1000000000 ))" "$(sed -n 's/^t_merge_saude_s=\([0-9]*\).*//p' "$T")"
+ok "T-g1-8 t_merge_saude_s calculado a partir dela" "$(( (F3 - EN) / 1000000000 ))" "$(sed -n 's/^t_merge_saude_s=\([0-9]*\).*/\1/p' "$T")"
 a=$(linhas "$S"); sleep 2.5; b=$(linhas "$S")
 ok "T-g1-8 log parou ao fim do g1.sh" "$a" "$b"
 

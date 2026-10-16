@@ -1,0 +1,15 @@
+t0_up_epoch=1792140882
+1792140882.196389660 11222:ERR 11223:ERR 11224:ERR
+1792140884.212257062 11222:ERR 11223:ERR 11224:ERR
+1792140886.433616667 "health_status":"HEALTHY","number_of_nodes":3 "health_status":"HEALTHY","number_of_nodes":3 "health_status":"HEALTHY","number_of_nodes":3
+1792140888.471869962 "health_status":"HEALTHY","number_of_nodes":3 "health_status":"HEALTHY","number_of_nodes":3 "health_status":"HEALTHY","number_of_nodes":3
+1792140890.502267155 "health_status":"HEALTHY","number_of_nodes":3 "health_status":"HEALTHY","number_of_nodes":3 "health_status":"HEALTHY","number_of_nodes":3
+1792140892.533081846 "health_status":"HEALTHY","number_of_nodes":3 "health_status":"HEALTHY","number_of_nodes":3 "health_status":"HEALTHY","number_of_nodes":3
+1792140894.564269120 "health_status":"HEALTHY","number_of_nodes":3 "health_status":"HEALTHY","number_of_nodes":3 "health_status":"HEALTHY","number_of_nodes":3
+1792140896.594512869 "health_status":"HEALTHY","number_of_nodes":3 "health_status":"HEALTHY","number_of_nodes":3 "health_status":"HEALTHY","number_of_nodes":3
+1792140898.625329860 "health_status":"HEALTHY","number_of_nodes":3 "health_status":"HEALTHY","number_of_nodes":3 "health_status":"HEALTHY","number_of_nodes":3
+1792140900.653411738 "health_status":"HEALTHY","number_of_nodes":3 "health_status":"HEALTHY","number_of_nodes":3 "health_status":"HEALTHY","number_of_nodes":3
+1792140902.683175013 "health_status":"HEALTHY","number_of_nodes":3 "health_status":"HEALTHY","number_of_nodes":3 "health_status":"HEALTHY","number_of_nodes":3
+1792140904.710349127 "health_status":"HEALTHY","number_of_nodes":3 "health_status":"HEALTHY","number_of_nodes":3 "health_status":"HEALTHY","number_of_nodes":3
+1792140906.739186180 "health_status":"HEALTHY","number_of_nodes":3 "health_status":"HEALTHY","number_of_nodes":3 "health_status":"HEALTHY","number_of_nodes":3
+ESTAVEL size=3 HEALTHY: primeira leitura boa +4s, estavel por 20s (total 24s)

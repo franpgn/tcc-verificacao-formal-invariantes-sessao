@@ -1,0 +1,10 @@
+PASS TERM: injetor saiu com rc=143 (128+SIGTERM, via trap)
+PASS TERM: sem clsact apos o trap
+PASS TERM: marcadores start e end presentes
+size=3 HEALTHY apos 0 s
+PASS KILL: injetor saiu com rc=137 (128+SIGKILL)
+PASS KILL: clsact FICOU (esperado: nenhum trap captura SIGKILL)
+PASS KILL: sem marcador end (esperado)
+PASS KILL: --heal rc=0
+PASS KILL: sem clsact apos --heal
+size=3 HEALTHY apos 0 s

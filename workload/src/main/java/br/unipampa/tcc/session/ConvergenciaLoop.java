@@ -48,7 +48,10 @@ public final class ConvergenciaLoop {
         void dormirNs(long ns) throws InterruptedException;
 
         static Relogio sistema() {
-            EpochClock ancora = EpochClock.capturarAgora();
+            return sistema(EpochClock.capturarAgora());
+        }
+
+        static Relogio sistema(EpochClock ancora) {
             return new Relogio() {
                 @Override public long agoraNs() { return ancora.paraEpochNanos(System.nanoTime()); }
                 @Override public void dormirNs(long ns) throws InterruptedException {

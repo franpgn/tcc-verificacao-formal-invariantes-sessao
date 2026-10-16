@@ -17,6 +17,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.BooleanSupplier;
 import java.util.function.Supplier;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -120,7 +121,14 @@ public final class WorkloadMain {
             // converter cada evento monotônico em epoch-ns no CSV.
             EpochClock relogio = EpochClock.capturarAgora();
             EventCsvWriter eventos = new EventCsvWriter(politica);
-            SessionOps ops = new SessionOps(rcm, latency, auditor, eventos, relogio);
+            // B-33: marcadores de falha, rastro de cliente (Q-10) e parada da carga no fim da
+            // falha; tudo desligado por padrao (sem as opcoes novas o fluxo e o de B-24).
+            Marcadores marcadores = lerMarcadores(cli);
+            RastroCliente rastro = (marcadores != null || cli.varredura) ? new RastroCliente() : null;
+            SessionOps ops = new SessionOps(rcm, latency, auditor, eventos, relogio, rastro);
+            BooleanSupplier parar = cli.paraNoFimDaFalha
+                    ? new ParadaPorMarcador(Path.of(cli.marcadores))
+                    : () -> false;
 
             System.out.printf(
                 "Warm-up ate +%ds; medicao a partir de +%ds; total %ds%n",
@@ -137,7 +145,7 @@ public final class WorkloadMain {
                 final int tid = t;
                 final long seedThread = cli.seedBase + (long) tid + (long) rep * 1_000_003L;
                 pool.submit(() -> rodarCliente(ops, tid, fim, cli.scenario,
-                        seedThread, opsAlvoPorThread, totalOps));
+                        seedThread, opsAlvoPorThread, totalOps, parar));
             }
             pool.shutdown();
             pool.awaitTermination(cli.duracaoSeg + 30, TimeUnit.SECONDS);
@@ -147,7 +155,18 @@ public final class WorkloadMain {
             // aproximacao mais direta de "quiescencia" disponivel sem W_quiesc
             // (janela deslizante), que fica para o controlador (B-26). Ver
             // docs/plano-consolidacao-b21-b23-b24-2026-10-02.md SS3.3.
-            auditor.rodadaUnica(leitores.leitoresSessao(), leitores.leitoresIdentidade());
+            long fimCargaNs = relogio.paraEpochNanos(System.nanoTime());
+            if (cli.convergencia) {
+                // B-33: laco de convergencia substitui a rodada unica.
+                marcadores = executarConvergencia(cli, rcm, leitores, auditor, relogio,
+                        lerMarcadores(cli), fimCargaNs, rep);
+            } else {
+                auditor.rodadaUnica(leitores.leitoresSessao(), leitores.leitoresIdentidade());
+                marcadores = lerMarcadores(cli);
+            }
+            if (cli.varredura) {
+                executarVarredura(cli, rcm, ops, rastro, rep);
+            }
 
             System.out.printf("Total de operacoes: %d%n", totalOps.get());
             System.out.println("Violacoes detectadas: " + auditor.total());
@@ -166,7 +185,7 @@ public final class WorkloadMain {
             if (cli.csvDir != null && !cli.csvDir.isBlank()) {
                 Path destino = Path.of(cli.csvDir,
                         String.format("rep-%03d.csv", rep));
-                eventos.flush(destino);
+                eventos.flush(destino, marcadores);
                 System.out.printf(
                         "Eventos gravados em %s (registrados=%d, descartados_warmup=%d)%n",
                         destino, eventos.totalRegistrados(), eventos.descartadosWarmup());
@@ -174,11 +193,103 @@ public final class WorkloadMain {
                 // B-23: persistencia das violacoes I1-I6 detectadas nesta repeticao.
                 Path violacoesDestino = Path.of(cli.csvDir,
                         String.format("violacoes-rep-%03d.csv", rep));
-                auditor.dumpCsv(violacoesDestino);
+                List<InvariantAuditor.Coluna> extras = rastro == null ? List.of()
+                        : List.of(new InvariantAuditor.Coluna("classificacao",
+                            v -> "I2".equals(v.invariante())
+                                ? rastro.classificarViolacaoI2(v.chave(), InvariantAuditor.epochNs(v.em()))
+                                : ""));
+                auditor.dumpCsv(violacoesDestino, marcadores, extras);
                 System.out.printf("Violacoes gravadas em %s (total=%d)%n",
                         violacoesDestino, auditor.total());
             }
         }
+    }
+
+    /** B-33: le o arquivo de marcadores (ou {@code null} sem {@code --marker}) e fixa W_recovery. */
+    private static Marcadores lerMarcadores(Cli cli) throws java.io.IOException {
+        if (cli.marcadores == null || cli.marcadores.isBlank()) {
+            return null;
+        }
+        return Marcadores.ler(Path.of(cli.marcadores))
+                .comRecuperacao(cli.wRecoverySeg * 1_000_000_000L);
+    }
+
+    /**
+     * B-33 (O-5): laco de convergencia. {@code t_fim} vem do marcador {@code end}; sem
+     * ele usa o fim da carga (documentado no relatorio). Devolve os marcadores
+     * completados com {@code t_convergencia} ou divergencia persistente.
+     */
+    private static Marcadores executarConvergencia(Cli cli, RemoteCacheManager rcm,
+            LeitoresMultiReplica leitores, InvariantAuditor auditor, EpochClock relogio,
+            Marcadores marcadores, long fimCargaNs, int rep) throws java.io.IOException {
+        RemoteCache<String, SessionState> sessoesTopologia = rcm.getCache("sessions");
+        int esperados = leitores.leitoresSessao().size();
+        ConvergenciaLoop.SondaCluster sonda = () -> {
+            HealthRest.Estado h = HealthRest.consultar(cli.restUrl, cli.usuario, cli.senha);
+            int topologia = sessoesTopologia.getCacheTopologyInfo().getSegmentsPerServer().size();
+            return new ConvergenciaLoop.EstadoCluster(Math.min(h.numeroDeNos(), topologia),
+                    h.healthy("sessions"), h.healthy("counters"));
+        };
+        long tFimNs = marcadores != null && marcadores.fimNs() != null ? marcadores.fimNs() : fimCargaNs;
+        ConvergenciaLoop laco = new ConvergenciaLoop(auditor,
+                leitores.leitoresSessao(), leitores.leitoresIdentidade(), sonda, esperados,
+                ConvergenciaLoop.Relogio.sistema(relogio),
+                cli.convergenciaPeriodoSeg * 1_000_000_000L,
+                cli.convergenciaTetoSeg * 1_000_000_000L, 3);
+        ConvergenciaLoop.Resultado res = laco.executar(tFimNs);
+        System.out.printf("Convergencia: convergiu=%s, persistente=%s, rodadas=%d, t_convergencia=%s ns%n",
+                res.convergiu(), res.divergenciaPersistente(), res.rodadas().size(),
+                res.tConvergenciaRelFimNs());
+        if (cli.csvDir != null && !cli.csvDir.isBlank()) {
+            ConvergenciaLoop.escreverCsv(
+                    Path.of(cli.csvDir, String.format("convergencia-rep-%03d.csv", rep)), res);
+            ConvergenciaLoop.escreverResumo(
+                    Path.of(cli.csvDir, String.format("convergencia-resumo-rep-%03d.json", rep)),
+                    res, tFimNs);
+        }
+        if (marcadores == null) {
+            return null;
+        }
+        return res.convergiu() ? marcadores.comConvergencia(res.tConvergenciaAbsNs())
+                               : marcadores.comDivergenciaPersistente();
+    }
+
+    /**
+     * B-33: varredura final global (I1, I4, I2 global, bloqueio perdido). Le todas as chaves
+     * dos dois caches pelo cliente topology-aware; se a leitura falhar (cache DEGRADED), a
+     * varredura NAO e feita e o erro e registrado (nunca resultado parcial).
+     */
+    private static void executarVarredura(Cli cli, RemoteCacheManager rcm, SessionOps ops,
+            RastroCliente rastro, int rep) throws java.io.IOException {
+        try {
+            Map<String, SessionState> sessoes = materializarTudo(rcm.getCache("sessions"));
+            Map<String, IdentityState> identidades = materializarTudo(rcm.getCache("counters"));
+            VarreduraFinal.Resultado r = VarreduraFinal.varrer(sessoes, identidades,
+                    ops.invalidacoesConfirmadasSnapshot(), rastro, SessionOps.LIMITE_TENTATIVAS);
+            System.out.println(r.resumo());
+            if (cli.csvDir != null && !cli.csvDir.isBlank()) {
+                VarreduraFinal.escreverAchados(
+                        Path.of(cli.csvDir, String.format("varredura-rep-%03d.csv", rep)), r);
+                VarreduraFinal.escreverIdentidades(
+                        Path.of(cli.csvDir, String.format("varredura-identidades-rep-%03d.csv", rep)), r);
+            }
+        } catch (RuntimeException e) {
+            System.err.println("VARREDURA NAO EXECUTADA (leitura global falhou): " + e);
+            if (cli.csvDir != null && !cli.csvDir.isBlank()) {
+                java.nio.file.Files.createDirectories(Path.of(cli.csvDir));
+                java.nio.file.Files.writeString(
+                        Path.of(cli.csvDir, String.format("varredura-rep-%03d.erro.txt", rep)),
+                        String.valueOf(e) + System.lineSeparator());
+            }
+        }
+    }
+
+    private static <V> Map<String, V> materializarTudo(RemoteCache<String, V> cache) {
+        Map<String, V> out = new HashMap<>();
+        for (Map.Entry<String, V> e : cache.entrySet()) {
+            out.put(e.getKey(), e.getValue());
+        }
+        return out;
     }
 
     /**
@@ -306,12 +417,14 @@ public final class WorkloadMain {
      */
     private static void rodarCliente(SessionOps ops, int tid, long deadline,
                                      Scenario cenario, long seed,
-                                     long opsAlvo, AtomicLong totalOps) {
+                                     long opsAlvo, AtomicLong totalOps,
+                                     BooleanSupplier parar) {
         ThreadLocalRandom r = ThreadLocalRandom.current();
         KeyGenerator chaves = new KeyGenerator(seed);
         String identidade = "user-" + tid;
         long executadas = 0;
-        while (System.currentTimeMillis() < deadline && executadas < opsAlvo) {
+        while (System.currentTimeMillis() < deadline && executadas < opsAlvo
+                && !parar.getAsBoolean()) {
             String sid = chaves.nextSessionKey();
             try {
                 switch (cenario.proximaOperacao(r)) {

@@ -198,6 +198,22 @@ esac
 exit 0
 EOF
 
+# readlink: so /proc/<pid>/ns/net. Cada PID tem netns proprio, exceto os nos
+# listados em SHIM_HOSTNET (simula --network=host: mesmo netns do PID 1) e
+# SHIM_NO_NS (leitura falha).
+cat >"${SHIMDIR}/readlink" <<'EOF2'
+#!/usr/bin/env bash
+echo "readlink $*" >>"${SHIM_LOG}"
+case "$1" in
+    /proc/1/ns/net) echo "net:[4026531840]" ;;
+    /proc/*/ns/net)
+        p="${1#/proc/}"; p="${p%%/*}"; d=$((p - 4000))
+        case " ${SHIM_NO_NS:-} " in *" isn${d} "*) exit 1 ;; esac
+        case " ${SHIM_HOSTNET:-} " in *" isn${d} "*) echo "net:[4026531840]" ;; *) echo "net:[40265${p}]" ;; esac ;;
+    *) exit 1 ;;
+esac
+EOF2
+
 # flock: sempre concede o lock (a exclusao real e o T-nd-17).
 cat >"${SHIMDIR}/flock" <<'EOF'
 #!/usr/bin/env bash
@@ -211,7 +227,7 @@ reset_shims() {
     : >"${SHIM_LOG}"
     rm -f "${SHIM_STATE}"/* "${TMP}/marker" "${TMP}/saida" "${LOCK_DIR}"/* 2>/dev/null || true
     unset SHIM_MISSING SHIM_STATUS SHIM_FAIL_PRIO SHIM_FAIL_NETEM SHIM_NETEM_FAIL_MATCH \
-          SHIM_TC_FAIL_MATCH SHIM_SENT SHIM_DROPPED
+          SHIM_TC_FAIL_MATCH SHIM_SENT SHIM_DROPPED SHIM_HOSTNET SHIM_NO_NS
     export SHIM_PING_LOSS=20
 }
 
@@ -699,6 +715,29 @@ reset_shims
 export SHIM_SENT=0 SHIM_DROPPED=500
 roda_shim --target isn3 --loss 20 --duration 1 --ping-count 0
 ok "T-nd-15m Sent 0 e dropped 500 com perda 20%: exit" "0" "${RC}"
+
+echo "== T-nd-15n: guarda de netns (R4) =="
+reset_shims
+roda_shim --target isn3 --loss 20 --duration 1 --ping-count 0
+ok "T-nd-15n netns distinto do PID 1: exit" "0" "${RC}"
+contem "T-nd-15n consultou o netns do alvo" "readlink /proc/4003/ns/net" "$(cat "${SHIM_LOG}")"
+contem "T-nd-15n consultou o netns do PID 1" "readlink /proc/1/ns/net" "$(cat "${SHIM_LOG}")"
+reset_shims
+SHIM_HOSTNET="isn3" roda_shim --target isn3 --loss 20 --duration 1 --ping-count 0
+ok "T-nd-15o alvo com netns do host: exit" "4" "${RC}"
+contem "T-nd-15o diagnostico" "netns do host" "${OUT}"
+nao_contem "T-nd-15o nenhum tc executado" "tc " "$(cat "${SHIM_LOG}")"
+reset_shims
+SHIM_HOSTNET="isn1" roda_shim --target isn3 --loss 20 --duration 1 --ping-count 0
+ok "T-nd-15p par com netns do host: exit" "4" "${RC}"
+nao_contem "T-nd-15p nenhum tc executado" "tc " "$(cat "${SHIM_LOG}")"
+reset_shims
+SHIM_NO_NS="isn3" roda_shim --target isn3 --loss 20 --duration 1 --ping-count 0
+ok "T-nd-15q netns ilegivel: recusa (exit 4)" "4" "${RC}"
+nao_contem "T-nd-15q nenhum tc executado" "tc " "$(cat "${SHIM_LOG}")"
+reset_shims
+SHIM_HOSTNET="isn2" roda_shim --heal
+nao_contem "T-nd-15r --heal nao toca no no com netns do host" "nsenter -t 4002" "$(cat "${SHIM_LOG}")"
 
 echo "== T-nd-16: exit 4 -- no ausente, parado ou sem IP =="
 reset_shims

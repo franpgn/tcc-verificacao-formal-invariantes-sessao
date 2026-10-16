@@ -72,7 +72,7 @@ flowchart TB
 | `--delay`, `--jitter` | atraso e jitter (`ms`, `us`, `s`; sem sufixo = ms), distribuição normal; `--jitter` exige `--delay` |
 | `--duplicate`, `--corrupt` | percentual 0..100 |
 | `--reorder <pct[,corr]>` | percentual 0..100; exige `--delay` (o `netem` só reordena pacotes atrasados) |
-| `--severity S1..S5` | atalho de perda; não combina com `--loss` |
+| `--severity N1..N5` | atalho de perda; não combina com `--loss` |
 | `--duration <seg>` | padrão 120; abaixo de 45 s avisa (menor que a detecção do `FD_ALL3`) |
 | `--ping-count <n>` | pings por par para medir a perda no fio (padrão 200; 0 desliga) |
 | `--marker <arq>` | acrescenta `fault=F4 node=<alvo> event=start\|end t_epoch_ns=<n>` (mesmo formato de B-25/F2) |
@@ -85,11 +85,11 @@ flowchart TB
 
 | Perfil | Perda | Observação |
 |---|---|---|
-| S1 | 1% | |
-| S2 | 5% | |
-| S3 | 20% | |
-| S4 | 50% | |
-| S5 | 99,9% | aviso: "equivale a partição"; para comparação controlada com F2 |
+| N1 | 1% | |
+| N2 | 5% | |
+| N3 | 20% | |
+| N4 | 50% | |
+| N5 | 99,9% | aviso: "equivale a partição"; para comparação controlada com F2 |
 
 ### Códigos de saída
 

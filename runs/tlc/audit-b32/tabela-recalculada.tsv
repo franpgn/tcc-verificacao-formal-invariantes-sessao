@@ -1,0 +1,101 @@
+dir	arquivo	prop	workers	card	MaxCanal	MaxRelogio	MaxEventosFalha	LIMITE	restricao	SYMMETRY	secao	resultado_do_out	gerados	distintos	fila	duracao_out	fonte_numeros	estados_do_traco	tsv_resultado	tsv_duracao	tsv_n_linhas	diverge_tsv	detalhe_divergencia
+prop-livre-particao	r3-I1F.out	I1F	4	r3	3	5	2	2	SoParticao	SIM	PROPERTY	VIOLADA	5339	1494	1334	01s	linha_final	5	VIOLADA:traco_de_5_estados	3s	1	nao	
+prop-livre-particao	r3-I1M.out	I1M	4	r3	3	5	2	2	SoParticao	SIM	PROPERTY	VIOLADA	4822	1255	1108	01s	linha_final	6	VIOLADA:traco_de_6_estados	2s	1	nao	
+prop-livre-particao	r3-I1P.out	I1P	4	r3	3	5	2	2	SoParticao	SIM	PROPERTY	VIOLADA	1284	358	317	00s	linha_final	5	VIOLADA:traco_de_5_estados	1s	1	nao	
+prop-livre-particao	r3-I2Fa.out	I2Fa	4	r3	3	5	2	2	SoParticao	SIM	PROPERTY	VIOLADA	8065	2111	1875	00s	linha_final	4	VIOLADA:traco_de_4_estados	2s	1	nao	
+prop-livre-particao	r3-I2Fb.out	I2Fb	4	r3	3	5	2	2	SoParticao	SIM	INVARIANTS	VIOLADA	808	250	226	00s	linha_final	4	VIOLADA:traco_de_4_estados	1s	1	nao	
+prop-livre-particao	r3-I4F.out	I4F	4	r3	3	5	2	2	SoParticao	SIM	PROPERTY	VIOLADA	5360	1409	1246	01s	linha_final	7	VIOLADA:traco_de_7_estados	2s	1	nao	
+prop-livre-particao	r3-I4M.out	I4M	4	r3	3	5	2	2	SoParticao	SIM	PROPERTY	VIOLADA	4240	1126	995	01s	linha_final	7	VIOLADA:traco_de_7_estados	2s	1	nao	
+prop-livre-particao	r3-MesclarPerdeChave.out	MesclarPerdeChave	4	r3	3	5	2	2	SoParticao	SIM	PROPERTY	VIOLADA	1375	380	336	00s	linha_final	4	VIOLADA:traco_de_4_estados	1s	1	nao	
+prop-livre-particao-n2m-sim	r3-I1F.out	I1F	1	r3	3	5	2	2	SoParticao	SIM	PROPERTY	VIOLADA	1549			00s	simulate	5	VIOLADA:traco_de_5_estados	0s	1	nao	
+prop-livre-particao-n2m-sim	r3-I1P.out	I1P	1	r3	3	5	2	2	SoParticao	SIM	PROPERTY	VIOLADA	89			00s	simulate	5	VIOLADA:traco_de_5_estados	1s	1	nao	
+prop-livre-particao-n2m-sim	r3-I2Fb.out	I2Fb	1	r3	3	5	2	2	SoParticao	SIM	INVARIANTS	VIOLADA	77			00s	simulate	4	VIOLADA:traco_de_4_estados	1s	1	nao	
+prop-livre-particao-n2m-sim	r3-I4F.out	I4F	1	r3	3	5	2	2	SoParticao	SIM	PROPERTY	VIOLADA	1253			00s	simulate	6	VIOLADA:traco_de_6_estados	1s	1	nao	
+prop-livre-particao-w1	r3-I1F.out	I1F	1	r3	3	5	2	2	SoParticao	SIM	PROPERTY	VIOLADA	3327	987	884	00s	linha_final	5	VIOLADA:traco_de_5_estados	2s	1	nao	
+prop-livre-particao-w1	r3-I1M.out	I1M	1	r3	3	5	2	2	SoParticao	SIM	PROPERTY	VIOLADA	3327	987	884	00s	linha_final	5	VIOLADA:traco_de_5_estados	1s	1	nao	
+prop-livre-particao-w1	r3-I1P.out	I1P	1	r3	3	5	2	2	SoParticao	SIM	PROPERTY	VIOLADA	496	176	160	00s	linha_final	4	VIOLADA:traco_de_4_estados	1s	1	nao	
+prop-livre-particao-w1	r3-I2Fa.out	I2Fa	1	r3	3	5	2	2	SoParticao	SIM	PROPERTY	VIOLADA	1167	389	350	00s	linha_final	4	VIOLADA:traco_de_4_estados	2s	1	nao	
+prop-livre-particao-w1	r3-I2Fb.out	I2Fb	1	r3	3	5	2	2	SoParticao	SIM	INVARIANTS	VIOLADA	338	110	98	00s	linha_final	4	VIOLADA:traco_de_4_estados	1s	1	nao	
+prop-livre-particao-w1	r3-I4F.out	I4F	1	r3	3	5	2	2	SoParticao	SIM	PROPERTY	VIOLADA	3327	987	884	00s	linha_final	5	VIOLADA:traco_de_5_estados	2s	1	nao	
+prop-livre-particao-w1	r3-I4M.out	I4M	1	r3	3	5	2	2	SoParticao	SIM	PROPERTY	VIOLADA	3327	987	884	00s	linha_final	5	VIOLADA:traco_de_5_estados	1s	1	nao	
+prop-livre-particao-w1	r3-MesclarPerdeChave.out	MesclarPerdeChave	1	r3	3	5	2	2	SoParticao	SIM	PROPERTY	VIOLADA	531	185	168	00s	linha_final	4	VIOLADA:traco_de_4_estados	1s	1	nao	
+prop-livre-queda	r3-I1F.out	I1F	4	r3	3	5	2	2	SoQueda	SIM	PROPERTY	VIOLADA	110422	17353	14455	02s	linha_final	8	VIOLADA:traco_de_8_estados	3s	1	nao	
+prop-livre-queda	r3-I1P.out	I1P	4	r3	3	5	2	2	SoQueda	SIM	PROPERTY	VIOLADA	1809	424	377	00s	linha_final	4	VIOLADA:traco_de_4_estados	1s	1	nao	
+prop-livre-queda	r3-I2Fb.out	I2Fb	4	r3	3	5	2	2	SoQueda	SIM	INVARIANTS	VIOLADA	827	213	188	00s	linha_final	5	VIOLADA:traco_de_5_estados	1s	1	nao	
+prop-livre-queda	r3-I4F.out	I4F	4	r3	3	5	2	2	SoQueda	SIM	PROPERTY	VIOLADA	142998	22005	18245	02s	linha_final	8	VIOLADA:traco_de_8_estados	4s	1	nao	
+prop-livre-queda-n2m-sim	r3-I1F.out	I1F	1	r3	3	5	2	2	SoQueda	SIM	PROPERTY	VIOLADA	1241927			05s	simulate	10	VIOLADA:traco_de_10_estados	6s	1	nao	
+prop-livre-queda-n2m-sim	r3-I1P.out	I1P	1	r3	3	5	2	2	SoQueda	SIM	PROPERTY	VIOLADA	557			00s	simulate	6	VIOLADA:traco_de_6_estados	1s	1	nao	
+prop-livre-queda-n2m-sim	r3-I2Fb.out	I2Fb	1	r3	3	5	2	2	SoQueda	SIM	INVARIANTS	VIOLADA	183			00s	simulate	6	VIOLADA:traco_de_6_estados	1s	1	nao	
+prop-livre-queda-n2m-sim	r3-I4F.out	I4F	1	r3	3	5	2	2	SoQueda	SIM	PROPERTY	VIOLADA	7880			00s	simulate	17	VIOLADA:traco_de_17_estados	1s	1	nao	
+prop-livre-queda-w1	r3-I1F.out	I1F	1	r3	3	5	2	2	SoQueda	SIM	PROPERTY	VIOLADA	140453	22681	18934	03s	linha_final	7	VIOLADA:traco_de_7_estados	4s	1	nao	
+prop-livre-queda-w1	r3-I1P.out	I1P	1	r3	3	5	2	2	SoQueda	SIM	PROPERTY	VIOLADA	495	150	135	00s	linha_final	4	VIOLADA:traco_de_4_estados	1s	1	nao	
+prop-livre-queda-w1	r3-I2Fb.out	I2Fb	1	r3	3	5	2	2	SoQueda	SIM	INVARIANTS	VIOLADA	337	94	83	00s	linha_final	4	VIOLADA:traco_de_4_estados	1s	1	nao	
+prop-livre-queda-w1	r3-I4F.out	I4F	1	r3	3	5	2	2	SoQueda	SIM	PROPERTY	VIOLADA	140453	22681	18934	03s	linha_final	7	VIOLADA:traco_de_7_estados	5s	1	nao	
+prop-livre-sem	r3-I1F.out	I1F	4	r3	3	5	2	2	SemFalha	SIM	PROPERTY	VIOLADA	91979	11331	9260	02s	linha_final	8	VIOLADA:traco_de_8_estados	3s	1	nao	
+prop-livre-sem	r3-I1P.out	I1P	4	r3	3	5	2	2	SemFalha	SIM	PROPERTY	VIOLADA	2026	375	324	00s	linha_final	4	VIOLADA:traco_de_4_estados	1s	1	nao	
+prop-livre-sem	r3-I2Fb.out	I2Fb	4	r3	3	5	2	2	SemFalha	SIM	INVARIANTS	VIOLADA	808	172	148	00s	linha_final	5	VIOLADA:traco_de_5_estados	1s	1	nao	
+prop-livre-sem	r3-I4F.out	I4F	4	r3	3	5	2	2	SemFalha	SIM	PROPERTY	VIOLADA	103005	12512	10188	01s	linha_final	8	VIOLADA:traco_de_8_estados	3s	1	nao	
+prop-livre-sem-n2m-sim	r3-I1F.out	I1F	1	r3	3	5	2	2	SemFalha	SIM	PROPERTY	VIOLADA	164425			02s	simulate	10	VIOLADA:traco_de_10_estados	3s	1	nao	
+prop-livre-sem-n2m-sim	r3-I1P.out	I1P	1	r3	3	5	2	2	SemFalha	SIM	PROPERTY	VIOLADA	1066			00s	simulate	4	VIOLADA:traco_de_4_estados	1s	1	nao	
+prop-livre-sem-n2m-sim	r3-I2Fb.out	I2Fb	1	r3	3	5	2	2	SemFalha	SIM	INVARIANTS	VIOLADA	297			00s	simulate	6	VIOLADA:traco_de_6_estados	1s	1	nao	
+prop-livre-sem-n2m-sim	r3-I4F.out	I4F	1	r3	3	5	2	2	SemFalha	SIM	PROPERTY	VIOLADA	661464			03s	simulate	8	VIOLADA:traco_de_8_estados	4s	1	nao	
+prop-livre-sem-w1	r3-I1F.out	I1F	1	r3	3	5	2	2	SemFalha	SIM	PROPERTY	VIOLADA	110551	13835	11290	02s	linha_final	7	VIOLADA:traco_de_7_estados	3s	1	nao	
+prop-livre-sem-w1	r3-I1P.out	I1P	1	r3	3	5	2	2	SemFalha	SIM	PROPERTY	VIOLADA	476	122	108	00s	linha_final	4	VIOLADA:traco_de_4_estados	1s	1	nao	
+prop-livre-sem-w1	r3-I2Fb.out	I2Fb	1	r3	3	5	2	2	SemFalha	SIM	INVARIANTS	VIOLADA	318	76	66	00s	linha_final	4	VIOLADA:traco_de_4_estados	1s	1	nao	
+prop-livre-sem-w1	r3-I4F.out	I4F	1	r3	3	5	2	2	SemFalha	SIM	PROPERTY	VIOLADA	110551	13835	11290	02s	linha_final	7	VIOLADA:traco_de_7_estados	3s	1	nao	
+prop-particao	r3-I1F.out	I1F	4	r3	3	5	2	2	SoParticao	SIM	PROPERTY	VIOLADA	1119	317	275	00s	linha_final	5	VIOLADA:traco_de_5_estados	1s	1	nao	
+prop-particao	r3-I1M.out	I1M	4	r3	3	5	2	2	SoParticao	SIM	PROPERTY	VIOLADA	1066	306	266	00s	linha_final	4	VIOLADA:traco_de_4_estados	1s	1	nao	
+prop-particao	r3-I1P.out	I1P	4	r3	3	5	2	2	SoParticao	SIM	PROPERTY	TIMEOUT	11911646	2417880	1977482		ultimo_Progress		SEM_VIOLACAO_ATE_AQUI:limite_de_tempo_120s	120s	1	nao	
+prop-particao	r3-I2Fa.out	I2Fa	4	r3	3	5	2	2	SoParticao	SIM	PROPERTY	VIOLADA	7197	2039	1803	00s	linha_final	6	VIOLADA:traco_de_6_estados	1s	1	nao	
+prop-particao	r3-I2Fb.out	I2Fb	4	r3	3	5	2	2	SoParticao	SIM	INVARIANTS	VIOLADA	384	119	103	00s	linha_final	5	VIOLADA:traco_de_5_estados	1s	1	nao	
+prop-particao	r3-I4F.out	I4F	4	r3	3	5	2	2	SoParticao	SIM	PROPERTY	VIOLADA	1054	305	266	00s	linha_final	5	VIOLADA:traco_de_5_estados	2s	1	nao	
+prop-particao	r3-I4Fp.out	I4Fp	4	r3	3	5	2	2	SoParticao	SIM	PROPERTY	VIOLADA	2002	598	532	00s	linha_final	6	VIOLADA:traco_de_6_estados	0s	1	nao	
+prop-particao	r3-I4M.out	I4M	4	r3	3	5	2	2	SoParticao	SIM	PROPERTY	VIOLADA	1277	377	331	00s	linha_final	4	VIOLADA:traco_de_4_estados	1s	1	nao	
+prop-particao	r3-I4Mp.out	I4Mp	4	r3	3	5	2	2	SoParticao	SIM	PROPERTY	VIOLADA	7676	2147	1888	00s	linha_final	5	VIOLADA:traco_de_5_estados	1s	1	nao	
+prop-particao-c2r3	r3-I1P.out	I1P	6	r3	2	3	2	2	SoParticao	SIM	PROPERTY	TIMEOUT	287159605	33038740	21076524		ultimo_Progress		SEM_VIOLACAO_ATE_AQUI:limite_de_tempo_600s	600s	1	nao	
+prop-particao-lim6	r3-I2Fb.out	I2Fb	4	r3	3	5	2	6	SoParticao	SIM	INVARIANTS	VIOLADA	1030	354	320	00s	linha_final	4	VIOLADA:traco_de_4_estados	1s	1	nao	
+prop-particao-lim6-w1	r3-I2Fb.out	I2Fb	1	r3	3	5	2	6	SoParticao	SIM	INVARIANTS	VIOLADA	376	130	117	00s	linha_final	4	VIOLADA:traco_de_4_estados	1s	1	nao	
+prop-particao-w1	r3-I1F.out	I1F	1	r3	3	5	2	2	SoParticao	SIM	PROPERTY	VIOLADA	468	162	146	00s	linha_final	4	VIOLADA:traco_de_4_estados	1s	1	nao	
+prop-particao-w1	r3-I1M.out	I1M	1	r3	3	5	2	2	SoParticao	SIM	PROPERTY	VIOLADA	468	162	146	00s	linha_final	4	VIOLADA:traco_de_4_estados	1s	1	nao	
+prop-particao-w1	r3-I2Fa.out	I2Fa	1	r3	3	5	2	2	SoParticao	SIM	PROPERTY	VIOLADA	1096	363	325	00s	linha_final	4	VIOLADA:traco_de_4_estados	2s	1	nao	
+prop-particao-w1	r3-I2Fb.out	I2Fb	1	r3	3	5	2	2	SoParticao	SIM	INVARIANTS	VIOLADA	82	21	17	00s	linha_final	3	VIOLADA:traco_de_3_estados	1s	1	nao	
+prop-particao-w1	r3-I4F.out	I4F	1	r3	3	5	2	2	SoParticao	SIM	PROPERTY	VIOLADA	468	162	146	00s	linha_final	4	VIOLADA:traco_de_4_estados	1s	1	nao	
+prop-particao-w1	r3-I4Fp.out	I4Fp	1	r3	3	5	2	2	SoParticao	SIM	PROPERTY	VIOLADA	1801	554	492	00s	linha_final	5	VIOLADA:traco_de_5_estados	1s	1	nao	
+prop-particao-w1	r3-I4M.out	I4M	1	r3	3	5	2	2	SoParticao	SIM	PROPERTY	VIOLADA	468	162	146	00s	linha_final	4	VIOLADA:traco_de_4_estados	1s	1	nao	
+prop-queda	r2-I1F.out	I1F	4	r2	3	5	2	2	SoQueda	SIM	PROPERTY	TIMEOUT	252032652	21725102	2989734		ultimo_Progress		SEM_VIOLACAO_ATE_AQUI:limite_de_tempo_600s	604s	1	nao	
+prop-queda	r3-I1F.out	I1F	4	r3	3	5	2	2	SoQueda	SIM	PROPERTY	TIMEOUT	188561497	22377840	16358832		ultimo_Progress		SEM_VIOLACAO_ATE_AQUI:limite_de_tempo_600s	601s	1	nao	
+prop-queda	r3-I1M.out	I1M	4	r3	3	5	2	2	SoQueda	SIM	PROPERTY	TIMEOUT	785287	115696	91737		ultimo_Progress		SEM_VIOLACAO_ATE_AQUI:limite_de_tempo_60s	60s	1	nao	
+prop-queda	r3-I1P.out	I1P	4	r3	3	5	2	2	SoQueda	SIM	PROPERTY	TIMEOUT	15492100	1972331	1485476		ultimo_Progress		SEM_VIOLACAO_ATE_AQUI:limite_de_tempo_120s	120s	1	nao	
+prop-queda	r3-I2Fa.out	I2Fa	4	r3	3	5	2	2	SoQueda	SIM	PROPERTY	TIMEOUT	734680	110313	88042		ultimo_Progress		SEM_VIOLACAO_ATE_AQUI:limite_de_tempo_60s	61s	1	nao	
+prop-queda	r3-I2Fb.out	I2Fb	4	r3	3	5	2	2	SoQueda	SIM	INVARIANTS	VIOLADA	382	99	83	00s	linha_final	4	VIOLADA:traco_de_4_estados	1s	1	nao	
+prop-queda	r3-I4F.out	I4F	4	r3	3	5	2	2	SoQueda	SIM	PROPERTY	VIOLADA	2033	482	421	00s	linha_final	5	VIOLADA:traco_de_5_estados	1s	1	nao	
+prop-queda	r3-I4Fp.out	I4Fp	4	r3	3	5	2	2	SoQueda	SIM	PROPERTY	VIOLADA	1915	443	386	00s	linha_final	6	VIOLADA:traco_de_6_estados	1s	1	nao	
+prop-queda	r3-I4M.out	I4M	4	r3	3	5	2	2	SoQueda	SIM	PROPERTY	TIMEOUT	773116	114802	91295		ultimo_Progress		SEM_VIOLACAO_ATE_AQUI:limite_de_tempo_60s	60s	2	nao	
+prop-queda	r3-I4Mp.out	I4Mp	4	r3	3	5	2	2	SoQueda	SIM	PROPERTY	TIMEOUT	65911283	8168945	6081679		ultimo_Progress		SEM_VIOLACAO_ATE_AQUI:limite_de_tempo_300s	300s	1	nao	
+prop-queda-c2r3	r2-I1F.out	I1F	4	r2	2	3	2	2	SoQueda	SIM	PROPERTY	FECHOU	195239	15690	0	02s	linha_final		SEM_VIOLACAO:exaustivo	3s	1	nao	
+prop-queda-c2r3	r3-I1F.out	I1F	4	r3	2	3	2	2	SoQueda	SIM	PROPERTY	TIMEOUT	208052900	13297388	3531514		ultimo_Progress		SEM_VIOLACAO_ATE_AQUI:limite_de_tempo_600s	600s	1	nao	
+prop-queda-c2r3-ev1	r3-I1F.out	I1F	4	r3	2	3	1	2	SoQueda	SIM	PROPERTY	FECHOU	197610219	8037698	0	09min 31s	linha_final		SEM_VIOLACAO:exaustivo	571s	1	nao	
+prop-queda-c2r3-ev2-longo	r3-I1F.out	I1F	8	r3	2	3	2	2	SoQueda	SIM	PROPERTY	FECHOU	394154264	19229901	0	10min 23s	linha_final		SEM_VIOLACAO:exaustivo	624s	1	nao	
+prop-queda-lim6	r3-I2Fb.out	I2Fb	4	r3	3	5	2	6	SoQueda	SIM	INVARIANTS	VIOLADA	1556	360	314	00s	linha_final	5	VIOLADA:traco_de_5_estados	1s	1	nao	
+prop-queda-lim6-w1	r3-I2Fb.out	I2Fb	1	r3	3	5	2	6	SoQueda	SIM	INVARIANTS	VIOLADA	375	111	99	00s	linha_final	4	VIOLADA:traco_de_4_estados	1s	1	nao	
+prop-queda-w1	r3-I2Fb.out	I2Fb	1	r3	3	5	2	2	SoQueda	SIM	INVARIANTS	VIOLADA	82	18	14	00s	linha_final	3	VIOLADA:traco_de_3_estados	1s	1	nao	
+prop-queda-w1	r3-I4F.out	I4F	1	r3	3	5	2	2	SoQueda	SIM	PROPERTY	VIOLADA	1778	440	387	00s	linha_final	5	VIOLADA:traco_de_5_estados	2s	1	nao	
+prop-queda-w1	r3-I4Fp.out	I4Fp	1	r3	3	5	2	2	SoQueda	SIM	PROPERTY	VIOLADA	1778	440	387	00s	linha_final	5	VIOLADA:traco_de_5_estados	1s	1	nao	
+prop-queda-w1	r3-I4M.out	I4M	1	r3	3	5	2	2	SoQueda	SIM	PROPERTY	TIMEOUT	20297926	2584308	1960150		ultimo_Progress		SEM_VIOLACAO_ATE_AQUI:limite_de_tempo_300s	300s	1	nao	
+prop-sem	r2-I1F.out	I1F	4	r2	3	5	2	2	SemFalha	SIM	PROPERTY	FECHOU	63508237	2968799	0	02min 17s	linha_final		SEM_VIOLACAO:exaustivo	137s	1	nao	
+prop-sem	r3-I1F.out	I1F	4	r3	3	5	2	2	SemFalha	SIM	PROPERTY	TIMEOUT	222726728	18273465	12793143		ultimo_Progress		SEM_VIOLACAO_ATE_AQUI:limite_de_tempo_600s	601s	1	nao	
+prop-sem	r3-I1M.out	I1M	4	r3	3	5	2	2	SemFalha	SIM	PROPERTY	TIMEOUT	888357	98970	77270		ultimo_Progress		SEM_VIOLACAO_ATE_AQUI:limite_de_tempo_60s	60s	1	nao	
+prop-sem	r3-I1P.out	I1P	4	r3	3	5	2	2	SemFalha	SIM	PROPERTY	TIMEOUT	16618334	1600887	1193796		ultimo_Progress		SEM_VIOLACAO_ATE_AQUI:limite_de_tempo_120s	120s	1	nao	
+prop-sem	r3-I2Fa.out	I2Fa	4	r3	3	5	2	2	SemFalha	SIM	PROPERTY	TIMEOUT	835264	94862	74453		ultimo_Progress		SEM_VIOLACAO_ATE_AQUI:limite_de_tempo_60s	61s	1	nao	
+prop-sem	r3-I2Fb.out	I2Fb	4	r3	3	5	2	2	SemFalha	SIM	INVARIANTS	VIOLADA	378	76	61	00s	linha_final	5	VIOLADA:traco_de_5_estados	1s	1	nao	
+prop-sem	r3-I4F.out	I4F	4	r3	3	5	2	2	SemFalha	SIM	PROPERTY	VIOLADA	1979	366	309	00s	linha_final	6	VIOLADA:traco_de_6_estados	1s	1	nao	
+prop-sem	r3-I4Fp.out	I4Fp	4	r3	3	5	2	2	SemFalha	SIM	PROPERTY	VIOLADA	2151	422	361	00s	linha_final	6	VIOLADA:traco_de_6_estados	2s	1	nao	
+prop-sem	r3-I4M.out	I4M	4	r3	3	5	2	2	SemFalha	SIM	PROPERTY	TIMEOUT	974562	109115	85278		ultimo_Progress		SEM_VIOLACAO_ATE_AQUI:limite_de_tempo_60s	60s	1	nao	
+prop-sem	r3-I4Mp.out	I4Mp	4	r3	3	5	2	2	SemFalha	SIM	PROPERTY	TIMEOUT	76614049	7061453	5176880		ultimo_Progress		SEM_VIOLACAO_ATE_AQUI:limite_de_tempo_300s	301s	1	nao	
+prop-sem-c2r3	r3-I1F.out	I1F	4	r3	2	3	2	2	SemFalha	SIM	PROPERTY	FECHOU	53541786	1627731	0	02min 09s	linha_final		SEM_VIOLACAO:exaustivo	130s	1	nao	
+prop-sem-c2r3	r3-I1P.out	I1P	6	r3	2	3	2	2	SemFalha	SIM	PROPERTY	FECHOU	53541786	1627731	0	01min 23s	linha_final		SEM_VIOLACAO:exaustivo	84s	1	nao	
+prop-sem-lim6	r3-I2Fb.out	I2Fb	4	r3	3	5	2	6	SemFalha	SIM	INVARIANTS	VIOLADA	1274	256	219	00s	linha_final	4	VIOLADA:traco_de_4_estados	1s	1	nao	
+prop-sem-lim6-w1	r3-I2Fb.out	I2Fb	1	r3	3	5	2	6	SemFalha	SIM	INVARIANTS	VIOLADA	356	90	79	00s	linha_final	4	VIOLADA:traco_de_4_estados	1s	1	nao	
+prop-sem-w1	r3-I2Fb.out	I2Fb	1	r3	3	5	2	2	SemFalha	SIM	INVARIANTS	VIOLADA	82	15	11	00s	linha_final	3	VIOLADA:traco_de_3_estados	2s	1	nao	
+prop-sem-w1	r3-I4F.out	I4F	1	r3	3	5	2	2	SemFalha	SIM	PROPERTY	VIOLADA	1545	330	288	00s	linha_final	5	VIOLADA:traco_de_5_estados	1s	1	nao	
+prop-sem-w1	r3-I4Fp.out	I4Fp	1	r3	3	5	2	2	SemFalha	SIM	PROPERTY	VIOLADA	1545	330	288	00s	linha_final	5	VIOLADA:traco_de_5_estados	1s	1	nao	

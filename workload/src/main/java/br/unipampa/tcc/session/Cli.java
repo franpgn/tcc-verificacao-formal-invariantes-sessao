@@ -110,6 +110,61 @@ public final class Cli {
     )
     public boolean dryRun;
 
+    // ---- B-33 (instrumentacao de particao): todas desligadas por padrao ----
+
+    @Option(
+        names = {"--marker"},
+        description = "Arquivo de marcadores de falha (fault=F2 node=<no> event=start|split|end t_epoch_ns=<n>). "
+            + "Com ele, o CSV de eventos ganha a coluna phase e o de violacoes a coluna fase."
+    )
+    public String marcadores;
+
+    @Option(
+        names = {"--w-recovery-sec"},
+        description = "Janela de recuperacao W_recovery apos o fim da falha, em segundos. Padrao ${DEFAULT-VALUE}.",
+        defaultValue = "60"
+    )
+    public long wRecoverySeg;
+
+    @Option(
+        names = {"--stop-at-fault-end"},
+        description = "Para a carga de escrita quando o marcador event=end aparece (exige --marker)."
+    )
+    public boolean paraNoFimDaFalha;
+
+    @Option(
+        names = {"--convergence"},
+        description = "Apos a carga, executa o laco de convergencia (I5/I6, rodadas validas) e grava convergencia-rep-NNN.csv."
+    )
+    public boolean convergencia;
+
+    @Option(
+        names = {"--convergence-timeout-sec"},
+        description = "Teto do laco de convergencia em segundos. Padrao ${DEFAULT-VALUE}.",
+        defaultValue = "600"
+    )
+    public long convergenciaTetoSeg;
+
+    @Option(
+        names = {"--convergence-period-sec"},
+        description = "Periodo entre rodadas de convergencia em segundos. Padrao ${DEFAULT-VALUE}.",
+        defaultValue = "5"
+    )
+    public long convergenciaPeriodoSeg;
+
+    @Option(
+        names = {"--sweep"},
+        description = "Executa a varredura final global (I1, I4, I2 global, bloqueio perdido) e grava varredura-rep-NNN.csv."
+    )
+    public boolean varredura;
+
+    @Option(
+        names = {"--rest-url"},
+        description = "Base do REST do Infinispan para a saude do cluster no laco de convergencia. Padrao ${DEFAULT-VALUE}.",
+        defaultValue = "http://localhost:11222"
+    )
+    public String restUrl;
+
     /** Sanidade dos parâmetros; lança IllegalArgumentException com motivo. */
     public void validar() {
         if (duracaoSeg <= 0) {
@@ -129,6 +184,18 @@ public final class Cli {
         }
         if (servidores == null || servidores.isBlank()) {
             throw new IllegalArgumentException("--servers nao pode estar vazio");
+        }
+        if (wRecoverySeg < 0) {
+            throw new IllegalArgumentException("--w-recovery-sec deve ser >= 0");
+        }
+        if (convergenciaTetoSeg <= 0) {
+            throw new IllegalArgumentException("--convergence-timeout-sec deve ser > 0");
+        }
+        if (convergenciaPeriodoSeg <= 0) {
+            throw new IllegalArgumentException("--convergence-period-sec deve ser > 0");
+        }
+        if (paraNoFimDaFalha && (marcadores == null || marcadores.isBlank())) {
+            throw new IllegalArgumentException("--stop-at-fault-end exige --marker");
         }
     }
 

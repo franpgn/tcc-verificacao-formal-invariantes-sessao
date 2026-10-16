@@ -1,0 +1,990 @@
+[33m2026-10-16 06:48:14,935 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health/status, remote=/127.0.0.1:56540, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-16 06:48:16,970 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:32952, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-16 06:48:16,972 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:32952, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-16 06:48:17,925 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:32962, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-16 06:48:17,927 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:32962, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-16 06:48:17,935 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/caches, remote=/10.89.1.1:32978, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-16 06:48:17,937 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/caches, remote=/10.89.1.1:32978, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-16 06:48:20,183 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health/status, remote=/127.0.0.1:51486, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-16 06:48:25,433 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health/status, remote=/127.0.0.1:51510, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-16 06:48:28,053 WARN  [o.j.p.TCP] JGRP000006: 10.89.1.3:7800: failed accepting connection from peer Socket[addr=/10.89.1.2,port=56814,localport=7800]: java.io.EOFException java.io.EOFException
+	at java.base/java.io.DataInputStream.readFully(DataInputStream.java:210)
+	at org.jgroups.blocks.cs.TcpConnection.readPeerAddress(TcpConnection.java:249)
+	at org.jgroups.blocks.cs.TcpConnection.<init>(TcpConnection.java:64)
+	at org.jgroups.blocks.cs.TcpServer$Acceptor.handleAccept(TcpServer.java:119)
+	at org.jgroups.blocks.cs.TcpServer$Acceptor.run(TcpServer.java:103)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+[m
+[33m2026-10-16 06:48:28,070 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:44308, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-16 06:48:28,071 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:44308, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-16 06:48:29,984 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:47432, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-16 06:48:29,986 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:47432, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-16 06:48:29,997 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/caches, remote=/10.89.1.1:47448, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-16 06:48:29,998 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/caches, remote=/10.89.1.1:47448, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-16 06:48:30,937 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health/status, remote=/127.0.0.1:37838, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-16 06:48:36,440 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health/status, remote=/127.0.0.1:37870, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-16 06:48:41,683 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health/status, remote=/127.0.0.1:47014, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-16 06:48:42,035 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:46622, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-16 06:48:42,037 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:46622, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-16 06:48:42,044 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/caches, remote=/10.89.1.1:46624, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-16 06:48:42,045 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/caches, remote=/10.89.1.1:46624, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-16 06:48:45,123 WARN  [o.j.p.TCP] JGRP000006: 10.89.1.3:7800: failed accepting connection from peer Socket[addr=/10.89.1.2,port=38582,localport=7800]: java.io.EOFException java.io.EOFException
+	at java.base/java.io.DataInputStream.readFully(DataInputStream.java:210)
+	at org.jgroups.blocks.cs.TcpConnection.readPeerAddress(TcpConnection.java:249)
+	at org.jgroups.blocks.cs.TcpConnection.<init>(TcpConnection.java:64)
+	at org.jgroups.blocks.cs.TcpServer$Acceptor.handleAccept(TcpServer.java:119)
+	at org.jgroups.blocks.cs.TcpServer$Acceptor.run(TcpServer.java:103)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+[m
+[33m2026-10-16 06:48:45,139 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:46656, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-16 06:48:45,140 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:46656, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-16 06:48:47,188 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health/status, remote=/127.0.0.1:47070, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-16 06:48:52,439 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health/status, remote=/127.0.0.1:45182, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-16 06:48:57,939 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health/status, remote=/127.0.0.1:45204, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-16 06:48:58,084 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:33280, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-16 06:48:58,086 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:33280, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-16 06:48:58,092 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/caches, remote=/10.89.1.1:33294, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-16 06:48:58,093 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/caches, remote=/10.89.1.1:33294, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[0m2026-10-16 06:49:02,316 INFO  [o.i.CLUSTER] ISPN000094: Received new cluster view for channel cluster-tcc: [isn2-19096|5] (2) [isn2-19096, isn1-47759][m
+[0m2026-10-16 06:49:02,316 INFO  [o.i.CLUSTER] [Scope=isn2-19096]ISPN100001: Node isn3-5889 left the cluster[m
+[0m2026-10-16 06:49:02,317 INFO  [o.i.CLUSTER] [Scope=isn2-19096]ISPN100001: Node isn3-5889 left the cluster[m
+[0m2026-10-16 06:49:02,318 INFO  [o.i.CLUSTER] [Context=___hotRodTopologyCache_hotrod-default]ISPN100008: Updating cache members list [isn2-19096, isn1-47759], topology id 21[m
+[0m2026-10-16 06:49:02,319 INFO  [o.i.CLUSTER] [Context=___hotRodTopologyCache_hotrod-default]ISPN100002: Starting rebalance with members [isn2-19096, isn1-47759], phase READ_OLD_WRITE_ALL, topology id 22[m
+[0m2026-10-16 06:49:02,319 INFO  [o.i.LIFECYCLE] [Context=___hotRodTopologyCache_hotrod-default][Scope=isn2-19096]ISPN100002: Starting rebalance with members [isn2-19096, isn1-47759], phase READ_OLD_WRITE_ALL, topology id 22[m
+[0m2026-10-16 06:49:02,319 INFO  [o.i.CLUSTER] [Context=sessions]ISPN100011: Entering availability mode AVAILABLE, topology id 22[m
+[0m2026-10-16 06:49:02,320 INFO  [o.i.CLUSTER] [Context=sessions]ISPN100008: Updating cache members list [isn2-19096, isn1-47759], topology id 23[m
+[0m2026-10-16 06:49:02,320 INFO  [o.i.CLUSTER] [Context=sessions]ISPN100002: Starting rebalance with members [isn2-19096, isn1-47759], phase READ_OLD_WRITE_ALL, topology id 24[m
+[0m2026-10-16 06:49:02,320 INFO  [o.i.LIFECYCLE] [Context=sessions][Scope=isn2-19096]ISPN100002: Starting rebalance with members [isn2-19096, isn1-47759], phase READ_OLD_WRITE_ALL, topology id 24[m
+[0m2026-10-16 06:49:02,320 INFO  [o.i.CLUSTER] [Context=counters]ISPN100011: Entering availability mode AVAILABLE, topology id 22[m
+[0m2026-10-16 06:49:02,321 INFO  [o.i.LIFECYCLE] [Context=___hotRodTopologyCache_hotrod-default][Scope=isn2-19096]ISPN100010: Finished rebalance with members [isn2-19096, isn1-47759], topology id 22[m
+[0m2026-10-16 06:49:02,321 INFO  [o.i.LIFECYCLE] [Context=sessions][Scope=isn2-19096]ISPN100010: Finished rebalance with members [isn2-19096, isn1-47759], topology id 24[m
+[0m2026-10-16 06:49:02,322 INFO  [o.i.CLUSTER] [Context=counters]ISPN100008: Updating cache members list [isn2-19096, isn1-47759], topology id 23[m
+[0m2026-10-16 06:49:02,323 INFO  [o.i.CLUSTER] [Context=counters]ISPN100002: Starting rebalance with members [isn2-19096, isn1-47759], phase READ_OLD_WRITE_ALL, topology id 24[m
+[0m2026-10-16 06:49:02,323 INFO  [o.i.LIFECYCLE] [Context=counters][Scope=isn2-19096]ISPN100002: Starting rebalance with members [isn2-19096, isn1-47759], phase READ_OLD_WRITE_ALL, topology id 24[m
+[0m2026-10-16 06:49:02,323 INFO  [o.i.CLUSTER] [Context=___hotRodTopologyCache_hotrod-default]ISPN100009: Advancing to rebalance phase READ_ALL_WRITE_ALL, topology id 23[m
+[0m2026-10-16 06:49:02,326 INFO  [o.i.LIFECYCLE] [Context=counters][Scope=isn2-19096]ISPN100010: Finished rebalance with members [isn2-19096, isn1-47759], topology id 24[m
+[0m2026-10-16 06:49:02,327 INFO  [o.i.LIFECYCLE] ISPN000973: Task 'state-transfer-sessions' started at 2026-10-16T06:49:02.321180246Z and done 2026-10-16T06:49:02.327628840Z[m
+[0m2026-10-16 06:49:02,328 INFO  [o.i.CLUSTER] [Context=org.infinispan.CONFIG]ISPN100008: Updating cache members list [isn2-19096, isn1-47759], topology id 21[m
+[0m2026-10-16 06:49:02,332 INFO  [o.i.CLUSTER] [Context=sessions]ISPN100009: Advancing to rebalance phase READ_ALL_WRITE_ALL, topology id 25[m
+[0m2026-10-16 06:49:02,333 INFO  [o.i.CLUSTER] [Context=org.infinispan.CONFIG]ISPN100002: Starting rebalance with members [isn2-19096, isn1-47759], phase READ_OLD_WRITE_ALL, topology id 22[m
+[0m2026-10-16 06:49:02,333 INFO  [o.i.CLUSTER] [Context=___hotRodTopologyCache_hotrod-default]ISPN100009: Advancing to rebalance phase READ_NEW_WRITE_ALL, topology id 24[m
+[0m2026-10-16 06:49:02,333 INFO  [o.i.LIFECYCLE] ISPN000973: Task 'state-transfer-counters' started at 2026-10-16T06:49:02.326628950Z and done 2026-10-16T06:49:02.333338303Z[m
+[0m2026-10-16 06:49:02,334 INFO  [o.i.CLUSTER] [Context=sessions]ISPN100009: Advancing to rebalance phase READ_NEW_WRITE_ALL, topology id 26[m
+[0m2026-10-16 06:49:02,335 INFO  [o.i.LIFECYCLE] [Context=org.infinispan.CONFIG][Scope=isn2-19096]ISPN100002: Starting rebalance with members [isn2-19096, isn1-47759], phase READ_OLD_WRITE_ALL, topology id 22[m
+[0m2026-10-16 06:49:02,336 INFO  [o.i.CLUSTER] [Context=counters]ISPN100009: Advancing to rebalance phase READ_ALL_WRITE_ALL, topology id 25[m
+[0m2026-10-16 06:49:02,336 INFO  [o.i.CLUSTER] [Context=___hotRodTopologyCache_hotrod-default]ISPN100010: Finished rebalance with members [isn2-19096, isn1-47759], topology id 25[m
+[0m2026-10-16 06:49:02,338 INFO  [o.i.CLUSTER] [Context=___protobuf_metadata]ISPN100008: Updating cache members list [isn2-19096, isn1-47759], topology id 21[m
+[0m2026-10-16 06:49:02,339 INFO  [o.i.CLUSTER] [Context=___protobuf_metadata]ISPN100002: Starting rebalance with members [isn2-19096, isn1-47759], phase READ_OLD_WRITE_ALL, topology id 22[m
+[0m2026-10-16 06:49:02,339 INFO  [o.i.LIFECYCLE] [Context=___protobuf_metadata][Scope=isn2-19096]ISPN100002: Starting rebalance with members [isn2-19096, isn1-47759], phase READ_OLD_WRITE_ALL, topology id 22[m
+[0m2026-10-16 06:49:02,339 INFO  [o.i.CLUSTER] [Context=org.infinispan.COUNTER]ISPN100008: Updating cache members list [isn2-19096, isn1-47759], topology id 21[m
+[0m2026-10-16 06:49:02,340 INFO  [o.i.CLUSTER] [Context=org.infinispan.COUNTER]ISPN100002: Starting rebalance with members [isn2-19096, isn1-47759], phase READ_OLD_WRITE_ALL, topology id 22[m
+[0m2026-10-16 06:49:02,341 INFO  [o.i.CLUSTER] [Context=org.infinispan.CONFIG]ISPN100009: Advancing to rebalance phase READ_ALL_WRITE_ALL, topology id 23[m
+[0m2026-10-16 06:49:02,343 INFO  [o.i.LIFECYCLE] [Context=org.infinispan.CONFIG][Scope=isn2-19096]ISPN100010: Finished rebalance with members [isn2-19096, isn1-47759], topology id 22[m
+[0m2026-10-16 06:49:02,344 INFO  [o.i.CLUSTER] [Context=sessions]ISPN100010: Finished rebalance with members [isn2-19096, isn1-47759], topology id 27[m
+[0m2026-10-16 06:49:02,344 INFO  [o.i.LIFECYCLE] [Context=org.infinispan.COUNTER][Scope=isn2-19096]ISPN100002: Starting rebalance with members [isn2-19096, isn1-47759], phase READ_OLD_WRITE_ALL, topology id 22[m
+[0m2026-10-16 06:49:02,344 INFO  [o.i.LIFECYCLE] [Context=org.infinispan.COUNTER][Scope=isn2-19096]ISPN100010: Finished rebalance with members [isn2-19096, isn1-47759], topology id 22[m
+[0m2026-10-16 06:49:02,344 INFO  [o.i.CLUSTER] [Context=counters]ISPN100009: Advancing to rebalance phase READ_NEW_WRITE_ALL, topology id 26[m
+[0m2026-10-16 06:49:02,345 INFO  [o.i.CLUSTER] [Context=___protobuf_metadata]ISPN100009: Advancing to rebalance phase READ_ALL_WRITE_ALL, topology id 23[m
+[0m2026-10-16 06:49:02,345 INFO  [o.i.LIFECYCLE] [Context=___protobuf_metadata][Scope=isn2-19096]ISPN100010: Finished rebalance with members [isn2-19096, isn1-47759], topology id 22[m
+[0m2026-10-16 06:49:02,345 INFO  [o.i.CLUSTER] [Context=___script_cache]ISPN100008: Updating cache members list [isn2-19096, isn1-47759], topology id 21[m
+[0m2026-10-16 06:49:02,346 INFO  [o.i.CLUSTER] [Context=___script_cache]ISPN100002: Starting rebalance with members [isn2-19096, isn1-47759], phase READ_OLD_WRITE_ALL, topology id 22[m
+[0m2026-10-16 06:49:02,347 INFO  [o.i.LIFECYCLE] [Context=___script_cache][Scope=isn2-19096]ISPN100002: Starting rebalance with members [isn2-19096, isn1-47759], phase READ_OLD_WRITE_ALL, topology id 22[m
+[0m2026-10-16 06:49:02,347 INFO  [o.i.CLUSTER] [Context=org.infinispan.CONFIG]ISPN100009: Advancing to rebalance phase READ_NEW_WRITE_ALL, topology id 24[m
+[0m2026-10-16 06:49:02,348 INFO  [o.i.CLUSTER] [Context=org.infinispan.CLIENT_SERVER_TX_TABLE]ISPN100008: Updating cache members list [isn2-19096, isn1-47759], topology id 21[m
+[0m2026-10-16 06:49:02,348 INFO  [o.i.CLUSTER] [Context=___script_cache]ISPN100009: Advancing to rebalance phase READ_ALL_WRITE_ALL, topology id 23[m
+[0m2026-10-16 06:49:02,349 INFO  [o.i.CLUSTER] [Context=org.infinispan.CLIENT_SERVER_TX_TABLE]ISPN100002: Starting rebalance with members [isn2-19096, isn1-47759], phase READ_OLD_WRITE_ALL, topology id 22[m
+[0m2026-10-16 06:49:02,347 INFO  [o.i.LIFECYCLE] [Context=___script_cache][Scope=isn2-19096]ISPN100010: Finished rebalance with members [isn2-19096, isn1-47759], topology id 22[m
+[0m2026-10-16 06:49:02,349 INFO  [o.i.LIFECYCLE] [Context=org.infinispan.CLIENT_SERVER_TX_TABLE][Scope=isn2-19096]ISPN100002: Starting rebalance with members [isn2-19096, isn1-47759], phase READ_OLD_WRITE_ALL, topology id 22[m
+[0m2026-10-16 06:49:02,350 INFO  [o.i.CLUSTER] [Context=counters]ISPN100010: Finished rebalance with members [isn2-19096, isn1-47759], topology id 27[m
+[0m2026-10-16 06:49:02,350 INFO  [o.i.LIFECYCLE] [Context=org.infinispan.CLIENT_SERVER_TX_TABLE][Scope=isn2-19096]ISPN100010: Finished rebalance with members [isn2-19096, isn1-47759], topology id 22[m
+[0m2026-10-16 06:49:02,347 INFO  [o.i.CLUSTER] [Context=___protobuf_metadata]ISPN100009: Advancing to rebalance phase READ_NEW_WRITE_ALL, topology id 24[m
+[0m2026-10-16 06:49:02,352 INFO  [o.i.CLUSTER] [Context=org.infinispan.CONFIG]ISPN100010: Finished rebalance with members [isn2-19096, isn1-47759], topology id 25[m
+[0m2026-10-16 06:49:02,352 INFO  [o.i.CLUSTER] [Context=___script_cache]ISPN100009: Advancing to rebalance phase READ_NEW_WRITE_ALL, topology id 24[m
+[0m2026-10-16 06:49:02,353 INFO  [o.i.CLUSTER] [Context=___protobuf_metadata]ISPN100010: Finished rebalance with members [isn2-19096, isn1-47759], topology id 25[m
+[0m2026-10-16 06:49:02,354 INFO  [o.i.CLUSTER] [Context=org.infinispan.CLIENT_SERVER_TX_TABLE]ISPN100009: Advancing to rebalance phase READ_ALL_WRITE_ALL, topology id 23[m
+[0m2026-10-16 06:49:02,354 INFO  [o.i.CLUSTER] [Context=___script_cache]ISPN100010: Finished rebalance with members [isn2-19096, isn1-47759], topology id 25[m
+[0m2026-10-16 06:49:02,357 INFO  [o.i.CLUSTER] [Context=org.infinispan.CLIENT_SERVER_TX_TABLE]ISPN100009: Advancing to rebalance phase READ_NEW_WRITE_ALL, topology id 24[m
+[0m2026-10-16 06:49:02,360 INFO  [o.i.CLUSTER] [Context=org.infinispan.CLIENT_SERVER_TX_TABLE]ISPN100010: Finished rebalance with members [isn2-19096, isn1-47759], topology id 25[m
+[0m2026-10-16 06:49:02,360 INFO  [o.i.LIFECYCLE] ISPN000973: Task 'state-transfer-org.infinispan.COUNTER' started at 2026-10-16T06:49:02.344797168Z and done 2026-10-16T06:49:02.360727935Z[m
+[0m2026-10-16 06:49:02,365 INFO  [o.i.CLUSTER] [Context=org.infinispan.COUNTER]ISPN100009: Advancing to rebalance phase READ_ALL_WRITE_ALL, topology id 23[m
+[0m2026-10-16 06:49:02,368 INFO  [o.i.CLUSTER] [Context=org.infinispan.COUNTER]ISPN100009: Advancing to rebalance phase READ_NEW_WRITE_ALL, topology id 24[m
+[0m2026-10-16 06:49:02,370 INFO  [o.i.CLUSTER] [Context=org.infinispan.COUNTER]ISPN100010: Finished rebalance with members [isn2-19096, isn1-47759], topology id 25[m
+[33m2026-10-16 06:49:03,196 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health/status, remote=/127.0.0.1:58354, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-16 06:49:05,190 WARN  [o.j.p.TCP] JGRP000006: 10.89.1.3:7800: failed accepting connection from peer Socket[addr=/10.89.1.2,port=42104,localport=7800]: java.io.EOFException java.io.EOFException
+	at java.base/java.io.DataInputStream.readFully(DataInputStream.java:210)
+	at org.jgroups.blocks.cs.TcpConnection.readPeerAddress(TcpConnection.java:249)
+	at org.jgroups.blocks.cs.TcpConnection.<init>(TcpConnection.java:64)
+	at org.jgroups.blocks.cs.TcpServer$Acceptor.handleAccept(TcpServer.java:119)
+	at org.jgroups.blocks.cs.TcpServer$Acceptor.run(TcpServer.java:103)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+[m
+[33m2026-10-16 06:49:08,440 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health/status, remote=/127.0.0.1:58362, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-16 06:49:10,208 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:44346, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-16 06:49:10,209 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:44346, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-16 06:49:13,689 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health/status, remote=/127.0.0.1:43094, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-16 06:49:18,945 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health/status, remote=/127.0.0.1:55228, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-16 06:49:22,131 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:49432, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-16 06:49:22,132 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:49432, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-16 06:49:22,138 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/caches, remote=/10.89.1.1:49444, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-16 06:49:22,139 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/caches, remote=/10.89.1.1:49444, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-16 06:49:24,184 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health/status, remote=/127.0.0.1:55294, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-16 06:49:25,251 WARN  [o.j.p.TCP] JGRP000006: 10.89.1.3:7800: failed accepting connection from peer Socket[addr=/10.89.1.2,port=47362,localport=7800]: java.io.EOFException java.io.EOFException
+	at java.base/java.io.DataInputStream.readFully(DataInputStream.java:210)
+	at org.jgroups.blocks.cs.TcpConnection.readPeerAddress(TcpConnection.java:249)
+	at org.jgroups.blocks.cs.TcpConnection.<init>(TcpConnection.java:64)
+	at org.jgroups.blocks.cs.TcpServer$Acceptor.handleAccept(TcpServer.java:119)
+	at org.jgroups.blocks.cs.TcpServer$Acceptor.run(TcpServer.java:103)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+[m
+[33m2026-10-16 06:49:29,439 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health/status, remote=/127.0.0.1:33646, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-16 06:49:30,267 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:48496, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-16 06:49:30,269 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:48496, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-16 06:49:34,699 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health/status, remote=/127.0.0.1:33682, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-16 06:49:40,183 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health/status, remote=/127.0.0.1:57504, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-16 06:49:42,307 WARN  [o.j.p.TCP] JGRP000006: 10.89.1.3:7800: failed accepting connection from peer Socket[addr=/10.89.1.2,port=59324,localport=7800]: java.io.EOFException java.io.EOFException
+	at java.base/java.io.DataInputStream.readFully(DataInputStream.java:210)
+	at org.jgroups.blocks.cs.TcpConnection.readPeerAddress(TcpConnection.java:249)
+	at org.jgroups.blocks.cs.TcpConnection.<init>(TcpConnection.java:64)
+	at org.jgroups.blocks.cs.TcpServer$Acceptor.handleAccept(TcpServer.java:119)
+	at org.jgroups.blocks.cs.TcpServer$Acceptor.run(TcpServer.java:103)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+[m
+[33m2026-10-16 06:49:45,500 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health/status, remote=/127.0.0.1:57522, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-16 06:49:46,174 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:46272, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-16 06:49:46,176 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:46272, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-16 06:49:46,182 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/caches, remote=/10.89.1.1:46282, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-16 06:49:46,183 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/caches, remote=/10.89.1.1:46282, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-16 06:49:47,326 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:46322, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-16 06:49:47,327 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:46322, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-16 06:49:50,681 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health/status, remote=/127.0.0.1:53260, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-16 06:49:53,407 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:37148, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-16 06:49:53,408 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:37148, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-16 06:49:56,191 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health/status, remote=/127.0.0.1:53296, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-16 06:50:00,427 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:44738, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-16 06:50:00,429 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:44738, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-16 06:50:01,434 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health/status, remote=/127.0.0.1:35322, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-16 06:50:06,720 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health/status, remote=/127.0.0.1:35344, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-16 06:50:07,450 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:44754, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-16 06:50:07,452 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:44754, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-16 06:50:10,219 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:49214, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-16 06:50:10,221 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:49214, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-16 06:50:10,228 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/caches, remote=/10.89.1.1:49220, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-16 06:50:10,230 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/caches, remote=/10.89.1.1:49220, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-16 06:50:11,942 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health/status, remote=/127.0.0.1:38052, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-16 06:50:14,474 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:49270, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-16 06:50:14,476 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:49270, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-16 06:50:17,188 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health/status, remote=/127.0.0.1:38084, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-16 06:50:21,500 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:49104, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-16 06:50:21,501 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:49104, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-16 06:50:22,457 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health/status, remote=/127.0.0.1:54078, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-16 06:50:27,682 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health/status, remote=/127.0.0.1:54090, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-16 06:50:28,521 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:49120, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-16 06:50:28,523 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:49120, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-16 06:50:32,941 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health/status, remote=/127.0.0.1:42760, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-16 06:50:34,265 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:60806, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-16 06:50:34,266 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:60806, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-16 06:50:34,272 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/caches, remote=/10.89.1.1:60816, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-16 06:50:34,273 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/caches, remote=/10.89.1.1:60816, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-16 06:50:35,543 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:60864, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-16 06:50:35,544 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:60864, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-16 06:50:38,184 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health/status, remote=/127.0.0.1:42866, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[0m2026-10-16 06:50:38,319 INFO  [o.i.CLUSTER] ISPN000093: Received new, MERGED cluster view for channel cluster-tcc: MergeView::[isn2-19096|6] (3) [isn2-19096, isn1-47759, isn3-5889], 2 subgroups: [isn3-5889|5] (1) [isn3-5889], [isn2-19096|5] (2) [isn2-19096, isn1-47759][m
+[0m2026-10-16 06:50:38,319 INFO  [o.i.CLUSTER] [Scope=isn2-19096]ISPN100000: Node isn3-5889 joined the cluster[m
+[0m2026-10-16 06:50:38,319 INFO  [o.i.CLUSTER] [Scope=isn2-19096]ISPN100000: Node isn3-5889 joined the cluster[m
+[0m2026-10-16 06:50:38,325 INFO  [o.i.CLUSTER] [Context=___hotRodTopologyCache_hotrod-default]ISPN100007: After merge (or coordinator change), recovered members [isn2-19096, isn1-47759] with topology id 26[m
+[0m2026-10-16 06:50:38,325 INFO  [o.i.CLUSTER] [Context=sessions]ISPN100007: After merge (or coordinator change), recovered members [isn2-19096, isn1-47759, isn3-5889] with topology id 28[m
+[0m2026-10-16 06:50:38,325 INFO  [o.i.CLUSTER] [Context=counters]ISPN100007: After merge (or coordinator change), recovered members [isn2-19096, isn1-47759, isn3-5889] with topology id 28[m
+[0m2026-10-16 06:50:38,326 INFO  [o.i.CLUSTER] [Context=counters]ISPN100012: Starting conflict resolution with members [isn2-19096, isn1-47759, isn3-5889], topology id 28[m
+[0m2026-10-16 06:50:38,326 INFO  [o.i.CLUSTER] [Context=org.infinispan.CONFIG]ISPN100007: After merge (or coordinator change), recovered members [isn2-19096, isn1-47759] with topology id 26[m
+[0m2026-10-16 06:50:38,327 INFO  [o.i.CLUSTER] [Context=sessions]ISPN100012: Starting conflict resolution with members [isn2-19096, isn1-47759, isn3-5889], topology id 28[m
+[0m2026-10-16 06:50:38,327 INFO  [o.i.CLUSTER] [Context=org.infinispan.CONFIG]ISPN100002: Starting rebalance with members [isn2-19096, isn1-47759, isn3-5889], phase READ_OLD_WRITE_ALL, topology id 27[m
+[0m2026-10-16 06:50:38,328 INFO  [o.i.LIFECYCLE] [Context=org.infinispan.CONFIG][Scope=isn2-19096]ISPN100002: Starting rebalance with members [isn2-19096, isn1-47759, isn3-5889], phase READ_OLD_WRITE_ALL, topology id 27[m
+[33m2026-10-16 06:50:38,335 WARN  [o.i.p.i.PreferAvailabilityStrategy] ISPN000517: Ignoring cache topology from [isn3-5889] during merge: CacheTopology{id=22, phase=NO_REBALANCE, rebalanceId=7, currentCH=ReplicatedConsistentHash{ns = 256, owners = (1)[isn3-5889: 256+0]}, pendingCH=null, unionCH=null, actualMembers=[isn3-5889], persistentUUIDs=[180aa4b2-e8b1-425e-a1b6-a5a255ff6c2b]}[m
+[0m2026-10-16 06:50:38,335 INFO  [o.i.CLUSTER] [Context=___protobuf_metadata]ISPN100007: After merge (or coordinator change), recovered members [isn2-19096, isn1-47759] with topology id 26[m
+[0m2026-10-16 06:50:38,336 INFO  [o.i.CLUSTER] [Context=___protobuf_metadata]ISPN100008: Updating cache members list [isn2-19096, isn1-47759], topology id 27[m
+[0m2026-10-16 06:50:38,337 INFO  [o.i.CLUSTER] [Context=___protobuf_metadata]ISPN100002: Starting rebalance with members [isn2-19096, isn1-47759, isn3-5889], phase READ_OLD_WRITE_ALL, topology id 28[m
+[0m2026-10-16 06:50:38,339 INFO  [o.i.LIFECYCLE] [Context=___protobuf_metadata][Scope=isn2-19096]ISPN100002: Starting rebalance with members [isn2-19096, isn1-47759, isn3-5889], phase READ_OLD_WRITE_ALL, topology id 28[m
+[0m2026-10-16 06:50:38,338 INFO  [o.i.CLUSTER] [Context=org.infinispan.COUNTER]ISPN100007: After merge (or coordinator change), recovered members [isn2-19096, isn1-47759] with topology id 26[m
+[0m2026-10-16 06:50:38,339 INFO  [o.i.CLUSTER] [Context=___script_cache]ISPN100007: After merge (or coordinator change), recovered members [isn2-19096, isn1-47759] with topology id 26[m
+[0m2026-10-16 06:50:38,338 INFO  [o.i.CLUSTER] [Context=___hotRodTopologyCache_hotrod-default]ISPN100002: Starting rebalance with members [isn2-19096, isn1-47759, isn3-5889], phase READ_OLD_WRITE_ALL, topology id 27[m
+[0m2026-10-16 06:50:38,341 INFO  [o.i.LIFECYCLE] [Context=___hotRodTopologyCache_hotrod-default][Scope=isn2-19096]ISPN100002: Starting rebalance with members [isn2-19096, isn1-47759, isn3-5889], phase READ_OLD_WRITE_ALL, topology id 27[m
+[0m2026-10-16 06:50:38,342 INFO  [o.i.CLUSTER] [Context=org.infinispan.CLIENT_SERVER_TX_TABLE]ISPN100007: After merge (or coordinator change), recovered members [isn2-19096, isn1-47759] with topology id 26[m
+[0m2026-10-16 06:50:38,340 INFO  [o.i.CLUSTER] [Context=org.infinispan.COUNTER]ISPN100002: Starting rebalance with members [isn2-19096, isn1-47759, isn3-5889], phase READ_OLD_WRITE_ALL, topology id 27[m
+[0m2026-10-16 06:50:38,342 INFO  [o.i.LIFECYCLE] [Context=org.infinispan.COUNTER][Scope=isn2-19096]ISPN100002: Starting rebalance with members [isn2-19096, isn1-47759, isn3-5889], phase READ_OLD_WRITE_ALL, topology id 27[m
+[0m2026-10-16 06:50:38,343 INFO  [o.i.CLUSTER] [Context=org.infinispan.CLIENT_SERVER_TX_TABLE]ISPN100002: Starting rebalance with members [isn2-19096, isn1-47759, isn3-5889], phase READ_OLD_WRITE_ALL, topology id 27[m
+[0m2026-10-16 06:50:38,343 INFO  [o.i.LIFECYCLE] [Context=org.infinispan.CLIENT_SERVER_TX_TABLE][Scope=isn2-19096]ISPN100002: Starting rebalance with members [isn2-19096, isn1-47759, isn3-5889], phase READ_OLD_WRITE_ALL, topology id 27[m
+[0m2026-10-16 06:50:38,343 INFO  [o.i.CLUSTER] [Context=___script_cache]ISPN100002: Starting rebalance with members [isn2-19096, isn1-47759, isn3-5889], phase READ_OLD_WRITE_ALL, topology id 27[m
+[0m2026-10-16 06:50:38,344 INFO  [o.i.LIFECYCLE] [Context=___script_cache][Scope=isn2-19096]ISPN100002: Starting rebalance with members [isn2-19096, isn1-47759, isn3-5889], phase READ_OLD_WRITE_ALL, topology id 27[m
+[0m2026-10-16 06:50:38,345 INFO  [o.i.LIFECYCLE] [Context=___hotRodTopologyCache_hotrod-default][Scope=isn2-19096]ISPN100010: Finished rebalance with members [isn2-19096, isn1-47759, isn3-5889], topology id 27[m
+[0m2026-10-16 06:50:38,346 INFO  [o.i.LIFECYCLE] [Context=org.infinispan.CLIENT_SERVER_TX_TABLE][Scope=isn2-19096]ISPN100010: Finished rebalance with members [isn2-19096, isn1-47759, isn3-5889], topology id 27[m
+[0m2026-10-16 06:50:38,346 INFO  [o.i.LIFECYCLE] [Context=org.infinispan.COUNTER][Scope=isn2-19096]ISPN100010: Finished rebalance with members [isn2-19096, isn1-47759, isn3-5889], topology id 27[m
+[0m2026-10-16 06:50:38,347 INFO  [o.i.LIFECYCLE] [Context=___protobuf_metadata][Scope=isn2-19096]ISPN100010: Finished rebalance with members [isn2-19096, isn1-47759, isn3-5889], topology id 28[m
+[0m2026-10-16 06:50:38,349 INFO  [o.i.LIFECYCLE] [Context=org.infinispan.CONFIG][Scope=isn2-19096]ISPN100010: Finished rebalance with members [isn2-19096, isn1-47759, isn3-5889], topology id 27[m
+[0m2026-10-16 06:50:38,349 INFO  [o.i.LIFECYCLE] [Context=___script_cache][Scope=isn2-19096]ISPN100010: Finished rebalance with members [isn2-19096, isn1-47759, isn3-5889], topology id 27[m
+[0m2026-10-16 06:50:38,396 INFO  [o.i.CLUSTER] [Context=sessions]ISPN100013: Finished conflict resolution with members [isn2-19096, isn1-47759, isn3-5889], topology id 28[m
+[0m2026-10-16 06:50:38,397 INFO  [o.i.CLUSTER] [Context=sessions]ISPN100002: Starting rebalance with members [isn2-19096, isn1-47759, isn3-5889], phase READ_OLD_WRITE_ALL, topology id 30[m
+[0m2026-10-16 06:50:38,397 INFO  [o.i.LIFECYCLE] [Context=sessions][Scope=isn2-19096]ISPN100002: Starting rebalance with members [isn2-19096, isn1-47759, isn3-5889], phase READ_OLD_WRITE_ALL, topology id 30[m
+[0m2026-10-16 06:50:38,398 INFO  [o.i.LIFECYCLE] [Context=sessions][Scope=isn2-19096]ISPN100010: Finished rebalance with members [isn2-19096, isn1-47759, isn3-5889], topology id 30[m
+[33m2026-10-16 06:50:42,564 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:48428, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-16 06:50:42,566 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:48428, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-16 06:50:43,474 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health/status, remote=/127.0.0.1:45970, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-16 06:50:48,686 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health/status, remote=/127.0.0.1:60970, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-16 06:50:49,587 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:53662, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-16 06:50:49,588 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:53662, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-16 06:50:53,946 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health/status, remote=/127.0.0.1:60992, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-16 06:50:56,609 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:53670, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-16 06:50:56,610 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:53670, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-16 06:50:58,310 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:53686, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-16 06:50:58,311 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:53686, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-16 06:50:58,317 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/caches, remote=/10.89.1.1:53690, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-16 06:50:58,318 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/caches, remote=/10.89.1.1:53690, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-16 06:50:59,434 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health/status, remote=/127.0.0.1:34840, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[1;31m2026-10-16 06:50:59,982 ERROR [o.i.i.i.InvocationContextInterceptor] ISPN000136: Error executing command PutKeyValueCommand on Cache 'sessions', writing keys [WrappedByteArray[ACED0005\t000A\s\o\n\d\a\-\i\s\n\1 (17 bytes)]] org.infinispan.commons.TimeoutException: ISPN000299: Unable to acquire lock after 15 seconds for key WrappedByteArray[ACED0005\t000A\s\o\n\d\a\-\i\s\n\1 (17 bytes)] and requestor CommandInvocation:isn1-47759:244. Lock is held by CommandInvocation:isn1-47759:243
+	at org.infinispan.util.concurrent.locks.impl.DefaultLockManager$KeyAwareExtendedLockPromise.get(DefaultLockManager.java:299)
+	at org.infinispan.util.concurrent.locks.impl.DefaultLockManager$KeyAwareExtendedLockPromise.get(DefaultLockManager.java:229)
+	at org.infinispan.util.concurrent.locks.impl.InfinispanLock$LockPlaceHolder.checkState(InfinispanLock.java:554)
+	at org.infinispan.util.concurrent.locks.impl.InfinispanLock$LockPlaceHolder.lambda$toInvocationStage$1(InfinispanLock.java:484)
+	at java.base/java.util.concurrent.CompletableFuture$UniApply.tryFire(CompletableFuture.java:646)
+	at java.base/java.util.concurrent.CompletableFuture$Completion.run(CompletableFuture.java:482)
+	at io.netty.util.concurrent.AbstractEventExecutor.runTask(AbstractEventExecutor.java:173)
+	at io.netty.util.concurrent.AbstractEventExecutor.safeExecute(AbstractEventExecutor.java:166)
+	at io.netty.util.concurrent.SingleThreadEventExecutor.runAllTasks(SingleThreadEventExecutor.java:472)
+	at io.netty.channel.epoll.EpollEventLoop.run(EpollEventLoop.java:405)
+	at io.netty.util.concurrent.SingleThreadEventExecutor$4.run(SingleThreadEventExecutor.java:998)
+	at io.netty.util.internal.ThreadExecutorMap$2.run(ThreadExecutorMap.java:74)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+[m
+[33m2026-10-16 06:50:59,983 WARN  [o.i.CLUSTER] ISPN000071: Caught exception when handling command SingleRpcCommand{cacheName='sessions', command=PutKeyValueCommand{key=WrappedByteArray[ACED0005\t000A\s\o\n\d\a\-\i\s\n\1 (17 bytes)], value=WrappedByteArray[ACED0005\s\r00\$\b\r\.\u\n\i\p\a\m\p\a\.\t\c\c\.\s\e\s\s\i\o\n\.\S\e\s\s\i\o\n\S\t\a\t\e0000000000000001020007\J0006\v\e\r\s\a\o... (525 bytes)], flags=[IGNORE_RETURN_VALUES], commandInvocationId=CommandInvocation:isn1-47759:244, putIfAbsent=false, returnEntry=true, valueMatcher=MATCH_ALWAYS, metadata=EmbeddedExpirableMetadata{version=NumericVersion{version=3011309623871682122}, lifespan=-1, maxIdle=-1}, internalMetadata=null, successful=true, topologyId=30, segment=38}} org.infinispan.commons.TimeoutException: ISPN000299: Unable to acquire lock after 15 seconds for key WrappedByteArray[ACED0005\t000A\s\o\n\d\a\-\i\s\n\1 (17 bytes)] and requestor CommandInvocation:isn1-47759:244. Lock is held by CommandInvocation:isn1-47759:243
+	at org.infinispan.util.concurrent.locks.impl.DefaultLockManager$KeyAwareExtendedLockPromise.get(DefaultLockManager.java:299)
+	at org.infinispan.util.concurrent.locks.impl.DefaultLockManager$KeyAwareExtendedLockPromise.get(DefaultLockManager.java:229)
+	at org.infinispan.util.concurrent.locks.impl.InfinispanLock$LockPlaceHolder.checkState(InfinispanLock.java:554)
+	at org.infinispan.util.concurrent.locks.impl.InfinispanLock$LockPlaceHolder.lambda$toInvocationStage$1(InfinispanLock.java:484)
+	at java.base/java.util.concurrent.CompletableFuture$UniApply.tryFire(CompletableFuture.java:646)
+	at java.base/java.util.concurrent.CompletableFuture$Completion.run(CompletableFuture.java:482)
+	at io.netty.util.concurrent.AbstractEventExecutor.runTask(AbstractEventExecutor.java:173)
+	at io.netty.util.concurrent.AbstractEventExecutor.safeExecute(AbstractEventExecutor.java:166)
+	at io.netty.util.concurrent.SingleThreadEventExecutor.runAllTasks(SingleThreadEventExecutor.java:472)
+	at io.netty.channel.epoll.EpollEventLoop.run(EpollEventLoop.java:405)
+	at io.netty.util.concurrent.SingleThreadEventExecutor$4.run(SingleThreadEventExecutor.java:998)
+	at io.netty.util.internal.ThreadExecutorMap$2.run(ThreadExecutorMap.java:74)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+[m
+[1;31m2026-10-16 06:51:00,481 ERROR [o.i.i.i.InvocationContextInterceptor] ISPN000136: Error executing command PutKeyValueCommand on Cache 'sessions', writing keys [WrappedByteArray[ACED0005\t000A\s\o\n\d\a\-\i\s\n\1 (17 bytes)]] org.infinispan.commons.TimeoutException: ISPN000476: Timed out waiting for responses for request 535 from isn3-5889 after 17.5 seconds
+	at org.infinispan.remoting.transport.impl.MultiTargetRequest.onTimeout(MultiTargetRequest.java:179)
+	at org.infinispan.remoting.transport.AbstractRequest.call(AbstractRequest.java:89)
+	at org.infinispan.remoting.transport.AbstractRequest.call(AbstractRequest.java:23)
+	at java.base/java.util.concurrent.FutureTask.run(FutureTask.java:317)
+	at java.base/java.util.concurrent.ScheduledThreadPoolExecutor$ScheduledFutureTask.run(ScheduledThreadPoolExecutor.java:304)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1144)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:642)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+[m
+[33m2026-10-16 06:51:00,481 WARN  [o.i.CLUSTER] ISPN000071: Caught exception when handling command SingleRpcCommand{cacheName='sessions', command=PutKeyValueCommand{key=WrappedByteArray[ACED0005\t000A\s\o\n\d\a\-\i\s\n\1 (17 bytes)], value=WrappedByteArray[ACED0005\s\r00\$\b\r\.\u\n\i\p\a\m\p\a\.\t\c\c\.\s\e\s\s\i\o\n\.\S\e\s\s\i\o\n\S\t\a\t\e0000000000000001020007\J0006\v\e\r\s\a\o... (525 bytes)], flags=[IGNORE_RETURN_VALUES], commandInvocationId=CommandInvocation:isn1-47759:243, putIfAbsent=false, returnEntry=true, valueMatcher=MATCH_ALWAYS, metadata=EmbeddedExpirableMetadata{version=NumericVersion{version=5575321590573245921}, lifespan=-1, maxIdle=-1}, internalMetadata=null, successful=true, topologyId=30, segment=38}} org.infinispan.commons.TimeoutException: ISPN000476: Timed out waiting for responses for request 535 from isn3-5889 after 17.5 seconds
+	at org.infinispan.remoting.transport.impl.MultiTargetRequest.onTimeout(MultiTargetRequest.java:179)
+	at org.infinispan.remoting.transport.AbstractRequest.call(AbstractRequest.java:89)
+	at org.infinispan.remoting.transport.AbstractRequest.call(AbstractRequest.java:23)
+	at java.base/java.util.concurrent.FutureTask.run(FutureTask.java:317)
+	at java.base/java.util.concurrent.ScheduledThreadPoolExecutor$ScheduledFutureTask.run(ScheduledThreadPoolExecutor.java:304)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1144)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:642)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+[m
+[33m2026-10-16 06:51:03,633 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:45620, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-16 06:51:03,634 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:45620, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-16 06:51:04,692 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health/status, remote=/127.0.0.1:34872, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[1;31m2026-10-16 06:51:07,994 ERROR [o.i.i.i.InvocationContextInterceptor] ISPN000136: Error executing command PutKeyValueCommand on Cache 'counters', writing keys [WrappedByteArray[ACED0005\t000A\s\o\n\d\a\-\i\s\n\1 (17 bytes)]] org.infinispan.commons.TimeoutException: ISPN000299: Unable to acquire lock after 15 seconds for key WrappedByteArray[ACED0005\t000A\s\o\n\d\a\-\i\s\n\1 (17 bytes)] and requestor CommandInvocation:isn1-47759:248. Lock is held by CommandInvocation:isn1-47759:247
+	at org.infinispan.util.concurrent.locks.impl.DefaultLockManager$KeyAwareExtendedLockPromise.get(DefaultLockManager.java:299)
+	at org.infinispan.util.concurrent.locks.impl.DefaultLockManager$KeyAwareExtendedLockPromise.get(DefaultLockManager.java:229)
+	at org.infinispan.util.concurrent.locks.impl.InfinispanLock$LockPlaceHolder.checkState(InfinispanLock.java:554)
+	at org.infinispan.util.concurrent.locks.impl.InfinispanLock$LockPlaceHolder.lambda$toInvocationStage$1(InfinispanLock.java:484)
+	at java.base/java.util.concurrent.CompletableFuture$UniApply.tryFire(CompletableFuture.java:646)
+	at java.base/java.util.concurrent.CompletableFuture$Completion.run(CompletableFuture.java:482)
+	at io.netty.util.concurrent.AbstractEventExecutor.runTask(AbstractEventExecutor.java:173)
+	at io.netty.util.concurrent.AbstractEventExecutor.safeExecute(AbstractEventExecutor.java:166)
+	at io.netty.util.concurrent.SingleThreadEventExecutor.runAllTasks(SingleThreadEventExecutor.java:472)
+	at io.netty.channel.epoll.EpollEventLoop.run(EpollEventLoop.java:405)
+	at io.netty.util.concurrent.SingleThreadEventExecutor$4.run(SingleThreadEventExecutor.java:998)
+	at io.netty.util.internal.ThreadExecutorMap$2.run(ThreadExecutorMap.java:74)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+[m
+[33m2026-10-16 06:51:07,995 WARN  [o.i.CLUSTER] ISPN000071: Caught exception when handling command SingleRpcCommand{cacheName='counters', command=PutKeyValueCommand{key=WrappedByteArray[ACED0005\t000A\s\o\n\d\a\-\i\s\n\1 (17 bytes)], value=WrappedByteArray[ACED0005\s\r00\%\b\r\.\u\n\i\p\a\m\p\a\.\t\c\c\.\s\e\s\s\i\o\n\.\I\d\e\n\t\i\t\y\S\t\a\t\e0000000000000001020005\J000E\c\o\n\t\a... (380 bytes)], flags=[IGNORE_RETURN_VALUES], commandInvocationId=CommandInvocation:isn1-47759:248, putIfAbsent=false, returnEntry=true, valueMatcher=MATCH_ALWAYS, metadata=EmbeddedExpirableMetadata{version=NumericVersion{version=551026913248347506}, lifespan=-1, maxIdle=-1}, internalMetadata=null, successful=true, topologyId=28, segment=38}} org.infinispan.commons.TimeoutException: ISPN000299: Unable to acquire lock after 15 seconds for key WrappedByteArray[ACED0005\t000A\s\o\n\d\a\-\i\s\n\1 (17 bytes)] and requestor CommandInvocation:isn1-47759:248. Lock is held by CommandInvocation:isn1-47759:247
+	at org.infinispan.util.concurrent.locks.impl.DefaultLockManager$KeyAwareExtendedLockPromise.get(DefaultLockManager.java:299)
+	at org.infinispan.util.concurrent.locks.impl.DefaultLockManager$KeyAwareExtendedLockPromise.get(DefaultLockManager.java:229)
+	at org.infinispan.util.concurrent.locks.impl.InfinispanLock$LockPlaceHolder.checkState(InfinispanLock.java:554)
+	at org.infinispan.util.concurrent.locks.impl.InfinispanLock$LockPlaceHolder.lambda$toInvocationStage$1(InfinispanLock.java:484)
+	at java.base/java.util.concurrent.CompletableFuture$UniApply.tryFire(CompletableFuture.java:646)
+	at java.base/java.util.concurrent.CompletableFuture$Completion.run(CompletableFuture.java:482)
+	at io.netty.util.concurrent.AbstractEventExecutor.runTask(AbstractEventExecutor.java:173)
+	at io.netty.util.concurrent.AbstractEventExecutor.safeExecute(AbstractEventExecutor.java:166)
+	at io.netty.util.concurrent.SingleThreadEventExecutor.runAllTasks(SingleThreadEventExecutor.java:472)
+	at io.netty.channel.epoll.EpollEventLoop.run(EpollEventLoop.java:405)
+	at io.netty.util.concurrent.SingleThreadEventExecutor$4.run(SingleThreadEventExecutor.java:998)
+	at io.netty.util.internal.ThreadExecutorMap$2.run(ThreadExecutorMap.java:74)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+[m
+[1;31m2026-10-16 06:51:08,491 ERROR [o.i.i.i.InvocationContextInterceptor] ISPN000136: Error executing command PutKeyValueCommand on Cache 'counters', writing keys [WrappedByteArray[ACED0005\t000A\s\o\n\d\a\-\i\s\n\1 (17 bytes)]] org.infinispan.commons.TimeoutException: ISPN000476: Timed out waiting for responses for request 536 from isn3-5889 after 17.5 seconds
+	at org.infinispan.remoting.transport.impl.MultiTargetRequest.onTimeout(MultiTargetRequest.java:179)
+	at org.infinispan.remoting.transport.AbstractRequest.call(AbstractRequest.java:89)
+	at org.infinispan.remoting.transport.AbstractRequest.call(AbstractRequest.java:23)
+	at java.base/java.util.concurrent.FutureTask.run(FutureTask.java:317)
+	at java.base/java.util.concurrent.ScheduledThreadPoolExecutor$ScheduledFutureTask.run(ScheduledThreadPoolExecutor.java:304)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1144)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:642)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+[m
+[33m2026-10-16 06:51:08,492 WARN  [o.i.CLUSTER] ISPN000071: Caught exception when handling command SingleRpcCommand{cacheName='counters', command=PutKeyValueCommand{key=WrappedByteArray[ACED0005\t000A\s\o\n\d\a\-\i\s\n\1 (17 bytes)], value=WrappedByteArray[ACED0005\s\r00\%\b\r\.\u\n\i\p\a\m\p\a\.\t\c\c\.\s\e\s\s\i\o\n\.\I\d\e\n\t\i\t\y\S\t\a\t\e0000000000000001020005\J000E\c\o\n\t\a... (380 bytes)], flags=[IGNORE_RETURN_VALUES], commandInvocationId=CommandInvocation:isn1-47759:247, putIfAbsent=false, returnEntry=true, valueMatcher=MATCH_ALWAYS, metadata=EmbeddedExpirableMetadata{version=NumericVersion{version=1091728337576975672}, lifespan=-1, maxIdle=-1}, internalMetadata=null, successful=true, topologyId=28, segment=38}} org.infinispan.commons.TimeoutException: ISPN000476: Timed out waiting for responses for request 536 from isn3-5889 after 17.5 seconds
+	at org.infinispan.remoting.transport.impl.MultiTargetRequest.onTimeout(MultiTargetRequest.java:179)
+	at org.infinispan.remoting.transport.AbstractRequest.call(AbstractRequest.java:89)
+	at org.infinispan.remoting.transport.AbstractRequest.call(AbstractRequest.java:23)
+	at java.base/java.util.concurrent.FutureTask.run(FutureTask.java:317)
+	at java.base/java.util.concurrent.ScheduledThreadPoolExecutor$ScheduledFutureTask.run(ScheduledThreadPoolExecutor.java:304)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1144)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:642)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+[m
+[33m2026-10-16 06:51:09,942 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health/status, remote=/127.0.0.1:58722, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-16 06:51:10,653 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:34384, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-16 06:51:10,654 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:34384, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-16 06:51:10,920 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:34388, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-16 06:51:10,921 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:34388, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-16 06:51:15,448 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health/status, remote=/127.0.0.1:58746, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[1;31m2026-10-16 06:51:16,003 ERROR [o.i.i.i.InvocationContextInterceptor] ISPN000136: Error executing command PutKeyValueCommand on Cache 'sessions', writing keys [WrappedByteArray[ACED0005\t000A\s\o\n\d\a\-\i\s\n\1 (17 bytes)]] org.infinispan.commons.TimeoutException: ISPN000299: Unable to acquire lock after 15 seconds for key WrappedByteArray[ACED0005\t000A\s\o\n\d\a\-\i\s\n\1 (17 bytes)] and requestor CommandInvocation:isn1-47759:252. Lock is held by CommandInvocation:isn1-47759:251
+	at org.infinispan.util.concurrent.locks.impl.DefaultLockManager$KeyAwareExtendedLockPromise.get(DefaultLockManager.java:299)
+	at org.infinispan.util.concurrent.locks.impl.DefaultLockManager$KeyAwareExtendedLockPromise.get(DefaultLockManager.java:229)
+	at org.infinispan.util.concurrent.locks.impl.InfinispanLock$LockPlaceHolder.checkState(InfinispanLock.java:554)
+	at org.infinispan.util.concurrent.locks.impl.InfinispanLock$LockPlaceHolder.lambda$toInvocationStage$1(InfinispanLock.java:484)
+	at java.base/java.util.concurrent.CompletableFuture$UniApply.tryFire(CompletableFuture.java:646)
+	at java.base/java.util.concurrent.CompletableFuture$Completion.run(CompletableFuture.java:482)
+	at io.netty.util.concurrent.AbstractEventExecutor.runTask(AbstractEventExecutor.java:173)
+	at io.netty.util.concurrent.AbstractEventExecutor.safeExecute(AbstractEventExecutor.java:166)
+	at io.netty.util.concurrent.SingleThreadEventExecutor.runAllTasks(SingleThreadEventExecutor.java:472)
+	at io.netty.channel.epoll.EpollEventLoop.run(EpollEventLoop.java:405)
+	at io.netty.util.concurrent.SingleThreadEventExecutor$4.run(SingleThreadEventExecutor.java:998)
+	at io.netty.util.internal.ThreadExecutorMap$2.run(ThreadExecutorMap.java:74)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+[m
+[33m2026-10-16 06:51:16,004 WARN  [o.i.CLUSTER] ISPN000071: Caught exception when handling command SingleRpcCommand{cacheName='sessions', command=PutKeyValueCommand{key=WrappedByteArray[ACED0005\t000A\s\o\n\d\a\-\i\s\n\1 (17 bytes)], value=WrappedByteArray[ACED0005\s\r00\$\b\r\.\u\n\i\p\a\m\p\a\.\t\c\c\.\s\e\s\s\i\o\n\.\S\e\s\s\i\o\n\S\t\a\t\e0000000000000001020007\J0006\v\e\r\s\a\o... (525 bytes)], flags=[IGNORE_RETURN_VALUES], commandInvocationId=CommandInvocation:isn1-47759:252, putIfAbsent=false, returnEntry=true, valueMatcher=MATCH_ALWAYS, metadata=EmbeddedExpirableMetadata{version=NumericVersion{version=7700716972594288451}, lifespan=-1, maxIdle=-1}, internalMetadata=null, successful=true, topologyId=30, segment=38}} org.infinispan.commons.TimeoutException: ISPN000299: Unable to acquire lock after 15 seconds for key WrappedByteArray[ACED0005\t000A\s\o\n\d\a\-\i\s\n\1 (17 bytes)] and requestor CommandInvocation:isn1-47759:252. Lock is held by CommandInvocation:isn1-47759:251
+	at org.infinispan.util.concurrent.locks.impl.DefaultLockManager$KeyAwareExtendedLockPromise.get(DefaultLockManager.java:299)
+	at org.infinispan.util.concurrent.locks.impl.DefaultLockManager$KeyAwareExtendedLockPromise.get(DefaultLockManager.java:229)
+	at org.infinispan.util.concurrent.locks.impl.InfinispanLock$LockPlaceHolder.checkState(InfinispanLock.java:554)
+	at org.infinispan.util.concurrent.locks.impl.InfinispanLock$LockPlaceHolder.lambda$toInvocationStage$1(InfinispanLock.java:484)
+	at java.base/java.util.concurrent.CompletableFuture$UniApply.tryFire(CompletableFuture.java:646)
+	at java.base/java.util.concurrent.CompletableFuture$Completion.run(CompletableFuture.java:482)
+	at io.netty.util.concurrent.AbstractEventExecutor.runTask(AbstractEventExecutor.java:173)
+	at io.netty.util.concurrent.AbstractEventExecutor.safeExecute(AbstractEventExecutor.java:166)
+	at io.netty.util.concurrent.SingleThreadEventExecutor.runAllTasks(SingleThreadEventExecutor.java:472)
+	at io.netty.channel.epoll.EpollEventLoop.run(EpollEventLoop.java:405)
+	at io.netty.util.concurrent.SingleThreadEventExecutor$4.run(SingleThreadEventExecutor.java:998)
+	at io.netty.util.internal.ThreadExecutorMap$2.run(ThreadExecutorMap.java:74)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+[m
+[33m2026-10-16 06:51:17,675 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:34404, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-16 06:51:17,676 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:34404, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[1;31m2026-10-16 06:51:17,983 ERROR [o.i.i.i.InvocationContextInterceptor] ISPN000136: Error executing command PutKeyValueCommand on Cache 'sessions', writing keys [WrappedByteArray[ACED0005\t000A\s\o\n\d\a\-\i\s\n\1 (17 bytes)]] org.infinispan.commons.TimeoutException: ISPN000476: Timed out waiting for responses for request 537 from isn3-5889 after 17.5 seconds
+	at org.infinispan.remoting.transport.impl.MultiTargetRequest.onTimeout(MultiTargetRequest.java:179)
+	at org.infinispan.remoting.transport.AbstractRequest.call(AbstractRequest.java:89)
+	at org.infinispan.remoting.transport.AbstractRequest.call(AbstractRequest.java:23)
+	at java.base/java.util.concurrent.FutureTask.run(FutureTask.java:317)
+	at java.base/java.util.concurrent.ScheduledThreadPoolExecutor$ScheduledFutureTask.run(ScheduledThreadPoolExecutor.java:304)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1144)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:642)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+[m
+[33m2026-10-16 06:51:17,984 WARN  [o.i.CLUSTER] ISPN000071: Caught exception when handling command SingleRpcCommand{cacheName='sessions', command=PutKeyValueCommand{key=WrappedByteArray[ACED0005\t000A\s\o\n\d\a\-\i\s\n\1 (17 bytes)], value=WrappedByteArray[ACED0005\s\r00\$\b\r\.\u\n\i\p\a\m\p\a\.\t\c\c\.\s\e\s\s\i\o\n\.\S\e\s\s\i\o\n\S\t\a\t\e0000000000000001020007\J0006\v\e\r\s\a\o... (525 bytes)], flags=[IGNORE_RETURN_VALUES], commandInvocationId=CommandInvocation:isn1-47759:251, putIfAbsent=false, returnEntry=true, valueMatcher=MATCH_ALWAYS, metadata=EmbeddedExpirableMetadata{version=NumericVersion{version=3229714299462026838}, lifespan=-1, maxIdle=-1}, internalMetadata=null, successful=true, topologyId=30, segment=38}} org.infinispan.commons.TimeoutException: ISPN000476: Timed out waiting for responses for request 537 from isn3-5889 after 17.5 seconds
+	at org.infinispan.remoting.transport.impl.MultiTargetRequest.onTimeout(MultiTargetRequest.java:179)
+	at org.infinispan.remoting.transport.AbstractRequest.call(AbstractRequest.java:89)
+	at org.infinispan.remoting.transport.AbstractRequest.call(AbstractRequest.java:23)
+	at java.base/java.util.concurrent.FutureTask.run(FutureTask.java:317)
+	at java.base/java.util.concurrent.ScheduledThreadPoolExecutor$ScheduledFutureTask.run(ScheduledThreadPoolExecutor.java:304)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1144)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:642)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+[m
+[33m2026-10-16 06:51:20,688 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health/status, remote=/127.0.0.1:37268, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-16 06:51:22,354 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:50372, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-16 06:51:22,355 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:50372, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-16 06:51:22,361 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/caches, remote=/10.89.1.1:50382, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-16 06:51:22,363 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/caches, remote=/10.89.1.1:50382, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[1;31m2026-10-16 06:51:24,016 ERROR [o.i.i.i.InvocationContextInterceptor] ISPN000136: Error executing command PutKeyValueCommand on Cache 'counters', writing keys [WrappedByteArray[ACED0005\t000A\s\o\n\d\a\-\i\s\n\1 (17 bytes)]] org.infinispan.commons.TimeoutException: ISPN000299: Unable to acquire lock after 15 seconds for key WrappedByteArray[ACED0005\t000A\s\o\n\d\a\-\i\s\n\1 (17 bytes)] and requestor CommandInvocation:isn1-47759:256. Lock is held by CommandInvocation:isn1-47759:255
+	at org.infinispan.util.concurrent.locks.impl.DefaultLockManager$KeyAwareExtendedLockPromise.get(DefaultLockManager.java:299)
+	at org.infinispan.util.concurrent.locks.impl.DefaultLockManager$KeyAwareExtendedLockPromise.get(DefaultLockManager.java:229)
+	at org.infinispan.util.concurrent.locks.impl.InfinispanLock$LockPlaceHolder.checkState(InfinispanLock.java:554)
+	at org.infinispan.util.concurrent.locks.impl.InfinispanLock$LockPlaceHolder.lambda$toInvocationStage$1(InfinispanLock.java:484)
+	at java.base/java.util.concurrent.CompletableFuture$UniApply.tryFire(CompletableFuture.java:646)
+	at java.base/java.util.concurrent.CompletableFuture$Completion.run(CompletableFuture.java:482)
+	at io.netty.util.concurrent.AbstractEventExecutor.runTask(AbstractEventExecutor.java:173)
+	at io.netty.util.concurrent.AbstractEventExecutor.safeExecute(AbstractEventExecutor.java:166)
+	at io.netty.util.concurrent.SingleThreadEventExecutor.runAllTasks(SingleThreadEventExecutor.java:472)
+	at io.netty.channel.epoll.EpollEventLoop.run(EpollEventLoop.java:405)
+	at io.netty.util.concurrent.SingleThreadEventExecutor$4.run(SingleThreadEventExecutor.java:998)
+	at io.netty.util.internal.ThreadExecutorMap$2.run(ThreadExecutorMap.java:74)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+[m
+[33m2026-10-16 06:51:24,016 WARN  [o.i.CLUSTER] ISPN000071: Caught exception when handling command SingleRpcCommand{cacheName='counters', command=PutKeyValueCommand{key=WrappedByteArray[ACED0005\t000A\s\o\n\d\a\-\i\s\n\1 (17 bytes)], value=WrappedByteArray[ACED0005\s\r00\%\b\r\.\u\n\i\p\a\m\p\a\.\t\c\c\.\s\e\s\s\i\o\n\.\I\d\e\n\t\i\t\y\S\t\a\t\e0000000000000001020005\J000E\c\o\n\t\a... (380 bytes)], flags=[IGNORE_RETURN_VALUES], commandInvocationId=CommandInvocation:isn1-47759:256, putIfAbsent=false, returnEntry=true, valueMatcher=MATCH_ALWAYS, metadata=EmbeddedExpirableMetadata{version=NumericVersion{version=5395837368030272344}, lifespan=-1, maxIdle=-1}, internalMetadata=null, successful=true, topologyId=28, segment=38}} org.infinispan.commons.TimeoutException: ISPN000299: Unable to acquire lock after 15 seconds for key WrappedByteArray[ACED0005\t000A\s\o\n\d\a\-\i\s\n\1 (17 bytes)] and requestor CommandInvocation:isn1-47759:256. Lock is held by CommandInvocation:isn1-47759:255
+	at org.infinispan.util.concurrent.locks.impl.DefaultLockManager$KeyAwareExtendedLockPromise.get(DefaultLockManager.java:299)
+	at org.infinispan.util.concurrent.locks.impl.DefaultLockManager$KeyAwareExtendedLockPromise.get(DefaultLockManager.java:229)
+	at org.infinispan.util.concurrent.locks.impl.InfinispanLock$LockPlaceHolder.checkState(InfinispanLock.java:554)
+	at org.infinispan.util.concurrent.locks.impl.InfinispanLock$LockPlaceHolder.lambda$toInvocationStage$1(InfinispanLock.java:484)
+	at java.base/java.util.concurrent.CompletableFuture$UniApply.tryFire(CompletableFuture.java:646)
+	at java.base/java.util.concurrent.CompletableFuture$Completion.run(CompletableFuture.java:482)
+	at io.netty.util.concurrent.AbstractEventExecutor.runTask(AbstractEventExecutor.java:173)
+	at io.netty.util.concurrent.AbstractEventExecutor.safeExecute(AbstractEventExecutor.java:166)
+	at io.netty.util.concurrent.SingleThreadEventExecutor.runAllTasks(SingleThreadEventExecutor.java:472)
+	at io.netty.channel.epoll.EpollEventLoop.run(EpollEventLoop.java:405)
+	at io.netty.util.concurrent.SingleThreadEventExecutor$4.run(SingleThreadEventExecutor.java:998)
+	at io.netty.util.internal.ThreadExecutorMap$2.run(ThreadExecutorMap.java:74)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+[m
+[33m2026-10-16 06:51:24,697 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:50416, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-16 06:51:24,698 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:50416, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-16 06:51:25,951 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health/status, remote=/127.0.0.1:37340, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[1;31m2026-10-16 06:51:25,994 ERROR [o.i.i.i.InvocationContextInterceptor] ISPN000136: Error executing command PutKeyValueCommand on Cache 'counters', writing keys [WrappedByteArray[ACED0005\t000A\s\o\n\d\a\-\i\s\n\1 (17 bytes)]] org.infinispan.commons.TimeoutException: ISPN000476: Timed out waiting for responses for request 538 from isn3-5889 after 17.5 seconds
+	at org.infinispan.remoting.transport.impl.MultiTargetRequest.onTimeout(MultiTargetRequest.java:179)
+	at org.infinispan.remoting.transport.AbstractRequest.call(AbstractRequest.java:89)
+	at org.infinispan.remoting.transport.AbstractRequest.call(AbstractRequest.java:23)
+	at java.base/java.util.concurrent.FutureTask.run(FutureTask.java:317)
+	at java.base/java.util.concurrent.ScheduledThreadPoolExecutor$ScheduledFutureTask.run(ScheduledThreadPoolExecutor.java:304)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1144)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:642)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+[m
+[33m2026-10-16 06:51:25,994 WARN  [o.i.CLUSTER] ISPN000071: Caught exception when handling command SingleRpcCommand{cacheName='counters', command=PutKeyValueCommand{key=WrappedByteArray[ACED0005\t000A\s\o\n\d\a\-\i\s\n\1 (17 bytes)], value=WrappedByteArray[ACED0005\s\r00\%\b\r\.\u\n\i\p\a\m\p\a\.\t\c\c\.\s\e\s\s\i\o\n\.\I\d\e\n\t\i\t\y\S\t\a\t\e0000000000000001020005\J000E\c\o\n\t\a... (380 bytes)], flags=[IGNORE_RETURN_VALUES], commandInvocationId=CommandInvocation:isn1-47759:255, putIfAbsent=false, returnEntry=true, valueMatcher=MATCH_ALWAYS, metadata=EmbeddedExpirableMetadata{version=NumericVersion{version=1191733415148375701}, lifespan=-1, maxIdle=-1}, internalMetadata=null, successful=true, topologyId=28, segment=38}} org.infinispan.commons.TimeoutException: ISPN000476: Timed out waiting for responses for request 538 from isn3-5889 after 17.5 seconds
+	at org.infinispan.remoting.transport.impl.MultiTargetRequest.onTimeout(MultiTargetRequest.java:179)
+	at org.infinispan.remoting.transport.AbstractRequest.call(AbstractRequest.java:89)
+	at org.infinispan.remoting.transport.AbstractRequest.call(AbstractRequest.java:23)
+	at java.base/java.util.concurrent.FutureTask.run(FutureTask.java:317)
+	at java.base/java.util.concurrent.ScheduledThreadPoolExecutor$ScheduledFutureTask.run(ScheduledThreadPoolExecutor.java:304)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1144)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:642)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+[m
+[33m2026-10-16 06:51:31,190 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health/status, remote=/127.0.0.1:47748, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-16 06:51:31,718 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:43130, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-16 06:51:31,719 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:43130, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[1;31m2026-10-16 06:51:32,025 ERROR [o.i.i.i.InvocationContextInterceptor] ISPN000136: Error executing command PutKeyValueCommand on Cache 'sessions', writing keys [WrappedByteArray[ACED0005\t000A\s\o\n\d\a\-\i\s\n\1 (17 bytes)]] org.infinispan.commons.TimeoutException: ISPN000299: Unable to acquire lock after 15 seconds for key WrappedByteArray[ACED0005\t000A\s\o\n\d\a\-\i\s\n\1 (17 bytes)] and requestor CommandInvocation:isn1-47759:260. Lock is held by CommandInvocation:isn1-47759:259
+	at org.infinispan.util.concurrent.locks.impl.DefaultLockManager$KeyAwareExtendedLockPromise.get(DefaultLockManager.java:299)
+	at org.infinispan.util.concurrent.locks.impl.DefaultLockManager$KeyAwareExtendedLockPromise.get(DefaultLockManager.java:229)
+	at org.infinispan.util.concurrent.locks.impl.InfinispanLock$LockPlaceHolder.checkState(InfinispanLock.java:554)
+	at org.infinispan.util.concurrent.locks.impl.InfinispanLock$LockPlaceHolder.lambda$toInvocationStage$1(InfinispanLock.java:484)
+	at java.base/java.util.concurrent.CompletableFuture$UniApply.tryFire(CompletableFuture.java:646)
+	at java.base/java.util.concurrent.CompletableFuture$Completion.run(CompletableFuture.java:482)
+	at io.netty.util.concurrent.AbstractEventExecutor.runTask(AbstractEventExecutor.java:173)
+	at io.netty.util.concurrent.AbstractEventExecutor.safeExecute(AbstractEventExecutor.java:166)
+	at io.netty.util.concurrent.SingleThreadEventExecutor.runAllTasks(SingleThreadEventExecutor.java:472)
+	at io.netty.channel.epoll.EpollEventLoop.run(EpollEventLoop.java:405)
+	at io.netty.util.concurrent.SingleThreadEventExecutor$4.run(SingleThreadEventExecutor.java:998)
+	at io.netty.util.internal.ThreadExecutorMap$2.run(ThreadExecutorMap.java:74)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+[m
+[33m2026-10-16 06:51:32,025 WARN  [o.i.CLUSTER] ISPN000071: Caught exception when handling command SingleRpcCommand{cacheName='sessions', command=PutKeyValueCommand{key=WrappedByteArray[ACED0005\t000A\s\o\n\d\a\-\i\s\n\1 (17 bytes)], value=WrappedByteArray[ACED0005\s\r00\$\b\r\.\u\n\i\p\a\m\p\a\.\t\c\c\.\s\e\s\s\i\o\n\.\S\e\s\s\i\o\n\S\t\a\t\e0000000000000001020007\J0006\v\e\r\s\a\o... (525 bytes)], flags=[IGNORE_RETURN_VALUES], commandInvocationId=CommandInvocation:isn1-47759:260, putIfAbsent=false, returnEntry=true, valueMatcher=MATCH_ALWAYS, metadata=EmbeddedExpirableMetadata{version=NumericVersion{version=4505388774547656026}, lifespan=-1, maxIdle=-1}, internalMetadata=null, successful=true, topologyId=30, segment=38}} org.infinispan.commons.TimeoutException: ISPN000299: Unable to acquire lock after 15 seconds for key WrappedByteArray[ACED0005\t000A\s\o\n\d\a\-\i\s\n\1 (17 bytes)] and requestor CommandInvocation:isn1-47759:260. Lock is held by CommandInvocation:isn1-47759:259
+	at org.infinispan.util.concurrent.locks.impl.DefaultLockManager$KeyAwareExtendedLockPromise.get(DefaultLockManager.java:299)
+	at org.infinispan.util.concurrent.locks.impl.DefaultLockManager$KeyAwareExtendedLockPromise.get(DefaultLockManager.java:229)
+	at org.infinispan.util.concurrent.locks.impl.InfinispanLock$LockPlaceHolder.checkState(InfinispanLock.java:554)
+	at org.infinispan.util.concurrent.locks.impl.InfinispanLock$LockPlaceHolder.lambda$toInvocationStage$1(InfinispanLock.java:484)
+	at java.base/java.util.concurrent.CompletableFuture$UniApply.tryFire(CompletableFuture.java:646)
+	at java.base/java.util.concurrent.CompletableFuture$Completion.run(CompletableFuture.java:482)
+	at io.netty.util.concurrent.AbstractEventExecutor.runTask(AbstractEventExecutor.java:173)
+	at io.netty.util.concurrent.AbstractEventExecutor.safeExecute(AbstractEventExecutor.java:166)
+	at io.netty.util.concurrent.SingleThreadEventExecutor.runAllTasks(SingleThreadEventExecutor.java:472)
+	at io.netty.channel.epoll.EpollEventLoop.run(EpollEventLoop.java:405)
+	at io.netty.util.concurrent.SingleThreadEventExecutor$4.run(SingleThreadEventExecutor.java:998)
+	at io.netty.util.internal.ThreadExecutorMap$2.run(ThreadExecutorMap.java:74)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+[m
+[1;31m2026-10-16 06:51:34,028 ERROR [o.i.i.i.InvocationContextInterceptor] ISPN000136: Error executing command RemoveCommand on Cache 'sessions', writing keys [WrappedByteArray[ACED0005\t000A\s\o\n\d\a\-\i\s\n\1 (17 bytes)]] org.infinispan.commons.TimeoutException: ISPN000299: Unable to acquire lock after 15 seconds for key WrappedByteArray[ACED0005\t000A\s\o\n\d\a\-\i\s\n\1 (17 bytes)] and requestor CommandInvocation:isn1-47759:261. Lock is held by CommandInvocation:isn1-47759:259
+	at org.infinispan.util.concurrent.locks.impl.DefaultLockManager$KeyAwareExtendedLockPromise.get(DefaultLockManager.java:299)
+	at org.infinispan.util.concurrent.locks.impl.DefaultLockManager$KeyAwareExtendedLockPromise.get(DefaultLockManager.java:229)
+	at org.infinispan.util.concurrent.locks.impl.InfinispanLock$LockPlaceHolder.checkState(InfinispanLock.java:554)
+	at org.infinispan.util.concurrent.locks.impl.InfinispanLock$LockPlaceHolder.lambda$toInvocationStage$1(InfinispanLock.java:484)
+	at java.base/java.util.concurrent.CompletableFuture$UniApply.tryFire(CompletableFuture.java:646)
+	at java.base/java.util.concurrent.CompletableFuture$Completion.run(CompletableFuture.java:482)
+	at io.netty.util.concurrent.AbstractEventExecutor.runTask(AbstractEventExecutor.java:173)
+	at io.netty.util.concurrent.AbstractEventExecutor.safeExecute(AbstractEventExecutor.java:166)
+	at io.netty.util.concurrent.SingleThreadEventExecutor.runAllTasks(SingleThreadEventExecutor.java:472)
+	at io.netty.channel.epoll.EpollEventLoop.run(EpollEventLoop.java:405)
+	at io.netty.util.concurrent.SingleThreadEventExecutor$4.run(SingleThreadEventExecutor.java:998)
+	at io.netty.util.internal.ThreadExecutorMap$2.run(ThreadExecutorMap.java:74)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+[m
+[33m2026-10-16 06:51:34,029 WARN  [o.i.CLUSTER] ISPN000071: Caught exception when handling command SingleRpcCommand{cacheName='sessions', command=RemoveCommand{key=WrappedByteArray[ACED0005\t000A\s\o\n\d\a\-\i\s\n\1 (17 bytes)], value=null, returnEntry=true, metadata=null, internalMetadata=null, flags=[], commandInvocationId=CommandInvocation:isn1-47759:261, valueMatcher=MATCH_ALWAYS, topologyId=30}} org.infinispan.commons.TimeoutException: ISPN000299: Unable to acquire lock after 15 seconds for key WrappedByteArray[ACED0005\t000A\s\o\n\d\a\-\i\s\n\1 (17 bytes)] and requestor CommandInvocation:isn1-47759:261. Lock is held by CommandInvocation:isn1-47759:259
+	at org.infinispan.util.concurrent.locks.impl.DefaultLockManager$KeyAwareExtendedLockPromise.get(DefaultLockManager.java:299)
+	at org.infinispan.util.concurrent.locks.impl.DefaultLockManager$KeyAwareExtendedLockPromise.get(DefaultLockManager.java:229)
+	at org.infinispan.util.concurrent.locks.impl.InfinispanLock$LockPlaceHolder.checkState(InfinispanLock.java:554)
+	at org.infinispan.util.concurrent.locks.impl.InfinispanLock$LockPlaceHolder.lambda$toInvocationStage$1(InfinispanLock.java:484)
+	at java.base/java.util.concurrent.CompletableFuture$UniApply.tryFire(CompletableFuture.java:646)
+	at java.base/java.util.concurrent.CompletableFuture$Completion.run(CompletableFuture.java:482)
+	at io.netty.util.concurrent.AbstractEventExecutor.runTask(AbstractEventExecutor.java:173)
+	at io.netty.util.concurrent.AbstractEventExecutor.safeExecute(AbstractEventExecutor.java:166)
+	at io.netty.util.concurrent.SingleThreadEventExecutor.runAllTasks(SingleThreadEventExecutor.java:472)
+	at io.netty.channel.epoll.EpollEventLoop.run(EpollEventLoop.java:405)
+	at io.netty.util.concurrent.SingleThreadEventExecutor$4.run(SingleThreadEventExecutor.java:998)
+	at io.netty.util.internal.ThreadExecutorMap$2.run(ThreadExecutorMap.java:74)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+[m
+[1;31m2026-10-16 06:51:35,484 ERROR [o.i.i.i.InvocationContextInterceptor] ISPN000136: Error executing command PutKeyValueCommand on Cache 'sessions', writing keys [WrappedByteArray[ACED0005\t000A\s\o\n\d\a\-\i\s\n\1 (17 bytes)]] org.infinispan.commons.TimeoutException: ISPN000476: Timed out waiting for responses for request 539 from isn3-5889 after 17.5 seconds
+	at org.infinispan.remoting.transport.impl.MultiTargetRequest.onTimeout(MultiTargetRequest.java:179)
+	at org.infinispan.remoting.transport.AbstractRequest.call(AbstractRequest.java:89)
+	at org.infinispan.remoting.transport.AbstractRequest.call(AbstractRequest.java:23)
+	at java.base/java.util.concurrent.FutureTask.run(FutureTask.java:317)
+	at java.base/java.util.concurrent.ScheduledThreadPoolExecutor$ScheduledFutureTask.run(ScheduledThreadPoolExecutor.java:304)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1144)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:642)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+[m
+[33m2026-10-16 06:51:35,484 WARN  [o.i.CLUSTER] ISPN000071: Caught exception when handling command SingleRpcCommand{cacheName='sessions', command=PutKeyValueCommand{key=WrappedByteArray[ACED0005\t000A\s\o\n\d\a\-\i\s\n\1 (17 bytes)], value=WrappedByteArray[ACED0005\s\r00\$\b\r\.\u\n\i\p\a\m\p\a\.\t\c\c\.\s\e\s\s\i\o\n\.\S\e\s\s\i\o\n\S\t\a\t\e0000000000000001020007\J0006\v\e\r\s\a\o... (525 bytes)], flags=[IGNORE_RETURN_VALUES], commandInvocationId=CommandInvocation:isn1-47759:259, putIfAbsent=false, returnEntry=true, valueMatcher=MATCH_ALWAYS, metadata=EmbeddedExpirableMetadata{version=NumericVersion{version=7014011014659852102}, lifespan=-1, maxIdle=-1}, internalMetadata=null, successful=true, topologyId=30, segment=38}} org.infinispan.commons.TimeoutException: ISPN000476: Timed out waiting for responses for request 539 from isn3-5889 after 17.5 seconds
+	at org.infinispan.remoting.transport.impl.MultiTargetRequest.onTimeout(MultiTargetRequest.java:179)
+	at org.infinispan.remoting.transport.AbstractRequest.call(AbstractRequest.java:89)
+	at org.infinispan.remoting.transport.AbstractRequest.call(AbstractRequest.java:23)
+	at java.base/java.util.concurrent.FutureTask.run(FutureTask.java:317)
+	at java.base/java.util.concurrent.ScheduledThreadPoolExecutor$ScheduledFutureTask.run(ScheduledThreadPoolExecutor.java:304)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1144)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:642)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+[m
+[33m2026-10-16 06:51:36,508 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health/status, remote=/127.0.0.1:47774, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[1;31m2026-10-16 06:51:38,327 ERROR [o.i.CLUSTER] ISPN000524: Conflict resolution failed for cache counters with topology CacheTopology{id=28, phase=CONFLICT_RESOLUTION, rebalanceId=8, currentCH=DefaultConsistentHash{ns=64, owners = (3)[isn2-19096: 32+32, isn1-47759: 32+32, isn3-5889: 0+43]}, pendingCH=null, unionCH=null, actualMembers=[isn2-19096, isn1-47759, isn3-5889], persistentUUIDs=[111264ff-2741-4648-93d1-eb87e87dd217, 7e1d1aae-7f28-47b2-a620-3da22f92cc51, 180aa4b2-e8b1-425e-a1b6-a5a255ff6c2b]} java.util.concurrent.TimeoutException
+	at java.base/java.util.concurrent.CompletableFuture.timedGet(CompletableFuture.java:1960)
+	at java.base/java.util.concurrent.CompletableFuture.get(CompletableFuture.java:2095)
+	at org.infinispan.conflict.impl.DefaultConflictManager$ReplicaSpliterator.tryAdvance(DefaultConflictManager.java:494)
+	at java.base/java.util.Spliterator.forEachRemaining(Spliterator.java:332)
+	at java.base/java.util.stream.AbstractPipeline.copyInto(AbstractPipeline.java:509)
+	at java.base/java.util.stream.AbstractPipeline.wrapAndCopyInto(AbstractPipeline.java:499)
+	at java.base/java.util.stream.ForEachOps$ForEachOp.evaluateSequential(ForEachOps.java:151)
+	at java.base/java.util.stream.ForEachOps$ForEachOp$OfRef.evaluateSequential(ForEachOps.java:174)
+	at java.base/java.util.stream.AbstractPipeline.evaluate(AbstractPipeline.java:234)
+	at java.base/java.util.stream.ReferencePipeline.forEach(ReferencePipeline.java:596)
+	at org.infinispan.conflict.impl.DefaultConflictManager.doResolveConflicts(DefaultConflictManager.java:285)
+	at org.infinispan.conflict.impl.DefaultConflictManager.lambda$resolveConflicts$0(DefaultConflictManager.java:254)
+	at java.base/java.util.concurrent.CompletableFuture$AsyncRun.run(CompletableFuture.java:1804)
+	at org.infinispan.executors.LimitedExecutor.actualRun(LimitedExecutor.java:192)
+	at org.infinispan.executors.LimitedExecutor.runTasks(LimitedExecutor.java:176)
+	at org.infinispan.executors.LimitedExecutor$Runner.run(LimitedExecutor.java:237)
+	at org.jboss.threads.ContextHandler$1.runWith(ContextHandler.java:18)
+	at org.jboss.threads.EnhancedQueueExecutor$Task.doRunWith(EnhancedQueueExecutor.java:2516)
+	at org.jboss.threads.EnhancedQueueExecutor$Task.run(EnhancedQueueExecutor.java:2495)
+	at org.jboss.threads.EnhancedQueueExecutor$ThreadBody.run(EnhancedQueueExecutor.java:1521)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+[m
+[1;31m2026-10-16 06:51:38,328 ERROR [o.i.CLUSTER] [Context=counters]ISPN100014: Failed conflict resolution with members [isn2-19096, isn1-47759, isn3-5889], topology id 28: null[m
+[0m2026-10-16 06:51:38,329 INFO  [o.i.CLUSTER] [Context=counters]ISPN100002: Starting rebalance with members [isn2-19096, isn1-47759, isn3-5889], phase READ_OLD_WRITE_ALL, topology id 30[m
+[0m2026-10-16 06:51:38,329 INFO  [o.i.LIFECYCLE] [Context=counters][Scope=isn2-19096]ISPN100002: Starting rebalance with members [isn2-19096, isn1-47759, isn3-5889], phase READ_OLD_WRITE_ALL, topology id 30[m
+[0m2026-10-16 06:51:38,329 INFO  [o.i.LIFECYCLE] [Context=counters][Scope=isn2-19096]ISPN100010: Finished rebalance with members [isn2-19096, isn1-47759, isn3-5889], topology id 30[m
+[33m2026-10-16 06:51:38,739 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:45836, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-16 06:51:38,740 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:45836, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[1;31m2026-10-16 06:51:40,035 ERROR [o.i.i.i.InvocationContextInterceptor] ISPN000136: Error executing command PutKeyValueCommand on Cache 'counters', writing keys [WrappedByteArray[ACED0005\t000A\s\o\n\d\a\-\i\s\n\1 (17 bytes)]] org.infinispan.commons.TimeoutException: ISPN000299: Unable to acquire lock after 15 seconds for key WrappedByteArray[ACED0005\t000A\s\o\n\d\a\-\i\s\n\1 (17 bytes)] and requestor CommandInvocation:isn1-47759:264. Lock is held by CommandInvocation:isn1-47759:263
+	at org.infinispan.util.concurrent.locks.impl.DefaultLockManager$KeyAwareExtendedLockPromise.get(DefaultLockManager.java:299)
+	at org.infinispan.util.concurrent.locks.impl.DefaultLockManager$KeyAwareExtendedLockPromise.get(DefaultLockManager.java:229)
+	at org.infinispan.util.concurrent.locks.impl.InfinispanLock$LockPlaceHolder.checkState(InfinispanLock.java:554)
+	at org.infinispan.util.concurrent.locks.impl.InfinispanLock$LockPlaceHolder.lambda$toInvocationStage$1(InfinispanLock.java:484)
+	at java.base/java.util.concurrent.CompletableFuture$UniApply.tryFire(CompletableFuture.java:646)
+	at java.base/java.util.concurrent.CompletableFuture$Completion.run(CompletableFuture.java:482)
+	at io.netty.util.concurrent.AbstractEventExecutor.runTask(AbstractEventExecutor.java:173)
+	at io.netty.util.concurrent.AbstractEventExecutor.safeExecute(AbstractEventExecutor.java:166)
+	at io.netty.util.concurrent.SingleThreadEventExecutor.runAllTasks(SingleThreadEventExecutor.java:472)
+	at io.netty.channel.epoll.EpollEventLoop.run(EpollEventLoop.java:405)
+	at io.netty.util.concurrent.SingleThreadEventExecutor$4.run(SingleThreadEventExecutor.java:998)
+	at io.netty.util.internal.ThreadExecutorMap$2.run(ThreadExecutorMap.java:74)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+[m
+[33m2026-10-16 06:51:40,035 WARN  [o.i.CLUSTER] ISPN000071: Caught exception when handling command SingleRpcCommand{cacheName='counters', command=PutKeyValueCommand{key=WrappedByteArray[ACED0005\t000A\s\o\n\d\a\-\i\s\n\1 (17 bytes)], value=WrappedByteArray[ACED0005\s\r00\%\b\r\.\u\n\i\p\a\m\p\a\.\t\c\c\.\s\e\s\s\i\o\n\.\I\d\e\n\t\i\t\y\S\t\a\t\e0000000000000001020005\J000E\c\o\n\t\a... (380 bytes)], flags=[IGNORE_RETURN_VALUES], commandInvocationId=CommandInvocation:isn1-47759:264, putIfAbsent=false, returnEntry=true, valueMatcher=MATCH_ALWAYS, metadata=EmbeddedExpirableMetadata{version=NumericVersion{version=268737462507819922}, lifespan=-1, maxIdle=-1}, internalMetadata=null, successful=true, topologyId=28, segment=38}} org.infinispan.commons.TimeoutException: ISPN000299: Unable to acquire lock after 15 seconds for key WrappedByteArray[ACED0005\t000A\s\o\n\d\a\-\i\s\n\1 (17 bytes)] and requestor CommandInvocation:isn1-47759:264. Lock is held by CommandInvocation:isn1-47759:263
+	at org.infinispan.util.concurrent.locks.impl.DefaultLockManager$KeyAwareExtendedLockPromise.get(DefaultLockManager.java:299)
+	at org.infinispan.util.concurrent.locks.impl.DefaultLockManager$KeyAwareExtendedLockPromise.get(DefaultLockManager.java:229)
+	at org.infinispan.util.concurrent.locks.impl.InfinispanLock$LockPlaceHolder.checkState(InfinispanLock.java:554)
+	at org.infinispan.util.concurrent.locks.impl.InfinispanLock$LockPlaceHolder.lambda$toInvocationStage$1(InfinispanLock.java:484)
+	at java.base/java.util.concurrent.CompletableFuture$UniApply.tryFire(CompletableFuture.java:646)
+	at java.base/java.util.concurrent.CompletableFuture$Completion.run(CompletableFuture.java:482)
+	at io.netty.util.concurrent.AbstractEventExecutor.runTask(AbstractEventExecutor.java:173)
+	at io.netty.util.concurrent.AbstractEventExecutor.safeExecute(AbstractEventExecutor.java:166)
+	at io.netty.util.concurrent.SingleThreadEventExecutor.runAllTasks(SingleThreadEventExecutor.java:472)
+	at io.netty.channel.epoll.EpollEventLoop.run(EpollEventLoop.java:405)
+	at io.netty.util.concurrent.SingleThreadEventExecutor$4.run(SingleThreadEventExecutor.java:998)
+	at io.netty.util.internal.ThreadExecutorMap$2.run(ThreadExecutorMap.java:74)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+[m
+[33m2026-10-16 06:51:41,691 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health/status, remote=/127.0.0.1:43334, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[1;31m2026-10-16 06:51:42,040 ERROR [o.i.i.i.InvocationContextInterceptor] ISPN000136: Error executing command RemoveCommand on Cache 'counters', writing keys [WrappedByteArray[ACED0005\t000A\s\o\n\d\a\-\i\s\n\1 (17 bytes)]] org.infinispan.commons.TimeoutException: ISPN000299: Unable to acquire lock after 15 seconds for key WrappedByteArray[ACED0005\t000A\s\o\n\d\a\-\i\s\n\1 (17 bytes)] and requestor CommandInvocation:isn1-47759:265. Lock is held by CommandInvocation:isn1-47759:263
+	at org.infinispan.util.concurrent.locks.impl.DefaultLockManager$KeyAwareExtendedLockPromise.get(DefaultLockManager.java:299)
+	at org.infinispan.util.concurrent.locks.impl.DefaultLockManager$KeyAwareExtendedLockPromise.get(DefaultLockManager.java:229)
+	at org.infinispan.util.concurrent.locks.impl.InfinispanLock$LockPlaceHolder.checkState(InfinispanLock.java:554)
+	at org.infinispan.util.concurrent.locks.impl.InfinispanLock$LockPlaceHolder.lambda$toInvocationStage$1(InfinispanLock.java:484)
+	at java.base/java.util.concurrent.CompletableFuture$UniApply.tryFire(CompletableFuture.java:646)
+	at java.base/java.util.concurrent.CompletableFuture$Completion.run(CompletableFuture.java:482)
+	at io.netty.util.concurrent.AbstractEventExecutor.runTask(AbstractEventExecutor.java:173)
+	at io.netty.util.concurrent.AbstractEventExecutor.safeExecute(AbstractEventExecutor.java:166)
+	at io.netty.util.concurrent.SingleThreadEventExecutor.runAllTasks(SingleThreadEventExecutor.java:472)
+	at io.netty.channel.epoll.EpollEventLoop.run(EpollEventLoop.java:405)
+	at io.netty.util.concurrent.SingleThreadEventExecutor$4.run(SingleThreadEventExecutor.java:998)
+	at io.netty.util.internal.ThreadExecutorMap$2.run(ThreadExecutorMap.java:74)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+[m
+[33m2026-10-16 06:51:42,040 WARN  [o.i.CLUSTER] ISPN000071: Caught exception when handling command SingleRpcCommand{cacheName='counters', command=RemoveCommand{key=WrappedByteArray[ACED0005\t000A\s\o\n\d\a\-\i\s\n\1 (17 bytes)], value=null, returnEntry=true, metadata=null, internalMetadata=null, flags=[], commandInvocationId=CommandInvocation:isn1-47759:265, valueMatcher=MATCH_ALWAYS, topologyId=28}} org.infinispan.commons.TimeoutException: ISPN000299: Unable to acquire lock after 15 seconds for key WrappedByteArray[ACED0005\t000A\s\o\n\d\a\-\i\s\n\1 (17 bytes)] and requestor CommandInvocation:isn1-47759:265. Lock is held by CommandInvocation:isn1-47759:263
+	at org.infinispan.util.concurrent.locks.impl.DefaultLockManager$KeyAwareExtendedLockPromise.get(DefaultLockManager.java:299)
+	at org.infinispan.util.concurrent.locks.impl.DefaultLockManager$KeyAwareExtendedLockPromise.get(DefaultLockManager.java:229)
+	at org.infinispan.util.concurrent.locks.impl.InfinispanLock$LockPlaceHolder.checkState(InfinispanLock.java:554)
+	at org.infinispan.util.concurrent.locks.impl.InfinispanLock$LockPlaceHolder.lambda$toInvocationStage$1(InfinispanLock.java:484)
+	at java.base/java.util.concurrent.CompletableFuture$UniApply.tryFire(CompletableFuture.java:646)
+	at java.base/java.util.concurrent.CompletableFuture$Completion.run(CompletableFuture.java:482)
+	at io.netty.util.concurrent.AbstractEventExecutor.runTask(AbstractEventExecutor.java:173)
+	at io.netty.util.concurrent.AbstractEventExecutor.safeExecute(AbstractEventExecutor.java:166)
+	at io.netty.util.concurrent.SingleThreadEventExecutor.runAllTasks(SingleThreadEventExecutor.java:472)
+	at io.netty.channel.epoll.EpollEventLoop.run(EpollEventLoop.java:405)
+	at io.netty.util.concurrent.SingleThreadEventExecutor$4.run(SingleThreadEventExecutor.java:998)
+	at io.netty.util.internal.ThreadExecutorMap$2.run(ThreadExecutorMap.java:74)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+[m
+[1;31m2026-10-16 06:51:43,496 ERROR [o.i.i.i.InvocationContextInterceptor] ISPN000136: Error executing command PutKeyValueCommand on Cache 'counters', writing keys [WrappedByteArray[ACED0005\t000A\s\o\n\d\a\-\i\s\n\1 (17 bytes)]] org.infinispan.commons.TimeoutException: ISPN000476: Timed out waiting for responses for request 540 from isn3-5889 after 17.5 seconds
+	at org.infinispan.remoting.transport.impl.MultiTargetRequest.onTimeout(MultiTargetRequest.java:179)
+	at org.infinispan.remoting.transport.AbstractRequest.call(AbstractRequest.java:89)
+	at org.infinispan.remoting.transport.AbstractRequest.call(AbstractRequest.java:23)
+	at java.base/java.util.concurrent.FutureTask.run(FutureTask.java:317)
+	at java.base/java.util.concurrent.ScheduledThreadPoolExecutor$ScheduledFutureTask.run(ScheduledThreadPoolExecutor.java:304)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1144)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:642)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+[m
+[33m2026-10-16 06:51:43,496 WARN  [o.i.CLUSTER] ISPN000071: Caught exception when handling command SingleRpcCommand{cacheName='counters', command=PutKeyValueCommand{key=WrappedByteArray[ACED0005\t000A\s\o\n\d\a\-\i\s\n\1 (17 bytes)], value=WrappedByteArray[ACED0005\s\r00\%\b\r\.\u\n\i\p\a\m\p\a\.\t\c\c\.\s\e\s\s\i\o\n\.\I\d\e\n\t\i\t\y\S\t\a\t\e0000000000000001020005\J000E\c\o\n\t\a... (380 bytes)], flags=[IGNORE_RETURN_VALUES], commandInvocationId=CommandInvocation:isn1-47759:263, putIfAbsent=false, returnEntry=true, valueMatcher=MATCH_ALWAYS, metadata=EmbeddedExpirableMetadata{version=NumericVersion{version=4654933569587186728}, lifespan=-1, maxIdle=-1}, internalMetadata=null, successful=true, topologyId=28, segment=38}} org.infinispan.commons.TimeoutException: ISPN000476: Timed out waiting for responses for request 540 from isn3-5889 after 17.5 seconds
+	at org.infinispan.remoting.transport.impl.MultiTargetRequest.onTimeout(MultiTargetRequest.java:179)
+	at org.infinispan.remoting.transport.AbstractRequest.call(AbstractRequest.java:89)
+	at org.infinispan.remoting.transport.AbstractRequest.call(AbstractRequest.java:23)
+	at java.base/java.util.concurrent.FutureTask.run(FutureTask.java:317)
+	at java.base/java.util.concurrent.ScheduledThreadPoolExecutor$ScheduledFutureTask.run(ScheduledThreadPoolExecutor.java:304)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1144)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:642)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+[m
+[33m2026-10-16 06:51:43,591 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:45852, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-16 06:51:43,592 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:45852, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-16 06:51:45,760 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:45862, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-16 06:51:45,761 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:45862, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-16 06:51:47,184 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health/status, remote=/127.0.0.1:43378, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[1;31m2026-10-16 06:51:48,046 ERROR [o.i.i.i.InvocationContextInterceptor] ISPN000136: Error executing command PutKeyValueCommand on Cache 'sessions', writing keys [WrappedByteArray[ACED0005\t000A\s\o\n\d\a\-\i\s\n\1 (17 bytes)]] org.infinispan.commons.TimeoutException: ISPN000299: Unable to acquire lock after 15 seconds for key WrappedByteArray[ACED0005\t000A\s\o\n\d\a\-\i\s\n\1 (17 bytes)] and requestor CommandInvocation:isn1-47759:268. Lock is held by CommandInvocation:isn1-47759:267
+	at org.infinispan.util.concurrent.locks.impl.DefaultLockManager$KeyAwareExtendedLockPromise.get(DefaultLockManager.java:299)
+	at org.infinispan.util.concurrent.locks.impl.DefaultLockManager$KeyAwareExtendedLockPromise.get(DefaultLockManager.java:229)
+	at org.infinispan.util.concurrent.locks.impl.InfinispanLock$LockPlaceHolder.checkState(InfinispanLock.java:554)
+	at org.infinispan.util.concurrent.locks.impl.InfinispanLock$LockPlaceHolder.lambda$toInvocationStage$1(InfinispanLock.java:484)
+	at java.base/java.util.concurrent.CompletableFuture$UniApply.tryFire(CompletableFuture.java:646)
+	at java.base/java.util.concurrent.CompletableFuture$Completion.run(CompletableFuture.java:482)
+	at io.netty.util.concurrent.AbstractEventExecutor.runTask(AbstractEventExecutor.java:173)
+	at io.netty.util.concurrent.AbstractEventExecutor.safeExecute(AbstractEventExecutor.java:166)
+	at io.netty.util.concurrent.SingleThreadEventExecutor.runAllTasks(SingleThreadEventExecutor.java:472)
+	at io.netty.channel.epoll.EpollEventLoop.run(EpollEventLoop.java:405)
+	at io.netty.util.concurrent.SingleThreadEventExecutor$4.run(SingleThreadEventExecutor.java:998)
+	at io.netty.util.internal.ThreadExecutorMap$2.run(ThreadExecutorMap.java:74)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+[m
+[33m2026-10-16 06:51:48,046 WARN  [o.i.CLUSTER] ISPN000071: Caught exception when handling command SingleRpcCommand{cacheName='sessions', command=PutKeyValueCommand{key=WrappedByteArray[ACED0005\t000A\s\o\n\d\a\-\i\s\n\1 (17 bytes)], value=WrappedByteArray[ACED0005\s\r00\$\b\r\.\u\n\i\p\a\m\p\a\.\t\c\c\.\s\e\s\s\i\o\n\.\S\e\s\s\i\o\n\S\t\a\t\e0000000000000001020007\J0006\v\e\r\s\a\o... (525 bytes)], flags=[IGNORE_RETURN_VALUES], commandInvocationId=CommandInvocation:isn1-47759:268, putIfAbsent=false, returnEntry=true, valueMatcher=MATCH_ALWAYS, metadata=EmbeddedExpirableMetadata{version=NumericVersion{version=6648458140982234793}, lifespan=-1, maxIdle=-1}, internalMetadata=null, successful=true, topologyId=30, segment=38}} org.infinispan.commons.TimeoutException: ISPN000299: Unable to acquire lock after 15 seconds for key WrappedByteArray[ACED0005\t000A\s\o\n\d\a\-\i\s\n\1 (17 bytes)] and requestor CommandInvocation:isn1-47759:268. Lock is held by CommandInvocation:isn1-47759:267
+	at org.infinispan.util.concurrent.locks.impl.DefaultLockManager$KeyAwareExtendedLockPromise.get(DefaultLockManager.java:299)
+	at org.infinispan.util.concurrent.locks.impl.DefaultLockManager$KeyAwareExtendedLockPromise.get(DefaultLockManager.java:229)
+	at org.infinispan.util.concurrent.locks.impl.InfinispanLock$LockPlaceHolder.checkState(InfinispanLock.java:554)
+	at org.infinispan.util.concurrent.locks.impl.InfinispanLock$LockPlaceHolder.lambda$toInvocationStage$1(InfinispanLock.java:484)
+	at java.base/java.util.concurrent.CompletableFuture$UniApply.tryFire(CompletableFuture.java:646)
+	at java.base/java.util.concurrent.CompletableFuture$Completion.run(CompletableFuture.java:482)
+	at io.netty.util.concurrent.AbstractEventExecutor.runTask(AbstractEventExecutor.java:173)
+	at io.netty.util.concurrent.AbstractEventExecutor.safeExecute(AbstractEventExecutor.java:166)
+	at io.netty.util.concurrent.SingleThreadEventExecutor.runAllTasks(SingleThreadEventExecutor.java:472)
+	at io.netty.channel.epoll.EpollEventLoop.run(EpollEventLoop.java:405)
+	at io.netty.util.concurrent.SingleThreadEventExecutor$4.run(SingleThreadEventExecutor.java:998)
+	at io.netty.util.internal.ThreadExecutorMap$2.run(ThreadExecutorMap.java:74)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+[m
+[1;31m2026-10-16 06:51:50,052 ERROR [o.i.i.i.InvocationContextInterceptor] ISPN000136: Error executing command RemoveCommand on Cache 'sessions', writing keys [WrappedByteArray[ACED0005\t000A\s\o\n\d\a\-\i\s\n\1 (17 bytes)]] org.infinispan.commons.TimeoutException: ISPN000299: Unable to acquire lock after 15 seconds for key WrappedByteArray[ACED0005\t000A\s\o\n\d\a\-\i\s\n\1 (17 bytes)] and requestor CommandInvocation:isn1-47759:269. Lock is held by CommandInvocation:isn1-47759:267
+	at org.infinispan.util.concurrent.locks.impl.DefaultLockManager$KeyAwareExtendedLockPromise.get(DefaultLockManager.java:299)
+	at org.infinispan.util.concurrent.locks.impl.DefaultLockManager$KeyAwareExtendedLockPromise.get(DefaultLockManager.java:229)
+	at org.infinispan.util.concurrent.locks.impl.InfinispanLock$LockPlaceHolder.checkState(InfinispanLock.java:554)
+	at org.infinispan.util.concurrent.locks.impl.InfinispanLock$LockPlaceHolder.lambda$toInvocationStage$1(InfinispanLock.java:484)
+	at java.base/java.util.concurrent.CompletableFuture$UniApply.tryFire(CompletableFuture.java:646)
+	at java.base/java.util.concurrent.CompletableFuture$Completion.run(CompletableFuture.java:482)
+	at io.netty.util.concurrent.AbstractEventExecutor.runTask(AbstractEventExecutor.java:173)
+	at io.netty.util.concurrent.AbstractEventExecutor.safeExecute(AbstractEventExecutor.java:166)
+	at io.netty.util.concurrent.SingleThreadEventExecutor.runAllTasks(SingleThreadEventExecutor.java:472)
+	at io.netty.channel.epoll.EpollEventLoop.run(EpollEventLoop.java:405)
+	at io.netty.util.concurrent.SingleThreadEventExecutor$4.run(SingleThreadEventExecutor.java:998)
+	at io.netty.util.internal.ThreadExecutorMap$2.run(ThreadExecutorMap.java:74)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+[m
+[33m2026-10-16 06:51:50,052 WARN  [o.i.CLUSTER] ISPN000071: Caught exception when handling command SingleRpcCommand{cacheName='sessions', command=RemoveCommand{key=WrappedByteArray[ACED0005\t000A\s\o\n\d\a\-\i\s\n\1 (17 bytes)], value=null, returnEntry=true, metadata=null, internalMetadata=null, flags=[], commandInvocationId=CommandInvocation:isn1-47759:269, valueMatcher=MATCH_ALWAYS, topologyId=30}} org.infinispan.commons.TimeoutException: ISPN000299: Unable to acquire lock after 15 seconds for key WrappedByteArray[ACED0005\t000A\s\o\n\d\a\-\i\s\n\1 (17 bytes)] and requestor CommandInvocation:isn1-47759:269. Lock is held by CommandInvocation:isn1-47759:267
+	at org.infinispan.util.concurrent.locks.impl.DefaultLockManager$KeyAwareExtendedLockPromise.get(DefaultLockManager.java:299)
+	at org.infinispan.util.concurrent.locks.impl.DefaultLockManager$KeyAwareExtendedLockPromise.get(DefaultLockManager.java:229)
+	at org.infinispan.util.concurrent.locks.impl.InfinispanLock$LockPlaceHolder.checkState(InfinispanLock.java:554)
+	at org.infinispan.util.concurrent.locks.impl.InfinispanLock$LockPlaceHolder.lambda$toInvocationStage$1(InfinispanLock.java:484)
+	at java.base/java.util.concurrent.CompletableFuture$UniApply.tryFire(CompletableFuture.java:646)
+	at java.base/java.util.concurrent.CompletableFuture$Completion.run(CompletableFuture.java:482)
+	at io.netty.util.concurrent.AbstractEventExecutor.runTask(AbstractEventExecutor.java:173)
+	at io.netty.util.concurrent.AbstractEventExecutor.safeExecute(AbstractEventExecutor.java:166)
+	at io.netty.util.concurrent.SingleThreadEventExecutor.runAllTasks(SingleThreadEventExecutor.java:472)
+	at io.netty.channel.epoll.EpollEventLoop.run(EpollEventLoop.java:405)
+	at io.netty.util.concurrent.SingleThreadEventExecutor$4.run(SingleThreadEventExecutor.java:998)
+	at io.netty.util.internal.ThreadExecutorMap$2.run(ThreadExecutorMap.java:74)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+[m
+[1;31m2026-10-16 06:51:52,054 ERROR [o.i.i.i.InvocationContextInterceptor] ISPN000136: Error executing command RemoveCommand on Cache 'sessions', writing keys [WrappedByteArray[ACED0005\t000A\s\o\n\d\a\-\i\s\n\1 (17 bytes)]] org.infinispan.commons.TimeoutException: ISPN000299: Unable to acquire lock after 15 seconds for key WrappedByteArray[ACED0005\t000A\s\o\n\d\a\-\i\s\n\1 (17 bytes)] and requestor CommandInvocation:isn1-47759:270. Lock is held by CommandInvocation:isn1-47759:267
+	at org.infinispan.util.concurrent.locks.impl.DefaultLockManager$KeyAwareExtendedLockPromise.get(DefaultLockManager.java:299)
+	at org.infinispan.util.concurrent.locks.impl.DefaultLockManager$KeyAwareExtendedLockPromise.get(DefaultLockManager.java:229)
+	at org.infinispan.util.concurrent.locks.impl.InfinispanLock$LockPlaceHolder.checkState(InfinispanLock.java:554)
+	at org.infinispan.util.concurrent.locks.impl.InfinispanLock$LockPlaceHolder.lambda$toInvocationStage$1(InfinispanLock.java:484)
+	at java.base/java.util.concurrent.CompletableFuture$UniApply.tryFire(CompletableFuture.java:646)
+	at java.base/java.util.concurrent.CompletableFuture$Completion.run(CompletableFuture.java:482)
+	at io.netty.util.concurrent.AbstractEventExecutor.runTask(AbstractEventExecutor.java:173)
+	at io.netty.util.concurrent.AbstractEventExecutor.safeExecute(AbstractEventExecutor.java:166)
+	at io.netty.util.concurrent.SingleThreadEventExecutor.runAllTasks(SingleThreadEventExecutor.java:472)
+	at io.netty.channel.epoll.EpollEventLoop.run(EpollEventLoop.java:405)
+	at io.netty.util.concurrent.SingleThreadEventExecutor$4.run(SingleThreadEventExecutor.java:998)
+	at io.netty.util.internal.ThreadExecutorMap$2.run(ThreadExecutorMap.java:74)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+[m
+[33m2026-10-16 06:51:52,054 WARN  [o.i.CLUSTER] ISPN000071: Caught exception when handling command SingleRpcCommand{cacheName='sessions', command=RemoveCommand{key=WrappedByteArray[ACED0005\t000A\s\o\n\d\a\-\i\s\n\1 (17 bytes)], value=null, returnEntry=true, metadata=null, internalMetadata=null, flags=[], commandInvocationId=CommandInvocation:isn1-47759:270, valueMatcher=MATCH_ALWAYS, topologyId=30}} org.infinispan.commons.TimeoutException: ISPN000299: Unable to acquire lock after 15 seconds for key WrappedByteArray[ACED0005\t000A\s\o\n\d\a\-\i\s\n\1 (17 bytes)] and requestor CommandInvocation:isn1-47759:270. Lock is held by CommandInvocation:isn1-47759:267
+	at org.infinispan.util.concurrent.locks.impl.DefaultLockManager$KeyAwareExtendedLockPromise.get(DefaultLockManager.java:299)
+	at org.infinispan.util.concurrent.locks.impl.DefaultLockManager$KeyAwareExtendedLockPromise.get(DefaultLockManager.java:229)
+	at org.infinispan.util.concurrent.locks.impl.InfinispanLock$LockPlaceHolder.checkState(InfinispanLock.java:554)
+	at org.infinispan.util.concurrent.locks.impl.InfinispanLock$LockPlaceHolder.lambda$toInvocationStage$1(InfinispanLock.java:484)
+	at java.base/java.util.concurrent.CompletableFuture$UniApply.tryFire(CompletableFuture.java:646)
+	at java.base/java.util.concurrent.CompletableFuture$Completion.run(CompletableFuture.java:482)
+	at io.netty.util.concurrent.AbstractEventExecutor.runTask(AbstractEventExecutor.java:173)
+	at io.netty.util.concurrent.AbstractEventExecutor.safeExecute(AbstractEventExecutor.java:166)
+	at io.netty.util.concurrent.SingleThreadEventExecutor.runAllTasks(SingleThreadEventExecutor.java:472)
+	at io.netty.channel.epoll.EpollEventLoop.run(EpollEventLoop.java:405)
+	at io.netty.util.concurrent.SingleThreadEventExecutor$4.run(SingleThreadEventExecutor.java:998)
+	at io.netty.util.internal.ThreadExecutorMap$2.run(ThreadExecutorMap.java:74)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+[m
+[33m2026-10-16 06:51:52,433 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health/status, remote=/127.0.0.1:57016, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-16 06:51:52,781 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:38932, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-16 06:51:52,782 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:38932, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[1;31m2026-10-16 06:51:52,986 ERROR [o.i.i.i.InvocationContextInterceptor] ISPN000136: Error executing command PutKeyValueCommand on Cache 'sessions', writing keys [WrappedByteArray[ACED0005\t000A\s\o\n\d\a\-\i\s\n\1 (17 bytes)]] org.infinispan.commons.TimeoutException: ISPN000476: Timed out waiting for responses for request 541 from isn3-5889 after 17.5 seconds
+	at org.infinispan.remoting.transport.impl.MultiTargetRequest.onTimeout(MultiTargetRequest.java:179)
+	at org.infinispan.remoting.transport.AbstractRequest.call(AbstractRequest.java:89)
+	at org.infinispan.remoting.transport.AbstractRequest.call(AbstractRequest.java:23)
+	at java.base/java.util.concurrent.FutureTask.run(FutureTask.java:317)
+	at java.base/java.util.concurrent.ScheduledThreadPoolExecutor$ScheduledFutureTask.run(ScheduledThreadPoolExecutor.java:304)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1144)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:642)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+[m
+[33m2026-10-16 06:51:52,986 WARN  [o.i.CLUSTER] ISPN000071: Caught exception when handling command SingleRpcCommand{cacheName='sessions', command=PutKeyValueCommand{key=WrappedByteArray[ACED0005\t000A\s\o\n\d\a\-\i\s\n\1 (17 bytes)], value=WrappedByteArray[ACED0005\s\r00\$\b\r\.\u\n\i\p\a\m\p\a\.\t\c\c\.\s\e\s\s\i\o\n\.\S\e\s\s\i\o\n\S\t\a\t\e0000000000000001020007\J0006\v\e\r\s\a\o... (525 bytes)], flags=[IGNORE_RETURN_VALUES], commandInvocationId=CommandInvocation:isn1-47759:267, putIfAbsent=false, returnEntry=true, valueMatcher=MATCH_ALWAYS, metadata=EmbeddedExpirableMetadata{version=NumericVersion{version=6871527502793805770}, lifespan=-1, maxIdle=-1}, internalMetadata=null, successful=true, topologyId=30, segment=38}} org.infinispan.commons.TimeoutException: ISPN000476: Timed out waiting for responses for request 541 from isn3-5889 after 17.5 seconds
+	at org.infinispan.remoting.transport.impl.MultiTargetRequest.onTimeout(MultiTargetRequest.java:179)
+	at org.infinispan.remoting.transport.AbstractRequest.call(AbstractRequest.java:89)
+	at org.infinispan.remoting.transport.AbstractRequest.call(AbstractRequest.java:23)
+	at java.base/java.util.concurrent.FutureTask.run(FutureTask.java:317)
+	at java.base/java.util.concurrent.ScheduledThreadPoolExecutor$ScheduledFutureTask.run(ScheduledThreadPoolExecutor.java:304)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1144)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:642)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+[m
+[33m2026-10-16 06:51:55,615 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:38946, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-16 06:51:55,616 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:38946, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[1;31m2026-10-16 06:51:56,057 ERROR [o.i.i.i.InvocationContextInterceptor] ISPN000136: Error executing command PutKeyValueCommand on Cache 'counters', writing keys [WrappedByteArray[ACED0005\t000A\s\o\n\d\a\-\i\s\n\1 (17 bytes)]] org.infinispan.commons.TimeoutException: ISPN000299: Unable to acquire lock after 15 seconds for key WrappedByteArray[ACED0005\t000A\s\o\n\d\a\-\i\s\n\1 (17 bytes)] and requestor CommandInvocation:isn1-47759:274. Lock is held by CommandInvocation:isn1-47759:273
+	at org.infinispan.util.concurrent.locks.impl.DefaultLockManager$KeyAwareExtendedLockPromise.get(DefaultLockManager.java:299)
+	at org.infinispan.util.concurrent.locks.impl.DefaultLockManager$KeyAwareExtendedLockPromise.get(DefaultLockManager.java:229)
+	at org.infinispan.util.concurrent.locks.impl.InfinispanLock$LockPlaceHolder.checkState(InfinispanLock.java:554)
+	at org.infinispan.util.concurrent.locks.impl.InfinispanLock$LockPlaceHolder.lambda$toInvocationStage$1(InfinispanLock.java:484)
+	at java.base/java.util.concurrent.CompletableFuture$UniApply.tryFire(CompletableFuture.java:646)
+	at java.base/java.util.concurrent.CompletableFuture$Completion.run(CompletableFuture.java:482)
+	at io.netty.util.concurrent.AbstractEventExecutor.runTask(AbstractEventExecutor.java:173)
+	at io.netty.util.concurrent.AbstractEventExecutor.safeExecute(AbstractEventExecutor.java:166)
+	at io.netty.util.concurrent.SingleThreadEventExecutor.runAllTasks(SingleThreadEventExecutor.java:472)
+	at io.netty.channel.epoll.EpollEventLoop.run(EpollEventLoop.java:405)
+	at io.netty.util.concurrent.SingleThreadEventExecutor$4.run(SingleThreadEventExecutor.java:998)
+	at io.netty.util.internal.ThreadExecutorMap$2.run(ThreadExecutorMap.java:74)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+[m
+[33m2026-10-16 06:51:56,058 WARN  [o.i.CLUSTER] ISPN000071: Caught exception when handling command SingleRpcCommand{cacheName='counters', command=PutKeyValueCommand{key=WrappedByteArray[ACED0005\t000A\s\o\n\d\a\-\i\s\n\1 (17 bytes)], value=WrappedByteArray[ACED0005\s\r00\%\b\r\.\u\n\i\p\a\m\p\a\.\t\c\c\.\s\e\s\s\i\o\n\.\I\d\e\n\t\i\t\y\S\t\a\t\e0000000000000001020005\J000E\c\o\n\t\a... (380 bytes)], flags=[IGNORE_RETURN_VALUES], commandInvocationId=CommandInvocation:isn1-47759:274, putIfAbsent=false, returnEntry=true, valueMatcher=MATCH_ALWAYS, metadata=EmbeddedExpirableMetadata{version=NumericVersion{version=5252190098218369870}, lifespan=-1, maxIdle=-1}, internalMetadata=null, successful=true, topologyId=30, segment=38}} org.infinispan.commons.TimeoutException: ISPN000299: Unable to acquire lock after 15 seconds for key WrappedByteArray[ACED0005\t000A\s\o\n\d\a\-\i\s\n\1 (17 bytes)] and requestor CommandInvocation:isn1-47759:274. Lock is held by CommandInvocation:isn1-47759:273
+	at org.infinispan.util.concurrent.locks.impl.DefaultLockManager$KeyAwareExtendedLockPromise.get(DefaultLockManager.java:299)
+	at org.infinispan.util.concurrent.locks.impl.DefaultLockManager$KeyAwareExtendedLockPromise.get(DefaultLockManager.java:229)
+	at org.infinispan.util.concurrent.locks.impl.InfinispanLock$LockPlaceHolder.checkState(InfinispanLock.java:554)
+	at org.infinispan.util.concurrent.locks.impl.InfinispanLock$LockPlaceHolder.lambda$toInvocationStage$1(InfinispanLock.java:484)
+	at java.base/java.util.concurrent.CompletableFuture$UniApply.tryFire(CompletableFuture.java:646)
+	at java.base/java.util.concurrent.CompletableFuture$Completion.run(CompletableFuture.java:482)
+	at io.netty.util.concurrent.AbstractEventExecutor.runTask(AbstractEventExecutor.java:173)
+	at io.netty.util.concurrent.AbstractEventExecutor.safeExecute(AbstractEventExecutor.java:166)
+	at io.netty.util.concurrent.SingleThreadEventExecutor.runAllTasks(SingleThreadEventExecutor.java:472)
+	at io.netty.channel.epoll.EpollEventLoop.run(EpollEventLoop.java:405)
+	at io.netty.util.concurrent.SingleThreadEventExecutor$4.run(SingleThreadEventExecutor.java:998)
+	at io.netty.util.internal.ThreadExecutorMap$2.run(ThreadExecutorMap.java:74)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+[m
+[33m2026-10-16 06:51:57,685 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health/status, remote=/127.0.0.1:57056, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[1;31m2026-10-16 06:51:58,064 ERROR [o.i.i.i.InvocationContextInterceptor] ISPN000136: Error executing command RemoveCommand on Cache 'counters', writing keys [WrappedByteArray[ACED0005\t000A\s\o\n\d\a\-\i\s\n\1 (17 bytes)]] org.infinispan.commons.TimeoutException: ISPN000299: Unable to acquire lock after 15 seconds for key WrappedByteArray[ACED0005\t000A\s\o\n\d\a\-\i\s\n\1 (17 bytes)] and requestor CommandInvocation:isn1-47759:275. Lock is held by CommandInvocation:isn1-47759:273
+	at org.infinispan.util.concurrent.locks.impl.DefaultLockManager$KeyAwareExtendedLockPromise.get(DefaultLockManager.java:299)
+	at org.infinispan.util.concurrent.locks.impl.DefaultLockManager$KeyAwareExtendedLockPromise.get(DefaultLockManager.java:229)
+	at org.infinispan.util.concurrent.locks.impl.InfinispanLock$LockPlaceHolder.checkState(InfinispanLock.java:554)
+	at org.infinispan.util.concurrent.locks.impl.InfinispanLock$LockPlaceHolder.lambda$toInvocationStage$1(InfinispanLock.java:484)
+	at java.base/java.util.concurrent.CompletableFuture$UniApply.tryFire(CompletableFuture.java:646)
+	at java.base/java.util.concurrent.CompletableFuture$Completion.run(CompletableFuture.java:482)
+	at io.netty.util.concurrent.AbstractEventExecutor.runTask(AbstractEventExecutor.java:173)
+	at io.netty.util.concurrent.AbstractEventExecutor.safeExecute(AbstractEventExecutor.java:166)
+	at io.netty.util.concurrent.SingleThreadEventExecutor.runAllTasks(SingleThreadEventExecutor.java:472)
+	at io.netty.channel.epoll.EpollEventLoop.run(EpollEventLoop.java:405)
+	at io.netty.util.concurrent.SingleThreadEventExecutor$4.run(SingleThreadEventExecutor.java:998)
+	at io.netty.util.internal.ThreadExecutorMap$2.run(ThreadExecutorMap.java:74)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+[m
+[33m2026-10-16 06:51:58,065 WARN  [o.i.CLUSTER] ISPN000071: Caught exception when handling command SingleRpcCommand{cacheName='counters', command=RemoveCommand{key=WrappedByteArray[ACED0005\t000A\s\o\n\d\a\-\i\s\n\1 (17 bytes)], value=null, returnEntry=true, metadata=null, internalMetadata=null, flags=[], commandInvocationId=CommandInvocation:isn1-47759:275, valueMatcher=MATCH_ALWAYS, topologyId=30}} org.infinispan.commons.TimeoutException: ISPN000299: Unable to acquire lock after 15 seconds for key WrappedByteArray[ACED0005\t000A\s\o\n\d\a\-\i\s\n\1 (17 bytes)] and requestor CommandInvocation:isn1-47759:275. Lock is held by CommandInvocation:isn1-47759:273
+	at org.infinispan.util.concurrent.locks.impl.DefaultLockManager$KeyAwareExtendedLockPromise.get(DefaultLockManager.java:299)
+	at org.infinispan.util.concurrent.locks.impl.DefaultLockManager$KeyAwareExtendedLockPromise.get(DefaultLockManager.java:229)
+	at org.infinispan.util.concurrent.locks.impl.InfinispanLock$LockPlaceHolder.checkState(InfinispanLock.java:554)
+	at org.infinispan.util.concurrent.locks.impl.InfinispanLock$LockPlaceHolder.lambda$toInvocationStage$1(InfinispanLock.java:484)
+	at java.base/java.util.concurrent.CompletableFuture$UniApply.tryFire(CompletableFuture.java:646)
+	at java.base/java.util.concurrent.CompletableFuture$Completion.run(CompletableFuture.java:482)
+	at io.netty.util.concurrent.AbstractEventExecutor.runTask(AbstractEventExecutor.java:173)
+	at io.netty.util.concurrent.AbstractEventExecutor.safeExecute(AbstractEventExecutor.java:166)
+	at io.netty.util.concurrent.SingleThreadEventExecutor.runAllTasks(SingleThreadEventExecutor.java:472)
+	at io.netty.channel.epoll.EpollEventLoop.run(EpollEventLoop.java:405)
+	at io.netty.util.concurrent.SingleThreadEventExecutor$4.run(SingleThreadEventExecutor.java:998)
+	at io.netty.util.internal.ThreadExecutorMap$2.run(ThreadExecutorMap.java:74)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+[m
+[1;31m2026-10-16 06:51:58,498 ERROR [o.i.i.i.InvocationContextInterceptor] ISPN000136: Error executing command RemoveCommand on Cache 'counters', writing keys [WrappedByteArray[ACED0005\t000A\s\o\n\d\a\-\i\s\n\1 (17 bytes)]] org.infinispan.commons.TimeoutException: ISPN000299: Unable to acquire lock after 15 seconds for key WrappedByteArray[ACED0005\t000A\s\o\n\d\a\-\i\s\n\1 (17 bytes)] and requestor CommandInvocation:isn1-47759:266. Lock is held by CommandInvocation:isn1-47759:273
+	at org.infinispan.util.concurrent.locks.impl.DefaultLockManager$KeyAwareExtendedLockPromise.get(DefaultLockManager.java:299)
+	at org.infinispan.util.concurrent.locks.impl.DefaultLockManager$KeyAwareExtendedLockPromise.get(DefaultLockManager.java:229)
+	at org.infinispan.util.concurrent.locks.impl.InfinispanLock$LockPlaceHolder.checkState(InfinispanLock.java:554)
+	at org.infinispan.util.concurrent.locks.impl.InfinispanLock$LockPlaceHolder.lambda$toInvocationStage$1(InfinispanLock.java:484)
+	at java.base/java.util.concurrent.CompletableFuture$UniApply.tryFire(CompletableFuture.java:646)
+	at java.base/java.util.concurrent.CompletableFuture$Completion.run(CompletableFuture.java:482)
+	at io.netty.util.concurrent.AbstractEventExecutor.runTask(AbstractEventExecutor.java:173)
+	at io.netty.util.concurrent.AbstractEventExecutor.safeExecute(AbstractEventExecutor.java:166)
+	at io.netty.util.concurrent.SingleThreadEventExecutor.runAllTasks(SingleThreadEventExecutor.java:472)
+	at io.netty.channel.epoll.EpollEventLoop.run(EpollEventLoop.java:405)
+	at io.netty.util.concurrent.SingleThreadEventExecutor$4.run(SingleThreadEventExecutor.java:998)
+	at io.netty.util.internal.ThreadExecutorMap$2.run(ThreadExecutorMap.java:74)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+[m
+[33m2026-10-16 06:51:58,498 WARN  [o.i.CLUSTER] ISPN000071: Caught exception when handling command SingleRpcCommand{cacheName='counters', command=RemoveCommand{key=WrappedByteArray[ACED0005\t000A\s\o\n\d\a\-\i\s\n\1 (17 bytes)], value=null, returnEntry=true, metadata=null, internalMetadata=null, flags=[COMMAND_RETRY], commandInvocationId=CommandInvocation:isn1-47759:266, valueMatcher=MATCH_ALWAYS, topologyId=30}} org.infinispan.commons.TimeoutException: ISPN000299: Unable to acquire lock after 15 seconds for key WrappedByteArray[ACED0005\t000A\s\o\n\d\a\-\i\s\n\1 (17 bytes)] and requestor CommandInvocation:isn1-47759:266. Lock is held by CommandInvocation:isn1-47759:273
+	at org.infinispan.util.concurrent.locks.impl.DefaultLockManager$KeyAwareExtendedLockPromise.get(DefaultLockManager.java:299)
+	at org.infinispan.util.concurrent.locks.impl.DefaultLockManager$KeyAwareExtendedLockPromise.get(DefaultLockManager.java:229)
+	at org.infinispan.util.concurrent.locks.impl.InfinispanLock$LockPlaceHolder.checkState(InfinispanLock.java:554)
+	at org.infinispan.util.concurrent.locks.impl.InfinispanLock$LockPlaceHolder.lambda$toInvocationStage$1(InfinispanLock.java:484)
+	at java.base/java.util.concurrent.CompletableFuture$UniApply.tryFire(CompletableFuture.java:646)
+	at java.base/java.util.concurrent.CompletableFuture$Completion.run(CompletableFuture.java:482)
+	at io.netty.util.concurrent.AbstractEventExecutor.runTask(AbstractEventExecutor.java:173)
+	at io.netty.util.concurrent.AbstractEventExecutor.safeExecute(AbstractEventExecutor.java:166)
+	at io.netty.util.concurrent.SingleThreadEventExecutor.runAllTasks(SingleThreadEventExecutor.java:472)
+	at io.netty.channel.epoll.EpollEventLoop.run(EpollEventLoop.java:405)
+	at io.netty.util.concurrent.SingleThreadEventExecutor$4.run(SingleThreadEventExecutor.java:998)
+	at io.netty.util.internal.ThreadExecutorMap$2.run(ThreadExecutorMap.java:74)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+[m
+[33m2026-10-16 06:51:59,802 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:38302, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-16 06:51:59,803 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:38302, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[1;31m2026-10-16 06:52:00,067 ERROR [o.i.i.i.InvocationContextInterceptor] ISPN000136: Error executing command RemoveCommand on Cache 'counters', writing keys [WrappedByteArray[ACED0005\t000A\s\o\n\d\a\-\i\s\n\1 (17 bytes)]] org.infinispan.commons.TimeoutException: ISPN000299: Unable to acquire lock after 15 seconds for key WrappedByteArray[ACED0005\t000A\s\o\n\d\a\-\i\s\n\1 (17 bytes)] and requestor CommandInvocation:isn1-47759:276. Lock is held by CommandInvocation:isn1-47759:273
+	at org.infinispan.util.concurrent.locks.impl.DefaultLockManager$KeyAwareExtendedLockPromise.get(DefaultLockManager.java:299)
+	at org.infinispan.util.concurrent.locks.impl.DefaultLockManager$KeyAwareExtendedLockPromise.get(DefaultLockManager.java:229)
+	at org.infinispan.util.concurrent.locks.impl.InfinispanLock$LockPlaceHolder.checkState(InfinispanLock.java:554)
+	at org.infinispan.util.concurrent.locks.impl.InfinispanLock$LockPlaceHolder.lambda$toInvocationStage$1(InfinispanLock.java:484)
+	at java.base/java.util.concurrent.CompletableFuture$UniApply.tryFire(CompletableFuture.java:646)
+	at java.base/java.util.concurrent.CompletableFuture$Completion.run(CompletableFuture.java:482)
+	at io.netty.util.concurrent.AbstractEventExecutor.runTask(AbstractEventExecutor.java:173)
+	at io.netty.util.concurrent.AbstractEventExecutor.safeExecute(AbstractEventExecutor.java:166)
+	at io.netty.util.concurrent.SingleThreadEventExecutor.runAllTasks(SingleThreadEventExecutor.java:472)
+	at io.netty.channel.epoll.EpollEventLoop.run(EpollEventLoop.java:405)
+	at io.netty.util.concurrent.SingleThreadEventExecutor$4.run(SingleThreadEventExecutor.java:998)
+	at io.netty.util.internal.ThreadExecutorMap$2.run(ThreadExecutorMap.java:74)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+[m
+[33m2026-10-16 06:52:00,067 WARN  [o.i.CLUSTER] ISPN000071: Caught exception when handling command SingleRpcCommand{cacheName='counters', command=RemoveCommand{key=WrappedByteArray[ACED0005\t000A\s\o\n\d\a\-\i\s\n\1 (17 bytes)], value=null, returnEntry=true, metadata=null, internalMetadata=null, flags=[], commandInvocationId=CommandInvocation:isn1-47759:276, valueMatcher=MATCH_ALWAYS, topologyId=30}} org.infinispan.commons.TimeoutException: ISPN000299: Unable to acquire lock after 15 seconds for key WrappedByteArray[ACED0005\t000A\s\o\n\d\a\-\i\s\n\1 (17 bytes)] and requestor CommandInvocation:isn1-47759:276. Lock is held by CommandInvocation:isn1-47759:273
+	at org.infinispan.util.concurrent.locks.impl.DefaultLockManager$KeyAwareExtendedLockPromise.get(DefaultLockManager.java:299)
+	at org.infinispan.util.concurrent.locks.impl.DefaultLockManager$KeyAwareExtendedLockPromise.get(DefaultLockManager.java:229)
+	at org.infinispan.util.concurrent.locks.impl.InfinispanLock$LockPlaceHolder.checkState(InfinispanLock.java:554)
+	at org.infinispan.util.concurrent.locks.impl.InfinispanLock$LockPlaceHolder.lambda$toInvocationStage$1(InfinispanLock.java:484)
+	at java.base/java.util.concurrent.CompletableFuture$UniApply.tryFire(CompletableFuture.java:646)
+	at java.base/java.util.concurrent.CompletableFuture$Completion.run(CompletableFuture.java:482)
+	at io.netty.util.concurrent.AbstractEventExecutor.runTask(AbstractEventExecutor.java:173)
+	at io.netty.util.concurrent.AbstractEventExecutor.safeExecute(AbstractEventExecutor.java:166)
+	at io.netty.util.concurrent.SingleThreadEventExecutor.runAllTasks(SingleThreadEventExecutor.java:472)
+	at io.netty.channel.epoll.EpollEventLoop.run(EpollEventLoop.java:405)
+	at io.netty.util.concurrent.SingleThreadEventExecutor$4.run(SingleThreadEventExecutor.java:998)
+	at io.netty.util.internal.ThreadExecutorMap$2.run(ThreadExecutorMap.java:74)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+[m
+[1;31m2026-10-16 06:52:00,997 ERROR [o.i.i.i.InvocationContextInterceptor] ISPN000136: Error executing command PutKeyValueCommand on Cache 'counters', writing keys [WrappedByteArray[ACED0005\t000A\s\o\n\d\a\-\i\s\n\1 (17 bytes)]] org.infinispan.commons.TimeoutException: ISPN000476: Timed out waiting for responses for request 542 from isn3-5889 after 17.5 seconds
+	at org.infinispan.remoting.transport.impl.MultiTargetRequest.onTimeout(MultiTargetRequest.java:179)
+	at org.infinispan.remoting.transport.AbstractRequest.call(AbstractRequest.java:89)
+	at org.infinispan.remoting.transport.AbstractRequest.call(AbstractRequest.java:23)
+	at java.base/java.util.concurrent.FutureTask.run(FutureTask.java:317)
+	at java.base/java.util.concurrent.ScheduledThreadPoolExecutor$ScheduledFutureTask.run(ScheduledThreadPoolExecutor.java:304)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1144)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:642)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+[m
+[33m2026-10-16 06:52:00,998 WARN  [o.i.CLUSTER] ISPN000071: Caught exception when handling command SingleRpcCommand{cacheName='counters', command=PutKeyValueCommand{key=WrappedByteArray[ACED0005\t000A\s\o\n\d\a\-\i\s\n\1 (17 bytes)], value=WrappedByteArray[ACED0005\s\r00\%\b\r\.\u\n\i\p\a\m\p\a\.\t\c\c\.\s\e\s\s\i\o\n\.\I\d\e\n\t\i\t\y\S\t\a\t\e0000000000000001020005\J000E\c\o\n\t\a... (380 bytes)], flags=[IGNORE_RETURN_VALUES], commandInvocationId=CommandInvocation:isn1-47759:273, putIfAbsent=false, returnEntry=true, valueMatcher=MATCH_ALWAYS, metadata=EmbeddedExpirableMetadata{version=NumericVersion{version=1109043912202910321}, lifespan=-1, maxIdle=-1}, internalMetadata=null, successful=true, topologyId=30, segment=38}} org.infinispan.commons.TimeoutException: ISPN000476: Timed out waiting for responses for request 542 from isn3-5889 after 17.5 seconds
+	at org.infinispan.remoting.transport.impl.MultiTargetRequest.onTimeout(MultiTargetRequest.java:179)
+	at org.infinispan.remoting.transport.AbstractRequest.call(AbstractRequest.java:89)
+	at org.infinispan.remoting.transport.AbstractRequest.call(AbstractRequest.java:23)
+	at java.base/java.util.concurrent.FutureTask.run(FutureTask.java:317)
+	at java.base/java.util.concurrent.ScheduledThreadPoolExecutor$ScheduledFutureTask.run(ScheduledThreadPoolExecutor.java:304)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1144)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:642)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+[m
+[33m2026-10-16 06:52:02,933 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health/status, remote=/127.0.0.1:46018, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-16 06:52:06,826 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:38318, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-16 06:52:06,827 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:38318, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-16 06:52:07,635 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:38334, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-16 06:52:07,636 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:38334, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-16 06:52:08,226 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health/status, remote=/127.0.0.1:46062, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-16 06:52:13,436 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health/status, remote=/127.0.0.1:52834, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-16 06:52:13,856 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:41142, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-16 06:52:13,857 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:41142, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[0m2026-10-16 06:52:17,949 INFO  [o.i.CLUSTER] [Context=sessions]ISPN100009: Advancing to rebalance phase READ_ALL_WRITE_ALL, topology id 31[m
+[0m2026-10-16 06:52:17,952 INFO  [o.i.CLUSTER] [Context=sessions]ISPN100009: Advancing to rebalance phase READ_NEW_WRITE_ALL, topology id 32[m
+[0m2026-10-16 06:52:17,953 INFO  [o.i.CLUSTER] [Context=sessions]ISPN100010: Finished rebalance with members [isn2-19096, isn1-47759, isn3-5889], topology id 33[m
+[0m2026-10-16 06:52:17,966 INFO  [o.i.CLUSTER] [Context=___script_cache]ISPN100009: Advancing to rebalance phase READ_ALL_WRITE_ALL, topology id 28[m
+[33m2026-10-16 06:52:18,936 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health/status, remote=/127.0.0.1:49606, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-16 06:52:19,656 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:35534, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-16 06:52:19,657 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:35534, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-16 06:52:19,963 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:35540, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-16 06:52:19,965 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:35540, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-16 06:52:24,435 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health/status, remote=/127.0.0.1:49650, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-16 06:52:26,986 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:35548, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-16 06:52:26,987 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:35548, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-16 06:52:27,675 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:35552, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-16 06:52:27,676 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:35552, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[0m2026-10-16 06:52:29,998 INFO  [o.i.CLUSTER] [Context=___script_cache]ISPN100009: Advancing to rebalance phase READ_NEW_WRITE_ALL, topology id 29[m
+[0m2026-10-16 06:52:29,998 INFO  [o.i.CLUSTER] [Context=counters]ISPN100009: Advancing to rebalance phase READ_ALL_WRITE_ALL, topology id 31[m
+[0m2026-10-16 06:52:30,001 INFO  [o.i.CLUSTER] [Context=___script_cache]ISPN100010: Finished rebalance with members [isn2-19096, isn1-47759, isn3-5889], topology id 30[m
+[0m2026-10-16 06:52:30,001 INFO  [o.i.CLUSTER] [Context=counters]ISPN100009: Advancing to rebalance phase READ_NEW_WRITE_ALL, topology id 32[m
+[0m2026-10-16 06:52:30,003 INFO  [o.i.CLUSTER] [Context=counters]ISPN100010: Finished rebalance with members [isn2-19096, isn1-47759, isn3-5889], topology id 33[m
+[33m2026-10-16 06:52:30,435 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health/status, remote=/127.0.0.1:37232, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-16 06:52:34,006 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:53856, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-16 06:52:34,007 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:53856, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-16 06:52:35,932 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health/status, remote=/127.0.0.1:37270, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-16 06:52:36,026 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:53872, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-16 06:52:36,027 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:53872, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-16 06:52:38,011 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:53888, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-16 06:52:38,012 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:53888, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-16 06:52:38,047 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:53890, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-16 06:52:38,048 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:53890, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-16 06:52:40,067 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:54168, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-16 06:52:40,068 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:54168, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-16 06:52:41,191 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health/status, remote=/127.0.0.1:58874, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-16 06:52:42,087 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:54174, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-16 06:52:42,088 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:54174, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-16 06:52:46,480 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health/status, remote=/127.0.0.1:58904, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-16 06:52:49,107 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:47320, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-16 06:52:49,108 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:47320, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-16 06:52:51,128 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:47334, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-16 06:52:51,129 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:47334, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-16 06:52:51,935 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health/status, remote=/127.0.0.1:40506, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-16 06:52:53,149 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:47342, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-16 06:52:53,150 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:47342, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-16 06:52:57,184 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health/status, remote=/127.0.0.1:40538, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-16 06:53:00,171 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:38012, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-16 06:53:00,172 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:38012, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[0m2026-10-16 06:53:02,113 INFO  [o.i.CLUSTER] [Context=___hotRodTopologyCache_hotrod-default]ISPN100009: Advancing to rebalance phase READ_ALL_WRITE_ALL, topology id 28[m
+[0m2026-10-16 06:53:02,113 INFO  [o.i.CLUSTER] [Context=org.infinispan.CLIENT_SERVER_TX_TABLE]ISPN100009: Advancing to rebalance phase READ_ALL_WRITE_ALL, topology id 28[m
+[0m2026-10-16 06:53:02,114 INFO  [o.i.CLUSTER] [Context=org.infinispan.CONFIG]ISPN100009: Advancing to rebalance phase READ_ALL_WRITE_ALL, topology id 28[m
+[0m2026-10-16 06:53:02,117 INFO  [o.i.CLUSTER] [Context=___hotRodTopologyCache_hotrod-default]ISPN100009: Advancing to rebalance phase READ_NEW_WRITE_ALL, topology id 29[m
+[0m2026-10-16 06:53:02,117 INFO  [o.i.CLUSTER] [Context=org.infinispan.CONFIG]ISPN100009: Advancing to rebalance phase READ_NEW_WRITE_ALL, topology id 29[m
+[0m2026-10-16 06:53:02,119 INFO  [o.i.CLUSTER] [Context=org.infinispan.CONFIG]ISPN100010: Finished rebalance with members [isn2-19096, isn1-47759, isn3-5889], topology id 30[m
+[0m2026-10-16 06:53:02,120 INFO  [o.i.CLUSTER] [Context=org.infinispan.CLIENT_SERVER_TX_TABLE]ISPN100009: Advancing to rebalance phase READ_NEW_WRITE_ALL, topology id 29[m
+[0m2026-10-16 06:53:02,122 INFO  [o.i.CLUSTER] [Context=___hotRodTopologyCache_hotrod-default]ISPN100010: Finished rebalance with members [isn2-19096, isn1-47759, isn3-5889], topology id 30[m
+[0m2026-10-16 06:53:02,126 INFO  [o.i.CLUSTER] [Context=org.infinispan.CLIENT_SERVER_TX_TABLE]ISPN100010: Finished rebalance with members [isn2-19096, isn1-47759, isn3-5889], topology id 30[m
+[0m2026-10-16 06:53:02,137 INFO  [o.i.CLUSTER] [Context=org.infinispan.COUNTER]ISPN100009: Advancing to rebalance phase READ_ALL_WRITE_ALL, topology id 28[m
+[0m2026-10-16 06:53:02,139 INFO  [o.i.CLUSTER] [Context=org.infinispan.COUNTER]ISPN100009: Advancing to rebalance phase READ_NEW_WRITE_ALL, topology id 29[m
+[0m2026-10-16 06:53:02,139 INFO  [o.i.CLUSTER] [Context=___protobuf_metadata]ISPN100009: Advancing to rebalance phase READ_ALL_WRITE_ALL, topology id 29[m
+[0m2026-10-16 06:53:02,141 INFO  [o.i.CLUSTER] [Context=org.infinispan.COUNTER]ISPN100010: Finished rebalance with members [isn2-19096, isn1-47759, isn3-5889], topology id 30[m
+[0m2026-10-16 06:53:02,143 INFO  [o.i.CLUSTER] [Context=___protobuf_metadata]ISPN100009: Advancing to rebalance phase READ_NEW_WRITE_ALL, topology id 30[m
+[0m2026-10-16 06:53:02,145 INFO  [o.i.CLUSTER] [Context=___protobuf_metadata]ISPN100010: Finished rebalance with members [isn2-19096, isn1-47759, isn3-5889], topology id 31[m
+[33m2026-10-16 06:53:02,193 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:38028, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-16 06:53:02,194 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:38028, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-16 06:53:02,212 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:38036, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-16 06:53:02,213 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:38036, subject=null}] has been deprecated. Please consult the upgrade guide[m

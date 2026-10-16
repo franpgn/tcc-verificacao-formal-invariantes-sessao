@@ -1,0 +1,17 @@
+[?2004h[01;32mserver1@server1[00m:[01;34m~/tcc-gate[00m$ REP=2 bash runs/gate-b29/g1.sh
+[?2004lG-1: go do Gestor registrado no relatorio? [digite GO] GO
+go 2026-10-16T06:48:16+00:00 vm=192.168.137.150 sha=544879150d70e146d4b3f5a4847c13d8f824f5b9
+"health_status":"HEALTHY","number_of_nodes":3
+"health_status":"HEALTHY","number_of_nodes":3
+"health_status":"HEALTHY","number_of_nodes":3
+ok sem clsact em isn3: qdisc noqueue 0: root refcnt 2
+dead-man armado: tcc-heal-79752-18554 em 180s
+injetor rc=0 (esperado 0)
+ok sem clsact em isn3: qdisc noqueue 0: root refcnt 2
+dead-man desarmado: tcc-heal-79752-18554
+t_merge_s=188 (desde event=end)
+"health_status":"HEALTHY","number_of_nodes":3
+"health_status":"HEALTHY","number_of_nodes":3
+"health_status":"HEALTHY","number_of_nodes":3
+[?2004h[01;32mserver1@server1[00m:[01;34m~/tcc-gate[00m$ exit
+[?2004lexit

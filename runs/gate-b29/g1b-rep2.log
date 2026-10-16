@@ -1,0 +1,12 @@
+g1b: janela iniciada (start_ns=1792133297309780433); sondas e coleta ligadas 2026-10-16T06:48:17+00:00
+g1b: event=end visto; mais 75s de coleta
+rep=2
+start_ns=1792133297309780433
+end_ns=1792133393351002900
+amostras_de_saude=10 intervalo_s=5 pos_fim_s=75
+jar=workload/target/session-workload-0.1.0-SNAPSHOT.jar
+jar_sha256=c58c8b5e87e3ed8ceb6dc12b86bbf93e2b928b9d319262d5e464c521596dd61c
+java=openjdk version "17.0.19" 2026-04-21
+sonda-isn3: linhas=98 erros=82
+sonda-isn1: linhas=266 erros=27
+g1b: pronto. Copie runs/gate-b29/g1-rep2/hotrod para o host (ver docs/relatorio-sonda-hotrod-2026-10-16.md).

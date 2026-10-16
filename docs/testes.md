@@ -223,3 +223,16 @@ Contagens medidas apos cada fusao (Git Bash PASS/FAIL/SKIP | WSL Ubuntu com `flo
 | + fix netns (A2), conflito resolvido | 125/0/2 \| 127/0/1 | n/a | | |
 | + B-29.2 | 125/0/2 \| 127/0/1 | 298/0/1 \| 306/0/0 | 35/0 \| 35/0 | |
 | + B-32 (+auditoria) + B-33 (final) | 125/0/2 \| 127/0/1 | 298/0/1 \| 306/0/0 | 35/0 \| 35/0 | `mvn test` 184/0/0 (2 skipped); `unittest` analysis 9/9 |
+
+## Gate v3: testes sem VM de g1/g1b/g5/g6 (2026-10-16)
+
+Branch `test/b29-gate-vm-v3`; detalhes e comandos da VM em `docs/relatorio-gate-v3-2026-10-16.md`. Shims e injetores falsos em `runs/gate-b29/gate-test-lib.sh`; nenhum toca em VM, rede ou privilegio.
+
+```bash
+bash runs/gate-b29/g5.test.sh     # T-g5-1..7: 50 PASS (TERM, KILL+--heal, sem start, sem clsact, rc!=137, ordem dead-man, sem GO)
+bash runs/gate-b29/g6.test.sh     # T-g6-1..8: 70 PASS (ordem, netns, coexistencia, F3<F2, amostra tardia, PID2, corpo do dead-man, espera desde o fim da F2)
+bash runs/gate-b29/g1.test.sh     # T-g1-1..7: 48 PASS (log de saude de 2 s, g1.sh completo/abort/sem GO, G1_LOG_SAUDE_S=0)
+bash runs/gate-b29/g1b.test.sh    # 25 ok (completa, COLETA=minima, COLETA invalida)
+```
+
+Contagens medidas (Git Bash | WSL): g5 50/0 | 50/0; g6 70/0 | 70/0; g1 48/0 | 48/0; g1b falhas=0 | falhas=0; inject-partition 125/0/2 | 127/0/1; inject-netdegrade 298/0/1 | 306/0/0; inject-jitter 35/0 | 35/0; `mvn test` 205/0/0 (3 skipped); `unittest` analysis 9/9.

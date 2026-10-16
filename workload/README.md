@@ -50,6 +50,20 @@ A CLI parametrizada conforme T7 (mistura 50/50 ou 95/5), T9 (10⁶ operações),
 - `com.fasterxml.jackson:jackson-databind:2.17.0`  — serialização dos `runs/<scenario>/summary.json`.
 - `org.junit.jupiter:junit-jupiter:5.10.2`  — *smoke tests* a partir de B-05.
 
+## Instrumentação de partição (B-33, parte E1)
+
+Todas as opções abaixo vêm **desligadas**; sem elas a execução, o CSV de eventos e o de violações são os de antes (S1/S2 inalterados).
+
+| Opção | Efeito |
+|---|---|
+| `--marker <arq>` | Lê os marcadores de falha (`fault=F2 node=isn3 event=start\|split\|end t_epoch_ns=<n>`). O CSV de eventos ganha a coluna `phase`; o de violações, `fase` e `classificacao` (I2 inline reclassificada por motivo do bloqueio). |
+| `--w-recovery-sec` | Janela de recuperação após `t_fim` (padrão 60). |
+| `--stop-at-fault-end` | Para a carga de escrita quando o marcador `end` aparece (exige `--marker`). |
+| `--convergence` | Depois da carga, laço de convergência (período 5 s, teto 600 s, 3 rodadas válidas limpas); grava `convergencia-rep-NNN.csv` e `convergencia-resumo-rep-NNN.json`. Rodada só vale com a topologia completa, os dois caches `HEALTHY` (REST, `--rest-url`) e todos os leitores respondendo. |
+| `--sweep` | Varredura final global (I1, I4, I2 global, bloqueio perdido); grava `varredura-rep-NNN.csv` e `varredura-identidades-rep-NNN.csv`. |
+
+Códigos de retorno novos: operações `Block`/`Unblock` entram no CSV; `ERROR_UNAVAILABLE` distingue recusa por indisponibilidade de `ERROR_TRANSPORT`. A classificação do motivo do bloqueio (limite × administrativo) é feita por rastro no cliente (`RastroCliente`), sem alterar `IdentityState`. Esquemas e decisões em `docs/relatorio-b33-2026-10-15.md`.
+
 ## Próximas tarefas previstas
 
 - **B-05** — Implementação efetiva de O1-O7 com Hot Rod, códigos de retorno conforme Cap. 3 §3.3.1.

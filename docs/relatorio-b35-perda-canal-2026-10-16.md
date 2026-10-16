@@ -69,7 +69,7 @@ A base r3 sem falha tem 1.627.731 distintos; com P0 e `MaxPerdas=1` o espaco foi
 ## 4. O que se pode e o que nao se pode afirmar
 
 Pode (dentro das cotas e do status ILUSTRATIVO):
-- Nas colunas sem falha e queda de r2, e em sem falha de r3 para P0 com `MaxPerdas=1`, perder mensagens do canal nao fez nenhuma das propriedades de seguranca por replica avaliadas deixar de valer onde valia na base.
+- Nas colunas sem falha e queda de r2, e em sem falha de r3 para P0 com `MaxPerdas=1` (em r3 foram avaliadas so `I1F` e `I1P`), perder mensagens do canal nao fez nenhuma das propriedades de seguranca por replica avaliadas deixar de valer onde valia na base.
 - Com a especificacao corrente, `I5`/`I6` ja nao valem sem perda; ver secao 1.
 
 Nao pode:
@@ -84,6 +84,7 @@ Nao pode:
 - Tamanho de traco com `WORKERS=2` nao e minimo e nao deve ser comparado entre celulas (em particao, `I2Fa` tem 5 estados na base e 4 sob perda, com traco de 4 estados que existe tambem na base).
 - A cobertura `D:T` de celulas `VIOLADA` e parcial (parada na violacao); so celulas exaustivas sustentam afirmacao de disparo ou vacuidade.
 - `I1P` em particao: ver secao 3.3.
+- O modelo nao cobre duplicacao, corrupcao, perda assimetrica nem particao nao transitiva (secao 2.6 das decisoes).
 - Nao ha rodada com `Login` livre (modo `livre`); so o semeado.
 
 ## 6. Ambiente

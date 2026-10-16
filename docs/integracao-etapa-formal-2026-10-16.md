@@ -36,7 +36,7 @@ Somente no passo 5 (netns x contadores), ambos em arquivos esperados:
 
 ## Contagens por passo
 
-Ver tabela em `docs/testes.md` (secao "Integracao local"). Final: inject-partition 125/0/2 (Git Bash) e 127/0/1 (WSL); inject-netdegrade 298/0/1 e 306/0/0; inject-jitter 35/0 e 35/0; `mvn -f workload/pom.xml test` 184 testes, 0 falhas, 0 erros, 2 skipped; `python -m unittest` em `analysis/` 9 OK.
+Ver tabela em `docs/testes.md` (secao "Integracao local"). Final: inject-partition 125/0/2 (Git Bash) e 127/0/1 (WSL); inject-netdegrade 298/0/1 e 306/0/0; inject-jitter 35/0 e 35/0; `mvn -f workload/pom.xml test` 184 testes, 0 falhas, 0 erros, 2 skipped; `python -m unittest discover -s analysis` (da raiz) 9 OK.
 
 ## Ocorrencias
 

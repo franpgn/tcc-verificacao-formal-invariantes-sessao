@@ -4,7 +4,7 @@
 
 ## Suíte unitária (JUnit 5)
 
-Execução: `mvn -f workload/pom.xml test`. Estado atual: **49/49 verde** nos blocos da tabela abaixo; na branch de integracao `feature/etapa-formal-integracao` (2026-10-16) o Surefire completo mede **184 testes, 0 falhas, 0 erros, 2 skipped** (inclui B-33), e `python -m unittest` em `analysis/` mede 9/9.
+Execução: `mvn -f workload/pom.xml test`. Estado atual: **49/49 verde** nos blocos da tabela abaixo; na branch de integracao `feature/etapa-formal-integracao` (2026-10-16) o Surefire completo mede **184 testes, 0 falhas, 0 erros, 2 skipped** (inclui B-33), e `python -m unittest discover -s analysis` (da raiz) mede 9/9.
 
 | Classe de teste | n | Cobre |
 |---|---|---|
@@ -222,7 +222,7 @@ Contagens medidas apos cada fusao (Git Bash PASS/FAIL/SKIP | WSL Ubuntu com `flo
 | + fix contadores (A1/A3) | 111/0/2 \| 113/0/1 | n/a | | |
 | + fix netns (A2), conflito resolvido | 125/0/2 \| 127/0/1 | n/a | | |
 | + B-29.2 | 125/0/2 \| 127/0/1 | 298/0/1 \| 306/0/0 | 35/0 \| 35/0 | |
-| + B-32 (+auditoria) + B-33 (final) | 125/0/2 \| 127/0/1 | 298/0/1 \| 306/0/0 | 35/0 \| 35/0 | `mvn test` 184/0/0 (2 skipped); `unittest` analysis 9/9 |
+| + B-32 (+auditoria) + B-33 (final) | 125/0/2 \| 127/0/1 | 298/0/1 \| 306/0/0 | 35/0 \| 35/0 | `mvn test` 184/0/0 (2 skipped); `python -m unittest discover -s analysis` 9/9 |
 
 ## Gate v3: testes sem VM de g1/g1b/g5/g6 (2026-10-16)
 

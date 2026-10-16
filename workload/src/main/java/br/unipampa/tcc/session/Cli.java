@@ -1,6 +1,8 @@
 package br.unipampa.tcc.session;
 
+import picocli.CommandLine;
 import picocli.CommandLine.Command;
+import picocli.CommandLine.Mixin;
 import picocli.CommandLine.Option;
 
 /**
@@ -28,12 +30,52 @@ import picocli.CommandLine.Option;
 )
 public final class Cli {
 
+    /**
+     * Cenario de mistura (T7). B-33 (E2): o valor e lido como texto para que {@code S3}
+     * (simulacao de ciclo de vida, fora do enum) seja tratado ANTES de {@link Scenario}; S1 e
+     * S2 continuam resolvidos pelo enum, como antes, e valor desconhecido continua sendo erro
+     * de parametro (nao cai no fallback de {@link Scenario#porNome}).
+     */
+    public Scenario scenario = Scenario.S1;
+
+    /** B-33 (E2): {@code true} com {@code --scenario S3}. */
+    public boolean scenarioS3;
+
     @Option(
         names = {"--scenario", "-s"},
-        description = "Cenario de mistura de operacoes (T7): ${COMPLETION-CANDIDATES}. Padrao ${DEFAULT-VALUE}.",
-        defaultValue = "S1"
+        description = "Cenario: S1, S2 (mistura de operacoes, T7) ou S3 (simulacao de ciclo de vida de sessao, B-33). Padrao ${DEFAULT-VALUE}.",
+        defaultValue = "S1",
+        converter = CenarioConverter.class
     )
-    public Scenario scenario;
+    public void definirCenario(Escolha escolha) {
+        this.scenarioS3 = escolha.s3();
+        if (!escolha.s3()) {
+            this.scenario = escolha.scenario();
+        }
+    }
+
+    /** Resultado da conversao do texto de {@code --scenario}. */
+    public record Escolha(boolean s3, Scenario scenario) { }
+
+    /** Converte "S1"/"S2" (enum) ou "S3" (modo novo); outro valor e erro de parametro. */
+    public static final class CenarioConverter implements CommandLine.ITypeConverter<Escolha> {
+        @Override
+        public Escolha convert(String valor) {
+            if ("S3".equals(valor)) {
+                return new Escolha(true, null);
+            }
+            try {
+                return new Escolha(false, Scenario.valueOf(valor));
+            } catch (IllegalArgumentException e) {
+                throw new CommandLine.TypeConversionException(
+                        "valor invalido '" + valor + "' para --scenario (aceitos: S1, S2, S3)");
+            }
+        }
+    }
+
+    /** B-33 (E2): parametros do cenario S3 (so valem com {@code --scenario S3}). */
+    @Mixin
+    public S3Parametros s3 = new S3Parametros();
 
     @Option(
         names = {"--duration", "-d"},
@@ -197,6 +239,9 @@ public final class Cli {
         if (paraNoFimDaFalha && (marcadores == null || marcadores.isBlank())) {
             throw new IllegalArgumentException("--stop-at-fault-end exige --marker");
         }
+        if (scenarioS3) {
+            s3.validar();
+        }
     }
 
     @Override
@@ -204,7 +249,7 @@ public final class Cli {
         return String.format(
             "Cli{scenario=%s, duracao=%ds, ops=%d, rep=%d, threads=%d, "
                 + "seed=%d, csvDir=%s, warmupMin=%ds, dryRun=%s}",
-            scenario, duracaoSeg, ops, repeticoes, threads,
+            scenarioS3 ? "S3" : scenario, duracaoSeg, ops, repeticoes, threads,
             seedBase, csvDir, warmupMinimoSeg, dryRun);
     }
 }

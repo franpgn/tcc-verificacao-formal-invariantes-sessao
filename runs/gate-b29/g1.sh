@@ -2,9 +2,9 @@
 # runs/gate-b29/g1.sh -- G-1..G-4 numa janela real de 90 s em isn3. PROPOSTA: NAO executar sem o "go" do Gestor.
 set -euo pipefail
 # v3 (V-B2): log de saude a cada 2 s em $OUT/saude-log.csv (timestamp, porta, http, status, size); go via exigir_go (g56-lib).
-# Variaveis (teste com shims; padrao = REP=1/2): G1_DUR (90), G1_AMOSTRAS ("8 25 45 65 82"), G1_MERGE_LIM (600), G1_LOG_SAUDE_S (2; 0 = sem log).
+# Variaveis (teste com shims; padrao = REP=1/2): G1_DUR (90), G1_AMOSTRAS ("8 25 45 65 82"), G1_MERGE_LIM (600), G1_LOG_SAUDE_S (2; 0 = sem log), G1_LOG_POS_S (30; s de log depois de HEALTHY/size=3).
 source "$(dirname "$0")/g56-lib.sh"
-DUR="${G1_DUR:-90}"; AMOSTRAS="${G1_AMOSTRAS:-8 25 45 65 82}"; MERGE_LIM="${G1_MERGE_LIM:-600}"; SAUDE_S="${G1_LOG_SAUDE_S:-2}"
+DUR="${G1_DUR:-90}"; AMOSTRAS="${G1_AMOSTRAS:-8 25 45 65 82}"; MERGE_LIM="${G1_MERGE_LIM:-600}"; SAUDE_S="${G1_LOG_SAUDE_S:-2}"; POS_S="${G1_LOG_POS_S:-30}"
 exigir_go "G-1 (REP=${REP:-1}, janela de ${DUR} s em isn3)"
 N=${REP:-1}; OUT="$LOG/g1-rep$N"; mkdir -p "$OUT"
 trap parar_log_saude EXIT   # o log de saude nunca sobrevive ao g1.sh (fim limpo, abort ou erro)
@@ -52,5 +52,21 @@ health | tee "$OUT/saude-depois.txt"
 # antes dela o merge ainda nao tinha ocorrido e a vista final nao estaria nos logs.
 # log-completo-* guarda tudo desde t0-5; log-vista-* e o filtro de mensagens de vista.
 extrair_logs
+# V-B4: o log de saude continua POS_S s depois de detectar size=3 (amostras pos-merge: estabilidade, sem oscilacao)
+if [ "$SAUDE_S" != 0 ]; then
+  sleep "$POS_S"; parar_log_saude
+  # t_merge pelo saude-log: 1a amostra HEALTHY/size=3 (qualquer porta) depois do end; e a 1a em que as 3 portas ja tinham HEALTHY/3
+  PRIM=$(awk -F, -v e="$END_NS" 'NR>1 && $1>e && $4=="HEALTHY" && $5==3{print $1; exit}' "$OUT/saude-log.csv")
+  TODAS=$(awk -F, -v e="$END_NS" 'NR>1 && $1>e && $4=="HEALTHY" && $5==3 && !($2 in v){v[$2]=$1; n++; if(n==3){print $1; exit}}' "$OUT/saude-log.csv")
+  iso() { printf '%s.%09dZ' "$(date -u -d "@$(( $1 / 1000000000 ))" +%Y-%m-%dT%H:%M:%S)" "$(( $1 % 1000000000 ))"; }
+  if [ -n "$PRIM" ]; then
+    { echo "t_saude_primeira_ns=$PRIM"; echo "t_saude_primeira_iso=$(iso "$PRIM")"
+      echo "t_merge_saude_s=$(( (PRIM - END_NS) / 1000000000 )) (1a amostra HEALTHY/3 do saude-log, desde event=end)"
+      if [ -n "$TODAS" ]; then echo "t_saude_todas_ns=$TODAS"; echo "t_saude_todas_iso=$(iso "$TODAS")"
+        echo "t_merge_saude_todas_s=$(( (TODAS - END_NS) / 1000000000 )) (HEALTHY/3 ja visto nas 3 portas)"; fi
+    } >> "$OUT/t_merge.txt"
+  else echo "t_saude_primeira_ns=ausente (nenhuma amostra HEALTHY/3 depois do end no saude-log)" >> "$OUT/t_merge.txt"; fi
+  cat "$OUT/t_merge.txt"
+fi
 parar_log_saude
 echo "G-1 concluido (REP=$N)"; [ ! -f "$OUT/saude-log.csv" ] || echo "log de saude: $(( $(wc -l < "$OUT/saude-log.csv") - 1 )) linhas em $OUT/saude-log.csv"

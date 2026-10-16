@@ -5,6 +5,7 @@
 set -uo pipefail
 source "$(dirname "${BASH_SOURCE[0]}")/gate-test-lib.sh"
 G1="$GATE_DIR/g1.sh"
+export G1_LOG_POS_S=1   # padrao do g1.sh e 30 s; aqui curto (T-g1-8/9 definem o seu)
 R1="$TCC/runs/gate-b29/g1-rep3"
 linhas() { [ -f "$1" ] && wc -l < "$1" | tr -d ' ' || echo 0; }
 # executa uma funcao da g-lib num subshell com shims

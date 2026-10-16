@@ -40,7 +40,17 @@ public class InvariantAuditor implements AutoCloseable {
 
     public record Violacao(Instant em, String invariante, String chave, String mensagem) {}
 
+    /**
+     * B-33: resultado de {@link #avaliarRodada}. {@code completa} = todos os
+     * leitores responderam (rodada valida quanto as leituras); {@code leiturasFalhas}
+     * = leitores que lancaram excecao (p.ex. no em DEGRADED).
+     */
+    public record RodadaAuditoria(boolean completa, int divergentesI5, int divergentesI6,
+                                  int leiturasFalhas) {}
+
     private final ConcurrentLinkedQueue<Violacao> registros = new ConcurrentLinkedQueue<>();
+    private final java.util.concurrent.atomic.AtomicInteger leiturasFalhas =
+            new java.util.concurrent.atomic.AtomicInteger();
     private ScheduledExecutorService scheduler;
 
     public void registrarViolacao(String invariante, String chave, String mensagem) {
@@ -48,6 +58,9 @@ public class InvariantAuditor implements AutoCloseable {
     }
 
     public int total() { return registros.size(); }
+
+    /** B-33: total acumulado de leituras de replica que lancaram excecao (toleradas). */
+    public int leiturasFalhas() { return leiturasFalhas.get(); }
 
     public List<Violacao> drenar() {
         List<Violacao> out = new ArrayList<>(registros);
@@ -90,6 +103,48 @@ public class InvariantAuditor implements AutoCloseable {
     }
 
     /**
+     * B-33: avalia uma rodada de I5/I6 <b>sem registrar violacao</b>, devolvendo
+     * a contagem de chaves divergentes e se a rodada foi completa. Um leitor que
+     * lanca excecao (no em DEGRADED recusa leitura) e <b>excluido</b> da
+     * comparacao e torna a rodada incompleta: "excecao" nunca e lida como
+     * "conjunto vazio = convergiu". Usada pelo laco de convergencia.
+     */
+    public RodadaAuditoria avaliarRodada(
+            List<Supplier<Map<String, SessionState>>> leitoresSessao,
+            List<Supplier<Map<String, IdentityState>>> leitoresIdentidade) {
+        Leitura<SessionState> ls = ler(leitoresSessao);
+        Leitura<IdentityState> li = ler(leitoresIdentidade);
+        int falhas = ls.falhas() + li.falhas();
+        int d5 = ls.lidos().size() < 2 ? 0 : divergenciasI5(ls.lidos()).size();
+        int d6 = li.lidos().size() < 2 ? 0 : divergenciasI6(li.lidos()).size();
+        return new RodadaAuditoria(falhas == 0, d5, d6, falhas);
+    }
+
+    private record Leitura<T>(List<Map<String, T>> lidos, int falhas) {}
+
+    /**
+     * Le todos os leitores; excecao de um leitor (DEGRADED) o exclui e e contada
+     * em {@link #leiturasFalhas()}, em vez de derrubar a rodada (e, na auditoria
+     * periodica, a tarefa agendada, que o ScheduledExecutor cancela em silencio
+     * se a tarefa lancar).
+     */
+    private <T> Leitura<T> ler(List<Supplier<Map<String, T>>> leitores) {
+        List<Map<String, T>> lidos = new ArrayList<>();
+        int falhas = 0;
+        if (leitores != null) {
+            for (Supplier<Map<String, T>> s : leitores) {
+                try {
+                    lidos.add(s.get());
+                } catch (RuntimeException e) {
+                    falhas++;
+                    leiturasFalhas.incrementAndGet();
+                }
+            }
+        }
+        return new Leitura<>(lidos, falhas);
+    }
+
+    /**
      * I5, per spec/SessionStore.tla: convergência de ESTADO, MOTIVO e IDENTIDADE
      * sob quiescência. (Correção de B-24, ver docs/registro-de-problemas.md P-21:
      * desde que os leitores passaram a ser RESTRITOS POR SEGMENTO -- cada réplica
@@ -103,8 +158,13 @@ public class InvariantAuditor implements AutoCloseable {
      */
     private void verificarI5(List<Supplier<Map<String, SessionState>>> leitores) {
         if (leitores == null || leitores.size() < 2) return;
-        List<Map<String, SessionState>> snaps = new ArrayList<>(leitores.size());
-        for (Supplier<Map<String, SessionState>> s : leitores) snaps.add(s.get());
+        List<Map<String, SessionState>> snaps = ler(leitores).lidos();
+        divergenciasI5(snaps).forEach((k, msg) -> registrarViolacao("I5", k, msg));
+    }
+
+    /** Chaves divergentes de I5 (chave para mensagem); nao registra violacao. */
+    private static Map<String, String> divergenciasI5(List<Map<String, SessionState>> snaps) {
+        Map<String, String> out = new java.util.LinkedHashMap<>();
         Set<String> chaves = new HashSet<>();
         for (Map<String, SessionState> m : snaps) chaves.addAll(m.keySet());
         for (String k : chaves) {
@@ -116,7 +176,7 @@ public class InvariantAuditor implements AutoCloseable {
                 if (s.estado() != ref.estado()
                         || !java.util.Objects.equals(s.motivo(), ref.motivo())
                         || !java.util.Objects.equals(s.identidade(), ref.identidade())) {
-                    registrarViolacao("I5", k,
+                    out.put(k,
                         "divergencia entre replicas: estado " + ref.estado() + " vs " + s.estado()
                             + "; motivo " + ref.motivo() + " vs " + s.motivo()
                             + "; identidade " + ref.identidade() + " vs " + s.identidade());
@@ -124,6 +184,7 @@ public class InvariantAuditor implements AutoCloseable {
                 }
             }
         }
+        return out;
     }
 
     /**
@@ -141,8 +202,13 @@ public class InvariantAuditor implements AutoCloseable {
      */
     private void verificarI6(List<Supplier<Map<String, IdentityState>>> leitores) {
         if (leitores == null || leitores.size() < 2) return;
-        List<Map<String, IdentityState>> snaps = new ArrayList<>(leitores.size());
-        for (Supplier<Map<String, IdentityState>> s : leitores) snaps.add(s.get());
+        List<Map<String, IdentityState>> snaps = ler(leitores).lidos();
+        divergenciasI6(snaps).forEach((k, msg) -> registrarViolacao("I6", k, msg));
+    }
+
+    /** Chaves divergentes de I6 (chave para mensagem); nao registra violacao. */
+    private static Map<String, String> divergenciasI6(List<Map<String, IdentityState>> snaps) {
+        Map<String, String> out = new java.util.LinkedHashMap<>();
         Set<String> chaves = new HashSet<>();
         for (Map<String, IdentityState> m : snaps) chaves.addAll(m.keySet());
         for (String k : chaves) {
@@ -154,13 +220,14 @@ public class InvariantAuditor implements AutoCloseable {
                 boolean divergeContador = ref.contadorFalhas() != st.contadorFalhas();
                 boolean divergeStatus = ref.status() != st.status();
                 if (divergeContador || divergeStatus) {
-                    registrarViolacao("I6", k,
+                    out.put(k,
                         "divergencia entre replicas: contador " + ref.contadorFalhas() + " vs " + st.contadorFalhas()
                             + "; status " + ref.status() + " vs " + st.status());
                     break;
                 }
             }
         }
+        return out;
     }
 
     /** Escreve as violacoes correntes em CSV: instante,invariante,chave,mensagem. */

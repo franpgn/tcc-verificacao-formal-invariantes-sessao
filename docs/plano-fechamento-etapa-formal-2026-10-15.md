@@ -15,6 +15,10 @@
 > `docs/plano-controlador-heuristico-2026-09-24.md` §3.2 e §6 (branch `docs/plano-controlador-heuristico`),
 > `docs/runbook-vm-hyperv.md`, `cluster/*.xml`, `scripts/run-baseline.sh`, `workload/.../{SessionOps,Scenario,IdentityState,InvariantAuditor,WorkloadMain}.java`.
 
+> **Revisão 2026-10-15 (2ª rodada):** o Gestor respondeu às perguntas abertas. Decididos aqui: Q-6, Q-7, Q-8, Q-9, Q-10, Q-13
+> (Senior, por delegação); Q-3 fechada; Q-1, Q-4, Q-11, Q-12, Q-14 com **default assumido**. A VM foi **ligada**
+> (192.168.137.150, `server1`); falta só a chave SSH. Ver seção 10 e a subseção 2.2. Ainda nenhum código ou spec alterado; sem push.
+
 ---
 
 ## 1. Resumo executivo
@@ -29,13 +33,16 @@ Três achados desta leitura mudam o plano original e estão incorporados abaixo:
 
 1. **O workload atual não exercita `Block` (O6).** `Scenario.java` só tem Validate, Login, Logout, IncrementFailure e Reset;
    `block()` não está no mix. Sem uma carga que emita bloqueios administrativos, I2 sob partição **não tem como** ser observado
-   no sistema real. B-33 precisa de uma sonda/cenário de invalidação (seção T-E).
+   no sistema real. B-33 precisa de um cenário de invalidação, decidido como **S3** (seção T-E, item 5, e 2.2).
 2. **I2 global tem um falso positivo por desenho.** O auto-bloqueio por limite (`IdentityState.incrementar`) deixa sessões `VALID`
    de uma identidade `BLOCKED`, e `IdentityState` não guarda o motivo do bloqueio. Uma varredura global ingênua de I2 acusará
    violação em **toda** execução, com ou sem falha. A varredura de B-33 precisa separar bloqueio por limite de bloqueio
    administrativo (decisão 1 do Gestor, ver 2.1).
-3. **A VM `tcc-f3` não estava acessível hoje** (seção 3), e o IP registrado (172.20.90.6) provavelmente mudou: a Default Switch
-   está agora em 192.168.128.1. Há uma ação do Gestor antes de qualquer tarefa que use a VM.
+3. **A VM `tcc-f3` estava desligada** (seção 3) e o IP antigo (172.20.90.6) mudou. O Gestor a **ligou**: agora responde em
+   `192.168.137.150` (usuário `server1`). Falta a **autenticação por chave SSH** (ação do Gestor, T0.2) antes de qualquer tarefa que use a VM.
+4. **Achado novo (disco, base `8e2e815`):** `block()` e `unblock()` não têm `try/catch` nem `emitir`; as outras cinco operações têm. Uma exceção
+   de partição derrubaria a thread de um `Block`, e `Block`/`Unblock` não aparecem no CSV (seção 3 e T-E item 1).
+5. **Colisão de nomes:** "S1..S5" designava as severidades de degradação e também os cenários de carga S1/S2/S3. As severidades passam a **N1..N5**.
 
 ---
 
@@ -48,6 +55,7 @@ Três achados desta leitura mudam o plano original e estão incorporados abaixo:
 | D3 | Falha de rede testada na **VM Hyper-V real** com `tc`/`netem`/`nsenter`; além da partição total, **perda de pacotes e degradação parcial** com matriz de severidades; hipóteses sobre JGroups/Infinispan; observáveis; relação com o modelo (cobre/não cobre). | T-B, T-C, T-D, T-F, seção 8 |
 | D4 | Toda tarefa termina com **validação independente** do Senior; sem validação aprovada a seguinte não começa. | seção 4.3, passos V-x de cada tarefa |
 | D5 | Vários Workers; paralelismo, worktrees, dono, entregáveis, aceite, riscos, prompt. O agente principal orquestra. | seções 5 a 7 |
+| D6 | (2026-10-15, 2ª rodada) Catálogo em documento novo e vivo (Q-6); `ERROR_UNAVAILABLE` aprovado (Q-9); Q-10, Q-13, Q-7, Q-8 delegadas ao Senior; Q-3 aceita. | 2.2, T-A, T-C1, T-E |
 
 ### 2.1 Interpretação de D1 que o plano adota (para o Gestor confirmar)
 
@@ -57,6 +65,18 @@ Três achados desta leitura mudam o plano original e estão incorporados abaixo:
 - **P-26 (novo)**: artefato do relógio (`EntregaMensagem` não atualiza `relogio`, decisão D-4 do módulo). Ver T-A.5 para a recomendação.
 - Linha do catálogo para I2: o veredito do TLC passa a ser dado por **I2Fa** (escopo `Mesclar`); I2Fb entra com status `VIOLADA-POR-CONSTRUCAO`
   e **não** discrimina a coluna de falha.
+
+### 2.2 Decisões da 2ª rodada (2026-10-15)
+
+| # | Decisão | Justificativa curta | Efeito |
+|---|---|---|---|
+| Q-6 | Catálogo em `docs/catalogo-operacao-falha-invariante.md`, documento vivo; **não** se edita a §3.2 do plano do controlador | a §3.2 mora em outra branch `docs/`; o catálogo muda a cada tarefa | T-A cria; T-G atualiza |
+| Q-9 | Novo código `ERROR_UNAVAILABLE` no CSV (distinto de `ERROR_TRANSPORT`); `workload/` e `analysis/` ajustados | H-L7 e a leitura de partição dependem de distinguir recusa de indisponibilidade de timeout | T-E item 6; `analysis/` entra no escopo de T-E; teste de contrato |
+| Q-10 | **Rastrear no cliente; não alterar `IdentityState`.** Regra completa em T-E item 4 | `IdentityState` espelha o domínio de `SessionStore.tla`: acrescentar campo de motivo cria divergência modelo x código e altera o objeto sob teste; além disso `desbloquear()` zera o contador (verificado), então o contador sozinho não revela o motivo depois de um unblock. O motivo é conhecível por construção (só `block()` produz `ADMIN_BLOCK`; `incrementar()` nunca toca `sessions`) | T-E item 4 e prompt |
+| Q-13 | **S3 = simulação de ciclo de vida de sessão com falhas realistas** (usuários virtuais, timeouts curtos, logout, bloqueio administrativo, bloqueio por limite), fora do enum de pesos; S1/S2 intocados. Desenho em T-E item 5 | critério do Gestor: fidelidade, não sucesso pleno; o harness não repara estado nem retenta sem fim | T-E item 5 e prompt; T-F usa S3 |
+| Q-7 | `prio` + `netem` por banda + `u32` por par: **aprovado**, com 3 condições (T-C1) | não ocupa `clsact` (convive com F2); permite perda por par e assimetria sem `ifb`; custo: exclusão mútua com F3 no mesmo nó (exit 7) | T-C1 |
+| Q-8 | F2 = partição, F3 = jitter (inalterado), **F4 = degradação**; injetor = **B-29.2**; integração = B-29.1; severidades renomeadas **N1..N5** (hipótese de partida) | "S1..S5" colidia com os cenários S1/S2/S3 | todo o plano |
+| Q-3 | Auto-bloqueio por limite sem cascata é intencional no domínio (Gestor: I2Fb "violada por construção") | decisão do Gestor | P-27, T-E item 4 |
 
 ---
 
@@ -77,13 +97,13 @@ Três achados desta leitura mudam o plano original e estão incorporados abaixo:
 | `cluster/jgroups-tcp.xml`: TCPPING estático, `MERGE3 10000..30000`, `FD_SOCK2`, `FD_ALL3` (padrões), `VERIFY_SUSPECT2 timeout=1000`, `NAKACK2`, `UNICAST3`, `pbcast.GMS`. **Transporte é TCP**: perda de pacote vira retransmissão do TCP (latência), não perda de mensagem do JGroups | arquivo |
 | `Scenario.java`: operações VALIDATE, LOGIN_VALIDATE_LOGOUT, LOGOUT, INCREMENT_FAILURE, RESET_FAILURES. **Sem Block (O6)** | arquivo |
 | `WorkloadMain` faz **uma** `auditor.rodadaUnica(...)` após a carga; não existe laço de convergência; `ERROR_TRANSPORT` é o único código de falha de rede em `OpResult` | arquivo |
-| `SessionOps` tem `try/catch(RuntimeException)` nas operações; o plano de B-29 afirma que `block()` não tem (a conferir em T-E: o `catch` do `block()` pode estar apenas no `forEach` interno) | `grep` de `try`/`catch`; **a conferir** |
+| **Verificado na base `8e2e815`:** `login`, `validate`, `logout`, `incrementFailure`, `resetFailures` têm `try/catch(RuntimeException)` que devolve `ERROR_TRANSPORT` e chamam `emitir(...)`. **`block()` e `unblock()` não têm `try/catch` nem `emitir`** (não existem `OP_BLOCK`/`OP_UNBLOCK`; `block()` varre `sessions.entrySet().forEach` com um `put` por sessão, logo uma falha no meio deixa cascata parcial). `incrementar()` (`IdentityState`) só muda `status` e não toca `sessions`; `desbloquear()` zera `contadorFalhas`; `IdentityState` não tem campo de motivo; `SessionState.Motivo` = `NONE, LOGOUT, EXPIRADA, ADMIN_BLOCK` (nenhuma operação produz `EXPIRADA`). `cluster/*.xml` não define `lifespan`/`max-idle` | leitura de `SessionOps.java`, `IdentityState.java`, `SessionState.java`; `grep lifespan` |
 | Testes Java: `@Test` somam 58 por `grep`; a memória e os planos falam em **49** testes verdes. A contagem oficial deve vir do Surefire (`mvn test`), não de `grep` | `grep -c "@Test"`; **a conferir em T-E** |
 | `run-baseline.sh` conhece `none F1 F3`; F2 e perda não existem; flags de jitter são `--jitter-*` | `scripts/run-baseline.sh` |
-| **VM `tcc-f3`: não acessível hoje.** `ping 172.20.90.6` e `ssh server1@172.20.90.6` expiram; `172.20.90.136` (outro IP antigo no `known_hosts`) também; `vEthernet (Default Switch)` do host está em **192.168.128.1** (sub-rede diferente das 172.20.90.x); sem vizinhos ARP na Default Switch; `tcc-f3.mshome.net` não resolve. Hyper-V (`vmms`) está `Running`, mas `Get-VM` exige shell elevado (não disponível ao agente). Disco `C:\Hyper-V\tcc-f3\tcc-f3.vhdx` existe | `ping`, `ssh`, `Get-NetIPAddress`, `arp -a` |
+| **VM `tcc-f3`: ligada pelo Gestor em 2026-10-15** (Hyper-V `Running`), em `192.168.137.150`, usuário `server1`. O IP antigo (172.20.90.6) deixou de valer. **Autenticação por chave SSH ainda não instalada** (ação do Gestor, T0.2). Antes da religação (medições minhas): `ping`/`ssh` aos IPs antigos expiravam; `vEthernet (Default Switch)` do host em 192.168.128.1 (sub-rede NAT interna do Hyper-V, pode mudar a cada reinício do host). Disco `C:\Hyper-V\tcc-f3\tcc-f3.vhdx` existe | informação do Gestor; `ping`, `ssh`, `Get-NetIPAddress` anteriores |
 | Estado do cluster e do repositório **dentro** da VM são desconhecidos (última evidência: gate netem PASS e push de `feature/f3-baseline` em 2026-06-23) | memória do projeto |
 
-Conclusão: a VM está **provavelmente desligada** (ou com outro IP depois de reinício do host). Ligar e informar o IP é a ação T0.1 do Gestor.
+Conclusão: a VM está de pé e com IP novo; o que falta para os Workers usarem é a chave SSH (T0.2) e o "go" do Gestor nas janelas de injeção. O IP deve ser reconferido (`ip -br addr` na VM) a cada reinício do host.
 
 ---
 
@@ -189,7 +209,7 @@ flowchart TB
 | **T-C1** | `feature/b29-2-inject-netdegrade` (`b56c6ea`) | `wt-tc` | `scripts/inject-netdegrade.sh`, `scripts/inject-netdegrade.test.sh`, `docs/degradacao-de-rede.md` (novo) | T-A, T-B, T-E | nenhum | Worker-3 (infra) | 2 dias |
 | **T-C2** | mesma branch de T-C1 (continua) | `wt-tc` | `runs/gate-netdegrade/**`, `docs/relatorio-netdegrade-gate-<data>.md` | T-A, T-E | **VM** (depois de T-B) | Worker-3 | 1 a 1,5 dia |
 | **T-D** | `feature/b29-1-baseline-f2-degradacao` (ponta integrada de T-B/T-C, ver 5.3) | `wt-td` | `scripts/run-baseline.sh`, `scripts/run-baseline.test.sh` (se existir; senão novo), `docs/runbook-vm-hyperv.md` (seção `--heal`/degradação) | T-A, T-E | **VM** só no smoke final | Worker-2 | 1 a 1,5 dia |
-| **T-E** | `feature/b33-instrumentacao-particao` (`8e2e815`) | `wt-te` | `workload/**`, e `analysis/**` **somente** se `ERROR_UNAVAILABLE` for aprovado (Q-9) | T-A, T-B, T-C, T-D | nenhum (mocks) ; smoke na VM só em T-F | Worker-4 (workload) | 3 a 4 dias |
+| **T-E** | `feature/b33-instrumentacao-particao` (`8e2e815`) | `wt-te` | `workload/**` e `analysis/**` (`ERROR_UNAVAILABLE` aprovado, Q-9; só o necessário para o novo código e o teste de contrato) | T-A, T-B, T-C, T-D | nenhum (mocks); smoke na VM só em T-F | Worker-4 (workload) | 5 a 6 dias (S3 e app servers pinados aumentam o escopo; commits em duas partes: E1 correções, marcadores, convergência, varredura, `ERROR_UNAVAILABLE`; E2 S3) |
 | **T-F** | `feature/b34-experimento-real` (integra tudo) | `wt-tf` | `runs/f2-*`, `runs/degrada-*`, `docs/relatorio-b34-<data>.md` | nenhuma | **VM (exclusiva)** | Worker-2 (execução) + Worker-5 (análise, em paralelo, só `analysis/`) | 4 a 5 dias, ~20 h de máquina |
 | **T-G** | `docs/catalogo-modelo-vs-real` | `wt-tg` | `docs/catalogo-operacao-falha-invariante.md`, `docs/comparacao-modelo-real-<data>.md`, `docs/resumos-para-tcc/*` | T-H (parte) | nenhum | Worker-1 | 1,5 dia |
 | **T-H** | `docs/plano-merge-etapa-formal` | `wt-th` | `docs/plano-merge-etapa-formal-<data>.md` | T-G | nenhum | Senior (com Worker-2 para dry-run) | 0,5 dia |
@@ -212,9 +232,9 @@ com `git merge --ff-only`/`rebase` na ordem **b29 (+gate) → b29.2 → b32 (+au
 
 | # | Ação | Por quê |
 |---|---|---|
-| T0.1 | Em PowerShell **elevado**: `Start-VM tcc-f3`; `Get-VMNetworkAdapter -VMName tcc-f3 \| Select IPAddresses`; informar o IP | VM inacessível hoje; Default Switch mudou de sub-rede |
-| T0.2 | Instalar chave SSH (uma vez): `ssh-copy-id server1@<ip>` (ou colar a chave pública em `~/.ssh/authorized_keys` da VM) e conferir `sudo -n true` (sudo sem senha para `tc`, `nsenter`, `podman`) | o Worker não deve usar senha em texto; BatchMode |
-| T0.3 | Decidir Q-1 a Q-12 (seção 10) | portões |
+| T0.1 | **FEITO (2026-10-15):** VM ligada; IP `192.168.137.150`, usuário `server1`. Reconferir o IP após qualquer reinício do host | VM inacessível; Default Switch mudou de sub-rede |
+| T0.2 | **PENDENTE (Gestor):** instalar chave SSH (uma vez): `ssh-copy-id server1@192.168.137.150` (ou colar a chave pública em `~/.ssh/authorized_keys` da VM) e conferir `sudo -n true` (sudo sem senha para `tc`, `nsenter`, `podman`) | o Worker não deve usar senha em texto; BatchMode |
+| T0.3 | **FEITO:** Q-1..Q-14 respondidas ou com default assumido (seção 10); resta Q-5 (recomendação do Senior aguarda o Gestor) | portões |
 | T0.4 | Liberar ao agente principal a permissão de `ssh`/`scp` para a VM | pode exigir aprovação do sistema de permissões |
 
 Sugestão: reservar IP fixo (ou rodar `ip -br addr` ao ligar e anotar no `docs/runbook-vm-hyperv.md`), porque a Default Switch (NAT) pode mudar o IP a cada reinício do host.
@@ -294,7 +314,7 @@ Sugestão: reservar IP fixo (ou rodar `ip -br addr` ao ligar e anotar no `docs/r
 
 **Nome e numeração.** `scripts/inject-netdegrade.sh`, item **B-29.2** (não colide com B-30/B-31; B-29.1 continua sendo a integração no baseline).
 
-**Mecanismo proposto (a ser aprovado, Q-7).** `netem` em uma **banda** de uma disciplina `prio` na raiz da interface do container, com filtro `u32` por IP de destino do par, de modo que apenas o tráfego **entre pares do cluster** é degradado:
+**Mecanismo (aprovado, Q-7, com as condições abaixo).** `netem` em uma **banda** de uma disciplina `prio` na raiz da interface do container, com filtro `u32` por IP de destino do par, de modo que apenas o tráfego **entre pares do cluster** é degradado:
 
 ```
 tc qdisc add dev eth0 root handle 1: prio bands 3 priomap 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
@@ -305,7 +325,8 @@ tc filter add dev eth0 parent 1: protocol ip prio 1 u32 match ip dst <ip-par>/32
 - **Egress apenas** no nó onde roda. A direção de entrada é obtida aplicando a mesma regra no **egress dos pares, com destino ao nó-alvo** (um `nsenter` por par). Assim `--direction out|in|both` e valores diferentes por sentido (`--loss-out`, `--loss-in`) dão **perda assimétrica** sem `ifb`.
 - **Convivência:** `inject-partition.sh` usa `clsact` (não ocupa a raiz) → convive. `inject-jitter.sh` (F3) usa `root netem` sem filtro → **mutuamente exclusivo no mesmo nó** (o script de degradação detecta qdisc raiz existente e sai com código 7, "raiz ocupada"); F3 e degradação em nós **diferentes** coexistem. Documentar e testar.
 - Modelo de perda: `--loss-model random` (padrão; `loss X% [corr]`) e `--loss-model gemodel` (perda em rajada, Gilbert-Elliott: `loss gemodel p r 1-h 1-k`), porque perda real é correlacionada.
-- Interface: `--target <no>`, `--peers` (default: demais nós), `--direction out|in|both`, `--loss X`, `--loss-corr Y`, `--loss-in X` (assimétrica), `--delay Dms --jitter Jms`, `--duplicate d`, `--reorder r[,c]` (exige `--delay`), `--corrupt c`, `--duration`, `--marker` (formato do B-29, com `fault=F4`), `--heal`, `--dry-run`, `--severity <S1..S5>` (atalho: perfis fixos, ver matriz 8.1), códigos de saída iguais aos do B-29 (0..6) + **7** (raiz ocupada). `trap` registrado **antes** de alterar, `flock`, pré-limpeza, sonda, verificação de efetividade (contadores `tc -s qdisc`: `Sent`, `dropped`; teste de taxa de perda observada com 200 pings para o par, comparando com X dentro de tolerância binomial).
+- Interface: `--target <no>`, `--peers` (default: demais nós), `--direction out|in|both`, `--loss X`, `--loss-corr Y`, `--loss-in X` (assimétrica), `--delay Dms --jitter Jms`, `--duplicate d`, `--reorder r[,c]` (exige `--delay`), `--corrupt c`, `--duration`, `--marker` (formato do B-29, com `fault=F4`), `--heal`, `--dry-run`, `--severity <N1..N5>` (atalho: perfis fixos, ver matriz 8.1), códigos de saída iguais aos do B-29 (0..6) + **7** (raiz ocupada). `trap` registrado **antes** de alterar, `flock`, pré-limpeza, sonda, verificação de efetividade (contadores `tc -s qdisc`: `Sent`, `dropped`; teste de taxa de perda observada com 200 pings para o par, comparando com X dentro de tolerância binomial).
+- **Condições da aprovação (Q-7):** (1) raiz ocupada (qualquer qdisc que não seja a padrão) leva a exit 7, nunca sobrescrever F3; (2) `u32` só IPv4: o gate L-0/L-1 confirma que o cluster não usa IPv6 no TCP do JGroups, senão parar e voltar ao Senior; (3) `cls_u32`/`sch_prio`/`sch_netem` ausentes levam a exit 5 e voltam ao Senior (sem plano B improvisado).
 - Guardas: `loss` aceita 0 a 100; avisos para `loss ≥ 99` ("equivale a partição; use `inject-partition.sh` para comparação controlada") e para duração < 45 s.
 
 **Testes sem VM** (`inject-netdegrade.test.sh`, estilo T-par: *shims* de `podman`, `sudo`, `nsenter`, `tc`, `flock`, `ping`): `--help`; `--dry-run` sem podman; argumentos inválidos (loss fora de 0..100, `--reorder` sem `--delay`, `--direction` inválida, nó fora da lista); sequência de chamadas (pré-limpeza → sonda → prio → netem → filtros por par → show → del); `--direction in/both` chama `nsenter` nos PIDs dos **pares**; perda assimétrica gera dois valores diferentes; `trap` em `SIGTERM`; `--heal`; raiz ocupada → exit 7; exit 5 na sonda; exit 6 por contador zerado. Meta: ≥ 80 asserções PASS no Git Bash e no WSL.
@@ -319,7 +340,7 @@ tc filter add dev eth0 parent 1: protocol ip prio 1 u32 match ip dst <ip-par>/32
 **V-C1.** O Senior revisa o script linha a linha contra a seção do mecanismo, roda a suíte nos dois ambientes, confirma que a suíte falha sem o script (revertendo o commit do script num worktree temporário), e aprova a interface (congelada para T-D).
 
 **Prompt-resumo para o Worker-3 (T-C1).**
-> Você é o Worker de infraestrutura. Branch `feature/b29-2-inject-netdegrade` a partir de `feature/b29-inject-partition` (`b56c6ea`), worktree `../wt-tc`. Leia `scripts/inject-partition.sh`, `scripts/inject-partition.test.sh`, `scripts/inject-jitter.sh` e a seção T-C1 de `docs/plano-fechamento-etapa-formal-2026-10-15.md`. Escreva **primeiro** `scripts/inject-netdegrade.test.sh` (e rode-o vermelho), depois `scripts/inject-netdegrade.sh`, até verde. Mecanismo: `nsenter -t <pid> -n tc` com `prio` na raiz, `netem` na banda 3 (perda `random`/`gemodel`, atraso+jitter, duplicação, reordenação, corrupção) e `u32` por IP de par; `--direction out|in|both` com perda assimétrica (entrada = egress dos pares). Reaproveite o padrão de limpeza/trap/flock/códigos de saída do `inject-partition.sh` (+ código 7 para raiz ocupada). Documente em `docs/degradacao-de-rede.md`. Não edite `run-baseline.sh`, `docs/testes.md` nem `docs/configuracao-infinispan.md`. Sem VM nesta fase. Sem push; commits `test:` antes de `feat:`; relatório curto em `docs/relatorio-b29-2-<data>.md`.
+> Você é o Worker de infraestrutura. Branch `feature/b29-2-inject-netdegrade` a partir de `feature/b29-inject-partition` (`b56c6ea`), worktree `../wt-tc`. Leia `scripts/inject-partition.sh`, `scripts/inject-partition.test.sh`, `scripts/inject-jitter.sh` e a seção T-C1 de `docs/plano-fechamento-etapa-formal-2026-10-15.md`. Escreva **primeiro** `scripts/inject-netdegrade.test.sh` (e rode-o vermelho), depois `scripts/inject-netdegrade.sh`, até verde. Mecanismo **aprovado** (condições na seção T-C1: exit 7 em raiz ocupada, só IPv4, exit 5 se faltar módulo; severidades chamam-se **N1..N5**, não S1..S5; marcador `fault=F4`): `nsenter -t <pid> -n tc` com `prio` na raiz, `netem` na banda 3 (perda `random`/`gemodel`, atraso+jitter, duplicação, reordenação, corrupção) e `u32` por IP de par; `--direction out|in|both` com perda assimétrica (entrada = egress dos pares). Reaproveite o padrão de limpeza/trap/flock/códigos de saída do `inject-partition.sh` (+ código 7 para raiz ocupada). Documente em `docs/degradacao-de-rede.md`. Não edite `run-baseline.sh`, `docs/testes.md` nem `docs/configuracao-infinispan.md`. Sem VM nesta fase. Sem push; commits `test:` antes de `feat:`; relatório curto em `docs/relatorio-b29-2-<data>.md`.
 
 ---
 
@@ -333,7 +354,7 @@ Depende de V-B (a VM e o método SSH já provados) e V-C1. Mesmas salvaguardas d
 | L-1 | efetividade: `loss 20%` isn3→pares por 60 s, cluster **ocioso** | taxa observada (ping a 0,2 s, ≥ 300 amostras) dentro do IC binomial de 20%; contadores `dropped` > 0; Hot Rod do host a isn3 e SSH **sem** degradação mensurável |
 | L-2 | limpeza | `tc qdisc show`/`tc filter show` sem `prio`/`netem` ao final |
 | L-3 | direções | `--direction out` degrada só o sentido pretendido (medir RTT/perda em cada direção por `ping` de dentro dos dois netns); `--loss-in` ≠ `--loss-out` produz taxas distintas |
-| L-4 | severidades | rodar S1..S5 (matriz 8.1) por 120 s cada, **cluster ocioso**: registrar por severidade o nº de mudanças de vista por nó, `t_split` (se houver), erros de health, tráfego retransmitido (`nstat TcpRetransSegs` no netns), RTT p50/p99 entre nós. Meta: **mapear a faixa de transição** (se há e onde) e ver se `S5` (~100%) reproduz o comportamento da partição do T-B |
+| L-4 | severidades | rodar N1..N5 (matriz 8.1) por 120 s cada, **cluster ocioso**: registrar por severidade o nº de mudanças de vista por nó, `t_split` (se houver), erros de health, tráfego retransmitido (`nstat TcpRetransSegs` no netns), RTT p50/p99 entre nós. Meta: **mapear a faixa de transição** (se há e onde) e ver se `N5` (~100%) reproduz o comportamento da partição do T-B |
 | L-5 | sinais | `SIGTERM` e `SIGKILL`+`--heal` |
 | L-6 | coexistência | degradação em isn3 + F3 em isn2 (nós distintos) e + partição em outro par; tentativa de F3 no mesmo nó → exit 7 |
 
@@ -346,7 +367,7 @@ Entregáveis: `docs/relatorio-netdegrade-gate-<data>.md`, `runs/gate-netdegrade/
 
 ### T-D. B-29.1: integrar F2 e degradação ao `run-baseline.sh`
 
-**Objetivo.** `scripts/run-baseline.sh --faults "none F1 F2 F3 F4"` (F2 = partição, F4 = degradação; nomes a confirmar em Q-8) com marcadores `fault_start_ns`/`fault_end_ns` por repetição.
+**Objetivo.** `scripts/run-baseline.sh --faults "none F1 F2 F3 F4"` (F2 = partição, F4 = degradação; nomes decididos em Q-8) com marcadores `fault_start_ns`/`fault_end_ns` por repetição.
 
 **Escopo.** `--partition-node`, `--partition-duration`, `--degrade-*` (espelhando `inject-netdegrade.sh`), `--degrade-severity`, arquivo de marcadores por repetição (`runs/<cenário>-<falha>/marcadores-rep-NNN.txt`), verificação de resíduo **no início de toda repetição** (regras `clsact`/`prio` remanescentes → limpeza com `--heal` e aviso), `aguardar_healthy` entre repetições para as falhas novas, `--dry-run` descreve os ramos; testes: T-par-6 (hoje SKIP) passa a executar; novo `T-dg-*` do dry-run do baseline com F4; seção de `--heal` no `runbook`. **Regressão obrigatória:** o ramo F1 e F3 não mudam (revalidar com `--dry-run` e, na VM, `--faults "none F1" --reps 1`, pendência herdada do B-12).
 
@@ -367,23 +388,37 @@ Entregáveis: `docs/relatorio-netdegrade-gate-<data>.md`, `runs/gate-netdegrade/
 
 **Escopo (ordem de commits).**
 
-1. **Correções primeiro:** (a) conferir o `try/catch` de `block()` (`SessionOps.java`) e garantir que uma exceção do cliente numa partição **não** derrube a thread e vire `ERROR_TRANSPORT`/`ERROR_UNAVAILABLE`; (b) leitores multi-réplica toleram nó em DEGRADED (exceção de leitura = rodada inválida para aquela réplica, não "conjunto vazio = convergiu").
+1. **Correções primeiro (E1):** (a) `block()` e `unblock()` **não têm** `try/catch` (verificado, seção 3): acrescentar o mesmo padrão das demais (exceção vira `ERROR_TRANSPORT`/`ERROR_UNAVAILABLE`, a thread não cai), com `emitir(OP_BLOCK, ...)`/`emitir(OP_UNBLOCK, ...)` e as constantes `OP_BLOCK = "Block"` e `OP_UNBLOCK = "Unblock"`. A cascata parcial de um `block()` interrompido **não** é consertada (é comportamento real a observar), mas o resultado fica registrado como erro; (b) leitores multi-réplica toleram nó em DEGRADED (exceção de leitura = rodada inválida para aquela réplica, não "conjunto vazio = convergiu").
 2. **Marcadores:** ler o arquivo de marcadores (formato B-29/B-29.1) e rotular cada evento do CSV e cada violação com a **fase**: `antes`, `durante-pre-split`, `durante-pos-split`, `recuperacao` (`t_fim` a `t_fim + W_recovery`), `pos-convergencia` (B-25, mínimo).
-3. **Laço de convergência** (O-5 do plano de B-29): após `t_fim`, a carga de escrita para; a cada 5 s uma rodada de I5/I6 **válida** se a topologia lista os 3 servidores e os dois caches estão HEALTHY (REST); `t_convergencia` = primeiro instante de 3 rodadas válidas consecutivas sem divergência, menos `t_fim`; teto 600 s → `divergencia-persistente`. Saída `convergencia.csv` (instante, válida?, chaves divergentes I5, I6).
-4. **Varredura global final** (depois da convergência): percorre todas as chaves e registra I1 (sid com invalidação confirmada que está `VALID`), I4 (motivo lido ≠ confirmado), **I2 global** (sessão `VALID` de identidade `BLOCKED`, **sem exigir que o cliente conheça a sid**) e **I2 bloqueio perdido** (bloqueio administrativo confirmado e identidade `OPEN` sem `Unblock`). **Classificação por D1:** como `IdentityState` não guarda o motivo do bloqueio, a varredura distingue `BLOQUEIO-POR-LIMITE` (contador ≥ `LIMITE_TENTATIVAS` e nenhum `Block` administrativo confirmado no registro de operações do cliente) de `BLOQUEIO-ADMINISTRATIVO`; violação de I2 por limite entra no relatório como `ESPERADA-POR-DESENHO` (P-27), não como falha. Se a distinção exigir mudar `IdentityState` (campo de motivo), é decisão do Gestor (Q-10); a alternativa sem mudar o domínio é rastrear no cliente.
-5. **Cenário que exercite `Block`:** novo cenário (ex.: `S3`, "invalidação") ou sonda com baixa taxa que emite `Login`/`Logout`/`Block`/`Unblock` sobre um conjunto **pequeno e fixo** de identidades, para que I1/I2/I4 sejam alcançáveis; fração das operações de escrita **ancorada no nó que será isolado** (o cliente Hot Rod roteia por proprietário do segmento; garantir por contagem em `replica` do CSV que o nó isolado recebe escritas na janela). Mix de S1/S2 do baseline fica **intocado** (comparabilidade).
-6. **Opcional (Q-9):** código `ERROR_UNAVAILABLE` no CSV, distinto de `ERROR_TRANSPORT`, quando a exceção indicar partição/indisponibilidade; muda o esquema consumido por `analysis/` (exigiria teste em `analysis/`).
+3. **Laço de convergência** (O-5 do plano de B-29): após `t_fim`, a carga de escrita para; a cada 5 s uma rodada de I5/I6 **válida** se a topologia lista os 3 servidores e os dois caches estão HEALTHY (REST); `t_convergencia` = primeiro instante de 3 rodadas válidas consecutivas sem divergência, menos `t_fim`; teto 600 s leva a `divergencia-persistente`. Saída `convergencia.csv` (instante, válida?, chaves divergentes I5, I6).
+4. **Varredura global final** (depois da convergência): percorre todas as chaves e registra I1 (sid com invalidação confirmada que está `VALID`), I4 (motivo lido diferente do confirmado), **I2 global** (sessão `VALID` de identidade `BLOCKED`, **sem exigir que o cliente conheça a sid**) e **I2 bloqueio perdido** (bloqueio administrativo confirmado e identidade `OPEN` sem `Unblock` confirmado posterior).
+   **Decisão Q-10 (Senior): rastrear no cliente; `IdentityState` e todo o domínio ficam inalterados.** Regra:
+   - **Por construção:** as identidades do S3 vêm de dois conjuntos **disjuntos**: pool **U** (usuários; recebem `Login/Validate/Logout` e `Block/Unblock` administrativos; **nunca** `IncrementFailure`) e pool **L** (contas com senha errada; recebem `IncrementFailure/ResetFailures/Login` e `Unblock` de suporte; **nunca** `Block`). Um `BLOCKED` em L só pode ter vindo do limite; em U só do administrativo.
+   - **Por verificação:** o cliente mantém, em memória e no CSV (`Block`/`Unblock` com `return_code`), o registro de operações confirmadas e o mapa sid para identidade (o CSV de `Login` tem a identidade como chave, não a sid). A varredura classifica cada identidade `BLOCKED`: `BLOQUEIO-ADMINISTRATIVO` se o último evento confirmado em ordem de tempo é `Block`; `BLOQUEIO-POR-LIMITE` se `contadorFalhas >= LIMITE_TENTATIVAS` e não há `Block` confirmado sem `Unblock` posterior; `BLOQUEIO-INCERTO` se há `Block` com resultado de erro (tentativa de efeito desconhecido; relatado à parte, nunca somado como violação nem como sucesso); qualquer outro caso é `BLOQUEIO-INEXPLICADO` (anomalia, reportada como achado).
+   - **Efeito nas violações:** sessão `VALID` sob `BLOQUEIO-ADMINISTRATIVO` é violação de I2 **real**; sob `BLOQUEIO-POR-LIMITE` é `ESPERADA-POR-DESENHO` (P-27). A violação inline que `SessionOps.validate` já grava ("valida sob bloqueio") passa a ser **reclassificada** na análise pela identidade da sid (sem mudar a mensagem existente, para não quebrar testes). Em S1/S2 (sem `Block`) todo `BLOCKED` é por limite; a varredura deve dizê-lo explicitamente.
+5. **Cenário S3 (E2), decidido pelo Senior sob o critério do Gestor: simulação fiel da realidade, não aplicação plenamente funcional.** Princípio: o harness se comporta como uma aplicação web real **com os defeitos dela** (não reconcilia estado, não repara sessão, não retenta indefinidamente) e o experimento registra o que o sistema entrega nessas condições. Desenho:
+   - **Forma:** modo novo `--scenario S3`, implementado como máquina de estados por **usuário virtual** em classe nova, **fora** do enum `Scenario` de pesos (S1/S2 byte a byte intocados; teste de regressão: mesma semente gera a mesma sequência de operações em S1/S2). `Scenario.porNome("S3")` hoje cairia no fallback S1: o `WorkloadMain` trata S3 antes.
+   - **Servidores de aplicação regionais (ancoragem):** três `RemoteCacheManager`, cada um com **só** o seu nó (`isn1`, `isn2`, `isn3`) como servidor e sem aprender a topologia (`ClientIntelligence.BASIC`, a confirmar na API); cada usuário é *sticky* a um servidor de aplicação, como num balanceador real. Assim o nó isolado recebe escrita de verdade (campo `replica` do CSV igual ao nó) em vez de depender do roteamento por proprietário. Um quarto `RemoteCacheManager` é o **console administrativo**, apontado a um nó da maioria (`--admin-node`, padrão `isn1`). Parâmetro `--client-mode pinned|topology` (padrão `pinned`; `topology` reproduz o cliente topology-aware como contraste).
+   - **Timeouts curtos de cliente:** `socket_timeout` e `connect_timeout` do Hot Rod em 2000 ms, `max_retries` 1 (valores a conferir contra os padrões da biblioteca e parametrizados); retentativa **de aplicação**: no máximo 2 (espera de 500 ms e 1 s), depois a operação conta como `falha-percebida-pelo-usuario`.
+   - **Timeout de sessão (idle) no cliente:** 30 s sem atividade, a aplicação considera a sessão expirada e faz novo `Login`; a sid antiga é **abandonada ainda `VALID`** no grid (o domínio não tem operação de expiração; isso é propriedade do sistema sob teste e é documentado). Gera sessões órfãs que o bloqueio administrativo deve invalidar, como acontece na prática.
+   - **Ciclo do usuário (pool U, 20 identidades por padrão):** `Login`; laço de "páginas" com tempo de pensar exponencial (média 1 s) e `Validate`; duração de sessão log-normal (mediana 20 s); ao final, 70% fazem `Logout` (com retentativa se erro) e 30% abandonam em silêncio (caem no timeout de 30 s). Após o `Logout` confirmado, um comportamento de "botão voltar" repete `Validate` da sid a cada 1 a 3 s por 10 s (exercita I1/I4: invalidação confirmada que volta a `VALID`).
+   - **Ator administrativo:** a cada ~15 s (exponencial) escolhe uma identidade de U com sessão ativa e faz `Block`; mantém por no mínimo 20 s (período em que `Login` deve dar `BLOCKED` e `Validate` deve ver `INVALID` com motivo `ADMIN_BLOCK`) e então `Unblock` (suporte). `Block` com erro: registra tentativa incerta e retenta uma vez.
+   - **Pool L (10 identidades):** cinco `IncrementFailure` espaçados de 1 s (limite) seguidos de `Login` (esperado `BLOCKED`); em metade dos casos, antes do limite, `ResetFailures` (usuário acertou a senha). Após 60 s, `Unblock` de suporte. Mantém O4/O5 e o bloqueio por limite sempre presentes e separados do administrativo (Q-10).
+   - **Cenários-tema que a dinâmica produz naturalmente na janela de falha:** (i) `Logout` na minoria isolada, falha e retentativa; (ii) `Block` na maioria enquanto a sessão do usuário vive na minoria; (iii) `Block` cortado no meio da cascata; (iv) "botão voltar" depois da fusão. Nenhum é forçado por código: o harness só registra.
+   - **Carga e registro:** carga baixa (ordem de 10^2 ops/s; o foco é a semântica, não a vazão; `N_U`, taxas e tempos são parâmetros e os **valores usados são fixados no pré-registro de T-F**). Todo evento passa por `emitir` (inclui `Block`/`Unblock`); o mix efetivo medido entra no relatório. S3 não substitui o baseline: T-F reexecuta as referências (sem falha, F1, F3) com S3 para comparabilidade.
+   - **Aceite do cenário:** (a) teste de disjunção dos pools U e L; (b) teste do timeout de sessão (relógio injetável); (c) teste de retentativa e backoff; (d) teste de determinismo por semente; (e) em execução local curta, `replica` do CSV mostra escritas nos três nós; (f) S1/S2 inalterados.
+6. **`ERROR_UNAVAILABLE` (aprovado, Q-9):** novo código em `OpResult`, distinto de `ERROR_TRANSPORT`, quando a exceção indicar recusa por partição/indisponibilidade (classificação por tipo de exceção do cliente Hot Rod, em **uma** função testada; mensagens reais mapeadas no gate G-3, T-B). Ajustes em `analysis/` para aceitar o novo valor da coluna `return_code`, mais teste de contrato. S1/S2 sem falha nunca emitem o novo código, então seus CSV continuam byte-compatíveis.
 
 **Testes.** Unitários novos: rodada válida/inválida do laço (relógio e topologia injetáveis); varredura com mapas em memória contendo sessão `VALID` de identidade `BLOCKED` (por limite e administrativa), bloqueio perdido, I1 e I4 violados; `block()` com exceção; marcadores; fases. **`mvn -f workload/pom.xml test` deve manter todos os testes pré-existentes verdes**; o Worker registra a **contagem do Surefire antes** (esperada 49; `grep @Test` dá 58, então conferir) e **depois**, sem diminuir.
 
-**Aceite.** (1) contagem Surefire antes/depois, nenhuma regressão; (2) cada item acima com teste novo que **falha sem a mudança**; (3) `convergencia.csv` e saída da varredura com esquema documentado em `docs/relatorio-b33-<data>.md`; (4) CSV de eventos de S1/S2 byte-compatível com o consumido por `analysis/` (teste de contrato) quando `ERROR_UNAVAILABLE` não for aprovado; (5) nenhum arquivo fora de `workload/` (e `analysis/` só com Q-9).
+**Aceite.** (1) contagem Surefire antes/depois, nenhuma regressão; (2) cada item acima com teste novo que **falha sem a mudança**; (3) `convergencia.csv` e saída da varredura com esquema documentado em `docs/relatorio-b33-<data>.md`; (4) CSV de eventos de S1/S2 byte-compatível com o consumido por `analysis/` (teste de contrato; `analysis/` aceita `ERROR_UNAVAILABLE`); (5) nenhum arquivo fora de `workload/` e `analysis/`; (6) cada regra do item 4 (Q-10) e cada ponto do aceite do S3 (item 5) com teste que falha sem a mudança.
 
-**Riscos.** A varredura global muda o custo da repetição (percorrer todas as chaves: Zipfian 100k); a leitura multi-réplica "por segmento" (P-19, P-21) é sensível a topologia em mudança; ambiguidade de I2 por limite × administrativo (acima); ancoragem de escrita depende do roteamento do cliente.
+**Riscos.** O escopo de T-E cresceu (S3 e app servers pinados): por isso E1 e E2 em commits e relatórios separados, e V-E pode aprovar E1 antes de E2; `ClientIntelligence.BASIC` pode não existir com esse nome na versão do cliente (confirmar; o requisito é não aprender a topologia). A varredura global muda o custo da repetição (percorrer todas as chaves: Zipfian 100k); a leitura multi-réplica "por segmento" (P-19, P-21) é sensível a topologia em mudança; ambiguidade de I2 por limite × administrativo (acima); ancoragem de escrita depende do roteamento do cliente.
 
 **V-E.** O Senior roda `mvn test` num clone limpo, compara a contagem Surefire, lê os testes novos (um teste que não pode falhar não vale), e faz **um smoke de `--dry-run`/execução curta no cluster local ou na VM** se T-B/T-C já liberaram a VM; senão o smoke real fica como primeiro passo de T-F.
 
 **Prompt-resumo para o Worker-4 (T-E).**
-> Branch `feature/b33-instrumentacao-particao` a partir de `8e2e815`, worktree `../wt-te`. Só `workload/` (e `analysis/` se o Gestor aprovar `ERROR_UNAVAILABLE`). Leia a seção T-E de `docs/plano-fechamento-etapa-formal-2026-10-15.md` e `docs/plano-b29-particao-real-e-contraexemplos-2026-10-09.md` §3.6 e §5.7. Primeiro rode `mvn -f workload/pom.xml test` e registre a contagem do **Surefire** (não do grep). Depois, na ordem: correções (`block()` e leitores em DEGRADED), marcadores/fases, laço de convergência + `convergencia.csv`, varredura global (I1, I4, I2 global, bloqueio perdido, **com a classificação limite × administrativo**), cenário/sonda que exercite `Block`. Teste primeiro (TDD), um commit por item, nenhum teste existente enfraquecido. S1/S2 do baseline ficam inalterados. Sem push; relatório em `docs/relatorio-b33-<data>.md`.
+> Branch `feature/b33-instrumentacao-particao` a partir de `8e2e815`, worktree `../wt-te`. Só `workload/` e `analysis/` (este último apenas para aceitar `ERROR_UNAVAILABLE`, com teste de contrato). **Não altere o domínio** (`IdentityState`, `SessionState`, regras de `SessionOps`) além de `try/catch` e `emitir` em `block()`/`unblock()`. Leia a seção T-E de `docs/plano-fechamento-etapa-formal-2026-10-15.md` (itens 1 a 6 e a subseção 2.2) e `docs/plano-b29-particao-real-e-contraexemplos-2026-10-09.md` §3.6 e §5.7. Primeiro rode `mvn -f workload/pom.xml test` e registre a contagem do **Surefire** (não do grep). Parte E1, um commit por item, TDD: correções (`block()`/`unblock()` sem `try/catch`/`emitir`; leitores em DEGRADED), marcadores/fases, laço de convergência + `convergencia.csv`, varredura global (I1, I4, I2 global, bloqueio perdido) com a classificação **limite x administrativo por rastreio no cliente** (pools U e L disjuntos, regra da Q-10), `ERROR_UNAVAILABLE`. Parte E2: cenário **S3** como simulação fiel de uma aplicação real (usuários virtuais, três servidores de aplicação pinados a um nó cada, console administrativo, timeouts curtos de cliente 2 s, timeout de sessão 30 s, retentativas limitadas, Block/Unblock/Logout, pool L de bloqueio por limite), **sem** reconciliação nem reparo de estado; S3 fora do enum de pesos; S1/S2 byte a byte inalterados. Nenhum teste existente enfraquecido. Sem push; relatório em `docs/relatorio-b33-<data>.md` (E1 e E2 em seções separadas).
 
 ---
 
@@ -394,7 +429,7 @@ Entregáveis: `docs/relatorio-netdegrade-gate-<data>.md`, `runs/gate-netdegrade/
 **Etapas.**
 
 0. **Smoke integrado** (1 rep curta de cada falha, S3): confirma marcadores, `convergencia.csv`, varredura e nós isolados recebendo escrita.
-1. **Piloto** (3 repetições) nas células-âncora: F2 `isn3` 90 s S3; F2 `isn1` 90 s S3; degradação S3 (20%) e S5 (~100%); **referências** sem falha, F1 e F3 (já existentes em `runs/`, **reexecutar sem falha e F3 com o mesmo workload S3** porque o cenário novo exige referência comparável).
+1. **Piloto** (3 repetições) nas células-âncora: F2 `isn3` 90 s S3; F2 `isn1` 90 s S3; degradação N3 (20%) e N5 (~100%); **referências** sem falha, F1 e F3 (já existentes em `runs/`, **reexecutar sem falha e F3 com o mesmo workload S3** porque o cenário novo exige referência comparável).
 2. Relatório do piloto ao Senior (variabilidade, custo por célula) → o Senior propõe ao Gestor o nº final de repetições (Q-4) e o refinamento da faixa de transição de perda.
 3. **Campanha** conforme a matriz da seção 8.1. Cada célula: repetição = injeção + janela de convergência; ordem **aleatorizada** das células (registrar a semente) para não confundir deriva da VM com tratamento; reinício limpo do cluster entre células (size=3 HEALTHY, caches vazios).
 
@@ -467,7 +502,7 @@ Convenção: o nó-alvo é `isn3` (não coordenador) salvo indicação; duraçã
 |---|---|---|---|
 | **R0** | referências | sem falha; F1 (queda `isn2`); F3 (jitter `isn2`, +50 ms p99) | 3 |
 | **P** | partição total (F2, `clsact` drop) | nó `isn3`/`isn1` × 20/90/180 s | 6 |
-| **L** | perda simétrica (F4) | S1=1%, S2=5%, S3=20%, S4=50%, S5=~100% (99,9%) | 5 |
+| **L** | perda simétrica (F4) | N1=1%, N2=5%, N3=20%, N4=50%, N5=~100% (99,9%) | 5 |
 | **LA** | perda assimétrica, 20% e 50% | só saída do alvo; só entrada | 4 |
 | **LC** | perda 20% correlacionada (`corr 50%`) ou `gemodel` | 1 perfil | 1 |
 | **D** | atraso + jitter | 100 ms ±50; 500 ms ±200 | 2 |
@@ -475,9 +510,9 @@ Convenção: o nó-alvo é `isn3` (não coordenador) salvo indicação; duraçã
 | **M** | combinação "rede ruim": 5% perda + 100 ms ±50 + 1% duplicação | 1 | 1 |
 | **R** | refinamento da faixa de transição | 3 níveis entre os dois severidades vizinhas onde o comportamento mudar (decisão do Gestor após L) | ≤ 3 |
 
-Total ≈ 27 células × 3 repetições ≈ 81 execuções; cada execução ≈ aquecimento + janela + convergência (até 10 min) ≈ 12 a 20 min ⇒ **≈ 16 a 27 h de máquina** (mais o reinício limpo). Piloto primeiro (células âncora: P `isn3` 90 s, L S3 e S5, LA saída 20%), decidir depois. A matriz **não** cruza nós isolados com todas as severidades (`isn1` só em P), por custo.
+Total ≈ 27 células × 3 repetições ≈ 81 execuções; cada execução ≈ aquecimento + janela + convergência (até 10 min) ≈ 12 a 20 min ⇒ **≈ 16 a 27 h de máquina** (mais o reinício limpo). Piloto primeiro (células âncora: P `isn3` 90 s, L N3 e N5, LA saída 20%), decidir depois. A matriz **não** cruza nós isolados com todas as severidades (`isn1` só em P), por custo.
 
-As severidades S1..S5 são **hipótese de partida**; T-C2 (L-4) ajusta onde está a transição observada.
+As severidades N1..N5 são **hipótese de partida** (renomeadas de S1..S5 para não colidir com os cenários S1/S2/S3); T-C2 (L-4) ajusta onde está a transição observada.
 
 ### 8.2 Hipóteses sobre JGroups e Infinispan (a testar, não a assumir)
 
@@ -491,7 +526,7 @@ Base: transporte **TCP** (`TCPPING`), `FD_ALL3` por heartbeat (padrão estimado 
 | H-L4 | Com ~100% simétrica: comportamento equivalente a F2 depois de ≈ `FD_ALL3` (mesma ordem de `t_split`, DEGRADED na minoria); diferença: conexões TCP **não** são reiniciadas por RST | `drop` e `loss 100%` não geram RST; `FD_SOCK2` não dispara | `t_split` muito diferente do de F2 ou nenhuma DEGRADED |
 | H-L5 | Perda **assimétrica** (só saída do alvo): vistas **assimétricas** transitórias (a maioria deixa de ouvir o alvo e o exclui; o alvo ainda ouve e só descobre depois); maior janela de inconsistência de vista que na partição simétrica | `FD_ALL3` é por heartbeat recebido; assimetria atrasa a detecção do lado que ainda recebe | vistas simétricas |
 | H-L6 | Violações de I1/I2/I4: **zero** em todas as condições de perda parcial, e zero ou raras em F2; I5/I6 convergem; o que muda é latência, erros e vistas | escrita `SYNC` confirmada exige os dois proprietários; `DENY_READ_WRITES` corta a minoria depois da detecção | uma violação com invalidação confirmada seguida de leitura `VALID` |
-| H-L7 | `ERROR_TRANSPORT` e indisponibilidade (DEGRADED) são distinguíveis apenas pela mensagem de exceção; em perda parcial predominam timeouts, em F2 predominam recusas por indisponibilidade | códigos diferentes no cliente Hot Rod | só se `ERROR_UNAVAILABLE` for aprovado (Q-9) |
+| H-L7 | `ERROR_TRANSPORT` (timeout/conexão) e `ERROR_UNAVAILABLE` (recusa por partição/DEGRADED) são distinguíveis no CSV; em perda parcial predominam timeouts, em F2 predominam recusas por indisponibilidade | classificação por tipo de exceção do cliente Hot Rod (a mensagem real é mapeada no gate G-3) | proporção `ERROR_UNAVAILABLE`/(`ERROR_TRANSPORT`+`ERROR_UNAVAILABLE`) igual nos dois regimes |
 
 Cada hipótese é pré-registrada com seu critério numérico em T-F. H-R1..H-R5 (B-29 §5.7) continuam valendo para F2.
 
@@ -541,35 +576,37 @@ Cada hipótese é pré-registrada com seu critério numérico em T-F. H-R1..H-R5
 | Resultados zero e pouco poder estatístico | Alta | Médio | regra de três, pré-registro, texto honesto |
 | Contaminação do experimento por reuso de cluster/deriva | Média | Médio | reinício limpo, ordem aleatória, referências no mesmo workload (S3) |
 | Conflito de merge em `docs/testes.md` | Alta | Baixo | regra 4.4; T-H |
-| Falso positivo de I2 por bloqueio por limite | Alta | Alto (distorce B-34) | classificação em T-E, P-27 |
+| Falso positivo de I2 por bloqueio por limite | Alta | Alto (distorce B-34) | pools U/L disjuntos + rastreio no cliente (Q-10), T-E item 4, P-27 |
 | Dados de `runs/` enormes | Média | Médio | Q-11 |
 | Prazo | Desconhecido | Alto | Q-1; o piloto decide o corte da matriz |
 
 ---
 
-## 10. Perguntas abertas ao Gestor (decisões que ainda dependem dele)
+## 10. Perguntas ao Gestor: situação após a 2ª rodada (2026-10-15)
 
-1. **Q-1 Prazo.** Qual a data-limite para fechar esta etapa e abrir B-25..B-28? (define o corte da matriz de T-F)
-2. **Q-2 VM.** Ligar `tcc-f3` (`Start-VM`), informar o IP atual, instalar chave SSH e confirmar `sudo` sem senha; aceita reservar IP fixo?
-3. **Q-3 Auto-bloqueio por limite.** Não invalidar sessões ao atingir `LIMITE_TENTATIVAS` é **intencional** no domínio? (afeta P-27 e a varredura global)
-4. **Q-4 Repetições.** Piloto de 3 por célula e decisão do número final depois da variabilidade; teto de máquina aceitável (≈ 16 a 27 h)? Incluir `isn1` fora de P?
-5. **Q-5 Modelo.** (a) Registrar P-26 conforme recomendado (sim/não); (b) corrigir o artefato do relógio em **variante** do modelo (alteração de `SessionStore.tla`, não recomendada agora) ou apenas classificar; (c) avaliar `MesclarNaoNulo` depois de T-F; (d) fazer T-I (B-35) opcional?
-6. **Q-6 Catálogo.** Criar `docs/catalogo-operacao-falha-invariante.md` (recomendado, documento vivo) ou editar a seção 3.2 de `docs/plano-controlador-heuristico-2026-09-24.md` (que mora noutra branch `docs/`)?
-7. **Q-7 Mecanismo de degradação.** Aprovar `prio` + `netem` por banda com `u32` por par (egress, entrada via egress dos pares) no lugar de `netem` na raiz ou `ifb`; aceitar a exclusão mútua com F3 no mesmo nó.
-8. **Q-8 Nomenclatura.** F4 para degradação (F3 permanece jitter) e B-29.2 para o injetor; severidades S1..S5 como hipótese de partida.
-9. **Q-9 `ERROR_UNAVAILABLE`.** Aprovar o novo código (muda o esquema do CSV e exige ajuste em `analysis/`) ou manter só `ERROR_TRANSPORT` e distinguir por mensagem em coluna extra?
-10. **Q-10 Motivo do bloqueio.** Aceitar rastrear no cliente (sem mudar o domínio) para separar bloqueio por limite de administrativo, ou acrescentar o motivo ao `IdentityState`?
-11. **Q-11 `runs/`.** Política para dados grandes (`*.out` do TLC, CSV): comprimir, `git lfs`, ou fora do repositório com índice/hashes?
-12. **Q-12 Portão.** A liberação de cada tarefa exige só o veredito do Senior ou também a assinatura do Gestor? E o Gestor estará presente (disponível) nas janelas de G-1 e L-1?
-13. **Q-13 Cenário S3.** Aprovar novo cenário de invalidação (com `Block`) mantendo S1/S2 intocados.
-14. **Q-14 Merge.** Confirmar a ordem de T-H (seção T-H) e que `main` receberá tudo por PRs lineares só depois de V-G.
+| Q | Situação | Decisão / default |
+|---|---|---|
+| Q-1 Prazo | **default assumido** | sem data-limite informada; o corte da matriz de T-F sai do piloto; teto de máquina como em Q-4. Se o Gestor der a data, o Senior reajusta a matriz |
+| Q-2 VM | **parcial** | ligada, `192.168.137.150`, `server1`; **pendente: chave SSH e `sudo -n`** (T0.2, Gestor). IP fixo: recomendado, não decidido |
+| Q-3 Auto-bloqueio por limite | **fechada** | intencional / "violada por construção" (D1, P-27) |
+| Q-4 Repetições | **default assumido** | piloto de 3 por célula; `isn1` só em P; teto de cerca de 27 h de máquina; nº final decidido depois do piloto |
+| Q-5 Modelo | **aberta** (recomendação do Senior mantida) | (a) registrar P-26: sim; (b) só classificar, sem alterar `SessionStore.tla`; (c) avaliar `MesclarNaoNulo` depois de T-F; (d) T-I (B-35) só se o Gestor pedir |
+| Q-6 Catálogo | **fechada** | `docs/catalogo-operacao-falha-invariante.md`, documento vivo (T-A cria, T-G atualiza) |
+| Q-7 Mecanismo de degradação | **decidida** (Senior) | `prio` + `netem` na banda 3 + `u32` por par (egress; entrada via egress dos pares); condições: exit 7 em raiz ocupada, só IPv4, exit 5 se faltar módulo; exclusão mútua com F3 no mesmo nó aceita |
+| Q-8 Nomenclatura | **decidida** (Senior) | F2 partição, F3 jitter, **F4 degradação**; injetor **B-29.2**, integração **B-29.1**; severidades **N1..N5** (renomeadas de S1..S5 por colisão com S1/S2/S3) |
+| Q-9 `ERROR_UNAVAILABLE` | **fechada** | aprovado; `analysis/` ajustado em T-E; compatibilidade e testes mantidos |
+| Q-10 Motivo do bloqueio | **decidida** (Senior) | rastrear no cliente com pools U/L disjuntos; domínio inalterado (2.2, T-E item 4) |
+| Q-11 `runs/` | **default assumido** | `.out`/CSV acima de 50 MB comprimidos (`gzip`) e nada acima de 100 MB no repositório; sem `git lfs`; SHA-256 de cada arquivo grande num índice versionado |
+| Q-12 Portão | **default assumido** | basta o veredito `APROVADA*` do Senior; o Gestor dá "go" apenas antes de G-1, G-5 (`kill -KILL`) e L-1, e precisa estar disponível nessas janelas |
+| Q-13 Cenário S3 | **decidida** (Senior) | simulação de ciclo de vida com falhas realistas; fora do enum; S1/S2 intocados (T-E item 5) |
+| Q-14 Merge | **default assumido** | ordem de T-H confirmada; `main` só por PRs lineares depois de V-G; cada push com aprovação explícita |
 
 ---
 
 ## 11. Prompts de despacho (resumo para o orquestrador)
 
-Ordem de despacho sugerida ao agente principal: depois de T0 e das respostas a Q-1..Q-4, Q-6..Q-8, Q-13, **disparar em paralelo** Worker-1 (T-A), Worker-2 (T-B), Worker-3 (T-C1), Worker-4 (T-E), cada um com o prompt da respectiva seção. Ao receber cada entrega, **acionar o Senior** para V-x antes de liberar a seguinte (T-C2 e T-D só após V-B/V-C1/V-C2; T-F só após V-A, V-D e V-E).
+Ordem de despacho sugerida ao agente principal: **a onda 1 já pode sair** para T-A, T-C1 e T-E (não dependem da VM nem da chave SSH). T-B (e, depois, T-C2) esperam a chave SSH (T0.2) e o "go" do Gestor para G-1. Disparar em paralelo Worker-1 (T-A), Worker-3 (T-C1), Worker-4 (T-E) e, quando T0.2 estiver pronta, Worker-2 (T-B), cada um com o prompt da respectiva seção. Ao receber cada entrega, **acionar o Senior** para V-x antes de liberar a seguinte (T-C2 e T-D só após V-B/V-C1/V-C2; T-F só após V-A, V-D e V-E). Os prompts de T-C1 e T-E mudaram nesta revisão (N1..N5 e F4; S3, Q-10, `ERROR_UNAVAILABLE`).
 
 ## 12. Próxima tarefa sugerida
 
-Despachar a **onda 1** (T-A, T-B, T-C1, T-E) assim que o Gestor responder T0 e as perguntas bloqueantes (Q-2, Q-3, Q-6, Q-7, Q-9, Q-10, Q-13); T-A e T-E não dependem da VM e podem iniciar já.
+Despachar T-A, T-C1 e T-E já; T-B assim que o Gestor instalar a chave SSH (T0.2). Pendência de decisão do Gestor: apenas Q-5.

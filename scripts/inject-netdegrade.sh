@@ -781,7 +781,7 @@ if [[ "${RESTO}" -gt 0 ]]; then
 fi
 
 # ----------------------------------------------- contadores (antes de remover)
-# Prova de que o trafego CASOU o filtro e de que o netem agiu. 'Sent' zerado =
+# Prova de que o trafego CASOU o filtro e de que o netem agiu. Sent+dropped zerado =
 # o filtro u32 nao casou nada (exit 6). Perda configurada sem nenhum descarte
 # so e erro quando se esperavam >= 10 descartes (P(0) < 5e-5); com amostra
 # pequena e apenas aviso.
@@ -796,8 +796,10 @@ for i in "${!E_NODE[@]}"; do
         echo "Erro: a degradacao nao se efetivou: nao foi possivel ler os contadores do netem em ${n} (saida de 'tc -s qdisc' inesperada)." >&2
         exit 6
     fi
-    if [[ "${SENT}" -eq 0 ]]; then
-        echo "Erro: a degradacao nao se efetivou: contador 'Sent' zerado em ${n} apos ${DURACAO}s (o filtro u32 nao casou nenhum pacote)." >&2
+    # 'Sent' conta so o que PASSOU; com perda ~100% e normal ser 0. Nada casou o
+    # filtro somente se Sent + dropped == 0.
+    if [[ "$((SENT + DROP))" -eq 0 ]]; then
+        echo "Erro: a degradacao nao se efetivou: contadores 'Sent' e 'dropped' zerados em ${n} apos ${DURACAO}s (o filtro u32 nao casou nenhum pacote)." >&2
         exit 6
     fi
     if positivo "${E_LOSS[$i]}" && [[ "${DROP}" -eq 0 ]]; then

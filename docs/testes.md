@@ -133,6 +133,7 @@ Sem VM (rodam em qualquer host; `bash scripts/inject-partition.test.sh`). T-par-
 | T-par-13 | nó isolado/par inexistente ou parado | exit 4, nada alterado |
 | T-par-14 | `PODMAN="sudo podman"` | reflete no plano e funciona na execução |
 | T-par-15 | `flock` real: segunda injeção no mesmo nó | exit 1 (SKIP onde não há `flock`, p.ex. Git Bash) |
+| T-par-18 | Guarda de netns: alvo/par/--heal com netns == PID 1 ou ilegivel -> exit 4 sem nsenter/tc (--heal limpa os demais) | A2 de V-B |
 
 Resultado desta rodada: Git Bash (Windows) 99 PASS / 0 FAIL / 2 SKIP; Ubuntu (WSL) com `flock` real 101 PASS / 0 FAIL / 1 SKIP.
 

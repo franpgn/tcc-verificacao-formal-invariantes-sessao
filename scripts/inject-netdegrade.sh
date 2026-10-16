@@ -537,6 +537,19 @@ resolver_pid() {
     [[ "${estado}" == "running" ]] || return 1
     pid="$(${PODMAN} inspect -f '{{.State.Pid}}' "${no}" 2>/dev/null || true)"
     [[ -n "${pid}" && "${pid}" != "0" ]] || return 1
+    # Guarda de netns (R4): um container em rede do host (--network=host) tem o
+    # mesmo netns do PID 1; aplicar prio/netem ali atingiria a NIC da VM (e o SSH).
+    local ns_alvo ns_host
+    ns_alvo="$(sudo readlink "/proc/${pid}/ns/net" 2>/dev/null || true)"
+    ns_host="$(sudo readlink /proc/1/ns/net 2>/dev/null || true)"
+    if [[ -z "${ns_alvo}" || -z "${ns_host}" ]]; then
+        echo "Erro: nao foi possivel ler o netns de '${no}' (pid ${pid}) ou do PID 1; recusando por seguranca" >&2
+        return 1
+    fi
+    if [[ "${ns_alvo}" == "${ns_host}" ]]; then
+        echo "Erro: '${no}' (pid ${pid}) compartilha o netns do host (${ns_host}); recusando para nao degradar a NIC da VM" >&2
+        return 1
+    fi
     echo "${pid}"
 }
 

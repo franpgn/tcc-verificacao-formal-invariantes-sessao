@@ -1,0 +1,10 @@
+Referencias geradas com as classes COMPILADAS DA BASE 8e2e815 (antes de qualquer mudanca
+do B-33), por um programa que usa EventCsvWriter, Scenario, KeyGenerator e InvariantAuditor
+dessa base. Servem de golden dos formatos de S1/S2 (C-3 da validacao V-E1).
+- eventos-sem-marcadores.csv: 9 eventos fixos; op_id parte de 0 (o teste normaliza o op_id,
+  que e um contador global do processo).
+- sequencia-s1-s2-seed42.txt: 2000 operacoes de S1 e de S2 com Random(42) e 500 chaves de
+  KeyGenerator(42).
+- violacoes-cabecalho.txt / violacoes-linha-sem-timestamp.txt: formato do CSV de violacoes sem
+  marcadores (a 1a coluna e Instant.now(), logo fica de fora da comparacao).
+Nao regenerar a partir do codigo atual: o objetivo e detectar mudanca em relacao a 8e2e815.

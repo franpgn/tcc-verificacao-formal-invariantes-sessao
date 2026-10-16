@@ -20,3 +20,21 @@ Validador: Senior. Entrega: `test/b32-auditoria-controle` (e73f616, 2788273, 74a
   - Queda: `I4F` 5 estados (2.033/482), `I2Fb` 4 (382/99).
   - Partição: `I1F` 5 (1.119/317), `I2Fa` 6 (7.197/2.039), `I1M` 4 (1.066/306), `I4Mp` 5 (7.676/2.147) (4 workers; o catálogo usa os de 1 worker).
 - Casam com `resumo-*.tsv` e com o catálogo (seção 3/4.1).
+
+## Item 3. Controles reexecutados (JDK 17.0.2, TLC 2.19, 1 worker, **sem `SYMMETRY`** — `grep -c SYMMETRY` nos .cfg = 0; jar SHA-256 `936a2620...`)
+Script corrigido de `wt-ta`, saída em diretório temporário, 3 execuções simultâneas (também serviu de teste de rc, 0 erros).
+
+| Célula | Esperado (catálogo) | Reproduzido | gerados / distintos |
+|---|---|---|---|
+| I1F partição, r3, 3/5/2 | violada, 4 estados | VIOLADA, 4 estados (Logout, Particionar, Mesclar) | 1.008 / 478 |
+| I2Fa partição, r3, 3/5/2 | violada, 4 estados | VIOLADA, 4 estados | 5.889 / 2.608 |
+| I4F sem falha, r3, 3/5/2 | violada, 5 estados | VIOLADA, 5 estados | 7.260 / 2.174 |
+| I1F queda, r2, MaxCanal=2, MaxRelogio=3, ev=2 | fechou, 51.840 distintos | SEM_VIOLACAO exaustivo, 0 na fila | 641.661 / 51.840 |
+
+## Item 4. Vacuidade (`-coverage 1`, 1 worker, r2, MaxCanal=2, MaxRelogio=3, ev=2, com simetria)
+| Coluna / propriedade | Resultado | `Particionar` | `Mesclar` |
+|---|---|---|---|
+| sem falha, I2Fa e I1M | fechou, 1.988 distintos (38.643 gerados) | 0:3.976 | **0:0** |
+| queda, I4Mp | fechou, 15.690 distintos (195.239 gerados) | 0:11.928 | **0:0** |
+| partição, I2Fa (controle positivo) | violada, 4 estados | 41:48 | **11:14** |
+`Particionar 0:3976` significa que a ação gera sucessores, todos barrados pela restrição (`distintos` 0); `Mesclar 0:0` significa nunca habilitada. Catálogo (seção 6) distingue `vácuo-verificado` (r2, r3 c2r3 sem falha, r2 queda, r3 queda c2r3 só I2Fa) de `vácuo-estrutural` (cotas do plano, TLC não fechou). A distinção está correta e honesta.

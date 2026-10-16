@@ -167,9 +167,12 @@ contem "T-l-9a registrou ABORTADO" "ABORTADO" "$RES"
 reset_shims_v4; export L0C_PRAZO=3 L0C_MIN=3 L0C_MAX=5 L0C_LIMITE=20 SHIM_DM_ATRASO=6; roda_tty "GO" "$L0C"
 RES="$(cat "$RL/l0c/resultado.txt" 2>/dev/null)"
 ok "T-l-9b disparo tardio (3+6 s > 5): rc != 0" "1" "$([ "$RC" != 0 ] && echo 1 || echo 0)"; contem "T-l-9b FAIL DEPOIS" "FAIL disparo DEPOIS de 5 s" "$RES"
-reset_shims_v4; export L0C_PRAZO=3 L0C_MIN=3 L0C_MAX=9 L0C_LIMITE=20 SHIM_DM_PRAZO=1; roda_tty "GO" "$L0C"
+# 9c: o shim dispara 1 s apos armar e a janela exige >= MIN=12 s. A MARGEM (12 s contra ~3,4 s medidos no Git Bash: setup ~1,3 s + --heal ~2 s)
+# e o que torna o teste independente do relogio: l0c mede quando a SONDA ve a prio sumir, e no Git Bash isso nunca ocorre antes de ~3 s
+# (com MIN=3 o overhead de fork do shim "atrasava" o disparo de 1 s para >= 3 s e o mutante passava).
+reset_shims_v4; export L0C_PRAZO=3 L0C_MIN=12 L0C_MAX=20 L0C_LIMITE=20 SHIM_DM_PRAZO=1; roda_tty "GO" "$L0C"
 RES="$(cat "$RL/l0c/resultado.txt" 2>/dev/null)"
-ok "T-l-9c disparo antecipado (1 s < 3): rc != 0" "1" "$([ "$RC" != 0 ] && echo 1 || echo 0)"; contem "T-l-9c FAIL ANTES" "FAIL disparo ANTES de 3 s" "$RES"
+ok "T-l-9c disparo antecipado (1 s < 12): rc != 0" "1" "$([ "$RC" != 0 ] && echo 1 || echo 0)"; contem "T-l-9c FAIL ANTES" "FAIL disparo ANTES de 12 s" "$RES"
 reset_shims_v4; export L0C_PRAZO=3 L0C_MIN=3 L0C_MAX=9 L0C_LIMITE=20 STUB_HEAL_SILENT=1; roda_tty "GO" "$L0C"
 RES="$(cat "$RL/l0c/resultado.txt" 2>/dev/null)"
 ok "T-l-9h unit que limpa mas nao executa o --heal do injetor (sem a mensagem): rc != 0" "1" "$([ "$RC" != 0 ] && echo 1 || echo 0)"

@@ -136,7 +136,9 @@ Sem VM (rodam em qualquer host; `bash scripts/inject-partition.test.sh`). T-par-
 | T-par-16 | Contadores por sentido: `at 12` = ingress, `at 16` = egress; um sentido 0 avisa "um so sentido" (exit 0); ambos 0 = exit 6 | A1 de V-B |
 | T-par-17 | `log()` recalcula o timestamp a cada chamada | primeira e ultima linha diferem |
 
-Resultado desta rodada: Git Bash (Windows) 99 PASS / 0 FAIL / 2 SKIP; Ubuntu (WSL) com `flock` real 101 PASS / 0 FAIL / 1 SKIP.
+Resultado desta rodada: Git Bash (Windows) 111 PASS / 0 FAIL / 2 SKIP; Ubuntu (WSL) com `flock` real 113 PASS / 0 FAIL / 1 SKIP.
+
+Nota de TDD (A1/A3 de V-B): o vermelho `bc4a16f` (T-par-16/17) tinha defeito no shim de `tc`: faltava `n="${n16}"` no laco `at 16`; foi corrigido em `3f7b8c1` junto com o fix. Os 7 FAIL do vermelho sao reais e o vermelho puro (teste final + codigo antigo) tambem deu 7 FAIL (medido pelo Senior).
 
 **Gate real na VM (pendente)**: G-0 (kernel aceita `clsact` + `u32` + `drop`), G-1 (contadores > 0 nos dois sentidos, conexão a `IP_par:7800` falha, Hot Rod a isn3 responde com erro e não com *timeout*), G-2 (sem resíduo), G-3 (vistas 2 e 1; isn3 DEGRADED em `sessions` e `counters`), G-4 (fusão e tempo), G-5 (`SIGTERM` e `SIGKILL`+`--heal`), G-6 (coexistência com F3). Comandos no relatório `docs/relatorio-b29-implementacao-2026-10-09.md`. Resultados reais **ainda não registrados**.
 

@@ -100,4 +100,33 @@ ok "T-g1-7 sem saude-log.csv" "nao" "$([ -e "$R1/saude-log.csv" ] && echo sim ||
 contem "T-g1-7 mensagem final" "G-1 concluido (REP=3)" "$SAIDA"
 nao_contem "T-g1-7 sem mensagem de log de saude" "log de saude" "$SAIDA"
 
+echo "== T-g1-8: log continua G1_LOG_POS_S s apos size=3; t_merge.txt registra a 1a amostra HEALTHY/3 (ns e ISO) =="
+reset_shims
+export REP=3 G1_DUR=4 G1_AMOSTRAS="1 3" G1_MERGE_LIM=30 G1_LOG_SAUDE_S=1 G1_LOG_POS_S=4 STUB_POS_FUSAO=3
+roda "GO" "$G1"
+S="$R1/saude-log.csv"; T="$R1/t_merge.txt"
+ok "T-g1-8 rc 0" "0" "$RC"
+EN=$(awk -F't_epoch_ns=' '/event=end/{print $2}' "$R1/marcadores.txt")
+F3=$(awk -F, -v e="$EN" 'NR>1 && $1>e && $4=="HEALTHY" && $5==3{print $1; exit}' "$S")
+ok "T-g1-8 ha amostras HEALTHY/3 apos o end" "1" "$([ -n "$F3" ] && echo 1 || echo 0)"
+LAST=$(tail -1 "$S" | cut -d, -f1)
+ok "T-g1-8 log segue >= 3 s depois da 1a amostra HEALTHY/3" "1" "$([ -n "$F3" ] && [ $(( (LAST - F3) / 1000000000 )) -ge 3 ] && echo 1 || echo 0)"
+ok "T-g1-8 >= 6 linhas HEALTHY/3 apos o end (2 ciclos x 3 portas)" "1" "$([ "$(awk -F, -v e="$EN" 'NR>1 && $1>e && $4=="HEALTHY" && $5==3' "$S" | wc -l)" -ge 6 ] && echo 1 || echo 0)"
+contem "T-g1-8 t_merge.txt mantem t_merge_s (polling)" "t_merge_s=" "$(cat "$T")"
+ok "T-g1-8 t_merge.txt: t_saude_primeira_ns = 1a amostra HEALTHY/3" "$F3" "$(sed -n 's/^t_saude_primeira_ns=//p' "$T")"
+contem "T-g1-8 t_merge.txt: ISO" "t_saude_primeira_iso=20" "$(cat "$T")"
+ok "T-g1-8 t_merge_saude_s calculado a partir dela" "$(( (F3 - EN) / 1000000000 ))" "$(sed -n 's/^t_merge_saude_s=\([0-9]*\).*//p' "$T")"
+a=$(linhas "$S"); sleep 2.5; b=$(linhas "$S")
+ok "T-g1-8 log parou ao fim do g1.sh" "$a" "$b"
+
+echo "== T-g1-9: G1_LOG_SAUDE_S=0 nao espera G1_LOG_POS_S nem escreve campos de saude =="
+reset_shims
+export REP=3 G1_DUR=4 G1_AMOSTRAS="1 3" G1_MERGE_LIM=30 G1_LOG_SAUDE_S=0 G1_LOG_POS_S=60
+unset STUB_POS_FUSAO
+T0=$(date +%s); roda "GO" "$G1"; DT=$(( $(date +%s) - T0 ))
+ok "T-g1-9 rc 0" "0" "$RC"
+ok "T-g1-9 sem espera pos (< 30 s)" "1" "$([ "$DT" -lt 30 ] && echo 1 || echo 0)"
+ok "T-g1-9 t_merge.txt sem campos de saude" "0" "$(grep -c 't_saude\|t_merge_saude' "$R1/t_merge.txt")"
+contem "T-g1-9 t_merge_s presente" "t_merge_s=" "$(cat "$R1/t_merge.txt")"
+
 resumo_final

@@ -546,7 +546,7 @@ roda_shim --target isn3 --direction in --loss 20 --duration 1
 ok "T-nd-12f falha em NO PAR (direcao in): exit" "5" "${RC}"
 ok "T-nd-12f nada residual em nenhum no" "0" "$(residuo)"
 
-echo "== T-nd-13: SIGTERM/SIGINT durante a janela -> limpeza antes de sair =="
+echo "== T-nd-13: SIGTERM/SIGHUP durante a janela (SIGINT nao e testavel: o bash ignora INT em jobs assincronos nao interativos) -> limpeza antes de sair =="
 reset_shims
 PATH="${PATH_SHIMS}" bash "${ND}" --target isn3 --direction both --loss 20 --duration 30 \
     --ping-count 0 --marker "${TMP}/marker" >"${TMP}/saida" 2>&1 &
@@ -578,10 +578,10 @@ until grep -qF -e "tc -s qdisc show dev eth0" "${SHIM_LOG}" 2>/dev/null; do
     sleep 0.2; ESPERA=$((ESPERA + 1))
     [[ "${ESPERA}" -lt 100 ]] || break
 done
-kill -INT "${BGPID}" 2>/dev/null
+kill -HUP "${BGPID}" 2>/dev/null
 wait "${BGPID}" 2>/dev/null; RC=$?
-ok "T-nd-13b SIGINT: exit 130" "130" "${RC}"
-ok "T-nd-13b SIGINT: sem residuo" "0" "$(residuo)"
+ok "T-nd-13b SIGHUP: exit 129" "129" "${RC}"
+ok "T-nd-13b SIGHUP: sem residuo" "0" "$(residuo)"
 # SIGTERM durante o ping de verificacao (antes da janela): o trap tambem limpa.
 reset_shims
 cat >"${TMP}/ping-lento" <<'EOF'

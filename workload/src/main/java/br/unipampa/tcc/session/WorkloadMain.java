@@ -136,10 +136,17 @@ public final class WorkloadMain {
                 (politica.medicaoInicioMs() - inicioMs) / 1000L,
                 cli.duracaoSeg);
 
-            ExecutorService pool = Executors.newFixedThreadPool(cli.threads);
             AtomicLong totalOps = new AtomicLong();
-            long opsAlvoPorThread = cli.ops > 0 ? cli.ops / cli.threads : Long.MAX_VALUE;
             long fim = politica.medicaoFimMs();
+            Supplier<Map<String, SessionState.Motivo>> invalidacoes = ops::invalidacoesConfirmadasSnapshot;
+
+            if (cli.scenarioS3) {
+                // B-33 (E2): cenario S3, tratado ANTES do enum Scenario (S1/S2 seguem o ramo abaixo).
+                invalidacoes = executarS3(cli, rep, latency, auditor, eventos, relogio, rastro,
+                        parar, fim, totalOps);
+            } else {
+            ExecutorService pool = Executors.newFixedThreadPool(cli.threads);
+            long opsAlvoPorThread = cli.ops > 0 ? cli.ops / cli.threads : Long.MAX_VALUE;
 
             for (int t = 0; t < cli.threads; t++) {
                 final int tid = t;
@@ -149,6 +156,7 @@ public final class WorkloadMain {
             }
             pool.shutdown();
             pool.awaitTermination(cli.duracaoSeg + 30, TimeUnit.SECONDS);
+            }
 
             // B-24: checagem de I5/I6 (convergencia sob quiescencia) feita UMA VEZ,
             // logo apos as threads geradoras de carga pararem de emitir operacoes --
@@ -165,7 +173,7 @@ public final class WorkloadMain {
                 marcadores = lerMarcadores(cli);
             }
             if (cli.varredura) {
-                executarVarredura(cli, rcm, ops, rastro, rep);
+                executarVarredura(cli, rcm, invalidacoes, rastro, rep);
             }
 
             System.out.printf("Total de operacoes: %d%n", totalOps.get());
@@ -202,6 +210,51 @@ public final class WorkloadMain {
                 System.out.printf("Violacoes gravadas em %s (total=%d)%n",
                         violacoesDestino, auditor.total());
             }
+        }
+    }
+
+    /**
+     * B-33 (E2): executa o cenario S3 (simulacao de ciclo de vida de sessao) ate o fim da janela de
+     * medicao: tres servidores de aplicacao pinados (um por no, BASIC) mais o console administrativo
+     * (modo {@code pinned}), ou um cliente topology-aware (modo {@code topology}). Uma thread por
+     * ator; {@code --threads} nao se aplica. Grava {@code s3-acoes-rep-NNN.csv} e
+     * {@code s3-resumo-rep-NNN.json} em {@code --csv-dir}.
+     *
+     * @return o fornecedor das invalidacoes confirmadas por todos os atores (varredura I1/I4)
+     */
+    private static Supplier<Map<String, SessionState.Motivo>> executarS3(Cli cli, int rep,
+            LatencyRegistry latency, InvariantAuditor auditor, EventCsvWriter eventos,
+            EpochClock relogio, RastroCliente rastro, BooleanSupplier parar, long fimMs,
+            AtomicLong totalOps) throws Exception {
+        S3Registro registro = new S3Registro();
+        RelogioS3 reloginho = RelogioS3.sistema();
+        ContextoS3 ctx = new ContextoS3(reloginho, cli.s3, registro,
+                cli.seedBase + (long) rep * 1_000_003L);
+        try (S3Clientes clientes = S3Clientes.abrir(cli, latency, auditor, eventos, relogio, rastro)) {
+            long inicioNs = reloginho.agoraNs();
+            long fimNs = inicioNs + Math.max(0L, fimMs - System.currentTimeMillis()) * 1_000_000L;
+            S3Simulacao sim = new S3Simulacao(ctx, clientes.servidoresApp(), clientes.admin(), inicioNs);
+            System.out.printf("S3: %d usuarios (U), %d contas de limite (L), 1 admin; modo %s; admin-node %s%n",
+                    cli.s3.usuarios, cli.s3.contasLimite, cli.s3.modoCliente, cli.s3.noAdmin);
+            sim.rodarEmThreads(fimNs, parar);
+            totalOps.set(registro.totalAcoes());
+            if (cli.csvDir != null && !cli.csvDir.isBlank()) {
+                registro.escreverCsv(Path.of(cli.csvDir, String.format("s3-acoes-rep-%03d.csv", rep)), relogio);
+                java.util.Map<String, Object> par = new java.util.LinkedHashMap<>();
+                par.put("modo_cliente", cli.s3.modoCliente.name());
+                par.put("admin_node", cli.s3.noAdmin);
+                par.put("usuarios", cli.s3.usuarios);
+                par.put("contas_limite", cli.s3.contasLimite);
+                par.put("semente", cli.seedBase + (long) rep * 1_000_003L);
+                par.put("hotrod_timeout_ms", cli.s3.hotrodTimeoutMs);
+                par.put("hotrod_retentativas", cli.s3.hotrodRetentativas);
+                par.put("app_retentativas", cli.s3.appRetentativas);
+                par.put("idle_timeout_sec", cli.s3.idleSeg);
+                par.put("nota", "o resumo inclui o warm-up; acoes anteriores a medicao nao entram no CSV de eventos");
+                registro.escreverResumo(Path.of(cli.csvDir, String.format("s3-resumo-rep-%03d.json", rep)), par);
+            }
+            registro.contadores().forEach((k, v) -> System.out.printf("S3 %s = %d%n", k, v));
+            return clientes::invalidacoesSnapshot;
         }
     }
 
@@ -259,13 +312,14 @@ public final class WorkloadMain {
      * dos dois caches pelo cliente topology-aware; se a leitura falhar (cache DEGRADED), a
      * varredura NAO e feita e o erro e registrado (nunca resultado parcial).
      */
-    private static void executarVarredura(Cli cli, RemoteCacheManager rcm, SessionOps ops,
+    private static void executarVarredura(Cli cli, RemoteCacheManager rcm,
+            Supplier<Map<String, SessionState.Motivo>> invalidacoes,
             RastroCliente rastro, int rep) throws java.io.IOException {
         try {
             Map<String, SessionState> sessoes = materializarTudo(rcm.getCache("sessions"));
             Map<String, IdentityState> identidades = materializarTudo(rcm.getCache("counters"));
             VarreduraFinal.Resultado r = VarreduraFinal.varrer(sessoes, identidades,
-                    ops.invalidacoesConfirmadasSnapshot(), rastro, SessionOps.LIMITE_TENTATIVAS);
+                    invalidacoes.get(), rastro, SessionOps.LIMITE_TENTATIVAS);
             System.out.println(r.resumo());
             if (cli.csvDir != null && !cli.csvDir.isBlank()) {
                 VarreduraFinal.escreverAchados(

@@ -1,0 +1,11 @@
+netns PID1: net:[4026531840]
+netns self shell: net:[4026531840]
+guarda(pid=1 host) rc=1 esperado=1 PASS
+guarda(pid=$$ shell do host) rc=1 esperado=1 PASS
+guarda(pid vazio) rc=1 esperado=1 PASS
+guarda(pid 0) rc=1 esperado=1 PASS
+guarda(pid inexistente 999999) rc=1 esperado=1 PASS
+isn3 pid=161250 netns=net:[4026532291]
+guarda(isn3) rc=0 esperado=0 PASS
+Error: no such object: "nao-existe-xyz"
+pid_de(nao-existe) rc=1 (esperado 1)

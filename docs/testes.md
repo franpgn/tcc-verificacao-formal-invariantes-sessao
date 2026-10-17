@@ -240,3 +240,44 @@ Contagens medidas (Git Bash | WSL): g5 50/0 | 50/0; g6 70/0 | 70/0; g1 48/0 | 48
 ### Integracao local, segunda rodada (gate v3 + g1fix + C-2 + REP=2)
 
 Medido em `feature/etapa-formal-integracao` apos `ff-only` de `test/b29-gate-v3-g1fix`, cherry-pick de C-2 (3 commits) e de `8394843` (Git Bash | WSL): `mvn test` 275/0/0 (0 skipped); g1 61/0; g1b falhas=0; g5 50/0; g6 70/0; inject-partition 125/0/2 | 127/0/1; inject-netdegrade 298/0/1 | 306/0/0; inject-jitter 35/0 | 35/0; `unittest` analysis 9/9. Estas contagens substituem as de g1 (48) e `mvn` (184 e 205) citadas acima. Detalhes em `docs/integracao-etapa-formal-2026-10-16.md`.
+
+## Gate v4 (S0): testes sem VM de L-0, L-0c, L-1 e G-5b (2026-10-16)
+
+Branch `test/b29-gate-v4`; relatorio em `docs/relatorio-gate-v4-2026-10-16.md`. Nada aqui toca VM, rede ou privilegio: shims de `podman/nsenter/tc/systemd-run/systemctl/journalctl` e injetor falso em `runs/gate-b29/gate-test-lib-v4.sh`. Os testes provam a logica dos scripts, **nao** o kernel, o systemd real (AccuracySec) nem o formato real de `tc -s`/journal.
+
+```bash
+bash runs/gate-netdegrade/l-gate.test.sh   # l-lib, l0, l1 (verbatim) e l0c: guarda de netns, exigir_go, dead-man que dispara, 19 mutantes
+bash runs/gate-b29/g5b.test.sh             # G-5b-A (cura apos split real) e G-5b-B (dead-man sozinho); ~330 s no Git Bash
+bash runs/gate-netdegrade/verbatim.sh verificar   # diff doc x arquivo de l-lib.sh, l0.sh, l1.sh
+bash runs/gate-b29/mutacao-gate-v4.sh l|g5b|todas [paralelismo]   # MORTO/SOBREVIVEU/TRAVOU por mutante (timeout por mutante 1200 s)
+```
+
+Contagens medidas (sem `java` ativo salvo indicacao):
+
+| Suite | Git Bash | WSL (Ubuntu, gawk 5.1, `flock` real) |
+|---|---|---|
+| `l-gate.test.sh` | 162/0 (3 rodadas), e 162/0 (2 rodadas apos o cherry-pick final) | 157/0 (2 rodadas) |
+| `g5b.test.sh` | 128/0 (2 rodadas finais, 330 s e 328 s) | 126/0 (2 rodadas) |
+| `inject-netdegrade.test.sh` | 298/0/1 SKIP (`T-nd-21`, sem `flock` real) | 306/0/0 |
+| `inject-partition.test.sh` | 125/0/2 SKIP | nao medido nesta rodada (127/0/1 na rodada anterior) |
+| `inject-jitter.test.sh` | 35/0 | nao medido |
+| `g5.test.sh` / `g6.test.sh` (isolados) | 50/0 / 70/0 | nao medido |
+| `g1b.test.sh` | falhas=0 | nao medido |
+| `g1.test.sh` (5 rodadas) | 4x 61/0 e 1x 60/1 (`T-g1-2`) | nao medido |
+| `verbatim.sh verificar` | IDENTICO nos 3 (l-lib 80 linhas, l0 19, l1 17) | IDENTICO nos 3 |
+
+Mutacao (`mutacao-gate-v4.sh`): bateria completa no Git Bash, 36 mutantes (19 de `l-gate`, 17 de `g5b`), **36 MORTO, 0 SOBREVIVEU, 0 TRAVOU**, os dois baselines passam; no WSL, `g5b` 17/17 MORTO, 0 SOBREVIVEU. Apos o conserto do `verbatim.sh`, os mutantes V1..V6 foram reexecutados no Git Bash: 6/6 MORTO. A bateria completa de `l` nao foi repetida depois do commit do `verbatim.sh` nem a de `g5b` completa no Git Bash depois do `ff18fe3` (so a do WSL).
+
+### Ressalvas registradas da v4
+
+- **SKIP/ausencia dos testes de modo git no WSL**: 5 casos em `l-gate` (162 contra 157) e 2 em `g5b` (128 contra 126). O `.git` do worktree aponta para um caminho Windows, entao `git rev-parse` falha no WSL e os casos `100755` sao pulados. Nao e falha. O mesmo efeito aparece no Git Bash se `MSYS_NO_PATHCONV=1` estiver exportado (126 e 157 em vez de 128 e 162).
+- **`T-g1-4` e `T-g1-2` (`g1.test.sh`)**: corrida de `parar_log_saude` (`runs/gate-b29/g-lib.sh`, linhas 64 a 69): uma amostra de saude em voo depois do abort faz o arquivo crescer de 1 a 3 linhas apos a conferencia. Instavel no Git Bash (2 de 6 rodadas dessa sessao falharam, 1 em `T-g1-2` e 1 em `T-g1-4`; 2 de 5 na primeira sessao, em `T-g1-4`); preexistente a v4 (arquivo inalterado desde `4b680a2`). **Nao corrigido** por decisao do Gestor; fica como ressalva.
+- **`T-g6-5` (`g6.test.sh`)**: falha apenas sob carga (execucao paralela de varias suites); isolado passa 70/0.
+- **Rodar as suites em serie.** Em paralelo, `g1`, `g6` e `l-gate` falham por tempo. O `g5b.test.sh` leva ~330 s no Git Bash: com timeout externo abaixo de 330 s ele e morto (rc 124), o que nao e falha do teste.
+
+### Defeitos de teste encontrados e corrigidos na S0
+
+- `T-l-9c`: disparo "antecipado" medido com margem de 1 s, menor que o custo de fork do Git Bash; margem passou a `MIN=12 s` (commit `dd67af8`).
+- `g5b.test.sh`: vigias em segundo plano sem limite penduravam a suite; agora `espera_cond` de 90 s, `G_CASO_TIMEOUT=240 s` por caso e `MUT_TIMEOUT=1200 s` por mutante (cherry-pick de `111e673`).
+- `T-b-6d` e `T-b-8f` falhavam no WSL por corrida do teste (o vigia so escrevia `nodes2` depois de `heal.log`/`journal-unit.txt`); o gatilho passou a ser `rc_injetor=` em `estado.txt` (cherry-pick de `ff18fe3`).
+- `verbatim.sh`: sob `pipefail` no Linux, o `awk` saia no fence de fechamento e o `tr` morria por SIGPIPE (141), falhando a extracao; o `awk` agora consome toda a entrada.

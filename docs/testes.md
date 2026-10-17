@@ -271,7 +271,7 @@ Mutacao (`mutacao-gate-v4.sh`): bateria completa no Git Bash, 36 mutantes (19 de
 ### Ressalvas registradas da v4
 
 - **SKIP/ausencia dos testes de modo git no WSL**: 5 casos em `l-gate` (162 contra 157) e 2 em `g5b` (128 contra 126). O `.git` do worktree aponta para um caminho Windows, entao `git rev-parse` falha no WSL e os casos `100755` sao pulados. Nao e falha. O mesmo efeito aparece no Git Bash se `MSYS_NO_PATHCONV=1` estiver exportado (126 e 157 em vez de 128 e 162).
-- **`T-g1-4` e `T-g1-2` (`g1.test.sh`)**: corrida de `parar_log_saude` (`runs/gate-b29/g-lib.sh`, linhas 64 a 69): uma amostra de saude em voo depois do abort faz o arquivo crescer de 1 a 3 linhas apos a conferencia. Instavel no Git Bash (2 de 6 rodadas dessa sessao falharam, 1 em `T-g1-2` e 1 em `T-g1-4`; 2 de 5 na primeira sessao, em `T-g1-4`); preexistente a v4 (arquivo inalterado desde `4b680a2`). **Nao corrigido** por decisao do Gestor; fica como ressalva.
+- **`T-g1-4` e `T-g1-2` (`g1.test.sh`)**: corrida de `parar_log_saude` (`runs/gate-b29/g-lib.sh`, linhas 64 a 69): uma amostra de saude em voo depois do abort faz o arquivo crescer de 1 a 3 linhas apos a conferencia. Instavel no Git Bash (primeira sessao: 3 de 5 rodadas falharam em `T-g1-4`, uma delas em paralelo; segunda sessao: 1 de 5 falhou, em `T-g1-2`); preexistente a v4 (arquivo inalterado desde `4b680a2`). **Nao corrigido** por decisao do Gestor; fica como ressalva.
 - **`T-g6-5` (`g6.test.sh`)**: falha apenas sob carga (execucao paralela de varias suites); isolado passa 70/0.
 - **Rodar as suites em serie.** Em paralelo, `g1`, `g6` e `l-gate` falham por tempo. O `g5b.test.sh` leva ~330 s no Git Bash: com timeout externo abaixo de 330 s ele e morto (rc 124), o que nao e falha do teste.
 

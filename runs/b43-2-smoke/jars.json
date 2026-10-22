@@ -1,0 +1,17 @@
+{
+ "workload": {
+  "commit": "6137cf8",
+  "branch": "fix/b43-2-mistura-s1-s2-sessoes-reais",
+  "sha256": "88096d77a513a2860ff7feb8508011df427a9e1c9346b795f0e7c84d071f4c38"
+ },
+ "verificador": {
+  "commit": "a8f5549",
+  "branch": "fix/b43-3-guarda-sanidade-mistura",
+  "origem": "git archive a8f5549 workload; mvn -o clean package -DskipTests",
+  "sha256": "8c6bf228b62ea6dcd6cfc4c360dd2a9fdf03c08cbb543f6db2f8ccc10d1f4966"
+ },
+ "java": "JDK 22.0.2 via $JAVA_HOME/bin/java",
+ "podman": "5.7.0, maquina WSL (parada antes e depois)",
+ "imagem": "quay.io/infinispan/server:15.0.21.Final",
+ "comando": "--scenario <S> --replication <r> --mix <m> --reset-state on --duration <60|30> --ops 0 --rep 1 --threads 4 --warmup-min-sec 10 --csv-dir runs/b43-2-smoke/Qn"
+}

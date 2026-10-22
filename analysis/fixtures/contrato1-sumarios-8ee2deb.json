@@ -1,0 +1,96 @@
+{
+  "contrato1-S1-F1-rep-001-recorte.csv": {
+    "IncrementFailure": {
+      "media_ns": 1593752.9411764706,
+      "n": 187,
+      "p50_ns": 1476700,
+      "p95_ns": 2310300,
+      "p99_9_ns": null,
+      "p99_ns": 3422500,
+      "taxa_erro": 0.0
+    },
+    "Login": {
+      "media_ns": 698283.1372549019,
+      "n": 510,
+      "p50_ns": 511500,
+      "p95_ns": 936200,
+      "p99_9_ns": null,
+      "p99_ns": 5577200,
+      "taxa_erro": 0.0
+    },
+    "Logout": {
+      "media_ns": 620921.1822660099,
+      "n": 203,
+      "p50_ns": 475900,
+      "p95_ns": 912000,
+      "p99_9_ns": null,
+      "p99_ns": 1769600,
+      "taxa_erro": 0.0
+    },
+    "ResetFailures": {
+      "media_ns": 1722629.6703296704,
+      "n": 91,
+      "p50_ns": 1482800,
+      "p95_ns": 2619000,
+      "p99_9_ns": null,
+      "p99_ns": 7322100,
+      "taxa_erro": 0.0
+    },
+    "Validate": {
+      "media_ns": 585135.5797819623,
+      "n": 1009,
+      "p50_ns": 455500,
+      "p95_ns": 922500,
+      "p99_9_ns": null,
+      "p99_ns": 1982400,
+      "taxa_erro": 0.0
+    }
+  },
+  "contrato1-b43-2-Q1-rep-001-recorte.csv": {
+    "IncrementFailure": {
+      "media_ns": 627686.6666666666,
+      "n": 120,
+      "p50_ns": 612400,
+      "p95_ns": 775000,
+      "p99_9_ns": null,
+      "p99_ns": 907700,
+      "taxa_erro": 0.0
+    },
+    "Login": {
+      "media_ns": 638889.9408284024,
+      "n": 338,
+      "p50_ns": 602200,
+      "p95_ns": 787700,
+      "p99_9_ns": null,
+      "p99_ns": 888100,
+      "taxa_erro": 0.0
+    },
+    "Logout": {
+      "media_ns": 573409.243697479,
+      "n": 476,
+      "p50_ns": 575200,
+      "p95_ns": 785300,
+      "p99_9_ns": null,
+      "p99_ns": 1048400,
+      "taxa_erro": 0.0
+    },
+    "ResetFailures": {
+      "media_ns": 604316.9491525424,
+      "n": 59,
+      "p50_ns": 575800,
+      "p95_ns": 753800,
+      "p99_9_ns": null,
+      "p99_ns": 833300,
+      "taxa_erro": 0.0
+    },
+    "Validate": {
+      "media_ns": 425537.2393247269,
+      "n": 1007,
+      "p50_ns": 401200,
+      "p95_ns": 579600,
+      "p99_9_ns": null,
+      "p99_ns": 722200,
+      "taxa_erro": 0.0
+    }
+  }
+}

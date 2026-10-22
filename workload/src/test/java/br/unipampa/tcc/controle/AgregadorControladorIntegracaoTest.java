@@ -25,9 +25,11 @@ class AgregadorControladorIntegracaoTest {
     private final AgregadorDeJanela agr = new AgregadorDeJanela(ORIGEM, p, Referencia.de(Map.of("Login", S)));
     private final Controlador ctrl = new Controlador(p);
     private final List<Decisao> decisoes = new ArrayList<>();
+    private final List<JanelaObservada> observadas = new ArrayList<>();
 
     private void entregar(List<JanelaObservada> fechadas) {
         for (JanelaObservada o : fechadas) {
+            observadas.add(o);
             decisoes.add(ctrl.avaliar(o.janela(), EstadoTopologia.indisponivel()));
         }
     }
@@ -97,5 +99,22 @@ class AgregadorControladorIntegracaoTest {
         assertEquals("NNC", perfis());
         assertEquals(Decisao.Regra.NENHUMA, decisoes.get(1).regra());
         assertEquals(Decisao.Regra.R1, decisoes.get(2).regra());
+    }
+
+    @Test
+    @DisplayName("I1 atrasado (janela 0 ja emitida) e promovido e dispara R1 uma janela depois (Gestor 22/10)")
+    void violacaoAtrasadaDisparaR1NaJanelaSeguinte() {
+        janela(0, 0);
+        janela(1, 0); // a janela 0 ja foi emitida e avaliada (NORMAL)
+        assertEquals("N", perfis());
+        entregar(agr.registrarViolacao(ClasseViolacao.de("I1", null), ORIGEM + p.wNs() - 1));
+        janela(2, 0);
+        fechar(2);
+        assertEquals("NCC", perfis());
+        assertEquals(Decisao.Regra.R1, decisoes.get(1).regra());
+        assertEquals(ORIGEM + 2 * p.wNs(), decisoes.get(1).fimNs(), "R1 no fimNs da janela que recebeu a promovida");
+        assertEquals(1, observadas.get(1).violacoesSegurancaPromovidas());
+        assertEquals(1, observadas.get(1).janela().violacoesSeguranca());
+        assertEquals(0, observadas.get(0).janela().violacoesSeguranca(), "a janela 0 emitida nao muda");
     }
 }

@@ -158,16 +158,79 @@ class AgregadorDeJanelaTest {
     }
 
     @Test
-    @DisplayName("violacao atrasada: descartada e contada a parte, sem sumir em silencio")
+    @DisplayName("violacao fora do gatilho atrasada: descartada e contada a parte, sem sumir em silencio")
     void violacaoAtrasada() {
+        for (ClasseViolacao c : List.of(ClasseViolacao.I2_ESPERADA, ClasseViolacao.I2_FORA_DO_GATILHO,
+                ClasseViolacao.FORA_DO_GATILHO)) {
+            AgregadorDeJanela a = agr(0);
+            a.registrar(ok(15));
+            assertEquals(List.of(), a.registrarViolacao(c, 4));
+            assertEquals(1, a.violacoesAtrasadasTotal(), c.name());
+            JanelaObservada j = a.registrar(ok(20)).get(0);
+            assertEquals(new Janela(10, 20, 1, 0, 0, 0, 0, 0, 0), j.janela(), c.name() + ": descartada, nao migra");
+            assertEquals(1, j.violacoesAtrasadas(), c.name());
+            assertEquals(0, j.violacoesSegurancaPromovidas(), c.name());
+            assertEquals(0, j.violacoesI2ForaDoGatilho() + j.violacoesForaDoGatilho(), c.name());
+            assertEquals(0, j.atrasados());
+            assertEquals(0, a.violacoesSegurancaPromovidasTotal());
+        }
+    }
+
+    @Test
+    @DisplayName("violacao de seguranca atrasada e promovida a proxima janela emitida; a fechada fica intacta (Gestor 22/10)")
+    void violacaoSegurancaAtrasadaPromovida() {
         AgregadorDeJanela a = agr(0);
-        a.registrar(ok(15));
-        assertEquals(List.of(), a.registrarViolacao(ClasseViolacao.SEGURANCA, 4));
-        assertEquals(1, a.violacoesAtrasadasTotal());
+        a.registrarViolacao(ClasseViolacao.I2_ESPERADA, 3);
+        Janela fechada = a.registrar(ok(15)).get(0).janela();
+        assertEquals(new Janela(0, 10, 0, 0, 0, 0, 0, 0, 1), fechada);
+
+        assertEquals(List.of(), a.registrarViolacao(ClasseViolacao.SEGURANCA, 4), "promover nao emite nada");
+        assertEquals(List.of(), a.registrarViolacao(ClasseViolacao.de("I1", null), 9));
+        a.registrarViolacao(ClasseViolacao.SEGURANCA, 12); // no prazo, na propria janela [10,20)
         JanelaObservada j = a.registrar(ok(20)).get(0);
-        assertEquals(0, j.janela().violacoesSeguranca());
-        assertEquals(1, j.violacoesAtrasadas());
-        assertEquals(0, j.atrasados());
+        assertEquals(new Janela(10, 20, 1, 0, 0, 0, 0, 3, 0), j.janela(), "1 no prazo + 2 promovidas");
+        assertEquals(2, j.violacoesSegurancaPromovidas());
+        assertEquals(0, j.violacoesAtrasadas(), "promovida nao conta como descartada");
+        assertEquals(new Janela(0, 10, 0, 0, 0, 0, 0, 0, 1), fechada, "a janela fechada nunca muda");
+        assertEquals(2, a.violacoesSegurancaPromovidasTotal());
+        assertEquals(0, a.violacoesAtrasadasTotal());
+
+        JanelaObservada seguinte = a.registrar(ok(30)).get(0);
+        assertEquals(0, seguinte.violacoesSegurancaPromovidas(), "o contador zera a cada emissao");
+        assertEquals(0, seguinte.janela().violacoesSeguranca());
+    }
+
+    @Test
+    @DisplayName("promovida vai para a janela emitida pelo proprio fechamento seguinte, inclusive vazia")
+    void promovidaEntraNaProximaMesmoVazia() {
+        AgregadorDeJanela a = agr(0);
+        a.registrar(ok(12));
+        a.registrarViolacao(ClasseViolacao.SEGURANCA, 1);
+        List<JanelaObservada> f = a.registrar(ok(35));
+        assertEquals(2, f.size());
+        assertEquals(1, f.get(0).janela().violacoesSeguranca(), "[10,20) recebe a promovida");
+        assertEquals(1, f.get(0).violacoesSegurancaPromovidas());
+        assertEquals(0, f.get(1).janela().violacoesSeguranca(), "[20,30) vazia nao recebe de novo");
+    }
+
+    @Test
+    @DisplayName("promovida pendente no encerramento: vai na janela que encerrar emitir, senao conta no descarte")
+    void promovidaNoEncerramento() {
+        AgregadorDeJanela a = agr(100);
+        a.registrar(ok(5));
+        a.registrar(ok(115)); // fecha [0,10) com L = 100
+        a.registrarViolacao(ClasseViolacao.SEGURANCA, 2);
+        List<JanelaObservada> f = a.encerrar();
+        assertEquals(1, f.get(0).janela().violacoesSeguranca(), "[10,20) emitida no encerramento recebe a promovida");
+        assertEquals(1, f.get(0).violacoesSegurancaPromovidas());
+        assertEquals(0, a.violacoesDescartadasNoEncerramento());
+
+        AgregadorDeJanela b = agr(0);
+        b.registrar(ok(12));
+        b.registrarViolacao(ClasseViolacao.SEGURANCA, 2);
+        assertEquals(List.of(), b.encerrar(), "[10,20) e parcial");
+        assertEquals(1, b.violacoesDescartadasNoEncerramento(), "a promovida sem janela conta no descarte");
+        assertEquals(0, b.violacoesSegurancaPromovidasTotal(), "promovidas contam quando emitidas");
     }
 
     // ------------------------------------------------------------------ excedencia e codigos
@@ -369,10 +432,15 @@ class AgregadorDeJanelaTest {
     @Test
     @DisplayName("JanelaObservada rejeita contadores negativos e janela nula")
     void janelaObservadaValida() {
-        assertThrows(NullPointerException.class, () -> new JanelaObservada(null, 0, 0, 0, 0));
-        assertThrows(IllegalArgumentException.class, () -> new JanelaObservada(vazia(0, 1), -1, 0, 0, 0));
-        assertThrows(IllegalArgumentException.class, () -> new JanelaObservada(vazia(0, 1), 0, -1, 0, 0));
-        assertThrows(IllegalArgumentException.class, () -> new JanelaObservada(vazia(0, 1), 0, 0, -1, 0));
-        assertThrows(IllegalArgumentException.class, () -> new JanelaObservada(vazia(0, 1), 0, 0, 0, -1));
+        assertThrows(NullPointerException.class, () -> new JanelaObservada(null, 0, 0, 0, 0, 0));
+        assertThrows(IllegalArgumentException.class, () -> new JanelaObservada(vazia(0, 1), -1, 0, 0, 0, 0));
+        assertThrows(IllegalArgumentException.class, () -> new JanelaObservada(vazia(0, 1), 0, -1, 0, 0, 0));
+        assertThrows(IllegalArgumentException.class, () -> new JanelaObservada(vazia(0, 1), 0, 0, -1, 0, 0));
+        assertThrows(IllegalArgumentException.class, () -> new JanelaObservada(vazia(0, 1), 0, 0, 0, -1, 0));
+        assertThrows(IllegalArgumentException.class, () -> new JanelaObservada(vazia(0, 1), 0, 0, 0, 0, -1));
+        // promovidas sao parte de violacoesSeguranca: nao podem passar dela
+        assertThrows(IllegalArgumentException.class, () -> new JanelaObservada(vazia(0, 1), 0, 0, 1, 0, 0));
+        Janela comUma = new Janela(0, 1, 0, 0, 0, 0, 0, 1, 0);
+        assertEquals(1, new JanelaObservada(comUma, 0, 0, 1, 0, 0).violacoesSegurancaPromovidas());
     }
 }

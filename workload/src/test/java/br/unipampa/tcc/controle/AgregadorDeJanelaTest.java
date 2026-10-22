@@ -408,12 +408,12 @@ class AgregadorDeJanelaTest {
     }
 
     @Test
-    @DisplayName("construtor com ParametrosControlador usa wNs dos parametros e L padrao de 10 ms")
+    @DisplayName("construtor com ParametrosControlador usa wNs dos parametros e L padrao de 100 ms")
     void construtorComParametros() {
         ParametrosControlador p = ParametrosControlador.padrao();
         AgregadorDeJanela a = new AgregadorDeJanela(1_000, p, REF);
         assertEquals(p.wNs(), a.wNs());
-        assertEquals(10_000_000L, AgregadorDeJanela.TOLERANCIA_PADRAO_NS);
+        assertEquals(100_000_000L, AgregadorDeJanela.TOLERANCIA_PADRAO_NS, "L padrao de 100 ms (Gestor 22/10, V-B26.1 secao 6)");
         assertEquals(AgregadorDeJanela.TOLERANCIA_PADRAO_NS, a.toleranciaNs());
         assertEquals(1_000, a.origemNs());
     }

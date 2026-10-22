@@ -106,4 +106,74 @@ class CliTest {
         assertFalse(c.toString().contains("secreta-123"),
             "toString nao deveria conter a senha");
     }
+
+    // ---- B-42.1: --replication sync|async ----
+
+    @Test
+    @DisplayName("--replication: padrao e sync (nomes historicos)")
+    void replicacaoPadraoSync() {
+        Cli c = parse();
+        assertEquals(PerfilReplicacao.SYNC, c.replicacao);
+        assertEquals("sessions", c.replicacao.cacheSessoes());
+        assertEquals("counters", c.replicacao.cacheContadores());
+        c.validar();
+    }
+
+    @Test
+    @DisplayName("--replication sync escolhe SYNC")
+    void replicacaoSync() {
+        Cli c = parse("--replication", "sync");
+        assertEquals(PerfilReplicacao.SYNC, c.replicacao);
+        c.validar();
+    }
+
+    @Test
+    @DisplayName("--replication async escolhe ASYNC (sessions-async e counters-async)")
+    void replicacaoAsync() {
+        Cli c = parse("--replication", "async");
+        assertEquals(PerfilReplicacao.ASYNC, c.replicacao);
+        assertEquals("sessions-async", c.replicacao.cacheSessoes());
+        assertEquals("counters-async", c.replicacao.cacheContadores());
+        c.validar();
+        Cli s3 = parse("--scenario", "S3", "--replication", "async");
+        assertEquals(PerfilReplicacao.ASYNC, s3.replicacao);
+    }
+
+    @Test
+    @DisplayName("--replication com valor invalido e rejeitado no parse")
+    void replicacaoInvalida() {
+        for (String ruim : new String[]{"asinc", "repl", "", "dist_async"}) {
+            CommandLine.ParameterException e = assertThrows(CommandLine.ParameterException.class,
+                    () -> parse("--replication", ruim), ruim);
+            assertTrue(e.getMessage().contains("--replication"), e.getMessage());
+        }
+        assertThrows(CommandLine.ParameterException.class, () -> parse("--replication"));
+    }
+
+    @Test
+    @DisplayName("--dry-run mostra o perfil e os nomes de cache, mantendo a linha historica")
+    void dryRunMostraPerfil() {
+        Cli a = parse("--dry-run", "--replication", "async");
+        String t = a.textoDryRun();
+        assertTrue(t.startsWith("dry-run, configuracao OK: Cli{"), t);
+        assertTrue(t.contains("replicacao=async caches=sessions-async,counters-async"), t);
+        String d = parse("--dry-run").textoDryRun();
+        assertTrue(d.contains("replicacao=sync caches=sessions,counters"), d);
+    }
+
+    @Test
+    @DisplayName("WorkloadMain --dry-run imprime o perfil sem conectar ao cluster")
+    void workloadMainDryRunImprimePerfil() {
+        java.io.PrintStream original = System.out;
+        java.io.ByteArrayOutputStream buf = new java.io.ByteArrayOutputStream();
+        try {
+            System.setOut(new java.io.PrintStream(buf, true, java.nio.charset.StandardCharsets.UTF_8));
+            WorkloadMain.main(new String[]{"--dry-run", "--replication", "async", "--servers", "nao-existe:1"});
+        } finally {
+            System.setOut(original);
+        }
+        String out = buf.toString(java.nio.charset.StandardCharsets.UTF_8);
+        assertTrue(out.contains("dry-run, configuracao OK: "), out);
+        assertTrue(out.contains("dry-run, replicacao=async caches=sessions-async,counters-async"), out);
+    }
 }

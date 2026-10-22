@@ -207,6 +207,41 @@ public final class Cli {
     )
     public String restUrl;
 
+    /**
+     * B-42.1: perfil de replicacao. {@code sync} (padrao) abre {@code sessions}/{@code counters}
+     * (DIST_SYNC, controle; fluxo identico ao anterior a B-42.1); {@code async} abre os irmaos
+     * {@code sessions-async}/{@code counters-async} (DIST_ASYNC). Outro valor e erro de parametro.
+     */
+    @Option(
+        names = {"--replication"},
+        description = "Perfil de replicacao: sync (caches sessions/counters, DIST_SYNC) ou async "
+            + "(sessions-async/counters-async, DIST_ASYNC). Padrao ${DEFAULT-VALUE}.",
+        defaultValue = "sync",
+        converter = ReplicacaoConverter.class
+    )
+    public PerfilReplicacao replicacao = PerfilReplicacao.SYNC;
+
+    /** Converte {@code sync}/{@code async}; outro valor e {@link CommandLine.TypeConversionException}. */
+    public static final class ReplicacaoConverter implements CommandLine.ITypeConverter<PerfilReplicacao> {
+        @Override
+        public PerfilReplicacao convert(String valor) {
+            try {
+                return PerfilReplicacao.porRotulo(valor);
+            } catch (IllegalArgumentException e) {
+                throw new CommandLine.TypeConversionException(e.getMessage());
+            }
+        }
+    }
+
+    /**
+     * Texto impresso por {@code --dry-run}: a linha historica (inalterada) seguida do perfil de
+     * replicacao e dos nomes de cache que a execucao abriria.
+     */
+    public String textoDryRun() {
+        return "dry-run, configuracao OK: " + this + System.lineSeparator()
+                + "dry-run, " + replicacao.descricao();
+    }
+
     /** Sanidade dos parâmetros; lança IllegalArgumentException com motivo. */
     public void validar() {
         if (duracaoSeg <= 0) {

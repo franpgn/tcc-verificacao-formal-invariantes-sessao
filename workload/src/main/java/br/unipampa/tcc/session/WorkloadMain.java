@@ -63,7 +63,7 @@ public final class WorkloadMain {
             System.exit(2);
         }
         if (cli.dryRun) {
-            System.out.println("dry-run, configuracao OK: " + cli);
+            System.out.println(cli.textoDryRun());
             return;
         }
         try {

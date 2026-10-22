@@ -106,7 +106,7 @@ class IdentidadesMisturaTest {
         assertEquals("v2", VersaoMistura.V2.rotulo());
         assertEquals(VersaoMistura.V2, VersaoMistura.porRotulo("v2"));
         assertEquals(VersaoMistura.V1, VersaoMistura.porRotulo("v1"));
-        for (String v : new String[] {"V2", "2", "", " v2", "v3"}) {
+        for (String v : new String[] {"V2", "2", "", " v2", "v4"}) {
             assertThrows(IllegalArgumentException.class, () -> VersaoMistura.porRotulo(v), v);
         }
         assertThrows(IllegalArgumentException.class, () -> VersaoMistura.porRotulo(null));

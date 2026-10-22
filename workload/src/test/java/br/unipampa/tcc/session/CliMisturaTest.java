@@ -55,9 +55,9 @@ class CliMisturaTest {
     }
 
     @Test
-    @DisplayName("invalidos (V2, 2, vazio, v3) e opcao sem valor => ParameterException")
+    @DisplayName("invalidos (V2, 2, vazio, v4) e opcao sem valor => ParameterException")
     void invalidos() {
-        for (String v : new String[] {"V2", "2", "", "v3", "V1"}) {
+        for (String v : new String[] {"V2", "2", "", "v4", "V1"}) {
             CommandLine.ParameterException e = assertThrows(CommandLine.ParameterException.class,
                     () -> parse("--mix", v), "aceitou '" + v + "'");
             assertTrue(e.getMessage().contains("--mix"), e.getMessage());

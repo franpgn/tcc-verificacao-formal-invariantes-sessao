@@ -185,6 +185,9 @@ public final class Sanidade {
         } else {
             avaliarFora(cenario, lim, motivos, met);
         }
+        if (eventosDentro > 0) {
+            avaliarDentro(motivos, met);
+        }
 
         Map<String, Map<String, Map<String, Long>>> cont = new LinkedHashMap<>();
         for (Regiao r : Regiao.values()) {
@@ -234,6 +237,30 @@ public final class Sanidade {
                             + " (maximo " + pct(lim.validNotFoundMax()) + ")"));
         }
         avaliarMistura(cenario, lim, loginOk, validate, motivos, met);
+    }
+
+    /**
+     * DENTRO_SEM_VALID: na regiao "dentro" (com eventos), Validate VALID = 0 e
+     * nem todos os eventos sao {@code ERROR_*}. Uma regiao "dentro" toda
+     * recusada por indisponibilidade (DENY_READ_WRITES) e esperada e nao falha.
+     */
+    private void avaliarDentro(List<Motivo> motivos, Map<String, Object> met) {
+        Regiao d = Regiao.DENTRO;
+        long valid = n(d, OP_VALIDATE, "VALID");
+        long naoErro = 0L;
+        for (Map<String, Long> porRc : contagens.get(d).values()) {
+            for (Map.Entry<String, Long> e : porRc.entrySet()) {
+                if (!e.getKey().startsWith("ERROR_")) {
+                    naoErro += e.getValue();
+                }
+            }
+        }
+        met.put("dentro_validate_valid", valid);
+        met.put("dentro_nao_error", naoErro);
+        if (valid == 0 && naoErro > 0) {
+            motivos.add(new Motivo("DENTRO_SEM_VALID",
+                    "regiao dentro: Validate VALID = 0 com " + naoErro + " eventos nao ERROR_*"));
+        }
     }
 
     /**

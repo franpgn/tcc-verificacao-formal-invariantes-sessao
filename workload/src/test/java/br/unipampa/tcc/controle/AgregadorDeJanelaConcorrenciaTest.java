@@ -39,11 +39,12 @@ class AgregadorDeJanelaConcorrenciaTest {
         CountDownLatch largada = new CountDownLatch(1);
         ExecutorService pool = Executors.newFixedThreadPool(THREADS);
         try {
-            List<Future<Long>> futuros = new ArrayList<>();
+            List<Future<long[]>> futuros = new ArrayList<>();
             for (int t = 0; t < THREADS; t++) {
+                final int deslocamento = t;
                 futuros.add(pool.submit(() -> {
                     largada.await();
-                    long violacoes = 0;
+                    long[] violacoes = new long[ClasseViolacao.values().length];
                     for (int i = 0; i < EVENTOS_POR_THREAD; i++) {
                         // end_ns lido antes da chamada, como em SessionOps.emitir: entre ler e
                         // registrar outra thread pode passar na frente (desordem real).
@@ -51,17 +52,26 @@ class AgregadorDeJanelaConcorrenciaTest {
                         String cod = (i % 10 == 0) ? "ERROR_TRANSPORT" : "OK";
                         emitidas.addAll(a.registrar(new EventoOperacao("Login", fim - (i % 20), fim, cod)));
                         if (i % VIOLACAO_A_CADA == 0) {
-                            emitidas.addAll(a.registrarViolacao(ClasseViolacao.SEGURANCA, fim));
-                            violacoes++;
+                            // as 4 classes se alternam (V-B26.1, T2)
+                            ClasseViolacao c = ClasseViolacao.values()[(i / VIOLACAO_A_CADA + deslocamento) % 4];
+                            emitidas.addAll(a.registrarViolacao(c, fim));
+                            violacoes[c.ordinal()]++;
                         }
                     }
                     return violacoes;
                 }));
             }
             largada.countDown();
-            long violacoesEnviadas = 0;
-            for (Future<Long> f : futuros) {
-                violacoesEnviadas += f.get(60, TimeUnit.SECONDS);
+            long[] enviadasPorClasse = new long[ClasseViolacao.values().length];
+            for (Future<long[]> f : futuros) {
+                long[] v = f.get(60, TimeUnit.SECONDS);
+                for (int c = 0; c < v.length; c++) {
+                    enviadasPorClasse[c] += v[c];
+                }
+            }
+            long violacoesEnviadas = java.util.Arrays.stream(enviadasPorClasse).sum();
+            for (long v : enviadasPorClasse) {
+                assertTrue(v > 0, "todas as classes exercitadas");
             }
             emitidas.addAll(a.encerrar());
 
@@ -77,7 +87,15 @@ class AgregadorDeJanelaConcorrenciaTest {
             assertEquals(n, nasJanelas + a.atrasadosTotal() + a.descartadosNoEncerramento(), "eventos conservados");
             assertTrue(atrasadosNasJanelas <= a.atrasadosTotal());
 
-            long violNasJanelas = ordenadas.stream().mapToLong(o -> o.janela().violacoesSeguranca()).sum();
+            long[] nasJanelasPorClasse = {
+                    ordenadas.stream().mapToLong(o -> o.janela().violacoesSeguranca()).sum(),
+                    ordenadas.stream().mapToLong(o -> o.janela().violacoesI2Esperadas()).sum(),
+                    ordenadas.stream().mapToLong(JanelaObservada::violacoesI2ForaDoGatilho).sum(),
+                    ordenadas.stream().mapToLong(JanelaObservada::violacoesForaDoGatilho).sum()};
+            for (int c = 0; c < nasJanelasPorClasse.length; c++) {
+                assertTrue(nasJanelasPorClasse[c] <= enviadasPorClasse[c], ClasseViolacao.values()[c].name());
+            }
+            long violNasJanelas = java.util.Arrays.stream(nasJanelasPorClasse).sum();
             assertEquals(violacoesEnviadas,
                     violNasJanelas + a.violacoesAtrasadasTotal() + a.violacoesDescartadasNoEncerramento(),
                     "violacoes conservadas");

@@ -217,11 +217,14 @@ class AgregadorDeJanelaTest {
         a.registrarViolacao(ClasseViolacao.de("I2", null), 6);
         a.registrarViolacao(ClasseViolacao.de("I5", null), 7);
         a.registrarViolacao(ClasseViolacao.de("I3", null), 8);
+        a.registrarViolacao(ClasseViolacao.de("I6", null), 8);
+        a.registrarViolacao(ClasseViolacao.de("I2-PERDIDO", "REAL"), 9);
         JanelaObservada o = a.registrar(ok(10)).get(0);
         assertEquals(3, o.janela().violacoesSeguranca());
         assertEquals(2, o.janela().violacoesI2Esperadas());
+        // contagens assimetricas (2 x 4): uma troca entre os dois contadores nao passa (V-B26.1, S12)
         assertEquals(2, o.violacoesI2ForaDoGatilho());
-        assertEquals(2, o.violacoesForaDoGatilho());
+        assertEquals(4, o.violacoesForaDoGatilho());
         assertEquals(0, o.janela().total(), "violacao nao e evento de operacao (ok(10) e da janela seguinte)");
     }
 
@@ -265,6 +268,48 @@ class AgregadorDeJanelaTest {
         assertThrows(IllegalStateException.class, () -> a.registrar(ok(30)));
         assertThrows(IllegalStateException.class, () -> a.registrarViolacao(ClasseViolacao.SEGURANCA, 30));
         assertEquals(List.of(), a.encerrar(), "encerrar de novo nao emite nada");
+    }
+
+    @Test
+    @DisplayName("encerrar conta no descarte as violacoes das 4 classes que estavam na parcial (V-B26.1, T2)")
+    void encerrarDescartaTodasAsClasses() {
+        AgregadorDeJanela a = agr(100);
+        a.registrar(ok(12));
+        for (ClasseViolacao c : ClasseViolacao.values()) {
+            a.registrarViolacao(c, 15);
+        }
+        List<JanelaObservada> f = a.encerrar();
+        assertEquals(1, f.size(), "so [0,10) esta completa (marca = 15)");
+        assertEquals(1, a.descartadosNoEncerramento());
+        assertEquals(4, a.violacoesDescartadasNoEncerramento());
+    }
+
+    @Test
+    @DisplayName("a marca d'agua nunca decresce; encerrar apos evento fora de ordem usa a maior marca (V-B26.1, T4)")
+    void marcaNaoDecresce() {
+        AgregadorDeJanela a = agr(100);
+        a.registrar(ok(30));
+        a.registrar(ok(25));
+        assertEquals(30, a.marcaDaguaNs());
+        a.registrarViolacao(ClasseViolacao.FORA_DO_GATILHO, 21);
+        assertEquals(30, a.marcaDaguaNs());
+        List<JanelaObservada> f = a.encerrar();
+        assertEquals(3, f.size(), "[0,10), [10,20) e [20,30) completas pela marca 30");
+        assertEquals(30, f.get(2).janela().fimNs());
+        assertEquals(1, f.get(2).janela().total(), "o 25 entra em [20,30); o 30 fica na parcial");
+        assertEquals(1, a.descartadosNoEncerramento());
+    }
+
+    @Test
+    @DisplayName("o contador de violacoes atrasadas zera na emissao seguinte; o total continua (V-B26.1, T1)")
+    void violacoesAtrasadasZeramPorJanela() {
+        AgregadorDeJanela a = agr(0);
+        a.registrar(ok(15));
+        a.registrarViolacao(ClasseViolacao.I2_ESPERADA, 4);
+        assertEquals(1, a.registrar(ok(20)).get(0).violacoesAtrasadas());
+        JanelaObservada segunda = a.registrar(ok(30)).get(0);
+        assertEquals(0, segunda.violacoesAtrasadas());
+        assertEquals(1, a.violacoesAtrasadasTotal());
     }
 
     // ------------------------------------------------------------------ determinismo e parametros

@@ -33,7 +33,7 @@ class ArquiteturaControleTest {
             "Decisao", "ParametrosControlador", "Controlador",
             // B-26.1: agregador e observador de janela
             "Referencia", "EventoOperacao", "ClasseViolacao", "JanelaObservada", "AgregadorDeJanela",
-            "LeitorCsvEventos");
+            "LeitorCsvEventos", "FonteDeTempo");
 
     static List<String> importsProibidos(String fonte) {
         List<String> r = new ArrayList<>();

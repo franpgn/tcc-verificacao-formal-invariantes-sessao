@@ -1,0 +1,86 @@
+{
+  "arquivo" : "dados-vm/baseline-2026-06-23/runs/S1-F3/rep-001.csv",
+  "sha256" : "2ec41a48b98fd6b2a14426ac65983eda2598220fbca6549c6c34477e7c9c371f",
+  "cenario" : "S1",
+  "modo" : "strict",
+  "limiares" : {
+    "login_ok_min" : 0.95,
+    "validate_valid_min_exclusivo" : 0,
+    "validate_ausente_max" : 0.05,
+    "mistura_tolerancia_pp" : 2.0,
+    "status" : "PROVISORIOS (diagnostico 2026-10-22; aceitos pelo Gestor como provisorios)"
+  },
+  "contagens" : {
+    "fora" : {
+      "IncrementFailure" : {
+        "COUNTED" : 7024
+      },
+      "Login" : {
+        "BLOCKED" : 17159
+      },
+      "Logout" : {
+        "NONE" : 6903
+      },
+      "ResetFailures" : {
+        "NONE" : 3397
+      },
+      "Validate" : {
+        "NONE" : 34590
+      }
+    },
+    "dentro" : { }
+  },
+  "metricas" : {
+    "eventos_total" : 69073,
+    "eventos_fora" : 69073,
+    "eventos_dentro" : 0,
+    "login" : 17159,
+    "login_ok" : 0,
+    "login_blocked" : 17159,
+    "login_ok_frac" : 0.0,
+    "validate" : 34590,
+    "validate_valid" : 0,
+    "validate_ausente" : 34590,
+    "validate_ausente_frac" : 1.0,
+    "ops" : 69073,
+    "mistura" : {
+      "Validate" : {
+        "observado" : 0.5007745428749294,
+        "esperado" : 0.5,
+        "desvio_pp" : 0.07745428749293959
+      },
+      "Login" : {
+        "observado" : 0.24841834001708338,
+        "esperado" : 0.25,
+        "desvio_pp" : -0.15816599829166222
+      },
+      "Logout" : {
+        "observado" : 0.09993774702126736,
+        "esperado" : 0.1,
+        "desvio_pp" : -0.006225297873264923
+      },
+      "IncrementFailure" : {
+        "observado" : 0.10168951688793017,
+        "esperado" : 0.1,
+        "desvio_pp" : 0.1689516887930162
+      },
+      "ResetFailures" : {
+        "observado" : 0.04917985319878969,
+        "esperado" : 0.05,
+        "desvio_pp" : -0.08201468012103141
+      }
+    }
+  },
+  "veredito" : "FALHA",
+  "motivos" : [ {
+    "codigo" : "LOGIN_OK_BAIXO",
+    "texto" : "Login OK = 0,0 % (minimo 95,0 %)"
+  }, {
+    "codigo" : "VALIDATE_VALID_ZERO",
+    "texto" : "Validate VALID = 0"
+  }, {
+    "codigo" : "VALIDATE_AUSENTE_ALTO",
+    "texto" : "Validate NONE+NOT_FOUND = 100,0 % (maximo 5,0 %)"
+  } ],
+  "versao" : "b43-3a-i/1"
+}

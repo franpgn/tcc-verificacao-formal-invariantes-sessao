@@ -57,6 +57,12 @@ public class SessionOps {
     public static final String OP_UNBLOCK = "Unblock";          // O7
 
     private final Armazem<SessionState> sessions;
+    /**
+     * B-43.8: o mesmo armazem de sessoes, quando ele e versionado (em producao, sempre: ver os
+     * construtores com {@code RemoteCacheManager}); {@code null} no caminho comum dos testes antigos,
+     * que mantem o comportamento de B-43.6.
+     */
+    private final ArmazemVersionado<SessionState> sessoesVersionadas;
     private final Armazem<IdentityState> identities;
     private final LatencyRegistry latency;
     private final InvariantAuditor auditor;
@@ -81,6 +87,25 @@ public class SessionOps {
      */
     private final LongAdder i1Concorrentes = new LongAdder();
     private final LongAdder i4Concorrentes = new LongAdder();
+
+    /**
+     * B-43.8 (DT-003): invalidacoes ({@code logout} ou cascata de {@code block}) que perderam a escrita
+     * condicional para outra invalidacao e viraram no-op ao reler INVALID; e invalidacoes que esgotaram
+     * {@link #TENTATIVAS_CONDICIONAIS} com a sessao VALID e a versao mudando. So diagnostico (DT-001).
+     */
+    private final LongAdder invalidacaoPerdida = new LongAdder();
+    private final LongAdder conflitoEsgotado = new LongAdder();
+
+    /** B-43.8: tentativas de escrita condicional por invalidacao, no total. */
+    static final int TENTATIVAS_CONDICIONAIS = 3;
+
+    long invalidacaoPerdida() {
+        return invalidacaoPerdida.sum();
+    }
+
+    long conflitoEsgotado() {
+        return conflitoEsgotado.sum();
+    }
 
     /** B-43.6: leituras VALID concorrentes com a primeira confirmacao da sessao (nao sao I1). */
     long i1Concorrentes() {
@@ -189,6 +214,7 @@ public class SessionOps {
                 ? invalidacoesCompartilhadas : new ConcurrentHashMap<>();
         this.rastro = rastro;
         this.sessions = sessions;
+        this.sessoesVersionadas = sessions instanceof ArmazemVersionado<SessionState> v ? v : null;
         this.identities = identities;
         this.latency = latency;
         this.auditor = auditor;
@@ -365,9 +391,12 @@ public class SessionOps {
         }
     }
 
-    /** O3, logout. Idempotente. */
+    /** O3, logout. Idempotente. B-43.8: com armazem versionado, ver {@link #logoutVersionado}. */
     public OpResult logout(String sid) {
         long t0 = System.nanoTime();
+        if (sessoesVersionadas != null) {
+            return logoutVersionado(sid, t0);
+        }
         try {
             // B-43.6: instantaneo ANTES da leitura (ver verificarI1I4).
             SessionState.Motivo confirmadoAntes = invalidacoesConfirmadas.get(sid);
@@ -411,6 +440,78 @@ public class SessionOps {
             OpResult r = ClassificadorDeErro.classificar(e);
             emitir(OP_LOGOUT, t0, System.nanoTime(), r, sid);
             return r;
+        }
+    }
+
+    /** B-43.8: desfecho de {@link #invalidarCondicional}. */
+    private enum Desfecho { ESCRITA, PERDIDA, AUSENTE }
+
+    /**
+     * B-43.8 (DT-003): {@code logout} com leitura versionada e escrita condicional. A leitura da
+     * operacao e {@code lerComVersao} (no lugar do {@code get}), precedida do instantaneo
+     * {@code confirmadoAntes} (regra de B-43.6). Ausente: NOT_FOUND. INVALID: checagem I1/I4 e no-op.
+     * VALID: checagem I1/I4 e {@link #invalidarCondicional}. A latencia {@code logout_ok} so para o
+     * vencedor; o perdedor (invalidacao perdida) e {@code logout_noop}, como um no-op.
+     */
+    private OpResult logoutVersionado(String sid, long t0) {
+        try {
+            SessionState.Motivo confirmadoAntes = invalidacoesConfirmadas.get(sid);
+            ArmazemVersionado.Versionado<SessionState> v = sessoesVersionadas.lerComVersao(sid);
+            if (v == null) {
+                return fimLogout(t0, "logout_noop", OpResult.notFound(), sid);
+            }
+            verificarI1I4(sid, v.valor(), confirmadoAntes);
+            if (v.valor().estado() == SessionState.Estado.INVALID) {
+                return fimLogout(t0, "logout_noop", OpResult.okNoop(), sid);
+            }
+            Desfecho d = invalidarCondicional(sid, v, SessionState.Motivo.LOGOUT);
+            if (d == Desfecho.ESCRITA) {
+                return fimLogout(t0, "logout_ok", OpResult.okNoop(), sid);
+            }
+            return fimLogout(t0, "logout_noop", d == Desfecho.PERDIDA ? OpResult.okNoop() : OpResult.notFound(), sid);
+        } catch (RuntimeException e) {
+            return fimLogout(t0, "logout_noop", ClassificadorDeErro.classificar(e), sid);
+        }
+    }
+
+    private OpResult fimLogout(long t0, String rotulo, OpResult r, String sid) {
+        latency.record(rotulo, t0);
+        emitir(OP_LOGOUT, t0, System.nanoTime(), r, sid);
+        return r;
+    }
+
+    /**
+     * B-43.8 (DT-003): invalida {@code sid} com {@code motivo} a partir da leitura VALID {@code v} (ja
+     * checada por I1/I4 pelo chamador), com escrita condicional a versao lida. Sucesso: a confirmacao
+     * entra no mapa DEPOIS da escrita reconhecida, so para o vencedor (ordem de B-43.6). Falha de
+     * versao: novo instantaneo e nova {@code lerComVersao}, checada por I1/I4; INVALID (outra
+     * invalidacao venceu) e no-op, conta em {@link #invalidacaoPerdida()} e nao escreve a confirmacao
+     * deste motivo; VALID tenta de novo, ate {@link #TENTATIVAS_CONDICIONAIS} no total, e entao conta
+     * em {@link #conflitoEsgotado()} e lanca {@code IllegalStateException} (o chamador classifica).
+     */
+    private Desfecho invalidarCondicional(String sid, ArmazemVersionado.Versionado<SessionState> lida,
+                                          SessionState.Motivo motivo) {
+        ArmazemVersionado.Versionado<SessionState> v = lida;
+        for (int tentativa = 1; ; tentativa++) {
+            SessionState nova = v.valor().invalidar(motivo, Instant.now());
+            if (sessoesVersionadas.substituirSeVersao(sid, nova, v.versao())) {
+                invalidacoesConfirmadas.put(sid, nova.motivo());
+                return Desfecho.ESCRITA;
+            }
+            SessionState.Motivo confirmadoAntes = invalidacoesConfirmadas.get(sid);
+            v = sessoesVersionadas.lerComVersao(sid);
+            if (v == null) {
+                return Desfecho.AUSENTE;
+            }
+            verificarI1I4(sid, v.valor(), confirmadoAntes);
+            if (v.valor().estado() == SessionState.Estado.INVALID) {
+                invalidacaoPerdida.increment();
+                return Desfecho.PERDIDA;
+            }
+            if (tentativa >= TENTATIVAS_CONDICIONAIS) {
+                conflitoEsgotado.increment();
+                throw new IllegalStateException("conflito de versao esgotado");
+            }
         }
     }
 

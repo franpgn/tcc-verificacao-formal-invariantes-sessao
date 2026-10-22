@@ -43,6 +43,19 @@ public final class WorkloadMain {
 
     private WorkloadMain() { /* utility */ }
 
+    /**
+     * Ponto de entrada. Codigos de saida:
+     * <ul>
+     *   <li>{@code 0}: execucao concluida (ou {@code --help}/{@code --dry-run});</li>
+     *   <li>{@code 2}: parametro invalido (Picocli ou {@link Cli#validar()});</li>
+     *   <li>{@code 3}: falha de execucao (qualquer outra excecao);</li>
+     *   <li>{@code 4}: reservado para a guarda de sanidade da mistura (B-43.3a, parte ii; ainda
+     *       nao emitido);</li>
+     *   <li>{@code 5}: o reset de estado (B-43.1, {@code --reset-state on}) nao provou que os caches
+     *       do perfil ficaram vazios ({@link EstadoNaoLimpoException}); a repeticao corrente nao
+     *       grava {@code rep-NNN.csv} e as seguintes nao rodam.</li>
+     * </ul>
+     */
     public static void main(String[] args) {
         Cli cli = new Cli();
         CommandLine cmd = new CommandLine(cli);
@@ -68,11 +81,95 @@ public final class WorkloadMain {
         }
         try {
             executar(cli);
+        } catch (EstadoNaoLimpoException e) {
+            System.err.println("Reset de estado falhou (reset_state=on): " + e.getMessage());
+            System.exit(codigoDeSaida(e));
         } catch (Exception e) {
             System.err.println("Falha na execucao: " + e.getMessage());
             e.printStackTrace(System.err);
-            System.exit(3);
+            System.exit(codigoDeSaida(e));
         }
+    }
+
+    /** Codigo de saida da execucao para {@code t} (ver {@link #main}). */
+    static int codigoDeSaida(Throwable t) {
+        for (Throwable c = t; c != null; c = c.getCause()) {
+            if (c instanceof EstadoNaoLimpoException) {
+                return 5;
+            }
+            if (c.getCause() == c) {
+                break;
+            }
+        }
+        return 3;
+    }
+
+    /**
+     * B-43.1: prepara o estado dos caches do perfil antes do <i>warm-up</i> da repeticao
+     * {@code rep}. Com {@code --reset-state on}, executa o {@link ResetEstado} (prazo 10 s,
+     * intervalo 100 ms), imprime a linha {@code Reset:} e, com {@code --csv-dir}, grava
+     * {@code estado-rep-NNN.json}; na falha grava o JSON com {@code FALHA} e relanca. Com
+     * {@code off} nao faz nenhuma operacao nos caches e devolve {@code null}.
+     */
+    static ResetEstado.Resultado prepararEstado(Cli cli, List<CacheLimpavel> caches, int rep)
+            throws EstadoNaoLimpoException, java.io.IOException {
+        return prepararEstado(cli, caches, rep, ResetEstado.PRAZO_PADRAO, ResetEstado.INTERVALO_PADRAO,
+                System::nanoTime, ResetEstado.Sono.real());
+    }
+
+    /** Como {@link #prepararEstado(Cli, List, int)}, com prazo, relogio e espera injetaveis (testes). */
+    static ResetEstado.Resultado prepararEstado(Cli cli, List<CacheLimpavel> caches, int rep,
+            java.time.Duration prazo, java.time.Duration intervalo,
+            java.util.function.LongSupplier relogioNs, ResetEstado.Sono sono)
+            throws EstadoNaoLimpoException, java.io.IOException {
+        if (!cli.resetEstado) {
+            System.out.println("Reset: reset_state=off");
+            gravarEstado(cli, rep, null, null, null);
+            return null;
+        }
+        try {
+            ResetEstado.Resultado r = ResetEstado.executar(caches, prazo, intervalo, relogioNs, sono);
+            System.out.printf("Reset: reset_state=on caches=%s antes=%s depois=%s ms=%d%n",
+                    String.join(",", r.caches()), juntar(r.tamanhosAntes()), juntar(r.tamanhosDepois()),
+                    r.duracaoMs());
+            gravarEstado(cli, rep, r, "OK", null);
+            return r;
+        } catch (EstadoNaoLimpoException e) {
+            gravarEstado(cli, rep, e.resultado(), "FALHA", e.getMessage());
+            throw e;
+        }
+    }
+
+    private static String juntar(List<Integer> l) {
+        StringBuilder sb = new StringBuilder();
+        for (Integer v : l) {
+            if (sb.length() > 0) {
+                sb.append(',');
+            }
+            sb.append(v);
+        }
+        return sb.toString();
+    }
+
+    /** Grava {@code estado-rep-NNN.json} em {@code --csv-dir} (nada sem {@code --csv-dir}). */
+    private static void gravarEstado(Cli cli, int rep, ResetEstado.Resultado r, String veredito,
+                                     String motivo) throws java.io.IOException {
+        if (cli.csvDir == null || cli.csvDir.isBlank()) {
+            return;
+        }
+        Map<String, Object> m = new java.util.LinkedHashMap<>();
+        m.put("reset_state", cli.rotuloResetEstado());
+        boolean on = cli.resetEstado;
+        m.put("replicacao", on ? cli.replicacao.rotulo() : null);
+        m.put("caches", on && r != null ? r.caches() : null);
+        m.put("tamanhos_antes", on && r != null ? r.tamanhosAntes() : null);
+        m.put("tamanhos_depois", on && r != null ? r.tamanhosDepois() : null);
+        m.put("duracao_ms", on && r != null ? r.duracaoMs() : null);
+        m.put("veredito", veredito);
+        m.put("motivo", motivo);
+        Path destino = Path.of(cli.csvDir, String.format("estado-rep-%03d.json", rep));
+        java.nio.file.Files.createDirectories(destino.getParent());
+        new com.fasterxml.jackson.databind.ObjectMapper().writeValue(destino.toFile(), m);
     }
 
     /**
@@ -111,6 +208,11 @@ public final class WorkloadMain {
 
         try (RemoteCacheManager rcm = new RemoteCacheManager(cb.build());
              LeitoresMultiReplica leitores = abrirLeitoresMultiReplica(cli, rcm)) {
+            // B-43.1: esvazia os caches do perfil ANTES do warm-up (nao consome warm-up). Na falha
+            // lanca EstadoNaoLimpoException: sem rep-NNN.csv, saida 5, repeticoes seguintes nao rodam.
+            prepararEstado(cli, List.of(
+                    CacheLimpavel.de(rcm.getCache(cli.replicacao.cacheSessoes())),
+                    CacheLimpavel.de(rcm.getCache(cli.replicacao.cacheContadores()))), rep);
             long inicioMs = System.currentTimeMillis();
             WarmupPolicy politica = WarmupPolicy.padrao(
                     inicioMs, cli.duracaoSeg, cli.warmupMinimoSeg,

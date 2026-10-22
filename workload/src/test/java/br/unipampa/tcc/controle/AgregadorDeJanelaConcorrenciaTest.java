@@ -98,7 +98,9 @@ class AgregadorDeJanelaConcorrenciaTest {
             long violNasJanelas = java.util.Arrays.stream(nasJanelasPorClasse).sum();
             assertEquals(violacoesEnviadas,
                     violNasJanelas + a.violacoesAtrasadasTotal() + a.violacoesDescartadasNoEncerramento(),
-                    "violacoes conservadas");
+                    "violacoes conservadas (as promovidas estao dentro de violacoesSeguranca)");
+            assertEquals(a.violacoesSegurancaPromovidasTotal(),
+                    ordenadas.stream().mapToLong(JanelaObservada::violacoesSegurancaPromovidas).sum());
 
             long erros = ordenadas.stream().mapToLong(o -> o.janela().erros()).sum();
             assertTrue(erros <= nasJanelas);

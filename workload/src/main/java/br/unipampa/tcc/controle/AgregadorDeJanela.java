@@ -22,9 +22,15 @@ import java.util.TreeMap;
  *
  * <p><b>Atrasados (regra C+A).</b> Um evento cuja janela ja foi emitida (ou anterior a origem) e
  * descartado e contado: em {@link JanelaObservada#atrasados()} da proxima janela emitida e em
- * {@link #atrasadosTotal()}. Violacoes atrasadas sao contadas a parte
- * ({@link JanelaObservada#violacoesAtrasadas()}), para que uma violacao de seguranca descartada
- * nao suma em silencio. Uma janela emitida nunca muda.
+ * {@link #atrasadosTotal()}. Violacoes atrasadas fora do gatilho sao descartadas e contadas a
+ * parte ({@link JanelaObservada#violacoesAtrasadas()}). Uma janela emitida nunca muda.
+ *
+ * <p><b>Violacao de seguranca atrasada (V-B26.1 secao 5.5; Gestor, 2026-10-22).</b> Uma violacao
+ * com {@link ClasseViolacao#gatilho()} cuja janela ja foi emitida nao e descartada: e
+ * <em>promovida</em> a proxima janela emitida, somando em {@code violacoesSeguranca} dela e em
+ * {@link JanelaObservada#violacoesSegurancaPromovidas()}. R1 dispara uma janela depois, a favor da
+ * seguranca. Promovidas pendentes no encerramento vao para a primeira janela que {@code encerrar}
+ * emitir; se nenhuma for emitida, contam em {@link #violacoesDescartadasNoEncerramento()}.
  *
  * <p><b>Encerramento.</b> {@link #encerrar()} emite, sem esperar {@code L}, todas as janelas
  * completas ({@code fimNs <= marca}); a janela parcial que contem a marca nao e emitida e o que
@@ -57,6 +63,8 @@ public final class AgregadorDeJanela {
 
     private long atrasadosPendentes;
     private long violacoesAtrasadasPendentes;
+    private long promovidasPendentes;
+    private long promovidasTotal;
     private long atrasadosTotal;
     private long violacoesAtrasadasTotal;
     private long descartadosNoEncerramento;
@@ -122,8 +130,12 @@ public final class AgregadorDeJanela {
         exigirAberto();
         Acumulador acc = acumuladorDe(fimNsDoEvento);
         if (acc == null) {
-            violacoesAtrasadasPendentes++;
-            violacoesAtrasadasTotal++;
+            if (classe.gatilho()) {
+                promovidasPendentes++;
+            } else {
+                violacoesAtrasadasPendentes++;
+                violacoesAtrasadasTotal++;
+            }
         } else {
             switch (classe) {
                 case SEGURANCA -> acc.seguranca++;
@@ -153,6 +165,8 @@ public final class AgregadorDeJanela {
             violacoesDescartadasNoEncerramento += acc.seguranca + acc.i2Esperadas + acc.i2Fora + acc.fora;
         }
         abertas.clear();
+        violacoesDescartadasNoEncerramento += promovidasPendentes;
+        promovidasPendentes = 0;
         return out;
     }
 
@@ -189,9 +203,11 @@ public final class AgregadorDeJanela {
         }
         long ini = origemNs + proxima * wNs;
         Janela janela = new Janela(ini, ini + wNs, acc.total, acc.erros, acc.indisponiveis,
-                acc.elegiveis, acc.excedencias, acc.seguranca, acc.i2Esperadas);
+                acc.elegiveis, acc.excedencias, acc.seguranca + promovidasPendentes, acc.i2Esperadas);
         JanelaObservada o = new JanelaObservada(janela, atrasadosPendentes, violacoesAtrasadasPendentes,
-                acc.i2Fora, acc.fora);
+                promovidasPendentes, acc.i2Fora, acc.fora);
+        promovidasTotal += promovidasPendentes;
+        promovidasPendentes = 0;
         atrasadosPendentes = 0;
         violacoesAtrasadasPendentes = 0;
         proxima++;
@@ -224,6 +240,11 @@ public final class AgregadorDeJanela {
 
     public synchronized long violacoesAtrasadasTotal() {
         return violacoesAtrasadasTotal;
+    }
+
+    /** Violacoes de seguranca atrasadas ja entregues em janelas emitidas (promovidas). */
+    public synchronized long violacoesSegurancaPromovidasTotal() {
+        return promovidasTotal;
     }
 
     public synchronized long descartadosNoEncerramento() {

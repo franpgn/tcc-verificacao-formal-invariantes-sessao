@@ -54,7 +54,9 @@ public final class WorkloadMain {
      *       nao emitido);</li>
      *   <li>{@code 5}: o reset de estado (B-43.1, {@code --reset-state on}) nao provou que os caches
      *       do perfil ficaram vazios ({@link EstadoNaoLimpoException}); a repeticao corrente nao
-     *       grava {@code rep-NNN.csv} e as seguintes nao rodam.</li>
+     *       grava {@code rep-NNN.csv} e as seguintes nao rodam. B-43.2 (P-c): o mesmo codigo quando a
+     *       carga inicial da mistura v2 nao chega a {@code size() == universo}
+     *       ({@link CargaInicialException}).</li>
      * </ul>
      */
     public static void main(String[] args) {
@@ -83,7 +85,9 @@ public final class WorkloadMain {
         try {
             executar(cli);
         } catch (EstadoNaoLimpoException e) {
-            System.err.println("Reset de estado falhou (reset_state=on): " + e.getMessage());
+            System.err.println((e instanceof CargaInicialException
+                    ? "Carga inicial falhou (mix=v2): " : "Reset de estado falhou (reset_state=on): ")
+                    + e.getMessage());
             System.exit(codigoDeSaida(e));
         } catch (Exception e) {
             System.err.println("Falha na execucao: " + e.getMessage());
@@ -139,6 +143,63 @@ public final class WorkloadMain {
             gravarEstado(cli, rep, e.resultado(), "FALHA", e.getMessage());
             throw e;
         }
+    }
+
+    /**
+     * B-43.2: carga inicial da mistura v2 antes do <i>warm-up</i> da repeticao {@code rep}. Com
+     * {@code --mix v2} em S1/S2 executa a {@link CargaInicial} (universo do {@link KeyGenerator},
+     * lote 1000, prazo 10 s, intervalo 100 ms), imprime a linha {@code Carga:} e, com
+     * {@code --csv-dir}, grava {@code carga-rep-NNN.json}; na falha grava o JSON com {@code FALHA} e
+     * relanca. Com {@code v1} ou em S3 nao faz nada (nem linha, nem JSON) e devolve {@code null}.
+     */
+    static CargaInicial.Resultado prepararCarga(Cli cli, CacheCarregavel sessoes, int rep)
+            throws CargaInicialException, java.io.IOException {
+        return prepararCarga(cli, sessoes, rep, KeyGenerator.TAMANHO_PADRAO_UNIVERSO,
+                CargaInicial.PRAZO_PADRAO, CargaInicial.INTERVALO_PADRAO,
+                System::nanoTime, ResetEstado.Sono.real());
+    }
+
+    /** Como {@link #prepararCarga(Cli, CacheCarregavel, int)}, com universo, prazo, relogio e espera injetaveis. */
+    static CargaInicial.Resultado prepararCarga(Cli cli, CacheCarregavel sessoes, int rep, int universo,
+            java.time.Duration prazo, java.time.Duration intervalo,
+            java.util.function.LongSupplier relogioNs, ResetEstado.Sono sono)
+            throws CargaInicialException, java.io.IOException {
+        if (cli.mix != VersaoMistura.V2 || cli.scenarioS3) {
+            return null;
+        }
+        String nome = sessoes.nome();
+        try {
+            CargaInicial.Resultado r = CargaInicial.carregar(sessoes, universo, cli.threads,
+                    java.time.Instant.now(), CargaInicial.LOTE_PADRAO, prazo, intervalo, relogioNs, sono);
+            System.out.printf("Carga: mix=%s cache=%s sids=%d lotes=%d ms=%d%n",
+                    cli.mix.rotulo(), nome, r.universo(), r.lotes(), r.duracaoMs());
+            gravarCarga(cli, rep, nome, r, "OK", null);
+            return r;
+        } catch (CargaInicialException e) {
+            gravarCarga(cli, rep, nome, e.carga(), "FALHA", e.getMessage());
+            throw e;
+        }
+    }
+
+    /** Grava {@code carga-rep-NNN.json} em {@code --csv-dir} (nada sem {@code --csv-dir}). */
+    private static void gravarCarga(Cli cli, int rep, String cache, CargaInicial.Resultado r,
+                                    String veredito, String motivo) throws java.io.IOException {
+        if (cli.csvDir == null || cli.csvDir.isBlank()) {
+            return;
+        }
+        Map<String, Object> m = new java.util.LinkedHashMap<>();
+        m.put("mix", cli.mix.rotulo());
+        m.put("replicacao", cli.replicacao.rotulo());
+        m.put("cache", cache);
+        m.put("universo", r != null ? r.universo() : null);
+        m.put("tamanho_final", r != null ? r.tamanhoFinal() : null);
+        m.put("lotes", r != null ? r.lotes() : null);
+        m.put("duracao_ms", r != null ? r.duracaoMs() : null);
+        m.put("veredito", veredito);
+        m.put("motivo", motivo);
+        Path destino = Path.of(cli.csvDir, String.format("carga-rep-%03d.json", rep));
+        java.nio.file.Files.createDirectories(destino.getParent());
+        new com.fasterxml.jackson.databind.ObjectMapper().writeValue(destino.toFile(), m);
     }
 
     private static String juntar(List<Integer> l) {
@@ -215,6 +276,9 @@ public final class WorkloadMain {
             prepararEstado(cli, List.of(
                     CacheLimpavel.de(rcm.getCache(cli.replicacao.cacheSessoes())),
                     CacheLimpavel.de(rcm.getCache(cli.replicacao.cacheContadores()))), rep);
+            // B-43.2: carga inicial dos sids VALID (so --mix v2 em S1/S2) depois do reset e ANTES do
+            // warm-up: fora da janela de medicao e fora do CSV. Na falha, saida 5 (CargaInicialException).
+            prepararCarga(cli, CacheCarregavel.de(rcm.getCache(cli.replicacao.cacheSessoes())), rep);
             long inicioMs = System.currentTimeMillis();
             WarmupPolicy politica = WarmupPolicy.padrao(
                     inicioMs, cli.duracaoSeg, cli.warmupMinimoSeg,

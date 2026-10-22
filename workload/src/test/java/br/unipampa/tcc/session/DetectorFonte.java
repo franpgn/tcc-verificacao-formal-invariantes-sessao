@@ -236,6 +236,57 @@ final class DetectorFonte {
         return p;
     }
 
+    /** Regex da chamada da carga inicial (B-43.2) como statement, na forma literal exigida. */
+    static final Pattern CHAMADA_CARGA = Pattern.compile(
+            "(?m)^\\s*prepararCarga\\(cli, CacheCarregavel\\.de\\(rcm\\.getCache\\(cli\\.replicacao\\.cacheSessoes\\(\\)\\)\\), rep\\);");
+
+    /**
+     * B-43.2 (T8): a chamada da carga em {@code executarRepeticao} e statement unico, executavel (so
+     * dentro do {@code try} do rcm, linha nao vazia anterior terminando em {@code ;} ou {@code {}),
+     * depois da chamada do reset e antes de {@code long inicioMs} e de {@code WarmupPolicy.padrao(}.
+     */
+    static List<String> problemasDaCarga(String fonte) {
+        List<String> p = new ArrayList<>();
+        String s = semComentarios(fonte);
+        String m = mascarado(fonte);
+        int[] corpo = corpo(m, ASSINATURA_REPETICAO);
+        if (corpo == null) {
+            p.add("executarRepeticao nao encontrado");
+            return p;
+        }
+        String corpoS = s.substring(corpo[0], corpo[1]);
+        Matcher cm = CHAMADA_CARGA.matcher(corpoS);
+        List<Integer> chamadas = new ArrayList<>();
+        while (cm.find()) {
+            chamadas.add(corpo[0] + corpoS.indexOf("prepararCarga(", cm.start()));
+        }
+        if (chamadas.size() != 1) {
+            p.add("esperada exatamente 1 chamada da carga como statement (sem comentario), achadas "
+                    + chamadas.size());
+            return p;
+        }
+        int pos = chamadas.get(0);
+        String anterior = linhaNaoVaziaAnterior(s, pos);
+        if (!(anterior.endsWith("{") || anterior.endsWith(";"))) {
+            p.add("linha nao vazia anterior a carga nao termina em '{' nem ';': " + anterior);
+        }
+        List<String> blocos = blocosEnvolventes(m, corpo[0], pos);
+        if (blocos.size() != 1 || !BLOCO_PERMITIDO.matcher(blocos.get(0)).find()) {
+            p.add("a carga tem de estar so dentro do try (RemoteCacheManager ...); blocos: " + blocos);
+        }
+        Matcher rm = CHAMADA_RESET.matcher(corpoS);
+        if (!rm.find() || corpo[0] + rm.end() > pos) {
+            p.add("a carga tem de vir depois de prepararEstado(");
+        }
+        for (String depois : new String[] {"long inicioMs", "WarmupPolicy.padrao("}) {
+            int k = corpoS.indexOf(depois);
+            if (k < 0 || corpo[0] + k < pos) {
+                p.add("a carga tem de vir antes de '" + depois + "'");
+            }
+        }
+        return p;
+    }
+
     /**
      * {@code catch (EstadoNaoLimpoException ...)} so pode aparecer em {@code main} (onde vira a saida
      * 5) ou como captura que relanca a mesma excecao no fim do bloco ({@code throw <var>;}), como em

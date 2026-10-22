@@ -107,3 +107,12 @@ nenhuma outra worktree foi tocada. Nada foi enviado a `origin`.
 Validação deste relatório pelo Senior (contagens 305 → 492, SHAs reescritos, compilação por commit). Depois,
 B-43.1 e B-43.3, um de cada vez e só após as validações, por rebase sobre o topo e `merge --ff-only`, com Surefire e
 golden S1/S2 conferidos a cada passo.
+
+## Passo 3: B-43.3a parte i (verificador offline de sanidade)
+
+Feito pelo orquestrador depois da V-B43.3a-i e da revalidação das ressalvas (APROVADA, `wt-plano-ctrl/docs/validacao-b43-3a-i-ressalvas-2026-10-22.md`, `66636ab`), dentro da aprovação do Gestor de integrar cada B-43.x validado.
+
+- Método: `git rebase --onto feature/controlador-integracao 8296270` de uma branch temporária em `a8f5549`, seguido de `merge --ff-only`. Histórico linear, sem commit de merge. A branch de origem `fix/b43-3-guarda-sanidade-mistura` continua em `a8f5549`.
+- 8 commits reescritos, sem conflito: `b568f2c`→`70d2fd0`, `728c85c`→`e2adba7`, `6e67807`→`27fb29d`, `6ce301a`→`2b9a69e`, `9e8eadc`→`f0b01e3`, `2b1b208`→`6778413`, `196ab17`→`b8fc136`, `a8f5549`→`c9295d8`.
+- Surefire depois do passo (`mvn -f workload/pom.xml clean test`): **540/0/0/1 em 59 arquivos**. O único skip é o teste S2 opt-in (`-Dsanidade.csvJunho`). O valor bate com o ensaio `merge-tree` da revalidação.
+- Fica de fora: B-43.1 entra junto com B-43.2, depois da V-B43.2 (o commit 1 de B-43.2 fecha as lacunas R1/R2 da V-B43.1).

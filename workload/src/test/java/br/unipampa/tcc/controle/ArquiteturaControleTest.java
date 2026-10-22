@@ -30,7 +30,10 @@ class ArquiteturaControleTest {
             Pattern.MULTILINE);
 
     private static final List<String> TIPOS_DO_NUCLEO = List.of("Janela", "EstadoTopologia", "Perfil", "Motivo",
-            "Decisao", "ParametrosControlador", "Controlador");
+            "Decisao", "ParametrosControlador", "Controlador",
+            // B-26.1: agregador e observador de janela
+            "Referencia", "EventoOperacao", "ClasseViolacao", "JanelaObservada", "AgregadorDeJanela",
+            "LeitorCsvEventos");
 
     static List<String> importsProibidos(String fonte) {
         List<String> r = new ArrayList<>();

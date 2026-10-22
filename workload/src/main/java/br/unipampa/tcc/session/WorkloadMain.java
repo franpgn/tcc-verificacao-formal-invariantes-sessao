@@ -424,6 +424,7 @@ public final class WorkloadMain {
             System.out.printf("Total de operacoes: %d%n", totalOps.get());
             System.out.println("Violacoes detectadas: " + auditor.total());
             System.out.println(SessionOps.linhaAuditor(instanciasAuditor));
+            System.out.println(SessionOps.linhaInvalidacao(instanciasAuditor));
             if (!cli.scenarioS3) {
                 System.out.println(desfechos.linha());
             }

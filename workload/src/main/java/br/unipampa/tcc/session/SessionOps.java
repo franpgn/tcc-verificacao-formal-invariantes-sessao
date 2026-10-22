@@ -131,6 +131,20 @@ public class SessionOps {
         return "Auditor: i1_concorrentes=" + i1 + " i4_concorrentes=" + i4;
     }
 
+    /**
+     * B-43.8: linha NOVA do stdout no fim da repeticao ({@code Auditor:} e fixada inteira por teste),
+     * com a soma das instancias dadas. So diagnostico (DT-001).
+     */
+    static String linhaInvalidacao(Iterable<SessionOps> instancias) {
+        long perdida = 0;
+        long esgotado = 0;
+        for (SessionOps o : instancias) {
+            perdida += o.invalidacaoPerdida();
+            esgotado += o.conflitoEsgotado();
+        }
+        return "Invalidacao: perdida=" + perdida + " conflito_esgotado=" + esgotado;
+    }
+
     /** B-43.2 (P-d): contador de desfechos de Validate; {@code null} = desligado. */
     private volatile DesfechosValidate desfechosValidate;
 
@@ -175,11 +189,13 @@ public class SessionOps {
     /**
      * B-33: como o anterior, com o rastro de cliente (Q-10) alimentado a cada evento.
      * B-42.1: os nomes de cache vem do {@link PerfilReplicacao} (SYNC = nomes historicos).
+     * B-43.8 (DT-003): o cache de sessoes vai SEMPRE pelo adaptador versionado
+     * ({@link ArmazemVersionado#de}), para que logout e cascata usem escrita condicional.
      */
     public SessionOps(RemoteCacheManager rcm, PerfilReplicacao perfil, LatencyRegistry latency,
                       InvariantAuditor auditor, EventCsvWriter eventos,
                       EpochClock relogio, RastroCliente rastro) {
-        this(Armazem.de(rcm.<String, SessionState>getCache(perfil.cacheSessoes())),
+        this(ArmazemVersionado.de(rcm.<String, SessionState>getCache(perfil.cacheSessoes())),
                 Armazem.de(rcm.<String, IdentityState>getCache(perfil.cacheContadores())),
                 latency, auditor, eventos, relogio, resolverReplica(rcm), rastro);
     }
@@ -233,7 +249,7 @@ public class SessionOps {
                EpochClock relogio, RastroCliente rastro,
                ConcurrentHashMap<String, SessionState.Motivo> invalidacoesCompartilhadas,
                String replica) {
-        this(Armazem.de(rcm.<String, SessionState>getCache(perfil.cacheSessoes())),
+        this(ArmazemVersionado.de(rcm.<String, SessionState>getCache(perfil.cacheSessoes())),
                 Armazem.de(rcm.<String, IdentityState>getCache(perfil.cacheContadores())),
                 latency, auditor, eventos, relogio,
                 replica != null ? replica : resolverReplica(rcm), rastro, invalidacoesCompartilhadas);

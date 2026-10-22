@@ -311,11 +311,14 @@ public final class WorkloadMain {
             AtomicLong totalOps = new AtomicLong();
             long fim = politica.medicaoFimMs();
             Supplier<Map<String, SessionState.Motivo>> invalidacoes = ops::invalidacoesConfirmadasSnapshot;
+            // B-43.6: instancias cujos contadores de corrida do auditor entram na linha "Auditor:"
+            // (S1/S2: o SessionOps unico; S3: todas as que compartilham o mapa, preenchidas abaixo).
+            List<SessionOps> instanciasAuditor = new ArrayList<>(List.of(ops));
 
             if (cli.scenarioS3) {
                 // B-33 (E2): cenario S3, tratado ANTES do enum Scenario (S1/S2 seguem o ramo abaixo).
                 invalidacoes = executarS3(cli, rep, latency, auditor, eventos, relogio, rastro,
-                        parar, fim, totalOps);
+                        parar, fim, totalOps, instanciasAuditor);
             } else {
             ExecutorService pool = Executors.newFixedThreadPool(cli.threads);
             long opsAlvoPorThread = cli.ops > 0 ? cli.ops / cli.threads : Long.MAX_VALUE;
@@ -350,6 +353,7 @@ public final class WorkloadMain {
 
             System.out.printf("Total de operacoes: %d%n", totalOps.get());
             System.out.println("Violacoes detectadas: " + auditor.total());
+            System.out.println(SessionOps.linhaAuditor(instanciasAuditor));
             if (!cli.scenarioS3) {
                 System.out.println(desfechos.linha());
             }
@@ -400,7 +404,7 @@ public final class WorkloadMain {
     private static Supplier<Map<String, SessionState.Motivo>> executarS3(Cli cli, int rep,
             LatencyRegistry latency, InvariantAuditor auditor, EventCsvWriter eventos,
             EpochClock relogio, RastroCliente rastro, BooleanSupplier parar, long fimMs,
-            AtomicLong totalOps) throws Exception {
+            AtomicLong totalOps, List<SessionOps> instanciasAuditor) throws Exception {
         S3Registro registro = new S3Registro();
         RelogioS3 reloginho = RelogioS3.sistema();
         ContextoS3 ctx = new ContextoS3(reloginho, cli.s3, registro,
@@ -408,6 +412,9 @@ public final class WorkloadMain {
         try (S3Clientes clientes = S3Clientes.abrir(cli, latency, auditor, eventos, relogio, rastro)) {
             long inicioNs = reloginho.agoraNs();
             long fimNs = inicioNs + Math.max(0L, fimMs - System.currentTimeMillis()) * 1_000_000L;
+            // B-43.6: a linha "Auditor:" soma os servidores de aplicacao e o admin (mapa compartilhado).
+            instanciasAuditor.clear();
+            instanciasAuditor.addAll(clientes.instancias());
             S3Simulacao sim = new S3Simulacao(ctx, clientes.servidoresApp(), clientes.admin(), inicioNs);
             System.out.printf("S3: %d usuarios (U), %d contas de limite (L), 1 admin; modo %s; admin-node %s%n",
                     cli.s3.usuarios, cli.s3.contasLimite, cli.s3.modoCliente, cli.s3.noAdmin);

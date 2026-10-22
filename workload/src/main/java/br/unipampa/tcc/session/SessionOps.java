@@ -4,6 +4,7 @@ import org.infinispan.client.hotrod.RemoteCacheManager;
 import java.time.Instant;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.LongAdder;
 
 /**
  * Operações O1 a O7 do protocolo de estado de sessão, conforme Seção 4.1 da monografia.
@@ -30,6 +31,16 @@ import java.util.concurrent.ConcurrentHashMap;
  * {@code SessionOps}/{@code InvariantAuditor} novos a cada repetição, então o mapa
  * começa vazio a cada uma; isso é consistente com o isolamento entre repetições já
  * existente no desenho atual.</p>
+ *
+ * <p><b>B-43.6, auditor sem corrida (achado A1 da V-B43.2):</b> uma leitura so pode ser acusada
+ * de I1/I4 contra uma confirmacao de invalidacao que ja existia <i>antes</i> de a leitura comecar.
+ * {@link #validate} e {@link #logout} tiram um instantaneo {@code confirmadoAntes} do mapa antes do
+ * {@code sessions.get}, e {@link #block} copia o mapa inteiro antes de {@code sessions.entrySet()}.
+ * Antes de B-43.6 a comparacao era feita contra o estado do mapa <i>depois</i> da leitura: uma
+ * leitura VALID concorrente com a primeira invalidacao da chave (linearizavel nas duas ordens)
+ * virava I1 falsa. Esse caso agora e contado em {@link #i1Concorrentes()} /
+ * {@link #i4Concorrentes()}, impressos no stdout ({@link #linhaAuditor}), e nao em violacao. Uma
+ * leitura velha real (iniciada depois da confirmacao) continua sendo acusada.</p>
  */
 public class SessionOps {
 
@@ -62,6 +73,38 @@ public class SessionOps {
      * deles e comparada com as leituras de todos.
      */
     private final ConcurrentHashMap<String, SessionState.Motivo> invalidacoesConfirmadas;
+
+    /**
+     * B-43.6: leituras que encontraram, DEPOIS de lidas, uma confirmacao incompativel que nao existia
+     * antes de comecarem (VALID lido; ou INVALID com motivo diferente). Corrida do observador, nao
+     * violacao. Ver o javadoc da classe.
+     */
+    private final LongAdder i1Concorrentes = new LongAdder();
+    private final LongAdder i4Concorrentes = new LongAdder();
+
+    /** B-43.6: leituras VALID concorrentes com a primeira confirmacao da sessao (nao sao I1). */
+    long i1Concorrentes() {
+        return i1Concorrentes.sum();
+    }
+
+    /** B-43.6: leituras INVALID cujo motivo divergiu de uma confirmacao concorrente (nao sao I4). */
+    long i4Concorrentes() {
+        return i4Concorrentes.sum();
+    }
+
+    /**
+     * B-43.6: linha do stdout no fim da repeticao, com a soma das instancias dadas (no S3, todas as
+     * que compartilham o mapa de invalidacoes confirmadas).
+     */
+    static String linhaAuditor(Iterable<SessionOps> instancias) {
+        long i1 = 0;
+        long i4 = 0;
+        for (SessionOps o : instancias) {
+            i1 += o.i1Concorrentes();
+            i4 += o.i4Concorrentes();
+        }
+        return "Auditor: i1_concorrentes=" + i1 + " i4_concorrentes=" + i4;
+    }
 
     /** B-43.2 (P-d): contador de desfechos de Validate; {@code null} = desligado. */
     private volatile DesfechosValidate desfechosValidate;
@@ -212,25 +255,37 @@ public class SessionOps {
 
     /**
      * B-23: verifica I1 (irreversibilidade da invalidação) e I4 (unicidade do
-     * motivo), comparando a leitura corrente contra {@link #invalidacoesConfirmadas}.
-     * Chamado de {@link #validate(String)} após cada leitura bem-sucedida.
+     * motivo) da leitura {@code atual} de {@code sid}.
      *
-     * <p>Se {@code sid} ainda não foi observado como inválido por esta instância,
-     * e a leitura corrente já é INVALID, a primeira observação é registrada (cobre
-     * o caso de uma invalidação originada por outra thread/réplica, não só pela
-     * própria chamada local de {@link #logout}/{@link #block}). Caso já exista um
-     * motivo confirmado: I1 dispara se a leitura corrente voltou a VALID; I4
-     * dispara se a leitura corrente é INVALID com um motivo diferente do
-     * confirmado.</p>
+     * <p>B-43.6: a comparacao e contra {@code confirmadoAntes}, o motivo que ja estava
+     * em {@link #invalidacoesConfirmadas} ANTES de a leitura comecar (instantaneo tirado
+     * pelo chamador antes do {@code get}), e nao contra o estado do mapa depois da
+     * leitura.</p>
+     *
+     * <ul>
+     *   <li>{@code confirmadoAntes != null}: I1 se a leitura deu VALID; I4 se deu
+     *       INVALID com motivo diferente de {@code confirmadoAntes}.</li>
+     *   <li>{@code confirmadoAntes == null}: nao ha violacao possivel. Se a leitura e
+     *       INVALID, a primeira observacao e registrada com {@code putIfAbsent} (cobre a
+     *       invalidacao feita por outra thread/replica). Se, depois da leitura, o mapa ja
+     *       tem uma confirmacao incompativel (VALID lido, ou motivo diferente), a leitura
+     *       foi concorrente com a invalidacao: conta em {@link #i1Concorrentes()} /
+     *       {@link #i4Concorrentes()}.</li>
+     * </ul>
      */
-    private void verificarI1I4(String sid, SessionState atual) {
-        SessionState.Motivo confirmado = invalidacoesConfirmadas.get(sid);
-        if (confirmado == null) {
+    private void verificarI1I4(String sid, SessionState atual, SessionState.Motivo confirmadoAntes) {
+        if (confirmadoAntes == null) {
             if (atual.estado() == SessionState.Estado.INVALID) {
-                invalidacoesConfirmadas.putIfAbsent(sid, atual.motivo());
+                SessionState.Motivo depois = invalidacoesConfirmadas.putIfAbsent(sid, atual.motivo());
+                if (depois != null && !depois.equals(atual.motivo())) {
+                    i4Concorrentes.increment();
+                }
+            } else if (invalidacoesConfirmadas.get(sid) != null) {
+                i1Concorrentes.increment();
             }
             return;
         }
+        SessionState.Motivo confirmado = confirmadoAntes;
         if (atual.estado() == SessionState.Estado.VALID) {
             auditor.registrarViolacao("I1", sid,
                     "invalidacao confirmada (" + confirmado + ") revertida para VALID");
@@ -283,6 +338,8 @@ public class SessionOps {
     public OpResult validate(String sid) {
         long t0 = System.nanoTime();
         try {
+            // B-43.6: instantaneo ANTES da leitura (ver verificarI1I4).
+            SessionState.Motivo confirmadoAntes = invalidacoesConfirmadas.get(sid);
             SessionState s = sessions.get(sid);
             latency.record("validate", t0);
             if (s == null) {
@@ -296,7 +353,7 @@ public class SessionOps {
                     && s.estado() == SessionState.Estado.VALID) {
                 auditor.registrarViolacao("I2", sid, "valida sob bloqueio");
             }
-            verificarI1I4(sid, s);
+            verificarI1I4(sid, s, confirmadoAntes);
             OpResult r = OpResult.okValidate(s.estado());
             emitir(OP_VALIDATE, t0, System.nanoTime(), r, sid);
             return contarValidate(r);
@@ -312,6 +369,8 @@ public class SessionOps {
     public OpResult logout(String sid) {
         long t0 = System.nanoTime();
         try {
+            // B-43.6: instantaneo ANTES da leitura (ver verificarI1I4).
+            SessionState.Motivo confirmadoAntes = invalidacoesConfirmadas.get(sid);
             SessionState s = sessions.get(sid);
             if (s == null) {
                 latency.record("logout_noop", t0);
@@ -324,7 +383,7 @@ public class SessionOps {
                 // antes sobrescrevia invalidacoesConfirmadas incondicionalmente,
                 // escapando a checagem de I4 quando a primeira leitura pos-
                 // divergencia passava por este caminho em vez de validate().
-                verificarI1I4(sid, s);
+                verificarI1I4(sid, s, confirmadoAntes);
                 latency.record("logout_noop", t0);
                 OpResult r = OpResult.okNoop();
                 emitir(OP_LOGOUT, t0, System.nanoTime(), r, sid);
@@ -335,8 +394,12 @@ public class SessionOps {
             // esta instancia), isso e uma violacao de I1 (irreversibilidade),
             // nao so um caso a sobrescrever. Checa ANTES de escrever a nova
             // invalidacao abaixo.
-            verificarI1I4(sid, s);
+            verificarI1I4(sid, s, confirmadoAntes);
             SessionState atual = s.invalidar(SessionState.Motivo.LOGOUT, Instant.now());
+            // B-43.6: a ordem importa. A confirmacao so entra no mapa DEPOIS de o put ter sido
+            // reconhecido pelo cluster; assim, uma confirmacao visivel no mapa implica uma escrita
+            // INVALID ja reconhecida, e uma leitura VALID iniciada depois dela e I1 real. O
+            // ConcurrentHashMap da a relacao happens-before entre este put e o instantaneo do leitor.
             sessions.put(sid, atual);
             invalidacoesConfirmadas.put(sid, atual.motivo());
             latency.record("logout_ok", t0);
@@ -414,14 +477,19 @@ public class SessionOps {
                 st = IdentityState.criar(identidade, Instant.now());
             }
             identities.put(identidade, st.bloquear(Instant.now()));
+            // B-43.6: copia das confirmacoes ANTES de iniciar a varredura; cada entrada e checada
+            // contra a copia (uma confirmacao que surge durante a varredura e corrida, nao I1).
+            java.util.Map<String, SessionState.Motivo> confirmadasAntes =
+                    new java.util.HashMap<>(invalidacoesConfirmadas);
             sessions.entrySet().forEach(e -> {
                 if (e.getValue().identidade().equals(identidade)
                         && e.getValue().estado() == SessionState.Estado.VALID) {
                     // B-23 (correcao, mesma razao de logout() acima): checa I1 contra
                     // um motivo ja confirmado para esta sid ANTES de escrever a nova
                     // invalidacao por cascata de bloqueio.
-                    verificarI1I4(e.getKey(), e.getValue());
+                    verificarI1I4(e.getKey(), e.getValue(), confirmadasAntes.get(e.getKey()));
                     SessionState atual = e.getValue().invalidar(SessionState.Motivo.ADMIN_BLOCK, Instant.now());
+                    // B-43.6: mesma ordem de logout(): put reconhecido, depois a confirmacao.
                     sessions.put(e.getKey(), atual);
                     invalidacoesConfirmadas.put(e.getKey(), atual.motivo());
                 }

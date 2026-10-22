@@ -1,0 +1,55 @@
+{
+ "Q1": {
+  "contrato_stdout": "v2",
+  "meta": {
+   "contrato_csv": 2
+  },
+  "linhas_csv": 224712,
+  "registrados_stdout": 224712,
+  "desfechos_stdout": {
+   "valid": 64859,
+   "invalid": 47361,
+   "not_found": 0,
+   "erro": 0
+  },
+  "csv_operation_return_code": {
+   "IncrementFailure COUNTED": 15044,
+   "Login OK": 37411,
+   "Logout NONE": 52464,
+   "ResetFailures NONE": 7573,
+   "Validate INVALID": 47361,
+   "Validate VALID": 64859
+  },
+  "dif_valid": 0,
+  "dif_invalid": 0,
+  "dif_not_found": 0,
+  "dif_erro": 0,
+  "validate_none": 0
+ },
+ "Q2": {
+  "contrato_stdout": "v2",
+  "meta": {
+   "contrato_csv": 2
+  },
+  "linhas_csv": 331579,
+  "registrados_stdout": 331579,
+  "desfechos_stdout": {
+   "valid": 155852,
+   "invalid": 150588,
+   "not_found": 0,
+   "erro": 0
+  },
+  "csv_operation_return_code": {
+   "IncrementFailure COUNTED": 3204,
+   "Login OK": 9389,
+   "Logout NONE": 12546,
+   "Validate INVALID": 150588,
+   "Validate VALID": 155852
+  },
+  "dif_valid": 0,
+  "dif_invalid": 0,
+  "dif_not_found": 0,
+  "dif_erro": 0,
+  "validate_none": 0
+ }
+}

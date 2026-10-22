@@ -54,8 +54,12 @@ from collections import defaultdict
 import numpy as np
 
 
+# B-43.4: contrato CSV v2. INVALID (Validate de sessao invalidada) e NOT_FOUND (chave ou
+# identidade ausente) sao desfechos de negocio, nao erros. VALID e NONE continuam, de modo que um
+# CSV do contrato 1 (OK_VALIDATE sempre VALID, ausente como NONE) sumariza exatamente como antes.
+# Ver docs/contrato-csv-v2.md.
 SUCESSOS = {"OK", "VALID", "INVALID", "COUNTED", "ALREADY_INVALID", "BLOCKED",
-            "ALREADY_BLOCKED", "NOT_BLOCKED", "NONE"}
+            "ALREADY_BLOCKED", "NOT_BLOCKED", "NONE", "NOT_FOUND"}
 
 # B-33 (Q-9): dois codigos de erro conhecidos. ERROR_UNAVAILABLE e a recusa por
 # indisponibilidade (cache DEGRADED sob DENY_READ_WRITES); ERROR_TRANSPORT e a
@@ -82,6 +86,18 @@ def csvs_de_eventos(diretorio: Path) -> list[Path]:
         if COLUNAS_EVENTO <= set(cabecalho):
             escolhidos.append(csvfile)
     return escolhidos
+
+
+def versao_contrato_csv(csvfile: Path) -> int:
+    """Versao do contrato da coluna `return_code` de um `rep-NNN.csv` (B-43.4).
+
+    2 se existir `meta-csv-rep-NNN.json` ao lado com `contrato_csv`; 1 caso contrario (CSV
+    anterior a B-43.4). Os dois contratos sao lidos pelo mesmo `SUCESSOS`.
+    """
+    meta = csvfile.with_name("meta-csv-" + csvfile.stem + ".json")
+    if not meta.exists():
+        return 1
+    return int(json.loads(meta.read_text()).get("contrato_csv", 1))
 
 
 def carregar_csvs(diretorio: Path) -> dict[str, list[tuple[float, str]]]:
@@ -174,6 +190,8 @@ def main() -> int:
 
     print(f"Cenário: {cenario}")
     print(f"CSVs lidos: {saida['execucoes']}")
+    versoes = sorted({versao_contrato_csv(p) for p in csvs_de_eventos(args.diretorio)})
+    print("Contrato CSV: " + ", ".join(f"v{v}" for v in versoes))
     print(f"Operações com amostras: {len(saida['operacoes'])}")
     for op, stats in saida["operacoes"].items():
         p999 = stats["p99_9_ns"]

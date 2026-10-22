@@ -61,13 +61,14 @@ public final class OpResult {
      * gravado na coluna {@code return_code} do CSV de eventos, consumido
      * pelo pipeline {@code analysis/}.
      *
-     * <p>Tabela de mapeamento (aprovada pelo Gestor):</p>
+     * <p>Tabela de mapeamento, contrato v2 ({@link #VERSAO_CONTRATO_CSV}, B-43.4, aprovada pelo
+     * Gestor em 2026-10-22):</p>
      * <pre>
      *   OK_LOGIN        -> OK
-     *   OK_VALIDATE     -> VALID
+     *   OK_VALIDATE     -> VALID ou INVALID (estado da sessao lida; contrato 1: sempre VALID)
      *   OK_STATUS       -> COUNTED
      *   OK_NOOP         -> NONE
-     *   NOT_FOUND       -> NONE
+     *   NOT_FOUND       -> NOT_FOUND           (todas as operacoes; contrato 1: NONE)
      *   BLOCKED         -> BLOCKED
      *   ERROR_TRANSPORT -> ERROR_TRANSPORT
      *   ERROR_UNAVAILABLE -> ERROR_UNAVAILABLE   (B-33, Q-9)
@@ -77,16 +78,23 @@ public final class OpResult {
      * {@code ERROR_UNAVAILABLE} pertencem ao conjunto {@code SUCESSOS} de
      * {@code analysis/percentis.py}, de modo que a {@code taxa_erro} reflete
      * apenas falhas (de transporte ou de indisponibilidade). Execuções sem
-     * falha de partição nunca emitem {@code ERROR_UNAVAILABLE}, então os CSV
-     * de S1/S2 sem falha seguem byte-compatíveis.</p>
+     * falha de partição nunca emitem {@code ERROR_UNAVAILABLE}. {@code INVALID} e
+     * {@code NOT_FOUND} (contrato v2) também são sucessos: desfechos de negócio,
+     * não erros. CSV do contrato 1 (sem {@code meta-csv-rep-NNN.json}) continua
+     * legível pelo mesmo {@code SUCESSOS}.</p>
      */
     public String returnCode() {
         switch (code) {
             case OK_LOGIN:        return "OK";
-            case OK_VALIDATE:     return "VALID";
+            case OK_VALIDATE:
+                // B-43.4: estado real (o literal em "return" e lido por analysis/test_contrato_csv.py)
+                if (estado() == SessionState.Estado.VALID) {
+                    return "VALID";
+                }
+                return "INVALID";
             case OK_STATUS:       return "COUNTED";
             case OK_NOOP:         return "NONE";
-            case NOT_FOUND:       return "NONE";
+            case NOT_FOUND:       return "NOT_FOUND";
             case BLOCKED:         return "BLOCKED";
             case ERROR_TRANSPORT: return "ERROR_TRANSPORT";
             case ERROR_UNAVAILABLE: return "ERROR_UNAVAILABLE";

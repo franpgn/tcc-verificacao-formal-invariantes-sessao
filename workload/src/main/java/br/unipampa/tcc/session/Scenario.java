@@ -76,6 +76,21 @@ public enum Scenario {
         return Op.RESET_FAILURES;
     }
 
+    /**
+     * Peso nominal (em %) de uma operação neste cenário. Só leitura: não
+     * altera os pesos nem o sorteio de {@link #proximaOperacao(Random)}.
+     * Usado pela guarda de sanidade da mistura (B-43.3a).
+     */
+    public int peso(Op op) {
+        return switch (op) {
+            case VALIDATE -> pesoValidate;
+            case LOGIN_VALIDATE_LOGOUT -> pesoLogin;
+            case LOGOUT -> pesoLogout;
+            case INCREMENT_FAILURE -> pesoIncrement;
+            case RESET_FAILURES -> pesoReset;
+        };
+    }
+
     /** Resolve um nome de cenário (case-insensitive); fallback para S1. */
     public static Scenario porNome(String nome) {
         if (nome == null || nome.isBlank()) return S1;

@@ -233,5 +233,55 @@ public final class Sanidade {
                     "Validate NONE+NOT_FOUND = " + pct(fracAusente)
                             + " (maximo " + pct(lim.validNotFoundMax()) + ")"));
         }
+        avaliarMistura(cenario, lim, loginOk, validate, motivos, met);
+    }
+
+    /**
+     * MISTURA_DESVIO. Cada Login OK gera dois eventos extras (o Validate e o
+     * Logout da triade), entao o numero de operacoes sorteadas e
+     * {@code ops = eventos - 2*loginOk}. Fracoes por operacao sorteada:
+     * Validate = (V - loginOk)/ops, Logout = (L - loginOk)/ops, Login = Login/ops,
+     * IncrementFailure/ops, ResetFailures/ops; comparadas a {@code peso/100}.
+     * |desvio| &gt; tolerancia (p.p.) da um motivo por operacao.
+     */
+    private void avaliarMistura(Scenario cenario, Limiares lim, long loginOk, long validate,
+                                List<Motivo> motivos, Map<String, Object> met) {
+        Regiao f = Regiao.FORA;
+        long ops = total(f) - 2L * loginOk;
+        met.put("ops", ops);
+        if (ops <= 0) {
+            return;
+        }
+        Map<String, Long> observados = new LinkedHashMap<>();
+        observados.put(OP_VALIDATE, validate - loginOk);
+        observados.put(OP_LOGIN, n(f, OP_LOGIN));
+        observados.put(OP_LOGOUT, n(f, OP_LOGOUT) - loginOk);
+        observados.put(OP_INCREMENT, n(f, OP_INCREMENT));
+        observados.put(OP_RESET, n(f, OP_RESET));
+        Map<String, Scenario.Op> sorteada = Map.of(
+                OP_VALIDATE, Scenario.Op.VALIDATE,
+                OP_LOGIN, Scenario.Op.LOGIN_VALIDATE_LOGOUT,
+                OP_LOGOUT, Scenario.Op.LOGOUT,
+                OP_INCREMENT, Scenario.Op.INCREMENT_FAILURE,
+                OP_RESET, Scenario.Op.RESET_FAILURES);
+
+        Map<String, Object> mistura = new LinkedHashMap<>();
+        for (Map.Entry<String, Long> e : observados.entrySet()) {
+            double obs = (double) e.getValue() / (double) ops;
+            double esp = cenario.peso(sorteada.get(e.getKey())) / 100.0;
+            double desvioPp = (obs - esp) * 100.0;
+            Map<String, Object> m = new LinkedHashMap<>();
+            m.put("observado", obs);
+            m.put("esperado", esp);
+            m.put("desvio_pp", desvioPp);
+            mistura.put(e.getKey(), m);
+            if (Math.abs(desvioPp) > lim.misturaToleranciaPp()) {
+                motivos.add(new Motivo("MISTURA_DESVIO",
+                        e.getKey() + ": observado " + pct(obs) + ", esperado " + pct(esp)
+                                + ", desvio " + pp(desvioPp)
+                                + " (tolerancia " + lim.misturaToleranciaPp() + " p.p.)"));
+            }
+        }
+        met.put("mistura", mistura);
     }
 }

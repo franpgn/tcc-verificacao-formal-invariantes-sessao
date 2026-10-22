@@ -414,6 +414,51 @@ public class SessionOps {
         }
     }
 
+    /**
+     * B-43.7: reposicoes da mistura v3 ({@link #reporSessao}) e as que falharam, na janela de medicao
+     * ({@link #definirPoliticaReposicao}; sem politica, sempre).
+     */
+    private final LongAdder reposicoes = new LongAdder();
+    private final LongAdder reposicaoErro = new LongAdder();
+    private volatile WarmupPolicy politicaReposicao = WarmupPolicy.always();
+
+    /** B-43.7: politica de janela dos contadores de reposicao (a mesma do CSV e do LatencyRegistry). */
+    void definirPoliticaReposicao(WarmupPolicy politica) {
+        this.politicaReposicao = politica != null ? politica : WarmupPolicy.always();
+    }
+
+    long reposicoes() {
+        return reposicoes.sum();
+    }
+
+    long reposicaoErro() {
+        return reposicaoErro.sum();
+    }
+
+    /**
+     * B-43.7 (decisao c2 do Gestor): reposicao do Logout isolado da mistura v3, isto e, o novo login do
+     * mesmo usuario na geracao seguinte do slot. Um {@code put} de uma sessao VALID nova, SEM evento no
+     * CSV (nao chama {@code emitir}), SEM latencia e SEM o auditor de I1/I4: nao e uma operacao da
+     * mistura, e a chave e sempre nova (geracao {@code g+1}), entao nunca reescreve uma sessao ja
+     * invalidada. Conta em {@link #reposicoes()} ou {@link #reposicaoErro()} na janela de medicao.
+     *
+     * @return {@code true} se o {@code put} foi reconhecido; {@code false} se lancou
+     */
+    boolean reporSessao(String sid, String identidade) {
+        try {
+            sessions.put(sid, SessionState.criar(sid, identidade, Instant.now()));
+            if (politicaReposicao.deveRegistrar()) {
+                reposicoes.increment();
+            }
+            return true;
+        } catch (RuntimeException e) {
+            if (politicaReposicao.deveRegistrar()) {
+                reposicaoErro.increment();
+            }
+            return false;
+        }
+    }
+
     /** O4, incrementFailure. */
     public OpResult incrementFailure(String identidade) {
         long t0 = System.nanoTime();

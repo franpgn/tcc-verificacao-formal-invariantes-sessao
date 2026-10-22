@@ -28,7 +28,8 @@ final class IdentidadesMistura {
         if (tid < 0) {
             throw new IllegalArgumentException("tid deve ser >= 0: " + tid);
         }
-        if (versao == VersaoMistura.V2) {
+        // B-43.7: v3 usa os mesmos pools de v2 (so V1 e caso especial).
+        if (versao == VersaoMistura.V2 || versao == VersaoMistura.V3) {
             logins = new String[POOL_LOGIN_POR_THREAD];
             for (int k = 0; k < POOL_LOGIN_POR_THREAD; k++) {
                 logins[k] = nomeLogin(tid, k);

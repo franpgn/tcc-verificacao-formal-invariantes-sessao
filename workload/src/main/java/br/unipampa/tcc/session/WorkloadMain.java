@@ -677,8 +677,14 @@ public final class WorkloadMain {
      */
     static void executarOperacoes(SessionOps ops, Scenario cenario, Random r, KeyGenerator chaves,
                                   IdentidadesMistura ids, long n) {
+        executarOperacoes(ops, cenario, r, chaves, ids, n, null);
+    }
+
+    /** B-43.7: como a anterior; com {@code v3 != null}, Validate/Logout isolados da mistura v3. */
+    static void executarOperacoes(SessionOps ops, Scenario cenario, Random r, KeyGenerator chaves,
+                                  IdentidadesMistura ids, long n, MisturaV3.Cliente v3) {
         for (long i = 0; i < n; i++) {
-            executarOperacao(ops, cenario, r, chaves, ids);
+            executarOperacao(ops, cenario, r, chaves, ids, v3);
         }
     }
 
@@ -689,10 +695,29 @@ public final class WorkloadMain {
      */
     static void executarOperacao(SessionOps ops, Scenario cenario, Random r, KeyGenerator chaves,
                                  IdentidadesMistura ids) {
+        executarOperacao(ops, cenario, r, chaves, ids, null);
+    }
+
+    /**
+     * B-43.7: com {@code v3 == null}, a operacao de v1/v2 (chave Zipf crua). Com {@code v3}, o
+     * {@code sid} Zipf da o slot {@code k}: o Validate isolado le a geracao corrente do slot (ou, 1 em
+     * cada {@link MisturaV3#PERIODO_TOKEN_ANTIGO} por thread, a anterior) e o Logout isolado segue
+     * {@link #logoutV3}. Triade, IncrementFailure e ResetFailures como v2. Nada disso consome {@code r}
+     * nem {@code chaves} alem do sorteio de sempre.
+     */
+    static void executarOperacao(SessionOps ops, Scenario cenario, Random r, KeyGenerator chaves,
+                                 IdentidadesMistura ids, MisturaV3.Cliente v3) {
         String sid = chaves.nextSessionKey();
         try {
             switch (cenario.proximaOperacao(r)) {
-                case VALIDATE -> ops.validate(sid);
+                case VALIDATE -> {
+                    if (v3 == null) {
+                        ops.validate(sid);
+                    } else {
+                        boolean antigo = v3.proximoEhTokenAntigo();
+                        validateV3(ops, v3, SlotsGeracao.slotDe(sid), antigo);
+                    }
+                }
                 case LOGIN_VALIDATE_LOGOUT -> {
                     OpResult login = ops.login(ids.login(), "cred");
                     if (login.code() == OpResult.Code.OK_LOGIN) {
@@ -701,12 +726,59 @@ public final class WorkloadMain {
                         ops.logout(novoSid);
                     }
                 }
-                case LOGOUT -> ops.logout(sid);
+                case LOGOUT -> {
+                    if (v3 == null) {
+                        ops.logout(sid);
+                    } else {
+                        logoutV3(ops, v3, SlotsGeracao.slotDe(sid));
+                    }
+                }
                 case INCREMENT_FAILURE -> ops.incrementFailure(ids.limite());
                 case RESET_FAILURES -> ops.resetFailures(ids.limite());
             }
         } catch (Exception e) {
             // erro de transporte; conta tentativa (no chamador) mas não interrompe.
+        }
+    }
+
+    /**
+     * B-43.7: Validate isolado da mistura v3: le a geracao corrente do slot {@code k} ou, com
+     * {@code antigo}, a anterior (token antigo; a geracao 0 ja nasce INVALID na carga). Le
+     * {@code geracao[k]} sem trava: um Validate concorrente com o Logout do mesmo slot pode ler a
+     * geracao que esta sendo invalidada (INVALID legitimo, contado nos desfechos).
+     */
+    static OpResult validateV3(SessionOps ops, MisturaV3.Cliente v3, int k, boolean antigo) {
+        int g = v3.slots().geracao(k);
+        OpResult r = ops.validate(SlotsGeracao.chave(k, antigo ? g - 1 : g));
+        v3.contarValidate(antigo);
+        return r;
+    }
+
+    /**
+     * B-43.7: Logout isolado da mistura v3, sob a trava da faixa do slot (Logouts no mesmo slot nao
+     * sao concorrentes entre si; artefato declarado do workload). Ordem: le a geracao {@code g};
+     * invalida {@code chave(k,g)} (medido, CSV); reposicao VALID de {@code chave(k,g+1)} (fora do
+     * CSV); so depois avanca a geracao, para que um Validate que veja {@code g+1} encontre a sessao ja
+     * gravada. Logout em {@code ERROR_*}: sem reposicao nem avanco ({@code reposicao_omitida}).
+     * Reposicao que falha: sem avanco (os Validate seguem na geracao {@code g}, ja invalidada, ate o
+     * proximo Logout do slot).
+     */
+    static void logoutV3(SessionOps ops, MisturaV3.Cliente v3, int k) {
+        SlotsGeracao slots = v3.slots();
+        synchronized (slots.trava(k)) {
+            int g = slots.geracao(k);
+            OpResult r = ops.logout(SlotsGeracao.chave(k, g));
+            boolean erro = r.code() == OpResult.Code.ERROR_TRANSPORT
+                    || r.code() == OpResult.Code.ERROR_UNAVAILABLE;
+            if (erro) {
+                v3.contarLogout(true);
+                return;
+            }
+            boolean reposta = ops.reporSessao(SlotsGeracao.chave(k, g + 1), slots.identidade(k));
+            if (reposta) {
+                slots.definirGeracao(k, g + 1);
+            }
+            v3.contarLogout(false);
         }
     }
 }

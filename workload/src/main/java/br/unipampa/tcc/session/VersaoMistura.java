@@ -1,7 +1,7 @@
 package br.unipampa.tcc.session;
 
 /**
- * B-43.2: versao da mistura S1/S2 ({@code --mix v1|v2}).
+ * B-43.2: versao da mistura S1/S2 ({@code --mix v1|v2|v3}; B-43.7 acrescenta {@link #V3}).
  *
  * <ul>
  *   <li>{@link #V1}: comportamento anterior, uma identidade {@code user-<tid>} por thread para Login,
@@ -14,7 +14,13 @@ package br.unipampa.tcc.session;
  */
 public enum VersaoMistura {
     V1("v1"),
-    V2("v2");
+    V2("v2"),
+    /**
+     * B-43.7: mistura "slot-geracao" ({@link SlotsGeracao}, {@link CargaSlots}, {@link MisturaV3}). Login,
+     * O4 e O5 como v2; Validate/Logout isolados sobre a sessao corrente do slot Zipf, com q = 1/20 de
+     * Validate isolados lendo o token antigo e reposicao dentro do Logout, fora do CSV.
+     */
+    V3("v3");
 
     private final String rotulo;
 
@@ -27,13 +33,13 @@ public enum VersaoMistura {
         return rotulo;
     }
 
-    /** Conversao estrita: so {@code v1} e {@code v2}, exatamente. */
+    /** Conversao estrita: so {@code v1}, {@code v2} e {@code v3}, exatamente. */
     public static VersaoMistura porRotulo(String valor) {
         for (VersaoMistura v : values()) {
             if (v.rotulo.equals(valor)) {
                 return v;
             }
         }
-        throw new IllegalArgumentException("valor invalido '" + valor + "' para --mix (aceitos: v1, v2)");
+        throw new IllegalArgumentException("valor invalido '" + valor + "' para --mix (aceitos: v1, v2, v3)");
     }
 }

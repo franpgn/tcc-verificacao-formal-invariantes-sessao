@@ -132,3 +132,79 @@ Feito pelo orquestrador depois da V-B43.6 (APROVADA, `wt-plano-ctrl` `6226e84`).
 - Método: `git rebase --onto feature/controlador-integracao 8ee2deb` de uma branch temporária em `8734c13`, seguido de `merge --ff-only`. São 6 commits, sem conflito e sem commit de merge. A branch de origem continua em `8734c13`.
 - Surefire: **629/0/0/1 em 77 arquivos**, igual a 608 + 21 (o B-43.6 sai de 373 e chega a 394).
 - Falta integrar: B-43.4, cujo trabalho está em andamento.
+
+## Passo 6: B-43.4 (contrato CSV v2), correção do leitor do controlador e smoke integrado
+
+Feito pelo Worker depois da V-B43.4 (`wt-plano-ctrl` `acb37fb`), com a aprovação do Gestor (22/10) para a reaplicação, para a correção da seção 5.2 (A1) e para o smoke da seção 5.3.
+
+### 6.1 Reaplicação do B-43.4
+
+- Método: `git rebase --onto feature/controlador-integracao 8ee2deb` de uma branch temporária em `f729c97`, seguido de `merge --ff-only` e da remoção da temporária. São 7 commits, sem conflito e sem commit de merge. A árvore final, `87d6fc8`, é igual à do rebase simulado da V-B43.4 §5.1. A branch de origem `fix/b43-4-return-code-validate` continua em `f729c97`.
+
+| antigo | novo |
+|---|---|
+| `1e51d1c` | `b7a5e23` |
+| `673a491` | `87d7bec` |
+| `ecc8e9a` | `66aadfc` |
+| `5384879` | `62db2db` |
+| `2dca918` | `03596fa` |
+| `af71bc1` | `2a20ed1` |
+| `f729c97` | `67f82a9` |
+
+- Surefire em `67f82a9`: **638/0/0/1 em 79 arquivos**, igual a 629 + 9. Python (`python -m unittest discover -s analysis`): **15 OK**.
+
+### 6.2 Correção do leitor do controlador (`d8d3e01`, `fix:`)
+
+`EventoOperacao.CODIGOS` não tinha `INVALID` nem `NOT_FOUND`, e o `LeitorCsvEventos` parava na linha 2 de qualquer CSV v2 (V-B43.4 §5.2). Os dois códigos entraram como não erro, pela mesma regra do `SUCESSOS` de `percentis.py`.
+
+- Teste novo, `EventoOperacaoContratoV2Test` (arquivo novo), com 3 testes:
+  - paridade: percorre todos os `OpResult.Code`, com `switch` exaustivo e todos os payloads que mudam o literal, e exige que `returnCode()` esteja em `CODIGOS` e que `CODIGOS` seja exatamente o conjunto desses literais;
+  - leitura de um recorte real v2;
+  - leitura de `NOT_FOUND` por linha sintética, porque nenhum CSV real tem esse código.
+- Fixture `controle/amostra-b43-4-q1-rep001-200-v2.csv`: cabeçalho mais as 200 primeiras linhas de `runs/b43-4-smoke/Q1/rep-001.csv`, cujo sha256 `3680771b…cf20` confere com o MANIFEST do B-43.4. Contém COUNTED 7, INVALID 33, NONE 59, OK 36 e VALID 65.
+- Edições de testes existentes, todas autorizadas pelo Gestor (22/10):
+  - `ClassificacaoTest` `:22-28`, com 2 linhas a mais no `@CsvSource`;
+  - `ClassificacaoTest` `:41`, com a lista nova;
+  - `AgregadorDeJanelaTest` `:263`, onde `8` virou `EventoOperacao.CODIGOS.size() + 1`. Esta terceira edição foi autorizada depois de uma parada: o primeiro Surefire completo deu 643/1/0/1, porque esse teste fixava à mão o tamanho antigo de `CODIGOS`.
+- Vermelho antes da implementação (testes direcionados): 28 testes, 2 failures e 4 errors, todos por `return_code fora do contrato` ou pela lista antiga.
+- **Mutante**, retirar `INVALID` de `CODIGOS`: **morto** por 5 testes (`paridadeComOpResult`, `leAmostraRealV2`, `leNotFound`, `conjuntoDeCodigos` e `codigos[INVALID]`) e revertido.
+- Surefire em `d8d3e01`: **643/0/0/1 em 80 arquivos**, igual a 638 + 5. Python: **15 OK**.
+
+### 6.3 Javadoc de `AcaoS3` (`43dfd1e`, `docs:`)
+
+O Javadoc dizia que o `return_code` de um Validate bem-sucedido é sempre `VALID`, o que só vale no contrato 1 (V-B43.4 D4). O texto foi atualizado. O código não mudou, e o Surefire ficou em 643/0/0/1 (só compilação conferida).
+
+### 6.4 Smoke integrado (`881287e`)
+
+O ambiente foi o seguinte:
+- Podman 5.7.0 com a máquina WSL `podman-machine-default`. Ela estava **parada** antes do smoke, foi iniciada para ele e **parada** de novo no fim.
+- Imagem `quay.io/infinispan/server:15.0.21.Final`.
+- Projeto `podman-compose -p b436i`, com containers `b436i-isn1..3` e portas Hot Rod **12332..12334** (`external-port` igual).
+- `cluster/*.xml` desta branch, iguais byte a byte aos do B-43.4.
+- JDK 22.0.2 por `$JAVA_HOME/bin/java`.
+- Jar de `git archive 43dfd1e workload`, com SHA-256 `f868a783…4114` registrado em `jars.json`.
+- Sem VM.
+
+Parâmetros: `--mix v2 --reset-state on --duration 60 --ops 0 --rep 1 --threads 4 --warmup-min-sec 10`.
+
+| Exec. | Cenário | exit | `Contrato CSV` / meta | `Auditor:` | I1 / I4 (CSV de violações) | linhas CSV = `registrados` = `LeitorCsvEventos` | Validate VALID (CSV) / `valid=` | Validate INVALID (CSV) / `invalid=` | dif. | Verificador |
+|---|---|---|---|---|---|---|---|---|---|---|
+| Q1 | S1 sync | 0 | v2 / `{"contrato_csv":2}` | `i1_concorrentes=0 i4_concorrentes=0` | 0 / 0 (total 0) | 413 394 = 413 394 = 413 394 | 111 628 / 111 628 | 94 733 / 94 733 | **0** | OK, exit 0 |
+| Q2 | S2 async | 0 | v2 / `{"contrato_csv":2}` | `i1_concorrentes=0 i4_concorrentes=0` | 0 / 0 (total 0) | 400 719 = 400 719 = 400 719 | 178 580 / 178 580 | 192 161 / 192 161 | **0** | OK, exit 0 |
+
+- **Todos os critérios foram atendidos** nas duas execuções (`criterios_ok: true` em `analise.json`, gerado por `analise.py`).
+- `Validate NOT_FOUND` = 0 e `Validate ERROR_*` = 0 nas duas.
+- O `LeitorCsvEventos` (`LerCsvV2.java` com o jar da integração, saída em `leitor-csv-eventos.json`) leu os dois CSV inteiros sem exceção, com `erros` = 0. É a primeira leitura de um CSV v2 real pelo leitor do controlador.
+- Saúde antes e depois: `HEALTHY`, 3 nós, nas 3 portas.
+- Logs dos servidores com **0** linhas ` ERROR `.
+- `podman ps -a` antes e depois: **idênticos byte a byte** (11 containers). A rede `b436i_infinispan-net` foi removida.
+- O histograma `validate` do stdout deu igual ao CSV em Q1 (206 361) e 1 acima em Q2 (370 742 contra 370 741). É a fronteira de relógio já documentada em B-43.2/B-43.4. O contador `Desfechos` segue o CSV.
+- Brutos em `runs/integ-passo6-smoke/`, com `MANIFEST.sha256` de 40 arquivos (`sha256sum -c` sem falhas). Os CSV, `stdout.log`, logs dos servidores e `.txt` ficam fora do git pelo `.gitignore` e são conferidos pelo manifesto.
+
+O smoke não prova ausência de I1 real. Prova que a combinação B-43.4 + B-43.6 não reintroduz a corrida A1, inclusive em S2 async, onde estava a única I1 observada (Q2 do B-43.4), e que o controlador lê o CSV v2.
+
+### 6.5 Estado
+
+- A ponta antes deste documento é `881287e`.
+- As branches de origem não foram alteradas. Nada foi publicado.
+- Desvio: os brutos do smoke foram num commit `test:` próprio (`881287e`), como nos blocos anteriores, e não no commit `docs:` desta seção.

@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
   Configuração do cluster Infinispan para o TCC.
-  Cache 'sessions' em modo DIST_SYNC, numOwners=2, numSegments=64.
-  Mantém duas cópias por chave para tolerar falha de um nó.
-  Statistics habilitado para captura por OpenMetrics.
-
-  Para cenários com replicação assíncrona, alternar mode="ASYNC".
+  Caches 'sessions'/'counters' em DIST_SYNC (controle) e irmãos 'sessions-async'/
+  'counters-async' em DIST_ASYNC (alvo T1), B-42.1: numOwners=2, numSegments=64 e
+  partition-handling iguais nos quatro; statistics para captura por OpenMetrics.
+  O workload escolhe o par pela opção replication = sync|async (PerfilReplicacao.java);
+  ClusterXmlIrmaosTest falha se os irmãos divergirem em algo além de name/mode.
 -->
 <infinispan
     xmlns="urn:infinispan:config:15.0"
@@ -26,6 +26,19 @@
     </distributed-cache>
 
     <distributed-cache name="counters" mode="SYNC" owners="2" segments="64" statistics="true">
+      <locking concurrency-level="1000" acquire-timeout="15000" striping="false"/>
+      <state-transfer enabled="true" timeout="60000"/>
+      <partition-handling when-split="DENY_READ_WRITES" merge-policy="PREFERRED_NON_NULL"/>
+    </distributed-cache>
+
+    <!-- B-42.1: perfil ASYNC; mesmos parâmetros dos irmãos SYNC acima, só mode muda. -->
+    <distributed-cache name="sessions-async" mode="ASYNC" owners="2" segments="64" statistics="true">
+      <locking concurrency-level="1000" acquire-timeout="15000" striping="false"/>
+      <state-transfer enabled="true" timeout="60000"/>
+      <partition-handling when-split="DENY_READ_WRITES" merge-policy="PREFERRED_NON_NULL"/>
+    </distributed-cache>
+
+    <distributed-cache name="counters-async" mode="ASYNC" owners="2" segments="64" statistics="true">
       <locking concurrency-level="1000" acquire-timeout="15000" striping="false"/>
       <state-transfer enabled="true" timeout="60000"/>
       <partition-handling when-split="DENY_READ_WRITES" merge-policy="PREFERRED_NON_NULL"/>

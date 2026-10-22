@@ -295,6 +295,9 @@ public final class WorkloadMain {
             Marcadores marcadores = lerMarcadores(cli);
             RastroCliente rastro = (marcadores != null || cli.varredura) ? new RastroCliente() : null;
             SessionOps ops = new SessionOps(rcm, cli.replicacao, latency, auditor, eventos, relogio, rastro);
+            // B-43.2 (P-d): desfechos reais de Validate na janela de medicao (so stdout).
+            DesfechosValidate desfechos = new DesfechosValidate(politica);
+            ops.definirDesfechosValidate(desfechos);
             BooleanSupplier parar = cli.paraNoFimDaFalha
                     ? new ParadaPorMarcador(Path.of(cli.marcadores))
                     : () -> false;
@@ -347,6 +350,9 @@ public final class WorkloadMain {
 
             System.out.printf("Total de operacoes: %d%n", totalOps.get());
             System.out.println("Violacoes detectadas: " + auditor.total());
+            if (!cli.scenarioS3) {
+                System.out.println(desfechos.linha());
+            }
             latency.snapshot().forEach((op, h) ->
                 System.out.printf(
                         "%-22s n=%d (descartados=%d) p50=%dns p95=%dns p99=%dns p999=%dns%n",

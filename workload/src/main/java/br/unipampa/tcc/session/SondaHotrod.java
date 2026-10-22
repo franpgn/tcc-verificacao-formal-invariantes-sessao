@@ -32,9 +32,10 @@ import java.util.function.LongSupplier;
  * registra. Para cobrir dois nos, o script de coleta (g1b.sh) roda duas JVMs, uma por no.</p>
  *
  * <p>Uso: {@code java -cp session-workload.jar br.unipampa.tcc.session.SondaHotrod
- * --no isn3=127.0.0.1:11224 [--caches sessions,counters] [--intervalo-s 5] [--duracao-s N]
- * [--usuario admin]}; a senha vem da variavel de ambiente {@code SONDA_SENHA} (nunca da linha de
- * comando).</p>
+ * --no isn3=127.0.0.1:11224 [--replication sync|async] [--caches sessions,counters] [--intervalo-s 5]
+ * [--duracao-s N] [--usuario admin]}; a senha vem da variavel de ambiente {@code SONDA_SENHA} (nunca
+ * da linha de comando). B-42.1: sem {@code --caches}, a sonda usa o cache de sessoes do perfil de
+ * {@code --replication} (padrao {@code sync}, isto e, {@code sessions}, como antes).</p>
  */
 public final class SondaHotrod {
 
@@ -66,11 +67,12 @@ public final class SondaHotrod {
 
     /** Argumentos da linha de comando. */
     record Args(String rotulo, String host, int porta, List<String> caches, int intervaloS,
-                int duracaoS, String usuario) {
+                int duracaoS, String usuario, PerfilReplicacao perfil) {
 
         static Args parse(String[] a) {
             String no = null;
-            List<String> caches = List.of("sessions");
+            PerfilReplicacao perfil = PerfilReplicacao.SYNC;
+            List<String> caches = null; // B-42.1: sem --caches, segue o perfil (resolvido abaixo)
             int intervalo = 5;
             int duracao = 0;
             String usuario = "admin";
@@ -82,6 +84,7 @@ public final class SondaHotrod {
                 switch (a[i]) {
                     case "--no" -> no = v;
                     case "--caches" -> caches = List.of(v.split(","));
+                    case "--replication" -> perfil = PerfilReplicacao.porRotulo(v);
                     case "--intervalo-s" -> intervalo = Integer.parseInt(v);
                     case "--duracao-s" -> duracao = Integer.parseInt(v);
                     case "--usuario" -> usuario = v;
@@ -96,8 +99,11 @@ public final class SondaHotrod {
             if (eq <= 0 || dp < eq + 2 || dp == no.length() - 1) {
                 throw new IllegalArgumentException("--no deve ser rotulo=host:porta: " + no);
             }
+            if (caches == null) {
+                caches = List.of(perfil.cacheSessoes());
+            }
             return new Args(no.substring(0, eq), no.substring(eq + 1, dp),
-                    Integer.parseInt(no.substring(dp + 1)), caches, intervalo, duracao, usuario);
+                    Integer.parseInt(no.substring(dp + 1)), caches, intervalo, duracao, usuario, perfil);
         }
     }
 
@@ -108,11 +114,14 @@ public final class SondaHotrod {
     /** Valor do tipo que o cache guarda, para que auditores e varreduras nao tropecem na chave de teste. */
     static Object valorDeTeste(String cache, String chave) {
         Instant agora = Instant.now();
-        return switch (cache) {
-            case "sessions" -> SessionState.criar(chave, "sonda", agora);
-            case "counters" -> IdentityState.criar("sonda", agora);
-            default -> throw new IllegalArgumentException("cache desconhecido para a sonda: " + cache);
-        };
+        // B-42.1: o papel do cache (sessoes x contadores) vem do resolvedor, nos dois perfis
+        if (PerfilReplicacao.ehCacheDeSessoes(cache)) {
+            return SessionState.criar(chave, "sonda", agora);
+        }
+        if (PerfilReplicacao.ehCacheDeContadores(cache)) {
+            return IdentityState.criar("sonda", agora);
+        }
+        throw new IllegalArgumentException("cache desconhecido para a sonda: " + cache);
     }
 
     /** Mesma marshaller e allow-list do workload; um unico servidor; sem aprender topologia. */

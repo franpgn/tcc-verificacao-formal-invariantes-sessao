@@ -105,26 +105,26 @@ public final class S3Clientes implements AutoCloseable {
                     RemoteCacheManager rcm = new RemoteCacheManager(
                             configuracaoPinned(no, cli.usuario, cli.senha, p));
                     c.gerenciadores.add(rcm);
-                    c.servidoresApp.add(new SessionOps(rcm, latency, auditor, eventos, relogio, rastro,
-                            c.invalidacoes, no.toString()));
+                    c.servidoresApp.add(new SessionOps(rcm, cli.replicacao, latency, auditor, eventos,
+                            relogio, rastro, c.invalidacoes, no.toString()));
                 }
                 HostPort noAdmin = resolverNoAdmin(p.noAdmin, todos);
                 RemoteCacheManager rcmAdmin = new RemoteCacheManager(
                         configuracaoPinned(noAdmin, cli.usuario, cli.senha, p));
                 c.gerenciadores.add(rcmAdmin);
-                c.admin = new SessionOps(rcmAdmin, latency, auditor, eventos, relogio, rastro,
-                        c.invalidacoes, noAdmin.toString());
+                c.admin = new SessionOps(rcmAdmin, cli.replicacao, latency, auditor, eventos, relogio,
+                        rastro, c.invalidacoes, noAdmin.toString());
             } else {
                 RemoteCacheManager rcm = new RemoteCacheManager(
                         configuracaoTopology(todos, cli.usuario, cli.senha, p));
                 c.gerenciadores.add(rcm);
                 // um unico cliente: o rotulo nao diz em que no a operacao caiu (decide o cliente)
                 for (int i = 0; i < todos.size(); i++) {
-                    c.servidoresApp.add(new SessionOps(rcm, latency, auditor, eventos, relogio, rastro,
-                            c.invalidacoes, "topology"));
+                    c.servidoresApp.add(new SessionOps(rcm, cli.replicacao, latency, auditor, eventos,
+                            relogio, rastro, c.invalidacoes, "topology"));
                 }
-                c.admin = new SessionOps(rcm, latency, auditor, eventos, relogio, rastro,
-                        c.invalidacoes, "topology");
+                c.admin = new SessionOps(rcm, cli.replicacao, latency, auditor, eventos, relogio,
+                        rastro, c.invalidacoes, "topology");
             }
         } catch (RuntimeException e) {
             c.close();

@@ -67,8 +67,9 @@ public class SessionOps {
      * Construtor sem trilha de eventos (mantém compatibilidade com testes
      * existentes e com execuções que só geram o resumo de latência).
      */
-    public SessionOps(RemoteCacheManager rcm, LatencyRegistry latency, InvariantAuditor auditor) {
-        this(rcm, latency, auditor, null, null);
+    public SessionOps(RemoteCacheManager rcm, PerfilReplicacao perfil, LatencyRegistry latency,
+                      InvariantAuditor auditor) {
+        this(rcm, perfil, latency, auditor, null, null);
     }
 
     /**
@@ -81,18 +82,21 @@ public class SessionOps {
      * <i>default</i> aprovado: obter o <i>owner</i> real por Hot Rod seria
      * caro, então o servidor de conexão é o fallback aceito.</p>
      */
-    public SessionOps(RemoteCacheManager rcm, LatencyRegistry latency,
+    public SessionOps(RemoteCacheManager rcm, PerfilReplicacao perfil, LatencyRegistry latency,
                       InvariantAuditor auditor, EventCsvWriter eventos,
                       EpochClock relogio) {
-        this(rcm, latency, auditor, eventos, relogio, null);
+        this(rcm, perfil, latency, auditor, eventos, relogio, null);
     }
 
-    /** B-33: como o anterior, com o rastro de cliente (Q-10) alimentado a cada evento. */
-    public SessionOps(RemoteCacheManager rcm, LatencyRegistry latency,
+    /**
+     * B-33: como o anterior, com o rastro de cliente (Q-10) alimentado a cada evento.
+     * B-42.1: os nomes de cache vem do {@link PerfilReplicacao} (SYNC = nomes historicos).
+     */
+    public SessionOps(RemoteCacheManager rcm, PerfilReplicacao perfil, LatencyRegistry latency,
                       InvariantAuditor auditor, EventCsvWriter eventos,
                       EpochClock relogio, RastroCliente rastro) {
-        this(Armazem.de(rcm.<String, SessionState>getCache("sessions")),
-                Armazem.de(rcm.<String, IdentityState>getCache("counters")),
+        this(Armazem.de(rcm.<String, SessionState>getCache(perfil.cacheSessoes())),
+                Armazem.de(rcm.<String, IdentityState>getCache(perfil.cacheContadores())),
                 latency, auditor, eventos, relogio, resolverReplica(rcm), rastro);
     }
 
@@ -139,13 +143,13 @@ public class SessionOps {
      * compartilhado entre instancias e rotulo de replica explicito ({@code null} = primeiro
      * servidor configurado). Usado pelo S3 (um {@code SessionOps} por servidor de aplicacao).
      */
-    SessionOps(RemoteCacheManager rcm, LatencyRegistry latency,
+    SessionOps(RemoteCacheManager rcm, PerfilReplicacao perfil, LatencyRegistry latency,
                InvariantAuditor auditor, EventCsvWriter eventos,
                EpochClock relogio, RastroCliente rastro,
                ConcurrentHashMap<String, SessionState.Motivo> invalidacoesCompartilhadas,
                String replica) {
-        this(Armazem.de(rcm.<String, SessionState>getCache("sessions")),
-                Armazem.de(rcm.<String, IdentityState>getCache("counters")),
+        this(Armazem.de(rcm.<String, SessionState>getCache(perfil.cacheSessoes())),
+                Armazem.de(rcm.<String, IdentityState>getCache(perfil.cacheContadores())),
                 latency, auditor, eventos, relogio,
                 replica != null ? replica : resolverReplica(rcm), rastro, invalidacoesCompartilhadas);
     }

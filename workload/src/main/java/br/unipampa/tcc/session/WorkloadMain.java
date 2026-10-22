@@ -82,6 +82,7 @@ public final class WorkloadMain {
      */
     static void executar(Cli cli) throws Exception {
         System.out.println("Configuracao: " + cli);
+        System.out.println("Replicacao: " + cli.replicacao.descricao());
 
         for (int rep = 1; rep <= cli.repeticoes; rep++) {
             System.out.printf("== Repeticao %d / %d ==%n", rep, cli.repeticoes);
@@ -125,7 +126,7 @@ public final class WorkloadMain {
             // falha; tudo desligado por padrao (sem as opcoes novas o fluxo e o de B-24).
             Marcadores marcadores = lerMarcadores(cli);
             RastroCliente rastro = (marcadores != null || cli.varredura) ? new RastroCliente() : null;
-            SessionOps ops = new SessionOps(rcm, latency, auditor, eventos, relogio, rastro);
+            SessionOps ops = new SessionOps(rcm, cli.replicacao, latency, auditor, eventos, relogio, rastro);
             BooleanSupplier parar = cli.paraNoFimDaFalha
                     ? new ParadaPorMarcador(Path.of(cli.marcadores))
                     : () -> false;
@@ -275,13 +276,13 @@ public final class WorkloadMain {
     private static Marcadores executarConvergencia(Cli cli, RemoteCacheManager rcm,
             LeitoresMultiReplica leitores, InvariantAuditor auditor, EpochClock relogio,
             Marcadores marcadores, long fimCargaNs, int rep) throws java.io.IOException {
-        RemoteCache<String, SessionState> sessoesTopologia = rcm.getCache("sessions");
+        RemoteCache<String, SessionState> sessoesTopologia = rcm.getCache(cli.replicacao.cacheSessoes());
         int esperados = leitores.leitoresSessao().size();
         ConvergenciaLoop.SondaCluster sonda = () -> {
             HealthRest.Estado h = HealthRest.consultar(cli.restUrl, cli.usuario, cli.senha);
             int topologia = sessoesTopologia.getCacheTopologyInfo().getSegmentsPerServer().size();
             return new ConvergenciaLoop.EstadoCluster(Math.min(h.numeroDeNos(), topologia),
-                    h.healthy("sessions"), h.healthy("counters"));
+                    h.healthy(cli.replicacao.cacheSessoes()), h.healthy(cli.replicacao.cacheContadores()));
         };
         long tFimNs = marcadores != null && marcadores.fimNs() != null ? marcadores.fimNs() : fimCargaNs;
         ConvergenciaLoop laco = new ConvergenciaLoop(auditor,
@@ -316,8 +317,8 @@ public final class WorkloadMain {
             Supplier<Map<String, SessionState.Motivo>> invalidacoes,
             RastroCliente rastro, int rep) throws java.io.IOException {
         try {
-            Map<String, SessionState> sessoes = materializarTudo(rcm.getCache("sessions"));
-            Map<String, IdentityState> identidades = materializarTudo(rcm.getCache("counters"));
+            Map<String, SessionState> sessoes = materializarTudo(rcm.getCache(cli.replicacao.cacheSessoes()));
+            Map<String, IdentityState> identidades = materializarTudo(rcm.getCache(cli.replicacao.cacheContadores()));
             VarreduraFinal.Resultado r = VarreduraFinal.varrer(sessoes, identidades,
                     invalidacoes.get(), rastro, SessionOps.LIMITE_TENTATIVAS);
             System.out.println(r.resumo());
@@ -378,8 +379,8 @@ public final class WorkloadMain {
      * depois do primeiro evento de falha.</p>
      */
     private static LeitoresMultiReplica abrirLeitoresMultiReplica(Cli cli, RemoteCacheManager rcmPrincipal) {
-        RemoteCache<String, SessionState> sessoesPrincipal = rcmPrincipal.getCache("sessions");
-        RemoteCache<String, IdentityState> identidadesPrincipal = rcmPrincipal.getCache("counters");
+        RemoteCache<String, SessionState> sessoesPrincipal = rcmPrincipal.getCache(cli.replicacao.cacheSessoes());
+        RemoteCache<String, IdentityState> identidadesPrincipal = rcmPrincipal.getCache(cli.replicacao.cacheContadores());
 
         List<RemoteCacheManager> gerenciadores = new ArrayList<>();
         List<Supplier<Map<String, SessionState>>> leitoresSessao = new ArrayList<>();
@@ -399,8 +400,8 @@ public final class WorkloadMain {
 
             RemoteCacheManager rcmNo = new RemoteCacheManager(cb.build());
             gerenciadores.add(rcmNo);
-            RemoteCache<String, SessionState> sessoesNo = rcmNo.getCache("sessions");
-            RemoteCache<String, IdentityState> identidadesNo = rcmNo.getCache("counters");
+            RemoteCache<String, SessionState> sessoesNo = rcmNo.getCache(cli.replicacao.cacheSessoes());
+            RemoteCache<String, IdentityState> identidadesNo = rcmNo.getCache(cli.replicacao.cacheContadores());
             leitoresSessao.add(() ->
                     materializar(sessoesNo, segmentosDoServidor(sessoesPrincipal, porta)));
             leitoresIdentidade.add(() ->

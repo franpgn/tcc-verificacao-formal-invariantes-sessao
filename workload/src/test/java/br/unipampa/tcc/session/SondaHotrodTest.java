@@ -162,4 +162,28 @@ class SondaHotrodTest {
         assertTrue(SondaHotrod.valorDeTeste("counters", "sonda-isn3") instanceof IdentityState);
         assertThrows(IllegalArgumentException.class, () -> SondaHotrod.valorDeTeste("outro", "k"));
     }
+    // ---- B-42.1: o padrao de --caches segue o perfil de --replication ----
+
+    @Test
+    void semCachesOPadraoSegueOPerfil() {
+        SondaHotrod.Args s = SondaHotrod.Args.parse(new String[]{"--no", "isn1=127.0.0.1:11222"});
+        assertEquals(PerfilReplicacao.SYNC, s.perfil());
+        assertEquals(List.of("sessions"), s.caches());
+        SondaHotrod.Args a = SondaHotrod.Args.parse(new String[]{"--replication", "async",
+                "--no", "isn1=127.0.0.1:11222"});
+        assertEquals(PerfilReplicacao.ASYNC, a.perfil());
+        assertEquals(List.of("sessions-async"), a.caches());
+        SondaHotrod.Args e = SondaHotrod.Args.parse(new String[]{"--no", "isn1=127.0.0.1:11222",
+                "--replication", "async", "--caches", "sessions-async,counters-async"});
+        assertEquals(List.of("sessions-async", "counters-async"), e.caches(), "--caches explicito prevalece");
+        assertThrows(IllegalArgumentException.class, () -> SondaHotrod.Args.parse(
+                new String[]{"--no", "isn1=127.0.0.1:11222", "--replication", "asinc"}));
+    }
+
+    @Test
+    void valorDeTesteReconheceOsCachesAsync() {
+        assertTrue(SondaHotrod.valorDeTeste("sessions-async", "sonda-isn3") instanceof SessionState);
+        assertTrue(SondaHotrod.valorDeTeste("counters-async", "sonda-isn3") instanceof IdentityState);
+        assertThrows(IllegalArgumentException.class, () -> SondaHotrod.valorDeTeste("sessions-repl", "k"));
+    }
 }

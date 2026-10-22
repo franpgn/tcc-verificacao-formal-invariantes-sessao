@@ -2,6 +2,8 @@ package br.unipampa.tcc.controle;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -63,16 +65,28 @@ class LeitorCsvEventosTest {
     }
 
     @Test
-    @DisplayName("amostra real agregada em janelas de 5 ms com L = 10 ms bate com o calculo independente")
+    @DisplayName("amostra real agregada em janelas de 5 ms com o L padrao (100 ms) bate com o calculo independente")
     void agregaAmostraReal() throws IOException {
+        // com L = 100 ms nenhuma janela de 5 ms fecha durante os ~20 ms da amostra; todas saem no encerrar
+        agregaAmostraReal(AgregadorDeJanela.TOLERANCIA_PADRAO_NS, 0);
+    }
+
+    @ParameterizedTest(name = "L = {0} ns: {1} janelas antes de encerrar")
+    @CsvSource({"0, 4", "10000000, 2"})
+    @DisplayName("amostra real com L = 0 e L = 10 ms: mesmas janelas, fechamento mais cedo")
+    void agregaAmostraRealOutrosL(long l, int antesDeEncerrar) throws IOException {
+        agregaAmostraReal(l, antesDeEncerrar);
+    }
+
+    private static void agregaAmostraReal(long l, int antesDeEncerrar) throws IOException {
         long origem = 1782175472165000000L;
-        AgregadorDeJanela a = new AgregadorDeJanela(origem, 5_000_000L, AgregadorDeJanela.TOLERANCIA_PADRAO_NS,
+        AgregadorDeJanela a = new AgregadorDeJanela(origem, 5_000_000L, l,
                 Referencia.de(Map.of("Validate", 1_000_000L, "Login", 2_000_000L)));
         List<JanelaObservada> out = new ArrayList<>();
         try (BufferedReader r = fixture()) {
             LeitorCsvEventos.ler(r, e -> out.addAll(a.registrar(e)));
         }
-        assertEquals(2, out.size(), "antes de encerrar: so as janelas com fim + L <= marca");
+        assertEquals(antesDeEncerrar, out.size(), "antes de encerrar: so as janelas com fim + L <= marca");
         out.addAll(a.encerrar());
         long[][] esperado = { // total, elegiveis, excedencias
                 {20, 18, 9}, {46, 32, 2}, {60, 46, 0}, {58, 45, 1}};

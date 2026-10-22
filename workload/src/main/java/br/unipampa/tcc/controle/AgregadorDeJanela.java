@@ -53,8 +53,11 @@ import java.util.TreeMap;
  */
 public final class AgregadorDeJanela {
 
-    /** Tolerancia padrao L para eventos fora de ordem: 10 ms (atraso medido em S1-F1: ~0,5 ms). */
-    public static final long TOLERANCIA_PADRAO_NS = 10_000_000L;
+    /**
+     * Tolerancia padrao L para eventos fora de ordem: 100 ms, cerca de 10x o pior atraso medido nos
+     * 12 CSVs brutos (9,43 ms em S2-none rep-001; V-B26.1 secao 6; Gestor, 2026-10-22).
+     */
+    public static final long TOLERANCIA_PADRAO_NS = 100_000_000L;
 
     private final long origemNs;
     private final long wNs;

@@ -16,6 +16,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.Set;
 import java.util.function.BooleanSupplier;
 import java.util.function.Supplier;
@@ -256,7 +257,7 @@ public final class WorkloadMain {
                 final int tid = t;
                 final long seedThread = cli.seedBase + (long) tid + (long) rep * 1_000_003L;
                 pool.submit(() -> rodarCliente(ops, tid, fim, cli.scenario,
-                        seedThread, opsAlvoPorThread, totalOps, parar));
+                        seedThread, opsAlvoPorThread, totalOps, parar, cli.mix));
             }
             pool.shutdown();
             pool.awaitTermination(cli.duracaoSeg + 30, TimeUnit.SECONDS);
@@ -572,40 +573,60 @@ public final class WorkloadMain {
      * Loop de geração de carga para uma thread; termina quando o tempo
      * limite for atingido ou quando a thread tiver gerado seu alvo de
      * operações ({@link Cli#ops} dividido pelo número de threads).
+     * B-43.2: as identidades vêm de {@link IdentidadesMistura} conforme {@code --mix}.
      */
     private static void rodarCliente(SessionOps ops, int tid, long deadline,
                                      Scenario cenario, long seed,
                                      long opsAlvo, AtomicLong totalOps,
-                                     BooleanSupplier parar) {
+                                     BooleanSupplier parar, VersaoMistura mix) {
         ThreadLocalRandom r = ThreadLocalRandom.current();
         KeyGenerator chaves = new KeyGenerator(seed);
-        String identidade = "user-" + tid;
+        IdentidadesMistura ids = new IdentidadesMistura(tid, mix);
         long executadas = 0;
         while (System.currentTimeMillis() < deadline && executadas < opsAlvo
                 && !parar.getAsBoolean()) {
-            String sid = chaves.nextSessionKey();
-            try {
-                switch (cenario.proximaOperacao(r)) {
-                    case VALIDATE -> ops.validate(sid);
-                    case LOGIN_VALIDATE_LOGOUT -> {
-                        OpResult login = ops.login(identidade, "cred");
-                        if (login.code() == OpResult.Code.OK_LOGIN) {
-                            String novoSid = login.sessionId();
-                            ops.validate(novoSid);
-                            ops.logout(novoSid);
-                        }
+            executarOperacao(ops, cenario, r, chaves, ids);
+            executadas++;
+            totalOps.incrementAndGet();
+        }
+    }
+
+    /**
+     * B-43.2: executa {@code n} operacoes da mistura (testes chamam com {@code new Random(42)} e
+     * dubles; a producao usa {@link #executarOperacao} dentro do laco de {@link #rodarCliente}).
+     */
+    static void executarOperacoes(SessionOps ops, Scenario cenario, Random r, KeyGenerator chaves,
+                                  IdentidadesMistura ids, long n) {
+        for (long i = 0; i < n; i++) {
+            executarOperacao(ops, cenario, r, chaves, ids);
+        }
+    }
+
+    /**
+     * Uma operacao da mistura: sorteia a chave Zipf (sempre, como antes) e a operacao; Login usa
+     * {@code ids.login()}, IncrementFailure/ResetFailures usam {@code ids.limite()}. O rodizio de
+     * identidades nao consome {@code r} nem {@code chaves}.
+     */
+    static void executarOperacao(SessionOps ops, Scenario cenario, Random r, KeyGenerator chaves,
+                                 IdentidadesMistura ids) {
+        String sid = chaves.nextSessionKey();
+        try {
+            switch (cenario.proximaOperacao(r)) {
+                case VALIDATE -> ops.validate(sid);
+                case LOGIN_VALIDATE_LOGOUT -> {
+                    OpResult login = ops.login(ids.login(), "cred");
+                    if (login.code() == OpResult.Code.OK_LOGIN) {
+                        String novoSid = login.sessionId();
+                        ops.validate(novoSid);
+                        ops.logout(novoSid);
                     }
-                    case LOGOUT -> ops.logout(sid);
-                    case INCREMENT_FAILURE -> ops.incrementFailure(identidade);
-                    case RESET_FAILURES -> ops.resetFailures(identidade);
                 }
-                executadas++;
-                totalOps.incrementAndGet();
-            } catch (Exception e) {
-                // erro de transporte; conta tentativa mas não interrompe.
-                executadas++;
-                totalOps.incrementAndGet();
+                case LOGOUT -> ops.logout(sid);
+                case INCREMENT_FAILURE -> ops.incrementFailure(ids.limite());
+                case RESET_FAILURES -> ops.resetFailures(ids.limite());
             }
+        } catch (Exception e) {
+            // erro de transporte; conta tentativa (no chamador) mas não interrompe.
         }
     }
 }

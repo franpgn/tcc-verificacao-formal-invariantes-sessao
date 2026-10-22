@@ -27,6 +27,14 @@ public final class OpResult {
         ERROR_UNAVAILABLE
     }
 
+    /**
+     * B-43.4: versao do contrato da coluna {@code return_code} do CSV de eventos. Contrato 1:
+     * {@code OK_VALIDATE} sempre {@code VALID} e {@code NOT_FOUND} como {@code NONE} (mascaramento
+     * C4). Contrato 2: estado real ({@code VALID}/{@code INVALID}) e {@code NOT_FOUND}. Gravada em
+     * {@code meta-csv-rep-NNN.json} ({@link MetaCsv}). Ver {@code docs/contrato-csv-v2.md}.
+     */
+    public static final int VERSAO_CONTRATO_CSV = 2;
+
     private final Code code;
     private final Object payload;
 

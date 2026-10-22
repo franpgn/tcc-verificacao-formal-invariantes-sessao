@@ -243,6 +243,8 @@ public final class WorkloadMain {
         System.out.println("Configuracao: " + cli);
         System.out.println("Replicacao: " + cli.replicacao.descricao());
         System.out.println("Mistura: mix=" + cli.mix.rotulo() + (cli.scenarioS3 ? " (sem efeito em S3)" : ""));
+        // B-43.4: versao do contrato da coluna return_code (tambem em meta-csv-rep-NNN.json).
+        System.out.println(MetaCsv.linha());
 
         for (int rep = 1; rep <= cli.repeticoes; rep++) {
             System.out.printf("== Repeticao %d / %d ==%n", rep, cli.repeticoes);
@@ -369,6 +371,7 @@ public final class WorkloadMain {
                 Path destino = Path.of(cli.csvDir,
                         String.format("rep-%03d.csv", rep));
                 eventos.flush(destino, marcadores);
+                MetaCsv.gravar(cli.csvDir, rep);
                 System.out.printf(
                         "Eventos gravados em %s (registrados=%d, descartados_warmup=%d)%n",
                         destino, eventos.totalRegistrados(), eventos.descartadosWarmup());

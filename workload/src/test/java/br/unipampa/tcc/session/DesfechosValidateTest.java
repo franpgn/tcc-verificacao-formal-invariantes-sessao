@@ -53,8 +53,8 @@ class DesfechosValidateTest {
         // o contrato do CSV nao muda (C4 continua ate B-43.4): INVALID sai como VALID, NOT_FOUND como NONE
         OpsGravadas.Chamada invalida = ops.chamadas.get(2);
         assertEquals(SessionState.Estado.INVALID, invalida.r().estado());
-        assertEquals("VALID", invalida.r().returnCode());
-        assertEquals("NONE", ops.chamadas.get(4).r().returnCode());
+        assertEquals("INVALID", invalida.r().returnCode());
+        assertEquals("NOT_FOUND", ops.chamadas.get(4).r().returnCode());
     }
 
     @Test

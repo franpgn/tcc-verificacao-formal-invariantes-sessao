@@ -124,7 +124,7 @@ class SessionOpsBlockTest {
     }
 
     @Test
-    @DisplayName("unblock() emite Unblock/NONE; identidade ausente e NONE (no-op)")
+    @DisplayName("unblock() emite Unblock/NONE; identidade ausente e NOT_FOUND (contrato CSV v2)")
     void unblockEmiteEvento() throws Exception {
         identidades.dados.put("u1", IdentityState.criar("u1", Instant.now()).bloquear(Instant.now()));
         assertEquals(OpResult.Code.OK_NOOP, ops.unblock("u1").code());
@@ -133,7 +133,7 @@ class SessionOpsBlockTest {
         List<String> l = linhasCsv();
         assertEquals(2, l.size());
         assertTrue(l.get(0).contains(",Unblock,") && l.get(0).contains(",NONE,"));
-        assertTrue(l.get(1).contains(",Unblock,") && l.get(1).contains(",NONE,"));
+        assertTrue(l.get(1).contains(",Unblock,") && l.get(1).contains(",NOT_FOUND,"));
     }
 
     @Test

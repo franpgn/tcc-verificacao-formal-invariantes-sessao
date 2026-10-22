@@ -18,7 +18,7 @@ class OpResultTest {
     /** Conjunto de sucessos reconhecido por analysis/percentis.py. */
     private static final Set<String> SUCESSOS = Set.of(
             "OK", "VALID", "INVALID", "COUNTED", "ALREADY_INVALID",
-            "BLOCKED", "ALREADY_BLOCKED", "NOT_BLOCKED", "NONE");
+            "BLOCKED", "ALREADY_BLOCKED", "NOT_BLOCKED", "NONE", "NOT_FOUND");
 
     @Test
     void okLoginMapeiaParaOk() {
@@ -44,7 +44,7 @@ class OpResultTest {
 
     @Test
     void notFoundMapeiaParaNone() {
-        assertEquals("NONE", OpResult.notFound().returnCode());
+        assertEquals("NOT_FOUND", OpResult.notFound().returnCode());
     }
 
     @Test

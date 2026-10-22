@@ -286,16 +286,20 @@ public final class Cli {
     /**
      * B-43.2: versao da mistura S1/S2 ({@link VersaoMistura}); padrao {@code v2} (P-a). Fica fora de
      * {@link #toString()}, como {@code --replication} e {@code --reset-state}; aparece na 4a linha do
-     * {@code --dry-run} e na linha {@code Mistura:} do stdout.
+     * {@code --dry-run} e na linha {@code Mistura:} do stdout. B-43.7: {@code v3} aceito; o padrao
+     * continua {@code v2} (DT-005: toda execucao de medicao passa {@code --mix v3} explicitamente).
      */
     public VersaoMistura mix = VersaoMistura.V2;
 
     @Option(
         names = {"--mix"},
-        paramLabel = "v1|v2",
+        paramLabel = "v1|v2|v3",
         description = "Versao da mistura S1/S2: v2 (Login em pool proprio user-<tid>-<k>, O4/O5 em "
             + "lim-<tid> e carga inicial de sid-000001..sid-100000 como sessoes VALID antes do warm-up; "
-            + "exige --reset-state on) ou v1 (uma identidade user-<tid> por thread, sem carga; "
+            + "exige --reset-state on), v3 (slot-geracao: como v2 no Login e em O4/O5; o slot Zipf tem "
+            + "uma sessao corrente sid-NNNNNN~g, 1 em cada 20 Validate isolados le o token antigo "
+            + "(q = 0.05) e o Logout isolado repoe a geracao seguinte fora do CSV; carga de 2 sessoes "
+            + "por slot; exige --reset-state on) ou v1 (uma identidade user-<tid> por thread, sem carga; "
             + "comportamento anterior, para regressao). Sem efeito em S3. Padrao ${DEFAULT-VALUE}.",
         defaultValue = "v2",
         arity = "1",
@@ -305,7 +309,7 @@ public final class Cli {
         this.mix = valor;
     }
 
-    /** Converte exatamente {@code v1}/{@code v2}; outro valor e {@link CommandLine.TypeConversionException}. */
+    /** Converte exatamente {@code v1}/{@code v2}/{@code v3}; outro valor e {@link CommandLine.TypeConversionException}. */
     public static final class MisturaConverter implements CommandLine.ITypeConverter<VersaoMistura> {
         @Override
         public VersaoMistura convert(String valor) {
@@ -326,12 +330,23 @@ public final class Cli {
         String aviso = misturaExigeResetAusente()
                 ? " (invalido com reset_state=off: a execucao sai com 2; use --reset-state on ou --mix v1)"
                 : "";
-        return textoDryRun() + System.lineSeparator() + "dry-run, mix=" + mix.rotulo() + aviso;
+        return textoDryRun() + System.lineSeparator() + "dry-run, mix=" + rotuloMistura() + aviso;
     }
 
-    /** {@code true} se a combinacao {@code --mix v2} + {@code --reset-state off} vale (S1/S2). */
+    /**
+     * B-43.7: rotulo da mistura no dry-run e na linha {@code Mistura:} ({@code v1}, {@code v2} ou
+     * {@code v3 q=0.05}).
+     */
+    public String rotuloMistura() {
+        return mix == VersaoMistura.V3 ? mix.rotulo() + " q=" + MisturaV3.rotuloQ() : mix.rotulo();
+    }
+
+    /**
+     * {@code true} se a combinacao {@code --mix v2|v3} + {@code --reset-state off} vale (S1/S2). B-43.7:
+     * P-b vale para v3 (a carga de slots verifica {@code size() == 2 x slots}).
+     */
     private boolean misturaExigeResetAusente() {
-        return mix == VersaoMistura.V2 && !resetEstado && !scenarioS3;
+        return (mix == VersaoMistura.V2 || mix == VersaoMistura.V3) && !resetEstado && !scenarioS3;
     }
 
     /**
@@ -382,6 +397,10 @@ public final class Cli {
         // B-43.2 (P-b): a carga inicial de v2 verifica size()==universo, que so vale sobre caches
         // vazios. Dispensado no --dry-run (nao executa; a 4a linha avisa) e em S3 (mistura sem efeito).
         if (misturaExigeResetAusente() && !dryRun) {
+            if (mix == VersaoMistura.V3) {
+                throw new IllegalArgumentException("--mix v3 exige --reset-state on (a carga de slots precisa "
+                        + "dos caches vazios); para --reset-state off use --mix v1");
+            }
             throw new IllegalArgumentException("--mix v2 exige --reset-state on (a carga inicial precisa "
                     + "dos caches vazios); para --reset-state off use --mix v1");
         }

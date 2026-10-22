@@ -86,7 +86,7 @@ public final class WorkloadMain {
             executar(cli);
         } catch (EstadoNaoLimpoException e) {
             System.err.println((e instanceof CargaInicialException
-                    ? "Carga inicial falhou (mix=v2): " : "Reset de estado falhou (reset_state=on): ")
+                    ? "Carga inicial falhou (mix=" + cli.mix.rotulo() + "): " : "Reset de estado falhou (reset_state=on): ")
                     + e.getMessage());
             System.exit(codigoDeSaida(e));
         } catch (Exception e) {
@@ -181,6 +181,68 @@ public final class WorkloadMain {
         }
     }
 
+    /**
+     * B-43.7: carga dos slots da mistura v3 antes do <i>warm-up</i> da repeticao {@code rep}. Com
+     * {@code --mix v3} em S1/S2 executa a {@link CargaSlots} (universo do {@link KeyGenerator}, lote
+     * 1000, prazo 10 s, intervalo 100 ms), imprime a linha {@code Carga:}, grava
+     * {@code carga-rep-NNN.json} (com {@code --csv-dir}) e devolve o {@link SlotsGeracao} da repeticao
+     * (geracoes em 1). Na falha grava o JSON com {@code FALHA} e relanca (saida 5). Com v1/v2 ou em S3
+     * nao faz nada e devolve {@code null}.
+     */
+    static SlotsGeracao prepararCargaSlots(Cli cli, CacheCarregavel sessoes, int rep)
+            throws CargaInicialException, java.io.IOException {
+        return prepararCargaSlots(cli, sessoes, rep, KeyGenerator.TAMANHO_PADRAO_UNIVERSO,
+                CargaInicial.PRAZO_PADRAO, CargaInicial.INTERVALO_PADRAO,
+                System::nanoTime, ResetEstado.Sono.real());
+    }
+
+    /** Como {@link #prepararCargaSlots(Cli, CacheCarregavel, int)}, com universo, prazo, relogio e espera injetaveis. */
+    static SlotsGeracao prepararCargaSlots(Cli cli, CacheCarregavel sessoes, int rep, int universo,
+            java.time.Duration prazo, java.time.Duration intervalo,
+            java.util.function.LongSupplier relogioNs, ResetEstado.Sono sono)
+            throws CargaInicialException, java.io.IOException {
+        if (cli.mix != VersaoMistura.V3 || cli.scenarioS3) {
+            return null;
+        }
+        String nome = sessoes.nome();
+        try {
+            CargaInicial.Resultado r = CargaSlots.carregar(sessoes, universo, cli.threads,
+                    java.time.Instant.now(), CargaInicial.LOTE_PADRAO, prazo, intervalo, relogioNs, sono);
+            System.out.printf("Carga: mix=%s cache=%s slots=%d entradas=%d lotes=%d ms=%d%n",
+                    cli.mix.rotulo(), nome, r.universo(), CargaSlots.ENTRADAS_POR_SLOT * r.universo(),
+                    r.lotes(), r.duracaoMs());
+            gravarCargaSlots(cli, rep, nome, universo, r, "OK", null);
+            return new SlotsGeracao(universo, cli.threads);
+        } catch (CargaInicialException e) {
+            gravarCargaSlots(cli, rep, nome, universo, e.carga(), "FALHA", e.getMessage());
+            throw e;
+        }
+    }
+
+    /** B-43.7: {@code carga-rep-NNN.json} da v3 (nada sem {@code --csv-dir}). */
+    private static void gravarCargaSlots(Cli cli, int rep, String cache, int universo, CargaInicial.Resultado r,
+                                         String veredito, String motivo) throws java.io.IOException {
+        if (cli.csvDir == null || cli.csvDir.isBlank()) {
+            return;
+        }
+        Map<String, Object> m = new java.util.LinkedHashMap<>();
+        m.put("mix", cli.mix.rotulo());
+        m.put("replicacao", cli.replicacao.rotulo());
+        m.put("cache", cache);
+        m.put("universo", universo);
+        m.put("entradas_por_slot", CargaSlots.ENTRADAS_POR_SLOT);
+        m.put("entradas", (long) CargaSlots.ENTRADAS_POR_SLOT * universo);
+        m.put("tamanho_final", r != null ? r.tamanhoFinal() : null);
+        m.put("lotes", r != null ? r.lotes() : null);
+        m.put("duracao_ms", r != null ? r.duracaoMs() : null);
+        m.put("q", MisturaV3.Q);
+        m.put("veredito", veredito);
+        m.put("motivo", motivo);
+        Path destino = Path.of(cli.csvDir, String.format("carga-rep-%03d.json", rep));
+        java.nio.file.Files.createDirectories(destino.getParent());
+        new com.fasterxml.jackson.databind.ObjectMapper().writeValue(destino.toFile(), m);
+    }
+
     /** Grava {@code carga-rep-NNN.json} em {@code --csv-dir} (nada sem {@code --csv-dir}). */
     private static void gravarCarga(Cli cli, int rep, String cache, CargaInicial.Resultado r,
                                     String veredito, String motivo) throws java.io.IOException {
@@ -242,7 +304,7 @@ public final class WorkloadMain {
     static void executar(Cli cli) throws Exception {
         System.out.println("Configuracao: " + cli);
         System.out.println("Replicacao: " + cli.replicacao.descricao());
-        System.out.println("Mistura: mix=" + cli.mix.rotulo() + (cli.scenarioS3 ? " (sem efeito em S3)" : ""));
+        System.out.println("Mistura: mix=" + cli.rotuloMistura() + (cli.scenarioS3 ? " (sem efeito em S3)" : ""));
         // B-43.4: versao do contrato da coluna return_code (tambem em meta-csv-rep-NNN.json).
         System.out.println(MetaCsv.linha());
 
@@ -281,6 +343,9 @@ public final class WorkloadMain {
             // B-43.2: carga inicial dos sids VALID (so --mix v2 em S1/S2) depois do reset e ANTES do
             // warm-up: fora da janela de medicao e fora do CSV. Na falha, saida 5 (CargaInicialException).
             prepararCarga(cli, CacheCarregavel.de(rcm.getCache(cli.replicacao.cacheSessoes())), rep);
+            // B-43.7: carga dos slots da v3 (geracao 0 INVALID, geracao 1 VALID; so --mix v3 em S1/S2),
+            // no mesmo ponto: depois do reset e ANTES do warm-up. Na falha, saida 5 (CargaInicialException).
+            SlotsGeracao slots = prepararCargaSlots(cli, CacheCarregavel.de(rcm.getCache(cli.replicacao.cacheSessoes())), rep);
             long inicioMs = System.currentTimeMillis();
             WarmupPolicy politica = WarmupPolicy.padrao(
                     inicioMs, cli.duracaoSeg, cli.warmupMinimoSeg,
@@ -300,6 +365,9 @@ public final class WorkloadMain {
             // B-43.2 (P-d): desfechos reais de Validate na janela de medicao (so stdout).
             DesfechosValidate desfechos = new DesfechosValidate(politica);
             ops.definirDesfechosValidate(desfechos);
+            // B-43.7: contadores da v3 e das reposicoes na mesma janela de medicao.
+            ops.definirPoliticaReposicao(politica);
+            MisturaV3 misturaV3 = slots != null ? new MisturaV3(slots, politica) : null;
             BooleanSupplier parar = cli.paraNoFimDaFalha
                     ? new ParadaPorMarcador(Path.of(cli.marcadores))
                     : () -> false;
@@ -329,7 +397,7 @@ public final class WorkloadMain {
                 final int tid = t;
                 final long seedThread = cli.seedBase + (long) tid + (long) rep * 1_000_003L;
                 pool.submit(() -> rodarCliente(ops, tid, fim, cli.scenario,
-                        seedThread, opsAlvoPorThread, totalOps, parar, cli.mix));
+                        seedThread, opsAlvoPorThread, totalOps, parar, cli.mix, misturaV3));
             }
             pool.shutdown();
             pool.awaitTermination(cli.duracaoSeg + 30, TimeUnit.SECONDS);
@@ -358,6 +426,9 @@ public final class WorkloadMain {
             System.out.println(SessionOps.linhaAuditor(instanciasAuditor));
             if (!cli.scenarioS3) {
                 System.out.println(desfechos.linha());
+            }
+            if (misturaV3 != null) {
+                System.out.println(misturaV3.linha(ops));
             }
             latency.snapshot().forEach((op, h) ->
                 System.out.printf(
@@ -658,14 +729,16 @@ public final class WorkloadMain {
     private static void rodarCliente(SessionOps ops, int tid, long deadline,
                                      Scenario cenario, long seed,
                                      long opsAlvo, AtomicLong totalOps,
-                                     BooleanSupplier parar, VersaoMistura mix) {
+                                     BooleanSupplier parar, VersaoMistura mix, MisturaV3 misturaV3) {
         ThreadLocalRandom r = ThreadLocalRandom.current();
         KeyGenerator chaves = new KeyGenerator(seed);
         IdentidadesMistura ids = new IdentidadesMistura(tid, mix);
+        // B-43.7: estado por thread da v3 (contador do token antigo); null em v1/v2.
+        MisturaV3.Cliente v3 = misturaV3 != null ? misturaV3.cliente() : null;
         long executadas = 0;
         while (System.currentTimeMillis() < deadline && executadas < opsAlvo
                 && !parar.getAsBoolean()) {
-            executarOperacao(ops, cenario, r, chaves, ids);
+            executarOperacao(ops, cenario, r, chaves, ids, v3);
             executadas++;
             totalOps.incrementAndGet();
         }

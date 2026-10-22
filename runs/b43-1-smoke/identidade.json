@@ -1,0 +1,182 @@
+{
+  "R1": {
+    "exit": 0,
+    "reset_state": "on",
+    "total_operacoes": 469487,
+    "registrados": 327072,
+    "descartados_warmup": 142777,
+    "eventos_menos_operacoes": 362,
+    "logins_ok": 181.0,
+    "tamanhos_rest_antes": {
+      "sessions": 0,
+      "counters": 0,
+      "sessions-async": 0,
+      "counters-async": 0
+    },
+    "tamanhos_rest_depois": {
+      "sessions": 181,
+      "counters": 4,
+      "sessions-async": 0,
+      "counters-async": 0
+    },
+    "estado_rep_001": {
+      "reset_state": "on",
+      "replicacao": "sync",
+      "caches": [
+        "sessions",
+        "counters"
+      ],
+      "tamanhos_antes": [
+        0,
+        0
+      ],
+      "tamanhos_depois": [
+        0,
+        0
+      ],
+      "duracao_ms": 22,
+      "veredito": "OK",
+      "motivo": null
+    },
+    "csv_operation_x_return_code": {
+      "IncrementFailure|COUNTED": 32466,
+      "Login|BLOCKED": 82061,
+      "Logout|NONE": 32617,
+      "ResetFailures|NONE": 16265,
+      "Validate|NONE": 163663
+    }
+  },
+  "R2": {
+    "exit": 0,
+    "reset_state": "off",
+    "total_operacoes": 492732,
+    "registrados": 320097,
+    "descartados_warmup": 172635,
+    "eventos_menos_operacoes": 0,
+    "logins_ok": 0.0,
+    "tamanhos_rest_antes": {
+      "sessions": 181,
+      "counters": 4,
+      "sessions-async": 0,
+      "counters-async": 0
+    },
+    "tamanhos_rest_depois": {
+      "sessions": 181,
+      "counters": 4,
+      "sessions-async": 0,
+      "counters-async": 0
+    },
+    "estado_rep_001": {
+      "reset_state": "off",
+      "replicacao": null,
+      "caches": null,
+      "tamanhos_antes": null,
+      "tamanhos_depois": null,
+      "duracao_ms": null,
+      "veredito": null,
+      "motivo": null
+    },
+    "csv_operation_x_return_code": {
+      "IncrementFailure|COUNTED": 31938,
+      "Login|BLOCKED": 80004,
+      "Logout|NONE": 32058,
+      "ResetFailures|NONE": 16019,
+      "Validate|NONE": 160078
+    }
+  },
+  "R3": {
+    "exit": 0,
+    "reset_state": "on",
+    "total_operacoes": 299411,
+    "registrados": 184533,
+    "descartados_warmup": 115312,
+    "eventos_menos_operacoes": 434,
+    "logins_ok": 217.0,
+    "tamanhos_rest_antes": {
+      "sessions": 181,
+      "counters": 4,
+      "sessions-async": 0,
+      "counters-async": 0
+    },
+    "tamanhos_rest_depois": {
+      "sessions": 217,
+      "counters": 4,
+      "sessions-async": 0,
+      "counters-async": 0
+    },
+    "estado_rep_001": {
+      "reset_state": "on",
+      "replicacao": "sync",
+      "caches": [
+        "sessions",
+        "counters"
+      ],
+      "tamanhos_antes": [
+        181,
+        4
+      ],
+      "tamanhos_depois": [
+        0,
+        0
+      ],
+      "duracao_ms": 9,
+      "veredito": "OK",
+      "motivo": null
+    },
+    "csv_operation_x_return_code": {
+      "IncrementFailure|COUNTED": 18507,
+      "Login|BLOCKED": 45994,
+      "Logout|NONE": 18414,
+      "ResetFailures|NONE": 9204,
+      "Validate|NONE": 92414
+    }
+  },
+  "R4": {
+    "exit": 0,
+    "reset_state": "on",
+    "total_operacoes": 474259,
+    "registrados": 375644,
+    "descartados_warmup": 98793,
+    "eventos_menos_operacoes": 178,
+    "logins_ok": 89.0,
+    "tamanhos_rest_antes": {
+      "sessions": 217,
+      "counters": 4,
+      "sessions-async": 0,
+      "counters-async": 0
+    },
+    "tamanhos_rest_depois": {
+      "sessions": 217,
+      "counters": 4,
+      "sessions-async": 89,
+      "counters-async": 4
+    },
+    "estado_rep_001": {
+      "reset_state": "on",
+      "replicacao": "async",
+      "caches": [
+        "sessions-async",
+        "counters-async"
+      ],
+      "tamanhos_antes": [
+        0,
+        0
+      ],
+      "tamanhos_depois": [
+        0,
+        0
+      ],
+      "duracao_ms": 6,
+      "veredito": "OK",
+      "motivo": null
+    },
+    "csv_operation_x_return_code": {
+      "IncrementFailure|COUNTED": 37488,
+      "Login|BLOCKED": 93287,
+      "Logout|NONE": 37826,
+      "ResetFailures|NONE": 18864,
+      "Validate|NONE": 188179
+    }
+  },
+  "nota": "Identidade do diagnostico 2026-10-22 secao 2.2: registrados + descartados_warmup - Total de operacoes = 2 x logins OK. Com a mistura atual (C1/C2), os numeros de operacoes, latencias e violacoes destas execucoes NAO servem como evidencia; o smoke prova apenas o reset."
+}

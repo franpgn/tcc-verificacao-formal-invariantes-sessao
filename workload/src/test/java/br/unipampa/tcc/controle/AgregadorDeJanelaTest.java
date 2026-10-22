@@ -260,7 +260,7 @@ class AgregadorDeJanelaTest {
         }
         a.registrar(ev("Logout", 1, 5, "ERROR_UNAVAILABLE"));
         Janela j = a.registrar(ok(10)).get(0).janela();
-        assertEquals(8, j.total());
+        assertEquals(EventoOperacao.CODIGOS.size() + 1, j.total());
         assertEquals(3, j.erros());
         assertEquals(2, j.indisponiveis());
     }

@@ -10,7 +10,8 @@ import java.util.Objects;
  *
  * <p>Classificacao de {@code return_code} (plano de 2026-10-22, secao 3.2): erro e
  * {@code ERROR_TRANSPORT} ou {@code ERROR_UNAVAILABLE}; indisponivel e so {@code ERROR_UNAVAILABLE}.
- * Os demais codigos do contrato contam so no total. Codigo fora do contrato e rejeitado, para que
+ * Os demais codigos do contrato (inclusive {@code INVALID} e {@code NOT_FOUND}, contrato CSV v2) contam
+ * so no total. Codigo fora do contrato e rejeitado, para que
  * uma mudanca em {@code OpResult.returnCode()} nao passe calada como "nao erro".
  *
  * @param operacao      coluna {@code operation}
@@ -23,9 +24,14 @@ public record EventoOperacao(String operacao, long inicioNs, long fimNs, String 
     public static final String ERROR_TRANSPORT = "ERROR_TRANSPORT";
     public static final String ERROR_UNAVAILABLE = "ERROR_UNAVAILABLE";
 
-    /** Codigos gravados por {@code OpResult.returnCode()}. */
-    public static final List<String> CODIGOS = List.of("OK", "VALID", "COUNTED", "NONE", "BLOCKED",
-            ERROR_TRANSPORT, ERROR_UNAVAILABLE);
+    /**
+     * Codigos gravados por {@code OpResult.returnCode()}, contratos CSV 1 e 2. {@code INVALID} e
+     * {@code NOT_FOUND} sao do contrato 2 (B-43.4) e, como no {@code SUCESSOS} de
+     * {@code analysis/percentis.py}, sao desfechos de negocio, nao erros. A paridade com
+     * {@code OpResult} e conferida por {@code EventoOperacaoContratoV2Test}.
+     */
+    public static final List<String> CODIGOS = List.of("OK", "VALID", "INVALID", "COUNTED", "NONE", "NOT_FOUND",
+            "BLOCKED", ERROR_TRANSPORT, ERROR_UNAVAILABLE);
 
     public EventoOperacao {
         Objects.requireNonNull(operacao, "operacao");

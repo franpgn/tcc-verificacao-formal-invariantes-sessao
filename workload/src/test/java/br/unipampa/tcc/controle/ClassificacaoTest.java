@@ -21,8 +21,10 @@ class ClassificacaoTest {
     @CsvSource({
             "OK,                false, false",
             "VALID,             false, false",
+            "INVALID,           false, false",
             "COUNTED,           false, false",
             "NONE,              false, false",
+            "NOT_FOUND,         false, false",
             "BLOCKED,           false, false",
             "ERROR_TRANSPORT,   true,  false",
             "ERROR_UNAVAILABLE, true,  true",
@@ -38,7 +40,8 @@ class ClassificacaoTest {
     @Test
     @DisplayName("o conjunto de codigos aceitos e exatamente o do contrato do CSV")
     void conjuntoDeCodigos() {
-        assertEquals(List.of("OK", "VALID", "COUNTED", "NONE", "BLOCKED", "ERROR_TRANSPORT", "ERROR_UNAVAILABLE"),
+        assertEquals(List.of("OK", "VALID", "INVALID", "COUNTED", "NONE", "NOT_FOUND", "BLOCKED", "ERROR_TRANSPORT",
+                        "ERROR_UNAVAILABLE"),
                 EventoOperacao.CODIGOS);
     }
 

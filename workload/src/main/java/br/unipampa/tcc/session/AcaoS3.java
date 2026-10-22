@@ -3,8 +3,10 @@ package br.unipampa.tcc.session;
 /**
  * B-33 (E2): uma acao de aplicacao do cenario S3 (o que o usuario ou o administrador fez e o
  * que percebeu), com todas as tentativas colapsadas. Complementa o CSV de eventos, que registra
- * cada tentativa individual mas nao distingue, por exemplo, Validate que viu {@code INVALID}
- * (o {@code return_code} de um Validate bem-sucedido e sempre {@code VALID}).
+ * cada tentativa individual. No contrato CSV 1 o {@code return_code} de um Validate bem-sucedido
+ * era sempre {@code VALID} e so este registro distinguia o Validate que viu {@code INVALID}; desde
+ * o contrato CSV 2 (B-43.4, {@code docs/contrato-csv-v2.md}) o CSV grava o estado real
+ * ({@code VALID} ou {@code INVALID}).
  *
  * @param tNs            inicio da acao, na base do {@link RelogioS3} (nanoTime em producao)
  * @param ator           identificador do ator (usuario, conta de L ou admin)

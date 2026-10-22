@@ -239,3 +239,121 @@ Artefatos em `runs/b43-3a-verificador/`:
    execução documental não têm `phase`, então essa parte só está coberta pelos testes sintéticos (S5).
 4. Nada foi ligado *online*. `percentis.py` continua aceitando os CSVs de junho. Isso fica para a
    parte ii, depois de B-43.2.
+
+## 10. Fechamento das ressalvas da V-B43.3a-i (2026-10-22)
+
+> Worker, 2026-10-22. Resposta a `validacao-b43-3a-i-2026-10-22.md` (Senior, commit `42b2324` em
+> `wt-plano-ctrl`) e à decisão do Gestor de 2026-10-22 sobre a questão 1. Mesma branch, a partir de
+> `6ce301a`. Commits só locais, sem push. Sem *cluster*, sem VM.
+
+### 10.1 Commits
+
+| Commit | Tipo | Conteúdo | Surefire depois | Arquivos |
+|---|---|---|---|---|
+| `6ce301a` (antes) | | ponta da entrega validada | 337/0/0/1 | 44 |
+| `9e8eadc` | `test:` | R1 (`SanidadeColunasTest`, 3 casos) e R2 (SHA exato do recorte no S1) | 340/0/0/1 | 45 |
+| `2b1b208` | `fix:` | operação fora da mistura do cenário ⇒ saída 2 (`SanidadeOperacaoTest`, 10 casos) | 350/0/0/1 | 46 |
+| `196ab17` | `fix:` | linha vazia ⇒ saída 2 (nota do D5; 3 casos em `SanidadeUsoTest`) | 353/0/0/1 | 46 |
+| (este commit) | `docs:` | esta seção | não toca `workload/` | |
+
+Comando: `mvn -f workload/pom.xml clean test`, com os `TEST-*.xml` somados. O único *skip* continua
+sendo o S2 opt-in. Com `-Dsanidade.csvJunho=…/tcc-desenvolvimento/runs/S1-F1/rep-001.csv`, a ponta dá
+**353/0/0/0** (exit 0), e o S2 passa com as contagens exatas.
+
+### 10.2 R1: colunas pelo nome
+
+`SanidadeColunasTest` grava os mesmos eventos na ordem canônica do `EventCsvWriter` e com as colunas
+permutadas (`return_code,key,operation,op_id,start_ns,end_ns,replica` e, com fase,
+`phase,end_ns,return_code,replica,key,op_id,operation,start_ns`). Exige a mesma saída, o mesmo
+veredito e os mesmos motivos, contagens e métricas. São três casos: fixture sã S1 (saída 0), S2 com
+1 Login em 10 BLOCKED (saída 4, `LOGIN_OK_BAIXO`) e S1 com `phase` na primeira coluna e região
+"dentro" ruim (saída 4, `DENTRO_SEM_VALID`). Como os bytes diferem, o teste também exige SHA-256
+diferente.
+
+### 10.3 R2: SHA-256 exato no S1
+
+`SanidadeRegressaoJunhoTest.s1F1Rep001DaFalha` compara o `sha256` do JSON com
+`3fd92d2c8b47aeb8238ac59a811fce580fb72485d2157d70b408cee41ed794f8`, o valor do `LEIAME.md`. O
+`.gitattributes` local (`*.csv -text`) mantém os bytes do recorte no *checkout*.
+
+### 10.4 Operação fora da mistura ⇒ saída 2 (decisão do Gestor)
+
+Uma `operation` fora da mistura do cenário declarado não entra mais nas contagens. O verificador sai
+com **2**, não grava JSON e escreve, por exemplo,
+`linha 79: operacao 'ResetFailures' fora da mistura do cenario S2 [IncrementFailure, Login, Logout, Validate]`.
+`return_code` continua livre: um código nunca visto não invalida o arquivo.
+
+A mistura vem de `Sanidade.operacoesDe(Scenario)`, derivada de `Scenario.peso`. Entram as operações
+com peso > 0, mais Validate e Logout quando a tríade Login está na mistura. Em S1 entram as cinco. Em
+S2 sai ResetFailures, que tem peso 0. A regra vale nas duas regiões ("fora" e "dentro").
+
+| Caso (`SanidadeOperacaoTest`) | Esperado |
+|---|---|
+| `operacoesDaMistura` | S1 = 5 nomes; S2 = 4, sem ResetFailures |
+| `unblockVerificadoComoS1Da2` | fixture sã S1 com 5 `Unblock` (0,02 % dos eventos), como `--scenario S1` ⇒ 2, mensagem com `'Unblock'`, `S1` e a linha, sem JSON |
+| `operacaoForaDaMisturaDeS1Da2` [Block, Unblock, login, Validar, vazio] | ⇒ 2 |
+| `resetFailuresEmS2Da2` | ⇒ 2 |
+| `operacaoForaDaMisturaNaRegiaoDentroTambemDa2` | `Block` em `durante` ⇒ 2 |
+| `returnCodeContinuaLivre` | `ERROR_CODIGO_NOVO` em IncrementFailure ⇒ 0 |
+
+Vermelho (com `operacoesDe` presente e sem a checagem no CLI): 8 de 10. O caso
+`unblockVerificadoComoS1Da2` deu `expected: <2> but was: <0>`, que é exatamente o OK silencioso que o
+Senior apontou.
+
+### 10.5 Linha vazia ⇒ saída 2 (nota do D5)
+
+Antes, uma linha vazia era pulada em silêncio. Agora ela dá 2, com a mensagem `linha N vazia`.
+Testes: `linhaVaziaNoMeioDa2` (o vermelho era `expected <2> but was <0>`), `linhaVaziaNoFimDa2`
+(`\r\n\r\n` no fim; o vermelho era `expected <2> but was <4>`) e `fimDeLinhaUnicoNoFimNaoEVazio`
+(`\n` e `\r\n` simples no fim não são linha vazia). Os 20 CSVs de origem têm 0 linhas vazias
+(`grep -c` de linhas vazias ou só com `\r`).
+
+### 10.6 Mutantes
+
+Cada mutante foi aplicado na árvore de trabalho sobre `196ab17`, testado com o Surefire completo
+(`clean test`) e revertido com `git checkout --`. Depois dos cinco, `git status` ficou limpo.
+
+| ID | Mutação | Resultado | Surefire | Teste que mata |
+|---|---|---|---|---|
+| M3 | `VerificadorSanidade`: sem `DigestInputStream` (grava o hash do vazio) | **morto** | 353/4/0/1 | `s1F1Rep001DaFalha` (`expected <3fd92d2c…> but was <e3b0c442…>`) e os 3 de `SanidadeColunasTest` |
+| M4 | colunas por posição (`iOp=1`, `iRc=5`, `iFase=7`), mantendo a checagem de nomes | **morto** | 353/3/0/1 | os 3 de `SanidadeColunasTest` (`colunas permutadas mudaram a saida`) |
+| M9 | regra nova desligada (`if (false && …)`): volta a diluir | **morto** | 353/8/0/1 | `unblockVerificadoComoS1Da2`, os 5 de `operacaoForaDaMisturaDeS1Da2`, `resetFailuresEmS2Da2` e `…NaRegiaoDentroTambemDa2` |
+| M10 | `operacoesDe`: ResetFailures com `peso >= 0` (aceito em S2) | **morto** | 353/2/0/1 | `operacoesDaMistura`, `resetFailuresEmS2Da2` |
+| M11 | linha vazia volta a ser pulada | **morto** | 353/2/0/1 | `linhaVaziaNoMeioDa2`, `linhaVaziaNoFimDa2` |
+
+Antes desta seção, M3 e M4 sobreviviam à suíte padrão. Os dois também morreram contra `9e8eadc` (só
+os testes R1/R2, sem as regras novas): M3 com 340/4/0/1 e M4 com 340/3/0/1.
+
+### 10.7 Execução documental, de novo
+
+O *jar* de `196ab17` (`package -DskipTests`) rodou com OpenJDK 22.0.2 a partir de `tcc/`, sobre cinco
+dos 20 CSVs. Todos saem com **4** e geram um JSON **byte a byte idêntico** ao versionado em
+`runs/b43-3a-verificador/` (`cmp`):
+
+| CSV | Cenário | Saída | JSON |
+|---|---|---|---|
+| `tcc-desenvolvimento/runs/S1-F1/rep-001.csv` | S1 | 4 | idêntico |
+| `wt-b42-1/runs/b42-1-smoke/S1-sync/rep-001.csv` | S1 | 4 | idêntico |
+| baseline `S1-F3/rep-003` | S1 | 4 | idêntico |
+| baseline `S2-none/rep-001` | S2 | 4 | idêntico |
+| baseline `S2-F3/rep-003` | S2 | 4 | idêntico |
+
+Nos 20 JSON versionados, os CSVs S1 só têm as cinco operações de S1 e os CSVs S2 só têm as quatro de
+S2 (nenhum S2 tem ResetFailures). Por isso a regra nova não muda nenhum dos 20, e os JSON e o
+`MANIFEST.sha256` ficam como estão. Contraprova: o CSV S1 `S1-F3/rep-003` passado como
+`--scenario S2` sai com **2** (`linha 79: operacao 'ResetFailures' …`), sem JSON.
+
+### 10.8 Desvios e pontos para o Gestor
+
+1. **ResetFailures em S2 conta como fora da mistura.** Interpretei "fora da mistura" como peso 0 em
+   `Scenario`. Os 20 CSVs reais confirmam que S2 nunca emite ResetFailures. Se o Gestor preferir que
+   "fora" seja só nome inexistente em S1/S2 (Block, Unblock, desconhecidos), basta trocar
+   `operacoesDe` por um conjunto fixo. Nesse caso o M10 deixa de valer.
+2. **`versao` continua `b43-3a-i/1`.** Para arquivos válidos, o critério de veredito não mudou, e foi
+   isso que manteve os 20 JSON byte a byte iguais. As regras novas só recusam arquivos (saída 2, sem
+   JSON). Se o Gestor quiser registrar a mudança no JSON, passar para `b43-3a-i/2` obriga a regenerar
+   os 20 JSON e o manifesto.
+3. **Uma linha vazia no fim também dá 2** (por exemplo, um `\n` a mais no fim do arquivo). O
+   `EventCsvWriter` não gera isso, e os 20 CSVs têm 0 linhas vazias.
+4. R3 (Login `ERROR_*` misturado com OK) continua para a parte ii, como a validação recomenda.
+5. Integração e push continuam pendentes de aprovação explícita.

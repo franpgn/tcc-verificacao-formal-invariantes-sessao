@@ -1,0 +1,16 @@
+{
+ "workload": {
+  "commit": "43dfd1e",
+  "nota": "codigo de producao igual a d8d3e01 exceto o Javadoc de AcaoS3; inclui LeitorCsvEventos e VerificadorSanidade",
+  "branch": "feature/controlador-integracao",
+  "origem": "git archive 43dfd1e workload; mvn -o clean package -DskipTests (scratchpad)",
+  "sha256": "f868a783e0474e4017ab827df6376d5fe6e7ea9d202fc2327b551f29783d4114"
+ },
+ "verificador": "VerificadorSanidade do mesmo jar (integrado no passo 3, origem a8f5549)",
+ "leitor": "LerCsvV2.java (java -cp <jar> LerCsvV2.java Q1/rep-001.csv Q2/rep-001.csv) -> leitor-csv-eventos.json",
+ "java": "JDK 22.0.2 via $JAVA_HOME/bin/java",
+ "podman": "maquina WSL podman-machine-default (parada antes e depois)",
+ "imagem": "quay.io/infinispan/server:15.0.21.Final",
+ "cluster": "podman-compose -p b436i, containers b436i-isn1..3, portas Hot Rod 12332..12334 (external-port igual)",
+ "comando": "--servers 127.0.0.1:12332,127.0.0.1:12333,127.0.0.1:12334 --scenario <S1|S2> --replication <sync|async> --mix v2 --reset-state on --duration 60 --ops 0 --rep 1 --threads 4 --warmup-min-sec 10 --csv-dir runs/integ-passo6-smoke/Qn"
+}

@@ -1,0 +1,75 @@
+{
+ "Q1": {
+  "exit": 0,
+  "contrato_stdout": "v2",
+  "meta": {
+   "contrato_csv": 2
+  },
+  "linha_auditor": "Auditor: i1_concorrentes=0 i4_concorrentes=0",
+  "violacoes_detectadas_stdout": 0,
+  "violacoes_por_invariante": {},
+  "I1": 0,
+  "I4": 0,
+  "linhas_csv": 413394,
+  "registrados_stdout": 413394,
+  "desfechos_stdout": {
+   "valid": 111628,
+   "invalid": 94733,
+   "not_found": 0,
+   "erro": 0
+  },
+  "csv_operation_return_code": {
+   "IncrementFailure COUNTED": 27727,
+   "Login OK": 69010,
+   "Logout NONE": 96588,
+   "ResetFailures NONE": 13708,
+   "Validate INVALID": 94733,
+   "Validate VALID": 111628
+  },
+  "dif_valid": 0,
+  "dif_invalid": 0,
+  "dif_not_found": 0,
+  "dif_erro": 0,
+  "leitor_status": "OK",
+  "leitor_eventos": 413394,
+  "verificador_exit": 0,
+  "verificador_veredito": "OK",
+  "criterios_ok": true
+ },
+ "Q2": {
+  "exit": 0,
+  "contrato_stdout": "v2",
+  "meta": {
+   "contrato_csv": 2
+  },
+  "linha_auditor": "Auditor: i1_concorrentes=0 i4_concorrentes=0",
+  "violacoes_detectadas_stdout": 0,
+  "violacoes_por_invariante": {},
+  "I1": 0,
+  "I4": 0,
+  "linhas_csv": 400719,
+  "registrados_stdout": 400719,
+  "desfechos_stdout": {
+   "valid": 178580,
+   "invalid": 192161,
+   "not_found": 0,
+   "erro": 0
+  },
+  "csv_operation_return_code": {
+   "IncrementFailure COUNTED": 3814,
+   "Login OK": 11253,
+   "Logout NONE": 14911,
+   "Validate INVALID": 192161,
+   "Validate VALID": 178580
+  },
+  "dif_valid": 0,
+  "dif_invalid": 0,
+  "dif_not_found": 0,
+  "dif_erro": 0,
+  "leitor_status": "OK",
+  "leitor_eventos": 400719,
+  "verificador_exit": 0,
+  "verificador_veredito": "OK",
+  "criterios_ok": true
+ }
+}

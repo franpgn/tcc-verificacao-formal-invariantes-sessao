@@ -1,0 +1,1 @@
+{"mix":"v3","replicacao":"async","cache":"sessions-async","universo":100000,"entradas_por_slot":2,"entradas":200000,"tamanho_final":200000,"lotes":200,"duracao_ms":1150,"q":0.05,"veredito":"OK","motivo":null}

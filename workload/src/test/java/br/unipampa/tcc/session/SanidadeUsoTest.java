@@ -87,6 +87,34 @@ class SanidadeUsoTest {
         assertTrue(saida().contains("linha 2"), saida());
     }
 
+    /** Nota do D5 na V-B43.3a-i: linha vazia nao e mais pulada em silencio. */
+    @Test
+    void linhaVaziaNoMeioDa2() throws Exception {
+        Path p = csv(EventCsvWriter.HEADER + "\n0,Login,1,2,r,OK,user-0\n\n1,Validate,3,4,r,VALID,sid-0\n");
+        Path json = tmp.resolve("v.json");
+        assertEquals(2, rodar("--csv", p.toString(), "--scenario", "S1", "--saida", json.toString()));
+        assertTrue(saida().contains("linha 3"), saida());
+        assertTrue(saida().contains("vazia"), saida());
+        assertFalse(Files.exists(json), "arquivo invalido nao grava JSON");
+    }
+
+    @Test
+    void linhaVaziaNoFimDa2() throws Exception {
+        Path p = csv(EventCsvWriter.HEADER + "\r\n0,Login,1,2,r,OK,user-0\r\n\r\n");
+        assertEquals(2, rodar("--csv", p.toString(), "--scenario", "S1"));
+        assertTrue(saida().contains("linha 3"), saida());
+    }
+
+    @Test
+    void fimDeLinhaUnicoNoFimNaoEVazio() throws Exception {
+        // O EventCsvWriter termina cada linha com \n (e o CSV de junho com \r\n): nao e linha vazia.
+        Path lf = csv(EventCsvWriter.HEADER + "\n0,Login,1,2,r,OK,user-0\n");
+        assertEquals(4, rodar("--csv", lf.toString(), "--scenario", "S1"), saida());
+        Path crlf = tmp.resolve("crlf.csv");
+        Files.writeString(crlf, EventCsvWriter.HEADER + "\r\n0,Login,1,2,r,OK,user-0\r\n", StandardCharsets.UTF_8);
+        assertEquals(4, rodar("--csv", crlf.toString(), "--scenario", "S1"), saida());
+    }
+
     @Test
     void faseDesconhecidaDa2() throws Exception {
         Path p = csv(EventCsvWriter.HEADER_COM_FASE + "\n0,Login,1,2,r,OK,user-0,talvez\n");

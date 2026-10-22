@@ -40,7 +40,7 @@ import java.util.Map;
  * modo leniente); <b>2</b> = uso ou arquivo invalido (argumento ausente ou
  * desconhecido, cenario diferente de S1/S2, arquivo inexistente ou vazio,
  * cabecalho sem {@code operation}/{@code return_code}, linha com numero de
- * colunas diferente do cabecalho, rotulo de fase desconhecido, {@code operation}
+ * colunas diferente do cabecalho, linha vazia, rotulo de fase desconhecido, {@code operation}
  * fora da mistura do cenario ({@link Sanidade#operacoesDe(Scenario)}; decisao do
  * Gestor de 2026-10-22, sem diluir as fracoes), falha de E/S). {@code return_code}
  * e livre.
@@ -177,7 +177,7 @@ public final class VerificadorSanidade {
             while ((linha = br.readLine()) != null) {
                 nLinha++;
                 if (linha.isEmpty()) {
-                    continue;
+                    throw new UsoInvalido("linha " + nLinha + " vazia");
                 }
                 String[] c = linha.split(",", -1);
                 if (c.length != cols.size()) {

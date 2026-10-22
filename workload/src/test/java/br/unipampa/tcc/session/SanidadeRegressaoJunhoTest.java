@@ -26,6 +26,10 @@ class SanidadeRegressaoJunhoTest {
 
     static final String RECORTE = "/sanidade/S1-F1-rep-001-head.csv";
 
+    /** SHA-256 do recorte ({@code head -n 5001} do original, CRLF), conforme o LEIAME.md. */
+    static final String SHA_RECORTE =
+            "3fd92d2c8b47aeb8238ac59a811fce580fb72485d2157d70b408cee41ed794f8";
+
     @TempDir
     Path tmp;
 
@@ -57,6 +61,8 @@ class SanidadeRegressaoJunhoTest {
         assertEquals(4, codigo, "regressao de junho tem de sair com 4");
         JsonNode json = new ObjectMapper().readTree(saida.toFile());
         assertEquals("FALHA", json.get("veredito").asText());
+        // R2 da V-B43.3a-i: SHA-256 exato do recorte (LEIAME.md), nao so o tamanho.
+        assertEquals(SHA_RECORTE, json.get("sha256").asText());
         List<String> motivos = codigos(json);
         assertTrue(motivos.contains("LOGIN_OK_BAIXO"), motivos.toString());
         assertTrue(motivos.contains("VALIDATE_VALID_ZERO"), motivos.toString());

@@ -1,6 +1,7 @@
 package br.unipampa.tcc.controle;
 
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -47,6 +48,8 @@ class ControladorRegrasTest {
                 Arguments.of("erro alto isolado nao entra (k = 2)", "EcEcE", "NNNNN"),
                 Arguments.of("latencia em j-1 e erro em j nao contam como persistencia", "LELE", "NNNN"),
                 Arguments.of("exatamente theta_in com amostra exatamente minima entra", "bb", "NC"),
+                // S1 (V-B28.1): so a latencia esta em theta_lat_in exato; o erro e 0 e nao dispara R2
+                Arguments.of("latencia exatamente theta_lat_in, com erro calmo, entra sozinha", "qq", "NC"),
                 Arguments.of("logo abaixo de theta_in nao entra", "aaaaaa", "NNNNNN"),
                 Arguments.of("erro com total exatamente n_err = 50 entra", "ww", "NC"),
                 Arguments.of("cooldown bloqueia topologia; entra quando expira",
@@ -140,7 +143,11 @@ class ControladorRegrasTest {
                 // w5 intermediaria quebra a sequencia; com m = 1, so w6 calma ja basta (com m = 6 ficaria em C)
                 Arguments.of("m = 1: uma janela calma basta (com cooldown expirado)",
                         comKm(2, 1), "Tccccl c", "CCCCCC N"),
-                Arguments.of("m = 6 no mesmo roteiro nao sai", comKm(2, 6), "Tccccl c", "CCCCCC C"));
+                Arguments.of("m = 6 no mesmo roteiro nao sai", comKm(2, 6), "Tccccl c", "CCCCCC C"),
+                // S12 (V-B28.1): com T_estavel = 0 so o contador de calmas segura a saida; a anomalia
+                // em w6 zera o contador e a saida vem em w12 (se nao zerasse, sairia em w7)
+                Arguments.of("topologia anomala zera o contador de calmas (T_estavel = 0)",
+                        comTempos(30 * S, 0, 120 * S), "Tccccc T cccccc", "CCCCCC C CCCCCN"));
     }
 
     @ParameterizedTest(name = "{0}")
@@ -148,6 +155,16 @@ class ControladorRegrasTest {
     @DisplayName("regras com parametros alternativos")
     void comParametros(String nome, ParametrosControlador p, String roteiro, String esperado) {
         verificar(p, roteiro, esperado);
+    }
+
+    @Test
+    @DisplayName("S12: janela com topologia anomala em CONSERVADOR registra janelasCalmas = 0")
+    void topologiaAnomalaZeraCalmasNosSinais() {
+        List<Decisao> ds = rodar(comTempos(30 * S, 0, 120 * S), "Tccccc T cccccc");
+        assertEquals(5, ds.get(5).sinais().janelasCalmas(), "w5: cinco calmas seguidas");
+        assertEquals(Decisao.Regra.R3, ds.get(6).regra(), "w6: topologia anomala e R3");
+        assertEquals(0, ds.get(6).sinais().janelasCalmas(), "w6: topologia anomala zera as calmas");
+        assertEquals(1, ds.get(7).sinais().janelasCalmas(), "w7: recomeca do zero");
     }
 
     private static void verificar(ParametrosControlador p, String roteiro, String esperado) {

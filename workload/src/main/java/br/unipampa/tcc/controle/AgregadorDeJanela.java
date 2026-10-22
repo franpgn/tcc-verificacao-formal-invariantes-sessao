@@ -185,7 +185,7 @@ public final class AgregadorDeJanela {
     private JanelaObservada emitir() {
         Acumulador acc = abertas.remove(proxima);
         if (acc == null) {
-            acc = Acumulador.VAZIO;
+            acc = new Acumulador();
         }
         long ini = origemNs + proxima * wNs;
         Janela janela = new Janela(ini, ini + wNs, acc.total, acc.erros, acc.indisponiveis,
@@ -236,7 +236,6 @@ public final class AgregadorDeJanela {
 
     /** Contadores mutaveis de uma janela aberta. */
     private static final class Acumulador {
-        static final Acumulador VAZIO = new Acumulador();
         long total;
         long erros;
         long indisponiveis;

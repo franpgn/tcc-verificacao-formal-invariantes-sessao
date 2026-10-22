@@ -11,7 +11,7 @@ import java.util.Objects;
  * <p>Classificacao de {@code return_code} (plano de 2026-10-22, secao 3.2): erro e
  * {@code ERROR_TRANSPORT} ou {@code ERROR_UNAVAILABLE}; indisponivel e so {@code ERROR_UNAVAILABLE}.
  * Os demais codigos do contrato contam so no total. Codigo fora do contrato e rejeitado, para que
- * uma mudanca em {@code OpResult.toCsvCode} nao passe calada como "nao erro".
+ * uma mudanca em {@code OpResult.returnCode()} nao passe calada como "nao erro".
  *
  * @param operacao      coluna {@code operation}
  * @param inicioNs      coluna {@code start_ns}
@@ -23,7 +23,7 @@ public record EventoOperacao(String operacao, long inicioNs, long fimNs, String 
     public static final String ERROR_TRANSPORT = "ERROR_TRANSPORT";
     public static final String ERROR_UNAVAILABLE = "ERROR_UNAVAILABLE";
 
-    /** Codigos gravados por {@code OpResult.toCsvCode}. */
+    /** Codigos gravados por {@code OpResult.returnCode()}. */
     public static final List<String> CODIGOS = List.of("OK", "VALID", "COUNTED", "NONE", "BLOCKED",
             ERROR_TRANSPORT, ERROR_UNAVAILABLE);
 

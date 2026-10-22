@@ -11,7 +11,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /**
- * B-26.1: classificacao de {@code return_code} (contrato de {@code OpResult.toCsvCode}) e das
+ * B-26.1: classificacao de {@code return_code} (contrato de {@code OpResult.returnCode()}) e das
  * violacoes do auditor (gatilho so com I1, I4 e I2 REAL; I2 por limite so registro; I3, I5, I6
  * fora do gatilho).
  */

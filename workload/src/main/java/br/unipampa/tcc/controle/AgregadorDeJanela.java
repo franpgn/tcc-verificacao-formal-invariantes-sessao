@@ -37,6 +37,13 @@ import java.util.TreeMap;
  * havia nela e contado em {@link #descartadosNoEncerramento()} e
  * {@link #violacoesDescartadasNoEncerramento()}. Depois disso o agregador recusa entrada.
  *
+ * <p><b>Tick de relogio (V-B26.1 secao 5.9; Gestor, 2026-10-22).</b> {@link #avancarRelogio(long)}
+ * tem a semantica de um evento sem conteudo: {@code marca = max(marca, agora)} e a mesma regra de
+ * fechamento com {@code L}. Garante que janelas fechem mesmo sem eventos (partição, portao K1).
+ * O agora vem de uma {@link FonteDeTempo} no mesmo relogio dos {@code end_ns}.
+ * {@link #seqRegistro()} conta as chamadas a {@code registrar} e {@code registrarViolacao} (o tick
+ * nao conta), para que o replay reinjete cada tick depois do mesmo registro.
+ *
  * <p><b>Violacoes.</b> Chegam com o {@code end_ns} do evento que as revelou, informado pelo
  * chamador (decisao do Gestor, 2026-10-22), ja classificadas por {@link ClasseViolacao}.
  *
@@ -60,6 +67,7 @@ public final class AgregadorDeJanela {
     private long proxima;
     private long marcaNs;
     private boolean encerrado;
+    private long seqRegistro;
 
     private long atrasadosPendentes;
     private long violacoesAtrasadasPendentes;
@@ -99,6 +107,7 @@ public final class AgregadorDeJanela {
     public synchronized List<JanelaObservada> registrar(EventoOperacao evento) {
         Objects.requireNonNull(evento, "evento");
         exigirAberto();
+        seqRegistro++;
         Acumulador acc = acumuladorDe(evento.fimNs());
         if (acc == null) {
             atrasadosPendentes++;
@@ -128,6 +137,7 @@ public final class AgregadorDeJanela {
     public synchronized List<JanelaObservada> registrarViolacao(ClasseViolacao classe, long fimNsDoEvento) {
         Objects.requireNonNull(classe, "classe");
         exigirAberto();
+        seqRegistro++;
         Acumulador acc = acumuladorDe(fimNsDoEvento);
         if (acc == null) {
             if (classe.gatilho()) {
@@ -145,6 +155,29 @@ public final class AgregadorDeJanela {
             }
         }
         return avancar(fimNsDoEvento);
+    }
+
+    /**
+     * Tick: avanca a marca d'agua ate {@code agoraNs} (sem recuar) e devolve as janelas que isso
+     * fechou, em ordem. {@code agoraNs <= marca} nao emite nada.
+     *
+     * @throws IllegalStateException depois de {@link #encerrar()}
+     */
+    public synchronized List<JanelaObservada> avancarRelogio(long agoraNs) {
+        exigirAberto();
+        return avancar(agoraNs);
+    }
+
+    /** Tick com o agora lido de {@code fonte} (mesmo relogio dos {@code end_ns}), sob o lock. */
+    public synchronized List<JanelaObservada> avancarRelogio(FonteDeTempo fonte) {
+        Objects.requireNonNull(fonte, "fonte");
+        exigirAberto();
+        return avancar(fonte.agoraNs());
+    }
+
+    /** Numero de chamadas a {@code registrar} e {@code registrarViolacao} ate agora. */
+    public synchronized long seqRegistro() {
+        return seqRegistro;
     }
 
     /**

@@ -63,6 +63,22 @@ public class SessionOps {
      */
     private final ConcurrentHashMap<String, SessionState.Motivo> invalidacoesConfirmadas;
 
+    /** B-43.2 (P-d): contador de desfechos de Validate; {@code null} = desligado. */
+    private volatile DesfechosValidate desfechosValidate;
+
+    /** B-43.2 (P-d): liga o contador de desfechos de Validate (so stdout; o CSV nao muda). */
+    void definirDesfechosValidate(DesfechosValidate d) {
+        this.desfechosValidate = d;
+    }
+
+    private OpResult contarValidate(OpResult r) {
+        DesfechosValidate d = desfechosValidate;
+        if (d != null) {
+            d.registrar(r);
+        }
+        return r;
+    }
+
     /**
      * Construtor sem trilha de eventos (mantém compatibilidade com testes
      * existentes e com execuções que só geram o resumo de latência).
@@ -272,7 +288,7 @@ public class SessionOps {
             if (s == null) {
                 OpResult r = OpResult.notFound();
                 emitir(OP_VALIDATE, t0, System.nanoTime(), r, sid);
-                return r;
+                return contarValidate(r);
             }
 
             IdentityState idSt = identities.get(s.identidade());
@@ -283,12 +299,12 @@ public class SessionOps {
             verificarI1I4(sid, s);
             OpResult r = OpResult.okValidate(s.estado());
             emitir(OP_VALIDATE, t0, System.nanoTime(), r, sid);
-            return r;
+            return contarValidate(r);
         } catch (RuntimeException e) {
             latency.record("validate", t0);
             OpResult r = ClassificadorDeErro.classificar(e);
             emitir(OP_VALIDATE, t0, System.nanoTime(), r, sid);
-            return r;
+            return contarValidate(r);
         }
     }
 

@@ -137,6 +137,18 @@ public final class S3Clientes implements AutoCloseable {
 
     public SessionOps admin() { return admin; }
 
+    /**
+     * B-43.6: todas as instancias que compartilham o mapa de invalidacoes confirmadas (servidores de
+     * aplicacao e admin), para somar os contadores de corrida do auditor.
+     */
+    public List<SessionOps> instancias() {
+        List<SessionOps> out = new ArrayList<>(servidoresApp);
+        if (admin != null) {
+            out.add(admin);
+        }
+        return out;
+    }
+
     /** Copia das invalidacoes confirmadas por qualquer ator (insumo da varredura I1/I4). */
     public java.util.Map<String, SessionState.Motivo> invalidacoesSnapshot() {
         return new java.util.HashMap<>(invalidacoes);

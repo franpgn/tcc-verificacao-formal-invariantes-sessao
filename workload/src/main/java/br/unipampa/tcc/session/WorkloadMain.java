@@ -76,7 +76,7 @@ public final class WorkloadMain {
             System.exit(2);
         }
         if (cli.dryRun) {
-            System.out.println(cli.textoDryRun());
+            System.out.println(cli.textoDryRunComMistura());
             return;
         }
         try {
@@ -180,6 +180,7 @@ public final class WorkloadMain {
     static void executar(Cli cli) throws Exception {
         System.out.println("Configuracao: " + cli);
         System.out.println("Replicacao: " + cli.replicacao.descricao());
+        System.out.println("Mistura: mix=" + cli.mix.rotulo() + (cli.scenarioS3 ? " (sem efeito em S3)" : ""));
 
         for (int rep = 1; rep <= cli.repeticoes; rep++) {
             System.out.printf("== Repeticao %d / %d ==%n", rep, cli.repeticoes);

@@ -284,6 +284,57 @@ public final class Cli {
     }
 
     /**
+     * B-43.2: versao da mistura S1/S2 ({@link VersaoMistura}); padrao {@code v2} (P-a). Fica fora de
+     * {@link #toString()}, como {@code --replication} e {@code --reset-state}; aparece na 4a linha do
+     * {@code --dry-run} e na linha {@code Mistura:} do stdout.
+     */
+    public VersaoMistura mix = VersaoMistura.V2;
+
+    @Option(
+        names = {"--mix"},
+        paramLabel = "v1|v2",
+        description = "Versao da mistura S1/S2: v2 (Login em pool proprio user-<tid>-<k>, O4/O5 em "
+            + "lim-<tid> e carga inicial de sid-000001..sid-100000 como sessoes VALID antes do warm-up; "
+            + "exige --reset-state on) ou v1 (uma identidade user-<tid> por thread, sem carga; "
+            + "comportamento anterior, para regressao). Sem efeito em S3. Padrao ${DEFAULT-VALUE}.",
+        defaultValue = "v2",
+        arity = "1",
+        converter = MisturaConverter.class
+    )
+    public void definirMistura(VersaoMistura valor) {
+        this.mix = valor;
+    }
+
+    /** Converte exatamente {@code v1}/{@code v2}; outro valor e {@link CommandLine.TypeConversionException}. */
+    public static final class MisturaConverter implements CommandLine.ITypeConverter<VersaoMistura> {
+        @Override
+        public VersaoMistura convert(String valor) {
+            try {
+                return VersaoMistura.porRotulo(valor);
+            } catch (IllegalArgumentException e) {
+                throw new CommandLine.TypeConversionException(e.getMessage());
+            }
+        }
+    }
+
+    /**
+     * B-43.2: {@link #textoDryRun()} (tres linhas, inalteradas) seguido da 4a linha
+     * {@code dry-run, mix=v1|v2}. Com {@code v2} e {@code --reset-state off} em S1/S2, a linha avisa
+     * que a execucao real sairia com 2 ({@link #validar()} so dispensa a regra no {@code --dry-run}).
+     */
+    public String textoDryRunComMistura() {
+        String aviso = misturaExigeResetAusente()
+                ? " (invalido com reset_state=off: a execucao sai com 2; use --reset-state on ou --mix v1)"
+                : "";
+        return textoDryRun() + System.lineSeparator() + "dry-run, mix=" + mix.rotulo() + aviso;
+    }
+
+    /** {@code true} se a combinacao {@code --mix v2} + {@code --reset-state off} vale (S1/S2). */
+    private boolean misturaExigeResetAusente() {
+        return mix == VersaoMistura.V2 && !resetEstado && !scenarioS3;
+    }
+
+    /**
      * Texto impresso por {@code --dry-run}: a linha historica (inalterada) seguida do perfil de
      * replicacao e dos nomes de cache que a execucao abriria e do estado do reset (B-43.1).
      */
@@ -327,6 +378,12 @@ public final class Cli {
         }
         if (scenarioS3) {
             s3.validar();
+        }
+        // B-43.2 (P-b): a carga inicial de v2 verifica size()==universo, que so vale sobre caches
+        // vazios. Dispensado no --dry-run (nao executa; a 4a linha avisa) e em S3 (mistura sem efeito).
+        if (misturaExigeResetAusente() && !dryRun) {
+            throw new IllegalArgumentException("--mix v2 exige --reset-state on (a carga inicial precisa "
+                    + "dos caches vazios); para --reset-state off use --mix v1");
         }
     }
 

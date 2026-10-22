@@ -7,7 +7,7 @@
 | Arquivo | Função |
 |---|---|
 | `cluster/podman-compose.yml` | Orquestra três nós Infinispan em *containers* Podman, com rede *bridge* dedicada e *health check* via REST. |
-| `cluster/infinispan-cluster.xml` | Define os *caches* `sessions` e `counters` em modo distribuído síncrono, com partição tratada por `DENY_READ_WRITES`. |
+| `cluster/infinispan-cluster.xml` | Define os *caches* `sessions`/`counters` (DIST_SYNC, controle) e os irmãos `sessions-async`/`counters-async` (DIST_ASYNC, alvo), com partição tratada por `DENY_READ_WRITES`; o *workload* escolhe o par por `--replication sync\|async`. |
 
 A inicialização ocorre via `cd cluster && podman-compose up -d`. O *health check* é executado pelo Podman a cada 5 s; um nó é considerado saudável quando `GET /rest/v2/cache-managers/default/health/status` retorna 200 com credenciais `admin:infinispan`.
 

@@ -5,8 +5,6 @@ import org.junit.jupiter.api.Test;
 
 import java.time.Instant;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.function.BiConsumer;
 
@@ -18,14 +16,12 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  * duas janelas que nao sao a corrida do observador corrigida em B-43.6. As decisoes sao do Gestor.
  *
  * <ul>
- *   <li><b>D1/D2/D3, {@code logout} x {@code block} na mesma sessao:</b> as duas operacoes fazem
- *       {@code get} + {@code put} sem condicao, e quem escreve por ultimo vence (atualizacao perdida
- *       da aplicacao). O motivo de uma invalidacao ja confirmada muda no grid (I4 real nos dados), e
- *       o confirmador perdedor tem a sua confirmacao sobrescrita no mapa compartilhado
- *       ({@code put}, nao {@code putIfAbsent}). Resultado: o auditor so ve a I4 se uma leitura cair
- *       na janela entre o {@code sessions.put} e o {@code invalidacoesConfirmadas.put} do vencedor
- *       (D3); fora dela, nem as leituras seguintes nem a varredura final (que usa o mesmo mapa)
- *       acusam nada (D1, D2).</li>
+ *   <li><b>D1/D2/D3, {@code logout} x {@code block} na mesma sessao (reescritos no B-43.8, DT-003,
+ *       com autorizacao do Gestor):</b> ate B-43.6 as duas operacoes faziam {@code get} + {@code put}
+ *       sem condicao e quem escrevia por ultimo vencia (atualizacao perdida). Desde B-43.8 a producao
+ *       usa leitura versionada e escrita condicional ({@link ArmazemVersionado}): a PRIMEIRA
+ *       invalidacao vence, quem perde a versao rele INVALID e vira no-op ({@code invalidacaoPerdida}),
+ *       e o motivo confirmado nao muda. Os casos rodam sobre o {@link MundoS3Versionado}.</li>
  *   <li><b>D4, I2 ({@code SessionOps.validate}):</b> sessao e identidade sao lidas por dois
  *       {@code get} nao atomicos. Se a sessao e lida VALID antes de um {@code block} comecar e a
  *       identidade e lida BLOCKED depois de ele terminar, o auditor registra I2 (D4a), embora em
@@ -84,76 +80,84 @@ class AuditorDiagnosticoS3Test {
         return n;
     }
 
+    private static MundoS3Versionado mundoVersionado() {
+        MundoS3Versionado w = new MundoS3Versionado();
+        w.sessoes.semear(SID, SessionState.criar(SID, U, Instant.parse("2026-10-22T00:00:00Z")));
+        return w;
+    }
+
     @Test
-    @DisplayName("D1: block le VALID, logout confirma LOGOUT, block grava ADMIN_BLOCK => LOGOUT perdido, sem I4")
-    void blockVenceLogout() {
-        MundoS3 w = mundo();
-        w.sessoes.antes = umaVez(Thread.currentThread(), "put", SID, () -> emOutraThread(() -> w.apps.get(0).logout(SID)));
+    @DisplayName("D1 (B-43.8): block le VALID, logout completo invalida, block perde a versao => LOGOUT mantido, no-op")
+    void blockPerdeParaLogoutAnterior() {
+        MundoS3Versionado w = mundoVersionado();
+        w.sessoes.antes = umaVez(Thread.currentThread(), "substituirSeVersao", SID,
+                () -> emOutraThread(() -> w.apps.get(0).logout(SID)));
 
         w.admin.block(U);
         w.apps.get(1).validate(SID);
         w.apps.get(2).logout(SID);
 
-        assertEquals(SessionState.Motivo.ADMIN_BLOCK, w.sessoes.dados.get(SID).motivo(), "o block venceu");
-        assertEquals(SessionState.Motivo.ADMIN_BLOCK, w.invalidacoes.get(SID), "a confirmacao LOGOUT foi sobrescrita");
-        assertEquals(List.of(), invariantes(w.auditor), "a mudanca de motivo nao aparece como I4");
-        assertEquals(0, concorrentesI1(w));
-        // a varredura final usa o mesmo mapa: tambem nao acusa
-        VarreduraFinal.Resultado r = VarreduraFinal.varrer(w.sessoes.dados, w.identidades.dados,
-                w.invalidacoes, w.rastro, SessionOps.LIMITE_TENTATIVAS);
-        assertTrue(r.achados().stream().noneMatch(a -> a.invariante().equals("I4")), r.achados().toString());
-    }
-
-    @Test
-    @DisplayName("D2: logout le VALID, block confirma ADMIN_BLOCK, logout grava LOGOUT => ADMIN_BLOCK perdido, sem I4")
-    void logoutVenceBlock() {
-        MundoS3 w = mundo();
-        w.sessoes.antes = umaVez(Thread.currentThread(), "put", SID, () -> emOutraThread(() -> w.admin.block(U)));
-
-        w.apps.get(0).logout(SID);
-        w.apps.get(1).validate(SID);
-
-        assertEquals(SessionState.Motivo.LOGOUT, w.sessoes.dados.get(SID).motivo(), "o logout venceu");
-        assertEquals(SessionState.Motivo.LOGOUT, w.invalidacoes.get(SID), "a confirmacao ADMIN_BLOCK foi sobrescrita");
+        assertEquals(SessionState.Motivo.LOGOUT, w.sessoes.valor(SID).motivo(), "o primeiro invalidador venceu");
+        assertEquals(SessionState.Motivo.LOGOUT, w.invalidacoes.get(SID), "o perdedor nao escreveu no mapa");
         assertEquals(IdentityState.Status.BLOCKED, w.identidades.dados.get(U).status());
         assertEquals(List.of(), invariantes(w.auditor));
-        assertEquals(0, concorrentesI1(w));
+        assertEquals(1, w.admin.invalidacaoPerdida(), "o block perdeu a versao e releu INVALID(LOGOUT)");
+        assertEquals(1, w.invalidacaoPerdida());
+        assertEquals(0, w.concorrentes());
+        VarreduraFinal.Resultado r = VarreduraFinal.varrer(w.sessoes.copia(), w.identidades.dados,
+                w.invalidacoes, w.rastro, SessionOps.LIMITE_TENTATIVAS);
+        assertTrue(r.achados().stream().noneMatch(x -> x.invariante().equals("I4")), r.achados().toString());
     }
 
     @Test
-    @DisplayName("D3: leitura na janela entre o sessions.put e a confirmacao do vencedor => I4 (unico ponto em que aparece)")
-    void leituraNaJanelaDoVencedorVeI4() {
-        MundoS3 w = mundo();
-        // Um servidor de aplicacao extra, no mesmo grid e no mesmo mapa, cujo Armazem roda o block
-        // concorrente ANTES do put do logout e uma leitura de outro servidor logo DEPOIS dele (antes
-        // de o logout gravar a sua confirmacao). O MundoS3 so tem gancho "antes"; o "depois" vem daqui.
-        Runnable[] antesDoPut = {() -> emOutraThread(() -> w.admin.block(U))};
-        Runnable[] depoisDoPut = {() -> emOutraThread(() -> w.apps.get(1).validate(SID))};
-        Armazem<SessionState> visao = new Armazem<>() {
-            @Override public SessionState get(String k) { return w.sessoes.get(k); }
+    @DisplayName("D2 (B-43.8): logout le VALID, block completo invalida, logout perde a versao => ADMIN_BLOCK mantido")
+    void logoutPerdeParaBlockAnterior() {
+        MundoS3Versionado w = mundoVersionado();
+        w.sessoes.antes = umaVez(Thread.currentThread(), "substituirSeVersao", SID,
+                () -> emOutraThread(() -> w.admin.block(U)));
 
-            @Override public SessionState put(String k, SessionState v) {
-                Runnable a = antesDoPut[0];
-                antesDoPut[0] = () -> { };
-                a.run();
-                SessionState r = w.sessoes.put(k, v);
-                Runnable d = depoisDoPut[0];
-                depoisDoPut[0] = () -> { };
-                d.run();
-                return r;
+        OpResult r = w.apps.get(0).logout(SID);
+        w.apps.get(1).validate(SID);
+
+        assertEquals(OpResult.Code.OK_NOOP, r.code());
+        assertEquals(SessionState.Motivo.ADMIN_BLOCK, w.sessoes.valor(SID).motivo(), "o primeiro invalidador venceu");
+        assertEquals(SessionState.Motivo.ADMIN_BLOCK, w.invalidacoes.get(SID), "o perdedor nao escreveu no mapa");
+        assertEquals(IdentityState.Status.BLOCKED, w.identidades.dados.get(U).status());
+        assertEquals(List.of(), invariantes(w.auditor));
+        assertEquals(1, w.apps.get(0).invalidacaoPerdida());
+        assertEquals(1, w.invalidacaoPerdida());
+        assertEquals(0, w.concorrentes());
+        VarreduraFinal.Resultado v = VarreduraFinal.varrer(w.sessoes.copia(), w.identidades.dados,
+                w.invalidacoes, w.rastro, SessionOps.LIMITE_TENTATIVAS);
+        assertTrue(v.achados().stream().noneMatch(x -> x.invariante().equals("I4")), v.achados().toString());
+    }
+
+    @Test
+    @DisplayName("D3 (B-43.8): leitura de outro servidor entre a escrita e a confirmacao do vencedor nao ve motivo divergente")
+    void leituraNaJanelaDoVencedorNaoVeI4() {
+        MundoS3Versionado w = mundoVersionado();
+        Thread dona = Thread.currentThread();
+        // O logout (dona) le VALID; antes da escrita dele, o block roda inteiro noutra thread e vence.
+        // Entre a escrita condicional do block e a confirmacao dele no mapa, um terceiro servidor le.
+        boolean[] lido = {false};
+        w.sessoes.depois = (op, k) -> {
+            if (!lido[0] && Thread.currentThread() != dona && op.equals("substituirSeVersao") && SID.equals(k)) {
+                lido[0] = true;
+                assertTrue(!w.invalidacoes.containsKey(SID), "a leitura cai antes da confirmacao do vencedor");
+                emOutraThread(() -> w.apps.get(1).validate(SID));
             }
-
-            @Override public Set<Map.Entry<String, SessionState>> entrySet() { return w.sessoes.entrySet(); }
         };
-        SessionOps app = new SessionOps(visao, w.identidades, new LatencyRegistry(), w.auditor, null, null,
-                "app-extra", null, w.invalidacoes);
+        w.sessoes.antes = umaVez(dona, "substituirSeVersao", SID, () -> emOutraThread(() -> w.admin.block(U)));
 
-        app.logout(SID);
+        w.apps.get(0).logout(SID);
 
-        assertEquals(List.of("I4:" + SID), invariantes(w.auditor), "unico ponto em que a I4 aparece");
-        assertEquals(SessionState.Motivo.LOGOUT, w.sessoes.dados.get(SID).motivo());
-        assertEquals(SessionState.Motivo.LOGOUT, w.invalidacoes.get(SID));
-        // uma leitura depois disso ja nao ve nada
+        assertTrue(lido[0], "a leitura na janela do vencedor aconteceu");
+        assertEquals(List.of(), invariantes(w.auditor), "sem I4: o motivo lido e o do vencedor");
+        assertEquals(SessionState.Motivo.ADMIN_BLOCK, w.sessoes.valor(SID).motivo());
+        assertEquals(SessionState.Motivo.ADMIN_BLOCK, w.invalidacoes.get(SID));
+        assertEquals(1, w.apps.get(0).invalidacaoPerdida());
+        assertEquals(0, w.concorrentes());
+        // uma leitura depois disso tambem nao ve nada
         w.apps.get(2).validate(SID);
         assertEquals(0, w.auditor.total());
     }

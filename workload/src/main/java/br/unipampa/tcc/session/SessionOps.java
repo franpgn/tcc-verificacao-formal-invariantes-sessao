@@ -627,6 +627,17 @@ public class SessionOps {
             // contra a copia (uma confirmacao que surge durante a varredura e corrida, nao I1).
             java.util.Map<String, SessionState.Motivo> confirmadasAntes =
                     new java.util.HashMap<>(invalidacoesConfirmadas);
+            if (sessoesVersionadas != null) {
+                // B-43.8 (DT-003): a varredura so seleciona as candidatas; cada uma e invalidada com
+                // leitura versionada e escrita condicional (invalidarPorBloqueio).
+                sessions.entrySet().forEach(e -> {
+                    if (e.getValue().identidade().equals(identidade)
+                            && e.getValue().estado() == SessionState.Estado.VALID) {
+                        verificarI1I4(e.getKey(), e.getValue(), confirmadasAntes.get(e.getKey()));
+                        invalidarPorBloqueio(e.getKey());
+                    }
+                });
+            } else {
             sessions.entrySet().forEach(e -> {
                 if (e.getValue().identidade().equals(identidade)
                         && e.getValue().estado() == SessionState.Estado.VALID) {
@@ -640,6 +651,7 @@ public class SessionOps {
                     invalidacoesConfirmadas.put(e.getKey(), atual.motivo());
                 }
             });
+            }
             latency.record("block_ok", t0);
             OpResult r = OpResult.okNoop();
             emitir(OP_BLOCK, t0, System.nanoTime(), r, identidade);
@@ -650,6 +662,25 @@ public class SessionOps {
             emitir(OP_BLOCK, t0, System.nanoTime(), r, identidade);
             return r;
         }
+    }
+
+    /**
+     * B-43.8 (DT-003): uma candidata da cascata de {@code block}. Instantaneo por entrada ANTES da
+     * {@code lerComVersao} (regra de B-43.6); ausente: nada; INVALID: checagem I1/I4 e no-op; VALID:
+     * checagem I1/I4 e {@link #invalidarCondicional} com ADMIN_BLOCK. Conflito esgotado propaga a
+     * excecao, e o {@code block} termina em erro (cascata parcial, como qualquer erro na cascata).
+     */
+    private void invalidarPorBloqueio(String sid) {
+        SessionState.Motivo confirmadoAntes = invalidacoesConfirmadas.get(sid);
+        ArmazemVersionado.Versionado<SessionState> v = sessoesVersionadas.lerComVersao(sid);
+        if (v == null) {
+            return;
+        }
+        verificarI1I4(sid, v.valor(), confirmadoAntes);
+        if (v.valor().estado() == SessionState.Estado.INVALID) {
+            return;
+        }
+        invalidarCondicional(sid, v, SessionState.Motivo.ADMIN_BLOCK);
     }
 
     /** O7, unblock. B-33: com try/catch e emitir. */

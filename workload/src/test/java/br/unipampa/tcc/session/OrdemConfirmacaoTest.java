@@ -10,6 +10,7 @@ import java.util.function.BiConsumer;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * B-43.8, W1 (pedido do Gestor; mata E1/E2 da V-B43.6 sem depender do diagnostico A7): a confirmacao
@@ -57,7 +58,11 @@ class OrdemConfirmacaoTest {
         assertFalse(mapa.containsKey(SID), "(a) confirmacao visivel antes de a escrita ser aplicada");
         OpResult r = leitor.validate(SID);
         assertEquals(SessionState.Estado.VALID, r.estado(), "(b) a escrita ainda nao foi aplicada");
-        assertEquals(0, a.total(), "(b) leitura VALID durante a escrita nao e I1: " + a.drenar());
+        // Na cascata, o leitor ve a identidade ja BLOCKED: a I2 da janela da cascata (D4b, B-43.9) e
+        // esperada aqui; o que nao pode haver e I1/I4.
+        java.util.List<String> durante = a.drenar().stream().map(InvariantAuditor.Violacao::invariante).toList();
+        assertTrue(durante.stream().noneMatch(i -> i.equals("I1") || i.equals("I4")),
+                "(b) leitura VALID durante a escrita nao e I1: " + durante);
 
         libera.countDown();
         Concorrencia.juntar(t);
@@ -101,5 +106,41 @@ class OrdemConfirmacaoTest {
 
         conferir(() -> escritor.logout(SID), alvo, chegou, libera, ops(s, ids, mapa, a), mapa, a,
                 () -> s.dados.get(SID), SessionState.Motivo.LOGOUT);
+    }
+
+    @Test
+    @DisplayName("W1 cascata de block, caminho versionado: pausa antes de substituirSeVersao")
+    void blockVersionado() {
+        FakeVersionado<SessionState> s = new FakeVersionado<>();
+        s.semear(SID, SessionState.criar(SID, U, T));
+        FakeCaches.Cache<IdentityState> ids = new FakeCaches.Cache<>();
+        ConcurrentHashMap<String, SessionState.Motivo> mapa = new ConcurrentHashMap<>();
+        InvariantAuditor a = new InvariantAuditor();
+        Thread[] alvo = {null};
+        CountDownLatch chegou = new CountDownLatch(1);
+        CountDownLatch libera = new CountDownLatch(1);
+        s.antes = pausa(alvo, "substituirSeVersao", chegou, libera);
+        SessionOps escritor = ops(s, ids, mapa, a);
+
+        conferir(() -> escritor.block(U), alvo, chegou, libera, ops(s, ids, mapa, a), mapa, a,
+                () -> s.valor(SID), SessionState.Motivo.ADMIN_BLOCK);
+    }
+
+    @Test
+    @DisplayName("W1 cascata de block, caminho comum (B-43.6): pausa antes do put da sessao")
+    void blockComum() {
+        FakeCaches.Cache<SessionState> s = new FakeCaches.Cache<>();
+        s.dados.put(SID, SessionState.criar(SID, U, T));
+        FakeCaches.Cache<IdentityState> ids = new FakeCaches.Cache<>();
+        ConcurrentHashMap<String, SessionState.Motivo> mapa = new ConcurrentHashMap<>();
+        InvariantAuditor a = new InvariantAuditor();
+        Thread[] alvo = {null};
+        CountDownLatch chegou = new CountDownLatch(1);
+        CountDownLatch libera = new CountDownLatch(1);
+        s.antes = pausa(alvo, "put", chegou, libera);
+        SessionOps escritor = ops(s, ids, mapa, a);
+
+        conferir(() -> escritor.block(U), alvo, chegou, libera, ops(s, ids, mapa, a), mapa, a,
+                () -> s.dados.get(SID), SessionState.Motivo.ADMIN_BLOCK);
     }
 }

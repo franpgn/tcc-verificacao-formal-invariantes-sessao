@@ -16,8 +16,8 @@ import java.util.function.BiConsumer;
  *
  * <p>Ganchos (chamados FORA do monitor, para que a operacao concorrente injetada possa usar o mesmo
  * duble): {@link #antes} antes de cada operacao e {@link #depois} logo depois de uma escrita aplicada
- * ({@code op} = {@code "get"}, {@code "put"}, {@code "entrySet"}, {@code "lerComVersao"},
- * {@code "substituirSeVersao"}).</p>
+ * ou de uma {@code lerComVersao} ({@code op} = {@code "get"}, {@code "put"}, {@code "entrySet"},
+ * {@code "lerComVersao"}, {@code "substituirSeVersao"}).</p>
  */
 final class FakeVersionado<V> implements ArmazemVersionado<V> {
 
@@ -83,9 +83,12 @@ final class FakeVersionado<V> implements ArmazemVersionado<V> {
     public Versionado<V> lerComVersao(String chave) {
         antes.accept("lerComVersao", chave);
         leiturasVersionadas.incrementAndGet();
+        Versionado<V> v;
         synchronized (this) {
-            return dados.get(chave);
+            v = dados.get(chave);
         }
+        depois.accept("lerComVersao", chave);
+        return v;
     }
 
     @Override

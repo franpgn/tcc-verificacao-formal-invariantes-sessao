@@ -125,6 +125,34 @@ public final class Sanidade {
         throw new IllegalArgumentException("fase desconhecida: '" + fase + "'");
     }
 
+    /**
+     * Nomes de {@code operation} da mistura do cenario: as operacoes com peso
+     * &gt; 0, mais Validate e Logout quando a triade Login esta na mistura (o
+     * Login OK emite os dois). S1: as cinco; S2: sem ResetFailures (peso 0).
+     * Uma operacao fora deste conjunto torna o arquivo invalido para o cenario
+     * (decisao do Gestor, 2026-10-22).
+     */
+    public static Set<String> operacoesDe(Scenario cenario) {
+        Set<String> r = new java.util.TreeSet<>();
+        boolean triade = cenario.peso(Scenario.Op.LOGIN_VALIDATE_LOGOUT) > 0;
+        if (triade) {
+            r.add(OP_LOGIN);
+        }
+        if (triade || cenario.peso(Scenario.Op.VALIDATE) > 0) {
+            r.add(OP_VALIDATE);
+        }
+        if (triade || cenario.peso(Scenario.Op.LOGOUT) > 0) {
+            r.add(OP_LOGOUT);
+        }
+        if (cenario.peso(Scenario.Op.INCREMENT_FAILURE) > 0) {
+            r.add(OP_INCREMENT);
+        }
+        if (cenario.peso(Scenario.Op.RESET_FAILURES) > 0) {
+            r.add(OP_RESET);
+        }
+        return Collections.unmodifiableSet(r);
+    }
+
     /** Acumula um evento. {@code fase} nulo = CSV sem coluna {@code phase}. */
     public void registrar(String operation, String returnCode, String fase) {
         contagens.get(regiaoDe(fase))

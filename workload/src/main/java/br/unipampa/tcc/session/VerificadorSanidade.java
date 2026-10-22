@@ -40,7 +40,10 @@ import java.util.Map;
  * modo leniente); <b>2</b> = uso ou arquivo invalido (argumento ausente ou
  * desconhecido, cenario diferente de S1/S2, arquivo inexistente ou vazio,
  * cabecalho sem {@code operation}/{@code return_code}, linha com numero de
- * colunas diferente do cabecalho, rotulo de fase desconhecido, falha de E/S).
+ * colunas diferente do cabecalho, rotulo de fase desconhecido, {@code operation}
+ * fora da mistura do cenario ({@link Sanidade#operacoesDe(Scenario)}; decisao do
+ * Gestor de 2026-10-22, sem diluir as fracoes), falha de E/S). {@code return_code}
+ * e livre.
  * S3 tem guarda propria na parte ii.</p>
  *
  * <p>Nao esta ligado ao {@code WorkloadMain} nem ao {@code percentis.py}: isso e
@@ -106,7 +109,7 @@ public final class VerificadorSanidade {
         try {
             Argumentos a = parse(args);
             Sanidade san = new Sanidade();
-            String sha = ler(a.csv(), san);
+            String sha = ler(a.csv(), a.cenario(), san);
             Sanidade.Limiares lim = Sanidade.Limiares.provisorios();
             Sanidade.Resultado r = san.avaliar(a.cenario(), lim);
 
@@ -136,8 +139,13 @@ public final class VerificadorSanidade {
         }
     }
 
-    /** Le o CSV em streaming, alimenta {@code san} e devolve o SHA-256 do arquivo. */
-    static String ler(Path csv, Sanidade san) throws IOException, UsoInvalido {
+    /**
+     * Le o CSV em streaming, alimenta {@code san} e devolve o SHA-256 do arquivo.
+     * Uma {@code operation} fora de {@link Sanidade#operacoesDe(Scenario)} torna o
+     * arquivo invalido para o cenario ({@link UsoInvalido}, saida 2).
+     */
+    static String ler(Path csv, Scenario cenario, Sanidade san) throws IOException, UsoInvalido {
+        java.util.Set<String> permitidas = Sanidade.operacoesDe(cenario);
         if (!Files.isRegularFile(csv)) {
             throw new UsoInvalido("arquivo inexistente: " + csv);
         }
@@ -175,6 +183,10 @@ public final class VerificadorSanidade {
                 if (c.length != cols.size()) {
                     throw new UsoInvalido("linha " + nLinha + " com " + c.length
                             + " colunas, cabecalho tem " + cols.size());
+                }
+                if (!permitidas.contains(c[iOp])) {
+                    throw new UsoInvalido("linha " + nLinha + ": operacao '" + c[iOp]
+                            + "' fora da mistura do cenario " + cenario.name() + " " + permitidas);
                 }
                 try {
                     san.registrar(c[iOp], c[iRc], iFase >= 0 ? c[iFase] : null);

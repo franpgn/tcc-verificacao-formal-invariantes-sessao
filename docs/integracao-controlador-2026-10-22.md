@@ -124,3 +124,11 @@ Feito pelo orquestrador depois da V-B43.1 (`503278d`) e da V-B43.2 (`a6fc0e4`), 
 - Método: `git rebase --onto feature/controlador-integracao 8296270` de uma branch temporária em `8ee2deb`, seguido de `merge --ff-only`. São 15 commits (6 de B-43.1 e 9 de B-43.2), sem conflito e sem commit de merge. As branches de origem continuam em `65d237b` e `8ee2deb`.
 - Surefire: **608/0/0/1 em 72 arquivos**, igual a 540 + 68 (o B-43.2 sai de 305 e chega a 373). O golden é idêntico a `6ba7e28`.
 - Ressalvas abertas, que entram nos próximos blocos: N1 e N9 da V-B43.2; A1, falso positivo de I1 no auditor (B-43.6); A2, deriva da fração INVALID (B-43.7, mistura v3).
+
+## Passo 5: B-43.6 (auditor I1/I4 sem corrida)
+
+Feito pelo orquestrador depois da V-B43.6 (APROVADA, `wt-plano-ctrl` `6226e84`).
+
+- Método: `git rebase --onto feature/controlador-integracao 8ee2deb` de uma branch temporária em `8734c13`, seguido de `merge --ff-only`. São 6 commits, sem conflito e sem commit de merge. A branch de origem continua em `8734c13`.
+- Surefire: **629/0/0/1 em 77 arquivos**, igual a 608 + 21 (o B-43.6 sai de 373 e chega a 394).
+- Falta integrar: B-43.4, cujo trabalho está em andamento.

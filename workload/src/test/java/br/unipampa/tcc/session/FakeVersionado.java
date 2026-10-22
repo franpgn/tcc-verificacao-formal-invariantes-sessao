@@ -27,6 +27,9 @@ final class FakeVersionado<V> implements ArmazemVersionado<V> {
     volatile BiConsumer<String, String> antes = (op, chave) -> { };
     volatile BiConsumer<String, String> depois = (op, chave) -> { };
 
+    /** Teto de seguranca de tentativas condicionais por duble (bem acima das 3 de producao). */
+    static final int LIMITE_DE_SEGURANCA = 50;
+
     /** W5: toda escrita condicional falha e muda a versao sem mudar o valor. */
     volatile boolean sempreConflita;
 
@@ -94,7 +97,11 @@ final class FakeVersionado<V> implements ArmazemVersionado<V> {
     @Override
     public boolean substituirSeVersao(String chave, V novo, long versao) {
         antes.accept("substituirSeVersao", chave);
-        tentativasCondicionais.incrementAndGet();
+        if (tentativasCondicionais.incrementAndGet() > LIMITE_DE_SEGURANCA) {
+            // Mutante "tentativas ilimitadas" (Y6): falha rapido em vez de girar para sempre (o
+            // assertTimeoutPreemptively nao interrompe a thread que gira).
+            throw new AssertionError("escrita condicional repetida mais de " + LIMITE_DE_SEGURANCA + " vezes");
+        }
         synchronized (this) {
             Versionado<V> a = dados.get(chave);
             if (a == null) {

@@ -108,6 +108,10 @@ class LeitorCsvEventosTest {
         IllegalArgumentException e = assertThrows(IllegalArgumentException.class,
                 () -> ler("operation,start_ns,end_ns,return_code\nLogin,1,2,OK\nLogin,1,2\n"));
         assertTrue(e.getMessage().startsWith("linha 3"), e.getMessage());
+        // campos a mais tambem (V-B26.1, T5)
+        IllegalArgumentException mais = assertThrows(IllegalArgumentException.class,
+                () -> ler("operation,start_ns,end_ns,return_code\nLogin,1,2,OK\nLogin,1,2,OK,extra\n"));
+        assertTrue(mais.getMessage().startsWith("linha 3: 5 campos"), mais.getMessage());
         assertThrows(IllegalArgumentException.class, () -> ler("operation,start_ns,end_ns,return_code\nLogin,x,2,OK\n"));
         assertThrows(IllegalArgumentException.class, () -> ler("operation,start_ns,end_ns,return_code\nLogin,1,2,FOO\n"));
     }

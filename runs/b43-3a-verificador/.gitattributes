@@ -1,0 +1,3 @@
+# Saidas e manifestos versionados byte a byte (LF), para o sha256sum -c valer no checkout Windows.
+*.json   -text
+*.sha256 -text

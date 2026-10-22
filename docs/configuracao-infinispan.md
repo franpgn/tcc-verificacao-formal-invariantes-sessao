@@ -15,7 +15,7 @@ A inicialização ocorre via `cd cluster && podman-compose up -d`. O *health che
 
 | Linha Tx | Onde realiza | Trecho relevante |
 |---|---|---|
-| **T1** Modo de replicação | `cluster/infinispan-cluster.xml` | `<distributed-cache name="sessions" mode="SYNC" ...>` (cenário-alvo `ASYNC` será introduzido em B-03 como segundo *cache* ou perfil) |
+| **T1** Modo de replicação | `cluster/infinispan-cluster.xml` | `sessions`/`counters` em `mode="SYNC"` (controle) e os irmãos `sessions-async`/`counters-async` em `mode="ASYNC"` (alvo), implementado em B-42.1 (antigo B-03); o *workload* escolhe o par por `--replication sync\|async` (padrão `sync`), resolvido em `PerfilReplicacao.java` |
 | **T2** Número de nós: 3 | `cluster/podman-compose.yml` | Serviços `isn1`, `isn2`, `isn3` |
 | **T3** `numOwners` = 2 | `cluster/infinispan-cluster.xml` | `owners="2"` em ambos os *caches* |
 | **T4** `numSegments` | `cluster/infinispan-cluster.xml` | `segments="64"` (valor herdado do esqueleto; T4 da tabela cita 256 como padrão Infinispan; o esqueleto adota 64 para reduzir tempo de *state transfer* em ambiente com três nós — desvio justificado a registrar em `docs/decisoes-tecnicas.md` em B-04 ou ajustar para 256 se o autor preferir aderência estrita à Tabela 1) |
@@ -98,7 +98,7 @@ state-transfer: enabled=true, timeout=60000
 
 | Variante | Quando | Branch sugerida |
 |---|---|---|
-| Perfil `DIST_ASYNC` | B-03 (próximo) | `feature/cluster-async` |
+| Perfil `DIST_ASYNC` | implementado em B-42.1 (antigo B-03): *caches* `sessions-async` e `counters-async` (`mode="ASYNC"`, mesmos `owners`, `segments`, `partition-handling` e `merge-policy` de `sessions`/`counters`, conferidos por `ClusterXmlIrmaosTest`); seleção por `--replication async`. Na VM só depois de S7 | `feature/b42-1-perfil-async` |
 | Stack JGroups customizado (parâmetros explícitos de FD\_ALL3) | a decidir | — |
 | Pacote `numSegments=256` alinhado ao default Infinispan | a decidir (vide T4) | — |
 

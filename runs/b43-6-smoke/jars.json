@@ -1,0 +1,14 @@
+{
+ "workload": {
+  "commit": "9de1881",
+  "nota": "codigo de producao identico a eb45006 (9de1881 so acrescenta teste)",
+  "branch": "fix/b43-6-auditor-i1-concorrencia",
+  "origem": "mvn -o -f workload/pom.xml clean package -DskipTests na worktree wt-b43-6",
+  "sha256": "ceb9c9f6d0d9a23ed24c3502c6b7129da202b877e8fa2d1f56370d4184ccc935"
+ },
+ "java": "JDK 22.0.2 via $JAVA_HOME/bin/java",
+ "podman": "maquina WSL podman-machine-default (parada antes e depois)",
+ "imagem": "quay.io/infinispan/server:15.0.21.Final",
+ "containers": "b436-isn1..3, projeto -p b436, portas 11232..11234 (external-port igual), hostnames isn1..3 (TCPPING)",
+ "comando": "--servers 127.0.0.1:11232,127.0.0.1:11233,127.0.0.1:11234 --scenario S1 --replication <sync|async> --mix v2 --reset-state on --duration 60 --ops 0 --rep 1 --threads 4 --warmup-min-sec 10 --csv-dir runs/b43-6-smoke/Rn"
+}

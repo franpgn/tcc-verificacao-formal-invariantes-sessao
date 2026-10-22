@@ -15,6 +15,7 @@ import java.util.List;
  * B  latencia 0,10 e erro 0,05     o  latencia 0,02 e erro 0,005 (exatamente theta_out)
  * p  latencia 0,021 (logo acima de theta_lat_out)
  * b  amostra minima (100) com latencia 0,05 e erro 0,02 (exatamente theta_in)
+ * q  amostra minima (100) com latencia 0,05 (exatamente theta_lat_in) e 0 erro (so a latencia e alta)
  * a  amostra minima (100) com latencia 0,04 e erro 0,01 (logo abaixo de theta_in)
  * w  total = 50 (minimo de erro) com erro 0,02 e sem elegiveis de latencia
  * x  10 eventos, todos com erro e excedencia (amostra insuficiente nos dois sinais)
@@ -55,6 +56,7 @@ final class Roteiro {
             case 'o' -> new Passo(janela(i, wNs, 1000, 5, 0, 1000, 20, 0, 0), TOP_OK);
             case 'p' -> new Passo(janela(i, wNs, 1000, 0, 0, 1000, 21, 0, 0), TOP_OK);
             case 'b' -> new Passo(janela(i, wNs, 100, 2, 0, 100, 5, 0, 0), TOP_OK);
+            case 'q' -> new Passo(janela(i, wNs, 100, 0, 0, 100, 5, 0, 0), TOP_OK);
             case 'a' -> new Passo(janela(i, wNs, 100, 1, 0, 100, 4, 0, 0), TOP_OK);
             case 'w' -> new Passo(janela(i, wNs, 50, 1, 0, 0, 0, 0, 0), TOP_OK);
             case 'x' -> new Passo(janela(i, wNs, 10, 10, 10, 10, 10, 0, 0), TOP_OK);

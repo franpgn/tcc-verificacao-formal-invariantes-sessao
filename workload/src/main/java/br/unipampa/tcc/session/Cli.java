@@ -234,12 +234,63 @@ public final class Cli {
     }
 
     /**
+     * B-43.1: reset de estado antes do <i>warm-up</i> de cada repeticao ({@code true}, padrao
+     * {@code on}) ou fluxo anterior, sem nenhuma operacao nos caches ({@code false}, {@code off},
+     * so explicito). Ver {@link ResetEstado}. Fica fora de {@link #toString()} (mesmo criterio da
+     * linha {@code Replicacao:} de B-42.1); aparece no {@code --dry-run} e na linha {@code Reset:}.
+     */
+    public boolean resetEstado = true;
+
+    /**
+     * Opcao {@code --reset-state on|off}. O valor passa por {@link LigaDesliga}, e nao direto para
+     * o campo {@code boolean}, porque o Picocli reaplica o padrao de opcoes {@code boolean} como
+     * {@code "true"}, que o conversor estrito rejeitaria.
+     */
+    @Option(
+        names = {"--reset-state"},
+        paramLabel = "on|off",
+        description = "Esvazia os dois caches do perfil antes do warm-up de cada repeticao e prova "
+            + "que ficaram vazios (on), ou nao toca nos caches (off). Se nao esvaziarem, a execucao "
+            + "aborta com codigo de saida 5. Padrao ${DEFAULT-VALUE}.",
+        defaultValue = "on",
+        arity = "1",
+        converter = LigaDesligaConverter.class
+    )
+    public void definirResetEstado(LigaDesliga valor) {
+        this.resetEstado = valor.ligado();
+    }
+
+    /** Resultado da conversao de {@code on}/{@code off}. */
+    public record LigaDesliga(boolean ligado) { }
+
+    /** Converte exatamente {@code on}/{@code off}; outro valor e {@link CommandLine.TypeConversionException}. */
+    public static final class LigaDesligaConverter implements CommandLine.ITypeConverter<LigaDesliga> {
+        @Override
+        public LigaDesliga convert(String valor) {
+            if ("on".equals(valor)) {
+                return new LigaDesliga(true);
+            }
+            if ("off".equals(valor)) {
+                return new LigaDesliga(false);
+            }
+            throw new CommandLine.TypeConversionException(
+                    "valor invalido '" + valor + "' para --reset-state (aceitos: on, off)");
+        }
+    }
+
+    /** Rotulo {@code on}/{@code off} de {@link #resetEstado}. */
+    public String rotuloResetEstado() {
+        return resetEstado ? "on" : "off";
+    }
+
+    /**
      * Texto impresso por {@code --dry-run}: a linha historica (inalterada) seguida do perfil de
-     * replicacao e dos nomes de cache que a execucao abriria.
+     * replicacao e dos nomes de cache que a execucao abriria e do estado do reset (B-43.1).
      */
     public String textoDryRun() {
         return "dry-run, configuracao OK: " + this + System.lineSeparator()
-                + "dry-run, " + replicacao.descricao();
+                + "dry-run, " + replicacao.descricao() + System.lineSeparator()
+                + "dry-run, reset_state=" + rotuloResetEstado();
     }
 
     /** Sanidade dos parâmetros; lança IllegalArgumentException com motivo. */

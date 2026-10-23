@@ -23,7 +23,7 @@ REAL_DATE="$(command -v date)"
 REAL_SLEEP="$(command -v sleep)"
 TMP="$(mktemp -d)"
 trap 'rm -rf "${TMP}"' EXIT
-SELECAO=" ${*:-R1 R2 R3 R4 R5 R6 R7 R8 R9 R10 R11 R12} "
+SELECAO=" ${*:-R1 R2 R3 R4 R5 R6 R7 R8 R9 R10 R11 R12 R13} "
 
 PASS=0
 FAIL=0
@@ -120,15 +120,33 @@ case "${cmd}" in
             *State.Status*) echo "${est}" ;;
             *State.Pid*) if [[ "${est}" == running ]]; then echo "$((1000 + ${no#isn}))"; else echo 0; fi ;;
             *Created.Unix*) cat "${ST}/criado-${no}" 2>/dev/null || echo 1792800000 ;;
-            *StartedAt.Unix*) echo 1792800000 ;;
+            *StartedAt.UnixMilli*) echo "$(( $(cat "${ST}/iniciado-${no}" 2>/dev/null || echo 1792700000) * 1000 ))" ;;
+            *StartedAt.Unix*) cat "${ST}/iniciado-${no}" 2>/dev/null || echo 1792700000 ;;
+            *FinishedAt.UnixMilli*) cat "${ST}/parado-ms-${no}" 2>/dev/null || echo -62135596800000 ;;
             *) echo '[{}]' ;;
         esac ;;
-    stop) echo stopped > "${ST}/status-$1"; echo parou >> "${ST}/parou-$1"; echo "$1" ;;
-    start) echo running > "${ST}/status-$1"; echo "$1" ;;
+    stop) echo stopped > "${ST}/status-$1"; echo parou >> "${ST}/parou-$1"; vms > "${ST}/parado-ms-$1"; echo "$1" ;;
+    start)
+        if [[ "$(cat "${ST}/status-$1" 2>/dev/null || echo running)" != running ]]; then
+            # nova vida do processo: ISPN080001 na subida e o aviso ISPN006010 da JVM nova (DT-013)
+            t="$(( $(vms) / 1000 ))"; echo "${t}" > "${ST}/iniciado-$1"
+            printf '%s INFO ISPN080001: Infinispan Server started\n%s WARN ISPN006010: Conditional operation\n' "${t}" "${t}" >> "${ST}/logs-$1"
+        fi
+        echo running > "${ST}/status-$1"; echo "$1" ;;
     logs)
-        no="${@: -1}"; n="$(cat "${ST}/ispn-${no}" 2>/dev/null || echo 1)"
-        for ((k = 0; k < n; k++)); do echo "WARN [o.i.s.h.HotRodHeader] ISPN006010: Conditional operation"; done
-        echo "INFO outra linha" ;;
+        no="${@: -1}"; desde=0
+        if [[ "$1" == "--since" ]]; then
+            [[ -f "${ST}/logs-since-falha" ]] && { echo "Error: since falhou (shim)" >&2; exit 125; }
+            desde="$2"
+        fi
+        if [[ ! -f "${ST}/logs-${no}" ]]; then
+            n="$(cat "${ST}/ispn-${no}" 2>/dev/null || echo 1)"
+            echo "1792700000 INFO ISPN080001: Infinispan Server started" > "${ST}/logs-${no}"
+            for ((k = 0; k < n; k++)); do echo "1792700000 WARN [o.i.s.h.HotRodHeader] ISPN006010: Conditional operation" >> "${ST}/logs-${no}"; done
+            echo "1792700000 INFO outra linha" >> "${ST}/logs-${no}"
+        fi
+        while read -r t txt; do [[ "${t}" -ge "${desde}" ]] && echo "${txt}"; done < "${ST}/logs-${no}"
+        exit 0 ;;
     version) echo "Version: 5.0.0 (shim)" ;;
     *) exit 0 ;;
 esac
@@ -599,6 +617,32 @@ for par in "1000 S1 sync 150000" "1001 S2 async 150100"; do
     VER="$(grep " java|-cp|${JAR}|br.unipampa.tcc.session.VerificadorSanidade|--csv|${D}/rep-001.csv|--scenario|$2|--saida|${D}/sanidade.json" "${ST}/chamadas.log" | grep -c .)"
     ok "R12 VerificadorSanidade de i=$1" "1" "${VER}"
 done
+fi
+
+# ============================================================================= R13
+if quer R13; then
+echo "== R13 (C1/DT-013): ispn006010.json por vida do processo; contagem ilegivel -> exit 6 =="
+novo_caso r13 20
+matriz "${CASO}/m.tsv" piloto "1000 S1-sync-F1"
+printf 'go piloto %s
+' "${HOJE}" > "${RB_TTY_ARQUIVO}"
+rodar_runner piloto
+ok "R13 exit 0" "0" "${RC}"
+D="$(exec_dir 1000)"
+ok "R13 total por no (isn2 com duas vidas)" "[1, 2, 1]" "$(json "${D}/ispn006010.json" '[d["por_no"][n] for n in ("isn1","isn2","isn3")]')"
+ok "R13 vidas por no (ISPN080001)" "[1, 2, 1]" "$(json "${D}/ispn006010.json" '[d["vidas_por_no"][n] for n in ("isn1","isn2","isn3")]')"
+ok "R13 vida atual (--since StartedAt)" "[1, 1, 1]" "$(json "${D}/ispn006010.json" '[d["por_no_desde_ultimo_start"][n] for n in ("isn1","isn2","isn3")]')"
+contem "R13 podman logs --since StartedAt" "podman|logs|--since|" "$(chamadas)"
+
+novo_caso r13b 20
+matriz "${CASO}/m.tsv" piloto "1000 S1-sync-none" "1001 S2-sync-none"
+printf 'go piloto %s
+' "${HOJE}" > "${RB_TTY_ARQUIVO}"
+: > "${ST}/logs-since-falha"
+rodar_runner piloto
+ok "R13 contagem da vida atual ilegivel -> exit 6" "6" "${RC}"
+ok "R13 checar nao chamado com contagem nula" "0" "$(grep -c 'rebaseline.py|checar' "${ST}/chamadas.log")"
+ok "R13 segunda execucao nao lancada" "1" "$(grep -c ' java|-jar' "${ST}/chamadas.log")"
 fi
 
 echo

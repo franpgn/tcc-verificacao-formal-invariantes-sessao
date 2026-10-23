@@ -129,7 +129,8 @@ def stdout_sintetico(cenario, modo, seed, rows, rep=1, k_token=None, sem_marco=0
 
 
 def montar_exec(raiz, linha, *, seed=None, rep=1, rows=None, stdout_kw=None, execucao=None, violacoes=(),
-                viol_cols=("instante", "invariante", "chave", "mensagem"), ispn=(1, 1, 1), sanidade="OK",
+                viol_cols=("instante", "invariante", "chave", "mensagem"), ispn=(1, 1, 1), ispn_desde=(1, 1, 1), ispn_vidas=(1, 1, 1),
+                sanidade="OK",
                 verificador_exit=0, workload_exit=0, portao_ok=True, injetor_log=None, sem=()):
     """Diretorio exec-<iiii>-<celula> com todos os brutos de uma execucao ACEITAVEL por padrao."""
     i = int(linha["i"])
@@ -150,7 +151,10 @@ def montar_exec(raiz, linha, *, seed=None, rep=1, rows=None, stdout_kw=None, exe
     (d / "estado-rep-001.json").write_text(json.dumps({"veredito": "OK", "tamanhos_depois": [0, 0]}))
     (d / "meta-csv-rep-001.json").write_text(json.dumps({"contrato_csv": 2}))
     (d / "sanidade.json").write_text(json.dumps({"veredito": sanidade, "motivos": []}))
-    (d / "ispn006010.json").write_text(json.dumps({"por_no": dict(zip(("isn1", "isn2", "isn3"), ispn))}))
+    nos = ("isn1", "isn2", "isn3")
+    (d / "ispn006010.json").write_text(json.dumps({"por_no": dict(zip(nos, ispn)),
+                                                   "por_no_desde_ultimo_start": dict(zip(nos, ispn_desde)),
+                                                   "vidas_por_no": dict(zip(nos, ispn_vidas))}))
     (d / "portao.json").write_text(json.dumps({"ok": portao_ok, "amostras": []}))
     ex = {"i": i, "celula": linha["celula"], "fase": linha["fase"], "cenario": cen, "modo": modo, "falha": falha,
           "seed": int(linha["seed"]), "workload_exit": workload_exit, "verificador_exit": verificador_exit,
@@ -494,6 +498,43 @@ class A7K9(Base):
         rc, ch = self.checar(d)
         self.assertEqual((rc, ch["veredito"]), (20, "PARADA"))
         self.assertFalse(ch["criterios"]["K8"]["ok"])
+
+
+# ============================================================================ A14: K8 por vida do processo (DT-013)
+
+class A14K8VidaDoProcesso(Base):
+
+    def k8(self, n=0, **kw):
+        d = montar_exec(self.saida, self.linha("S2-sync-F1", n=n), **kw)
+        rc, out, err = rodar("checar", "--exec", d, "--matriz", self.tsv)
+        return rc, d
+
+    def test_duas_vidas_com_um_aviso_cada_aceita(self):
+        rc, d = self.k8(ispn=(1, 2, 1), ispn_desde=(1, 1, 1), ispn_vidas=(1, 2, 1))
+        self.assertEqual(rc, 0, checagem(d)["motivos"])
+        self.assertTrue(checagem(d)["criterios"]["K8"]["ok"])
+        self.assertEqual(checagem(d)["criterios"]["K8"]["papel"], "parada")
+
+    def test_uma_vida_com_dois_avisos_para(self):
+        rc, d = self.k8(ispn=(1, 2, 1), ispn_desde=(1, 2, 1), ispn_vidas=(1, 1, 1))
+        self.assertEqual(rc, 20)
+        self.assertEqual(checagem(d)["veredito"], "PARADA")
+
+    def test_vida_atual_ok_mas_total_maior_que_as_vidas_para(self):
+        rc, d = self.k8(ispn=(1, 3, 1), ispn_desde=(1, 1, 1), ispn_vidas=(1, 2, 1))
+        self.assertEqual(rc, 20)
+        self.assertFalse(checagem(d)["criterios"]["K8"]["ok"])
+
+    def test_contagem_nula_e_erro_de_uso(self):
+        for n, kw in enumerate(({"ispn_desde": (1, None, 1)}, {"ispn_vidas": (None, 1, 1)})):
+            rc, d = self.k8(n=n, **kw)
+            self.assertEqual(rc, 2, kw)
+            self.assertFalse((d / "checagem.json").exists())
+
+    def test_chave_ausente_e_erro_de_uso(self):
+        d = montar_exec(self.saida, self.linha("S2-sync-F1"))
+        (d / "ispn006010.json").write_text(json.dumps({"por_no": {"isn1": 1, "isn2": 1, "isn3": 1}}))
+        self.assertEqual(rodar("checar", "--exec", d, "--matriz", self.tsv)[0], 2)
 
 
 # ============================================================================ A8: violacoes

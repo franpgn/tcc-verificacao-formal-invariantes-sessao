@@ -18,8 +18,9 @@ import java.util.concurrent.atomic.LongAdder;
  *
  * <p>Semente do sorteio: {@link #sementeToken(long)} da semente da thread
  * ({@link WorkloadMain#sementeThread(long, int, int)}), com o sal {@link #SAL_TOKEN} e o finalizador do
- * SplitMix64 ({@link #mix64(long)}). O sal separa o dominio do token do {@code Random} da mistura, que o
- * B-43.5 vai semear com a mesma semente da thread; o misturador espalha os bits de sementes vizinhas
+ * SplitMix64 ({@link #mix64(long)}). O sal separa o dominio do token do {@code Random} da mistura, semeado
+ * por {@code WorkloadMain.sementeMistura} com o sal {@code SAL_MISTURA} (B-43.5), e do
+ * {@link KeyGenerator}, semeado com a propria semente da thread; o misturador espalha os bits de sementes vizinhas
  * ({@code s}, {@code s+1}, ...) antes do LCG do {@code java.util.Random}.</p>
  */
 final class MisturaV3 {

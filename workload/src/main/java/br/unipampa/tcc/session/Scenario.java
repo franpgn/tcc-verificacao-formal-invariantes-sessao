@@ -56,10 +56,10 @@ public enum Scenario {
     /**
      * Sorteia a próxima operação conforme a distribuição do cenário.
      *
-     * <p>O parâmetro é declarado como {@link Random} para admitir tanto
-     * a instância thread-safe {@code ThreadLocalRandom.current()}
-     * usada em produção quanto a instância {@code new Random(seed)}
-     * usada em testes para garantir determinismo.</p>
+     * <p>Em produção, cada thread de carga passa o seu próprio {@link Random},
+     * semeado de forma determinística a partir da semente da thread
+     * ({@code WorkloadMain.randomDaMistura}, B-43.5); os testes passam
+     * {@code new Random(seed)} diretamente.</p>
      *
      * @param r gerador uniforme em [0, 100)
      */

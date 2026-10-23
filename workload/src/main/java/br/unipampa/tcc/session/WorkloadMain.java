@@ -733,7 +733,8 @@ public final class WorkloadMain {
     /**
      * B-43.7b: semente da thread {@code tid} na repeticao {@code rep} (S1/S2), a mesma formula de
      * sempre: {@code seedBase + tid + rep * 1_000_003}. Alimenta o {@link KeyGenerator} da thread e,
-     * com sal e misturador ({@code MisturaV3.sementeToken}), o sorteio do token antigo (DT-008).
+     * com sal e misturador, o sorteio do token antigo ({@code MisturaV3.sementeToken}, DT-008) e, desde o
+     * B-43.5, o {@code Random} da mistura ({@link #sementeMistura(long)}, sal {@link #SAL_MISTURA}).
      */
     static long sementeThread(long seedBase, int tid, int rep) {
         return seedBase + (long) tid + (long) rep * 1_000_003L;
@@ -768,6 +769,10 @@ public final class WorkloadMain {
      * limite for atingido ou quando a thread tiver gerado seu alvo de
      * operações ({@link Cli#ops} dividido pelo número de threads).
      * B-43.2: as identidades vêm de {@link IdentidadesMistura} conforme {@code --mix}.
+     * B-43.5: {@code seed} e a semente da thread ({@link #sementeThread(long, int, int)}); dela saem, por
+     * dominios separados, o {@code Random} da mistura ({@link #randomDaMistura(long)}), o
+     * {@link KeyGenerator} e o sorteio do token antigo da v3. Mesma {@code seed}, mesma sequencia de
+     * intencoes da thread (tipos de operacao, chaves, tokens antigos e identidades de Login).
      */
     private static void rodarCliente(SessionOps ops, int tid, long deadline,
                                      Scenario cenario, long seed,

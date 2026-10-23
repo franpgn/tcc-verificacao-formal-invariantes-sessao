@@ -128,7 +128,8 @@ public final class Cli {
 
     @Option(
         names = {"--seed"},
-        description = "Seed base do gerador Zipfian (T6). Cada thread usa seed+tid. Padrao ${DEFAULT-VALUE}.",
+        description = "Semente base: gerador Zipf, mistura de operacoes e token antigo de cada thread, "
+            + "por sementeThread(seed, tid, rep). Padrao ${DEFAULT-VALUE}.",
         defaultValue = "42"
     )
     public long seedBase;

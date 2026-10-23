@@ -681,15 +681,17 @@ rodar_execucao() {  # rodar_execucao "<i> <celula> <cenario> <modo> <falha> <see
         if [[ -f "${d}/checagem.json" ]]; then log "exec i=${E_I} ${E_CEL}: ja executada e checada; pulando"; return 0; fi
         finalizar 4 "pre-voo: ${d} existe sem checagem.json (execucao interrompida); decisao manual do Gestor"
     fi
+    # C2: o gate f3 vem ANTES do diretorio da execucao e do K1. Um go f3 errado sai com 5 sem deixar
+    # exec-<i>, e o K1 (>= 60 s) fica imediatamente antes do workload mesmo que o Gestor demore.
+    if [[ "${E_FALHA}" == F3 && "${GATE_F3_DADO}" -eq 0 ]]; then
+        log "GATE f3 pedido: primeira F3 da fase (i=${E_I}); aguardando 'go f3 ${E_I}' em /dev/tty (depois vem o K1, >= 60 s)"
+        ler_gate f3 "go f3 ${E_I}" "${E_I}"
+        GATE_F3_DADO=1
+    fi
     mkdir -p "${d}"
     log "exec i=${E_I} ${E_CEL} seed=${E_SEED}: portao K1"
     if ! portao_k1 "${d}"; then
         finalizar 10 "parada (e): portao K1 nao passou em ${K1_TIMEOUT_S} s antes de i=${E_I}"
-    fi
-    if [[ "${E_FALHA}" == F3 && "${GATE_F3_DADO}" -eq 0 ]]; then
-        log "GATE f3 pedido: primeira F3 da fase (i=${E_I}); aguardando 'go f3 ${E_I}' em /dev/tty"
-        ler_gate f3 "go f3 ${E_I}" "${E_I}"
-        GATE_F3_DADO=1
     fi
     local scratch="${d}/.scratch"
     mkdir -p "${scratch}"

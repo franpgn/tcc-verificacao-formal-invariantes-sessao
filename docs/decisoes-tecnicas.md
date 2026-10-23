@@ -135,3 +135,48 @@
 - **Validade:** vale para toda execução v3 feita com o *jar* do B-43.7b ou posterior. Os *smokes* do
   B-43.7 e do B-43.8 (contador determinístico) continuam válidos como *smokes* sob a regra antiga e não
   são resultado. O *rebaseline* S1/S2 roda depois do B-43.7b.
+
+## DT-009: *rebaseline* S1/S2 v3 em DIST_SYNC e DIST_ASYNC, PRÉ-REGISTRO (2026-10-23)
+
+- **Origem:** rascunho `docs/pre-registro-rebaseline-2026-10-23.md` (`d7df5dd`); respostas do Gestor
+  às perguntas R1..R10 em 2026-10-23. Texto completo e vinculante:
+  `docs/pre-registro-rebaseline-aprovado-2026-10-23.md`. Registrado antes de qualquer execução do
+  piloto.
+- **Matriz:** S1 e S2, `--mix v3`; `--replication sync` e `async`; falhas `none`, F1 (`podman stop`
+  de `isn2` por 60 s) e F3 (`netem delay 20ms 13ms distribution normal` em `isn2`, até o fim); 10
+  repetições de 300 s por célula (120 execuções), 4 *threads*, `--warmup-min-sec 30`, `--reset-state
+  on`, `--rep 1`. Injeção a +35 s; janela de medição de +44 a +300 s. S3 fora.
+- **Ordem:** blocos completos aleatorizados; rodada r ordenada por
+  `random.Random(231023 * 1000 + r).shuffle` da lista canônica; piloto = rodada 0.
+- **Sementes:** `--seed = 50 000 + 100·i`; campanha i = 0..119, piloto i = 1 000..1 011, reposições
+  i = 120, 121, ...; R-S3 e R-S4 como no documento.
+- **Recusa e parada:** K1..K10 e paradas (a)..(g) da seção 6 do documento. Com falha, o denominador
+  de C1/C2 é o número de Validate isolados com VALID ou INVALID (erros reportados à parte); C4/C5 são
+  reportados, não critério (DT-006). Nenhuma análise usa `Violacoes detectadas:`; I2 conta como
+  violação só com rótulo `I2` e `classificacao = REAL`.
+- **Análise:** unidade = execução; p99 por posto mais próximo sobre desfechos válidos, com n ≥ 1 000;
+  contraste = diferença das médias dos p99 por execução, IC 95 % por *bootstrap* percentil (10 000
+  reamostragens de execuções, `BOOT_SEED = 231024`), só com ≥ 8 execuções aceitas por célula;
+  Mann-Whitney bilateral sobre os p99 por execução como teste secundário.
+- **Operação:** VM `tcc-f3`, depois de S1..S7 e com o *cluster* recriado; duas noites de 5 rodadas
+  depois de uma noite de piloto validado de dia; `go` do Gestor presente no início de cada noite e
+  antes da primeira execução F3 de cada noite; sem coleta de CPU.
+- **Pré-requisitos:** B-43.9 com F-1 e B-43.5 integrados; *runner* e análise novos integrados;
+  complemento deste registro (SHA da ponta, SHA-256 do jar, do *bundle* e de `matriz.tsv`, criação do
+  *cluster*) commitado antes do piloto. Dados do piloto não entram em resultado.
+- **Desvio declarado:** T10 (30 repetições) passa a 10 repetições por célula.
+
+## DT-010: `sem_marco = 0` é critério só em DIST_SYNC (2026-10-23)
+
+- **Origem:** V-B43.9, ponto (5) e pergunta V5 (`validacao-b43-9-2026-10-23.md`); decisão do Gestor
+  de 2026-10-23.
+- **Decisão:** a contagem `sem_marco` da linha `Auditor I2:` (leitura VALID sob identidade lida
+  BLOCKED sem marco de bloqueio no mapa) deve ser 0 nas execuções em **DIST_SYNC** em que o
+  pré-registro da campanha usa o auditor como critério. Em **DIST_ASYNC** ela é métrica reportada
+  (por fase, na T-F), não critério: uma leitura velha da identidade depois do `unblock`, com o marco
+  já removido, é efeito do *grid* (H-A0), não defeito.
+- **Efeito no *rebaseline* (DT-009):** parte de K9 (SYNC sem falha, parada para investigar); em
+  ASYNC, reportada (K10).
+- **Efeito na T-F:** o pré-registro da T-F reporta `sem_marco` por fase em ASYNC. Se a T-F mostrar
+  `sem_marco > 0` em ASYNC, abre-se um item para um marco de desbloqueio (lápide) que dê a essas
+  leituras uma classe própria. A lápide não é feita agora.

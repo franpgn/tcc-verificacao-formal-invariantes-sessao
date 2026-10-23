@@ -10,6 +10,11 @@
 > Base de código citada: `feature/controlador-integracao` em `5e1084f` e a ponta do B-43.9 em
 > `96c8045` (`fix/b43-9-i2-instantaneo`), lidas sem modificar.
 
+> **Nota de remissão (2026-10-23):** o instante de injeção (+35 s), a duração de F3 (265 s) e a
+> leitura do efeito na seção 2 estão **SUBSTITUÍDOS por DT-011**: injeção a +49 s da âncora
+> `Warm-up ate` (início da medição + 5 s), F3 de 251 s (+49 a +300 s), e K6 recusa disparo fora de
+> +48..+51 s. O texto abaixo foi mantido sem edição.
+
 ## 0. Decisões do Gestor (23/10) aplicadas
 
 | # | Pergunta do rascunho | Decisão |

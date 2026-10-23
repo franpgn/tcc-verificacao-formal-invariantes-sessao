@@ -138,6 +138,10 @@
 
 ## DT-009: *rebaseline* S1/S2 v3 em DIST_SYNC e DIST_ASYNC, PRÉ-REGISTRO (2026-10-23)
 
+> **Nota de remissão (2026-10-23):** o instante de injeção (+35 s) e a duração de F3 abaixo estão
+> **SUBSTITUÍDOS por DT-011** (+49 s da âncora, F3 de 251 s), que também fixa a tolerância de K6.
+> O texto original foi mantido sem edição.
+
 - **Origem:** rascunho `docs/pre-registro-rebaseline-2026-10-23.md` (`d7df5dd`); respostas do Gestor
   às perguntas R1..R10 em 2026-10-23. Texto completo e vinculante:
   `docs/pre-registro-rebaseline-aprovado-2026-10-23.md`. Registrado antes de qualquer execução do
@@ -180,3 +184,23 @@
 - **Efeito na T-F:** o pré-registro da T-F reporta `sem_marco` por fase em ASYNC. Se a T-F mostrar
   `sem_marco > 0` em ASYNC, abre-se um item para um marco de desbloqueio (lápide) que dê a essas
   leituras uma classe própria. A lápide não é feita agora.
+
+## DT-011: injeção a +49 s, F3 de 251 s e tolerância de K6 no *rebaseline*, PRÉ-REGISTRO (2026-10-23)
+
+- **Origem:** perguntas P1..P3 do Senior ao entregar a DT-009; decisão do Gestor de 2026-10-23,
+  registrada antes de qualquer execução do piloto. **Substitui**, na DT-009 e no pré-registro
+  aprovado, o instante de injeção e a duração de F3 (textos originais mantidos, com remissão).
+- **Motivo (P1):** com `--duration 300` e `--warmup-min-sec 30`, a `WarmupPolicy` descarta mais
+  14 s depois do aquecimento, e a janela de medição vai de +44 a +300 s. A +35 s, os primeiros ≈ 9 s
+  do F1 (incluída a saída ordenada do nó por `podman stop`) cairiam fora da medição.
+- **Decisão P1:** F1 e F3 são disparados a **+49 s** da âncora (início da medição + 5 s). A âncora é o
+  instante em que a linha `Warm-up ate +` aparece no stdout do *workload* (início do aquecimento).
+  F1 deixa `isn2` parado de ≈ +49 a ≈ +109 s. F3 dura **251 s** (`--duration 251`), de +49 a +300 s.
+- **Decisão P3 (complemento operacional de K6):** o disparo do injetor tem de cair entre **−1 e +2 s**
+  do instante previsto, isto é, entre **+48 e +51 s** da âncora. Fora disso, a execução é recusada
+  (K6). O desvio medido é sempre registrado.
+- **Decisão P2:** aprovado o desenho do B-43.5 com sal próprio: o `Random` da mistura de cada *thread*
+  é `new Random(mix64(sementeThread ^ SAL_MISTURA))`, `SAL_MISTURA = 0x4D49535455524153L`
+  ("MISTURAS" em ASCII), e não `new Random(sementeThread)`, que compartilharia o fluxo do
+  `KeyGenerator`.
+- **Inalterado:** todo o resto da DT-009 (matriz, sementes, K1..K10, paradas, análise, noites, gates).

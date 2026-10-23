@@ -311,3 +311,18 @@ test` uma vez no fim só para provar que nada em workload mudou) e pare. Não in
 | Noite 0 | `--fase piloto`; gate da noite e gate F3 com o Gestor; `rebaseline.py piloto` de dia; parecer do Senior; liberação pelo Gestor |
 | Noites 1 e 2 | `--fase noite1` e `--fase noite2`; reposições ao fim da noite 2 ou numa noite curta |
 | Depois | `rebaseline.py tabelas` no *host*; validação do Senior contra os brutos; resumo para os agentes acadêmicos |
+
+## Adenda de 2026-10-23 (decisões do Gestor sobre P1..P3, DT-011)
+
+Prevalece sobre o corpo acima, que foi mantido sem edição:
+
+- **Instante de injeção:** onde o corpo diz `INJ_OFFSET=35`, "+35 s" ou "em +35 s", leia
+  `INJ_OFFSET=49` e +49 s da âncora `Warm-up ate` (início da medição + 5 s), para F1 e F3.
+- **F3:** `F3_DUR=251` (`inject-jitter.sh ... --duration 251`), de +49 a +300 s. O dead-man passa a
+  `--on-active=341s` (251 + 90). As amostras de `tc qdisc show` ficam em +70 s e +280 s.
+- **K6:** `INJ_TOL = (48.0, 51.0)` em segundos da âncora (−1 a +2 s do previsto); fora disso, recusa.
+  Nos testes, R4 espera o disparo em N + 49 s, e A9 passa a ser: offset 47,9 s ou 51,1 s → recusa,
+  49,2 s → ok.
+- **F1:** `isn2` parado de ≈ +49 a ≈ +109 s; a espera de até 180 s pelo *cluster* não muda.
+- **Mutante X2:** continua (disparo contado do lançamento do processo), morto por R4 com +49 s.
+- **B-43.5:** o sal próprio `SAL_MISTURA` foi aprovado (P2); nada muda no *runner* por isso.

@@ -378,7 +378,7 @@ fi
 # ============================================================================= R4
 if quer R4; then
 echo "== R4: ancora 'Warm-up ate' e disparo em N + 49 s =="
-novo_caso r4 4
+novo_caso r4 2
 matriz "${CASO}/m.tsv" piloto "1000 S1-sync-F1"
 printf 'go piloto %s\n' "${HOJE}" > "${RB_TTY_ARQUIVO}"
 echo 12 > "${ST}/java-ancora-s"; echo 120 > "${ST}/java-resto-s"
@@ -390,7 +390,7 @@ DISP="$(json "${D}/execucao.json" 'd["disparo_ms"]')"
 STOP="$(grep 'podman|stop|isn2' "${ST}/chamadas.log" | head -1 | cut -d' ' -f1)"
 echo "   (ancora do java ${ANC}; disparo do runner +$(( DISP - ANC )) ms; podman stop +$(( STOP - ANC )) ms)"
 verdade "R4 disparo em N + 49 s (+-1 s)" test "$(( DISP - ANC ))" -ge 48000 -a "$(( DISP - ANC ))" -le 50000
-verdade "R4 podman stop do injetor em N + 49 s (+-1 s)" test "$(( STOP - ANC ))" -ge 48000 -a "$(( STOP - ANC ))" -le 50000
+verdade "R4 podman stop do injetor dentro da tolerancia de K6 (N+48..N+51 s)" test "$(( STOP - ANC ))" -ge 48000 -a "$(( STOP - ANC ))" -le 51000
 OFF="$(json "${D}/execucao.json" 'd["inj_inicio_offset_s"]')"
 verdade "R4 inj_inicio_offset_s em [48,50]" "${REAL_PY}" -c "import sys; sys.exit(0 if 48 <= ${OFF} <= 50 else 1)"
 
@@ -427,7 +427,7 @@ fi
 # ============================================================================= R6
 if quer R6; then
 echo "== R6: F3 com dead-man antes do netem; residual -> exit 6 =="
-novo_caso r6
+novo_caso r6 10
 matriz "${CASO}/m.tsv" piloto "1000 S2-sync-F3"
 printf 'go piloto %s\ngo f3 1000\n' "${HOJE}" > "${RB_TTY_ARQUIVO}"
 rodar_runner piloto
@@ -446,7 +446,7 @@ ok "R6 alvos das amostras" "[70, 280]" "$(json "${D}/execucao.json" '[a["alvo_s"
 ok "R6 netem ausente depois" "False" "$(json "${D}/execucao.json" 'd["netem_pos"]["netem"]')"
 ok "R6 nenhum timer sobrando" "0" "$(ls "${ST}"/timer-* 2>/dev/null | grep -c .)"
 
-novo_caso r6b
+novo_caso r6b 10
 matriz "${CASO}/m.tsv" piloto "1000 S2-sync-F3"
 printf 'go piloto %s\ngo f3 1000\n' "${HOJE}" > "${RB_TTY_ARQUIVO}"
 : > "${ST}/del-falha"

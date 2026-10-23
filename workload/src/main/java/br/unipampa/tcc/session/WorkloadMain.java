@@ -395,7 +395,7 @@ public final class WorkloadMain {
 
             for (int t = 0; t < cli.threads; t++) {
                 final int tid = t;
-                final long seedThread = cli.seedBase + (long) tid + (long) rep * 1_000_003L;
+                final long seedThread = sementeThread(cli.seedBase, tid, rep);
                 pool.submit(() -> rodarCliente(ops, tid, fim, cli.scenario,
                         seedThread, opsAlvoPorThread, totalOps, parar, cli.mix, misturaV3));
             }
@@ -719,6 +719,15 @@ public final class WorkloadMain {
                 }
             }
         }
+    }
+
+    /**
+     * B-43.7b: semente da thread {@code tid} na repeticao {@code rep} (S1/S2), a mesma formula de
+     * sempre: {@code seedBase + tid + rep * 1_000_003}. Alimenta o {@link KeyGenerator} da thread e,
+     * com sal e misturador ({@code MisturaV3.sementeToken}), o sorteio do token antigo (DT-008).
+     */
+    static long sementeThread(long seedBase, int tid, int rep) {
+        return seedBase + (long) tid + (long) rep * 1_000_003L;
     }
 
     /**

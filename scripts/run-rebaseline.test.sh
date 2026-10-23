@@ -23,7 +23,7 @@ REAL_DATE="$(command -v date)"
 REAL_SLEEP="$(command -v sleep)"
 TMP="$(mktemp -d)"
 trap 'rm -rf "${TMP}"' EXIT
-SELECAO=" ${*:-R1 R2 R3 R4 R5 R6 R7 R8 R9 R10 R11 R12 R13} "
+SELECAO=" ${*:-R1 R2 R3 R4 R5 R6 R7 R8 R9 R10 R11 R12 R13 R14} "
 
 PASS=0
 FAIL=0
@@ -115,6 +115,7 @@ case "${cmd}" in
         fmt=""; if [[ "$1" == "-f" ]]; then fmt="$2"; shift 2; fi
         no="$1"
         [[ -f "${ST}/ausente-${no}" ]] && exit 125
+        [[ -z "${fmt}" && -f "${ST}/inspect-sem-f-falha-${no}" ]] && exit 125
         est="$(cat "${ST}/status-${no}" 2>/dev/null || echo running)"
         case "${fmt}" in
             *State.Status*) echo "${est}" ;;
@@ -183,7 +184,9 @@ registrar tc "pid=${RB_NETNS_PID:-?}" "$@"
 ST="${RB_ESTADO}"
 f="${ST}/netem-${RB_NETNS_PID:-0}"
 case "$*" in
-    "qdisc add dev eth0 root netem"*) echo "$*" > "${f}" ;;
+    "qdisc add dev eth0 root netem"*)
+        if [[ -f "${ST}/netem-rejeita" ]]; then echo "Error: Specified qdisc kind is unknown." >&2; exit 2; fi
+        echo "$*" > "${f}" ;;
     "qdisc del dev eth0 root")
         if [[ -f "${ST}/del-falha" ]]; then exit 0; fi
         if [[ -f "${f}" ]]; then rm -f "${f}"; else echo "Error: Cannot delete qdisc with handle of zero." >&2; exit 2; fi ;;
@@ -652,6 +655,33 @@ rodar_runner piloto
 ok "R13 contagem da vida atual ilegivel -> exit 6" "6" "${RC}"
 ok "R13 checar nao chamado com contagem nula" "0" "$(grep -c 'rebaseline.py|checar' "${ST}/chamadas.log")"
 ok "R13 segunda execucao nao lancada" "1" "$(grep -c ' java|-jar' "${ST}/chamadas.log")"
+fi
+
+# ============================================================================= R14
+if quer R14; then
+echo "== R14 (C3/P2): exit do injetor 1 e 4 = recusa K6 (segue); 2, 3, 5 e outros = exit 6 =="
+novo_caso r14 20
+matriz "${CASO}/m.tsv" piloto "1000 S1-sync-F1" "1001 S2-sync-none"
+printf 'go piloto %s
+' "${HOJE}" > "${RB_TTY_ARQUIVO}"
+: > "${ST}/inspect-sem-f-falha-isn2"
+rodar_runner piloto
+ok "R14 injetor F1 com exit 4 -> fase segue (exit 0)" "0" "${RC}"
+ok "R14 injetor_exit 4 registrado" "4" "$(json "$(exec_dir 1000)/execucao.json" 'd["injetor_exit"]')"
+ok "R14 execucao seguinte lancada" "2" "$(grep -c ' java|-jar' "${ST}/chamadas.log")"
+
+novo_caso r14b 20
+matriz "${CASO}/m.tsv" piloto "1000 S1-sync-F3" "1001 S2-sync-none"
+printf 'go piloto %s
+go f3 1000
+' "${HOJE}" > "${RB_TTY_ARQUIVO}"
+: > "${ST}/netem-rejeita"
+rodar_runner piloto
+ok "R14 injetor F3 com exit 5 (netem rejeitado) -> exit 6" "6" "${RC}"
+ok "R14 injetor_exit 5 registrado" "5" "$(json "$(exec_dir 1000)/execucao.json" 'd["injetor_exit"]')"
+contem "R14 motivo" "injetor" "$(tail -1 "${OUT}/piloto/runner.log")"
+ok "R14 execucao seguinte nao lancada" "1" "$(grep -c ' java|-jar' "${ST}/chamadas.log")"
+ok "R14 dead-man desarmado (sem netem)" "0" "$(ls "${ST}"/timer-* 2>/dev/null | grep -c .)"
 fi
 
 echo

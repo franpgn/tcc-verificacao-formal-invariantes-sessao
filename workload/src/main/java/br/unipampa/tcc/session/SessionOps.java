@@ -170,6 +170,54 @@ public class SessionOps {
         return i2ConcorrentesTotal.sum();
     }
 
+    /**
+     * B-43.9: conta um evento do auditor no contador com janela (so na janela de medicao, a mesma do
+     * CSV) e, se dado, no total sem janela.
+     */
+    private void contar(LongAdder comJanela, LongAdder total) {
+        if (total != null) {
+            total.increment();
+        }
+        if (politicaAuditor.deveRegistrar()) {
+            comJanela.increment();
+        }
+    }
+
+    /**
+     * B-43.9, regra A (DT-002): classifica a leitura de sessao VALID {@code sid} sob a identidade
+     * {@code identidade} lida BLOCKED, pelo instante {@code t0Sessao} (tomado antes do {@code get} da
+     * sessao) contra o marco do bloqueio.
+     *
+     * <ul>
+     *   <li>sem marco: I2 como antes de B-43.9, e {@code i2_sem_marco} (so testes que montam BLOCKED
+     *       direto no duble; em producao deve dar 0);</li>
+     *   <li>identidade ainda nao confirmada, ou {@code t0Sessao < marcoIdentidadeNs}:
+     *       {@code i2_concorrentes} (corrida do observador, DT-001; nao e violacao);</li>
+     *   <li>{@code marcoIdentidadeNs <= t0Sessao}, cascata em curso ou {@code t0Sessao < marcoCascataNs}:
+     *       {@link #I2_JANELA_CASCATA} no auditor (fora de {@code S_viol});</li>
+     *   <li>{@code t0Sessao >= marcoCascataNs} (cascata concluida): I2; o rastro classifica
+     *       REAL/ESPERADA/INCERTA como antes.</li>
+     * </ul>
+     */
+    private void classificarI2(String sid, String identidade, long t0Sessao) {
+        MarcoBloqueio m = marcos.get(identidade);
+        if (m == null) {
+            auditor.registrarViolacao("I2", sid, "valida sob bloqueio");
+            contar(i2SemMarco, null);
+            return;
+        }
+        if (!m.identidadeConfirmada() || t0Sessao < m.marcoIdentidadeNs()) {
+            contar(i2Concorrentes, i2ConcorrentesTotal);
+            return;
+        }
+        if (!m.cascataConcluida() || t0Sessao < m.marcoCascataNs()) {
+            auditor.registrarViolacao(I2_JANELA_CASCATA, sid, "valida sob bloqueio, dentro da janela da cascata");
+            contar(i2JanelaCascata, null);
+            return;
+        }
+        auditor.registrarViolacao("I2", sid, "valida sob bloqueio");
+    }
+
     /** B-43.9: marco corrente do bloqueio da identidade ({@code null} = sem marco). */
     MarcoBloqueio marco(String identidade) {
         return marcos.get(identidade);
@@ -470,10 +518,10 @@ public class SessionOps {
             if (atual.estado() == SessionState.Estado.INVALID) {
                 SessionState.Motivo depois = invalidacoesConfirmadas.putIfAbsent(sid, atual.motivo());
                 if (depois != null && !depois.equals(atual.motivo())) {
-                    i4Concorrentes.increment();
+                    contar(i4Concorrentes, i4ConcorrentesTotal);
                 }
             } else if (invalidacoesConfirmadas.get(sid) != null) {
-                i1Concorrentes.increment();
+                contar(i1Concorrentes, i1ConcorrentesTotal);
             }
             return;
         }
@@ -532,6 +580,8 @@ public class SessionOps {
         try {
             // B-43.6: instantaneo ANTES da leitura (ver verificarI1I4).
             SessionState.Motivo confirmadoAntes = invalidacoesConfirmadas.get(sid);
+            // B-43.9 (DT-002): instante do inicio da leitura da sessao, contra os marcos do bloqueio.
+            long t0Sessao = System.nanoTime();
             SessionState s = sessions.get(sid);
             latency.record("validate", t0);
             if (s == null) {
@@ -543,7 +593,7 @@ public class SessionOps {
             IdentityState idSt = identities.get(s.identidade());
             if (idSt != null && idSt.status() == IdentityState.Status.BLOCKED
                     && s.estado() == SessionState.Estado.VALID) {
-                auditor.registrarViolacao("I2", sid, "valida sob bloqueio");
+                classificarI2(sid, s.identidade(), t0Sessao);
             }
             verificarI1I4(sid, s, confirmadoAntes, null);
             OpResult r = OpResult.okValidate(s.estado());
@@ -737,7 +787,17 @@ public class SessionOps {
                 before = IdentityState.criar(identidade, Instant.now());
             }
             IdentityState after = before.incrementar(LIMITE_TENTATIVAS, Instant.now());
+            // B-43.9 (DT-002): o incremento que atinge o limite abre um periodo de bloqueio sem cascata.
+            boolean atingeLimite = before.status() == IdentityState.Status.OPEN
+                    && after.status() == IdentityState.Status.BLOCKED;
+            if (atingeLimite) {
+                marcos.put(identidade, MarcoBloqueio.emCurso(MarcoBloqueio.Tipo.LIMITE));
+            }
             identities.put(identidade, after);
+            if (atingeLimite) {
+                long agora = System.nanoTime();
+                marcos.put(identidade, new MarcoBloqueio(MarcoBloqueio.Tipo.LIMITE, agora, agora));
+            }
             latency.record("inc_failure", t0);
 
             if (after.contadorFalhas() < before.contadorFalhas()) {
@@ -790,7 +850,12 @@ public class SessionOps {
             if (st == null) {
                 st = IdentityState.criar(identidade, Instant.now());
             }
+            // B-43.9 (DT-002): marco provisorio (identidade ainda nao confirmada) durante o put; depois
+            // do put reconhecido, marcoIdentidadeNs = agora e a cascata PENDENTE.
+            marcos.put(identidade, MarcoBloqueio.emCurso(MarcoBloqueio.Tipo.ADMIN));
             identities.put(identidade, st.bloquear(Instant.now()));
+            MarcoBloqueio meu = new MarcoBloqueio(MarcoBloqueio.Tipo.ADMIN, System.nanoTime(), MarcoBloqueio.PENDENTE);
+            marcos.put(identidade, meu);
             // B-43.6: copia das confirmacoes ANTES de iniciar a varredura; cada entrada e checada
             // contra a copia (uma confirmacao que surge durante a varredura e corrida, nao I1).
             java.util.Map<String, SessionState.Motivo> confirmadasAntes =
@@ -822,6 +887,8 @@ public class SessionOps {
                 }
             });
             }
+            // B-43.9: a cascata terminou (depois da ultima invalidacao).
+            marcos.replace(identidade, meu, new MarcoBloqueio(meu.tipo(), meu.marcoIdentidadeNs(), System.nanoTime()));
             latency.record("block_ok", t0);
             OpResult r = OpResult.okNoop();
             emitir(OP_BLOCK, t0, System.nanoTime(), r, identidade);
@@ -865,6 +932,8 @@ public class SessionOps {
                 return r;
             }
             identities.put(identidade, st.desbloquear(Instant.now()));
+            // B-43.9: o periodo de bloqueio acabou (depois do put(OPEN) reconhecido).
+            marcos.remove(identidade);
             latency.record("unblock_ok", t0);
             OpResult r = OpResult.okNoop();
             emitir(OP_UNBLOCK, t0, System.nanoTime(), r, identidade);

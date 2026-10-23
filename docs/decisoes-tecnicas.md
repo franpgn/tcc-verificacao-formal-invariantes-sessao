@@ -293,6 +293,40 @@
 - **Parte 2 (pendente, antes do piloto):** SHA da ponta integrada, SHA-256 do jar, SHA-256 do *bundle* da
   VM e instante de criação do *cluster* depois do S7.
 
+## Complemento da DT-009, parte 2 de 2: ponta, jar e *bundle* (2026-10-23)
+
+- **Origem:** PR §9; revalidação do *runner* (`docs/revalidacao-rebaseline-runner-2026-10-23.md`).
+  São identificadores, não escolhas. Registrado antes de qualquer execução do piloto.
+- **Ponta do *runner*** (alvo do *fast-forward* de `feature/controlador-integracao`):
+  `988fd3c6bca5d3f201ca3b0366cdeca9e90f21d9`, base `642d81f`. Se o commit de integração que põe
+  `matriz.tsv` no git criar outra ponta, o SHA dela entra como adenda deste item, antes do piloto.
+- **Jar:** `workload/target/session-workload-0.1.0-SNAPSHOT.jar`, construído da ponta com
+  `mvn -q -o -f workload/pom.xml -DskipTests clean package` (JDK 22.0.2, Maven 3.9.16), 18 824 990 bytes,
+  SHA-256 `5eced1363f1b318f533174e967be6a81080bcc95961d0f72a118dc0184dcefaf`. O *build* **não é
+  reprodutível byte a byte** (o `pom.xml` não fixa `project.build.outputTimestamp`): o *hash* vale para
+  este arquivo, que deve ser congelado e levado à VM sem novo `package`. Identificador reprodutível do
+  conteúdo (SHA-256 da lista ordenada `nome<TAB>crc32<TAB>tamanho` das 12 018 entradas):
+  `c9aa921222655cd4991b0c6ed13c46b88231ba9184aa35c76455205b69e2669d`, igual em dois *builds*.
+- **`matriz.tsv`:** regenerada da ponta, `8654900cd23b9b46e65163a5d106bd6f86113632d2ce621ff962f637cd645c35`,
+  igual à parte 1.
+- ***Bundle* da VM** (*blobs* do git, LF, montado por `git archive`; não do *worktree* Windows, que tem
+  `core.autocrlf=true`):
+
+  | Arquivo | SHA-256 |
+  |---|---|
+  | `analysis/rebaseline.py` | `fe5c7c74c9e740f6fba935caca888a03395ca7491bad22317deece857a559256` |
+  | `runs/rebaseline/matriz.tsv` | `8654900cd23b9b46e65163a5d106bd6f86113632d2ce621ff962f637cd645c35` |
+  | `scripts/inject-crash.sh` | `1c9bf01b9a100e690f15f2fb4b923f2365c0d923572011cfde37eb0c36c92d55` |
+  | `scripts/inject-jitter.sh` | `7e68962b1b7f508ee84ca7561a20c0bba36c43ea4597d7390e7c8091cd24e529` |
+  | `scripts/rebaseline_matriz.py` | `3531916a863832fd5aea050910111c69f0c9130c0bd325c3ad3f238e44a3533a` |
+  | `scripts/run-rebaseline.sh` | `d95305fee402b1f882d387a40e81d4f83df72d7fe4b6daf810516e0627267366` |
+  | `workload/target/session-workload-0.1.0-SNAPSHOT.jar` | `5eced1363f1b318f533174e967be6a81080bcc95961d0f72a118dc0184dcefaf` |
+
+  SHA-256 da lista acima no formato do `sha256sum` (`<hash> *<caminho>`, em ordem):
+  `e304ba4b719820573fd3cd2bb70525e1160e7c76459b3ce16101766c34bdc34c`. Na VM, conferir arquivo a arquivo
+  com `sha256sum -c`.
+- **Pendente (só na VM):** instante UTC de criação do *cluster* depois do S7 (`--cluster-criado-apos`).
+
 ## DT-013: K8 do *rebaseline* conta `ISPN006010` por vida do processo do nó, PRÉ-REGISTRO (2026-10-23)
 
 > **Aprovada pelo Gestor em 2026-10-23** (pergunta Q1 da V-RB; decisão transmitida ao Senior pelo

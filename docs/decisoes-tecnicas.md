@@ -204,3 +204,53 @@
   ("MISTURAS" em ASCII), e não `new Random(sementeThread)`, que compartilharia o fluxo do
   `KeyGenerator`.
 - **Inalterado:** todo o resto da DT-009 (matriz, sementes, K1..K10, paradas, análise, noites, gates).
+
+## DT-012: semente do `Random` da mistura (`SAL_MISTURA`) e escopo da reprodutibilidade por `--seed` (2026-10-23)
+
+- **Origem:** decisão P2 do Gestor registrada na DT-011 (desenho com sal próprio); implementação no
+  B-43.5 (branch `fix/b43-5-mistura-semeada`, ponta `642d81f`); validação V-B43.5
+  (`docs/validacao-b43-5-2026-10-23.md`). Esta entrada fixa a derivação e o que a Metodologia pode
+  declarar. Vale para todo *jar* que contenha o B-43.5, inclusive o do *rebaseline* (DT-009).
+- **Derivação (S1/S2).** Com `s = sementeThread(seedBase, tid, rep) = seedBase + tid + rep · 1 000 003`
+  (inalterada desde o B-43.7b), cada *thread* de carga tem três geradores `java.util.Random` próprios,
+  nunca compartilhados:
+  - mistura (tipo de cada operação): `randomDaMistura(s) = new Random(sementeMistura(s))`, com
+    `sementeMistura(s) = mix64(s ^ SAL_MISTURA)` e `SAL_MISTURA = 0x4D49535455524153L` ("MISTURAS" em
+    ASCII);
+  - *token* antigo da v3 (DT-008): `new Random(mix64(s ^ SAL_TOKEN))`, `SAL_TOKEN = 0x544F4B454E414E54L`
+    ("TOKENANT");
+  - chave Zipf (`KeyGenerator`): `new Random(s)`, **sem sal** (comportamento anterior, mantido para
+    não mudar o golden nem as sequências já fixadas).
+  `mix64` é o finalizador do SplitMix64 (`MisturaV3.mix64`). Valores congelados por emulação
+  independente (Python) de `java.util.Random` e do SplitMix64: `sementeMistura(42) =
+  −595 519 573 436 187 269`; os 40 primeiros `randomDaMistura(42).nextInt(100)` estão em
+  `MisturaSemeadaTest.NEXT_INT_100_40`.
+- **Rejeitado:** `new Random(s)` para a mistura (o mesmo fluxo do LCG do `KeyGenerator`, sorteio da
+  operação n e chave de índice ≈ n/2 do mesmo estado); `ThreadLocalRandom` (não reprodutível);
+  semente sem a *thread* (`seedBase` ou `seedBase + rep·1 000 003`, que daria a mesma mistura a todas
+  as *threads*).
+- **Limite conhecido da separação.** Os três geradores são posições do mesmo ciclo de 2⁴⁸ do LCG do
+  `java.util.Random`; o sal com o misturador põe os da mistura e do *token* em posições
+  pseudoaleatórias. A chance de duas dessas sequências se sobreporem em N = 10⁶ sorteios é da ordem
+  de 2N/2⁴⁸ ≈ 7·10⁻⁹ por par. O `KeyGenerator`, sem misturador, recebe sementes vizinhas nas *threads*
+  (s, s+1, ...), e por isso o **primeiro** `nextDouble` de cada *thread* é quase igual
+  (≈ 0,608 nas quatro *threads* com `--seed 50000 --rep 1`, emulação da V-B43.5); do segundo sorteio em
+  diante as sequências já divergem. O efeito é uma chave no início do aquecimento, que fica fora da
+  janela de medição. Não muda nada agora; fica registrado.
+- **O que é reprodutível** (mesmo *jar*, mesma `--seed`, mesmo `--rep`, mesmo `--threads`, mesmo
+  `--scenario` e `--mix`): em cada *thread*, a sequência de **intenções**, isto é, os tipos de
+  operação, as chaves Zipf (logo os *slots* da v3), as decisões de *token* antigo e o rodízio de
+  identidades de Login, como prefixo de uma sequência infinita fixa. Evidência: W3, W6, W7 e W8 sobre o
+  `rodarCliente` real; no *smoke* local com 1 *thread*, 179 159 eventos (operação, chave) iguais entre
+  duas execuções com a mesma semente, e nenhuma janela de 256 eventos em comum com outra semente.
+- **O que não é reprodutível:** a intercalação entre *threads*; as latências; as respostas do *grid*
+  e o que depende delas (geração do *slot* lida por um Validate isolado, continuação da tríade depois
+  de Login OK, sucesso das reposições, erros sob falha); o número de operações por *thread* e a
+  fronteira da janela de medição, definidos por tempo (duas execuções iguais medem trechos
+  deslocados da mesma sequência); os `sid` da tríade (`UUID.randomUUID()`). Com mais de uma *thread*,
+  o CSV de duas execuções com a mesma semente **não** é igual, nem como trecho; a igualdade de
+  `return_code` vista no *smoke* com 1 *thread* sem falha não é propriedade geral. S3 não muda (já
+  tinha geradores por ator).
+- **Efeito no texto:** a Metodologia descreve três geradores por *thread* derivados da semente da
+  execução, do índice da *thread* e da repetição, **dois deles com sal próprio** (mistura e *token*),
+  e declara só o escopo acima.

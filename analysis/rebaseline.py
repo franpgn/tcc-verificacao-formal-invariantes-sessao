@@ -467,6 +467,7 @@ def checar_execucao(d, matriz):
     metricas["linhas_b439"] = b
     metricas["configuracao_lida"] = cfg_lida
     metricas["configuracao_confere"] = cfg_confere
+    metricas["falha_efetiva_informativo"] = ex.get("falha_efetiva")   # C5: so relatorio, nao entra em K6
     return {"i": i, "celula": lin["celula"], "fase": lin["fase"], "noite": lin.get("noite"), "cenario": cen,
             "modo": modo, "falha": falha, "seed": seed_mat, "seed_lido": seed_lido, "rep_lido": rep_lido,
             "veredito": veredito, "motivos": motivos, "criterios": crit, "metricas": metricas}
@@ -880,6 +881,7 @@ def piloto(saida, matriz):
         t0, t1 = _instante(ex.get("lancamento_utc")), _instante(ex.get("fim_utc"))
         r["duracao_real_s"] = round(t1 - t0, 3) if t0 is not None and t1 is not None else None
         r["inj_inicio_offset_s"] = ex.get("inj_inicio_offset_s")
+        r["falha_efetiva"] = ex.get("falha_efetiva")   # C5: instante efetivo (F1 parado/reiniciado; F3 netem a +51 s)
         cel[lin["celula"]] = r
     res = {"celulas": cel, "nao_executadas": faltam, "nota": "dados do piloto nunca entram em resultado (PR §8)"}
     gravar_json(Path(saida) / "piloto.json", res)

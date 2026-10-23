@@ -55,6 +55,7 @@ readonly NO_ALVO=isn2 IFACE=eth0  # PR §2
 readonly NOS="isn1 isn2 isn3"
 readonly DEADMAN_ON_ACTIVE=$((F3_DUR + 90))   # 341 s (DT-011)
 readonly NETEM_AMOSTRAS_S="70 280"            # DT-011: amostras de tc qdisc show em +70 s e +280 s
+readonly NETEM_EFETIVA_S=51                   # C5: amostra extra so para relatorio (instante efetivo da F3)
 readonly K1_JANELA_S=60 K1_PERIODO_S=5 K1_TIMEOUT_S=600   # PR §6: K1 e parada (e)
 readonly F1_VOLTA_TIMEOUT_S=180 F1_VOLTA_PERIODO_S=5      # PR §6: parada (e)
 readonly ANCORA_TIMEOUT_S=120 ANCORA_POLL_S=0.2
@@ -645,7 +646,8 @@ gravar_execucao() {
  "netem_amostras": [${E_NETEM}],
  "netem_pos": ${E_NETEM_POS:-null},
  "cluster_pos_f1": ${E_CLUSTER_F1:-null},
- "deadman": ${E_DEADMAN:-null}
+ "deadman": ${E_DEADMAN:-null},
+ "falha_efetiva": ${E_FALHA_EF:-null}
 }
 EOF
 }
@@ -670,13 +672,23 @@ gravar_ispn() {  # K8 (DT-013): por no, total desde a criacao, vida atual (--sin
         "${partes}" "${partes2}" "${partes3}" "${base}" > "${d}/ispn006010.json"
 }
 
+instante_efetivo_f1() {  # C5 (so relatorio): quando isn2 parou e voltou, pelo podman (FinishedAt/StartedAt)
+    local rc=0 fim="" ini="" pj="null" rj="null"
+    fim="$(podman_campo '{{.State.FinishedAt.UnixMilli}}' "${NO_ALVO}")" || rc=$?
+    if [[ "${rc}" -eq 0 && "${fim}" =~ ^[0-9]+$ ]]; then pj="$(ms_para_s $(( fim - E_ANC_MS )))"; fi
+    rc=0; ini="$(podman_campo '{{.State.StartedAt.UnixMilli}}' "${NO_ALVO}")" || rc=$?
+    if [[ "${rc}" -eq 0 && "${ini}" =~ ^[0-9]+$ ]]; then rj="$(ms_para_s $(( ini - E_ANC_MS )))"; fi
+    [[ "${pj}" != null && "${rj}" != null ]] || log "exec i=${E_I}: AVISO: instante efetivo do F1 ilegivel (so relatorio)"
+    E_FALHA_EF="{\"f1_parado_desde_ancora_s\":${pj},\"f1_reiniciado_desde_ancora_s\":${rj}}"
+}
+
 GATE_F3_DADO=0
 rodar_execucao() {  # rodar_execucao "<i> <celula> <cenario> <modo> <falha> <seed>"
     read -r E_I E_CEL E_CEN E_MODO E_FALHA E_SEED <<< "$1"
     E_FASE="$(awk -F'\t' -v i="${E_I}" 'NR > 1 && $1 == i {print $2}' "${MATRIZ_CHECAR}")"
     E_LANC_UTC=""; E_LANC_MS=""; E_ANC_UTC=""; E_ANC_MS=""; E_ANC_DESDE=""; E_DISP_UTC=""; E_DISP_MS=""
     E_OFFSET=""; E_FIM_UTC=""; E_WEXIT=""; E_IEXIT=""; E_VEXIT=""; E_RECUSA_K6=""; E_NETEM=""
-    E_NETEM_POS=""; E_CLUSTER_F1=""; E_DEADMAN=""
+    E_NETEM_POS=""; E_CLUSTER_F1=""; E_DEADMAN=""; E_FALHA_EF=""
     local d rc
     d="$(dir_exec "${E_I}" "${E_CEL}")"
     if [[ -d "${d}" ]]; then
@@ -758,6 +770,11 @@ rodar_execucao() {  # rodar_execucao "<i> <celula> <cenario> <modo> <falha> <see
         log "exec i=${E_I}: ${E_FALHA} disparada a +${E_OFFSET} s da ancora"
         if [[ "${E_FALHA}" == F3 ]]; then
             local a out netem
+            # C5 (so relatorio, nao muda K6): o netem ja esta aplicado logo depois do disparo?
+            dormir_ate $(( E_ANC_MS + NETEM_EFETIVA_S * 1000 ))
+            rc=0; out="$(sudo nsenter -t "${PID_ALVO}" -n tc qdisc show dev "${IFACE}" 2>&1)" || rc=$?
+            netem=false; if [[ "${rc}" -eq 0 && "${out}" == *netem* ]]; then netem=true; fi
+            E_FALHA_EF="{\"netem_efetiva\":{\"alvo_s\":${NETEM_EFETIVA_S},\"offset_s\":$(ms_para_s $(( $(agora_ms) - E_ANC_MS ))),\"netem\":${netem},\"rc\":${rc}}}"
             for a in ${NETEM_AMOSTRAS_S}; do
                 dormir_ate $(( E_ANC_MS + a * 1000 ))
                 rc=0; out="$(sudo nsenter -t "${PID_ALVO}" -n tc qdisc show dev "${IFACE}" 2>&1)" || rc=$?
@@ -770,6 +787,7 @@ rodar_execucao() {  # rodar_execucao "<i> <celula> <cenario> <modo> <falha> <see
         log "exec i=${E_I}: injetor saiu com ${rc}"
         if [[ "${E_FALHA}" == F1 ]]; then
             F1_ATIVA=0
+            instante_efetivo_f1
             local VOLTA_S=""
             if esperar_cluster; then
                 E_CLUSTER_F1="{\"ok\":true,\"espera_s\":${VOLTA_S}}"

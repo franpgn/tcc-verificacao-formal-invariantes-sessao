@@ -254,3 +254,77 @@
 - **Efeito no texto:** a Metodologia descreve três geradores por *thread* derivados da semente da
   execução, do índice da *thread* e da repetição, **dois deles com sal próprio** (mistura e *token*),
   e declara só o escopo acima.
+
+## Complemento da DT-009, parte 1 de 2: matriz e ordem congelada (2026-10-23)
+
+- **Origem:** PR §3 e §9 (`docs/pre-registro-rebaseline-aprovado-2026-10-23.md`); entrega do *runner*
+  (`feature/rebaseline-runner-analise`, ponta `599ea5e`); validação V-RB
+  (`docs/validacao-rebaseline-runner-2026-10-23.md`). São identificadores, não escolhas (PR §9).
+  Registrado antes de qualquer execução do piloto.
+- **Comando:** `python3 -I scripts/rebaseline_matriz.py gerar --ordem-seed 231023 --s0 50000 --saida
+  runs/rebaseline/matriz.tsv`. Cabeçalho mais 132 linhas (piloto, depois as rodadas 1..10), colunas
+  `i fase noite rodada posicao celula cenario modo falha seed`, LF, ASCII.
+- **SHA-256 de `matriz.tsv`:** `8654900cd23b9b46e65163a5d106bd6f86113632d2ce621ff962f637cd645c35`.
+  Conferido pelo Senior com um gerador independente escrito a partir do texto do PR §2..§4 (não do
+  script do Worker), em CPython 3.12.6; o Worker gerou em 3.12.10; mesmos bytes. O arquivo entra no git
+  como `runs/rebaseline/matriz.tsv` no commit de integração do *runner*; o *runner* recusa (exit 4) uma
+  matriz com outro SHA-256. A VM nunca regenera a matriz, então a versão do Python da VM não importa.
+- **Ordem congelada** (`random.Random(231023 * 1000 + r).shuffle` da lista canônica; posição:célula;
+  igual à constante `ORDEM_CONGELADA` de `scripts/test_rebaseline_matriz.py`):
+
+  | Rodada | Ordem (posição 0..11) |
+  |---|---|
+  | 0 (piloto, i = 1000..1011) | S2-sync-F1, S2-async-none, S1-sync-F1, S1-async-none, S2-async-F1, S1-async-F3, S2-async-F3, S2-sync-F3, S1-async-F1, S1-sync-F3, S2-sync-none, S1-sync-none |
+  | 1 | S2-sync-F1, S1-sync-F1, S1-sync-none, S2-sync-none, S1-async-F3, S1-async-none, S2-async-none, S1-sync-F3, S2-async-F3, S1-async-F1, S2-sync-F3, S2-async-F1 |
+  | 2 | S1-async-F3, S2-sync-F1, S1-async-none, S1-sync-none, S2-async-none, S2-sync-none, S1-sync-F1, S2-sync-F3, S2-async-F1, S2-async-F3, S1-async-F1, S1-sync-F3 |
+  | 3 | S1-sync-F1, S2-sync-F3, S2-sync-none, S1-sync-F3, S2-async-none, S2-async-F1, S1-async-F1, S2-sync-F1, S1-async-none, S1-sync-none, S2-async-F3, S1-async-F3 |
+  | 4 | S1-sync-F3, S2-async-none, S1-async-F1, S1-sync-none, S2-sync-F1, S2-async-F3, S1-async-F3, S1-async-none, S2-sync-none, S2-async-F1, S1-sync-F1, S2-sync-F3 |
+  | 5 | S1-sync-none, S1-async-none, S2-sync-F1, S2-async-F3, S2-async-none, S1-async-F3, S2-sync-F3, S2-async-F1, S1-sync-F3, S1-async-F1, S2-sync-none, S1-sync-F1 |
+  | 6 | S1-async-none, S1-sync-F3, S1-async-F1, S2-sync-none, S2-async-none, S2-async-F3, S2-async-F1, S2-sync-F1, S1-async-F3, S1-sync-F1, S2-sync-F3, S1-sync-none |
+  | 7 | S1-async-none, S1-sync-none, S2-sync-F1, S1-async-F1, S2-async-none, S2-async-F3, S2-sync-F3, S1-async-F3, S2-sync-none, S2-async-F1, S1-sync-F3, S1-sync-F1 |
+  | 8 | S2-sync-F1, S1-sync-F3, S2-sync-F3, S1-async-none, S2-async-F1, S1-async-F3, S1-sync-F1, S2-async-none, S2-sync-none, S1-sync-none, S2-async-F3, S1-async-F1 |
+  | 9 | S1-sync-none, S1-async-none, S2-sync-F3, S2-async-none, S2-async-F1, S1-async-F3, S1-sync-F1, S2-sync-none, S1-async-F1, S2-async-F3, S2-sync-F1, S1-sync-F3 |
+  | 10 | S1-sync-F1, S2-async-F1, S1-async-F3, S2-sync-F1, S2-sync-none, S1-sync-none, S1-sync-F3, S2-sync-F3, S2-async-F3, S2-async-none, S1-async-F1, S1-async-none |
+
+- **Índices e sementes:** campanha i = 12·(r − 1) + posição (0..119), piloto i = 1000 + posição,
+  `--seed = 50 000 + 100·i`; R-S2 conferido de forma independente (528 pares (semente da *thread*) com
+  `tid` 0..3 e `rep` 1, nenhum repetido). Primeira F3: i = 1005 no piloto, i = 4 na noite 1, i = 60 + 1 = 61
+  na noite 2 (rodada 6, posição 1).
+- **Parte 2 (pendente, antes do piloto):** SHA da ponta integrada, SHA-256 do jar, SHA-256 do *bundle* da
+  VM e instante de criação do *cluster* depois do S7.
+
+## DT-013 (RASCUNHO, aguarda Gestor): K8 do *rebaseline* conta `ISPN006010` por vida do processo do nó (2026-10-23)
+
+> **RASCUNHO.** Não vale até o Gestor aprovar. Se aprovado, tem de ser registrado e implementado **antes**
+> do piloto (nenhum dado do piloto foi visto). Se rejeitado, esta entrada é removida antes da integração
+> e o K8 literal da DT-009 fica.
+
+- **Origem:** ponto P1 do relatório do *runner* (`docs/relatorio-rebaseline-runner-2026-10-23.md` da
+  branch `feature/rebaseline-runner-analise`); validação V-RB.
+- **Motivo:** `ISPN006010` (`HotRodHeader`: "Conditional operation 'REPLACE_IF_UNMODIFIED' should be
+  used with transactional caches...") é um aviso de primeira ocorrência, emitido uma vez por JVM do
+  servidor (1 por nó nos *smokes* do B-43.7b, B-43.8 e B-43.9, cada nó com uma única JVM). O critério
+  nasceu na V-B43.8 com essa leitura ("aviso de primeira ocorrência; mais do que isso é investigado"). O
+  F1 faz `podman stop`/`start` de `isn2`, o que sobe uma JVM nova, que emite o aviso de novo, e `podman
+  logs` mostra todas as vidas do *container*. Com o texto da DT-009 ("no máximo 1 por nó por vida do
+  *cluster*"), a primeira execução F1 (i = 1000 no piloto, i = 0 na noite 1) daria PARADA sem nenhuma
+  anomalia. O texto da DT-009 foi escrito sem considerar que o F1 reinicia o processo.
+- **Decisão proposta:** K8 continua com papel **parada**, com esta contagem, por nó `n` e depois de cada
+  execução:
+  1. no máximo **1** `ISPN006010` na vida atual do processo (`podman logs --since
+     <.State.StartedAt.Unix> n`); e
+  2. o total de `ISPN006010` em `podman logs n` (desde a criação do *container*) **não maior** que o
+     número de vidas do processo, contado pelas linhas `ISPN080001` ("Infinispan Server ... started") no
+     mesmo `podman logs n`.
+  A regra 2 cobre o trecho que a regra 1 não vê: um segundo aviso na vida antiga de `isn2` emitido nos
+  primeiros ≈ 49 s da execução F1 seguinte, antes do `stop`. Contagem ilegível (`podman logs` ou
+  `podman inspect` com erro, ou campo ausente) não passa em silêncio: `checar` sai com 2 e o *runner* com
+  6 (infraestrutura).
+- **Rejeitado:** manter o texto literal e conferir na VM com um F1 fora do piloto (a regra literal pararia
+  a primeira F1 de qualquer forma, e o ensaio exigiria uma injeção a mais, com `go` próprio); contar só a
+  vida atual (perde o trecho descrito na regra 2); retirar K8 (perderia o sinal de uma segunda ocorrência
+  na mesma JVM).
+- **Efeito:** muda só a forma de contar de K8; o resto da DT-009, DT-010 e DT-011 fica igual. No
+  *runner*: `ispn006010.json` passa a gravar `vidas_por_no` (contagem de `ISPN080001`) e trata `null` em
+  `por_no_desde_ultimo_start` como erro. Na análise: K8 usa as duas regras, com testes (duas vidas com 1
+  aviso cada: ACEITA; uma vida com 2: PARADA; total maior que as vidas: PARADA; contagem `null`: exit 2).

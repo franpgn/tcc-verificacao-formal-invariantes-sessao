@@ -740,6 +740,30 @@ public final class WorkloadMain {
         return seedBase + (long) tid + (long) rep * 1_000_003L;
     }
 
+    /** B-43.5: sal da semente do {@code Random} da mistura: "MISTURAS" em ASCII. */
+    static final long SAL_MISTURA = 0x4D49535455524153L;
+
+    /**
+     * B-43.5: semente do {@code Random} da mistura de uma thread:
+     * {@code mix64(sementeThread ^ SAL_MISTURA)} (funcao pura; dominio separado do
+     * {@link KeyGenerator}, semeado com a propria {@code sementeThread}, e do token antigo,
+     * {@code MisturaV3.sementeToken}).
+     *
+     * @param sementeThread a semente da thread ({@link #sementeThread(long, int, int)})
+     */
+    static long sementeMistura(long sementeThread) {
+        return MisturaV3.mix64(sementeThread ^ SAL_MISTURA);
+    }
+
+    /**
+     * B-43.5: {@code Random} da mistura de uma thread (sorteia o tipo de cada operacao).
+     *
+     * @param sementeThread a semente da thread ({@link #sementeThread(long, int, int)})
+     */
+    static Random randomDaMistura(long sementeThread) {
+        return ThreadLocalRandom.current();
+    }
+
     /**
      * Loop de geração de carga para uma thread; termina quando o tempo
      * limite for atingido ou quando a thread tiver gerado seu alvo de
@@ -750,7 +774,7 @@ public final class WorkloadMain {
                                      Scenario cenario, long seed,
                                      long opsAlvo, AtomicLong totalOps,
                                      BooleanSupplier parar, VersaoMistura mix, MisturaV3 misturaV3) {
-        ThreadLocalRandom r = ThreadLocalRandom.current();
+        Random r = randomDaMistura(seed);
         KeyGenerator chaves = new KeyGenerator(seed);
         IdentidadesMistura ids = new IdentidadesMistura(tid, mix);
         // B-43.7/B-43.7b: estado por thread da v3 (Random proprio do token antigo, semeado pela

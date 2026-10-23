@@ -293,11 +293,10 @@
 - **Parte 2 (pendente, antes do piloto):** SHA da ponta integrada, SHA-256 do jar, SHA-256 do *bundle* da
   VM e instante de criação do *cluster* depois do S7.
 
-## DT-013 (RASCUNHO, aguarda Gestor): K8 do *rebaseline* conta `ISPN006010` por vida do processo do nó (2026-10-23)
+## DT-013: K8 do *rebaseline* conta `ISPN006010` por vida do processo do nó, PRÉ-REGISTRO (2026-10-23)
 
-> **RASCUNHO.** Não vale até o Gestor aprovar. Se aprovado, tem de ser registrado e implementado **antes**
-> do piloto (nenhum dado do piloto foi visto). Se rejeitado, esta entrada é removida antes da integração
-> e o K8 literal da DT-009 fica.
+> **Aprovada pelo Gestor em 2026-10-23** (pergunta Q1 da V-RB; decisão transmitida ao Senior pelo
+> coordenador). Registrada antes de qualquer execução do piloto; implementada antes do piloto.
 
 - **Origem:** ponto P1 do relatório do *runner* (`docs/relatorio-rebaseline-runner-2026-10-23.md` da
   branch `feature/rebaseline-runner-analise`); validação V-RB.
@@ -328,3 +327,37 @@
   *runner*: `ispn006010.json` passa a gravar `vidas_por_no` (contagem de `ISPN080001`) e trata `null` em
   `por_no_desde_ultimo_start` como erro. Na análise: K8 usa as duas regras, com testes (duas vidas com 1
   aviso cada: ACEITA; uma vida com 2: PARADA; total maior que as vidas: PARADA; contagem `null`: exit 2).
+
+## DT-014: execução interrompida no *rebaseline*, PRÉ-REGISTRO (2026-10-23)
+
+- **Origem:** ponto P3 do relatório do *runner* e pergunta Q3 da V-RB
+  (`docs/validacao-rebaseline-runner-2026-10-23.md`); decisão do Gestor de 2026-10-23 (transmitida ao
+  Senior pelo coordenador), registrada antes de qualquer execução do piloto. Complementa a DT-009
+  (PR §6, recusas e reposições).
+- **Contexto:** o *runner* nunca sobrescreve brutos; um `exec-<i>-<celula>` sem `checagem.json` impede a
+  retomada (exit 4). Com a correção C2 da V-RB (gate `go f3` antes de criar o diretório e antes do K1),
+  um `go f3` errado deixa de cair nesse caso; sobram interrupções reais (queda da VM, *tmux* morto,
+  sinal ao *runner*).
+- **Decisão:**
+  1. **Interrompida antes do lançamento do *workload*** (sem `stdout.log` no diretório): o diretório é
+     renomeado para `exec-<i>-<celula>.abortada-<UTC>`, mantido nos brutos, e o **mesmo i** roda de
+     novo, com a mesma semente (ela nunca mediu nada).
+  2. **Interrompida depois do lançamento** (há `stdout.log`): a execução conta como **RECUSADA**
+     (motivo "interrompida"), entra nas paradas (a) e (b) do PR §6 e é reposta no fim da campanha com o
+     próximo i livre, como qualquer recusa isolada.
+- **Efeito:** o *runner* aplica a regra na retomada, registra o caso em `runner.log` e no resumo da fase;
+  `estado` conta a recusa "interrompida". Nada mais da DT-009 muda.
+
+## Decisões do Gestor sobre a V-RB (2026-10-23)
+
+Registro das respostas às perguntas Q1..Q5 de `docs/validacao-rebaseline-runner-2026-10-23.md`
+(transmitidas ao Senior pelo coordenador):
+
+- **Q1:** DT-013 aprovada (acima).
+- **Q2:** correções C2..C5 aprovadas: gate `go f3` antes de criar o `exec-*` e antes do K1; exits do
+  injetor 1 e 4 dão recusa K6 e 2, 3, 5 ou outro dão exit 6; `null` em `por_no_desde_ultimo_start` é
+  erro e `remocao_extra = true` falha K6; instante efetivo da falha registrado só para relatório.
+- **Q3:** regra de execução interrompida aprovada (DT-014).
+- **Q4:** *rebase* da branch do *runner* sobre `642d81f` e *fast-forward* local de
+  `feature/controlador-integracao` depois das correções e da revalidação curta do Senior; sem push.
+- **Q5:** ajustes da checklist do Gestor (seção 8 da V-RB) aprovados.

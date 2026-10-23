@@ -23,7 +23,6 @@ import java.util.function.Supplier;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
@@ -761,7 +760,7 @@ public final class WorkloadMain {
      * @param sementeThread a semente da thread ({@link #sementeThread(long, int, int)})
      */
     static Random randomDaMistura(long sementeThread) {
-        return ThreadLocalRandom.current();
+        return new Random(sementeMistura(sementeThread));
     }
 
     /**

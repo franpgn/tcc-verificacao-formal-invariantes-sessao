@@ -839,10 +839,8 @@ public class SessionOps {
             // B-43.9 (DT-002): o incremento que atinge o limite abre um periodo de bloqueio sem cascata.
             boolean atingeLimite = before.status() == IdentityState.Status.OPEN
                     && after.status() == IdentityState.Status.BLOCKED;
-            // regra D: nao substitui um periodo de bloqueio ja concluido
-            MarcoBloqueio anterior = marcos.get(identidade);
-            atingeLimite = atingeLimite && !(anterior != null && anterior.identidadeConfirmada()
-                    && anterior.cascataConcluida());
+            // B-43.9 (D4, V-B43.9): o limite so e atingido a partir de OPEN; um marco que esteja no mapa e
+            // de um periodo que ja acabou (por exemplo, unblock com resposta perdida). O marco novo substitui.
             if (atingeLimite) {
                 marcos.put(identidade, MarcoBloqueio.emCurso(MarcoBloqueio.Tipo.LIMITE));
             }
@@ -916,6 +914,12 @@ public class SessionOps {
             IdentityState st = identities.get(identidade);
             if (st == null) {
                 st = IdentityState.criar(identidade, Instant.now());
+            }
+            // B-43.9 (F-1 da V-B43.9): identidade lida fora de BLOCKED => o periodo anterior terminou
+            // (unblock aplicado, mesmo com resposta perdida); o marco que ficou no mapa nao vale.
+            if (st.status() != IdentityState.Status.BLOCKED) {
+                anterior = null;
+                preserva = false;
             }
             // B-43.9 (DT-002): marco provisorio (identidade ainda nao confirmada) durante o put; depois
             // do put reconhecido, marcoIdentidadeNs = agora e a cascata PENDENTE.

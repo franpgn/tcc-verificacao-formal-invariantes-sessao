@@ -63,8 +63,10 @@ readonly EST_EXEC_S=420           # estimativa por execucao (portao 60 s + JVM/c
 readonly LOCK=/var/lock/tcc-vm.lock
 readonly CLASSE_VERIFICADOR=br.unipampa.tcc.session.VerificadorSanidade
 readonly ANCORA_RE='^Warm-up ate \+'
-# exits documentados dos injetores (inject-crash.sh: 0..4; inject-jitter.sh: 0..5); outro exit = infra (6)
-readonly INJ_EXITS_DOCUMENTADOS=" 0 1 2 3 4 5 "
+# C3/P2 (decisao do Gestor de 23/10): exits do injetor que seguem a fase: 0 (normal), 1 (generico) e 4 (no
+# nao encontrado ou parado), estes dois como recusa K6 (podem ser transitorios). 2 (uso), 3 (dependencia),
+# 5 (netem rejeitado pelo kernel) e qualquer outro sao deterministicos ou inesperados: exit 6.
+readonly INJ_EXITS_SEGUEM=" 0 1 4 "
 
 PODMAN="${PODMAN:-sudo podman}"
 export PODMAN
@@ -795,11 +797,11 @@ rodar_execucao() {  # rodar_execucao "<i> <celula> <cenario> <modo> <falha> <see
             fi
             F3_ATIVA=0
         fi
-        if [[ " ${INJ_EXITS_DOCUMENTADOS} " != *" ${E_IEXIT} "* ]]; then
+        if [[ "${INJ_EXITS_SEGUEM}" != *" ${E_IEXIT} "* ]]; then
             rc=0; wait "${WPID}" || rc=$?
             E_WEXIT="${rc}"; WPID=""
             gravar_execucao "${d}"
-            finalizar 6 "infra: injetor de i=${E_I} saiu com exit inesperado ${E_IEXIT}"
+            finalizar 6 "infra: injetor de i=${E_I} saiu com exit ${E_IEXIT} (so 0, 1 e 4 seguem; C3/P2)"
         fi
     fi
     rc=0; wait "${WPID}" || rc=$?

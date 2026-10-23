@@ -14,12 +14,21 @@ package br.unipampa.tcc.session;
  *   <li>{@code marcoCascataNs}: instante logo DEPOIS da ultima invalidacao da cascata; {@link #PENDENTE}
  *       enquanto a cascata nao terminou (ou se ela terminou em erro). No LIMITE (sem cascata), igual a
  *       {@code marcoIdentidadeNs}.</li>
+ *   <li>{@code blockEmErro} (B-43.9, regra D): o ULTIMO {@code block} desta identidade terminou em
+ *       {@code ERROR_*} depois de tentar o {@code put(BLOCKED)} (cascata parcial ou efeito
+ *       desconhecido); a cascata fica PENDENTE ate um {@code block} concluido ou um {@code unblock}.
+ *       Distingue a cascata em curso (janela) da cascata incompleta.</li>
  * </ul>
  *
  * <p>E estado do observador do experimento (como o mapa de invalidacoes confirmadas), nao da
  * aplicacao: nenhum desfecho de operacao depende dele.</p>
  */
-record MarcoBloqueio(Tipo tipo, long marcoIdentidadeNs, long marcoCascataNs) {
+record MarcoBloqueio(Tipo tipo, long marcoIdentidadeNs, long marcoCascataNs, boolean blockEmErro) {
+
+    /** Marco sem erro (cascata em curso ou concluida). */
+    MarcoBloqueio(Tipo tipo, long marcoIdentidadeNs, long marcoCascataNs) {
+        this(tipo, marcoIdentidadeNs, marcoCascataNs, false);
+    }
 
     /** Origem do bloqueio. */
     enum Tipo { ADMIN, LIMITE }
@@ -40,5 +49,10 @@ record MarcoBloqueio(Tipo tipo, long marcoIdentidadeNs, long marcoCascataNs) {
     /** A cascata do periodo de bloqueio terminou sem erro (ou nao existe, no LIMITE). */
     boolean cascataConcluida() {
         return marcoCascataNs != PENDENTE;
+    }
+
+    /** Regra D: cascata que nao vai terminar (o ultimo block terminou em erro). */
+    boolean cascataIncompleta() {
+        return blockEmErro && !cascataConcluida();
     }
 }

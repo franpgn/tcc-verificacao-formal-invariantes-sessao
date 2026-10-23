@@ -193,6 +193,8 @@ public class SessionOps {
      *       direto no duble; em producao deve dar 0);</li>
      *   <li>identidade ainda nao confirmada, ou {@code t0Sessao < marcoIdentidadeNs}:
      *       {@code i2_concorrentes} (corrida do observador, DT-001; nao e violacao);</li>
+     *   <li>{@code marcoIdentidadeNs <= t0Sessao} e o ultimo {@code block} terminou em erro (regra D):
+     *       {@link #I2_CASCATA_INCOMPLETA} no auditor (fora de {@code S_viol});</li>
      *   <li>{@code marcoIdentidadeNs <= t0Sessao}, cascata em curso ou {@code t0Sessao < marcoCascataNs}:
      *       {@link #I2_JANELA_CASCATA} no auditor (fora de {@code S_viol});</li>
      *   <li>{@code t0Sessao >= marcoCascataNs} (cascata concluida): I2; o rastro classifica
@@ -208,6 +210,12 @@ public class SessionOps {
         }
         if (!m.identidadeConfirmada() || t0Sessao < m.marcoIdentidadeNs()) {
             contar(i2Concorrentes, i2ConcorrentesTotal);
+            return;
+        }
+        if (m.cascataIncompleta()) {
+            // B-43.9, regra D: o ultimo block desta identidade terminou em erro (cascata parcial).
+            auditor.registrarViolacao(I2_CASCATA_INCOMPLETA, sid, "valida sob bloqueio, cascata do block em erro");
+            contar(i2CascataIncompleta, null);
             return;
         }
         if (!m.cascataConcluida() || t0Sessao < m.marcoCascataNs()) {
@@ -821,6 +829,7 @@ public class SessionOps {
     /** O4, incrementFailure. */
     public OpResult incrementFailure(String identidade) {
         long t0 = System.nanoTime();
+        boolean marcaLimite = false;
         try {
             IdentityState before = identities.get(identidade);
             if (before == null) {
@@ -830,10 +839,16 @@ public class SessionOps {
             // B-43.9 (DT-002): o incremento que atinge o limite abre um periodo de bloqueio sem cascata.
             boolean atingeLimite = before.status() == IdentityState.Status.OPEN
                     && after.status() == IdentityState.Status.BLOCKED;
+            // regra D: nao substitui um periodo de bloqueio ja concluido
+            MarcoBloqueio anterior = marcos.get(identidade);
+            atingeLimite = atingeLimite && !(anterior != null && anterior.identidadeConfirmada()
+                    && anterior.cascataConcluida());
             if (atingeLimite) {
                 marcos.put(identidade, MarcoBloqueio.emCurso(MarcoBloqueio.Tipo.LIMITE));
             }
+            marcaLimite = atingeLimite;
             identities.put(identidade, after);
+            marcaLimite = false;
             if (atingeLimite) {
                 long agora = System.nanoTime();
                 marcos.put(identidade, new MarcoBloqueio(MarcoBloqueio.Tipo.LIMITE, agora, agora));
@@ -847,6 +862,11 @@ public class SessionOps {
             emitir(OP_INCREMENT_FAILURE, t0, System.nanoTime(), r, identidade);
             return r;
         } catch (RuntimeException e) {
+            if (marcaLimite) {
+                // B-43.9: put que lancou (efeito desconhecido); sem cascata, o marco LIMITE fecha aqui.
+                long agora = System.nanoTime();
+                marcos.put(identidade, new MarcoBloqueio(MarcoBloqueio.Tipo.LIMITE, agora, agora));
+            }
             latency.record("inc_failure", t0);
             OpResult r = ClassificadorDeErro.classificar(e);
             emitir(OP_INCREMENT_FAILURE, t0, System.nanoTime(), r, identidade);
@@ -885,6 +905,13 @@ public class SessionOps {
      */
     public OpResult block(String identidade) {
         long t0 = System.nanoTime();
+        // B-43.9, regra D: um periodo de bloqueio que ja teve cascata concluida (sem unblock depois)
+        // mantem o marco, mesmo que este block termine em erro. O marco de um block anterior em erro
+        // (cascata incompleta) cede o marcoIdentidadeNs, que e anterior.
+        MarcoBloqueio anterior = marcos.get(identidade);
+        boolean preserva = anterior != null && anterior.identidadeConfirmada() && anterior.cascataConcluida();
+        boolean putTentado = false;
+        MarcoBloqueio meu = null;
         try {
             IdentityState st = identities.get(identidade);
             if (st == null) {
@@ -892,10 +919,16 @@ public class SessionOps {
             }
             // B-43.9 (DT-002): marco provisorio (identidade ainda nao confirmada) durante o put; depois
             // do put reconhecido, marcoIdentidadeNs = agora e a cascata PENDENTE.
-            marcos.put(identidade, MarcoBloqueio.emCurso(MarcoBloqueio.Tipo.ADMIN));
+            if (!preserva && (anterior == null || !anterior.identidadeConfirmada())) {
+                marcos.put(identidade, MarcoBloqueio.emCurso(MarcoBloqueio.Tipo.ADMIN));
+            }
+            putTentado = true;
             identities.put(identidade, st.bloquear(Instant.now()));
-            MarcoBloqueio meu = new MarcoBloqueio(MarcoBloqueio.Tipo.ADMIN, System.nanoTime(), MarcoBloqueio.PENDENTE);
-            marcos.put(identidade, meu);
+            if (!preserva) {
+                meu = new MarcoBloqueio(MarcoBloqueio.Tipo.ADMIN, identidadeDesde(anterior, System.nanoTime()),
+                        MarcoBloqueio.PENDENTE);
+                marcos.put(identidade, meu);
+            }
             // B-43.6: copia das confirmacoes ANTES de iniciar a varredura; cada entrada e checada
             // contra a copia (uma confirmacao que surge durante a varredura e corrida, nao I1).
             java.util.Map<String, SessionState.Motivo> confirmadasAntes =
@@ -928,17 +961,38 @@ public class SessionOps {
             });
             }
             // B-43.9: a cascata terminou (depois da ultima invalidacao).
-            marcos.replace(identidade, meu, new MarcoBloqueio(meu.tipo(), meu.marcoIdentidadeNs(), System.nanoTime()));
+            if (meu != null) {
+                marcos.replace(identidade, meu, new MarcoBloqueio(meu.tipo(), meu.marcoIdentidadeNs(), System.nanoTime()));
+            }
             latency.record("block_ok", t0);
             OpResult r = OpResult.okNoop();
             emitir(OP_BLOCK, t0, System.nanoTime(), r, identidade);
             return r;
         } catch (RuntimeException e) {
+            // B-43.9, regra D: block em erro depois de tentar o put(BLOCKED). Put reconhecido (cascata
+            // parcial, inclusive conflito esgotado): o marco fica com a cascata PENDENTE. Put que lancou
+            // (efeito desconhecido): marcoIdentidadeNs = instante deste catch. Nos dois casos o marco e
+            // marcado blockEmErro: leituras posteriores sao I2_CASCATA_INCOMPLETA, nunca "sem marco".
+            if (putTentado && !preserva) {
+                long ident = meu != null ? meu.marcoIdentidadeNs() : identidadeDesde(anterior, System.nanoTime());
+                marcos.put(identidade, new MarcoBloqueio(MarcoBloqueio.Tipo.ADMIN, ident, MarcoBloqueio.PENDENTE, true));
+            }
             latency.record("block_err", t0);
             OpResult r = ClassificadorDeErro.classificar(e);
             emitir(OP_BLOCK, t0, System.nanoTime(), r, identidade);
             return r;
         }
+    }
+
+    /**
+     * B-43.9: marcoIdentidadeNs de um block novo: {@code agora}, ou o de um marco anterior com a
+     * identidade ja confirmada (block anterior em erro), se for mais antigo.
+     */
+    private static long identidadeDesde(MarcoBloqueio anterior, long agora) {
+        if (anterior != null && anterior.identidadeConfirmada()) {
+            return Math.min(anterior.marcoIdentidadeNs(), agora);
+        }
+        return agora;
     }
 
     /**

@@ -46,6 +46,10 @@
 
 ## DT-004: tolerâncias de estacionariedade da mistura v3, PRÉ-REGISTRO (2026-10-22)
 
+> **Nota de remissão (2026-10-22):** a **Premissa** (`PERIODO_TOKEN_ANTIGO = 20`) e a tolerância de
+> **C3** (5,00 % ± 0,10 p.p.) abaixo estão **SUBSTITUÍDAS por DT-008** a partir do B-43.7b. A margem
+> de fronteira de C3/C5 está em DT-007. O texto original foi mantido sem edição.
+
 - **Origem:** adendo do B-43.7 (`validacao-b43-2-adendo-b43-7-2026-10-22.md`, `ecc79cf`), seção 3,
   critérios C1..C3; aprovadas pelo Gestor em 2026-10-22, **antes** de qualquer execução de v3.
 - **Premissa:** q = 5 % de Validate isolados lendo o *token* antigo (`PERIODO_TOKEN_ANTIGO = 20`),
@@ -64,9 +68,70 @@
 
 ## DT-005: `--mix` com padrão `v2`; o *baseline* passa `--mix v3` (2026-10-22)
 
+> **Nota de remissão (2026-10-22):** esclarecida por DT-006 (trava por faixa e reposição que falha).
+> O texto original foi mantido sem edição.
+
 - **Origem:** adendo do B-43.7, seção 6, ponto 2; decisão do Gestor de 2026-10-22.
 - **Decisão:** o padrão do `--mix` continua `v2` (os testes existentes fixam isso). Toda execução de
   medição (B-42.3/B-43.3b, *rebaseline*, matriz) passa `--mix v3` explicitamente, e o *dry-run*/stdout
   registram a versão.
 - **Também aprovado no mesmo dia:** a trava por faixa de *slot* no Logout isolado e a geração 0
   INVALID na carga de v3. As duas são artefatos declarados do *workload*.
+
+## DT-006: esclarecimento de DT-005, trava por faixa e reposição que falha (2026-10-22)
+
+- **Origem:** V-B43.7, observação O2 e ponto (iii) (`validacao-b43-7-2026-10-22.md`); decisão do
+  Gestor de 2026-10-22. Esclarece DT-005 sem mudar nenhuma tolerância.
+- **Trava:** a trava do Logout isolado da v3 é por **faixa** de *slot* (`k mod 1024`), não por *slot*.
+  Logouts isolados de *slots* diferentes com o mesmo `k mod 1024` também se serializam no cliente. A
+  espera pela trava fica fora da latência medida (`t0` é tomado dentro de `ops.logout`). A Metodologia
+  deve dizer "faixa de *slot*".
+- **Reposição que falha:** se a reposição VALID de `chave(k, g+1)` falhar, a geração **não** avança. Os
+  Validate do *slot* continuam na geração `g`, já invalidada, até o próximo Logout isolado do *slot*,
+  que vira no-op. É a única escolha que mantém Validate NOT_FOUND = 0 e não ressuscita chave.
+- **Efeito:** em execução sem falha injetada, `reposicao_erro = 0` continua sendo condição de C5. Em
+  execução com falha injetada, `reposicao_erro` e `logout_noop` são métricas reportadas, não critério.
+
+## DT-007: esclarecimento de DT-004, margem de fronteira em C3/C5 (2026-10-22)
+
+- **Origem:** V-B43.7, ponto (ii); decisão do Gestor de 2026-10-22. Esclarece DT-004 sem relaxar
+  nenhuma tolerância.
+- **Decisão:** nas comparações de contagem entre o stdout e o CSV de C3 (`validate_isolados`) e de C5
+  (`logout_isolados`), admite-se uma diferença de **até 4 eventos, igual ao número de *threads*** da
+  execução, na fronteira da janela de medição. Os contadores de janela e o evento do CSV são avaliados
+  em instantes diferentes, e cada *thread* pode ter no máximo uma operação de cada lado da fronteira.
+- **Limites:** a margem vale só para C3 e C5. Não se aplica a C1 nem a C2. Com outro número de
+  *threads*, a margem é esse número. O valor medido da diferença é **sempre** reportado, mesmo quando
+  for 0.
+
+## DT-008: *token* antigo por sorteio de Bernoulli semeado; C3 por IC binomial, PRÉ-REGISTRO (2026-10-22)
+
+- **Origem:** V-B43.7, observação O3; decisão do Gestor de 2026-10-22; implementação no B-43.7b.
+  **Substitui** a Premissa e a tolerância de C3 de DT-004 (que ficam no texto original, com nota de
+  remissão).
+- **Rejeitado:** manter o *token* antigo como contador determinístico ("1 em cada 20 Validates
+  isolados, por *thread*") e descrevê-lo assim na Metodologia. Um contador periódico não é o modelo de
+  q que a Metodologia quer declarar, e dá a C3 uma precisão artificial (erro < 10⁻⁴ p.p.).
+- **Decisão:** cada Validate isolado da v3 lê o *token* antigo com probabilidade **p = 0,05**, por um
+  sorteio de Bernoulli independente. O sorteio usa um `Random` **próprio de cada *thread***, separado
+  do `Random` da mistura e do `KeyGenerator`, semeado de forma determinística a partir da semente da
+  execução e do índice da *thread* (derivação fixada no prompt do B-43.7b). O `Random` da mistura não
+  é consumido. Mesma semente, mesma sequência de *tokens* antigos, alinhado à reprodutibilidade por
+  `--seed` do B-43.5.
+- **C3, nova tolerância:** com `n = validate_isolados` (stdout) e `k = token_antigo` (stdout) da
+  execução, C3 passa se `|k/n − 0,05| ≤ z · √(0,05 · 0,95 / n)`, com **z = 3,2905** (bilateral,
+  99,9 %). É a região de aceitação do teste de H0: p = 0,05 ao nível de 0,1 %, pela aproximação normal
+  da binomial, válida porque n · 0,05 · 0,95 ≥ 100 (o script de análise recusa a execução, como FALHA
+  de sanidade, se não valer). O relatório de cada execução mostra k, n, a fração e a meia-largura.
+- **Referência numérica (só ilustração, com os n do B-43.7):** n = 245 204 (S1 sync 120 s) dá
+  ± 0,145 p.p.; n = 974 990 (S2 sync 120 s) dá ± 0,073 p.p.; n = 1 338 556 (S1 sync 600 s) dá
+  ± 0,062 p.p. A banda é mais larga que os antigos ± 0,10 p.p. para n < ≈ 514 000 e mais estreita
+  acima disso. Não é relaxamento: com o sorteio, uma banda fixa de ± 0,10 p.p. reprovaria por acaso
+  cerca de 2 % das execuções de 120 s em S1 (2,3 % com n = 245 204), e o IC fixa essa chance em
+  0,1 % por execução.
+- **Inalterado:** C1 (terços ≤ 1,0 p.p.; décimos ≤ 2,0 p.p. em execuções ≥ 600 s), C2 (fração INVALID
+  em [4,5 %; 6,5 %]), a parte de C3 que compara `validate_isolados` do stdout com o CSV (DT-007) e as
+  definições de DT-004. Nenhuma outra tolerância muda.
+- **Validade:** vale para toda execução v3 feita com o *jar* do B-43.7b ou posterior. Os *smokes* do
+  B-43.7 e do B-43.8 (contador determinístico) continuam válidos como *smokes* sob a regra antiga e não
+  são resultado. O *rebaseline* S1/S2 roda depois do B-43.7b.

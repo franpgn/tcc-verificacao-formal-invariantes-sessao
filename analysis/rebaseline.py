@@ -597,6 +597,289 @@ def matrizes(saida, tsv):
     return ler_matriz(caminhos)
 
 
+# ============================================================================= tabelas (host: numpy/scipy)
+
+CENARIOS = ("S1", "S2")
+MODOS = ("sync", "async")
+FALHAS = ("none", "F1", "F3")
+
+
+def operacoes_de(cenario):
+    return OPERACOES_S1 if cenario == "S1" else OPERACOES_S2
+
+
+def rotulos_contrastes(_dados=None):
+    """Lista canonica ORDENADA dos rotulos "<tipo>|<cenario>|<modo ou falha>|<operacao>" (PR §7). Fixa,
+    independente dos dados: o indice k de cada contraste (semente do bootstrap) nao depende do que existe."""
+    rot = []
+    for cen in CENARIOS:
+        for op in operacoes_de(cen):
+            for f in ("F1", "F3"):
+                for modo in MODOS:
+                    rot.append("%s-none|%s|%s|%s" % (f, cen, modo, op))
+            for falha in FALHAS:
+                rot.append("async-sync|%s|%s|%s" % (cen, falha, op))
+    return sorted(rot)
+
+
+def lados_do_contraste(rot):
+    """(chave_a, chave_b) com contraste = media(b) - media(a); chave = (cenario, modo, falha, operacao)."""
+    tipo, cen, x, op = rot.split("|")
+    if tipo == "async-sync":
+        return (cen, "sync", x, op), (cen, "async", x, op)
+    return (cen, x, "none", op), (cen, x, tipo.split("-")[0], op)
+
+
+def _p99_por_execucao(execs):
+    """Cada execucao e a lista de latencias validas ou o seu p99 ja calculado; sem p99 fica de fora."""
+    out = []
+    for x in execs:
+        v = p99(x) if isinstance(x, (list, tuple)) else x
+        if v is not None:
+            out.append(float(v))
+    return out
+
+
+def bootstrap_diferenca(execs_a, execs_b, k, n_boot=N_BOOT):
+    """PR §7: diferenca das medias dos p99 por execucao (b - a) e IC 95 % por bootstrap percentil,
+    reamostrando EXECUCOES com reposicao, independentemente nas duas celulas, com
+    numpy.random.default_rng(SeedSequence([BOOT_SEED, k]))."""
+    import numpy as np
+    a = np.asarray(_p99_por_execucao(execs_a), dtype=float)
+    b = np.asarray(_p99_por_execucao(execs_b), dtype=float)
+    rng = np.random.default_rng(np.random.SeedSequence([BOOT_SEED, k]))
+    ia = rng.integers(0, len(a), size=(n_boot, len(a)))
+    ib = rng.integers(0, len(b), size=(n_boot, len(b)))
+    difs = b[ib].mean(axis=1) - a[ia].mean(axis=1)
+    lo, hi = np.percentile(difs, [2.5, 97.5])
+    return float(b.mean() - a.mean()), float(lo), float(hi)
+
+
+def calcular_contrastes(dados, ordem=None):
+    """dados: {(cenario, modo, falha, operacao): [p99 por execucao]}. Devolve {rotulo: resultado}; contraste so
+    estimado com >= MIN_EXEC_CONTRASTE execucoes com p99 em cada celula (PR §7)."""
+    from scipy.stats import mannwhitneyu
+    rots = rotulos_contrastes()
+    idx = {r: k for k, r in enumerate(rots)}
+    out = {}
+    for rot in (rots if ordem is None else ordem):
+        k = idx[rot]
+        ka, kb = lados_do_contraste(rot)
+        a = _p99_por_execucao(dados.get(ka, []))
+        b = _p99_por_execucao(dados.get(kb, []))
+        r = {"k": k, "a": "-".join(ka[:3]), "b": "-".join(kb[:3]), "operacao": ka[3], "n_a": len(a), "n_b": len(b),
+             "media_a": sum(a) / len(a) if a else None, "media_b": sum(b) / len(b) if b else None}
+        if len(a) < MIN_EXEC_CONTRASTE or len(b) < MIN_EXEC_CONTRASTE:
+            r.update({"estimado": False, "motivo": "não estimado (n insuficiente)", "dif": None, "ic95": None,
+                      "p_mann_whitney": None, "significativo": None})
+        else:
+            dif, lo, hi = bootstrap_diferenca(a, b, k)
+            p = float(mannwhitneyu(b, a, alternative="two-sided", method="auto").pvalue)
+            p = None if p != p else p
+            r.update({"estimado": True, "motivo": None, "dif": dif, "ic95": [lo, hi], "p_mann_whitney": p,
+                      "significativo": p is not None and p < ALFA})
+        out[rot] = r
+    return {r: out[r] for r in sorted(out)}
+
+
+def _sha256(p):
+    import hashlib
+    h = hashlib.sha256()
+    with open(p, "rb") as fh:
+        for b in iter(lambda: fh.read(1 << 20), b""):
+            h.update(b)
+    return h.hexdigest()
+
+
+def execucoes_aceitas(saida):
+    return [c for c in ler_checagens(saida) if c.get("veredito") == "ACEITA" and c.get("fase") in FASES_CAMPANHA]
+
+
+def ms(v):
+    """ns -> ms com 2 casas e virgula decimal no formato {,} do LaTeX."""
+    txt = ("%.2f" % (abs(v) / 1e6)).replace(".", "{,}")
+    return ("$-$" + txt) if v < 0 and txt.strip("0{,}") else txt
+
+
+def variacao_tex(c):
+    if not c or not c["estimado"]:
+        return "—"
+    s = ("+" if c["dif"] >= 0 else "") + ms(c["dif"])
+    s += " [%s; %s]" % (ms(c["ic95"][0]), ms(c["ic95"][1]))
+    if c["p_mann_whitney"] is None or c["p_mann_whitney"] >= ALFA:
+        s += " (n.s.)"
+    return s
+
+
+def media_tex(celulas, celula, op):
+    x = (celulas.get(celula) or {}).get(op)
+    return ms(x["media"]) if x and x["n_execucoes_com_p99"] else "—"
+
+
+def cabecalho_tex(meta, titulo):
+    return ("%% %s\n%% Gerado por analysis/rebaseline.py tabelas em %s (UTC)\n%% SHA-256 do jar: %s\n"
+            "%% SHA-256 da matriz: %s\n%% p99 por execucao (ms), media das execucoes aceitas; variacao = diferenca "
+            "das medias, IC 95 %% por bootstrap de execucoes; (n.s.) = Mann-Whitney com p >= 0{,}05; "
+            "— = nao estimado (menos de %d execucoes com p99)\n"
+            % (titulo, meta["data"], ", ".join(meta["jar_sha256"]) or "desconhecido", meta["matriz_sha256"],
+               MIN_EXEC_CONTRASTE))
+
+
+def tabela_falha_tex(f, celulas, contr, meta):
+    linhas = [cabecalho_tex(meta, "Tabela de p99 sem falha x %s (rebaseline, DT-009)" % f),
+              "\\begin{tabular}{llllllll}", "\\toprule",
+              " & & \\multicolumn{3}{c}{DIST\\_SYNC} & \\multicolumn{3}{c}{DIST\\_ASYNC} \\\\",
+              "Cenário & Operação & Sem falha & %s & Variação [IC 95 \\%%] & Sem falha & %s & Variação [IC 95 \\%%] \\\\"
+              % (f, f), "\\midrule"]
+    for cen in CENARIOS:
+        for op in operacoes_de(cen):
+            cols = [cen, op]
+            for modo in MODOS:
+                cols += [media_tex(celulas, "%s-%s-none" % (cen, modo), op),
+                         media_tex(celulas, "%s-%s-%s" % (cen, modo, f), op),
+                         variacao_tex(contr.get("%s-none|%s|%s|%s" % (f, cen, modo, op)))]
+            linhas.append(" & ".join(cols) + " \\\\")
+    linhas += ["\\bottomrule", "\\end{tabular}", ""]
+    return "\n".join(linhas)
+
+
+def tabela_async_sync_tex(contr, meta):
+    linhas = [cabecalho_tex(meta, "Contrastes ASYNC - SYNC do p99 (rebaseline, DT-009)"),
+              "\\begin{tabular}{lllll}", "\\toprule",
+              "Cenário & Operação & Sem falha & F1 & F3 \\\\", "\\midrule"]
+    for cen in CENARIOS:
+        for op in operacoes_de(cen):
+            cols = [cen, op] + [variacao_tex(contr.get("async-sync|%s|%s|%s" % (cen, falha, op))) for falha in FALHAS]
+            linhas.append(" & ".join(cols) + " \\\\")
+    linhas += ["\\bottomrule", "\\end{tabular}", ""]
+    return "\n".join(linhas)
+
+
+def tabelas(saida, tsv, destino):
+    """PR §7, so execucoes ACEITAS da campanha e das reposicoes (o piloto nunca entra)."""
+    import statistics
+    from datetime import datetime, timezone
+    destino = Path(destino)
+    destino.mkdir(parents=True, exist_ok=True)
+    aceitas = execucoes_aceitas(saida)
+    por_exec = []
+    dados = defaultdict(list)
+    jars = set()
+    for c in sorted(aceitas, key=lambda x: x["i"]):
+        d = Path(saida) / c["_dir"]
+        ex = ler_json(d / "execucao.json", {}) or {}
+        if ex.get("jar_sha256"):
+            jars.add(ex["jar_sha256"])
+        st = estatisticas_por_operacao(ler_csv_eventos(d / "rep-001.csv", latencias=True), c["cenario"])
+        for op, v in st.items():
+            por_exec.append(dict({"i": c["i"], "celula": c["celula"], "cenario": c["cenario"], "modo": c["modo"],
+                                  "falha": c["falha"], "operacao": op}, **v))
+            if op in VALIDOS:
+                dados[(c["cenario"], c["modo"], c["falha"], op)].append(v["p99"])
+    celulas = {}
+    for (cen, modo, falha, op), vals in sorted(dados.items()):
+        v = [x for x in vals if x is not None]
+        celulas.setdefault("%s-%s-%s" % (cen, modo, falha), {})[op] = {
+            "n_execucoes": len(vals), "n_execucoes_com_p99": len(v),
+            "media": statistics.fmean(v) if v else None, "mediana": statistics.median(v) if v else None,
+            "minimo": min(v) if v else None, "maximo": max(v) if v else None}
+    contr = calcular_contrastes(dados)
+    meta = {"data": datetime.now(timezone.utc).strftime("%Y-%m-%d"), "jar_sha256": sorted(jars),
+            "matriz_sha256": _sha256(tsv), "execucoes_aceitas": len(aceitas),
+            "comparacoes_estimadas": sum(1 for x in contr.values() if x["estimado"]),
+            "nota_multiplicidade": "IC sem correcao; contagem de comparacoes declarada (PR §7)"}
+    if len(jars) > 1:
+        meta["aviso"] = "mais de um SHA-256 de jar entre as execucoes aceitas"
+    res = dict(meta, celulas=celulas, contrastes=contr, por_execucao=por_exec)
+    gravar_json(destino / "rebaseline-resultados.json", res)
+    cols = ["i", "celula", "cenario", "modo", "falha", "operacao", "n", "p50", "p95", "p99", "p999", "vazao_por_s",
+            "contagens"]
+    with open(destino / "por-execucao.csv", "w", newline="", encoding="utf-8") as fh:
+        w = csv.writer(fh, lineterminator="\n")
+        w.writerow(cols)
+        for r in por_exec:
+            w.writerow([json.dumps(r[k], sort_keys=True) if k == "contagens" else r[k] for k in cols])
+    ccols = ["rotulo", "k", "a", "b", "operacao", "n_a", "n_b", "media_a", "media_b", "estimado", "dif", "ic95_lo",
+             "ic95_hi", "p_mann_whitney", "significativo", "motivo"]
+    with open(destino / "contrastes.csv", "w", newline="", encoding="utf-8") as fh:
+        w = csv.writer(fh, lineterminator="\n")
+        w.writerow(ccols)
+        for rot, r in contr.items():
+            ic = r["ic95"] or [None, None]
+            w.writerow([rot, r["k"], r["a"], r["b"], r["operacao"], r["n_a"], r["n_b"], r["media_a"], r["media_b"],
+                        r["estimado"], r["dif"], ic[0], ic[1], r["p_mann_whitney"], r["significativo"], r["motivo"]])
+    (destino / "tabela5-f1.tex").write_bytes(tabela_falha_tex("F1", celulas, contr, meta).encode("utf-8"))
+    (destino / "tabela6-f3.tex").write_bytes(tabela_falha_tex("F3", celulas, contr, meta).encode("utf-8"))
+    (destino / "tabela-async-sync.tex").write_bytes(tabela_async_sync_tex(contr, meta).encode("utf-8"))
+    return res
+
+
+# ============================================================================= piloto
+
+def _instante(iso):
+    from datetime import datetime, timezone
+    if not iso:
+        return None
+    base = iso.rstrip("Z")
+    fmt = "%Y-%m-%dT%H:%M:%S.%f" if "." in base else "%Y-%m-%dT%H:%M:%S"
+    return datetime.strptime(base, fmt).replace(tzinfo=timezone.utc).timestamp()
+
+
+def piloto(saida, matriz):
+    """Rodada 0 (PR §8): por celula, veredito, motivos, n por operacao, Validate isolados por terco e a chance
+    aproximada de falsa recusa de C1 (aproximacao normal da diferenca de duas proporcoes, com a fracao INVALID
+    observada), operacoes sem p99 e duracao real. Insumo do parecer do Senior; nunca entra em resultado."""
+    cel = {}
+    faltam = []
+    for i, lin in sorted((i, l) for i, l in matriz.items() if l["fase"] == "piloto"):
+        d = Path(saida) / ("exec-%04d-%s" % (i, lin["celula"]))
+        if not d.is_dir():
+            faltam.append(lin["celula"])
+            continue
+        ch = ler_json(d / "checagem.json")
+        ex = ler_json(d / "execucao.json", {}) or {}
+        r = {"i": i, "veredito": ch and ch.get("veredito"), "motivos": ch and ch.get("motivos")}
+        if (d / "rep-001.csv").exists():
+            lt = ler_csv_eventos(d / "rep-001.csv", latencias=True)
+            st = estatisticas_por_operacao(lt, lin["cenario"])
+            r["n_por_operacao"] = {op: v["n"] for op, v in st.items()}
+            r["operacoes_sem_p99"] = [op for op, v in st.items() if v["p99"] is None]
+            ok_rc = None if lin["falha"] == "none" else ("VALID", "INVALID")
+            iso = [(s, 1 if rc == "INVALID" else 0) for s, rc in lt["iso"] if ok_rc is None or rc in ok_rc]
+            ter = fatias(iso, lt["tmin"], lt["tmax"], 3) if iso else []
+            n1 = ter[0]["validate_isolados"] if ter else 0
+            n3 = ter[2]["validate_isolados"] if ter else 0
+            r["validate_isolados_por_terco"] = [t["validate_isolados"] for t in ter]
+            p = sum(x for _, x in iso) / len(iso) if iso else P0
+            if n1 and n3 and 0 < p < 1:
+                sd = math.sqrt(p * (1 - p) * (1.0 / n1 + 1.0 / n3))
+                r["chance_falsa_recusa_c1"] = math.erfc((C1_TERCOS_PP / 100.0) / sd / math.sqrt(2.0))
+            else:
+                r["chance_falsa_recusa_c1"] = None
+        else:
+            r.update({"n_por_operacao": None, "operacoes_sem_p99": None, "validate_isolados_por_terco": None,
+                      "chance_falsa_recusa_c1": None})
+        t0, t1 = _instante(ex.get("lancamento_utc")), _instante(ex.get("fim_utc"))
+        r["duracao_real_s"] = round(t1 - t0, 3) if t0 is not None and t1 is not None else None
+        r["inj_inicio_offset_s"] = ex.get("inj_inicio_offset_s")
+        cel[lin["celula"]] = r
+    res = {"celulas": cel, "nao_executadas": faltam, "nota": "dados do piloto nunca entram em resultado (PR §8)"}
+    gravar_json(Path(saida) / "piloto.json", res)
+    md = ["# Piloto do rebaseline (rodada 0)", "",
+          "| i | Célula | Veredito | Validate isolados por terço | Falsa recusa C1 (aprox.) | Sem p99 | "
+          "Duração (s) | Disparo (s) |", "|---|---|---|---|---|---|---|---|"]
+    for c, r in cel.items():
+        ch = r["chance_falsa_recusa_c1"]
+        md.append("| %d | %s | %s | %s | %s | %s | %s | %s |" % (
+            r["i"], c, r["veredito"], r["validate_isolados_por_terco"], "—" if ch is None else "%.4f" % ch,
+            ", ".join(r["operacoes_sem_p99"] or []) or "—", r["duracao_real_s"], r["inj_inicio_offset_s"]))
+    md += ["", "Motivos:", ""] + ["- %s: %s" % (c, "; ".join(r["motivos"] or []) or "—") for c, r in cel.items()]
+    if faltam:
+        md += ["", "Não executadas: " + ", ".join(faltam)]
+    (Path(saida) / "piloto.md").write_bytes(("\n".join(md) + "\n").encode("utf-8"))
+    return res
+
+
 # ============================================================================= CLI
 
 def main(argv):
@@ -644,8 +927,19 @@ def main(argv):
                 for m in r["motivos"]:
                     print("  " + m)
             return 20 if r["parada"] else 0
-        if a.cmd in ("tabelas", "piloto"):
-            raise ErroUso("subcomando %s ainda nao implementado" % a.cmd)
+        if a.cmd == "tabelas":
+            if not Path(a.saida).is_dir() or not Path(a.matriz).is_file():
+                raise ErroUso("--saida ou --matriz inexistente")
+            r = tabelas(a.saida, a.matriz, a.destino)
+            print("tabelas: %d execucoes aceitas, %d contrastes estimados -> %s" % (
+                r["execucoes_aceitas"], r["comparacoes_estimadas"], a.destino))
+            return 0
+        if a.cmd == "piloto":
+            if not Path(a.saida).is_dir() or not Path(a.matriz).is_file():
+                raise ErroUso("--saida ou --matriz inexistente")
+            r = piloto(a.saida, ler_matriz([a.matriz]))
+            print("piloto: %d celulas executadas, %d nao executadas" % (len(r["celulas"]), len(r["nao_executadas"])))
+            return 0
         ap.print_usage(sys.stderr)
         return 2
     except ErroUso as ex:

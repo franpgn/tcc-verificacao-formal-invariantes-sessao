@@ -8,26 +8,27 @@ import java.util.List;
 import java.util.concurrent.CountDownLatch;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
- * B-43.8, W8 (item 6 do prompt): diagnostico do TOCTOU {@code login} x {@code block}, SEM corrigir.
- * Documenta o comportamento ATUAL (a correcao, por exemplo a dupla checagem depois do {@code put}, e
- * decisao do Gestor para o B-43.9).
+ * B-43.8, W8, reescrito no B-43.9 (regra B, dupla checagem no {@code login}): o TOCTOU
+ * {@code login} x {@code block} documentado no B-43.8 fica fechado pela releitura da identidade
+ * depois do {@code put} da sessao.
  *
- * <p>Roteiro com latch: o {@code login} le a identidade OPEN; antes do {@code put} da sessao nova, um
- * {@code block} completo roda (identidade BLOCKED; a cascata nao ve a sessao ainda nao gravada); o
- * {@code login} grava a sessao VALID e devolve OK_LOGIN. Estado final: sessao VALID permanente sob
- * identidade BLOCKED. Um {@code validate} posterior registra I2, e o rastro classifica REAL (bloqueio
- * ADMINISTRATIVO). A varredura final tambem acusa I2 REAL. Nada disso e anomalia do grid.</p>
+ * <p>Mesmo roteiro com latch: o {@code login} le a identidade OPEN; antes do {@code put} da sessao
+ * nova, um {@code block} completo roda (identidade BLOCKED; a cascata nao ve a sessao ainda nao
+ * gravada); o {@code login} grava a sessao VALID e rele a identidade, que agora esta BLOCKED. O
+ * proprio {@code login} invalida a sessao com ADMIN_BLOCK (escrita condicional, mesmo caminho da
+ * cascata), conta {@code login_revertido_por_bloqueio} e devolve BLOCKED. Estado final: nenhuma
+ * sessao VALID sob a identidade bloqueada, nenhuma I2 nos {@code validate} posteriores e nenhum
+ * achado na varredura final.</p>
  */
 class ToctouLoginBlockTest {
 
     private static final String U = "u-toctou";
 
     @Test
-    @DisplayName("W8: login le OPEN, block completo, login grava VALID => sessao VALID sob BLOCKED; I2 REAL")
-    void loginEscapaDaCascata() {
+    @DisplayName("W8 (B-43.9): login le OPEN, block completo, releitura ve BLOCKED => login revertido, sem I2")
+    void loginRevertidoPelaDuplaChecagem() {
         MundoS3Versionado w = new MundoS3Versionado();
         Instant t = Instant.parse("2026-10-22T00:00:00Z");
         w.sessoes.semear("sid-antiga", SessionState.criar("sid-antiga", U, t));
@@ -49,31 +50,26 @@ class ToctouLoginBlockTest {
         OpResult login = w.apps.get(0).login(U, "cred");
 
         assertEquals(0, blockFeito.getCount(), "o block rodou inteiro dentro do login");
-        assertEquals(OpResult.Code.OK_LOGIN, login.code(), "o login devolve OK_LOGIN com a identidade ja BLOCKED");
-        String sid = login.sessionId();
+        assertEquals(OpResult.Code.BLOCKED, login.code(), "a dupla checagem reverte o login");
+        String sid = w.sessoes.copia().keySet().stream().filter(k -> !k.equals("sid-antiga")).findFirst().orElseThrow();
         assertEquals(IdentityState.Status.BLOCKED, w.identidades.dados.get(U).status());
-        assertEquals(SessionState.Estado.VALID, w.sessoes.valor(sid).estado(), "sessao VALID sob BLOCKED");
+        assertEquals(SessionState.Estado.INVALID, w.sessoes.valor(sid).estado(), "a sessao nova foi invalidada pelo login");
+        assertEquals(SessionState.Motivo.ADMIN_BLOCK, w.sessoes.valor(sid).motivo());
         assertEquals(SessionState.Motivo.ADMIN_BLOCK, w.sessoes.valor("sid-antiga").motivo(),
                 "a cascata invalidou o que ja estava gravado");
-        assertTrue(!w.invalidacoes.containsKey(sid), "a cascata nao viu a sessao nova");
+        assertEquals(SessionState.Motivo.ADMIN_BLOCK, w.invalidacoes.get(sid), "confirmada pelo proprio login");
         assertEquals(0, w.auditor.total(), "o login em si nao gera violacao");
+        assertEquals(1, w.apps.get(0).loginRevertidoPorBloqueio());
 
-        // permanente: nada no workload volta a invalidar essa sessao (so um logout explicito)
+        // leituras posteriores veem INVALID
         w.apps.get(1).validate(sid);
         w.apps.get(2).validate(sid);
         List<InvariantAuditor.Violacao> v = w.auditor.drenar();
-        assertEquals(List.of("I2", "I2"), v.stream().map(InvariantAuditor.Violacao::invariante).toList(),
-                "cada validate posterior registra I2");
-        for (InvariantAuditor.Violacao x : v) {
-            assertEquals("REAL", w.rastro.classificarViolacaoI2(x.chave(), InvariantAuditor.epochNs(x.em())),
-                    "o rastro classifica REAL (bloqueio ADMINISTRATIVO)");
-        }
+        assertEquals(List.of(), v.stream().map(InvariantAuditor.Violacao::invariante).toList(),
+                "nenhum validate posterior registra I2");
 
         VarreduraFinal.Resultado r = VarreduraFinal.varrer(w.sessoes.copia(), w.identidades.dados,
                 w.invalidacoes, w.rastro, SessionOps.LIMITE_TENTATIVAS);
-        List<VarreduraFinal.Achado> i2 = r.achados().stream().filter(a -> a.invariante().equals("I2")).toList();
-        assertEquals(1, i2.size(), r.achados().toString());
-        assertEquals(sid, i2.get(0).chave());
-        assertEquals("REAL", i2.get(0).classificacao(), "a varredura final tambem conta como I2 REAL");
+        assertEquals(List.of(), r.achados(), r.achados().toString());
     }
 }

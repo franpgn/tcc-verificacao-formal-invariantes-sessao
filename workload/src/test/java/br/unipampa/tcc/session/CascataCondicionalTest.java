@@ -101,9 +101,9 @@ class CascataCondicionalTest {
 
         admin.block(U);
 
-        // Duas leituras distintas da sessao (o valor da varredura e a lerComVersao), as duas iniciadas
-        // depois da confirmacao: cada uma e acusada.
-        assertEquals(List.of("I1:s1", "I1:s1"), invariantes(a));
+        // Duas leituras distintas da sessao, as duas depois da confirmacao; a operacao registra no
+        // maximo uma I1 por sid (B-43.9).
+        assertEquals(List.of("I1:s1"), invariantes(a));
         assertEquals(0, admin.i1Concorrentes());
     }
 

@@ -154,7 +154,8 @@ ex = []
 for d in dirs:
     c = saida / d / "checagem.json"
     ch = json.loads(c.read_text(encoding="utf-8")) if c.exists() else {}
-    ex.append({"dir": d, "i": ch.get("i"), "celula": ch.get("celula"), "veredito": ch.get("veredito", "SEM CHECAGEM"),
+    ex.append({"dir": d, "i": ch.get("i"), "celula": ch.get("celula"),
+               "veredito": "ABORTADA (DT-014)" if ".abortada-" in d else ch.get("veredito", "SEM CHECAGEM"),
                "motivos": ch.get("motivos", [])})
 cont = {}
 for e in ex:
@@ -255,6 +256,9 @@ dirs_da_fase() {  # diretorios exec-* da fila desta fase que existem (inclusive 
         read -r i cel _r <<< "${l}"
         d="$(dir_exec "${i}" "${cel}")"
         if [[ -d "${d}" ]]; then DIRS_FASE+=("${d##*/}"); fi
+        for d in "${d}".abortada-*; do   # DT-014: abortadas ficam nos brutos e no manifesto
+            if [[ -d "${d}" ]]; then DIRS_FASE+=("${d##*/}"); fi
+        done
     done
 }
 
@@ -435,7 +439,7 @@ if [[ "${FASE}" == reposicoes ]]; then
     if [[ ! -f "${REP_TSV}" ]]; then printf 'i\tfase\tnoite\trodada\tposicao\tcelula\tcenario\tmodo\tfalha\tseed\n' > "${REP_TSV}"; fi
     prox="${I_REPOSICAO_INICIAL}"
     for d in "${SAIDA}"/exec-*; do
-        [[ -d "${d}" ]] || continue
+        [[ -d "${d}" && "${d}" != *.abortada-* ]] || continue
         b="${d##*/exec-}"; n=$((10#${b%%-*}))
         if [[ "${n}" -ge "${I_REPOSICAO_INICIAL}" && "${n}" -lt "${I_PILOTO}" && "${n}" -ge "${prox}" ]]; then prox=$((n + 1)); fi
     done
@@ -682,6 +686,23 @@ instante_efetivo_f1() {  # C5 (so relatorio): quando isn2 parou e voltou, pelo p
     E_FALHA_EF="{\"f1_parado_desde_ancora_s\":${pj},\"f1_reiniciado_desde_ancora_s\":${rj}}"
 }
 
+checar_e_estado() {  # checar_e_estado <dir>: rebaseline.py checar e estado, com os exits do prompt
+    local d="$1" rc
+    rc=0; ${PYTHON} -I "${ANALISE}" checar --exec "${d}" --matriz "${MATRIZ_CHECAR}" >> "${LOG_ARQ}" 2>&1 || rc=$?
+    case "${rc}" in
+        0) log "exec i=${E_I}: checar ACEITA" ;;
+        10) log "exec i=${E_I}: checar RECUSADA (segue)" ;;
+        20) finalizar 10 "parada (c): checar PARADA em i=${E_I}" ;;
+        *) finalizar 6 "infra: rebaseline.py checar saiu com ${rc} em i=${E_I}" ;;
+    esac
+    rc=0; ${PYTHON} -I "${ANALISE}" estado --saida "${SAIDA}" --matriz "${MATRIZ}" >> "${LOG_ARQ}" 2>&1 || rc=$?
+    case "${rc}" in
+        0) ;;
+        20) finalizar 10 "parada: rebaseline.py estado (paradas a..d, R-S3) depois de i=${E_I}" ;;
+        *) finalizar 6 "infra: rebaseline.py estado saiu com ${rc} depois de i=${E_I}" ;;
+    esac
+}
+
 GATE_F3_DADO=0
 rodar_execucao() {  # rodar_execucao "<i> <celula> <cenario> <modo> <falha> <seed>"
     read -r E_I E_CEL E_CEN E_MODO E_FALHA E_SEED <<< "$1"
@@ -693,7 +714,21 @@ rodar_execucao() {  # rodar_execucao "<i> <celula> <cenario> <modo> <falha> <see
     d="$(dir_exec "${E_I}" "${E_CEL}")"
     if [[ -d "${d}" ]]; then
         if [[ -f "${d}/checagem.json" ]]; then log "exec i=${E_I} ${E_CEL}: ja executada e checada; pulando"; return 0; fi
-        finalizar 4 "pre-voo: ${d} existe sem checagem.json (execucao interrompida); decisao manual do Gestor"
+        if [[ ! -e "${d}/stdout.log" ]]; then
+            # DT-014 (1): interrompida antes do lancamento do workload; a semente nunca mediu nada
+            local ab; ab="${d}.abortada-$(date -u +%Y%m%dT%H%M%SZ)"
+            mv "${d}" "${ab}"
+            log "exec i=${E_I} ${E_CEL}: interrompida antes do workload (DT-014); diretorio mantido em ${ab##*/}; mesmo i roda de novo"
+        else
+            # DT-014 (2): interrompida depois do lancamento: RECUSADA "interrompida", reposta no fim
+            log "exec i=${E_I} ${E_CEL}: interrompida depois do lancamento do workload (DT-014); conta como RECUSADA"
+            if [[ ! -f "${d}/interrompida.json" ]]; then
+                printf '{"utc":%s,"motivo":"interrompida depois do lancamento do workload (DT-014)"}\n' \
+                    "$(json_str "$(iso_ms "$(agora_ms)")")" > "${d}/interrompida.json"
+            fi
+            checar_e_estado "${d}"
+            return 0
+        fi
     fi
     # C2: o gate f3 vem ANTES do diretorio da execucao e do K1. Um go f3 errado sai com 5 sem deixar
     # exec-<i>, e o K1 (>= 60 s) fica imediatamente antes do workload mesmo que o Gestor demore.
@@ -843,19 +878,7 @@ rodar_execucao() {  # rodar_execucao "<i> <celula> <cenario> <modo> <falha> <see
     gravar_ispn "${d}"
     gravar_execucao "${d}"
 
-    rc=0; ${PYTHON} -I "${ANALISE}" checar --exec "${d}" --matriz "${MATRIZ_CHECAR}" >> "${LOG_ARQ}" 2>&1 || rc=$?
-    case "${rc}" in
-        0) log "exec i=${E_I}: checar ACEITA" ;;
-        10) log "exec i=${E_I}: checar RECUSADA (segue)" ;;
-        20) finalizar 10 "parada (c): checar PARADA em i=${E_I}" ;;
-        *) finalizar 6 "infra: rebaseline.py checar saiu com ${rc} em i=${E_I}" ;;
-    esac
-    rc=0; ${PYTHON} -I "${ANALISE}" estado --saida "${SAIDA}" --matriz "${MATRIZ}" >> "${LOG_ARQ}" 2>&1 || rc=$?
-    case "${rc}" in
-        0) ;;
-        20) finalizar 10 "parada: rebaseline.py estado (paradas a..d, R-S3) depois de i=${E_I}" ;;
-        *) finalizar 6 "infra: rebaseline.py estado saiu com ${rc} depois de i=${E_I}" ;;
-    esac
+    checar_e_estado "${d}"
 }
 
 # ------------------------------------------------------------------ laco da fase

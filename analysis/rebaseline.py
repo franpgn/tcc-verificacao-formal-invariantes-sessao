@@ -363,9 +363,29 @@ def _crit(valor, limite, ok, papel):
     return {"valor": valor, "limite": limite, "ok": bool(ok), "papel": papel}
 
 
+def checagem_interrompida(d, matriz):
+    """DT-014 (2): execucao interrompida depois do lancamento do workload: RECUSADA "interrompida", sem
+    avaliar K1..K10 (os brutos podem estar incompletos); entra nas paradas (a)/(b) e e reposta no fim."""
+    m = re.match(r"^exec-(\d+)-(.+)$", d.name)
+    if not m or int(m.group(1)) not in matriz:
+        raise ErroUso("diretorio interrompido fora da matriz: %s" % d)
+    i = int(m.group(1))
+    lin = matriz[i]
+    if lin["celula"] != m.group(2):
+        raise ErroUso("celula do diretorio difere da matriz: %s" % d)
+    info = ler_json(d / "interrompida.json", {}) or {}
+    return {"i": i, "celula": lin["celula"], "fase": lin["fase"], "noite": lin.get("noite"),
+            "cenario": lin["cenario"], "modo": lin["modo"], "falha": lin["falha"], "seed": int(lin["seed"]),
+            "seed_lido": None, "rep_lido": None, "veredito": "RECUSADA",
+            "motivos": ["interrompida (DT-014): %s" % info.get("motivo", "sem motivo registrado")],
+            "criterios": {}, "metricas": {}, "interrompida": info}
+
+
 def checar_execucao(d, matriz):
     """K1..K10 do PR §6 (com K6 da DT-011) para o diretorio de uma execucao. Devolve o dict de checagem."""
     d = Path(d)
+    if (d / "interrompida.json").exists():
+        return checagem_interrompida(d, matriz)
     for obrig in ("execucao.json", "portao.json", "ispn006010.json"):
         if not (d / obrig).exists():
             raise ErroUso("arquivo obrigatorio ausente: %s" % (d / obrig))
@@ -524,6 +544,8 @@ def k6(ex, d, falha):
 def ler_checagens(saida):
     out = []
     for p in sorted(Path(saida).glob("exec-*/checagem.json")):
+        if ".abortada-" in p.parent.name:
+            continue
         c = ler_json(p)
         if c is not None:
             c["_dir"] = p.parent.name
@@ -594,7 +616,7 @@ def reposicoes_pendentes(saida):
     chs = ler_checagens(saida)
     repostas = {c["celula"] for c in chs if c.get("fase") == "reposicao"}
     ja_feitas = set(repostas)
-    exec_rep = {p.name.split("-", 2)[2] for p in Path(saida).glob("exec-*") if p.is_dir()
+    exec_rep = {p.name.split("-", 2)[2] for p in Path(saida).glob("exec-*") if p.is_dir() and ".abortada-" not in p.name
                 and int(p.name.split("-")[1]) >= 120 and int(p.name.split("-")[1]) < 1000}
     ja_feitas |= exec_rep
     rec = sorted((c["i"], c["celula"]) for c in chs if c.get("fase") == "campanha" and c["veredito"] == "RECUSADA")

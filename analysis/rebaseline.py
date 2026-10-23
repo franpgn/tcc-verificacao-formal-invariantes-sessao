@@ -511,9 +511,11 @@ def k6(ex, d, falha):
                 ok and stop and start and volta)
     am = {a.get("alvo_s"): a.get("netem") for a in (ex.get("netem_amostras") or [])}
     pos = (ex.get("netem_pos") or {}).get("netem")
-    v.update({"netem_amostras": am, "netem_depois": pos})
-    return (v, lim + "; netem presente em +70 s e +280 s e ausente depois",
-            ok and am.get(70) is True and am.get(280) is True and pos is False)
+    # C4: "ausente depois" do injetor; se o runner teve de remover o netem (remocao_extra), K6 falha
+    extra = (ex.get("netem_pos") or {}).get("remocao_extra")
+    v.update({"netem_amostras": am, "netem_depois": pos, "remocao_extra": extra})
+    return (v, lim + "; netem presente em +70 s e +280 s e ausente depois do injetor, sem remocao extra",
+            ok and am.get(70) is True and am.get(280) is True and pos is False and extra is False)
 
 
 # ============================================================================= estado

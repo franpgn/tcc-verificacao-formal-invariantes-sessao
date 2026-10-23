@@ -562,6 +562,17 @@ public class SessionOps {
             String sid = UUID.randomUUID().toString();
             SessionState s = SessionState.criar(sid, identidade, Instant.now());
             sessions.put(sid, s);
+            // B-43.9, regra B: dupla checagem contra o TOCTOU login x block (padrao de Dekker: o login
+            // escreve a sessao e rele a identidade; o block escreve a identidade e varre as sessoes).
+            IdentityState releitura = identities.get(identidade);
+            if (releitura != null && releitura.status() == IdentityState.Status.BLOCKED) {
+                reverterLogin(sid, s);
+                contar(loginRevertido, null);
+                latency.record("login_blocked", t0);
+                OpResult r = OpResult.blocked();
+                emitir(OP_LOGIN, t0, System.nanoTime(), r, identidade);
+                return r;
+            }
             latency.record("login_ok", t0);
             OpResult r = OpResult.okLogin(sid);
             emitir(OP_LOGIN, t0, System.nanoTime(), r, identidade);
@@ -572,6 +583,23 @@ public class SessionOps {
             emitir(OP_LOGIN, t0, System.nanoTime(), r, identidade);
             return r;
         }
+    }
+
+    /**
+     * B-43.9, regra B: o login cuja releitura viu BLOCKED invalida a propria sessao com ADMIN_BLOCK pelo
+     * MESMO caminho da cascata. Com armazem versionado, {@link #invalidarPorBloqueio} (leitura
+     * versionada, checagem I1/I4 deduplicada na operacao, escrita condicional; conflito esgotado lanca
+     * e o login termina em erro). Sem armazem versionado, {@code put} INVALID e so depois a confirmacao
+     * no mapa (ordem de B-43.6).
+     */
+    private void reverterLogin(String sid, SessionState s) {
+        if (sessoesVersionadas != null) {
+            invalidarPorBloqueio(sid, new java.util.HashSet<>());
+            return;
+        }
+        SessionState atual = s.invalidar(SessionState.Motivo.ADMIN_BLOCK, Instant.now());
+        sessions.put(sid, atual);
+        invalidacoesConfirmadas.put(sid, atual.motivo());
     }
 
     /** O2, validate. */

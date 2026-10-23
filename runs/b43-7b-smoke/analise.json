@@ -1,0 +1,1396 @@
+{
+ "R1": {
+  "cenario": "S1",
+  "replicacao": "sync",
+  "mix": "v3",
+  "duracao_s": 120,
+  "linhas_csv": 810911,
+  "csv_operation_return_code": {
+   "IncrementFailure COUNTED": 53926,
+   "Login OK": 135303,
+   "Logout NONE": 189592,
+   "ResetFailures NONE": 27073,
+   "Validate INVALID": 13942,
+   "Validate VALID": 391075
+  },
+  "validate_isolados_csv": 269713,
+  "invalid_isolados_csv": 13942,
+  "frac_invalid_isolados_pct": 5.1692,
+  "tercos": [
+   {
+    "validate_isolados": 89863,
+    "invalid": 4614,
+    "frac_pct": 5.1345
+   },
+   {
+    "validate_isolados": 89467,
+    "invalid": 4747,
+    "frac_pct": 5.3059
+   },
+   {
+    "validate_isolados": 90383,
+    "invalid": 4581,
+    "frac_pct": 5.0684
+   }
+  ],
+  "decimos": [
+   {
+    "validate_isolados": 26431,
+    "invalid": 1395,
+    "frac_pct": 5.2779
+   },
+   {
+    "validate_isolados": 26908,
+    "invalid": 1350,
+    "frac_pct": 5.0171
+   },
+   {
+    "validate_isolados": 27303,
+    "invalid": 1382,
+    "frac_pct": 5.0617
+   },
+   {
+    "validate_isolados": 27381,
+    "invalid": 1444,
+    "frac_pct": 5.2737
+   },
+   {
+    "validate_isolados": 26437,
+    "invalid": 1425,
+    "frac_pct": 5.3902
+   },
+   {
+    "validate_isolados": 26947,
+    "invalid": 1423,
+    "frac_pct": 5.2807
+   },
+   {
+    "validate_isolados": 26855,
+    "invalid": 1415,
+    "frac_pct": 5.269
+   },
+   {
+    "validate_isolados": 27371,
+    "invalid": 1337,
+    "frac_pct": 4.8847
+   },
+   {
+    "validate_isolados": 27388,
+    "invalid": 1387,
+    "frac_pct": 5.0643
+   },
+   {
+    "validate_isolados": 26692,
+    "invalid": 1384,
+    "frac_pct": 5.1851
+   }
+  ],
+  "logout_isolados_csv_por_codigo": {
+   "NONE": 54288
+  },
+  "exit": 0,
+  "violacoes_stdout": 0,
+  "linha_auditor": "Auditor: i1_concorrentes=132 i4_concorrentes=0",
+  "linha_invalidacao": "Invalidacao: perdida=0 conflito_esgotado=0",
+  "linha_reset": "Reset: reset_state=on caches=sessions,counters antes=0,0 depois=0,0 ms=20",
+  "invalidacao_perdida": 0,
+  "conflito_esgotado": 0,
+  "i1_concorrentes": 132,
+  "i4_concorrentes": 0,
+  "registrados": 810911,
+  "descartados_warmup": 114271,
+  "total_operacoes": 616452,
+  "histogramas": {
+   "login_ok": {
+    "n": 135303,
+    "descartados": 19062,
+    "p50_ns": 519167,
+    "p95_ns": 712703,
+    "p99_ns": 949247
+   },
+   "login_blocked": {
+    "n": 0,
+    "descartados": 0
+   },
+   "login_err": {
+    "n": 0,
+    "descartados": 0
+   },
+   "logout_noop": {
+    "n": 0,
+    "descartados": 0
+   },
+   "logout_ok": {
+    "n": 189592,
+    "descartados": 26670,
+    "p50_ns": 525311,
+    "p95_ns": 721919,
+    "p99_ns": 955903
+   }
+  },
+  "linha_mistura": "Mistura v3: validate_isolados=269713 token_antigo=13306 logout_isolados=54288 reposicoes=54288 reposicao_omitida=0 reposicao_erro=0",
+  "linha_desfechos": "Desfechos Validate: valid=391075 invalid=13942 not_found=0 erro=0",
+  "linha_carga": "Carga: mix=v3 cache=sessions slots=100000 entradas=200000 lotes=200 ms=1749",
+  "linha_q": "Mistura: mix=v3 q=0.05",
+  "mistura_v3_stdout": {
+   "validate_isolados": 269713,
+   "token_antigo": 13306,
+   "logout_isolados": 54288,
+   "reposicoes": 54288,
+   "reposicao_omitida": 0,
+   "reposicao_erro": 0
+  },
+  "violacoes_por_invariante": {},
+  "carga": {
+   "mix": "v3",
+   "replicacao": "sync",
+   "cache": "sessions",
+   "universo": 100000,
+   "entradas_por_slot": 2,
+   "entradas": 200000,
+   "tamanho_final": 200000,
+   "lotes": 200,
+   "duracao_ms": 1749,
+   "q": 0.05,
+   "veredito": "OK",
+   "motivo": null
+  },
+  "estado": {
+   "reset_state": "on",
+   "replicacao": "sync",
+   "caches": [
+    "sessions",
+    "counters"
+   ],
+   "tamanhos_antes": [
+    0,
+    0
+   ],
+   "tamanhos_depois": [
+    0,
+    0
+   ],
+   "duracao_ms": 20,
+   "veredito": "OK",
+   "motivo": null
+  },
+  "verificador_exit": 0,
+  "verificador_veredito": "OK",
+  "leitor": {
+   "status": "OK",
+   "eventos": 810911,
+   "erros": 0,
+   "por_codigo": {
+    "COUNTED": 53926,
+    "INVALID": 13942,
+    "NONE": 216665,
+    "OK": 135303,
+    "VALID": 391075
+   }
+  },
+  "criterios": {
+   "C1": {
+    "terco1_pct": 5.1345,
+    "terco2_pct": 5.3059,
+    "terco3_pct": 5.0684,
+    "dif_1_3_pp": 0.0661,
+    "ok": true
+   },
+   "C2": {
+    "frac_pct": 5.1692,
+    "ok": true
+   },
+   "C3": {
+    "k": 13306,
+    "n": 269713,
+    "n_csv": 269713,
+    "z": 3.2905,
+    "p0": 0.05,
+    "dif_stdout_csv": 0,
+    "margem_fronteira": 4,
+    "sanidade": null,
+    "frac_pct": 4.9333921612973795,
+    "meia_largura_pp": 0.13808857886517428,
+    "desvio_pp": -0.06660783870262102,
+    "banda_pct": [
+     4.861911421134827,
+     5.138088578865174
+    ],
+    "ok_ic": true,
+    "ok_csv": true,
+    "ok": true
+   },
+   "C4": {
+    "validate_not_found": 0,
+    "login_ok_frac": 1.0,
+    "eventos_menos_operacoes": 308730,
+    "dois_x_logins_ok": 308730,
+    "ok": true
+   },
+   "C5": {
+    "logout_isolados": 54288,
+    "reposicoes": 54288,
+    "reposicao_omitida": 0,
+    "reposicao_erro": 0,
+    "logout_isolados_csv": 54288,
+    "dif_stdout_csv": 0,
+    "logout_noop_janela": 0,
+    "logout_isolados_not_found_csv": 0,
+    "ok": true
+   },
+   "C6": {
+    "I1": 0,
+    "I4": 0,
+    "ok": true
+   },
+   "C7": {
+    "exit": 0,
+    "veredito": "OK",
+    "ok": true
+   },
+   "C8": {
+    "tamanho_final": 200000,
+    "carga_ms": 1749,
+    "ok": true
+   },
+   "C9": {
+    "exit": 0,
+    "ok": true
+   },
+   "B438": {
+    "invalidacao_perdida": 0,
+    "conflito_esgotado": 0,
+    "ok": true
+   }
+  },
+  "todos_ok": true,
+  "excesso_invalid_menos_token_pp": 0.2358,
+  "excesso_referencia": {
+   "b43_7": {
+    "execucao": "Q1",
+    "frac_invalid_pct": 5.2471,
+    "token_pct": 5.0003,
+    "excesso_pp": 0.2468
+   },
+   "b43_8": {
+    "execucao": "P1",
+    "frac_invalid_pct": 5.2492,
+    "token_pct": 5.0007,
+    "excesso_pp": 0.2485
+   }
+  }
+ },
+ "R2": {
+  "cenario": "S1",
+  "replicacao": "async",
+  "mix": "v3",
+  "duracao_s": 120,
+  "linhas_csv": 984555,
+  "csv_operation_return_code": {
+   "IncrementFailure COUNTED": 65272,
+   "Login OK": 164304,
+   "Logout NONE": 230136,
+   "ResetFailures NONE": 32635,
+   "Validate INVALID": 16883,
+   "Validate VALID": 475325
+  },
+  "validate_isolados_csv": 327905,
+  "invalid_isolados_csv": 16883,
+  "frac_invalid_isolados_pct": 5.1487,
+  "tercos": [
+   {
+    "validate_isolados": 109649,
+    "invalid": 5638,
+    "frac_pct": 5.1419
+   },
+   {
+    "validate_isolados": 107393,
+    "invalid": 5453,
+    "frac_pct": 5.0776
+   },
+   {
+    "validate_isolados": 110863,
+    "invalid": 5792,
+    "frac_pct": 5.2245
+   }
+  ],
+  "decimos": [
+   {
+    "validate_isolados": 33991,
+    "invalid": 1728,
+    "frac_pct": 5.0837
+   },
+   {
+    "validate_isolados": 32456,
+    "invalid": 1608,
+    "frac_pct": 4.9544
+   },
+   {
+    "validate_isolados": 32176,
+    "invalid": 1705,
+    "frac_pct": 5.299
+   },
+   {
+    "validate_isolados": 32568,
+    "invalid": 1725,
+    "frac_pct": 5.2966
+   },
+   {
+    "validate_isolados": 32140,
+    "invalid": 1695,
+    "frac_pct": 5.2738
+   },
+   {
+    "validate_isolados": 32132,
+    "invalid": 1593,
+    "frac_pct": 4.9577
+   },
+   {
+    "validate_isolados": 32424,
+    "invalid": 1655,
+    "frac_pct": 5.1042
+   },
+   {
+    "validate_isolados": 32385,
+    "invalid": 1625,
+    "frac_pct": 5.0178
+   },
+   {
+    "validate_isolados": 33470,
+    "invalid": 1776,
+    "frac_pct": 5.3062
+   },
+   {
+    "validate_isolados": 34163,
+    "invalid": 1773,
+    "frac_pct": 5.1898
+   }
+  ],
+  "logout_isolados_csv_por_codigo": {
+   "NONE": 65835
+  },
+  "exit": 0,
+  "violacoes_stdout": 0,
+  "linha_auditor": "Auditor: i1_concorrentes=372 i4_concorrentes=0",
+  "linha_invalidacao": "Invalidacao: perdida=0 conflito_esgotado=0",
+  "linha_reset": "Reset: reset_state=on caches=sessions-async,counters-async antes=0,0 depois=0,0 ms=5",
+  "invalidacao_perdida": 0,
+  "conflito_esgotado": 0,
+  "i1_concorrentes": 372,
+  "i4_concorrentes": 0,
+  "registrados": 984555,
+  "descartados_warmup": 170664,
+  "total_operacoes": 769759,
+  "histogramas": {
+   "login_ok": {
+    "n": 164304,
+    "descartados": 28426,
+    "p50_ns": 377855,
+    "p95_ns": 487935,
+    "p99_ns": 685055
+   },
+   "login_blocked": {
+    "n": 0,
+    "descartados": 0
+   },
+   "login_err": {
+    "n": 0,
+    "descartados": 0
+   },
+   "logout_noop": {
+    "n": 0,
+    "descartados": 0
+   },
+   "logout_ok": {
+    "n": 230136,
+    "descartados": 39718,
+    "p50_ns": 380927,
+    "p95_ns": 495103,
+    "p99_ns": 714239
+   }
+  },
+  "linha_mistura": "Mistura v3: validate_isolados=327905 token_antigo=16232 logout_isolados=65835 reposicoes=65835 reposicao_omitida=0 reposicao_erro=0",
+  "linha_desfechos": "Desfechos Validate: valid=475325 invalid=16883 not_found=0 erro=0",
+  "linha_carga": "Carga: mix=v3 cache=sessions-async slots=100000 entradas=200000 lotes=200 ms=1320",
+  "linha_q": "Mistura: mix=v3 q=0.05",
+  "mistura_v3_stdout": {
+   "validate_isolados": 327905,
+   "token_antigo": 16232,
+   "logout_isolados": 65835,
+   "reposicoes": 65835,
+   "reposicao_omitida": 0,
+   "reposicao_erro": 0
+  },
+  "violacoes_por_invariante": {},
+  "carga": {
+   "mix": "v3",
+   "replicacao": "async",
+   "cache": "sessions-async",
+   "universo": 100000,
+   "entradas_por_slot": 2,
+   "entradas": 200000,
+   "tamanho_final": 200000,
+   "lotes": 200,
+   "duracao_ms": 1320,
+   "q": 0.05,
+   "veredito": "OK",
+   "motivo": null
+  },
+  "estado": {
+   "reset_state": "on",
+   "replicacao": "async",
+   "caches": [
+    "sessions-async",
+    "counters-async"
+   ],
+   "tamanhos_antes": [
+    0,
+    0
+   ],
+   "tamanhos_depois": [
+    0,
+    0
+   ],
+   "duracao_ms": 5,
+   "veredito": "OK",
+   "motivo": null
+  },
+  "verificador_exit": 0,
+  "verificador_veredito": "OK",
+  "leitor": {
+   "status": "OK",
+   "eventos": 984555,
+   "erros": 0,
+   "por_codigo": {
+    "COUNTED": 65272,
+    "INVALID": 16883,
+    "NONE": 262771,
+    "OK": 164304,
+    "VALID": 475325
+   }
+  },
+  "criterios": {
+   "C1": {
+    "terco1_pct": 5.1419,
+    "terco2_pct": 5.0776,
+    "terco3_pct": 5.2245,
+    "dif_1_3_pp": 0.0826,
+    "ok": true
+   },
+   "C2": {
+    "frac_pct": 5.1487,
+    "ok": true
+   },
+   "C3": {
+    "k": 16232,
+    "n": 327905,
+    "n_csv": 327905,
+    "z": 3.2905,
+    "p0": 0.05,
+    "dif_stdout_csv": 0,
+    "margem_fronteira": 4,
+    "sanidade": null,
+    "frac_pct": 4.9502142388801635,
+    "meia_largura_pp": 0.12523758387085276,
+    "desvio_pp": -0.04978576111983671,
+    "banda_pct": [
+     4.874762416129148,
+     5.125237583870853
+    ],
+    "ok_ic": true,
+    "ok_csv": true,
+    "ok": true
+   },
+   "C4": {
+    "validate_not_found": 0,
+    "login_ok_frac": 1.0,
+    "eventos_menos_operacoes": 385460,
+    "dois_x_logins_ok": 385460,
+    "ok": true
+   },
+   "C5": {
+    "logout_isolados": 65835,
+    "reposicoes": 65835,
+    "reposicao_omitida": 0,
+    "reposicao_erro": 0,
+    "logout_isolados_csv": 65835,
+    "dif_stdout_csv": 0,
+    "logout_noop_janela": 0,
+    "logout_isolados_not_found_csv": 0,
+    "ok": true
+   },
+   "C6": {
+    "I1": 0,
+    "I4": 0,
+    "ok": true
+   },
+   "C7": {
+    "exit": 0,
+    "veredito": "OK",
+    "ok": true
+   },
+   "C8": {
+    "tamanho_final": 200000,
+    "carga_ms": 1320,
+    "ok": true
+   },
+   "C9": {
+    "exit": 0,
+    "ok": true
+   },
+   "B438": {
+    "invalidacao_perdida": 0,
+    "conflito_esgotado": 0,
+    "ok": true
+   }
+  },
+  "todos_ok": true,
+  "excesso_invalid_menos_token_pp": 0.1985,
+  "excesso_referencia": {
+   "b43_7": {
+    "execucao": "Q3",
+    "frac_invalid_pct": 5.1895,
+    "token_pct": 4.9999,
+    "excesso_pp": 0.1896
+   },
+   "b43_8": {
+    "execucao": "P2",
+    "frac_invalid_pct": 5.1957,
+    "token_pct": 5.0002,
+    "excesso_pp": 0.1955
+   }
+  }
+ },
+ "R3": {
+  "cenario": "S2",
+  "replicacao": "sync",
+  "mix": "v3",
+  "duracao_s": 120,
+  "linhas_csv": 1100221,
+  "csv_operation_return_code": {
+   "IncrementFailure COUNTED": 10471,
+   "Login OK": 31019,
+   "Logout NONE": 41438,
+   "Validate INVALID": 49567,
+   "Validate VALID": 967726
+  },
+  "validate_isolados_csv": 986274,
+  "invalid_isolados_csv": 49567,
+  "frac_invalid_isolados_pct": 5.0257,
+  "tercos": [
+   {
+    "validate_isolados": 329238,
+    "invalid": 16523,
+    "frac_pct": 5.0186
+   },
+   {
+    "validate_isolados": 329722,
+    "invalid": 16602,
+    "frac_pct": 5.0352
+   },
+   {
+    "validate_isolados": 327314,
+    "invalid": 16442,
+    "frac_pct": 5.0233
+   }
+  ],
+  "decimos": [
+   {
+    "validate_isolados": 98329,
+    "invalid": 5029,
+    "frac_pct": 5.1145
+   },
+   {
+    "validate_isolados": 99108,
+    "invalid": 4841,
+    "frac_pct": 4.8846
+   },
+   {
+    "validate_isolados": 98796,
+    "invalid": 4952,
+    "frac_pct": 5.0123
+   },
+   {
+    "validate_isolados": 99621,
+    "invalid": 5109,
+    "frac_pct": 5.1284
+   },
+   {
+    "validate_isolados": 98876,
+    "invalid": 4915,
+    "frac_pct": 4.9709
+   },
+   {
+    "validate_isolados": 99348,
+    "invalid": 4971,
+    "frac_pct": 5.0036
+   },
+   {
+    "validate_isolados": 98211,
+    "invalid": 4949,
+    "frac_pct": 5.0392
+   },
+   {
+    "validate_isolados": 98739,
+    "invalid": 4930,
+    "frac_pct": 4.993
+   },
+   {
+    "validate_isolados": 97467,
+    "invalid": 4899,
+    "frac_pct": 5.0263
+   },
+   {
+    "validate_isolados": 97779,
+    "invalid": 4972,
+    "frac_pct": 5.0849
+   }
+  ],
+  "logout_isolados_csv_por_codigo": {
+   "NONE": 10419
+  },
+  "exit": 0,
+  "violacoes_stdout": 0,
+  "linha_auditor": "Auditor: i1_concorrentes=63 i4_concorrentes=0",
+  "linha_invalidacao": "Invalidacao: perdida=0 conflito_esgotado=0",
+  "linha_reset": "Reset: reset_state=on caches=sessions,counters antes=416262,36 depois=0,0 ms=33",
+  "invalidacao_perdida": 0,
+  "conflito_esgotado": 0,
+  "i1_concorrentes": 63,
+  "i4_concorrentes": 0,
+  "registrados": 1100221,
+  "descartados_warmup": 133220,
+  "total_operacoes": 1163767,
+  "histogramas": {
+   "login_ok": {
+    "n": 31019,
+    "descartados": 3818,
+    "p50_ns": 517631,
+    "p95_ns": 687615,
+    "p99_ns": 953855
+   },
+   "login_blocked": {
+    "n": 0,
+    "descartados": 0
+   },
+   "login_err": {
+    "n": 0,
+    "descartados": 0
+   },
+   "logout_noop": {
+    "n": 0,
+    "descartados": 0
+   },
+   "logout_ok": {
+    "n": 41438,
+    "descartados": 4987,
+    "p50_ns": 516607,
+    "p95_ns": 677887,
+    "p99_ns": 898047
+   }
+  },
+  "linha_mistura": "Mistura v3: validate_isolados=986274 token_antigo=49119 logout_isolados=10419 reposicoes=10419 reposicao_omitida=0 reposicao_erro=0",
+  "linha_desfechos": "Desfechos Validate: valid=967726 invalid=49567 not_found=0 erro=0",
+  "linha_carga": "Carga: mix=v3 cache=sessions slots=100000 entradas=200000 lotes=200 ms=1219",
+  "linha_q": "Mistura: mix=v3 q=0.05",
+  "mistura_v3_stdout": {
+   "validate_isolados": 986274,
+   "token_antigo": 49119,
+   "logout_isolados": 10419,
+   "reposicoes": 10419,
+   "reposicao_omitida": 0,
+   "reposicao_erro": 0
+  },
+  "violacoes_por_invariante": {},
+  "carga": {
+   "mix": "v3",
+   "replicacao": "sync",
+   "cache": "sessions",
+   "universo": 100000,
+   "entradas_por_slot": 2,
+   "entradas": 200000,
+   "tamanho_final": 200000,
+   "lotes": 200,
+   "duracao_ms": 1219,
+   "q": 0.05,
+   "veredito": "OK",
+   "motivo": null
+  },
+  "estado": {
+   "reset_state": "on",
+   "replicacao": "sync",
+   "caches": [
+    "sessions",
+    "counters"
+   ],
+   "tamanhos_antes": [
+    416262,
+    36
+   ],
+   "tamanhos_depois": [
+    0,
+    0
+   ],
+   "duracao_ms": 33,
+   "veredito": "OK",
+   "motivo": null
+  },
+  "verificador_exit": 0,
+  "verificador_veredito": "OK",
+  "leitor": {
+   "status": "OK",
+   "eventos": 1100221,
+   "erros": 0,
+   "por_codigo": {
+    "COUNTED": 10471,
+    "INVALID": 49567,
+    "NONE": 41438,
+    "OK": 31019,
+    "VALID": 967726
+   }
+  },
+  "criterios": {
+   "C1": {
+    "terco1_pct": 5.0186,
+    "terco2_pct": 5.0352,
+    "terco3_pct": 5.0233,
+    "dif_1_3_pp": 0.0047,
+    "ok": true
+   },
+   "C2": {
+    "frac_pct": 5.0257,
+    "ok": true
+   },
+   "C3": {
+    "k": 49119,
+    "n": 986274,
+    "n_csv": 986274,
+    "z": 3.2905,
+    "p0": 0.05,
+    "dif_stdout_csv": 0,
+    "margem_fronteira": 4,
+    "sanidade": null,
+    "frac_pct": 4.980259035521569,
+    "meia_largura_pp": 0.0722120888291647,
+    "desvio_pp": -0.019740964478431183,
+    "banda_pct": [
+     4.927787911170835,
+     5.072212088829165
+    ],
+    "ok_ic": true,
+    "ok_csv": true,
+    "ok": true
+   },
+   "C4": {
+    "validate_not_found": 0,
+    "login_ok_frac": 1.0,
+    "eventos_menos_operacoes": 69674,
+    "dois_x_logins_ok": 69674,
+    "ok": true
+   },
+   "C5": {
+    "logout_isolados": 10419,
+    "reposicoes": 10419,
+    "reposicao_omitida": 0,
+    "reposicao_erro": 0,
+    "logout_isolados_csv": 10419,
+    "dif_stdout_csv": 0,
+    "logout_noop_janela": 0,
+    "logout_isolados_not_found_csv": 0,
+    "ok": true
+   },
+   "C6": {
+    "I1": 0,
+    "I4": 0,
+    "ok": true
+   },
+   "C7": {
+    "exit": 0,
+    "veredito": "OK",
+    "ok": true
+   },
+   "C8": {
+    "tamanho_final": 200000,
+    "carga_ms": 1219,
+    "ok": true
+   },
+   "C9": {
+    "exit": 0,
+    "ok": true
+   },
+   "B438": {
+    "invalidacao_perdida": 0,
+    "conflito_esgotado": 0,
+    "ok": true
+   }
+  },
+  "todos_ok": true,
+  "excesso_invalid_menos_token_pp": 0.0454,
+  "excesso_referencia": {
+   "b43_7": {
+    "execucao": "Q2",
+    "frac_invalid_pct": 5.0466,
+    "token_pct": 5.0001,
+    "excesso_pp": 0.0465
+   },
+   "b43_8": null
+  }
+ },
+ "R4": {
+  "cenario": "S2",
+  "replicacao": "async",
+  "mix": "v3",
+  "duracao_s": 120,
+  "linhas_csv": 1148248,
+  "csv_operation_return_code": {
+   "IncrementFailure COUNTED": 11078,
+   "Login OK": 32597,
+   "Logout NONE": 43391,
+   "Validate INVALID": 51602,
+   "Validate VALID": 1009580
+  },
+  "validate_isolados_csv": 1028585,
+  "invalid_isolados_csv": 51602,
+  "frac_invalid_isolados_pct": 5.0168,
+  "tercos": [
+   {
+    "validate_isolados": 350163,
+    "invalid": 17466,
+    "frac_pct": 4.988
+   },
+   {
+    "validate_isolados": 345479,
+    "invalid": 17284,
+    "frac_pct": 5.0029
+   },
+   {
+    "validate_isolados": 332943,
+    "invalid": 16852,
+    "frac_pct": 5.0615
+   }
+  ],
+  "decimos": [
+   {
+    "validate_isolados": 105918,
+    "invalid": 5226,
+    "frac_pct": 4.934
+   },
+   {
+    "validate_isolados": 104687,
+    "invalid": 5222,
+    "frac_pct": 4.9882
+   },
+   {
+    "validate_isolados": 104781,
+    "invalid": 5309,
+    "frac_pct": 5.0668
+   },
+   {
+    "validate_isolados": 105505,
+    "invalid": 5261,
+    "frac_pct": 4.9865
+   },
+   {
+    "validate_isolados": 104619,
+    "invalid": 5152,
+    "frac_pct": 4.9245
+   },
+   {
+    "validate_isolados": 103117,
+    "invalid": 5203,
+    "frac_pct": 5.0457
+   },
+   {
+    "validate_isolados": 100701,
+    "invalid": 5041,
+    "frac_pct": 5.0059
+   },
+   {
+    "validate_isolados": 101074,
+    "invalid": 5055,
+    "frac_pct": 5.0013
+   },
+   {
+    "validate_isolados": 101284,
+    "invalid": 5155,
+    "frac_pct": 5.0896
+   },
+   {
+    "validate_isolados": 96899,
+    "invalid": 4978,
+    "frac_pct": 5.1373
+   }
+  ],
+  "logout_isolados_csv_por_codigo": {
+   "NONE": 10794
+  },
+  "exit": 0,
+  "violacoes_stdout": 0,
+  "linha_auditor": "Auditor: i1_concorrentes=141 i4_concorrentes=0",
+  "linha_invalidacao": "Invalidacao: perdida=0 conflito_esgotado=0",
+  "linha_reset": "Reset: reset_state=on caches=sessions-async,counters-async antes=469854,36 depois=0,0 ms=19",
+  "invalidacao_perdida": 0,
+  "conflito_esgotado": 0,
+  "i1_concorrentes": 141,
+  "i4_concorrentes": 0,
+  "registrados": 1148248,
+  "descartados_warmup": 196709,
+  "total_operacoes": 1268783,
+  "histogramas": {
+   "login_ok": {
+    "n": 32597,
+    "descartados": 5490,
+    "p50_ns": 356863,
+    "p95_ns": 456703,
+    "p99_ns": 608255
+   },
+   "login_blocked": {
+    "n": 0,
+    "descartados": 0
+   },
+   "login_err": {
+    "n": 0,
+    "descartados": 0
+   },
+   "logout_noop": {
+    "n": 0,
+    "descartados": 0
+   },
+   "logout_ok": {
+    "n": 43391,
+    "descartados": 7409,
+    "p50_ns": 357887,
+    "p95_ns": 459263,
+    "p99_ns": 637951
+   }
+  },
+  "linha_mistura": "Mistura v3: validate_isolados=1028585 token_antigo=51303 logout_isolados=10794 reposicoes=10794 reposicao_omitida=0 reposicao_erro=0",
+  "linha_desfechos": "Desfechos Validate: valid=1009580 invalid=51602 not_found=0 erro=0",
+  "linha_carga": "Carga: mix=v3 cache=sessions-async slots=100000 entradas=200000 lotes=200 ms=1050",
+  "linha_q": "Mistura: mix=v3 q=0.05",
+  "mistura_v3_stdout": {
+   "validate_isolados": 1028585,
+   "token_antigo": 51303,
+   "logout_isolados": 10794,
+   "reposicoes": 10794,
+   "reposicao_omitida": 0,
+   "reposicao_erro": 0
+  },
+  "violacoes_por_invariante": {},
+  "carga": {
+   "mix": "v3",
+   "replicacao": "async",
+   "cache": "sessions-async",
+   "universo": 100000,
+   "entradas_por_slot": 2,
+   "entradas": 200000,
+   "tamanho_final": 200000,
+   "lotes": 200,
+   "duracao_ms": 1050,
+   "q": 0.05,
+   "veredito": "OK",
+   "motivo": null
+  },
+  "estado": {
+   "reset_state": "on",
+   "replicacao": "async",
+   "caches": [
+    "sessions-async",
+    "counters-async"
+   ],
+   "tamanhos_antes": [
+    469854,
+    36
+   ],
+   "tamanhos_depois": [
+    0,
+    0
+   ],
+   "duracao_ms": 19,
+   "veredito": "OK",
+   "motivo": null
+  },
+  "verificador_exit": 0,
+  "verificador_veredito": "OK",
+  "leitor": {
+   "status": "OK",
+   "eventos": 1148248,
+   "erros": 0,
+   "por_codigo": {
+    "COUNTED": 11078,
+    "INVALID": 51602,
+    "NONE": 43391,
+    "OK": 32597,
+    "VALID": 1009580
+   }
+  },
+  "criterios": {
+   "C1": {
+    "terco1_pct": 4.988,
+    "terco2_pct": 5.0029,
+    "terco3_pct": 5.0615,
+    "dif_1_3_pp": 0.0735,
+    "ok": true
+   },
+   "C2": {
+    "frac_pct": 5.0168,
+    "ok": true
+   },
+   "C3": {
+    "k": 51303,
+    "n": 1028585,
+    "n_csv": 1028585,
+    "z": 3.2905,
+    "p0": 0.05,
+    "dif_stdout_csv": 0,
+    "margem_fronteira": 4,
+    "sanidade": null,
+    "frac_pct": 4.987725856394951,
+    "meia_largura_pp": 0.07071126498869006,
+    "desvio_pp": -0.012274143605049692,
+    "banda_pct": [
+     4.92928873501131,
+     5.070711264988691
+    ],
+    "ok_ic": true,
+    "ok_csv": true,
+    "ok": true
+   },
+   "C4": {
+    "validate_not_found": 0,
+    "login_ok_frac": 1.0,
+    "eventos_menos_operacoes": 76174,
+    "dois_x_logins_ok": 76174,
+    "ok": true
+   },
+   "C5": {
+    "logout_isolados": 10794,
+    "reposicoes": 10794,
+    "reposicao_omitida": 0,
+    "reposicao_erro": 0,
+    "logout_isolados_csv": 10794,
+    "dif_stdout_csv": 0,
+    "logout_noop_janela": 0,
+    "logout_isolados_not_found_csv": 0,
+    "ok": true
+   },
+   "C6": {
+    "I1": 0,
+    "I4": 0,
+    "ok": true
+   },
+   "C7": {
+    "exit": 0,
+    "veredito": "OK",
+    "ok": true
+   },
+   "C8": {
+    "tamanho_final": 200000,
+    "carga_ms": 1050,
+    "ok": true
+   },
+   "C9": {
+    "exit": 0,
+    "ok": true
+   },
+   "B438": {
+    "invalidacao_perdida": 0,
+    "conflito_esgotado": 0,
+    "ok": true
+   }
+  },
+  "todos_ok": true,
+  "excesso_invalid_menos_token_pp": 0.0291,
+  "excesso_referencia": {
+   "b43_7": {
+    "execucao": "Q4",
+    "frac_invalid_pct": 5.0324,
+    "token_pct": 5.0001,
+    "excesso_pp": 0.0323
+   },
+   "b43_8": null
+  }
+ },
+ "R5": {
+  "cenario": "S1",
+  "replicacao": "sync",
+  "mix": "v3",
+  "duracao_s": 600,
+  "linhas_csv": 3963980,
+  "csv_operation_return_code": {
+   "IncrementFailure COUNTED": 264559,
+   "Login OK": 659869,
+   "Logout NONE": 923721,
+   "ResetFailures NONE": 132031,
+   "Validate INVALID": 69403,
+   "Validate VALID": 1914397
+  },
+  "validate_isolados_csv": 1323932,
+  "invalid_isolados_csv": 69403,
+  "frac_invalid_isolados_pct": 5.2422,
+  "tercos": [
+   {
+    "validate_isolados": 446509,
+    "invalid": 23109,
+    "frac_pct": 5.1755
+   },
+   {
+    "validate_isolados": 436672,
+    "invalid": 22932,
+    "frac_pct": 5.2515
+   },
+   {
+    "validate_isolados": 440751,
+    "invalid": 23362,
+    "frac_pct": 5.3005
+   }
+  ],
+  "decimos": [
+   {
+    "validate_isolados": 135918,
+    "invalid": 6984,
+    "frac_pct": 5.1384
+   },
+   {
+    "validate_isolados": 135676,
+    "invalid": 7132,
+    "frac_pct": 5.2566
+   },
+   {
+    "validate_isolados": 131194,
+    "invalid": 6798,
+    "frac_pct": 5.1816
+   },
+   {
+    "validate_isolados": 128934,
+    "invalid": 6740,
+    "frac_pct": 5.2275
+   },
+   {
+    "validate_isolados": 129740,
+    "invalid": 6788,
+    "frac_pct": 5.232
+   },
+   {
+    "validate_isolados": 133355,
+    "invalid": 6900,
+    "frac_pct": 5.1742
+   },
+   {
+    "validate_isolados": 132920,
+    "invalid": 7067,
+    "frac_pct": 5.3167
+   },
+   {
+    "validate_isolados": 133808,
+    "invalid": 7106,
+    "frac_pct": 5.3106
+   },
+   {
+    "validate_isolados": 132321,
+    "invalid": 7070,
+    "frac_pct": 5.3431
+   },
+   {
+    "validate_isolados": 130066,
+    "invalid": 6818,
+    "frac_pct": 5.242
+   }
+  ],
+  "logout_isolados_csv_por_codigo": {
+   "NONE": 263852
+  },
+  "exit": 0,
+  "violacoes_stdout": 0,
+  "linha_auditor": "Auditor: i1_concorrentes=721 i4_concorrentes=0",
+  "linha_invalidacao": "Invalidacao: perdida=0 conflito_esgotado=0",
+  "linha_reset": "Reset: reset_state=on caches=sessions,counters antes=246425,36 depois=0,0 ms=19",
+  "invalidacao_perdida": 0,
+  "conflito_esgotado": 0,
+  "i1_concorrentes": 721,
+  "i4_concorrentes": 0,
+  "registrados": 3963980,
+  "descartados_warmup": 684710,
+  "total_operacoes": 3100842,
+  "histogramas": {
+   "login_ok": {
+    "n": 659869,
+    "descartados": 114055,
+    "p50_ns": 530943,
+    "p95_ns": 756735,
+    "p99_ns": 1040383
+   },
+   "login_blocked": {
+    "n": 0,
+    "descartados": 0
+   },
+   "login_err": {
+    "n": 0,
+    "descartados": 0
+   },
+   "logout_noop": {
+    "n": 0,
+    "descartados": 0
+   },
+   "logout_ok": {
+    "n": 923721,
+    "descartados": 159804,
+    "p50_ns": 537087,
+    "p95_ns": 762879,
+    "p99_ns": 1043455
+   }
+  },
+  "linha_mistura": "Mistura v3: validate_isolados=1323932 token_antigo=66221 logout_isolados=263852 reposicoes=263852 reposicao_omitida=0 reposicao_erro=0",
+  "linha_desfechos": "Desfechos Validate: valid=1914397 invalid=69403 not_found=0 erro=0",
+  "linha_carga": "Carga: mix=v3 cache=sessions slots=100000 entradas=200000 lotes=200 ms=1279",
+  "linha_q": "Mistura: mix=v3 q=0.05",
+  "mistura_v3_stdout": {
+   "validate_isolados": 1323932,
+   "token_antigo": 66221,
+   "logout_isolados": 263852,
+   "reposicoes": 263852,
+   "reposicao_omitida": 0,
+   "reposicao_erro": 0
+  },
+  "violacoes_por_invariante": {},
+  "carga": {
+   "mix": "v3",
+   "replicacao": "sync",
+   "cache": "sessions",
+   "universo": 100000,
+   "entradas_por_slot": 2,
+   "entradas": 200000,
+   "tamanho_final": 200000,
+   "lotes": 200,
+   "duracao_ms": 1279,
+   "q": 0.05,
+   "veredito": "OK",
+   "motivo": null
+  },
+  "estado": {
+   "reset_state": "on",
+   "replicacao": "sync",
+   "caches": [
+    "sessions",
+    "counters"
+   ],
+   "tamanhos_antes": [
+    246425,
+    36
+   ],
+   "tamanhos_depois": [
+    0,
+    0
+   ],
+   "duracao_ms": 19,
+   "veredito": "OK",
+   "motivo": null
+  },
+  "verificador_exit": 0,
+  "verificador_veredito": "OK",
+  "leitor": {
+   "status": "OK",
+   "eventos": 3963980,
+   "erros": 0,
+   "por_codigo": {
+    "COUNTED": 264559,
+    "INVALID": 69403,
+    "NONE": 1055752,
+    "OK": 659869,
+    "VALID": 1914397
+   }
+  },
+  "criterios": {
+   "C1": {
+    "terco1_pct": 5.1755,
+    "terco2_pct": 5.2515,
+    "terco3_pct": 5.3005,
+    "dif_1_3_pp": 0.125,
+    "decimos_max_menos_min_pp": 0.2047,
+    "ok": true
+   },
+   "C2": {
+    "frac_pct": 5.2422,
+    "ok": true
+   },
+   "C3": {
+    "k": 66221,
+    "n": 1323932,
+    "n_csv": 1323932,
+    "z": 3.2905,
+    "p0": 0.05,
+    "dif_stdout_csv": 0,
+    "margem_fronteira": 4,
+    "sanidade": null,
+    "frac_pct": 5.001842994957445,
+    "meia_largura_pp": 0.06232694788501354,
+    "desvio_pp": 0.0018429949574447213,
+    "banda_pct": [
+     4.937673052114986,
+     5.062326947885014
+    ],
+    "ok_ic": true,
+    "ok_csv": true,
+    "ok": true
+   },
+   "C4": {
+    "validate_not_found": 0,
+    "login_ok_frac": 1.0,
+    "eventos_menos_operacoes": 1547848,
+    "dois_x_logins_ok": 1547848,
+    "ok": true
+   },
+   "C5": {
+    "logout_isolados": 263852,
+    "reposicoes": 263852,
+    "reposicao_omitida": 0,
+    "reposicao_erro": 0,
+    "logout_isolados_csv": 263852,
+    "dif_stdout_csv": 0,
+    "logout_noop_janela": 0,
+    "logout_isolados_not_found_csv": 0,
+    "ok": true
+   },
+   "C6": {
+    "I1": 0,
+    "I4": 0,
+    "ok": true
+   },
+   "C7": {
+    "exit": 0,
+    "veredito": "OK",
+    "ok": true
+   },
+   "C8": {
+    "tamanho_final": 200000,
+    "carga_ms": 1279,
+    "ok": true
+   },
+   "C9": {
+    "exit": 0,
+    "ok": true
+   },
+   "B438": {
+    "invalidacao_perdida": 0,
+    "conflito_esgotado": 0,
+    "ok": true
+   }
+  },
+  "todos_ok": true,
+  "excesso_invalid_menos_token_pp": 0.2403,
+  "excesso_referencia": {
+   "b43_7": {
+    "execucao": "L1",
+    "frac_invalid_pct": 5.2332,
+    "token_pct": 4.9999,
+    "excesso_pp": 0.2333
+   },
+   "b43_8": {
+    "execucao": "P5",
+    "frac_invalid_pct": 5.2385,
+    "token_pct": 5.0,
+    "excesso_pp": 0.2385
+   }
+  }
+ }
+}

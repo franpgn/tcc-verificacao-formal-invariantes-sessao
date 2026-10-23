@@ -596,6 +596,12 @@ class A9K6(Base):
         rc, ch = self._k6("S1-sync-F3", execucao={"netem_pos": {"netem": True, "remocao_extra": True}})
         self.assertEqual(rc, 10)
 
+    def test_f3_remocao_extra_recusa(self):
+        """C4: netem que o runner teve de remover depois do injetor = 'ausente depois' falhou (PR §6, K6)."""
+        rc, ch = self._k6("S2-sync-F3", execucao={"netem_pos": {"netem": False, "remocao_extra": True}})
+        self.assertEqual((rc, ch["veredito"]), (10, "RECUSADA"))
+        self.assertTrue(ch["criterios"]["K6"]["valor"]["remocao_extra"])
+
     def test_f1_injetor_exit_4(self):
         rc, ch = self._k6("S1-sync-F1", execucao={"injetor_exit": 4})
         self.assertEqual((rc, ch["veredito"]), (10, "RECUSADA"))

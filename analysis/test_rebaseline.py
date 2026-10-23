@@ -911,7 +911,8 @@ class Piloto(Base):
 
     def test_piloto(self):
         for cel in ("S1-sync-none", "S2-async-F3"):
-            d = montar_exec(self.saida, self.linha(cel, fase="piloto"))
+            d = montar_exec(self.saida, self.linha(cel, fase="piloto"), execucao={"falha_efetiva": {
+                "netem_efetiva": {"alvo_s": 51, "netem": True}}} if cel.endswith("F3") else None)
             self.checar(d)
         montar_exec(self.saida, self.linha("S1-sync-none", n=0))   # campanha nao entra no piloto
         rc, out, err = rodar("piloto", "--saida", self.saida, "--matriz", self.tsv)
@@ -926,6 +927,8 @@ class Piloto(Base):
         self.assertIn("IncrementFailure", c["operacoes_sem_p99"])
         self.assertAlmostEqual(c["duracao_real_s"], 330.0)
         self.assertTrue((self.saida / "piloto.md").exists())
+        # C5: o instante efetivo da falha registrado pelo runner chega ao piloto (so relatorio)
+        self.assertEqual(p["celulas"]["S2-async-F3"]["falha_efetiva"], {"netem_efetiva": {"alvo_s": 51, "netem": True}})
 
 
 # ============================================================================ A12: regressao opt-in

@@ -423,6 +423,10 @@ verdade "R4 disparo em N + 49 s (+-1 s)" test "$(( DISP - ANC ))" -ge 48000 -a "
 verdade "R4 podman stop do injetor dentro da tolerancia de K6 (N+48..N+51 s)" test "$(( STOP - ANC ))" -ge 48000 -a "$(( STOP - ANC ))" -le 51000
 OFF="$(json "${D}/execucao.json" 'd["inj_inicio_offset_s"]')"
 verdade "R4 inj_inicio_offset_s em [48,50]" "${REAL_PY}" -c "import sys; sys.exit(0 if 48 <= ${OFF} <= 50 else 1)"
+PAR="$(json "${D}/execucao.json" 'd["falha_efetiva"]["f1_parado_desde_ancora_s"]')"
+REI="$(json "${D}/execucao.json" 'd["falha_efetiva"]["f1_reiniciado_desde_ancora_s"]')"
+echo "   (C5: isn2 parado a +${PAR} s e reiniciado a +${REI} s da ancora)"
+verdade "R4 (C5) instante efetivo do F1 registrado (parado >= +48 s, reinicio ~60 s depois)" "${REAL_PY}" -c     "import sys; p, r = ${PAR}, ${REI}; sys.exit(0 if p >= 48 and 55 <= r - p <= 70 else 1)"
 
 novo_caso r4b
 matriz "${CASO}/m.tsv" piloto "1000 S1-sync-F1"
@@ -473,6 +477,8 @@ verdade "R6 systemctl stop depois da ultima remocao" test "${STP}" -gt "${DEL}" 
 D="$(exec_dir 1000)"
 ok "R6 amostras de netem (+70 e +280) presentes" "[True, True]" "$(json "${D}/execucao.json" '[a["netem"] for a in d["netem_amostras"]]')"
 ok "R6 alvos das amostras" "[70, 280]" "$(json "${D}/execucao.json" '[a["alvo_s"] for a in d["netem_amostras"]]')"
+ok "R6 (C5) amostra efetiva do netem a +51 s (so relatorio)" "51" "$(json "${D}/execucao.json" 'd["falha_efetiva"]["netem_efetiva"]["alvo_s"]')"
+ok "R6 (C5) amostra efetiva com offset e resultado" "True" "$(json "${D}/execucao.json" 'd["falha_efetiva"]["netem_efetiva"]["offset_s"] >= 50 and isinstance(d["falha_efetiva"]["netem_efetiva"]["netem"], bool)')"
 ok "R6 netem ausente depois" "False" "$(json "${D}/execucao.json" 'd["netem_pos"]["netem"]')"
 ok "R6 nenhum timer sobrando" "0" "$(ls "${ST}"/timer-* 2>/dev/null | grep -c .)"
 

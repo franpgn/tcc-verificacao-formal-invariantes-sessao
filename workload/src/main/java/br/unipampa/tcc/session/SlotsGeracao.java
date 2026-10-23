@@ -14,7 +14,7 @@ import java.util.concurrent.atomic.AtomicIntegerArray;
  *
  * <pre>
  * carga (CargaSlots):  chave(k,0) INVALID(LOGOUT), chave(k,1) VALID, geracao[k] = 1
- * Validate isolado:    le chave(k, geracao[k])  ou, 1 em cada 20 por thread, chave(k, geracao[k]-1)
+ * Validate isolado:    le chave(k, geracao[k])  ou, por sorteio de Bernoulli p = 0,05 por thread (DT-008), chave(k, geracao[k]-1)
  * Logout isolado:      synchronized (trava(k)) { g = geracao[k]; logout chave(k,g);
  *                                                 reposicao chave(k,g+1) VALID; geracao[k] = g+1 }
  * </pre>

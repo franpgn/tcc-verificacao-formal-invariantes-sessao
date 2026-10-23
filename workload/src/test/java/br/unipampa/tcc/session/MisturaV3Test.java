@@ -44,7 +44,7 @@ class MisturaV3Test {
         double frac = (double) invalid / val.size();
         assertEquals(0.05, frac, 3.2905 * Math.sqrt(0.05 * 0.95 / val.size()), "fracao INVALID " + frac);
 
-        // estacionaria: INVALID por terco das chamadas, diferenca <= 0,5 p.p.
+        // estacionaria: INVALID por terco das chamadas, diferenca no IC de 99,9 % da diferenca de duas proporcoes (DT-008)
         int terco = val.size() / 3;
         double min = 1;
         double max = 0;

@@ -367,6 +367,8 @@ public final class WorkloadMain {
             ops.definirDesfechosValidate(desfechos);
             // B-43.7: contadores da v3 e das reposicoes na mesma janela de medicao.
             ops.definirPoliticaReposicao(politica);
+            // B-43.9: contadores do auditor (Auditor:, Auditor I2:, Login:) na mesma janela de medicao.
+            ops.definirPoliticaAuditor(politica);
             MisturaV3 misturaV3 = slots != null ? new MisturaV3(slots, politica) : null;
             BooleanSupplier parar = cli.paraNoFimDaFalha
                     ? new ParadaPorMarcador(Path.of(cli.marcadores))
@@ -388,7 +390,7 @@ public final class WorkloadMain {
             if (cli.scenarioS3) {
                 // B-33 (E2): cenario S3, tratado ANTES do enum Scenario (S1/S2 seguem o ramo abaixo).
                 invalidacoes = executarS3(cli, rep, latency, auditor, eventos, relogio, rastro,
-                        parar, fim, totalOps, instanciasAuditor);
+                        parar, fim, totalOps, instanciasAuditor, politica);
             } else {
             ExecutorService pool = Executors.newFixedThreadPool(cli.threads);
             long opsAlvoPorThread = cli.ops > 0 ? cli.ops / cli.threads : Long.MAX_VALUE;
@@ -425,6 +427,10 @@ public final class WorkloadMain {
             System.out.println("Violacoes detectadas: " + auditor.total());
             System.out.println(SessionOps.linhaAuditor(instanciasAuditor));
             System.out.println(SessionOps.linhaInvalidacao(instanciasAuditor));
+            // B-43.9: linhas NOVAS (Auditor: e Invalidacao: sao fixadas inteiras por teste).
+            System.out.println(SessionOps.linhaAuditorI2(instanciasAuditor));
+            System.out.println(SessionOps.linhaAuditorTotal(instanciasAuditor));
+            System.out.println(SessionOps.linhaLogin(instanciasAuditor));
             if (!cli.scenarioS3) {
                 System.out.println(desfechos.linha());
             }
@@ -479,7 +485,7 @@ public final class WorkloadMain {
     private static Supplier<Map<String, SessionState.Motivo>> executarS3(Cli cli, int rep,
             LatencyRegistry latency, InvariantAuditor auditor, EventCsvWriter eventos,
             EpochClock relogio, RastroCliente rastro, BooleanSupplier parar, long fimMs,
-            AtomicLong totalOps, List<SessionOps> instanciasAuditor) throws Exception {
+            AtomicLong totalOps, List<SessionOps> instanciasAuditor, WarmupPolicy politica) throws Exception {
         S3Registro registro = new S3Registro();
         RelogioS3 reloginho = RelogioS3.sistema();
         ContextoS3 ctx = new ContextoS3(reloginho, cli.s3, registro,
@@ -490,6 +496,10 @@ public final class WorkloadMain {
             // B-43.6: a linha "Auditor:" soma os servidores de aplicacao e o admin (mapa compartilhado).
             instanciasAuditor.clear();
             instanciasAuditor.addAll(clientes.instancias());
+            // B-43.9: contadores do auditor na janela de medicao, em todas as instancias do S3.
+            for (SessionOps o : clientes.instancias()) {
+                o.definirPoliticaAuditor(politica);
+            }
             S3Simulacao sim = new S3Simulacao(ctx, clientes.servidoresApp(), clientes.admin(), inicioNs);
             System.out.printf("S3: %d usuarios (U), %d contas de limite (L), 1 admin; modo %s; admin-node %s%n",
                     cli.s3.usuarios, cli.s3.contasLimite, cli.s3.modoCliente, cli.s3.noAdmin);

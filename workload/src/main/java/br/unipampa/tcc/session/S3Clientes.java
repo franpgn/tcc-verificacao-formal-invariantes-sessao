@@ -38,6 +38,11 @@ public final class S3Clientes implements AutoCloseable {
     private final List<SessionOps> servidoresApp = new ArrayList<>();
     private SessionOps admin;
     private final ConcurrentHashMap<String, SessionState.Motivo> invalidacoes = new ConcurrentHashMap<>();
+    /**
+     * B-43.9 (DT-002): marcos do bloqueio por identidade, compartilhados como o mapa de invalidacoes: o
+     * admin grava os marcos do {@code block} e qualquer servidor de aplicacao classifica a leitura.
+     */
+    private final ConcurrentHashMap<String, MarcoBloqueio> marcos = new ConcurrentHashMap<>();
 
     public static List<HostPort> servidores(String csv) {
         List<HostPort> out = new ArrayList<>();
@@ -106,14 +111,14 @@ public final class S3Clientes implements AutoCloseable {
                             configuracaoPinned(no, cli.usuario, cli.senha, p));
                     c.gerenciadores.add(rcm);
                     c.servidoresApp.add(new SessionOps(rcm, cli.replicacao, latency, auditor, eventos,
-                            relogio, rastro, c.invalidacoes, no.toString()));
+                            relogio, rastro, c.invalidacoes, c.marcos, no.toString()));
                 }
                 HostPort noAdmin = resolverNoAdmin(p.noAdmin, todos);
                 RemoteCacheManager rcmAdmin = new RemoteCacheManager(
                         configuracaoPinned(noAdmin, cli.usuario, cli.senha, p));
                 c.gerenciadores.add(rcmAdmin);
                 c.admin = new SessionOps(rcmAdmin, cli.replicacao, latency, auditor, eventos, relogio,
-                        rastro, c.invalidacoes, noAdmin.toString());
+                        rastro, c.invalidacoes, c.marcos, noAdmin.toString());
             } else {
                 RemoteCacheManager rcm = new RemoteCacheManager(
                         configuracaoTopology(todos, cli.usuario, cli.senha, p));
@@ -121,10 +126,10 @@ public final class S3Clientes implements AutoCloseable {
                 // um unico cliente: o rotulo nao diz em que no a operacao caiu (decide o cliente)
                 for (int i = 0; i < todos.size(); i++) {
                     c.servidoresApp.add(new SessionOps(rcm, cli.replicacao, latency, auditor, eventos,
-                            relogio, rastro, c.invalidacoes, "topology"));
+                            relogio, rastro, c.invalidacoes, c.marcos, "topology"));
                 }
                 c.admin = new SessionOps(rcm, cli.replicacao, latency, auditor, eventos, relogio,
-                        rastro, c.invalidacoes, "topology");
+                        rastro, c.invalidacoes, c.marcos, "topology");
             }
         } catch (RuntimeException e) {
             c.close();
@@ -147,6 +152,11 @@ public final class S3Clientes implements AutoCloseable {
             out.add(admin);
         }
         return out;
+    }
+
+    /** B-43.9: o mapa de marcos compartilhado por todas as instancias deste S3. */
+    ConcurrentHashMap<String, MarcoBloqueio> marcosCompartilhados() {
+        return marcos;
     }
 
     /** Copia das invalidacoes confirmadas por qualquer ator (insumo da varredura I1/I4). */

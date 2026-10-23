@@ -99,6 +99,120 @@ public class SessionOps {
     /** B-43.8: tentativas de escrita condicional por invalidacao, no total. */
     static final int TENTATIVAS_CONDICIONAIS = 3;
 
+    /**
+     * B-43.9 (DT-002): rotulos das leituras de sessao VALID sob identidade BLOCKED que NAO sao I2 (fora
+     * de {@code S_viol}): dentro da janela da cascata concluida, ou com a cascata do bloqueio pendente
+     * ({@code block} em erro ou ainda em curso). Saem no CSV de violacoes com esse rotulo.
+     */
+    static final String I2_JANELA_CASCATA = "I2_JANELA_CASCATA";
+    static final String I2_CASCATA_INCOMPLETA = "I2_CASCATA_INCOMPLETA";
+
+    /**
+     * B-43.9 (DT-002): marcos do bloqueio por identidade ({@link MarcoBloqueio}). Mesmo ciclo de vida do
+     * mapa de invalidacoes confirmadas: um por repeticao em S1/S2 e um compartilhado por
+     * {@link S3Clientes} entre os servidores de aplicacao e o admin.
+     */
+    private final ConcurrentHashMap<String, MarcoBloqueio> marcos;
+
+    /**
+     * B-43.9: contadores com janela ({@link #definirPoliticaAuditor}) e totais sem janela (conferencia,
+     * D11 do B-43.6). So diagnostico (DT-001), fora de {@code S_viol}.
+     */
+    private final LongAdder i2Concorrentes = new LongAdder();
+    private final LongAdder i2JanelaCascata = new LongAdder();
+    private final LongAdder i2CascataIncompleta = new LongAdder();
+    private final LongAdder i2SemMarco = new LongAdder();
+    private final LongAdder loginRevertido = new LongAdder();
+    private final LongAdder i1ConcorrentesTotal = new LongAdder();
+    private final LongAdder i4ConcorrentesTotal = new LongAdder();
+    private final LongAdder i2ConcorrentesTotal = new LongAdder();
+    private volatile WarmupPolicy politicaAuditor = WarmupPolicy.always();
+
+    /** B-43.9: janela de medicao dos contadores do auditor (a mesma do CSV); sem politica, sempre. */
+    void definirPoliticaAuditor(WarmupPolicy politica) {
+        this.politicaAuditor = politica != null ? politica : WarmupPolicy.always();
+    }
+
+    /** B-43.9: leituras VALID sob BLOCKED iniciadas antes de a identidade ser confirmada (DT-001). */
+    long i2Concorrentes() {
+        return i2Concorrentes.sum();
+    }
+
+    /** B-43.9: leituras VALID sob BLOCKED dentro da janela da cascata (DT-002). */
+    long i2JanelaCascata() {
+        return i2JanelaCascata.sum();
+    }
+
+    /** B-43.9: leituras VALID sob BLOCKED com a cascata do bloqueio pendente. */
+    long i2CascataIncompleta() {
+        return i2CascataIncompleta.sum();
+    }
+
+    /** B-43.9: I2 sem marco do bloqueio (so testes que montam BLOCKED direto no duble). */
+    long i2SemMarco() {
+        return i2SemMarco.sum();
+    }
+
+    /** B-43.9: logins revertidos pela dupla checagem (releitura BLOCKED depois do put da sessao). */
+    long loginRevertidoPorBloqueio() {
+        return loginRevertido.sum();
+    }
+
+    long i1ConcorrentesTotal() {
+        return i1ConcorrentesTotal.sum();
+    }
+
+    long i4ConcorrentesTotal() {
+        return i4ConcorrentesTotal.sum();
+    }
+
+    long i2ConcorrentesTotal() {
+        return i2ConcorrentesTotal.sum();
+    }
+
+    /** B-43.9: marco corrente do bloqueio da identidade ({@code null} = sem marco). */
+    MarcoBloqueio marco(String identidade) {
+        return marcos.get(identidade);
+    }
+
+    /** B-43.9: linha NOVA do stdout, logo depois de {@code Invalidacao:}; contadores com janela. */
+    static String linhaAuditorI2(Iterable<SessionOps> instancias) {
+        long c = 0;
+        long j = 0;
+        long p = 0;
+        long s = 0;
+        for (SessionOps o : instancias) {
+            c += o.i2Concorrentes();
+            j += o.i2JanelaCascata();
+            p += o.i2CascataIncompleta();
+            s += o.i2SemMarco();
+        }
+        return "Auditor I2: concorrentes=" + c + " janela_cascata=" + j + " cascata_incompleta=" + p
+                + " sem_marco=" + s;
+    }
+
+    /** B-43.9: linha NOVA do stdout, os contadores de corrida sem janela (conferencia). */
+    static String linhaAuditorTotal(Iterable<SessionOps> instancias) {
+        long i1 = 0;
+        long i4 = 0;
+        long i2 = 0;
+        for (SessionOps o : instancias) {
+            i1 += o.i1ConcorrentesTotal();
+            i4 += o.i4ConcorrentesTotal();
+            i2 += o.i2ConcorrentesTotal();
+        }
+        return "Auditor total: i1_concorrentes=" + i1 + " i4_concorrentes=" + i4 + " i2_concorrentes=" + i2;
+    }
+
+    /** B-43.9: linha NOVA do stdout com os logins revertidos pela dupla checagem. */
+    static String linhaLogin(Iterable<SessionOps> instancias) {
+        long r = 0;
+        for (SessionOps o : instancias) {
+            r += o.loginRevertidoPorBloqueio();
+        }
+        return "Login: revertido_por_bloqueio=" + r;
+    }
+
     long invalidacaoPerdida() {
         return invalidacaoPerdida.sum();
     }
@@ -226,8 +340,24 @@ public class SessionOps {
                EventCsvWriter eventos, EpochClock relogio, String replica,
                RastroCliente rastro,
                ConcurrentHashMap<String, SessionState.Motivo> invalidacoesCompartilhadas) {
+        this(sessions, identities, latency, auditor, eventos, relogio, replica, rastro,
+                invalidacoesCompartilhadas, null);
+    }
+
+    /**
+     * B-43.9: como o anterior, com o mapa de marcos do bloqueio ({@link MarcoBloqueio}) compartilhado
+     * ({@code null} = mapa proprio, como nos construtores existentes).
+     */
+    SessionOps(Armazem<SessionState> sessions,
+               Armazem<IdentityState> identities,
+               LatencyRegistry latency, InvariantAuditor auditor,
+               EventCsvWriter eventos, EpochClock relogio, String replica,
+               RastroCliente rastro,
+               ConcurrentHashMap<String, SessionState.Motivo> invalidacoesCompartilhadas,
+               ConcurrentHashMap<String, MarcoBloqueio> marcosCompartilhados) {
         this.invalidacoesConfirmadas = invalidacoesCompartilhadas != null
                 ? invalidacoesCompartilhadas : new ConcurrentHashMap<>();
+        this.marcos = marcosCompartilhados != null ? marcosCompartilhados : new ConcurrentHashMap<>();
         this.rastro = rastro;
         this.sessions = sessions;
         this.sessoesVersionadas = sessions instanceof ArmazemVersionado<SessionState> v ? v : null;
@@ -249,10 +379,24 @@ public class SessionOps {
                EpochClock relogio, RastroCliente rastro,
                ConcurrentHashMap<String, SessionState.Motivo> invalidacoesCompartilhadas,
                String replica) {
+        this(rcm, perfil, latency, auditor, eventos, relogio, rastro, invalidacoesCompartilhadas, null, replica);
+    }
+
+    /**
+     * B-43.9: como o anterior, com o mapa de marcos do bloqueio compartilhado entre os servidores de
+     * aplicacao e o admin do S3 ({@code null} = mapa proprio).
+     */
+    SessionOps(RemoteCacheManager rcm, PerfilReplicacao perfil, LatencyRegistry latency,
+               InvariantAuditor auditor, EventCsvWriter eventos,
+               EpochClock relogio, RastroCliente rastro,
+               ConcurrentHashMap<String, SessionState.Motivo> invalidacoesCompartilhadas,
+               ConcurrentHashMap<String, MarcoBloqueio> marcosCompartilhados,
+               String replica) {
         this(ArmazemVersionado.de(rcm.<String, SessionState>getCache(perfil.cacheSessoes())),
                 Armazem.de(rcm.<String, IdentityState>getCache(perfil.cacheContadores())),
                 latency, auditor, eventos, relogio,
-                replica != null ? replica : resolverReplica(rcm), rastro, invalidacoesCompartilhadas);
+                replica != null ? replica : resolverReplica(rcm), rastro, invalidacoesCompartilhadas,
+                marcosCompartilhados);
     }
 
     /**
@@ -314,8 +458,14 @@ public class SessionOps {
      *       foi concorrente com a invalidacao: conta em {@link #i1Concorrentes()} /
      *       {@link #i4Concorrentes()}.</li>
      * </ul>
+     *
+     * <p>B-43.9 (regra C): {@code registradas} e o conjunto local da operacao (criado no inicio dela) com
+     * as violacoes ja registradas, por (invariante, {@code sid}); {@code null} = sem deduplicacao
+     * ({@code validate} e {@code logout} nao versionado, que leem uma vez so). Os contadores de corrida
+     * nao sao deduplicados.</p>
      */
-    private void verificarI1I4(String sid, SessionState atual, SessionState.Motivo confirmadoAntes) {
+    private void verificarI1I4(String sid, SessionState atual, SessionState.Motivo confirmadoAntes,
+                               java.util.Set<String> registradas) {
         if (confirmadoAntes == null) {
             if (atual.estado() == SessionState.Estado.INVALID) {
                 SessionState.Motivo depois = invalidacoesConfirmadas.putIfAbsent(sid, atual.motivo());
@@ -395,7 +545,7 @@ public class SessionOps {
                     && s.estado() == SessionState.Estado.VALID) {
                 auditor.registrarViolacao("I2", sid, "valida sob bloqueio");
             }
-            verificarI1I4(sid, s, confirmadoAntes);
+            verificarI1I4(sid, s, confirmadoAntes, null);
             OpResult r = OpResult.okValidate(s.estado());
             emitir(OP_VALIDATE, t0, System.nanoTime(), r, sid);
             return contarValidate(r);
@@ -428,7 +578,7 @@ public class SessionOps {
                 // antes sobrescrevia invalidacoesConfirmadas incondicionalmente,
                 // escapando a checagem de I4 quando a primeira leitura pos-
                 // divergencia passava por este caminho em vez de validate().
-                verificarI1I4(sid, s, confirmadoAntes);
+                verificarI1I4(sid, s, confirmadoAntes, null);
                 latency.record("logout_noop", t0);
                 OpResult r = OpResult.okNoop();
                 emitir(OP_LOGOUT, t0, System.nanoTime(), r, sid);
@@ -439,7 +589,7 @@ public class SessionOps {
             // esta instancia), isso e uma violacao de I1 (irreversibilidade),
             // nao so um caso a sobrescrever. Checa ANTES de escrever a nova
             // invalidacao abaixo.
-            verificarI1I4(sid, s, confirmadoAntes);
+            verificarI1I4(sid, s, confirmadoAntes, null);
             SessionState atual = s.invalidar(SessionState.Motivo.LOGOUT, Instant.now());
             // B-43.6: a ordem importa. A confirmacao so entra no mapa DEPOIS de o put ter sido
             // reconhecido pelo cluster; assim, uma confirmacao visivel no mapa implica uma escrita
@@ -471,16 +621,18 @@ public class SessionOps {
      */
     private OpResult logoutVersionado(String sid, long t0) {
         try {
+            // B-43.9 (regra C): no maximo uma I1 e uma I4 por sid nesta operacao.
+            java.util.Set<String> registradas = new java.util.HashSet<>();
             SessionState.Motivo confirmadoAntes = invalidacoesConfirmadas.get(sid);
             ArmazemVersionado.Versionado<SessionState> v = sessoesVersionadas.lerComVersao(sid);
             if (v == null) {
                 return fimLogout(t0, "logout_noop", OpResult.notFound(), sid);
             }
-            verificarI1I4(sid, v.valor(), confirmadoAntes);
+            verificarI1I4(sid, v.valor(), confirmadoAntes, registradas);
             if (v.valor().estado() == SessionState.Estado.INVALID) {
                 return fimLogout(t0, "logout_noop", OpResult.okNoop(), sid);
             }
-            Desfecho d = invalidarCondicional(sid, v, SessionState.Motivo.LOGOUT);
+            Desfecho d = invalidarCondicional(sid, v, SessionState.Motivo.LOGOUT, registradas);
             if (d == Desfecho.ESCRITA) {
                 return fimLogout(t0, "logout_ok", OpResult.okNoop(), sid);
             }
@@ -506,7 +658,7 @@ public class SessionOps {
      * em {@link #conflitoEsgotado()} e lanca {@code IllegalStateException} (o chamador classifica).
      */
     private Desfecho invalidarCondicional(String sid, ArmazemVersionado.Versionado<SessionState> lida,
-                                          SessionState.Motivo motivo) {
+                                          SessionState.Motivo motivo, java.util.Set<String> registradas) {
         ArmazemVersionado.Versionado<SessionState> v = lida;
         for (int tentativa = 1; ; tentativa++) {
             SessionState nova = v.valor().invalidar(motivo, Instant.now());
@@ -519,7 +671,7 @@ public class SessionOps {
             if (v == null) {
                 return Desfecho.AUSENTE;
             }
-            verificarI1I4(sid, v.valor(), confirmadoAntes);
+            verificarI1I4(sid, v.valor(), confirmadoAntes, registradas);
             if (v.valor().estado() == SessionState.Estado.INVALID) {
                 invalidacaoPerdida.increment();
                 return Desfecho.PERDIDA;
@@ -643,14 +795,16 @@ public class SessionOps {
             // contra a copia (uma confirmacao que surge durante a varredura e corrida, nao I1).
             java.util.Map<String, SessionState.Motivo> confirmadasAntes =
                     new java.util.HashMap<>(invalidacoesConfirmadas);
+            // B-43.9 (regra C): no maximo uma I1 e uma I4 por sid nesta operacao (varredura e releituras).
+            java.util.Set<String> registradas = new java.util.HashSet<>();
             if (sessoesVersionadas != null) {
                 // B-43.8 (DT-003): a varredura so seleciona as candidatas; cada uma e invalidada com
                 // leitura versionada e escrita condicional (invalidarPorBloqueio).
                 sessions.entrySet().forEach(e -> {
                     if (e.getValue().identidade().equals(identidade)
                             && e.getValue().estado() == SessionState.Estado.VALID) {
-                        verificarI1I4(e.getKey(), e.getValue(), confirmadasAntes.get(e.getKey()));
-                        invalidarPorBloqueio(e.getKey());
+                        verificarI1I4(e.getKey(), e.getValue(), confirmadasAntes.get(e.getKey()), registradas);
+                        invalidarPorBloqueio(e.getKey(), registradas);
                     }
                 });
             } else {
@@ -660,7 +814,7 @@ public class SessionOps {
                     // B-23 (correcao, mesma razao de logout() acima): checa I1 contra
                     // um motivo ja confirmado para esta sid ANTES de escrever a nova
                     // invalidacao por cascata de bloqueio.
-                    verificarI1I4(e.getKey(), e.getValue(), confirmadasAntes.get(e.getKey()));
+                    verificarI1I4(e.getKey(), e.getValue(), confirmadasAntes.get(e.getKey()), registradas);
                     SessionState atual = e.getValue().invalidar(SessionState.Motivo.ADMIN_BLOCK, Instant.now());
                     // B-43.6: mesma ordem de logout(): put reconhecido, depois a confirmacao.
                     sessions.put(e.getKey(), atual);
@@ -686,17 +840,17 @@ public class SessionOps {
      * checagem I1/I4 e {@link #invalidarCondicional} com ADMIN_BLOCK. Conflito esgotado propaga a
      * excecao, e o {@code block} termina em erro (cascata parcial, como qualquer erro na cascata).
      */
-    private void invalidarPorBloqueio(String sid) {
+    private void invalidarPorBloqueio(String sid, java.util.Set<String> registradas) {
         SessionState.Motivo confirmadoAntes = invalidacoesConfirmadas.get(sid);
         ArmazemVersionado.Versionado<SessionState> v = sessoesVersionadas.lerComVersao(sid);
         if (v == null) {
             return;
         }
-        verificarI1I4(sid, v.valor(), confirmadoAntes);
+        verificarI1I4(sid, v.valor(), confirmadoAntes, registradas);
         if (v.valor().estado() == SessionState.Estado.INVALID) {
             return;
         }
-        invalidarCondicional(sid, v, SessionState.Motivo.ADMIN_BLOCK);
+        invalidarCondicional(sid, v, SessionState.Motivo.ADMIN_BLOCK, registradas);
     }
 
     /** O7, unblock. B-33: com try/catch e emitir. */

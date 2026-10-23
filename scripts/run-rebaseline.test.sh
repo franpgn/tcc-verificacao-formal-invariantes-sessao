@@ -375,6 +375,8 @@ G="$(grep -n 'GATE f3' "${OUT}/piloto/runner.log" | cut -d: -f1)"
 W1001="$(grep -n 'lancando workload i=1001' "${OUT}/piloto/runner.log" | cut -d: -f1)"
 W1002="$(grep -n 'lancando workload i=1002' "${OUT}/piloto/runner.log" | cut -d: -f1)"
 verdade "R3 gate f3 depois do F1 (i=1001) e antes da primeira F3 (i=1002)" test "${W1001:-0}" -lt "${G:-0}" -a "${G:-0}" -lt "${W1002:-0}"
+K1002="$(grep -n 'exec i=1002 .*portao K1' "${OUT}/piloto/runner.log" | cut -d: -f1)"
+verdade "R3 (C2) gate f3 antes do portao K1 da primeira F3" test "${G:-0}" -gt 0 -a "${G:-0}" -lt "${K1002:-0}"
 ok "R3 gates.json com 2 gates" "2" "$(json "${OUT}/piloto/gates.json" 'len(d["execucoes_do_runner"][-1]["gates"])')"
 ok "R3 4 workloads" "4" "$(grep -c ' java|-jar' "${ST}/chamadas.log")"
 for f in resumo.json resumo.md MANIFEST.sha256 ambiente.md; do
@@ -391,6 +393,13 @@ ok "R3 gate f3 errado -> exit 5" "5" "${RC}"
 ok "R3 F1 anterior rodou (podman stop)" "1" "$(grep -c ' podman|stop|isn2' "${ST}/chamadas.log")"
 ok "R3 nenhum netem sem o gate f3" "0" "$(grep -c 'tc|.*|qdisc|add' "${ST}/chamadas.log")"
 ok "R3 workload da F3 nao lancado" "1" "$(grep -c ' java|-jar' "${ST}/chamadas.log")"
+verdade "R3 (C2) go f3 errado nao deixa exec-1001" test -z "$(ls -d "${OUT}"/exec-1001-* 2>/dev/null)"
+printf 'go piloto %s
+go f3 1001
+' "${HOJE}" > "${RB_TTY_ARQUIVO}"
+rodar_runner piloto
+ok "R3 (C2) nova tentativa com o go f3 certo -> exit 0" "0" "${RC}"
+ok "R3 (C2) F1 ja checada nao roda de novo; F3 roda" "2" "$(grep -c ' java|-jar' "${ST}/chamadas.log")"
 fi
 
 # ============================================================================= R4

@@ -4,7 +4,7 @@ Pre-registro: docs/pre-registro-rebaseline-aprovado-2026-10-23.md (PR), DT-009, 
 As fixtures sao geradas no proprio teste em diretorios temporarios (nenhuma versionada).
 A12 (regressao contra o smoke B-43.9) e opt-in: le REBASELINE_ORACULO_DIR e pula com aviso se ausente.
 
-Uso: python -I analysis/test_rebaseline.py   (de qualquer diretorio)
+Uso: python analysis/test_rebaseline.py   (de qualquer diretorio; sem -I, para enxergar numpy/scipy do usuario)
 """
 import csv
 import json
@@ -184,7 +184,11 @@ def montar_exec(raiz, linha, *, seed=None, rep=1, rows=None, stdout_kw=None, exe
 
 
 def rodar(*args):
-    r = subprocess.run([sys.executable, "-I", str(SCRIPT)] + [str(a) for a in args], capture_output=True, text=True)
+    # checar/estado rodam na VM com python3 -I (so biblioteca padrao); tabelas/piloto rodam no host, onde
+    # numpy/scipy podem estar no site-packages do usuario, que o -I desliga.
+    iso = ["-I"] if args and args[0] in ("checar", "estado") else []
+    r = subprocess.run([sys.executable] + iso + [str(SCRIPT)] + [str(a) for a in args], capture_output=True,
+                       text=True)
     return r.returncode, r.stdout, r.stderr
 
 
@@ -707,6 +711,174 @@ class Uso(Base):
             self.assertIn(v["papel"], ("recusa", "parada", "reportado"), k)
             self.assertTrue({"valor", "limite", "ok", "papel"} <= set(v), k)
         self.assertEqual(ch["seed_lido"], int(self.linha("S1-sync-none")["seed"]))
+
+
+# ============================================================================ A11: bootstrap
+
+def exec_heterogenea(rng, centro, n=1000):
+    """Latencias de uma execucao com p99 perto de 'centro' (ns)."""
+    return [int(centro * (0.5 + 0.5 * rng.random())) for _ in range(n)]
+
+
+class A11Bootstrap(unittest.TestCase):
+
+    def setUp(self):
+        try:
+            import numpy  # noqa: F401
+            import scipy  # noqa: F401
+        except ImportError:
+            self.skipTest("numpy/scipy ausentes (tabelas roda no host)")
+
+    def dados(self):
+        a = {("S1", "sync", "none", "Login"): [1.0 + 0.1 * j for j in range(10)],
+             ("S1", "sync", "F1", "Login"): [2.0 + 0.1 * j for j in range(10)],
+             ("S1", "sync", "F3", "Login"): [1.5 + 0.2 * j for j in range(9)],
+             ("S1", "async", "none", "Login"): [0.9 + 0.1 * j for j in range(8)],
+             ("S1", "async", "F1", "Login"): [1.9 + 0.1 * j for j in range(7)],
+             ("S2", "sync", "none", "Validate"): [0.3 + 0.01 * j for j in range(10)],
+             ("S2", "sync", "F1", "Validate"): [0.31 + 0.01 * j for j in range(10)]}
+        return a
+
+    def test_determinismo_e_ordem(self):
+        d = self.dados()
+        r1 = rb.calcular_contrastes(d)
+        r2 = rb.calcular_contrastes(d)
+        self.assertEqual(r1, r2)
+        import random
+        rotulos = sorted(r1)
+        random.Random(7).shuffle(rotulos)
+        r3 = rb.calcular_contrastes(d, ordem=rotulos)
+        self.assertEqual(r1, r3)
+        self.assertEqual(rb.rotulos_contrastes(d), sorted(r1))
+
+    def test_rotulos_e_indices(self):
+        r = rb.calcular_contrastes(self.dados())
+        self.assertIn("F1-none|S1|sync|Login", r)
+        self.assertIn("async-sync|S1|none|Login", r)
+        for k, rot in enumerate(sorted(r)):
+            self.assertEqual(r[rot]["k"], k)
+
+    def test_nao_estimado_com_7(self):
+        r = rb.calcular_contrastes(self.dados())
+        self.assertEqual(r["F1-none|S1|async|Login"]["estimado"], False)
+        self.assertEqual(r["F1-none|S1|async|Login"]["motivo"], "não estimado (n insuficiente)")
+        self.assertIsNone(r["F1-none|S1|async|Login"]["dif"])
+        self.assertTrue(r["F1-none|S1|sync|Login"]["estimado"])
+        self.assertTrue(r["async-sync|S1|none|Login"]["estimado"])   # 8 x 10
+        self.assertFalse(r["async-sync|S1|F1|Login"]["estimado"])    # 7 x 10
+
+    def test_diferenca_conhecida_no_ic(self):
+        r = rb.calcular_contrastes(self.dados())["F1-none|S1|sync|Login"]
+        self.assertAlmostEqual(r["dif"], 1.0)
+        self.assertLessEqual(r["ic95"][0], 1.0)
+        self.assertGreaterEqual(r["ic95"][1], 1.0)
+        self.assertLess(r["p_mann_whitney"], 0.05)
+        r = rb.calcular_contrastes(self.dados())["F1-none|S2|sync|Validate"]
+        self.assertGreater(r["p_mann_whitney"], 0.05)
+
+    def test_reamostra_execucoes_e_nao_eventos(self):
+        import numpy as np
+        g = np.random.default_rng(11)
+        centros_a = [1e6 * (1 + j) for j in range(8)]     # execucoes muito diferentes entre si
+        centros_b = [1e6 * (1.5 + j) for j in range(8)]
+        a = [exec_heterogenea(g, c) for c in centros_a]
+        b = [exec_heterogenea(g, c) for c in centros_b]
+        dif, lo, hi = rb.bootstrap_diferenca(a, b, 0)
+        pa = [rb.p99(x) for x in a]
+        pb = [rb.p99(x) for x in b]
+        self.assertAlmostEqual(dif, float(np.mean(pb) - np.mean(pa)))
+        sd = math.sqrt(np.var(pa, ddof=1) / 8 + np.var(pb, ddof=1) / 8)
+        # IC por execucoes: largura da ordem de 3,9 sd; por eventos ficaria muito mais estreito
+        self.assertGreater(hi - lo, 2.0 * sd)
+        self.assertLess(hi - lo, 6.0 * sd)
+        self.assertEqual(rb.bootstrap_diferenca(pa, pb, 0), (dif, lo, hi))
+
+
+# ============================================================================ A13: tabelas
+
+class A13Tabelas(Base):
+
+    def setUp(self):
+        super().setUp()
+        try:
+            import numpy  # noqa: F401
+            import scipy  # noqa: F401
+        except ImportError:
+            self.skipTest("numpy/scipy ausentes (tabelas roda no host)")
+
+    def montar(self, cel, n, desloc_login):
+        lin = self.linha(cel, n=n)
+        rows = linhas_csv("S1", n_iso=3000, n_login=1100, lat_base=1_000_000 + 7_000 * n)
+        for r in rows:
+            if r["operation"] == "Login":
+                r["end_ns"] += desloc_login
+        d = montar_exec(self.saida, lin, rows=rows,
+                        execucao={"jar_sha256": "ab" * 32, "matriz_sha256": "cd" * 32})
+        gravar = {"i": int(lin["i"]), "celula": cel, "fase": "campanha", "cenario": "S1", "modo": "sync",
+                  "falha": lin["falha"], "veredito": "ACEITA", "motivos": []}
+        (d / "checagem.json").write_text(json.dumps(gravar))
+
+    def test_tabela5(self):
+        for n in range(8):
+            self.montar("S1-sync-none", n, 0)
+            self.montar("S1-sync-F1", n, 5_000_000)
+        # uma execucao recusada nao entra
+        lin = self.linha("S1-sync-F1", n=9)
+        d = montar_exec(self.saida, lin, rows=linhas_csv("S1", n_login=1100, lat_base=10**9))
+        (d / "checagem.json").write_text(json.dumps({"i": int(lin["i"]), "celula": "S1-sync-F1", "fase": "campanha",
+                                                     "veredito": "RECUSADA", "motivos": ["x"]}))
+        dest = self.raiz / "tabelas"
+        rc, out, err = rodar("tabelas", "--saida", self.saida, "--matriz", self.tsv, "--destino", dest)
+        self.assertEqual(rc, 0, err)
+        for f in ("rebaseline-resultados.json", "por-execucao.csv", "contrastes.csv", "tabela5-f1.tex",
+                  "tabela6-f3.tex", "tabela-async-sync.tex"):
+            self.assertTrue((dest / f).exists(), f)
+        tex = (dest / "tabela5-f1.tex").read_text(encoding="utf-8")
+        self.assertIn("SHA-256", tex)
+        self.assertIn("ab" * 32, tex)
+        self.assertIn("{,}", tex)
+        linhas = {(l.split("&")[0].strip(), l.split("&")[1].strip()): l for l in tex.splitlines()
+                  if l.count("&") >= 6}
+        self.assertIn(("S1", "Login"), linhas)
+        self.assertIn(("S2", "IncrementFailure"), linhas)
+        self.assertNotIn(("S2", "ResetFailures"), linhas)
+        login = linhas[("S1", "Login")]
+        self.assertNotIn("(n.s.)", login)
+        self.assertRegex(login, r"\+5\{,\}\d\d \[")
+        self.assertIn("(n.s.)", linhas[("S1", "Validate")])
+        self.assertIn("—", linhas[("S1", "IncrementFailure")])
+        self.assertIn("—", linhas[("S1", "ResetFailures")])
+        cols = [c.strip() for c in login.rstrip("\\ ").split("&")]
+        self.assertEqual(cols[-3:], ["—", "—", "—"])   # ASYNC sem execucoes
+        self.assertNotRegex(tex, r"\d\.\d")             # nenhum ponto decimal
+        res = json.loads((dest / "rebaseline-resultados.json").read_text(encoding="utf-8"))
+        self.assertEqual(res["execucoes_aceitas"], 16)
+        c = res["contrastes"]["F1-none|S1|sync|Login"]
+        self.assertTrue(c["estimado"])
+        self.assertAlmostEqual(c["dif"] / 1e6, 5.0, delta=0.01)
+        cel = res["celulas"]["S1-sync-F1"]["Login"]
+        self.assertEqual(cel["n_execucoes_com_p99"], 8)
+
+
+class Piloto(Base):
+
+    def test_piloto(self):
+        for cel in ("S1-sync-none", "S2-async-F3"):
+            d = montar_exec(self.saida, self.linha(cel, fase="piloto"))
+            self.checar(d)
+        montar_exec(self.saida, self.linha("S1-sync-none", n=0))   # campanha nao entra no piloto
+        rc, out, err = rodar("piloto", "--saida", self.saida, "--matriz", self.tsv)
+        self.assertEqual(rc, 0, err)
+        p = json.loads((self.saida / "piloto.json").read_text(encoding="utf-8"))
+        self.assertEqual(sorted(p["celulas"]), ["S1-sync-none", "S2-async-F3"])
+        c = p["celulas"]["S1-sync-none"]
+        self.assertEqual(c["veredito"], "ACEITA")
+        self.assertEqual(sum(c["validate_isolados_por_terco"]), 3000)
+        self.assertGreater(c["chance_falsa_recusa_c1"], 0.0)
+        self.assertLess(c["chance_falsa_recusa_c1"], 1.0)
+        self.assertIn("IncrementFailure", c["operacoes_sem_p99"])
+        self.assertAlmostEqual(c["duracao_real_s"], 330.0)
+        self.assertTrue((self.saida / "piloto.md").exists())
 
 
 # ============================================================================ A12: regressao opt-in

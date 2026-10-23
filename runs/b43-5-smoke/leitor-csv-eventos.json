@@ -1,0 +1,7 @@
+{
+ "P1/rep-001.csv": {"status": "OK", "eventos": 185545, "erros": 0, "por_codigo": {"COUNTED": 12339, "INVALID": 2921, "NONE": 49396, "OK": 31002, "VALID": 89887}},
+ "P2/rep-001.csv": {"status": "OK", "eventos": 235129, "erros": 0, "por_codigo": {"COUNTED": 15554, "INVALID": 3772, "NONE": 62680, "OK": 39307, "VALID": 113816}},
+ "P3/rep-001.csv": {"status": "OK", "eventos": 232272, "erros": 0, "por_codigo": {"COUNTED": 15499, "INVALID": 3818, "NONE": 61986, "OK": 38699, "VALID": 112270}},
+ "P4/rep-001.csv": {"status": "OK", "eventos": 691094, "erros": 0, "por_codigo": {"COUNTED": 45856, "INVALID": 11838, "NONE": 184057, "OK": 115618, "VALID": 333725}},
+ "P5/rep-001.csv": {"status": "OK", "eventos": 1096281, "erros": 0, "por_codigo": {"COUNTED": 10387, "INVALID": 49355, "NONE": 41201, "OK": 30869, "VALID": 964469}}
+}

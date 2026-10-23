@@ -45,7 +45,7 @@ final class MundoV3 {
             r[t] = new Random(semente + t);
             k[t] = new KeyGenerator(semente + t);
             ids[t] = new IdentidadesMistura(t, VersaoMistura.V3);
-            c[t] = mistura.cliente();
+            c[t] = mistura.cliente(semente + t);
         }
         for (int i = 0; i < operacoes; i++) {
             int t = i % threads;

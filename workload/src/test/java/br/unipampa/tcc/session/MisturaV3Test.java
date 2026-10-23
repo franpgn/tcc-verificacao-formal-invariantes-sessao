@@ -16,7 +16,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 /**
  * B-43.7, T5: mistura v3 sobre {@link FakeCaches} com a {@link CargaSlots}, 4 threads simuladas em
  * sequencia e 10<sup>4</sup> operacoes, em S1 e S2. Sem concorrencia nao ha corrida, entao a fracao
- * INVALID entre os Validate isolados e exatamente a do token antigo (q = 5 %), estacionaria; todo
+ * INVALID entre os Validate isolados e exatamente a do token antigo (Bernoulli p = 0,05, DT-008), estacionaria; todo
  * Logout isolado invalida uma sessao VALID e e reposto; no fim, para todo slot tocado, so a geracao
  * corrente e VALID.
  */
@@ -36,13 +36,13 @@ class MisturaV3Test {
         assertEquals(logins, w.ops.contar(SessionOps.OP_LOGIN, OpResult.Code.OK_LOGIN), "Login OK / Login = 1");
         assertEquals(0, w.ops.contar(SessionOps.OP_VALIDATE, OpResult.Code.NOT_FOUND), "Validate NOT_FOUND = 0");
 
-        // INVALID entre os Validate isolados = token antigo, exatamente; 5 % +- 0,1 p.p.
+        // INVALID entre os Validate isolados = token antigo, exatamente; 5 % no IC binomial de 99,9 % (DT-008)
         List<OpsGravadas.Chamada> val = w.isolados(SessionOps.OP_VALIDATE);
         long invalid = val.stream().filter(c -> MundoV3.invalid(c.r())).count();
         assertEquals(val.size(), w.mistura.validateIsolados());
         assertEquals(w.mistura.tokenAntigo(), invalid, "INVALID = token_antigo (sem corrida)");
         double frac = (double) invalid / val.size();
-        assertEquals(0.05, frac, 0.001, "fracao INVALID " + frac);
+        assertEquals(0.05, frac, 3.2905 * Math.sqrt(0.05 * 0.95 / val.size()), "fracao INVALID " + frac);
 
         // estacionaria: INVALID por terco das chamadas, diferenca <= 0,5 p.p.
         int terco = val.size() / 3;
@@ -54,7 +54,7 @@ class MisturaV3Test {
             min = Math.min(min, f);
             max = Math.max(max, f);
         }
-        assertTrue(max - min <= 0.005, "tercos: " + min + " .. " + max);
+        assertTrue(max - min <= 3.2905 * Math.sqrt(2 * 0.05 * 0.95 / terco), "tercos: " + min + " .. " + max);
 
         // todo Logout isolado invalida uma sessao VALID (nenhum no-op, nem na triade); reposicoes = logouts
         List<OpsGravadas.Chamada> lo = w.isolados(SessionOps.OP_LOGOUT);
@@ -96,7 +96,7 @@ class MisturaV3Test {
                 throw new IllegalStateException("transporte simulado");
             }
         };
-        MisturaV3.Cliente c = w.mistura.cliente();
+        MisturaV3.Cliente c = w.mistura.cliente(42);
         WorkloadMain.logoutV3(w.ops, c, 7);
         assertEquals(OpResult.Code.ERROR_TRANSPORT, w.ops.chamadas.get(0).r().code());
         assertEquals(1, w.slots.geracao(7), "sem avanco");
@@ -125,7 +125,7 @@ class MisturaV3Test {
                 throw new IllegalStateException("transporte simulado");
             }
         };
-        WorkloadMain.logoutV3(w.ops, w.mistura.cliente(), 7);
+        WorkloadMain.logoutV3(w.ops, w.mistura.cliente(42), 7);
         assertEquals(1, w.slots.geracao(7));
         assertEquals(1, w.ops.reposicaoErro());
         assertEquals(0, w.ops.reposicoes());

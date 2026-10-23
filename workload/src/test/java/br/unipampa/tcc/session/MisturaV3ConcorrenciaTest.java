@@ -130,16 +130,16 @@ class MisturaV3ConcorrenciaTest {
         CountDownLatch entrou = new CountDownLatch(1);
         CountDownLatch segue = new CountDownLatch(1);
         w.sessoes.antes = pausarPrimeiroPut(SlotsGeracao.chave(7, 2), entrou, segue);
-        Thread logout = iniciar(() -> WorkloadMain.logoutV3(w.ops, w.mistura.cliente(), 7));
+        Thread logout = iniciar(() -> WorkloadMain.logoutV3(w.ops, w.mistura.cliente(42), 7));
         aguardar(entrou);
         // a reposicao de sid-000007~2 esta em curso: a geracao ainda nao pode ter avancado
-        OpResult durante = WorkloadMain.validateV3(w.ops, w.mistura.cliente(), 7, false);
+        OpResult durante = WorkloadMain.validateV3(w.ops, w.mistura.cliente(42), 7, false);
         assertNotEquals(OpResult.Code.NOT_FOUND, durante.code(), "NOT_FOUND durante a reposicao");
         assertEquals(SessionState.Estado.INVALID, durante.estado());
         segue.countDown();
         logout.join(TimeUnit.SECONDS.toMillis(PRAZO_S));
         assertFalse(logout.isAlive());
-        OpResult depois = WorkloadMain.validateV3(w.ops, w.mistura.cliente(), 7, false);
+        OpResult depois = WorkloadMain.validateV3(w.ops, w.mistura.cliente(42), 7, false);
         assertEquals(SessionState.Estado.VALID, depois.estado(), "depois do avanco le a sessao nova");
         assertEquals(0, w.desfechos.notFound());
     }
@@ -151,9 +151,9 @@ class MisturaV3ConcorrenciaTest {
         CountDownLatch entrou = new CountDownLatch(1);
         CountDownLatch segue = new CountDownLatch(1);
         w.sessoes.antes = pausarPrimeiroPut(SlotsGeracao.chave(7, 2), entrou, segue);
-        Thread a = iniciar(() -> WorkloadMain.logoutV3(w.ops, w.mistura.cliente(), 7));
+        Thread a = iniciar(() -> WorkloadMain.logoutV3(w.ops, w.mistura.cliente(42), 7));
         aguardar(entrou);
-        Thread b = iniciar(() -> WorkloadMain.logoutV3(w.ops, w.mistura.cliente(), 7));
+        Thread b = iniciar(() -> WorkloadMain.logoutV3(w.ops, w.mistura.cliente(42), 7));
         long limite = System.nanoTime() + TimeUnit.SECONDS.toNanos(PRAZO_S);
         while (b.getState() != Thread.State.BLOCKED && b.getState() != Thread.State.TERMINATED
                 && System.nanoTime() < limite) {
@@ -198,7 +198,7 @@ class MisturaV3ConcorrenciaTest {
                 try {
                     aguardar(largada);
                     WorkloadMain.executarOperacoes(w.ops, Scenario.S1, new Random(42 + tid), new KeyGenerator(42 + tid),
-                            new IdentidadesMistura(tid, VersaoMistura.V3), porThread, w.mistura.cliente());
+                            new IdentidadesMistura(tid, VersaoMistura.V3), porThread, w.mistura.cliente(42 + tid));
                 } catch (Throwable e) {
                     erros.add(e);
                 }

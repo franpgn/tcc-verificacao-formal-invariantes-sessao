@@ -1,0 +1,5 @@
+{"workload": {"arquivo": "session-workload-0.1.0-SNAPSHOT.jar", "commit": "414d2d3", "workload_igual_a": "7360a80 (414d2d3 so acrescenta runs/b43-9-smoke/)", "construcao": "mvn -f workload/pom.xml clean package -DskipTests na worktree wt-b43-9 (workload/ sem alteracao local; git diff --quiet HEAD -- workload)", "sha256": "e556c0249071e198e3573eaa866b4a285a1d8cb3926f808094d2368d3db010fb"},
+ "verificador_e_leitor": "o mesmo jar (VerificadorSanidade e LeitorCsvEventos inalterados no B-43.9)",
+ "java": "openjdk version 22.0.2 2024-07-16",
+ "podman": "podman 5.7.0, podman-compose 1.5.0 -p b439, containers b439-isn1..3, portas 12392..12394, rede b439_infinispan-net; maquina WSL podman-machine-default (parada antes, parada depois)",
+ "imagem": "quay.io/infinispan/server:15.0.21.Final"}

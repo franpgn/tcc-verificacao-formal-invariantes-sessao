@@ -1,26 +1,53 @@
 package br.unipampa.tcc.session;
 
 import java.util.Locale;
+import java.util.Random;
 import java.util.concurrent.atomic.LongAdder;
 
 /**
  * B-43.7: estado da mistura v3 numa repeticao S1/S2: o {@link SlotsGeracao} compartilhado, a
  * premissa q do token antigo e os contadores da janela de medicao impressos no fim da repeticao
- * ({@link #linha(SessionOps)}). Cada thread de carga usa o seu {@link Cliente} ({@link #cliente()}),
- * que guarda o contador POR THREAD de Validate isolados (nao consome o {@code Random} da mistura nem o
- * {@link KeyGenerator}).
+ * ({@link #linha(SessionOps)}). Cada thread de carga usa o seu {@link Cliente}
+ * ({@link #cliente(long)}, com a semente da thread), que decide o token antigo por um sorteio de
+ * Bernoulli p = 0,05 com Random proprio por thread (DT-008). Esse Random nao e o {@code Random} da
+ * mistura nem o {@link KeyGenerator}, e nenhum dos dois e consumido pelo token.
  *
- * <p>Premissa c3 do Gestor (DT-004): q = 1/{@value #PERIODO_TOKEN_ANTIGO} = 5 % dos Validate isolados
- * leem a geracao anterior do slot (token antigo). E premissa de engenharia, nao medida de servico
- * real.</p>
+ * <p>Premissa do Gestor (DT-008, que substitui a de DT-004): cada Validate isolado le a geracao
+ * anterior do slot (token antigo) com probabilidade {@value #P_TOKEN_ANTIGO}, num sorteio independente.
+ * E premissa de engenharia, nao medida de servico real.</p>
+ *
+ * <p>Semente do sorteio: {@link #sementeToken(long)} da semente da thread
+ * ({@link WorkloadMain#sementeThread(long, int, int)}), com o sal {@link #SAL_TOKEN} e o finalizador do
+ * SplitMix64 ({@link #mix64(long)}). O sal separa o dominio do token do {@code Random} da mistura, que o
+ * B-43.5 vai semear com a mesma semente da thread; o misturador espalha os bits de sementes vizinhas
+ * ({@code s}, {@code s+1}, ...) antes do LCG do {@code java.util.Random}.</p>
  */
 final class MisturaV3 {
 
-    /** Um em cada {@value} Validate isolados (por thread) le o token antigo. */
-    static final int PERIODO_TOKEN_ANTIGO = 20;
+    /** Probabilidade de um Validate isolado ler o token antigo (sorteio de Bernoulli, DT-008). */
+    static final double P_TOKEN_ANTIGO = 0.05;
 
-    /** q = 1 / {@link #PERIODO_TOKEN_ANTIGO}. */
-    static final double Q = 1.0 / PERIODO_TOKEN_ANTIGO;
+    /** q = {@link #P_TOKEN_ANTIGO} (dry-run e stdout). */
+    static final double Q = P_TOKEN_ANTIGO;
+
+    /** Sal da semente do token: "TOKENANT" em ASCII. */
+    static final long SAL_TOKEN = 0x544F4B454E414E54L;
+
+    /**
+     * Semente do {@code Random} do token antigo de uma thread: {@code mix64(sementeThread ^ SAL_TOKEN)}.
+     *
+     * @param sementeThread a semente da thread ({@link WorkloadMain#sementeThread(long, int, int)})
+     */
+    static long sementeToken(long sementeThread) {
+        return mix64(sementeThread ^ SAL_TOKEN);
+    }
+
+    /** Finalizador do SplitMix64 (Steele, Lea, Flood 2014), sem o incremento do gerador. */
+    static long mix64(long z) {
+        z = (z ^ (z >>> 30)) * 0xBF58476D1CE4E5B9L;
+        z = (z ^ (z >>> 27)) * 0x94D049BB133111EBL;
+        return z ^ (z >>> 31);
+    }
 
     private final SlotsGeracao slots;
     private final WarmupPolicy politica;
@@ -41,9 +68,14 @@ final class MisturaV3 {
         return slots;
     }
 
-    /** Estado de uma thread de carga (nao e thread-safe; uma instancia por thread). */
-    Cliente cliente() {
-        return new Cliente(slots);
+    /**
+     * Estado de uma thread de carga (nao e thread-safe; uma instancia por thread), com o seu Random do
+     * token antigo semeado por {@link #sementeToken(long)}.
+     *
+     * @param sementeThread a semente da thread ({@link WorkloadMain#sementeThread(long, int, int)})
+     */
+    Cliente cliente(long sementeThread) {
+        return new Cliente(slots, sementeThread);
     }
 
     long validateIsolados() {
@@ -74,14 +106,15 @@ final class MisturaV3 {
                 + " reposicao_omitida=" + reposicaoOmitida() + " reposicao_erro=" + ops.reposicaoErro();
     }
 
-    /** Estado por thread: o contador de Validate isolados que decide o token antigo. */
+    /** Estado por thread: o Random proprio que sorteia o token antigo (nunca compartilhado). */
     final class Cliente {
 
         private final SlotsGeracao slotsDoCliente;
-        private long posicao;
+        private final Random tokens;
 
-        Cliente(SlotsGeracao slotsDoCliente) {
+        Cliente(SlotsGeracao slotsDoCliente, long sementeThread) {
             this.slotsDoCliente = slotsDoCliente;
+            this.tokens = new Random(sementeToken(sementeThread));
         }
 
         SlotsGeracao slots() {
@@ -89,12 +122,13 @@ final class MisturaV3 {
         }
 
         /**
-         * Avanca o contador de Validate isolados desta thread e diz se este le o token antigo: o
-         * {@code PERIODO_TOKEN_ANTIGO}-esimo de cada bloco ({@code contador % 20 == 19}).
+         * Um sorteio por Validate isolado: {@code true} (token antigo) com probabilidade
+         * {@link #P_TOKEN_ANTIGO}. Sorteia SEMPRE, dentro e fora da janela de medicao (a politica de
+         * warm-up so decide se {@link #contarValidate(boolean)} conta), para que a sequencia dependa so
+         * da semente e da ordem dos Validate isolados da thread.
          */
         boolean proximoEhTokenAntigo() {
-            long c = posicao++;
-            return c % PERIODO_TOKEN_ANTIGO == PERIODO_TOKEN_ANTIGO - 1;
+            return tokens.nextDouble() < P_TOKEN_ANTIGO;
         }
 
         /** Conta um Validate isolado (e o token antigo) se estiver na janela de medicao. */

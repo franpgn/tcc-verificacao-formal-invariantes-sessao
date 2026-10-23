@@ -743,8 +743,9 @@ public final class WorkloadMain {
         ThreadLocalRandom r = ThreadLocalRandom.current();
         KeyGenerator chaves = new KeyGenerator(seed);
         IdentidadesMistura ids = new IdentidadesMistura(tid, mix);
-        // B-43.7: estado por thread da v3 (contador do token antigo); null em v1/v2.
-        MisturaV3.Cliente v3 = misturaV3 != null ? misturaV3.cliente() : null;
+        // B-43.7/B-43.7b: estado por thread da v3 (Random proprio do token antigo, semeado pela
+        // semente da thread, DT-008); null em v1/v2.
+        MisturaV3.Cliente v3 = misturaV3 != null ? misturaV3.cliente(seed) : null;
         long executadas = 0;
         while (System.currentTimeMillis() < deadline && executadas < opsAlvo
                 && !parar.getAsBoolean()) {
@@ -783,10 +784,10 @@ public final class WorkloadMain {
 
     /**
      * B-43.7: com {@code v3 == null}, a operacao de v1/v2 (chave Zipf crua). Com {@code v3}, o
-     * {@code sid} Zipf da o slot {@code k}: o Validate isolado le a geracao corrente do slot (ou, 1 em
-     * cada {@link MisturaV3#PERIODO_TOKEN_ANTIGO} por thread, a anterior) e o Logout isolado segue
-     * {@link #logoutV3}. Triade, IncrementFailure e ResetFailures como v2. Nada disso consome {@code r}
-     * nem {@code chaves} alem do sorteio de sempre.
+     * {@code sid} Zipf da o slot {@code k}: o Validate isolado le a geracao corrente do slot (ou a
+     * anterior, por sorteio de Bernoulli p = 0,05 com Random proprio por thread, DT-008) e o Logout
+     * isolado segue {@link #logoutV3}. Triade, IncrementFailure e ResetFailures como v2. Nada disso
+     * consome {@code r} nem {@code chaves} alem do sorteio de sempre.
      */
     static void executarOperacao(SessionOps ops, Scenario cenario, Random r, KeyGenerator chaves,
                                  IdentidadesMistura ids, MisturaV3.Cliente v3) {
@@ -826,7 +827,8 @@ public final class WorkloadMain {
 
     /**
      * B-43.7: Validate isolado da mistura v3: le a geracao corrente do slot {@code k} ou, com
-     * {@code antigo}, a anterior (token antigo; a geracao 0 ja nasce INVALID na carga). Le
+     * {@code antigo}, a anterior (token antigo, decidido por sorteio de Bernoulli p = 0,05 com Random
+     * proprio por thread, DT-008; a geracao 0 ja nasce INVALID na carga). Le
      * {@code geracao[k]} sem trava: um Validate concorrente com o Logout do mesmo slot pode ler a
      * geracao que esta sendo invalidada (INVALID legitimo, contado nos desfechos).
      */

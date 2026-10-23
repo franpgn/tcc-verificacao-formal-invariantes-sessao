@@ -297,8 +297,9 @@ public final class Cli {
         description = "Versao da mistura S1/S2: v2 (Login em pool proprio user-<tid>-<k>, O4/O5 em "
             + "lim-<tid> e carga inicial de sid-000001..sid-100000 como sessoes VALID antes do warm-up; "
             + "exige --reset-state on), v3 (slot-geracao: como v2 no Login e em O4/O5; o slot Zipf tem "
-            + "uma sessao corrente sid-NNNNNN~g, 1 em cada 20 Validate isolados le o token antigo "
-            + "(q = 0.05) e o Logout isolado repoe a geracao seguinte fora do CSV; carga de 2 sessoes "
+            + "uma sessao corrente sid-NNNNNN~g, cada Validate isolado le o token antigo com probabilidade "
+            + "q = 0.05, por sorteio semeado por thread, e o Logout isolado repoe a geracao seguinte "
+            + "fora do CSV; carga de 2 sessoes "
             + "por slot; exige --reset-state on) ou v1 (uma identidade user-<tid> por thread, sem carga; "
             + "comportamento anterior, para regressao). Sem efeito em S3. Padrao ${DEFAULT-VALUE}.",
         defaultValue = "v2",

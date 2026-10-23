@@ -17,8 +17,9 @@ public enum VersaoMistura {
     V2("v2"),
     /**
      * B-43.7: mistura "slot-geracao" ({@link SlotsGeracao}, {@link CargaSlots}, {@link MisturaV3}). Login,
-     * O4 e O5 como v2; Validate/Logout isolados sobre a sessao corrente do slot Zipf, com q = 1/20 de
-     * Validate isolados lendo o token antigo e reposicao dentro do Logout, fora do CSV.
+     * O4 e O5 como v2; Validate/Logout isolados sobre a sessao corrente do slot Zipf, com cada Validate
+     * isolado lendo o token antigo por sorteio de Bernoulli p = 0,05 (B-43.7b, DT-008) e reposicao
+     * dentro do Logout, fora do CSV.
      */
     V3("v3");
 

@@ -527,13 +527,25 @@ public class SessionOps {
         }
         SessionState.Motivo confirmado = confirmadoAntes;
         if (atual.estado() == SessionState.Estado.VALID) {
-            auditor.registrarViolacao("I1", sid,
-                    "invalidacao confirmada (" + confirmado + ") revertida para VALID");
+            if (primeiraNaOperacao(registradas, "I1", sid)) {
+                auditor.registrarViolacao("I1", sid,
+                        "invalidacao confirmada (" + confirmado + ") revertida para VALID");
+            }
         } else if (atual.estado() == SessionState.Estado.INVALID
                 && !confirmado.equals(atual.motivo())) {
-            auditor.registrarViolacao("I4", sid,
-                    "motivo inconsistente: confirmado " + confirmado + ", lido " + atual.motivo());
+            if (primeiraNaOperacao(registradas, "I4", sid)) {
+                auditor.registrarViolacao("I4", sid,
+                        "motivo inconsistente: confirmado " + confirmado + ", lido " + atual.motivo());
+            }
         }
+    }
+
+    /**
+     * B-43.9, regra C: {@code true} se (invariante, sid) ainda nao foi registrada nesta operacao (e a
+     * marca como registrada). {@code registradas == null}: sem deduplicacao.
+     */
+    private static boolean primeiraNaOperacao(java.util.Set<String> registradas, String invariante, String sid) {
+        return registradas == null || registradas.add(invariante + ":" + sid);
     }
 
     /**

@@ -419,11 +419,10 @@ def checar_execucao(d, matriz):
     k7 = {"seed_lido": seed_lido, "rep_lido": rep_lido, "seed_matriz": seed_mat, "seed_regra": S0 + PASSO_SEMENTE * i}
     crit["K7"] = _crit(k7, "seed = matriz = S0 + 100*i; rep = 1",
                        seed_lido == seed_mat == S0 + PASSO_SEMENTE * i and rep_lido == REP, "recusa")
-    # K8: ISPN006010 por no desde a criacao do cluster
-    isp = ler_json(d / "ispn006010.json", {}) or {}
-    por_no = isp.get("por_no") or {}
-    crit["K8"] = _crit(por_no, "<= %d por no" % ISPN006010_MAX,
-                       all(isinstance(por_no.get(n), int) and por_no[n] <= ISPN006010_MAX for n in NOS), "parada")
+    # K8 (DT-013): por no, <= 1 ISPN006010 na vida atual do processo e total <= numero de vidas (ISPN080001)
+    k8v = k8_valores(ler_json(d / "ispn006010.json", {}) or {})
+    crit["K8"] = _crit(k8v, "por no: <= %d na vida atual e total <= vidas (DT-013)" % ISPN006010_MAX,
+                       k8_ok(k8v), "parada")
     # K9 / K10: auditor e violacoes
     viol = contar_violacoes(d / "violacoes-rep-001.csv")
     b = linhas_b439(out)
@@ -471,6 +470,23 @@ def checar_execucao(d, matriz):
     return {"i": i, "celula": lin["celula"], "fase": lin["fase"], "noite": lin.get("noite"), "cenario": cen,
             "modo": modo, "falha": falha, "seed": seed_mat, "seed_lido": seed_lido, "rep_lido": rep_lido,
             "veredito": veredito, "motivos": motivos, "criterios": crit, "metricas": metricas}
+
+
+def k8_valores(isp):
+    """Contagens de K8 por no (DT-013). Contagem ausente ou nao inteira e erro de uso/infraestrutura (exit 2)."""
+    out = {}
+    for n in NOS:
+        v = {"total": (isp.get("por_no") or {}).get(n),
+             "vida_atual": (isp.get("por_no_desde_ultimo_start") or {}).get(n),
+             "vidas": (isp.get("vidas_por_no") or {}).get(n)}
+        if not all(isinstance(x, int) and not isinstance(x, bool) for x in v.values()):
+            raise ErroUso("ispn006010.json com contagem ilegivel para %s: %s (DT-013)" % (n, v))
+        out[n] = v
+    return out
+
+
+def k8_ok(k8v):
+    return all(v["vida_atual"] <= ISPN006010_MAX and v["total"] <= v["vidas"] for v in k8v.values())
 
 
 def k6(ex, d, falha):

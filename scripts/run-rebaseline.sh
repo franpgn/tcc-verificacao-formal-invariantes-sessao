@@ -396,8 +396,11 @@ for no in ${NOS}; do guarda_netns "${no}" || exit 4; done
 
 # ------------------------------------------------------------------ pre-voo 4: linha de base de ISPN006010
 contar_ispn() {  # contar_ispn <no> [--since <unix>] -> contagem (status != 0 se podman logs falhar)
-    local no="$1"; shift
-    ${PODMAN} logs "$@" "${no}" 2>&1 | awk '/ISPN006010/ {n++} END {print n + 0}'
+    contar_logs ISPN006010 "$@"
+}
+contar_logs() {  # contar_logs <codigo> <no> [--since <unix>] -> linhas com o codigo (status != 0 se podman logs falhar)
+    local cod="$1" no="$2"; shift 2
+    ${PODMAN} logs "$@" "${no}" 2>&1 | awk -v c="${cod}" 'index($0, c) {n++} END {print n + 0}'
 }
 declare -A ISPN_BASE
 for no in ${NOS}; do
@@ -645,23 +648,24 @@ gravar_execucao() {
 EOF
 }
 
-gravar_ispn() {  # contagem desde a criacao do cluster (podman logs) e desde o ultimo start de cada no
-    local d="$1" no rc tot desde ini partes="" partes2="" base=""
+gravar_ispn() {  # K8 (DT-013): por no, total desde a criacao, vida atual (--since StartedAt) e vidas (ISPN080001)
+    local d="$1" no rc tot desde ini vidas partes="" partes2="" partes3="" base=""
     for no in ${NOS}; do
         rc=0; tot="$(contar_ispn "${no}")" || rc=$?
-        [[ "${rc}" -eq 0 ]] || finalizar 6 "infra: podman logs ${no} falhou (rc=${rc})"
+        [[ "${rc}" -eq 0 && "${tot}" =~ ^[0-9]+$ ]] || finalizar 6 "infra: podman logs ${no} falhou (rc=${rc}); K8 ilegivel (DT-013)"
+        rc=0; vidas="$(contar_logs ISPN080001 "${no}")" || rc=$?
+        [[ "${rc}" -eq 0 && "${vidas}" =~ ^[0-9]+$ ]] || finalizar 6 "infra: contagem de ISPN080001 de ${no} falhou (rc=${rc}); K8 ilegivel (DT-013)"
         rc=0; ini="$(podman_campo '{{.State.StartedAt.Unix}}' "${no}")" || rc=$?
-        desde="null"
-        if [[ "${rc}" -eq 0 && "${ini}" =~ ^[0-9]+$ ]]; then
-            rc=0; desde="$(contar_ispn "${no}" --since "${ini}")" || rc=$?
-            [[ "${rc}" -eq 0 ]] || desde="null"
-        fi
+        [[ "${rc}" -eq 0 && "${ini}" =~ ^[0-9]+$ ]] || finalizar 6 "infra: StartedAt de ${no} ilegivel (rc=${rc}); K8 ilegivel (DT-013)"
+        rc=0; desde="$(contar_ispn "${no}" --since "${ini}")" || rc=$?
+        [[ "${rc}" -eq 0 && "${desde}" =~ ^[0-9]+$ ]] || finalizar 6 "infra: podman logs --since ${ini} ${no} falhou (rc=${rc}); K8 ilegivel (DT-013)"
         partes+="${partes:+,}\"${no}\":${tot}"
         partes2+="${partes2:+,}\"${no}\":${desde}"
+        partes3+="${partes3:+,}\"${no}\":${vidas}"
         base+="${base:+,}\"${no}\":${ISPN_BASE[${no}]}"
     done
-    printf '{"por_no":{%s},"por_no_desde_ultimo_start":{%s},"linha_de_base_pre_voo":{%s},"nota":"por_no conta podman logs desde a criacao do container (K8)"}\n' \
-        "${partes}" "${partes2}" "${base}" > "${d}/ispn006010.json"
+    printf '{"por_no":{%s},"por_no_desde_ultimo_start":{%s},"vidas_por_no":{%s},"linha_de_base_pre_voo":{%s},"nota":"K8 (DT-013): por no, <= 1 ISPN006010 na vida atual (podman logs --since StartedAt) e total desde a criacao do container <= vidas (linhas ISPN080001)"}\n' \
+        "${partes}" "${partes2}" "${partes3}" "${base}" > "${d}/ispn006010.json"
 }
 
 GATE_F3_DADO=0

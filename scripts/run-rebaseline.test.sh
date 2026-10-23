@@ -23,7 +23,7 @@ REAL_DATE="$(command -v date)"
 REAL_SLEEP="$(command -v sleep)"
 TMP="$(mktemp -d)"
 trap 'rm -rf "${TMP}"' EXIT
-SELECAO=" ${*:-R1 R2 R3 R4 R5 R6 R7 R8 R9 R10 R11 R12 R13 R14} "
+SELECAO=" ${*:-R1 R2 R3 R4 R5 R6 R7 R8 R9 R10 R11 R12 R13 R14 R15} "
 
 PASS=0
 FAIL=0
@@ -688,6 +688,38 @@ ok "R14 injetor_exit 5 registrado" "5" "$(json "$(exec_dir 1000)/execucao.json" 
 contem "R14 motivo" "injetor" "$(tail -1 "${OUT}/piloto/runner.log")"
 ok "R14 execucao seguinte nao lancada" "1" "$(grep -c ' java|-jar' "${ST}/chamadas.log")"
 ok "R14 dead-man desarmado (sem netem)" "0" "$(ls "${ST}"/timer-* 2>/dev/null | grep -c .)"
+fi
+
+# ============================================================================= R15
+if quer R15; then
+echo "== R15 (DT-014): execucao interrompida antes do workload (abortada, mesmo i) e depois (RECUSADA) =="
+novo_caso r15 20
+matriz "${CASO}/m.tsv" piloto "1000 S1-sync-none" "1001 S2-sync-none"
+printf 'go piloto %s
+' "${HOJE}" > "${RB_TTY_ARQUIVO}"
+mkdir -p "${OUT}/exec-1000-S1-sync-none"; echo '{"ok": false}' > "${OUT}/exec-1000-S1-sync-none/portao.json"
+rodar_runner piloto
+ok "R15 antes do lancamento: fase segue (exit 0)" "0" "${RC}"
+AB="$(ls -d "${OUT}"/exec-1000-S1-sync-none.abortada-* 2>/dev/null | head -1)"
+verdade "R15 diretorio renomeado .abortada-<UTC> e mantido" test -s "${AB}/portao.json"
+ok "R15 mesmo i roda de novo com a mesma semente" "1" "$(grep -c ' java|-jar|.*|--seed|150000|' "${ST}/chamadas.log")"
+verdade "R15 exec-1000 novo checado" test -s "$(exec_dir 1000)/checagem.json"
+contem "R15 resumo marca a abortada" "ABORTADA" "$(cat "${OUT}/piloto/resumo.json")"
+verdade "R15 MANIFEST cobre a abortada" grep -q '.abortada-' "${OUT}/piloto/MANIFEST.sha256"
+
+novo_caso r15b 20
+matriz "${CASO}/m.tsv" piloto "1000 S1-sync-none" "1001 S2-sync-none"
+printf 'go piloto %s
+' "${HOJE}" > "${RB_TTY_ARQUIVO}"
+mkdir -p "${OUT}/exec-1000-S1-sync-none"; echo "Configuracao: parcial" > "${OUT}/exec-1000-S1-sync-none/stdout.log"
+echo 10 > "${ST}/checar-rc-1000"
+rodar_runner piloto
+ok "R15 depois do lancamento: fase segue (exit 0)" "0" "${RC}"
+ok "R15 workload de i=1000 nao relancado" "0" "$(grep -c ' java|-jar|.*|--seed|150000|' "${ST}/chamadas.log")"
+verdade "R15 interrompida.json gravado" test -s "$(exec_dir 1000)/interrompida.json"
+ok "R15 checar chamado para a interrompida" "1" "$(grep -c 'rebaseline.py|checar|--exec|.*exec-1000-S1-sync-none|' "${ST}/chamadas.log")"
+ok "R15 execucao seguinte lancada" "1" "$(grep -c ' java|-jar|.*|--seed|150100|' "${ST}/chamadas.log")"
+contem "R15 log registra DT-014" "DT-014" "$(cat "${OUT}/piloto/runner.log")"
 fi
 
 echo

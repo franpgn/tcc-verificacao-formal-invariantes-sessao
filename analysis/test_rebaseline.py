@@ -721,6 +721,48 @@ class A10Estado(Base):
         self.assertEqual(out.strip().split("\n"), ["%s\t%s" % (b["celula"], b["i"])])
 
 
+# ============================================================================ A15: execucao interrompida (DT-014)
+
+class A15Interrompida(Base):
+
+    def interrompida(self, lin):
+        d = self.saida / ("exec-%04d-%s" % (int(lin["i"]), lin["celula"]))
+        d.mkdir()
+        (d / "stdout.log").write_text("Configuracao: Cli{scenario=S1, seed=1}" + chr(10), encoding="utf-8")
+        (d / "interrompida.json").write_text(json.dumps({"utc": "2026-10-24T02:00:00.000Z",
+                                                         "motivo": "interrompida depois do lancamento"}))
+        return d
+
+    def test_checar_recusa_interrompida_sem_os_outros_arquivos(self):
+        lin = self.linha("S1-sync-none")
+        d = self.interrompida(lin)
+        rc, out, err = rodar("checar", "--exec", d, "--matriz", self.tsv)
+        self.assertEqual(rc, 10, err)
+        ch = checagem(d)
+        self.assertEqual((ch["veredito"], ch["i"], ch["celula"], ch["fase"]),
+                         ("RECUSADA", int(lin["i"]), "S1-sync-none", "campanha"))
+        self.assertTrue(any("interrompida" in m for m in ch["motivos"]))
+
+    def test_estado_conta_e_lista_reposicao(self):
+        a = self.linha("S2-async-F3", n=0)
+        self.assertEqual(rodar("checar", "--exec", self.interrompida(a), "--matriz", self.tsv)[0], 10)
+        rc, out, err = rodar("estado", "--saida", self.saida, "--matriz", self.tsv, "--listar-reposicoes")
+        self.assertEqual(rc, 0, err)
+        self.assertEqual(out.strip(), "%s" % a["celula"] + chr(9) + a["i"])
+        b = self.linha("S2-async-F3", n=1)
+        self.assertEqual(rodar("checar", "--exec", self.interrompida(b), "--matriz", self.tsv)[0], 10)
+        rc, out, err = rodar("estado", "--saida", self.saida, "--matriz", self.tsv)
+        self.assertEqual(rc, 20)   # parada (a): duas recusas na mesma celula
+
+    def test_abortada_nao_conta(self):
+        lin = self.linha("S1-sync-none")
+        ab = self.saida / ("exec-%04d-%s.abortada-20261024T020000Z" % (int(lin["i"]), lin["celula"]))
+        ab.mkdir()
+        (ab / "portao.json").write_text("{}")
+        rc, out, err = rodar("estado", "--saida", self.saida, "--matriz", self.tsv, "--listar-reposicoes")
+        self.assertEqual((rc, out.strip()), (0, ""), err)
+
+
 # ============================================================================ uso e arquivos
 
 class Uso(Base):

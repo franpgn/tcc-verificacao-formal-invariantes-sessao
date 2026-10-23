@@ -392,3 +392,176 @@ posição 4 da noite 1 (i = 4, ≈ 28 min).
 
 Senior valida esta entrega (inclusive a ordem congelada da seção 4 antes do complemento da DT-009) e
 leva P1 ao Gestor; depois, integração por *fast-forward* junto com o B-43.5, como no prompt.
+
+## 10. Adenda de 2026-10-23: correções da V-RB (C1..C5, DT-013, DT-014), estabilidade e rebase
+
+> Parecer: `docs/validacao-rebaseline-runner-2026-10-23.md` (branch `docs/plano-implementacao-controlador`,
+> `246c87c`). Decisões do Gestor de 23/10 em `decisoes-tecnicas.md` (`4a8d461`): DT-013 aprovada, DT-014,
+> Q1..Q5. As seções 1..9 ficam como na entrega original. Onde divergirem, vale esta adenda, em especial
+> nos pontos P1..P5 e na checklist da seção 8.
+
+### 10.1 Commits novos (sem `--amend`), depois do *rebase* sobre `642d81f`
+
+| Correção | `test:` (vermelho) | `fix:` | Vermelho registrado |
+|---|---|---|---|
+| C1 / DT-013 (K8 por vida do processo) | `4224863` | `95c0a5e` | A14: 3 FAIL (duas vidas com 1 aviso cada saía PARADA; contagem `null` e chave ausente não davam exit 2). R13: 4 FAIL (sem `vidas_por_no`; `podman logs --since` ilegível não parava) |
+| C2 (gate `go f3` antes do diretório e do K1) | `774e791` | `f6173c0` | R3: 4 FAIL (gate depois do K1; `go f3` errado deixava `exec-1001`; nova tentativa saía com exit 4) |
+| C3 / P2 (exits do injetor) | `98e095e` | `1eba929` | R14: 3 FAIL (injetor F3 com exit 5 seguia a fase) |
+| C4 (`remocao_extra` falha K6) | `d3e5026` | `696a565` | A9: 1 FAIL (ACEITA em vez de RECUSADA) |
+| C5 (instante efetivo da falha, só relatório) | `91cd0fe` | `66305e7` | piloto: KeyError `falha_efetiva`. R4 e R6: 3 FAIL |
+| DT-014 (execução interrompida) | `64bc9e5` | `0923700` | A15: 2 FAIL. R15: 11 FAIL (exit 4 nos dois casos) |
+| Estabilidade da suíte no Git Bash | `53c1d04` (só teste) | | |
+
+Os 9 commits originais foram reaplicados sem conflito sobre `642d81f` (B-43.5): `48ba062` virou `ba1162a`, …,
+`599ea5e` virou `1b7ddab`. Só mudaram arquivos novos em `scripts/` e `analysis/`, e `docs/`. A verificação
+`git diff --quiet 642d81f HEAD -- scripts/run-baseline.sh scripts/inject-crash.sh scripts/inject-jitter.sh analysis/percentis.py analysis/compare_scenarios.py analysis/bootstrap_ic.py workload`
+continua passando.
+
+### 10.2 O que mudou
+
+- **C1 / DT-013.**
+  - O `checar` lê `por_no`, `por_no_desde_ultimo_start` e `vidas_por_no` de `ispn006010.json`.
+  - K8 passa, por nó, se houver no máximo 1 `ISPN006010` na vida atual e o total for menor ou igual ao
+    número de vidas (linhas `ISPN080001`). O papel continua "parada".
+  - Contagem ausente ou que não seja inteiro: `checar` sai com 2 sem gravar `checagem.json`.
+  - O runner conta, por nó, o total (`podman logs`), as vidas (`ISPN080001`) e a vida atual
+    (`podman logs --since <.State.StartedAt.Unix>`). Qualquer leitura que falhe leva a exit 6
+    ("K8 ilegivel (DT-013)") antes do `checar`.
+- **C2.**
+  - O gate `go f3 <i>` vem antes do `mkdir exec-<i>` e antes do K1.
+  - Um `go f3` errado sai com 5 sem deixar diretório. Na nova tentativa, a F1 já checada é pulada e a F3
+    roda.
+  - A mensagem do gate avisa que o K1 (≥ 60 s) vem depois.
+- **C3 / P2.**
+  - Exits do injetor que deixam a fase seguir: 0, 1 e 4. O 1 e o 4 já eram recusa K6 no `checar`.
+  - Exit 2, 3, 5 ou qualquer outro: o runner espera o workload, grava `execucao.json` e sai com 6
+    ("so 0, 1 e 4 seguem; C3/P2").
+- **C4.** K6 de F3 exige `netem_pos.remocao_extra == false`. O `null` da vida atual está no C1.
+- **C5 (só relatório, K6 não muda).**
+  - F1: `execucao.json.falha_efetiva` traz `f1_parado_desde_ancora_s` e `f1_reiniciado_desde_ancora_s`,
+    calculados de `{{.State.FinishedAt.UnixMilli}}` e `{{.State.StartedAt.UnixMilli}}` de `isn2`.
+  - F3: `falha_efetiva.netem_efetiva` traz a amostra de `tc qdisc show` a +51 s.
+  - O `checar` copia o campo para `metricas.falha_efetiva_informativo`, e o `piloto` para `falha_efetiva`
+    de cada célula.
+  - Se a leitura falhar, o campo fica `null`, com um aviso no log.
+- **DT-014.** Na retomada, um `exec-<i>` sem `checagem.json` é tratado assim:
+  - sem `stdout.log`: o diretório é renomeado para `exec-<i>-<celula>.abortada-<UTC>` e mantido; o mesmo
+    i roda de novo, com a mesma semente;
+  - com `stdout.log`: o runner grava `interrompida.json` e chama `checar`, que devolve RECUSADA
+    ("interrompida (DT-014)") sem exigir os outros arquivos. A recusa entra nas paradas (a)/(b) e nas
+    reposições;
+  - `estado` e `--listar-reposicoes` ignoram os `.abortada-*`;
+  - o resumo marca essas execuções como `ABORTADA (DT-014)` e o `MANIFEST.sha256` as inclui.
+- **Estabilidade.**
+  - Os casos com várias execuções rodam a ×20 (antes ×50). O R4 continua a ×2 e R6/R8 a ×10.
+  - No R4, a asserção do `podman stop` do injetor real passa a exigir só "nunca antes de N + 48 s".
+    Acima de N + 51 s sai um aviso, porque pode ser pausa do host (V-RB 2.1).
+  - O disparo do runner continua com tolerância de ±1 s. O instante efetivo vai para `falha_efetiva` (C5).
+
+### 10.3 Testes antes e depois
+
+| Suíte | Entrega original (base `9ddd5fe`) | Depois das correções e do *rebase* (base `642d81f`) |
+|---|---|---|
+| Matriz (`python -I scripts/test_rebaseline_matriz.py`) | 8/8 | 8/8 |
+| Análise (`python analysis/test_rebaseline.py`, A12 com `REBASELINE_ORACULO_DIR`) | 55/55 | **64/64**, A12 executado (Q3/Q4/Q5 iguais ao `analise.json`) |
+| Runner (`bash scripts/run-rebaseline.test.sh`) | 95/0 em 1 rodada (o Senior teve 92/3 e 94/1) | **130 PASS / 0 FAIL em 3 rodadas seguidas**: 15 min 16 s, 15 min 19 s, 15 min 17 s |
+| Surefire (`mvn -q -o -f workload/pom.xml test`) | 746/0/0/1 | **761/0/0/1** (o do B-43.5) |
+
+No R4 das três rodadas, o disparo do runner ficou a +49,29, +49,35 e +49,35 s da âncora, e o `podman stop`
+a +49,98, +49,97 e +50,05 s. Na primeira rodada, o C5 registrou `isn2` parado a +49,94 s e reiniciado a
++110,34 s. Nenhum aviso de pausa.
+
+### 10.4 Mutantes novos (suíte completa por mutante, fonte restaurado byte a byte)
+
+| Mutante | Mudança | Morto por |
+|---|---|---|
+| XC1 | K8 contado só pela vida atual (sem a regra "total ≤ vidas") | **A14** `test_vida_atual_ok_mas_total_maior_que_as_vidas_para` e **A7** `test_k8_ispn_para` (análise 62/64) |
+| XC2 | `mkdir exec-<i>` antes do gate `go f3` | **R3** "(C2) go f3 errado nao deixa exec-1001" (runner 129/130) |
+
+Sobre o XC2: com o mutante, a nova tentativa não sai mais com exit 4, porque a DT-014 renomeia o
+diretório sem `stdout.log` para `.abortada-*` e roda o mesmo i. A DT-014 atenua o defeito, mas quem mata o
+mutante é a asserção de C2 sobre o diretório. Os mutantes X1..X10 da entrega original não foram
+reaplicados nesta adenda. O código que eles tocam mudou só nos pontos acima, e as suítes completas
+continuam verdes.
+
+### 10.5 Desvios desta adenda
+
+| # | Ponto | O que fiz |
+|---|---|---|
+| D15 | C3 com exit 2, 3 ou 5 | o runner espera o workload terminar antes de sair com 6, para os brutos ficarem completos. Com F3, segue o mesmo fluxo de amostras e de desarme do dead-man; sem netem, o dead-man é desarmado normalmente |
+| D16 | C5 | uso `UnixMilli` (Go ≥ 1.17) no template do `podman inspect`, que nunca rodou no podman 4.9.3 da VM. Se falhar, fica `null` e um aviso, sem efeito em critério. Conferir no passo 4 da 10.6 |
+| D17 | DT-014 (2) | a checagem "interrompida" tem `criterios = {}` e não avalia K1..K10, porque os brutos podem estar truncados. Só grava o veredito RECUSADA e o motivo |
+| D18 | estabilidade | a escala padrão do `novo_caso` passou de ×50 para ×20. A suíte leva ≈ 15 min (antes ≈ 8 min) |
+| D19 | mutantes C1/C2 | o primeiro disparo do script de mutantes falhou por erro de sintaxe no próprio script, antes de aplicar qualquer mutação (`git status` limpo). Corrigi e rodei depois das 3 rodadas |
+
+### 10.6 Checklist do Gestor na VM (substitui a seção 8)
+
+**De dia, antes da noite do piloto:**
+
+1. Conferir o IP da VM pelo MAC `00-15-5D-03-AC-00` (`Get-NetNeighbor -InterfaceAlias 'vEthernet (Default Switch)'`).
+2. Levar o *bundle* conferido por *hash*:
+   - o jar construído da ponta integrada;
+   - `scripts/run-rebaseline.sh`, `scripts/rebaseline_matriz.py`, `scripts/inject-crash.sh` e `scripts/inject-jitter.sh`;
+   - `analysis/rebaseline.py`;
+   - `runs/rebaseline/matriz.tsv` (`8654900cd23b9b46e65163a5d106bd6f86113632d2ce621ff962f637cd645c35`).
+3. **Antes** de subir o *cluster* depois do S7, anotar o instante UTC com `date -u +%FT%TZ`. Ele vai em
+   `--cluster-criado-apos`, e o runner exige `.Created` maior ou igual a esse instante.
+4. Na VM, só leitura, sem injeção:
+   - `sudo -n true` (sem senha), `python3 --version`, `tmux -V`;
+   - `podman --version`;
+   - `flock --version` (util-linux ≥ 2.34, por causa do `-F`);
+   - `sudo podman inspect -f '{{.Created.Unix}} {{.State.StartedAt.Unix}} {{.State.StartedAt.UnixMilli}}' isn1`: três números;
+   - `sudo podman logs --since $(sudo podman inspect -f '{{.State.StartedAt.Unix}}' isn1) isn1 | grep -c ISPN080001`: esperado 1;
+   - `systemctl list-timers --all --no-legend 'tcc-heal-rb-*' | wc -c`: esperado **0**. Se não der 0, parar
+     e avisar o Senior antes do piloto, porque a primeira F3 terminaria com exit 6.
+5. Rodar `bash scripts/run-rebaseline.sh --dry-run --matriz runs/rebaseline/matriz.tsv --matriz-sha256 <sha> --fase piloto`
+   e conferir as 12 linhas com a seção 5.1.
+6. Ensaio de pré-voo sem injeção: rodar o comando do passo 9 com **`--saida runs/rebaseline-ensaio`** e,
+   no gate, digitar qualquer coisa diferente do pedido.
+   - Esperado: plano impresso, `exit 5`, nada injetado e nenhum `exec-*`.
+   - Isso confere flock, hashes, dependências, *cluster*, netns, `ISPN006010`/`ISPN080001` e `ambiente.md`.
+   - Os arquivos do ensaio ficam fora da pasta real do piloto.
+
+**Na noite:**
+
+7. Manter o host Windows em silêncio a noite inteira (PR §5): nada de TLC, `mvn test` ou carga.
+8. Abrir a sessão com `tmux new -s rebaseline` e, dentro dela, rodar `read -rs RB_PASSWORD && export RB_PASSWORD`,
+   para a senha não ir para o histórico. Não pôr outro `flock` do mesmo arquivo em volta do runner: ele
+   mesmo pega `/var/lock/tcc-vm.lock`, e com um `flock` externo sairia com exit 4.
+9. Rodar `bash scripts/run-rebaseline.sh --matriz runs/rebaseline/matriz.tsv --matriz-sha256 <sha da matriz> --jar <jar> --jar-sha256 <sha do jar> --fase piloto --cluster-criado-apos <instante do passo 3>`
+   (`PODMAN` padrão `sudo podman`).
+10. No gate da noite, digitar exatamente `go piloto <AAAA-MM-DD>`, com a data da VM impressa na tela.
+11. Primeira F3 do piloto (i = 1005, cerca de 35 min depois do `go`):
+    1. Antes do `go f3`, conferir em outro painel do `tmux` que
+       `systemctl list-timers --all --no-legend 'tcc-heal-rb-*'` está vazio.
+    2. Quando o runner pedir, digitar `go f3 1005`. A partir daí o runner faz o portão K1 (60 s ou mais de
+       *cluster* saudável) e só então lança o workload; essa espera é esperada (C2).
+    3. Acompanhar em `runs/rebaseline/piloto/runner.log` a linha `F3 disparada a +49.xxx s da ancora`.
+    4. Conferir que o timer `tcc-heal-rb-1005` aparece em `systemctl list-timers`.
+    5. Conferir que `sudo nsenter -t $(sudo podman inspect -f '{{.State.Pid}}' isn2) -n tc qdisc show dev eth0`
+       mostra `netem`.
+    6. Por volta de +300 s, esperar `injetor saiu com 0`, o netem sumir e o timer desaparecer.
+
+    Daí em diante a noite segue sem o Gestor, com as paradas automáticas.
+
+**Na manhã seguinte:**
+
+12. Ler a última linha de `runs/rebaseline/piloto/runner.log` (`FIM exit=... motivo=...`) e o `resumo.md`,
+    e rodar `cd runs/rebaseline && sha256sum -c piloto/MANIFEST.sha256`.
+13. Se o runner saiu com exit 6 por netem residual, o dead-man continua armado de propósito. Nesse caso:
+    1. `P=$(sudo podman inspect -f '{{.State.Pid}}' isn2)`;
+    2. `sudo nsenter -t $P -n tc qdisc show dev eth0`;
+    3. se aparecer `netem`, rodar `sudo nsenter -t $P -n tc qdisc del dev eth0 root` e conferir de novo;
+    4. só depois que o netem sumir, `sudo systemctl stop tcc-heal-rb-<i>.timer`.
+
+    **Nunca desarmar o dead-man antes de o netem sair.**
+14. Um `exec-*` sem `checagem.json` não pede decisão na hora: a DT-014 é aplicada sozinha na próxima
+    execução do runner.
+    - Sem `stdout.log`: vira `.abortada-<UTC>` e o mesmo i roda de novo.
+    - Com `stdout.log`: vira RECUSADA "interrompida" e é reposto no fim.
+
+    Nada é apagado.
+15. Copiar `runs/rebaseline/` para o host e rodar
+    `python analysis/rebaseline.py piloto --saida runs/rebaseline --matriz runs/rebaseline/matriz.tsv`.
+    É o insumo do parecer do Senior, que confere `falha_efetiva` (C5) e `configuracao_confere` nas 12
+    execuções.

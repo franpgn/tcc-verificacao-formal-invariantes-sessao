@@ -499,8 +499,12 @@ continuam verdes.
 **De dia, antes da noite do piloto:**
 
 1. Conferir o IP da VM pelo MAC `00-15-5D-03-AC-00` (`Get-NetNeighbor -InterfaceAlias 'vEthernet (Default Switch)'`).
-2. Levar o *bundle* conferido por *hash*:
-   - o jar construído da ponta integrada;
+2. Levar o *bundle* conferido por *hash*. Os arquivos do git saem **só** por `git archive` da ponta
+   integrada (G1): o `.gitattributes` força LF em `*.sh`, `*.py` e `*.tsv`, e o arquivo sai igual ao *blob*.
+   - O jar é o congelado da campanha (G2), **sem reconstruir**:
+     `C:\Users\Francesco\Development\tcc\dados-vm\rebaseline-2026-10\jar\session-workload-0.1.0-SNAPSHOT.jar`
+     (SHA-256 `5eced1363f1b318f533174e967be6a81080bcc95961d0f72a118dc0184dcefaf`, 18 824 990 bytes, ponta
+     `988fd3c`, `.sha256` ao lado). É o jar do piloto e de todas as noites, em `--jar`/`--jar-sha256`;
    - `scripts/run-rebaseline.sh`, `scripts/rebaseline_matriz.py`, `scripts/inject-crash.sh` e `scripts/inject-jitter.sh`;
    - `analysis/rebaseline.py`;
    - `runs/rebaseline/matriz.tsv` (`8654900cd23b9b46e65163a5d106bd6f86113632d2ce621ff962f637cd645c35`).
@@ -510,8 +514,13 @@ continuam verdes.
    - `sudo -n true` (sem senha), `python3 --version`, `tmux -V`;
    - `podman --version`;
    - `flock --version` (util-linux ≥ 2.34, por causa do `-F`);
-   - `sudo podman inspect -f '{{.Created.Unix}} {{.State.StartedAt.Unix}} {{.State.StartedAt.UnixMilli}}' isn1`: três números;
-   - `sudo podman logs --since $(sudo podman inspect -f '{{.State.StartedAt.Unix}}' isn1) isn1 | grep -c ISPN080001`: esperado 1;
+   - `sudo podman inspect -f '{{.Created.Unix}} {{.State.StartedAt.Unix}} {{.State.StartedAt.UnixMilli}} {{.State.FinishedAt.UnixMilli}}' isn1`:
+     quatro números (G4). Em `isn1`, que nunca parou, o último é negativo (`-62135596800000`). Isso só
+     confirma que o *template* `FinishedAt.UnixMilli` funciona; o runner o lê de `isn2` depois do F1, quando
+     é positivo;
+   - `sudo podman logs --since $(sudo podman inspect -f '{{.State.StartedAt.Unix}}' isn1) isn1 2>&1 | grep -c ISPN080001`:
+     esperado 1 (G4). O `2>&1` é obrigatório, como no `contar_logs` do runner: sem ele, um *log* escrito em
+     *stderr* daria 0;
    - `systemctl list-timers --all --no-legend 'tcc-heal-rb-*' | wc -c`: esperado **0**. Se não der 0, parar
      e avisar o Senior antes do piloto, porque a primeira F3 terminaria com exit 6.
 5. Rodar `bash scripts/run-rebaseline.sh --dry-run --matriz runs/rebaseline/matriz.tsv --matriz-sha256 <sha> --fase piloto`
@@ -561,7 +570,13 @@ continuam verdes.
     - Com `stdout.log`: vira RECUSADA "interrompida" e é reposto no fim.
 
     Nada é apagado.
+
+    **Procedimento G3 (K9 em execução interrompida).** Numa RECUSADA "interrompida" o runner não avalia
+    K1..K10. Para cada uma que tenha CSV parcial (`violacoes-rep-001.csv` em `exec-<i>/` ou em
+    `exec-<i>/.scratch/`), o Senior lê o CSV no parecer da noite e verifica K9 (SYNC sem falha: I1 = I4 = 0
+    e nenhum I2 REAL). Uma violação encontrada assim tem o efeito de **PARADA da fase**, como se o runner a
+    tivesse detectado: a fase não segue até o Gestor decidir. O código não muda.
 15. Copiar `runs/rebaseline/` para o host e rodar
     `python analysis/rebaseline.py piloto --saida runs/rebaseline --matriz runs/rebaseline/matriz.tsv`.
     É o insumo do parecer do Senior, que confere `falha_efetiva` (C5) e `configuracao_confere` nas 12
-    execuções.
+    execuções e aplica o procedimento G3 do passo 14 a toda RECUSADA "interrompida" com CSV parcial.

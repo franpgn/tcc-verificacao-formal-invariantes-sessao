@@ -421,12 +421,14 @@ J="${OUTD}/recursos-podman-rep-001.jsonl"
 ok "R10c exit code" "0" "${RC}"
 ok "R10c 1a linha ok:true apesar do aviso no stderr" "True isn1" "$("${PY}" -c 'import json,sys
 d=json.loads(open(sys.argv[1],encoding="utf-8").readline()); print(d["ok"], d["stats"][0]["name"], end="")' "${J}" 2>&1)"
-ok "R10c aviso fora do jsonl" "0" "$(grep -c 'level=warning' "${J}" 2>/dev/null || true)"
+# (uma linha ok:false com o aviso so pode vir do podman stats morto no encerramento)
+ok "R10c aviso fora das linhas ok:true" "0" "$(grep '"ok":true' "${J}" 2>/dev/null | grep -c 'level=warning' || true)"
 ok "R10c nenhum temporario sobrando" "0" "$(find "${OUTD}" -name '.*tmp*' | wc -l | tr -d ' ')"
 novo_caso r10d wsl
 touch "${SHIM_ESTADO}/stats-falha"
-PATH="${SHIMS}:${PATH}" bash "${COL}" --saida "${OUTD}" --rep 1 --containers "isn1"     --intervalo-ms 250 --podman-stats-s 1 --max-amostras 2 >/dev/null 2>&1
-contem "R10d erro traz rc e stderr do podman" 'rc=125 Error: stats \"falhou\" de proposito' "$(head -1 "${OUTD}/recursos-podman-rep-001.jsonl" 2>/dev/null)"
+PATH="${SHIMS}:${PATH}" bash "${COL}" --saida "${OUTD}" --rep 1 --containers "isn1"     --intervalo-ms 250 --podman-stats-s 1 --max-amostras 8 >/dev/null 2>&1
+# 2 s de coleta: o 1o podman stats termina antes do fim (o ultimo pode ser morto no encerramento)
+contem "R10d erro traz rc e stderr do podman" 'rc=125 Error: stats \"falhou\" de proposito' "$(cat "${OUTD}/recursos-podman-rep-001.jsonl" 2>/dev/null)"
 
 echo "== R11: meta =="
 novo_caso r11 ubuntu

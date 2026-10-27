@@ -151,6 +151,7 @@ CSV="${SAIDA}/recursos-rep-${NNN}.csv"
 META="${SAIDA}/recursos-meta-rep-${NNN}.json"
 JSONL="${SAIDA}/recursos-podman-rep-${NNN}.jsonl"
 STATS_TMP="${SAIDA}/.recursos-podman-rep-${NNN}.tmp"
+STATS_TMP_ERR="${SAIDA}/.recursos-podman-rep-${NNN}.err.tmp"
 read -ra PODMAN_CMD <<< "${PODMAN}"
 
 # Sinal: o trap entra ANTES de qualquer processo externo, para que um SIGTERM
@@ -351,23 +352,28 @@ ciclo() {   # $1 = t_epoch_ns da amostra
 
 # podman stats em segundo plano (unico processo periodico alem do sleep): a
 # saida vai para um temporario e e recolhida num ciclo seguinte, sem bloquear
-# a cadencia.
+# a cadencia. stdout e stderr em temporarios separados: um aviso no stderr com
+# rc 0 (Podman 5 com cgroup v1) nao invalida o JSON; o stderr so entra no
+# campo "erro" quando o comando falha.
 stats_lancar() {   # $1 = t
     STATS_T="$1"
-    "${PODMAN_CMD[@]}" stats --no-stream --format json > "${STATS_TMP}" 2>&1 &
+    "${PODMAN_CMD[@]}" stats --no-stream --format json > "${STATS_TMP}" 2> "${STATS_TMP_ERR}" &
     STATS_PID=$!
 }
 stats_recolher() {   # $1 = 1 se deve esperar (fim)
-    local rc=0 conteudo="" erro
+    local rc=0 conteudo="" stderr="" erro
     if [[ "$1" != 1 ]] && kill -0 "${STATS_PID}" 2>/dev/null; then return 1; fi
     wait "${STATS_PID}" 2>/dev/null; rc=$?
     read -r -d '' conteudo 2>/dev/null < "${STATS_TMP}"
+    read -r -d '' stderr 2>/dev/null < "${STATS_TMP_ERR}"
     conteudo="${conteudo//$'\r'/}"
     conteudo="${conteudo//$'\n'/ }"
     if [[ ${rc} -eq 0 && "${conteudo}" =~ ^[[:space:]]*[\[\{] ]]; then
         printf '{"t_epoch_ns":%s,"ok":true,"stats":%s}\n' "${STATS_T}" "${conteudo}" >> "${JSONL}"
     else
-        erro="rc=${rc} ${conteudo:0:200}"
+        [[ -n "${stderr}" ]] || stderr="${conteudo}"
+        stderr="${stderr//$'\r'/}"; stderr="${stderr//$'\n'/ }"
+        erro="rc=${rc} ${stderr:0:200}"
         erro="${erro//\\/\\\\}"; erro="${erro//\"/\\\"}"; erro="${erro//$'\t'/ }"
         printf '{"t_epoch_ns":%s,"ok":false,"erro":"%s"}\n' "${STATS_T}" "${erro}" >> "${JSONL}"
     fi
@@ -435,7 +441,7 @@ finalizar() {
         fi
         stats_recolher 1
     fi
-    rm -f "${STATS_TMP}"
+    rm -f "${STATS_TMP}" "${STATS_TMP_ERR}"
     agora_ns
     local fim="${AGORA_NS}"
     [[ -n "${INICIO_NS}" ]] || INICIO_NS="${fim}"

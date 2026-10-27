@@ -1,0 +1,74 @@
+### 2026-10-27T17:52:44Z host=server1@172.18.251.140
+$ cd ~/tcc-gate && git rev-parse HEAD && git branch --show-current
+507c21ee6812d4ea69788277907b92b56ff13311
+test/b29-gate-vm-v3
+rc=0
+
+### 2026-10-27T17:52:45Z host=server1@172.18.251.140
+$ cd ~/tcc-gate && git ls-tree -r --name-only test/b29-gate-v4 | while read f; do if [ -e "$f" ] && ! git ls-files --error-unmatch "$f" >/dev/null 2>&1; then echo "$f"; fi; done > /tmp/s1-conflito.txt; wc -l < /tmp/s1-conflito.txt; cut -d/ -f1-3 /tmp/s1-conflito.txt | sort | uniq -c
+156
+      1 runs/gate-b29/g1b-rep2.log
+      1 runs/gate-b29/g1-console-rep2.log
+    146 runs/gate-b29/g1-rep2
+      3 runs/gate-b29/g1-rep3
+      1 runs/gate-b29/g5
+      2 runs/gate-b29/g6
+      1 runs/gate-b29/go.log
+      1 runs/gate-b29/recriacao
+rc=0
+
+### 2026-10-27T17:52:46Z host=server1@172.18.251.140
+$ cd ~/tcc-gate && n=0; d=0; while read f; do n=$((n+1)); if [ "$(git hash-object "$f")" != "$(git rev-parse "test/b29-gate-v4:$f")" ]; then d=$((d+1)); echo "DIFERE $f"; fi; done < /tmp/s1-conflito.txt; echo "comparados=$n diferentes=$d"
+comparados=156 diferentes=0
+rc=0
+
+### 2026-10-27T17:53:05Z host=server1@172.18.251.140
+$ cd ~/tcc-gate && cp /tmp/s1-conflito.txt ~/s1-conflito-lista.txt && tar -czf ~/backup-s1-2026-10-27-runs-gate-b29.tgz runs/gate-b29 && ls -l ~/backup-s1-2026-10-27-runs-gate-b29.tgz && tar -tzf ~/backup-s1-2026-10-27-runs-gate-b29.tgz | wc -l && find runs/gate-b29 | wc -l
+-rw-rw-r-- 1 server1 server1 319893 Oct 27 17:53 /home/server1/backup-s1-2026-10-27-runs-gate-b29.tgz
+376
+376
+rc=0
+
+### 2026-10-27T17:54:04Z host=server1@172.18.251.140
+$ cd ~/tcc-gate && B=~/backup-s1-2026-10-27-conflito && mkdir -p $B && while read f; do mkdir -p "$B/$(dirname "$f")"; mv "$f" "$B/$f"; done < ~/s1-conflito-lista.txt && find $B -type f | wc -l
+156
+rc=0
+
+### 2026-10-27T17:54:05Z host=server1@172.18.251.140
+$ cd ~/tcc-gate && git checkout test/b29-gate-v4 && git rev-parse HEAD && git status --short | head -20
+Switched to branch 'test/b29-gate-v4'
+9eadbdbe30f0bc8635f88e273c775b43c615e147
+?? runs/gate-b29/g1-rep3/hotrod/
+?? runs/gate-b29/recriacao/pre-recriacao-inspect-isn1.json
+?? runs/gate-b29/recriacao/pre-recriacao-inspect-isn2.json
+?? runs/gate-b29/recriacao/pre-recriacao-inspect-isn3.json
+rc=0
+
+### 2026-10-27T17:54:05Z host=server1@172.18.251.140
+$ cd ~/tcc-gate && B=~/backup-s1-2026-10-27-conflito; n=0; d=0; while read f; do n=$((n+1)); cmp -s "$f" "$B/$f" || { d=$((d+1)); echo "DIFERE $f"; }; done < ~/s1-conflito-lista.txt; echo "conferidos=$n diferentes=$d"
+conferidos=156 diferentes=0
+rc=0
+
+### 2026-10-27T17:54:05Z host=server1@172.18.251.140
+$ cd ~/tcc-gate && test "$(git rev-parse HEAD)" = 9eadbdbe30f0bc8635f88e273c775b43c615e147 && echo HEAD_OK; git log --oneline -3; git status
+HEAD_OK
+9eadbdb docs: relatorio do gate v4 (S0): medido, nao validado e conferencias da V-S0
+1a63bc5 docs: corrige a contagem de rodadas de g1 nas ressalvas
+6c2cd78 docs: testes.md com as contagens medidas do gate v4 (S0) e as ressalvas
+On branch test/b29-gate-v4
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+	runs/gate-b29/g1-rep3/hotrod/
+	runs/gate-b29/recriacao/pre-recriacao-inspect-isn1.json
+	runs/gate-b29/recriacao/pre-recriacao-inspect-isn2.json
+	runs/gate-b29/recriacao/pre-recriacao-inspect-isn3.json
+
+nothing added to commit but untracked files present (use "git add" to track)
+rc=0
+
+### 2026-10-27T17:54:18Z host=server1@172.18.251.140
+$ cd ~/tcc-gate && tar -tzf ~/backup-s1-2026-10-27-runs-gate-b29.tgz | sed "s#/\$##" | sort > /tmp/s1-antes.txt; find runs/gate-b29 | sort > /tmp/s1-depois.txt; echo "ausentes_apos_checkout=$(comm -23 /tmp/s1-antes.txt /tmp/s1-depois.txt | wc -l)"; comm -23 /tmp/s1-antes.txt /tmp/s1-depois.txt | head; echo "novos_apos_checkout=$(comm -13 /tmp/s1-antes.txt /tmp/s1-depois.txt | wc -l)"
+ausentes_apos_checkout=0
+novos_apos_checkout=4
+rc=0
+

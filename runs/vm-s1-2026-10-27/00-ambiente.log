@@ -1,0 +1,57 @@
+### 2026-10-27T17:51:56Z host=server1@172.18.251.140
+$ date -Is; hostname; uptime; uname -a; ip -br link; ip -br addr
+2026-10-27T17:51:57+00:00
+server1
+ 17:51:57 up 7 days,  1:20,  1 user,  load average: 0.12, 0.03, 0.01
+Linux server1 6.8.0-147-generic #147-Ubuntu SMP PREEMPT_DYNAMIC Thu Sep 24 11:33:16 UTC 2026 x86_64 x86_64 x86_64 GNU/Linux
+lo               UNKNOWN        00:00:00:00:00:00 <LOOPBACK,UP,LOWER_UP> 
+eth0             UP             00:15:5d:03:ac:00 <BROADCAST,MULTICAST,UP,LOWER_UP> 
+lo               UNKNOWN        127.0.0.1/8 ::1/128 
+eth0             UP             172.18.251.140/20 metric 100 fe80::215:5dff:fe03:ac00/64 
+rc=0
+
+### 2026-10-27T17:51:57Z host=server1@172.18.251.140
+$ env | grep G_TESTE
+rc=1
+
+### 2026-10-27T17:51:57Z host=server1@172.18.251.140
+$ bash -lic "env | grep G_TESTE" 2>/dev/null
+rc=1
+
+### 2026-10-27T17:51:57Z host=server1@172.18.251.140
+$ grep -n G_TESTE ~/.bashrc ~/.profile ~/.bash_profile /etc/environment /etc/profile /etc/profile.d/* /etc/bash.bashrc 2>/dev/null
+rc=2
+
+### 2026-10-27T17:51:58Z host=server1@172.18.251.140
+$ sudo -n env | grep G_TESTE
+rc=1
+
+### 2026-10-27T17:51:58Z host=server1@172.18.251.140
+$ ls -l /var/lock/tcc-vm.lock; ls -la /var/lock/ | head -30
+ls: cannot access '/var/lock/tcc-vm.lock': No such file or directory
+total 0
+drwxrwxrwt  4 root root  100 Oct 20 16:31 .
+drwxr-xr-x 33 root root 1000 Oct 27 17:51 ..
+drwx------  2 root root   40 Oct 20 16:31 lvm
+-rw-r--r--  1 root root    0 Oct 20 16:31 netavark.lock
+drwxr-xr-x  2 root root   40 Oct 20 16:31 subsys
+rc=0
+
+### 2026-10-27T17:51:58Z host=server1@172.18.251.140
+$ systemctl list-timers --all --no-pager | grep -i tcc; systemctl list-units --all --no-pager | grep -i tcc-heal; echo "(grep vazio = 0 timers/units tcc)"
+(grep vazio = 0 timers/units tcc)
+rc=0
+
+### 2026-10-27T17:51:58Z host=server1@172.18.251.140
+$ tmux ls
+error connecting to /tmp/tmux-1000/default (No such file or directory)
+rc=1
+
+### 2026-10-27T17:51:59Z host=server1@172.18.251.140
+$ pgrep -a java; pgrep -af "inject|g5b|l0c|tc qdisc" | grep -v pgrep
+19 [idle_inject/0]
+22 [idle_inject/2]
+28 [idle_inject/1]
+34 [idle_inject/3]
+rc=0
+

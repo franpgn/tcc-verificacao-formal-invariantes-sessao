@@ -1,0 +1,342 @@
+### 2026-10-27T17:59:31Z host=server1@172.18.251.140
+$ cd ~/tcc-gate && git rev-parse HEAD && env | grep -c G_TESTE; uptime; date -Is; s=$(date +%s); flock -n /var/lock/tcc-vm.lock bash scripts/inject-netdegrade.test.sh; rc=$?; echo "suite_rc=$rc duracao_s=$(( $(date +%s) - s ))"; date -Is; ls -l /var/lock/tcc-vm.lock; exit $rc
+9eadbdbe30f0bc8635f88e273c775b43c615e147
+0
+ 17:59:32 up 7 days,  1:27,  1 user,  load average: 0.32, 0.36, 0.18
+2026-10-27T17:59:32+00:00
+== T-nd-0: o script existe e a sintaxe e valida ==
+PASS: T-nd-0 bash -n limpo
+PASS: T-nd-0 nenhum 'tc' fora de nsenter no script (linha iniciada por tc/sudo tc)
+PASS: T-nd-0 o script nao usa 'podman exec'
+== T-nd-1: --help retorna 0 e documenta as flags e os exit codes ==
+PASS: T-nd-1 exit code
+PASS: T-nd-1 documenta --target
+PASS: T-nd-1 documenta --nodes
+PASS: T-nd-1 documenta --peers
+PASS: T-nd-1 documenta --direction
+PASS: T-nd-1 documenta --loss
+PASS: T-nd-1 documenta --loss-corr
+PASS: T-nd-1 documenta --loss-in
+PASS: T-nd-1 documenta --loss-model
+PASS: T-nd-1 documenta --burst
+PASS: T-nd-1 documenta --delay
+PASS: T-nd-1 documenta --jitter
+PASS: T-nd-1 documenta --duplicate
+PASS: T-nd-1 documenta --reorder
+PASS: T-nd-1 documenta --corrupt
+PASS: T-nd-1 documenta --severity
+PASS: T-nd-1 documenta --duration
+PASS: T-nd-1 documenta --marker
+PASS: T-nd-1 documenta --iface
+PASS: T-nd-1 documenta --ping-count
+PASS: T-nd-1 documenta --heal
+PASS: T-nd-1 documenta --dry-run
+PASS: T-nd-1 documenta --help
+PASS: T-nd-1 documenta exit 0 
+PASS: T-nd-1 documenta exit 1 
+PASS: T-nd-1 documenta exit 2 
+PASS: T-nd-1 documenta exit 3 
+PASS: T-nd-1 documenta exit 4 
+PASS: T-nd-1 documenta exit 5 
+PASS: T-nd-1 documenta exit 6 
+PASS: T-nd-1 documenta exit 7 
+PASS: T-nd-1 documenta PODMAN
+PASS: T-nd-1 documenta raiz ocupada
+== T-nd-2: --dry-run (defaults, direcao out) sem podman ==
+PASS: T-nd-2 exit code
+PASS: T-nd-2 resolve pid
+PASS: T-nd-2 resolve IP dos pares
+PASS: T-nd-2 pre-limpeza condicionada a qdisc propria
+PASS: T-nd-2 add prio raiz
+PASS: T-nd-2 netem na banda 3
+PASS: T-nd-2 filtro u32 por par
+PASS: T-nd-2 del raiz
+PASS: T-nd-2 contadores
+PASS: T-nd-2 duracao padrao 120
+PASS: T-nd-2 menciona lock do F2
+PASS: T-nd-2 nao usa podman exec
+PASS: T-nd-2 dois pares (isn1, isn2) -> 2 filtros
+PASS: T-nd-2 direcao out -> 1 netem
+PASS: T-nd-2 nada executado
+PASS: T-nd-2 toda linha com 'tc ' do plano passa por nsenter
+== T-nd-3: direcao in (entrada = egress dos pares) e both ==
+PASS: T-nd-3a exit code
+PASS: T-nd-3a in -> um netem por par (2)
+PASS: T-nd-3a in -> filtros apontam para o IP do alvo
+PASS: T-nd-3a netem no no isn1
+PASS: T-nd-3a netem no no isn2
+PASS: T-nd-3a o alvo nao recebe netem em 'in'
+PASS: T-nd-3b exit code
+PASS: T-nd-3b both -> 3 netem (alvo + 2 pares)
+PASS: T-nd-3c 5 nos both -> 5 netem
+PASS: T-nd-3d --peers restringe os filtros (2)
+PASS: T-nd-3d par fora de --peers nao aparece
+== T-nd-4: perda assimetrica (--loss-in) ==
+PASS: T-nd-4a exit code
+PASS: T-nd-4a saida do alvo com 20%
+PASS: T-nd-4a entrada (pares) com 50%
+PASS: T-nd-4b so entrada com --loss-in
+PASS: T-nd-4b 2 netem de 50%
+PASS: T-nd-4c --loss-in 0 em both: so a saida degrada
+PASS: T-nd-4c 1 netem
+== T-nd-5: parametros do netem ==
+PASS: T-nd-5a exit
+PASS: T-nd-5a atraso+jitter normal
+PASS: T-nd-5b delay sem unidade vira ms
+PASS: T-nd-5c perda correlacionada
+PASS: T-nd-5d duplicacao
+PASS: T-nd-5e reordenacao com correlacao
+PASS: T-nd-5f reordenacao sem correlacao
+PASS: T-nd-5g corrupcao
+PASS: T-nd-5h combinacao 'rede ruim' (M)
+PASS: T-nd-5i gemodel exit
+PASS: T-nd-5i gemodel p=6.25% r=25% (media 20%)
+PASS: T-nd-5j gemodel burst 2 -> r=50%, p=12.5%
+PASS: T-nd-5k perda fracionaria
+PASS: T-nd-5l --iface
+PASS: T-nd-5m --duration
+PASS: T-nd-5n marcador citado (fault=F4)
+PASS: T-nd-5n marcador citado (arquivo)
+== T-nd-6: severidades N1..N5 ==
+PASS: T-nd-6 N1 exit
+PASS: T-nd-6 N1 -> loss 1%
+PASS: T-nd-6 N2 exit
+PASS: T-nd-6 N2 -> loss 5%
+PASS: T-nd-6 N3 exit
+PASS: T-nd-6 N3 -> loss 20%
+PASS: T-nd-6 N4 exit
+PASS: T-nd-6 N4 -> loss 50%
+PASS: T-nd-6 N5 exit
+PASS: T-nd-6 N5 -> loss 99.9%
+PASS: T-nd-6 N5 avisa equivalencia com particao
+PASS: T-nd-6b loss >= 99 avisa
+PASS: T-nd-6c 20% nao avisa equivalencia
+PASS: T-nd-6d --severity junto com --loss
+PASS: T-nd-6e severidade desconhecida
+PASS: T-nd-6g nome antigo S3 rejeitado (colide com cenario S3)
+PASS: T-nd-6f severidade com gemodel aceita
+PASS: T-nd-6f gemodel com media 5%
+== T-nd-7: avisos de duracao ==
+PASS: T-nd-7a exit
+PASS: T-nd-7a aviso de duracao curta
+PASS: T-nd-7a plano segue
+PASS: T-nd-7b 60 s sem aviso
+== T-nd-8: argumentos invalidos -> exit 2 ==
+PASS: T-nd-8 sem --target
+PASS: T-nd-8 nenhum efeito (so --target)
+PASS: T-nd-8 loss 101
+PASS: T-nd-8 loss negativa
+PASS: T-nd-8 loss nao numerica
+PASS: T-nd-8 loss-in 101
+PASS: T-nd-8 loss-corr 101
+PASS: T-nd-8 loss-corr sem loss
+PASS: T-nd-8 loss-corr com gemodel
+PASS: T-nd-8 --loss-model invalido
+PASS: T-nd-8 gemodel sem perda
+PASS: T-nd-8 gemodel com p > 100% (loss 90 burst 4)
+PASS: T-nd-8 gemodel loss 100
+PASS: T-nd-8 burst 0
+PASS: T-nd-8 burst nao numerico
+PASS: T-nd-8 --reorder sem --delay
+PASS: T-nd-8 --reorder 101
+PASS: T-nd-8 --reorder corr 101
+PASS: T-nd-8 --jitter sem --delay
+PASS: T-nd-8 delay com unidade invalida
+PASS: T-nd-8 delay negativo
+PASS: T-nd-8 duplicate 101
+PASS: T-nd-8 corrupt 101
+PASS: T-nd-8 direcao invalida
+PASS: T-nd-8 --loss-in com direcao out
+PASS: T-nd-8 alvo fora de --nodes
+PASS: T-nd-8 --peers contem o alvo
+PASS: T-nd-8 --peers fora de --nodes
+PASS: T-nd-8 --peers vazio
+PASS: T-nd-8 --nodes com 1 no
+PASS: T-nd-8 --duration 0
+PASS: T-nd-8 --duration nao inteiro
+PASS: T-nd-8 --ping-count nao inteiro
+PASS: T-nd-8 flag desconhecida
+PASS: T-nd-8 --target sem valor
+PASS: T-nd-8 --loss sem valor
+PASS: T-nd-8 nome de no com caracteres invalidos
+PASS: T-nd-8 --iface invalida
+PASS: T-nd-8 argumento invalido sem --dry-run tambem exit 2
+== T-nd-9: execucao completa com shims (direcao out, --duration 1) ==
+PASS: T-nd-9 exit code
+PASS: T-nd-9 sequencia resolve > inspeciona raiz > sonda > del > apply > ping > contadores > del
+PASS: T-nd-9 nenhum tc chamado fora de nsenter
+PASS: T-nd-9 nenhum tc inesperado
+PASS: T-nd-9 cada 'tc' do log foi precedido de um nsenter com tc
+PASS: T-nd-9 resolve IP de isn1
+PASS: T-nd-9 so toca no PID de isn3 (nao toca 4001)
+PASS: T-nd-9 nao toca no PID de isn2 (4002)
+PASS: T-nd-9 sem residuo da qdisc do injetor
+PASS: T-nd-9 marcador com 2 linhas
+PASS: T-nd-9 marcador start
+PASS: T-nd-9 marcador end
+PASS: T-nd-9 formato do marcador compativel com o de B-29
+PASS: T-nd-9 imprime contadores
+PASS: T-nd-9 loga a perda observada no ping
+PASS: T-nd-9 mensagem final de sucesso
+PASS: T-nd-9 ping: 200 pacotes por par, 2 pares
+== T-nd-10: --direction in/both toca os PIDs dos PARES ==
+PASS: T-nd-10a exit (in)
+PASS: T-nd-10a netem em isn1 (4001)
+PASS: T-nd-10a netem em isn2 (4002)
+PASS: T-nd-10a filtro no par aponta para o IP do ALVO
+PASS: T-nd-10a alvo (4003) nao recebe netem em 'in'
+PASS: T-nd-10a sem residuo
+PASS: T-nd-10a o ping de verificacao sai do alvo
+PASS: T-nd-10b exit (both)
+PASS: T-nd-10b netem em 4001
+PASS: T-nd-10b netem em 4002
+PASS: T-nd-10b netem em 4003
+PASS: T-nd-10b sem residuo em nenhum no
+PASS: T-nd-10b nenhum tc fora de nsenter
+PASS: T-nd-10c assimetrica exit
+PASS: T-nd-10c saida do alvo: 20%
+PASS: T-nd-10c entrada via isn1: 50%
+PASS: T-nd-10c entrada via isn2: 50%
+PASS: T-nd-10c dois valores distintos de perda
+PASS: T-nd-10d --loss-in 0 em both: so a saida (pares intocados)
+PASS: T-nd-10d par isn1 nao tocado
+== T-nd-11: parametros chegam intactos ao tc (todas as impairments) ==
+PASS: T-nd-11 exit
+PASS: T-nd-11 netem completo
+PASS: T-nd-11b gemodel exit
+PASS: T-nd-11b gemodel chega ao tc
+PASS: T-nd-11c so atraso: exit
+PASS: T-nd-11c ping-check nao se aplica sem perda
+PASS: T-nd-11d --peers com 5 nos: exit
+PASS: T-nd-11d filtro para isn5
+PASS: T-nd-11d nenhum filtro para isn2
+== T-nd-12: kernel rejeita (sonda ou aplicacao) -> exit 5 e limpeza ==
+PASS: T-nd-12a filtro u32 rejeitado na sonda: exit
+PASS: T-nd-12a diagnostico
+PASS: T-nd-12a nenhum filtro de par aplicado
+PASS: T-nd-12a sem residuo
+PASS: T-nd-12a sem marcador (a falha nem comecou)
+PASS: T-nd-12b prio rejeitado (sch_prio ausente): exit
+PASS: T-nd-12c netem rejeitado (sch_netem ausente): exit
+PASS: T-nd-12c sem residuo (prio da sonda removido)
+PASS: T-nd-12d a sonda usa os parametros reais (gemodel rejeitado): exit
+PASS: T-nd-12d diagnostico cita o gate
+PASS: T-nd-12e falha na aplicacao: exit
+PASS: T-nd-12e regra parcial removida pelo trap
+PASS: T-nd-12f falha em NO PAR (direcao in): exit
+PASS: T-nd-12f nada residual em nenhum no
+== T-nd-13: SIGTERM/SIGHUP durante a janela (SIGINT nao e testavel: o bash ignora INT em jobs assincronos nao interativos) -> limpeza antes de sair ==
+PASS: T-nd-13a chegou a janela ativa (3 nos com a regra)
+PASS: T-nd-13a saiu rapido (nao esperou os 30 s)
+PASS: T-nd-13a exit code 143 (128+SIGTERM)
+PASS: T-nd-13a 3 'qdisc del root' apos o sinal (alvo + 2 pares)
+PASS: T-nd-13a sem residuo
+PASS: T-nd-13a marcador end gravado mesmo com sinal
+PASS: T-nd-13a marcador end gravado uma vez so
+PASS: T-nd-13b SIGHUP: exit 129
+PASS: T-nd-13b SIGHUP: sem residuo
+PASS: T-nd-13c SIGTERM durante o ping: exit 143
+PASS: T-nd-13c SIGTERM durante o ping: saiu sem esperar o ping
+PASS: T-nd-13c SIGTERM durante o ping: sem residuo
+== T-nd-14: --heal ==
+PASS: T-nd-14a exit
+PASS: T-nd-14a remove a raiz em isn3
+PASS: T-nd-14a remove a raiz tambem nos pares (sobra de 'in')
+PASS: T-nd-14a NAO apaga a raiz de F3 em isn2
+PASS: T-nd-14a raiz de F3 intacta
+PASS: T-nd-14a nao adiciona qdisc
+PASS: T-nd-14a nao adiciona filtro
+PASS: T-nd-14a sem residuo do injetor
+PASS: T-nd-14b --heal sem --target: exit 0
+PASS: T-nd-14b inspeciona os 3 nos
+PASS: T-nd-14b so 1 'del' (so isn3 tinha sobra)
+PASS: T-nd-14c --heal tolera no ausente
+PASS: T-nd-14d --heal idempotente sem nada a limpar
+PASS: T-nd-14d nenhum 'del' sem alvo
+PASS: T-nd-14e --heal --dry-run exit
+PASS: T-nd-14e plano de heal
+PASS: T-nd-14e plano de heal nao aplica
+== T-nd-15: exit 6 -- a degradacao nao se efetivou ==
+PASS: T-nd-15a perda observada 0% contra 20% configurados: exit
+PASS: T-nd-15a diagnostico
+PASS: T-nd-15a limpeza apos exit 6
+PASS: T-nd-15b perda observada 40% contra 20%: exit
+PASS: T-nd-15c 25% observado contra 20% esta na tolerancia binomial: exit
+PASS: T-nd-15d N5 com 100% observado (esperado 99,9%): exit
+PASS: T-nd-15e N5 com 50% observado: exit
+PASS: T-nd-15f --ping-count 0 desliga a verificacao por ping (contadores ainda passam)
+PASS: T-nd-15g contador 'Sent' zerado (filtro nao casou nada): exit
+PASS: T-nd-15g diagnostico
+PASS: T-nd-15g limpeza apos exit 6
+PASS: T-nd-15h 1000 pacotes, 0 descartados com perda 20%: exit
+PASS: T-nd-15i poucos pacotes, perda 1%, 0 descartados e so aviso (esperado < 10 descartes): exit
+PASS: T-nd-15i aviso de amostra pequena
+PASS: T-nd-15j so atraso: 'dropped' 0 e normal
+PASS: T-nd-15k so atraso mas 'Sent' 0: exit
+PASS: T-nd-15l N5: Sent 0 mas dropped 500 (filtro casou, tudo descartado) nao e exit 6: exit
+PASS: T-nd-15m Sent 0 e dropped 500 com perda 20%: exit
+== T-nd-15n: guarda de netns (R4) ==
+PASS: T-nd-15n netns distinto do PID 1: exit
+PASS: T-nd-15n consultou o netns do alvo
+PASS: T-nd-15n consultou o netns do PID 1
+PASS: T-nd-15o alvo com netns do host: exit
+PASS: T-nd-15o diagnostico
+PASS: T-nd-15o nenhum tc executado
+PASS: T-nd-15p par com netns do host: exit
+PASS: T-nd-15p nenhum tc executado
+PASS: T-nd-15q netns ilegivel: recusa (exit 4)
+PASS: T-nd-15q nenhum tc executado
+PASS: T-nd-15r --heal nao toca no no com netns do host
+== T-nd-16: exit 4 -- no ausente, parado ou sem IP ==
+PASS: T-nd-16a alvo inexistente
+PASS: T-nd-16b par inexistente
+PASS: T-nd-16c container nao running
+PASS: T-nd-16 nada alterado no kernel
+== T-nd-17: exit 3 -- dependencia ausente ==
+PASS: T-nd-17 podman ausente
+PASS: T-nd-17 mensagem
+== T-nd-18: exit 7 -- raiz ocupada (F3) / F2 no mesmo no ==
+PASS: T-nd-18a netem raiz de F3 no ALVO: exit
+PASS: T-nd-18a mensagem cita a raiz ocupada
+PASS: T-nd-18a mensagem cita inject-jitter
+PASS: T-nd-18a nada foi adicionado
+PASS: T-nd-18a nada foi removido (a raiz de F3 e alheia)
+PASS: T-nd-18a raiz de F3 intacta
+PASS: T-nd-18a sem marcador
+PASS: T-nd-18b F3 num PAR com direcao in: exit
+PASS: T-nd-18b nada foi adicionado (nem no alvo nem nos pares)
+PASS: T-nd-18c F3 em no NAO tocado (direcao out) coexiste: exit
+PASS: T-nd-18c a raiz de F3 em isn1 segue intacta
+PASS: T-nd-18c injetor nao tocou isn1
+PASS: T-nd-18d F2 (clsact) ativo no mesmo no: exit
+PASS: T-nd-18d mensagem cita F2
+PASS: T-nd-18d nada foi adicionado
+PASS: T-nd-18d clsact de F2 intacto
+PASS: T-nd-18e F2 em outro no (nao tocado) coexiste: exit
+PASS: T-nd-18f --heal tambem respeita a raiz alheia
+PASS: T-nd-18f raiz de F3 intacta apos heal
+== T-nd-19: pre-limpeza idempotente de sobra de execucao morta ==
+PASS: T-nd-19 exit
+PASS: T-nd-19 a sobra (propria) e removida ANTES da sonda/aplicacao
+PASS: T-nd-19 sem residuo
+PASS: T-nd-19b duas execucoes seguidas: ambas exit 0 (limpeza completa na primeira)
+== T-nd-20: PODMAN='sudo podman' no plano e no uso real ==
+PASS: T-nd-20 dry-run exit
+PASS: T-nd-20 plano usa sudo podman inspect
+PASS: T-nd-20 execucao com PODMAN='sudo podman'
+== T-nd-21: flock real -- duas injecoes no mesmo no; F2 e F4 se excluem ==
+PASS: T-nd-21a segunda injecao no mesmo no recusada
+PASS: T-nd-21a mensagem de lock
+PASS: T-nd-21a a primeira terminou e limpou
+PASS: T-nd-21b lock de F2 ocupado no alvo: exit 7
+PASS: T-nd-21b mensagem cita F2
+PASS: T-nd-21b nada adicionado
+PASS: T-nd-21c F4 em andamento segura o lock de F2 do no (arquivo existe)
+PASS: T-nd-21c flock -n no lock de F2 do no falha enquanto F4 roda
+
+==== RESULTADO: 306 PASS, 0 FAIL, 0 SKIP ====
+suite_rc=0 duracao_s=84
+2026-10-27T18:00:56+00:00
+-rw-rw-r-- 1 server1 server1 0 Oct 27 17:59 /var/lock/tcc-vm.lock
+rc=0
+

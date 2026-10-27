@@ -1,0 +1,32 @@
+### 2026-10-27T18:17:51Z host=server1@172.18.251.140
+$ date -Is; sudo -n podman ps -a --format "{{.Names}} {{.Status}} {{.CreatedAt}}"; for c in isn1 isn2 isn3; do sudo -n podman inspect -f "{{.Name}} Status={{.State.Status}} Pid={{.State.Pid}} StartedAt={{.State.StartedAt}}" $c; done
+2026-10-27T18:18:03+00:00
+isn1 Created 2026-10-16 08:54:38.646604913 +0000 UTC
+isn2 Created 2026-10-16 08:54:39.830633905 +0000 UTC
+isn3 Created 2026-10-16 08:54:41.015448063 +0000 UTC
+isn1 Status=created Pid=0 StartedAt=2026-10-16 08:54:38.758899275 +0000 UTC
+isn2 Status=created Pid=0 StartedAt=2026-10-16 08:54:39.959685667 +0000 UTC
+isn3 Status=created Pid=0 StartedAt=2026-10-16 08:54:41.138260104 +0000 UTC
+rc=0
+
+### 2026-10-27T18:18:04Z host=server1@172.18.251.140
+$ ls -l /var/lock/tcc-vm.lock; flock -n /var/lock/tcc-vm.lock true && echo "lock LIVRE"; tmux ls 2>&1; systemctl list-timers --all --no-pager | grep -c tcc-heal; env | grep -c G_TESTE; cd ~/tcc-gate && git rev-parse HEAD && git branch --show-current
+-rw-rw-r-- 1 server1 server1 0 Oct 27 17:59 /var/lock/tcc-vm.lock
+lock LIVRE
+error connecting to /tmp/tmux-1000/default (No such file or directory)
+0
+0
+9eadbdbe30f0bc8635f88e273c775b43c615e147
+test/b29-gate-v4
+rc=0
+
+### 2026-10-27T18:18:06Z host=server1@172.18.251.140
+$ lsmod | grep -E "^(sch_prio|sch_netem|cls_u32) "; tc qdisc show | head -3
+cls_u32                28672  0
+sch_netem              24576  0
+sch_prio               20480  0
+qdisc noqueue 0: dev lo root refcnt 2 
+qdisc mq 0: dev eth0 root 
+qdisc fq_codel 0: dev eth0 parent :4 limit 10240p flows 1024 quantum 1514 target 5ms interval 100ms memory_limit 32Mb ecn drop_batch 64 
+rc=0
+

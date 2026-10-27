@@ -1,0 +1,158 @@
+### 2026-10-27T18:01:51Z host=server1@172.18.251.140
+$ cd ~/tcc-gate && git rev-parse HEAD && env | grep -c G_TESTE; uptime; date -Is; s=$(date +%s); flock -n /var/lock/tcc-vm.lock bash scripts/inject-partition.test.sh; rc=$?; echo "suite_rc=$rc duracao_s=$(( $(date +%s) - s ))"; date -Is; exit $rc
+9eadbdbe30f0bc8635f88e273c775b43c615e147
+0
+ 18:01:52 up 7 days,  1:30,  1 user,  load average: 0.43, 0.49, 0.26
+2026-10-27T18:01:52+00:00
+== T-par-1: --help retorna 0 e documenta as flags ==
+PASS: T-par-1 exit code
+PASS: T-par-1 documenta --minority
+PASS: T-par-1 documenta --nodes
+PASS: T-par-1 documenta --iface
+PASS: T-par-1 documenta --duration
+PASS: T-par-1 documenta --marker
+PASS: T-par-1 documenta --heal
+PASS: T-par-1 documenta --dry-run
+PASS: T-par-1 documenta --help
+PASS: T-par-1 documenta exit 6
+== T-par-2: --dry-run (defaults) sem podman: nsenter/clsact/filtros por par ==
+PASS: T-par-2 exit code
+PASS: T-par-2 resolve pid
+PASS: T-par-2 resolve IP dos pares
+PASS: T-par-2 add clsact
+PASS: T-par-2 filtro ingress (src)
+PASS: T-par-2 filtro egress (dst)
+PASS: T-par-2 del clsact
+PASS: T-par-2 duracao padrao 90
+PASS: T-par-2 nao usa podman exec
+PASS: T-par-2 dois pares (isn1, isn2) -> 2 filtros ingress
+PASS: T-par-2 nada executado
+PASS: T-par-2 sem aviso de atraso severo com 90 s
+== T-par-3: --dry-run com 5 nos, --minority isn1, --duration, --marker ==
+PASS: T-par-3 exit code
+PASS: T-par-3 inspect do no isolado
+PASS: T-par-3 4 pares -> 4 filtros ingress
+PASS: T-par-3 4 pares -> 4 filtros egress
+PASS: T-par-3 par isn2 listado
+PASS: T-par-3 par isn3 listado
+PASS: T-par-3 par isn4 listado
+PASS: T-par-3 par isn5 listado
+PASS: T-par-3 o proprio no isolado nao e par
+PASS: T-par-3 duracao custom
+PASS: T-par-3 marcador citado
+PASS: T-par-3b minoria de 2 em 5 nos aceita
+PASS: T-par-3b 3 pares por no isolado
+== T-par-4: argumentos invalidos -> exit 2 ==
+PASS: T-par-4a sem --minority
+PASS: T-par-4b no fora de --nodes
+PASS: T-par-4c isolar a maioria (2 de 3)
+PASS: T-par-4c2 isolar todos os nos
+PASS: T-par-4c3 1 de 4 nos aceito
+PASS: T-par-4c4 2 de 4 (metade, empate) rejeitado
+PASS: T-par-4d --duration 0
+PASS: T-par-4d2 --duration nao inteiro
+PASS: T-par-4e flag desconhecida
+PASS: T-par-4f --minority sem valor
+PASS: T-par-4f2 --nodes sem valor
+PASS: T-par-4g nome de no com caracteres invalidos
+PASS: T-par-4h no isolado fora de --nodes (lista de 2)
+PASS: T-par-4i cluster de 1 no
+== T-par-5: --duration 20 -> aviso de atraso severo e plano normal ==
+PASS: T-par-5 exit code
+PASS: T-par-5 aviso
+PASS: T-par-5 plano segue (sleep 20)
+PASS: T-par-5 plano segue (clsact)
+== T-par-6: run-baseline.sh --faults 'none F2' --dry-run descreve o ramo F2 ==
+SKIP: T-par-6 (run-baseline.sh ainda nao integra F2: escopo de B-29.1, nao de B-29)
+== T-par-7: execucao completa com shims (--duration 1) ==
+PASS: T-par-7 exit code
+PASS: T-par-7 sequencia resolve > pre-limpeza > sonda > add > filtros > show > del
+PASS: T-par-7 resolve IP de isn1
+PASS: T-par-7 teste de conexao ao par:7800
+PASS: T-par-7 so toca no PID de isn3 (4003)
+PASS: T-par-7 nao toca no PID de isn2 (4002)
+PASS: T-par-7 sem residuo de clsact no fim
+PASS: T-par-7 marcador com 2 linhas
+PASS: T-par-7 marcador start
+PASS: T-par-7 marcador end
+PASS: T-par-7 imprime contadores
+== T-par-8: tc falha na sonda -> exit 5 e limpeza chamada ==
+PASS: T-par-8 exit code
+PASS: T-par-8 mensagem de diagnostico
+PASS: T-par-8 sonda tentou o filtro e a limpeza veio depois
+PASS: T-par-8 nenhum filtro de par aplicado
+PASS: T-par-8 sem residuo de clsact
+PASS: T-par-8b clsact rejeitado -> exit 5
+== T-par-9: SIGTERM durante a janela -> qdisc del clsact antes de sair ==
+PASS: T-par-9 chegou a janela ativa
+PASS: T-par-9 saiu rapido (nao esperou os 30 s)
+PASS: T-par-9 exit code 143 (128+SIGTERM)
+PASS: T-par-9 qdisc del clsact apos o sinal
+PASS: T-par-9 sem residuo de clsact
+PASS: T-par-9 marcador end gravado mesmo com sinal
+== T-par-10: --heal chama so a limpeza ==
+PASS: T-par-10 exit code
+PASS: T-par-10 chama del clsact em isn3
+PASS: T-par-10 nao adiciona qdisc
+PASS: T-par-10 nao adiciona filtro
+PASS: T-par-10 resto removido
+PASS: T-par-10b --heal sem --minority: exit 0
+PASS: T-par-10b limpa os 3 nos
+PASS: T-par-10c --heal tolera no ausente (container caiu: netns sumiu)
+PASS: T-par-10d --heal --dry-run
+PASS: T-par-10d plano de heal
+== T-par-11: codigo 6 -- conexao ainda possivel ao par ==
+PASS: T-par-11 exit code
+PASS: T-par-11 diagnostico
+PASS: T-par-11 sem residuo de clsact
+== T-par-12: codigo 6 -- contadores zerados no fim da janela ==
+PASS: T-par-12 exit code
+PASS: T-par-12 diagnostico
+PASS: T-par-12 sem residuo de clsact
+== T-par-13: container inexistente/parado -> exit 4 ==
+PASS: T-par-13a no isolado inexistente
+PASS: T-par-13b par inexistente
+PASS: T-par-13c container nao running
+PASS: T-par-13 nada alterado no kernel
+== T-par-14: PODMAN='sudo podman' aparece no plano e no uso real ==
+PASS: T-par-14 dry-run exit
+PASS: T-par-14 plano usa sudo podman inspect
+PASS: T-par-14 execucao com PODMAN='sudo podman'
+== T-par-15: flock real impede duas injecoes simultaneas no mesmo no ==
+PASS: T-par-15 segunda injecao no mesmo no recusada
+PASS: T-par-15 mensagem de lock
+== T-par-16: contadores por sentido (A1 de V-B): at 12 = ingress, at 16 = egress ==
+PASS: T-par-16a exit code
+PASS: T-par-16a ingress soma so os filtros 'at 12' (2 pares x 5)
+PASS: T-par-16a nao soma os dois filtros em cada sentido
+PASS: T-par-16a ambos > 0: sem aviso de um so sentido
+PASS: T-par-16b ingress=0 e egress>0 -> exit 0 (nao e falha total)
+PASS: T-par-16b contadores por sentido
+PASS: T-par-16b avisa descarte em um so sentido
+PASS: T-par-16c egress=0 tambem avisa
+PASS: T-par-16c contadores por sentido
+PASS: T-par-16d ambos 0 continua exit 6
+== T-par-17: timestamp do log() calculado a cada chamada (A3 de V-B) ==
+PASS: T-par-17 exit code
+PASS: T-par-17 primeira e ultima linha de log tem timestamps distintos
+== T-par-18: guarda de netns (A2 de V-B): nunca tocar o netns do host ==
+PASS: T-par-18a netns distinto do PID 1: exit
+PASS: T-par-18a consultou o netns do alvo
+PASS: T-par-18a consultou o netns do PID 1
+PASS: T-par-18b alvo com netns do host: exit 4
+PASS: T-par-18b diagnostico
+PASS: T-par-18b nenhum nsenter/tc executado
+PASS: T-par-18c par com netns do host: exit 4
+PASS: T-par-18c nenhum nsenter/tc executado
+PASS: T-par-18d netns ilegivel: recusa (exit 4)
+PASS: T-par-18d nenhum nsenter/tc executado
+PASS: T-par-18e --heal com um no em netns do host: exit 4
+PASS: T-par-18e --heal nao toca no no com netns do host
+PASS: T-par-18e --heal ainda limpa isn1
+PASS: T-par-18e --heal ainda limpa isn3
+
+==== RESULTADO: 127 PASS, 0 FAIL, 1 SKIP ====
+suite_rc=0 duracao_s=38
+2026-10-27T18:02:30+00:00
+rc=0
+

@@ -1,0 +1,32 @@
+### 2026-10-27T17:54:23Z host=server1@172.18.251.140
+$ cd ~/tcc-gate && grep -rlI $'\r' scripts/ runs/gate-netdegrade runs/gate-b29/*.sh | wc -l
+0
+rc=0
+
+### 2026-10-27T17:54:29Z host=server1@172.18.251.140
+$ cd ~/tcc-gate && sha256sum scripts/inject-netdegrade.sh scripts/inject-netdegrade.test.sh scripts/inject-partition.sh scripts/inject-partition.test.sh runs/gate-netdegrade/*.sh runs/gate-b29/g5b.sh runs/gate-b29/g5b.test.sh runs/gate-b29/g56-lib.sh runs/gate-b29/g-lib.sh && git ls-files -s runs/gate-netdegrade runs/gate-b29/g5b.sh scripts/inject-netdegrade.test.sh scripts/inject-partition.test.sh
+4ebdd8a34a7d5c1e6981138272a4f0b90a67c44dd8626e9521884e185297abb1  scripts/inject-netdegrade.sh
+faf48fee6b60eed0abef083c5973c21726c1fe3994b5cd5a4351f124e4d68ab3  scripts/inject-netdegrade.test.sh
+59dd2beee5b003d85f96cae71866227d7bca1c87a9ceeab034180ce4254d94e1  scripts/inject-partition.sh
+39a257fc724bd90425cb5cb968796700b67b91606bf648e97095c2d1e858e904  scripts/inject-partition.test.sh
+8c8c35416a5d2ff89449bb12edd2c93672fcece8768c4dc4897a5c40be9d3955  runs/gate-netdegrade/l0c.sh
+38325ff08f9f368014f6de5fbfa5a64a46e5d1e1a4e7c620ace939a18e6731f7  runs/gate-netdegrade/l0.sh
+9f3deacc6c408d2e70125ede52d409d87b876202cd33b370277b6330775e1253  runs/gate-netdegrade/l1.sh
+eb3005c41252f6cf40aee1eca1024528915f7a74a9a6be7de3254e290bb6f511  runs/gate-netdegrade/l-gate.test.sh
+9bdd1faeca0399d11886ee5c77189825c18f5bf69d78797c579c1fd71e9d73fd  runs/gate-netdegrade/l-lib.sh
+70845dc0879e69404a077541c91308d2464d86d5efb533ab19f5ecedbc3a0b81  runs/gate-netdegrade/verbatim.sh
+94f7ae9232ac8aebe194e606acdc0ad7e531b7bbaa492cfddbbd4fa18db7a372  runs/gate-b29/g5b.sh
+e35931cedc4e8bf7ff7d1ef29ee002f0d9eb6462e7a2b0b489248c20b64efc15  runs/gate-b29/g5b.test.sh
+4f750fe3cf59f299585c12f66b3020973976e0e979474fde6354bf6998a18e2a  runs/gate-b29/g56-lib.sh
+af3436d5ede54f5f2047ba48620130a803b4bbd8929e2cbc242fbbe0ebb922dd  runs/gate-b29/g-lib.sh
+100755 4bef8a442c3fea649262cbe33faf4d07d27c9138 0	runs/gate-b29/g5b.sh
+100755 a6e6f98140f7068f0294ae0b84153660ce1dfa52 0	runs/gate-netdegrade/l-gate.test.sh
+100644 f157cbb985670585c6870561f153de6d63dd2a9e 0	runs/gate-netdegrade/l-lib.sh
+100755 4cdbfe5e90e6fca82dce4d3c060116484cb4284e 0	runs/gate-netdegrade/l0.sh
+100755 156d0db47e930f31cf50b38d3a1ebcf58c7f162d 0	runs/gate-netdegrade/l0c.sh
+100755 a04bcdde745474dadb811eb0bc8d587defe82121 0	runs/gate-netdegrade/l1.sh
+100755 e62e0e578a83be2ea2e97692afb0ac8d5e6b71ff 0	runs/gate-netdegrade/verbatim.sh
+100755 18e0513f050b90b0687d14018595aa2468904c6f 0	scripts/inject-netdegrade.test.sh
+100755 fac0d38776f2bd0892b09325359040bbbf182b76 0	scripts/inject-partition.test.sh
+rc=0
+

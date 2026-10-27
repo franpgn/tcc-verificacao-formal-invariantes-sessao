@@ -1,0 +1,16 @@
+### 2026-10-27T18:17:25Z host=Windows
+$ time ssh ... true  (tentativa 1)
+rc=0 duracao_ms=205
+### 2026-10-27T18:17:25Z host=Windows
+$ time ssh ... true  (tentativa 2)
+rc=0 duracao_ms=214
+### 2026-10-27T18:17:25Z host=Windows
+$ time ssh ... true  (tentativa 3)
+rc=0 duracao_ms=237
+### 2026-10-27T18:17:25Z host=server1@172.18.251.140
+$ grep -E "^(UseDNS|GSSAPIAuthentication)" /etc/ssh/sshd_config /etc/ssh/sshd_config.d/* 2>/dev/null; cat /proc/loadavg; free -m | head -2
+0.37 0.75 0.58 1/185 29749
+               total        used        free      shared  buff/cache   available
+Mem:            7940         620        4133           4        3440        7319
+rc=0
+

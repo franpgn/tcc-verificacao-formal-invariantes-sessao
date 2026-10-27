@@ -1,0 +1,171 @@
+### 2026-10-27T18:10:28Z host=server1@172.18.251.140
+$ sudo -n journalctl -b -1 --no-pager -o short-iso | grep -v -E "health_status|ISPN012026|healthcheck|podman\[[0-9]+\]: .* container (exec|exec_died)" | tail -40 | cut -c1-260
+2026-10-18T07:17:01+00:00 server1 CRON[1694348]: pam_unix(cron:session): session closed for user root
+2026-10-18T07:17:53+00:00 server1 systemd[1]: Starting man-db.service - Daily man-db regeneration...
+2026-10-18T07:17:53+00:00 server1 systemd[1]: tmp-crun.shb5zh.mount: Deactivated successfully.
+2026-10-18T07:17:53+00:00 server1 systemd[1]: man-db.service: Deactivated successfully.
+2026-10-18T07:17:53+00:00 server1 systemd[1]: Finished man-db.service - Daily man-db regeneration.
+2026-10-18T07:18:07+00:00 server1 systemd[1]: tmp-crun.STFvNf.mount: Deactivated successfully.
+2026-10-18T07:20:01+00:00 server1 systemd[1]: Starting sysstat-collect.service - system activity accounting tool...
+2026-10-18T07:20:01+00:00 server1 systemd[1]: sysstat-collect.service: Deactivated successfully.
+2026-10-18T07:20:01+00:00 server1 systemd[1]: Finished sysstat-collect.service - system activity accounting tool.
+2026-10-18T07:21:35+00:00 server1 systemd[1]: tmp-crun.le3OH0.mount: Deactivated successfully.
+2026-10-18T07:24:47+00:00 server1 systemd[1]: tmp-crun.eL3dvr.mount: Deactivated successfully.
+2026-10-18T07:25:01+00:00 server1 CRON[1698476]: pam_unix(cron:session): session opened for user root(uid=0) by root(uid=0)
+2026-10-18T07:25:01+00:00 server1 CRON[1698477]: (root) CMD (command -v debian-sa1 > /dev/null && debian-sa1 1 1)
+2026-10-18T07:25:01+00:00 server1 CRON[1698476]: pam_unix(cron:session): session closed for user root
+2026-10-18T07:26:23+00:00 server1 systemd[1]: tmp-crun.5su9OT.mount: Deactivated successfully.
+2026-10-18T07:27:43+00:00 server1 systemd[1]: tmp-crun.IgXrb4.mount: Deactivated successfully.
+2026-10-18T07:28:21+00:00 server1 systemd[1]: tmp-crun.rL3aNZ.mount: Deactivated successfully.
+2026-10-18T07:30:01+00:00 server1 systemd[1]: Starting sysstat-collect.service - system activity accounting tool...
+2026-10-18T07:30:01+00:00 server1 systemd[1]: sysstat-collect.service: Deactivated successfully.
+2026-10-18T07:30:01+00:00 server1 systemd[1]: Finished sysstat-collect.service - system activity accounting tool.
+2026-10-18T07:30:49+00:00 server1 systemd[1]: tmp-crun.R3dGGy.mount: Deactivated successfully.
+2026-10-18T07:31:05+00:00 server1 systemd[1]: tmp-crun.eGK5xy.mount: Deactivated successfully.
+2026-10-18T07:31:53+00:00 server1 systemd[1]: tmp-crun.o66DUS.mount: Deactivated successfully.
+2026-10-18T07:35:01+00:00 server1 CRON[1703626]: pam_unix(cron:session): session opened for user root(uid=0) by root(uid=0)
+2026-10-18T07:35:01+00:00 server1 CRON[1703627]: (root) CMD (command -v debian-sa1 > /dev/null && debian-sa1 1 1)
+2026-10-18T07:35:01+00:00 server1 CRON[1703626]: pam_unix(cron:session): session closed for user root
+2026-10-18T07:36:49+00:00 server1 systemd[1]: tmp-crun.jv8TXq.mount: Deactivated successfully.
+2026-10-18T07:39:51+00:00 server1 systemd[1]: tmp-crun.40WUKi.mount: Deactivated successfully.
+2026-10-18T07:40:01+00:00 server1 systemd[1]: Starting sysstat-collect.service - system activity accounting tool...
+2026-10-18T07:40:01+00:00 server1 systemd[1]: sysstat-collect.service: Deactivated successfully.
+2026-10-18T07:40:01+00:00 server1 systemd[1]: Finished sysstat-collect.service - system activity accounting tool.
+2026-10-18T07:45:01+00:00 server1 systemd[1]: tmp-crun.mPfnAM.mount: Deactivated successfully.
+2026-10-18T07:45:01+00:00 server1 CRON[1708764]: pam_unix(cron:session): session opened for user root(uid=0) by root(uid=0)
+2026-10-18T07:45:01+00:00 server1 CRON[1708765]: (root) CMD (command -v debian-sa1 > /dev/null && debian-sa1 1 1)
+2026-10-18T07:45:01+00:00 server1 CRON[1708764]: pam_unix(cron:session): session closed for user root
+2026-10-18T07:45:37+00:00 server1 systemd[1]: tmp-crun.M6C4Gc.mount: Deactivated successfully.
+2026-10-18T07:45:49+00:00 server1 systemd[1]: tmp-crun.hyCGz4.mount: Deactivated successfully.
+2026-10-18T07:47:09+00:00 server1 systemd[1]: tmp-crun.KNLo7N.mount: Deactivated successfully.
+2026-10-18T07:47:31+00:00 server1 systemd[1]: tmp-crun.FdfRec.mount: Deactivated successfully.
+2026-10-18T07:48:33+00:00 server1 systemd[1]: tmp-crun.ZIDGHy.mount: Deactivated successfully.
+rc=0
+
+### 2026-10-27T18:12:27Z host=server1@172.18.251.140
+$ sudo -n journalctl -b -1 --no-pager -o short-iso -k | grep -E "Hyper-V: Host Build|Linux version" | cut -c1-200; sudo -n journalctl -b 0 --no-pager -o short-iso -k | grep -E "Hyper-V: Host Build" 
+2026-10-16T01:45:35+00:00 server1 kernel: Linux version 6.8.0-124-generic (buildd@lcy02-amd64-019) (x86_64-linux-gnu-gcc-13 (Ubuntu 13.3.0-6ubuntu2~24.04.1) 13.3.0, GNU ld (GNU Binutils for Ubuntu) 2.
+2026-10-16T01:45:35+00:00 server1 kernel: Hyper-V: Host Build 10.0.26100.9711-9-0
+2026-10-20T16:31:46+00:00 server1 kernel: Hyper-V: Host Build 10.0.26100.9711-9-0
+rc=0
+
+### 2026-10-27T18:12:28Z host=server1@172.18.251.140
+$ sudo -n journalctl -b -1 --no-pager -o short-iso | grep -i -E "Stopping|Reached target.*(Shutdown|Power-Off|Reboot)|systemd-shutdown|Journal stopped|kernel: reboot|Power key" | tail -10; echo "(vazio = nenhuma linha de desligamento ordenado no boot -1)"
+2026-10-17T06:52:55+00:00 server1 systemd[1]: Stopping udisks2.service - Disk Manager...
+2026-10-17T06:52:57+00:00 server1 systemd[1]: Stopping udisks2.service - Disk Manager...
+2026-10-17T06:52:58+00:00 server1 systemd[1]: Stopping udisks2.service - Disk Manager...
+2026-10-17T06:53:01+00:00 server1 systemd[1]: Stopping rsyslog.service - System Logging Service...
+2026-10-17T06:53:25+00:00 server1 systemd[1]: Stopping fwupd.service - Firmware update daemon...
+2026-10-17T06:53:25+00:00 server1 systemd[1]: Stopping packagekit.service - PackageKit Daemon...
+2026-10-17T06:53:27+00:00 server1 systemd[1]: Stopping fwupd.service - Firmware update daemon...
+2026-10-17T06:53:27+00:00 server1 systemd[1]: Stopping packagekit.service - PackageKit Daemon...
+2026-10-17T06:53:29+00:00 server1 systemd[1]: Stopping fwupd.service - Firmware update daemon...
+2026-10-17T06:53:29+00:00 server1 systemd[1]: Stopping packagekit.service - PackageKit Daemon...
+(vazio = nenhuma linha de desligamento ordenado no boot -1)
+rc=0
+
+### 2026-10-27T18:12:34Z host=server1@172.18.251.140
+$ sudo -n journalctl -b -1 --no-pager -o short-iso --since "2026-10-18 07:40" | grep -v -E "health_status|ISPN012026" | cut -c1-260 | tail -30
+2026-10-18T07:40:01+00:00 server1 systemd[1]: Starting sysstat-collect.service - system activity accounting tool...
+2026-10-18T07:40:01+00:00 server1 systemd[1]: sysstat-collect.service: Deactivated successfully.
+2026-10-18T07:40:01+00:00 server1 systemd[1]: Finished sysstat-collect.service - system activity accounting tool.
+2026-10-18T07:45:01+00:00 server1 systemd[1]: tmp-crun.mPfnAM.mount: Deactivated successfully.
+2026-10-18T07:45:01+00:00 server1 CRON[1708764]: pam_unix(cron:session): session opened for user root(uid=0) by root(uid=0)
+2026-10-18T07:45:01+00:00 server1 CRON[1708765]: (root) CMD (command -v debian-sa1 > /dev/null && debian-sa1 1 1)
+2026-10-18T07:45:01+00:00 server1 CRON[1708764]: pam_unix(cron:session): session closed for user root
+2026-10-18T07:45:37+00:00 server1 systemd[1]: tmp-crun.M6C4Gc.mount: Deactivated successfully.
+2026-10-18T07:45:49+00:00 server1 systemd[1]: tmp-crun.hyCGz4.mount: Deactivated successfully.
+2026-10-18T07:47:09+00:00 server1 systemd[1]: tmp-crun.KNLo7N.mount: Deactivated successfully.
+2026-10-18T07:47:31+00:00 server1 systemd[1]: tmp-crun.FdfRec.mount: Deactivated successfully.
+2026-10-18T07:48:33+00:00 server1 systemd[1]: tmp-crun.ZIDGHy.mount: Deactivated successfully.
+rc=0
+
+### 2026-10-27T18:12:34Z host=server1@172.18.251.140
+$ sudo -n podman events --since 168h --until 1s --stream=false --format "{{.Time}} {{.Type}} {{.Status}} {{.Name}}" 2>&1 | grep -v -E " (health_status|exec|exec_died) " | tail -40
+rc=0
+
+### 2026-10-27T18:12:34Z host=server1@172.18.251.140
+$ for c in isn1 isn2 isn3; do sudo -n podman inspect -f "{{.Name}} LogType={{.HostConfig.LogConfig.Type}} LogPath={{.HostConfig.LogConfig.Path}}" $c; done
+isn1 LogType=journald LogPath=
+isn2 LogType=journald LogPath=
+isn3 LogType=journald LogPath=
+rc=0
+
+### 2026-10-27T18:12:57Z host=server1@172.18.251.140
+$ sudo -n podman events --since 2026-10-15T00:00:00Z --until 1s --stream=false --format "{{.Time}} {{.Type}} {{.Status}} {{.Name}}" 2>&1 | grep -v -E " (health_status|exec|exec_died) " | tail -60
+2026-10-16 01:45:38.600483815 +0000 UTC system refresh 
+2026-10-16 05:00:14.517393116 +0000 UTC container remove isn3
+2026-10-16 05:00:14.563352013 +0000 UTC container remove isn2
+2026-10-16 05:00:14.60640624 +0000 UTC container remove isn1
+2026-10-16 05:00:14.740103204 +0000 UTC container create isn1
+2026-10-16 05:00:14.71570087 +0000 UTC image pull quay.io/infinispan/server:15.0.21.Final
+2026-10-16 05:00:14.946181862 +0000 UTC container init isn1
+2026-10-16 05:00:14.962483904 +0000 UTC container start isn1
+2026-10-16 05:00:16.042188161 +0000 UTC container create isn2
+2026-10-16 05:00:16.004180373 +0000 UTC image pull quay.io/infinispan/server:15.0.21.Final
+2026-10-16 05:00:16.141578166 +0000 UTC container init isn2
+2026-10-16 05:00:16.154064576 +0000 UTC container start isn2
+2026-10-16 05:00:17.243605625 +0000 UTC container create isn3
+2026-10-16 05:00:17.198960468 +0000 UTC image pull quay.io/infinispan/server:15.0.21.Final
+2026-10-16 05:00:17.365660179 +0000 UTC container init isn3
+2026-10-16 05:00:17.379734588 +0000 UTC container start isn3
+2026-10-16 08:54:36.287804548 +0000 UTC container died isn3
+2026-10-16 08:54:36.430222924 +0000 UTC container cleanup isn3
+2026-10-16 08:54:37.6862329 +0000 UTC container died isn2
+2026-10-16 08:54:37.801111801 +0000 UTC container cleanup isn2
+2026-10-16 08:54:38.077955907 +0000 UTC container died isn1
+2026-10-16 08:54:38.304579875 +0000 UTC container cleanup isn1
+2026-10-16 08:54:38.435851296 +0000 UTC container remove isn3
+2026-10-16 08:54:38.47530082 +0000 UTC container remove isn2
+2026-10-16 08:54:38.513206804 +0000 UTC container remove isn1
+2026-10-16 08:54:38.667514027 +0000 UTC container create isn1
+2026-10-16 08:54:38.643253159 +0000 UTC image pull quay.io/infinispan/server:15.0.21.Final
+2026-10-16 08:54:38.7570613 +0000 UTC container init isn1
+2026-10-16 08:54:38.772904985 +0000 UTC container start isn1
+2026-10-16 08:54:39.862571742 +0000 UTC container create isn2
+2026-10-16 08:54:39.825040773 +0000 UTC image pull quay.io/infinispan/server:15.0.21.Final
+2026-10-16 08:54:39.955489985 +0000 UTC container init isn2
+2026-10-16 08:54:39.970906697 +0000 UTC container start isn2
+2026-10-16 08:54:41.041559975 +0000 UTC container create isn3
+2026-10-16 08:54:41.011348115 +0000 UTC image pull quay.io/infinispan/server:15.0.21.Final
+2026-10-16 08:54:41.134725341 +0000 UTC container init isn3
+2026-10-16 08:54:41.149471405 +0000 UTC container start isn3
+2026-10-20 16:31:48.788164405 +0000 UTC system refresh 
+rc=0
+
+### 2026-10-27T18:14:01Z host=server1@172.18.251.140
+$ sudo -n podman events --since 2026-10-15T00:00:00Z --until 1s --stream=false --format "{{.Time}} {{.Status}} {{.Name}}" 2>&1 | grep -E "isn[123]$" | grep -c health_status; sudo -n podman events --since 2026-10-15T00:00:00Z --until 1s --stream=false --format "{{.Time}} {{.Status}} {{.Name}}" 2>&1 | grep health_status | tail -3
+93781
+2026-10-18 07:49:45.485071154 +0000 UTC health_status isn2
+2026-10-18 07:49:47.484142764 +0000 UTC health_status isn3
+2026-10-18 07:49:49.484972324 +0000 UTC health_status isn1
+rc=0
+
+### 2026-10-27T18:16:17Z host=server1@172.18.251.140
+$ for c in isn1 isn2 isn3; do echo "== $c"; sudo -n journalctl --no-pager -o short-iso CONTAINER_NAME=$c --since 2026-10-16T09:07:00 2>/dev/null | grep -v ISPN012026 | grep -c .; sudo -n journalctl --no-pager -o short-iso CONTAINER_NAME=$c 2>/dev/null | grep -i -E "ISPN080002|ISPN080003|stopping|shutdown|SIGTERM" | tail -3 | cut -c1-200; sudo -n journalctl --no-pager -o short-iso CONTAINER_NAME=$c 2>/dev/null | tail -1 | cut -c1-120; done
+== isn1
+0
+2026-06-23T05:47:57+00:00 server1 isn1[23028]: 2026-06-23 05:47:57,724 INFO  [o.i.SERVER] ISPN080002: Infinispan Server stopping
+2026-06-24T02:11:36+00:00 server1 isn1[29496]: 2026-06-24 02:11:36,088 INFO  [o.i.SERVER] ISPN080002: Infinispan Server stopping
+2026-10-16T08:54:37+00:00 server1 isn1[4109]: 2026-10-16 08:54:37,823 INFO  [o.i.SERVER] ISPN080002: Infinispan Server stopping
+2026-10-18T07:49:49+00:00 server1 isn1[160699]: 2026-10-18 07:49:49,435 WARN  [o.i.r.RestRequestHandler] ISPN012026: The
+== isn2
+0
+2026-06-23T06:58:50+00:00 server1 isn2[69548]: 2026-06-23 06:58:50,988 INFO  [o.i.SERVER] ISPN080002: Infinispan Server stopping
+2026-06-24T02:11:36+00:00 server1 isn2[70499]: 2026-06-24 02:11:36,081 INFO  [o.i.SERVER] ISPN080002: Infinispan Server stopping
+2026-10-16T08:54:36+00:00 server1 isn2[4245]: 2026-10-16 08:54:36,454 INFO  [o.i.SERVER] ISPN080002: Infinispan Server stopping
+2026-10-18T07:49:45+00:00 server1 isn2[160970]: 2026-10-18 07:49:45,433 WARN  [o.i.r.RestRequestHandler] ISPN012026: The
+== isn3
+0
+2026-06-23T05:47:52+00:00 server1 isn3[23592]: 2026-06-23 05:47:52,524 INFO  [o.i.SERVER] ISPN080002: Infinispan Server stopping
+2026-06-24T02:11:36+00:00 server1 isn3[29901]: 2026-06-24 02:11:36,076 INFO  [o.i.SERVER] ISPN080002: Infinispan Server stopping
+2026-10-16T08:54:35+00:00 server1 isn3[4654]: 2026-10-16 08:54:35,234 INFO  [o.i.SERVER] ISPN080002: Infinispan Server stopping
+2026-10-18T07:49:47+00:00 server1 isn3[161248]: 2026-10-18 07:49:47,435 WARN  [o.i.r.RestRequestHandler] ISPN012026: The
+rc=0
+
+### 2026-10-27T18:16:26Z host=server1@172.18.251.140
+$ sudo -n podman logs --tail 50 isn1 2>&1 | grep -c ISPN012026; sudo -n podman logs --tail 1 isn1 2>&1 | cut -c1-80
+50
+[33m2026-10-18 07:49:49,435 WARN  [o.i.r.RestRequestHandler] ISPN012026: The RE
+rc=0
+

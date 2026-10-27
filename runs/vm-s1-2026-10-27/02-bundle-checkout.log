@@ -1,0 +1,163 @@
+### 2026-10-27T17:52:19Z host=Windows (Git Bash)
+$ sha256sum gate-v4.bundle; cat gate-v4.bundle.sha256
+39e9f100bbef535e138506010374ace447b49b2501882e46a80aefdca028f6c0 *gate-v4.bundle
+39e9f100bbef535e138506010374ace447b49b2501882e46a80aefdca028f6c0 *gate-v4.bundle
+9eadbdbe30f0bc8635f88e273c775b43c615e147
+rc=0
+
+### 2026-10-27T17:52:19Z host=Windows
+$ scp -i ~/.ssh/id_ed25519_tccf3 -o IdentitiesOnly=yes gate-v4.bundle gate-v4.bundle.sha256 server1@172.18.251.140:~/
+rc=0
+
+### 2026-10-27T17:52:19Z host=server1@172.18.251.140
+$ ls -l ~/gate-v4.bundle ~/gate-v4.bundle.sha256; sha256sum ~/gate-v4.bundle; head -c 64 <(cat ~/gate-v4.bundle.sha256); echo
+-rw-r--r-- 1 server1 server1 1068906 Oct 27 17:52 /home/server1/gate-v4.bundle
+-rw-r--r-- 1 server1 server1     122 Oct 27 17:52 /home/server1/gate-v4.bundle.sha256
+39e9f100bbef535e138506010374ace447b49b2501882e46a80aefdca028f6c0  /home/server1/gate-v4.bundle
+39e9f100bbef535e138506010374ace447b49b2501882e46a80aefdca028f6c0
+rc=0
+
+### 2026-10-27T17:52:19Z host=server1@172.18.251.140
+$ test "$(sha256sum ~/gate-v4.bundle | cut -d" " -f1)" = 39e9f100bbef535e138506010374ace447b49b2501882e46a80aefdca028f6c0 && echo SHA256_OK || echo SHA256_DIFERE
+SHA256_OK
+rc=0
+
+### 2026-10-27T17:52:20Z host=server1@172.18.251.140
+$ cd ~/tcc-gate && git bundle verify ~/gate-v4.bundle && git bundle list-heads ~/gate-v4.bundle
+The bundle contains this ref:
+9eadbdbe30f0bc8635f88e273c775b43c615e147 refs/heads/test/b29-gate-v4
+The bundle records a complete history.
+The bundle uses this hash algorithm: sha1
+/home/server1/gate-v4.bundle is okay
+9eadbdbe30f0bc8635f88e273c775b43c615e147 refs/heads/test/b29-gate-v4
+rc=0
+
+### 2026-10-27T17:52:31Z host=server1@172.18.251.140
+$ cd ~/tcc-gate && git rev-parse --verify -q refs/heads/test/b29-gate-v4 || echo "branch test/b29-gate-v4 ainda nao existe"
+branch test/b29-gate-v4 ainda nao existe
+rc=0
+
+### 2026-10-27T17:52:31Z host=server1@172.18.251.140
+$ cd ~/tcc-gate && git fetch ~/gate-v4.bundle test/b29-gate-v4:test/b29-gate-v4
+From /home/server1/gate-v4.bundle
+ * [new branch]      test/b29-gate-v4 -> test/b29-gate-v4
+rc=0
+
+### 2026-10-27T17:52:32Z host=server1@172.18.251.140
+$ cd ~/tcc-gate && git checkout test/b29-gate-v4 && git rev-parse HEAD && git status
+error: The following untracked working tree files would be overwritten by checkout:
+	runs/gate-b29/g1-rep2/hotrod/avail-counters-11222-1792133297982076772.json
+	runs/gate-b29/g1-rep2/hotrod/avail-counters-11222-1792133310020879626.json
+	runs/gate-b29/g1-rep2/hotrod/avail-counters-11222-1792133322071387318.json
+	runs/gate-b29/g1-rep2/hotrod/avail-counters-11222-1792133338127100286.json
+	runs/gate-b29/g1-rep2/hotrod/avail-counters-11222-1792133362166872626.json
+	runs/gate-b29/g1-rep2/hotrod/avail-counters-11222-1792133386210374133.json
+	runs/gate-b29/g1-rep2/hotrod/avail-counters-11222-1792133410257308022.json
+	runs/gate-b29/g1-rep2/hotrod/avail-counters-11222-1792133434296094669.json
+	runs/gate-b29/g1-rep2/hotrod/avail-counters-11222-1792133458343756319.json
+	runs/gate-b29/g1-rep2/hotrod/avail-counters-11222-1792133482388653905.json
+	runs/gate-b29/g1-rep2/hotrod/avail-counters-11223-1792133297973670509.json
+	runs/gate-b29/g1-rep2/hotrod/avail-counters-11223-1792133310021872758.json
+	runs/gate-b29/g1-rep2/hotrod/avail-counters-11223-1792133322067182674.json
+	runs/gate-b29/g1-rep2/hotrod/avail-counters-11223-1792133338118914319.json
+	runs/gate-b29/g1-rep2/hotrod/avail-counters-11223-1792133362160377500.json
+	runs/gate-b29/g1-rep2/hotrod/avail-counters-11223-1792133386210247559.json
+	runs/gate-b29/g1-rep2/hotrod/avail-counters-11223-1792133410254792054.json
+	runs/gate-b29/g1-rep2/hotrod/avail-counters-11223-1792133434294697946.json
+	runs/gate-b29/g1-rep2/hotrod/avail-counters-11223-1792133458343723202.json
+	runs/gate-b29/g1-rep2/hotrod/avail-counters-11223-1792133482388741662.json
+	runs/gate-b29/g1-rep2/hotrod/avail-counters-11224-1792133322019987270.json
+	runs/gate-b29/g1-rep2/hotrod/avail-counters-11224-1792133338069898285.json
+	runs/gate-b29/g1-rep2/hotrod/avail-sessions-11222-1792133297956651914.json
+	runs/gate-b29/g1-rep2/hotrod/avail-sessions-11222-1792133310006103211.json
+	runs/gate-b29/g1-rep2/hotrod/avail-sessions-11222-1792133322058772870.json
+	runs/gate-b29/g1-rep2/hotrod/avail-sessions-11222-1792133338107159043.json
+	runs/gate-b29/g1-rep2/hotrod/avail-sessions-11222-1792133362153753736.json
+	runs/gate-b29/g1-rep2/hotrod/avail-sessions-11222-1792133386192876365.json
+	runs/gate-b29/g1-rep2/hotrod/avail-sessions-11222-1792133410241292005.json
+	runs/gate-b29/g1-rep2/hotrod/avail-sessions-11222-1792133434284181038.json
+	runs/gate-b29/g1-rep2/hotrod/avail-sessions-11222-1792133458330316648.json
+	runs/gate-b29/g1-rep2/hotrod/avail-sessions-11222-1792133482373050751.json
+	runs/gate-b29/g1-rep2/hotrod/avail-sessions-11223-1792133297957047357.json
+	runs/gate-b29/g1-rep2/hotrod/avail-sessions-11223-1792133310008192577.json
+	runs/gate-b29/g1-rep2/hotrod/avail-sessions-11223-1792133322055007793.json
+	runs/gate-b29/g1-rep2/hotrod/avail-sessions-11223-1792133338104742744.json
+	runs/gate-b29/g1-rep2/hotrod/avail-sessions-11223-1792133362148219961.json
+	runs/gate-b29/g1-rep2/hotrod/avail-sessions-11223-1792133386193083985.json
+	runs/gate-b29/g1-rep2/hotrod/avail-sessions-11223-1792133410241272935.json
+	runs/gate-b29/g1-rep2/hotrod/avail-sessions-11223-1792133434282173777.json
+	runs/gate-b29/g1-rep2/hotrod/avail-sessions-11223-1792133458330231110.json
+	runs/gate-b29/g1-rep2/hotrod/avail-sessions-11223-1792133482373053111.json
+	runs/gate-b29/g1-rep2/hotrod/avail-sessions-11224-1792133301955911284.json
+	runs/gate-b29/g1-rep2/hotrod/caches-11222-1792133297932548683.json
+	runs/gate-b29/g1-rep2/hotrod/caches-11222-1792133309989500770.json
+	runs/gate-b29/g1-rep2/hotrod/caches-11222-1792133322042181431.json
+	runs/gate-b29/g1-rep2/hotrod/caches-11222-1792133338090672007.json
+	runs/gate-b29/g1-rep2/hotrod/caches-11222-1792133362134836352.json
+	runs/gate-b29/g1-rep2/hotrod/caches-11222-1792133386177596574.json
+	runs/gate-b29/g1-rep2/hotrod/caches-11222-1792133410225540195.json
+	runs/gate-b29/g1-rep2/hotrod/caches-11222-1792133434268462364.json
+	runs/gate-b29/g1-rep2/hotrod/caches-11222-1792133458314632060.json
+	runs/gate-b29/g1-rep2/hotrod/caches-11222-1792133482358046430.json
+	runs/gate-b29/g1-rep2/hotrod/caches-11223-1792133297931988756.
+Aborting
+rc=1
+
+### 2026-10-27T17:52:32Z host=server1@172.18.251.140
+$ cd ~/tcc-gate && test "$(git rev-parse HEAD)" = 9eadbdbe30f0bc8635f88e273c775b43c615e147 && echo HEAD_OK; ls runs/gate-b29 | head -40; ls runs/gate-netdegrade
+dryrun-g1.log
+dryrun-heal.log
+g0b.log
+g0b.sh
+g0.log
+g0.sh
+g1b-rep2.log
+g1b-rep3.log
+g1b.sh
+g1b.test.sh
+g1-console-rep1.log
+g1-console-rep2.log
+g1-console-rep3.log
+g1-rep1
+g1-rep2
+g1-rep3
+g1.sh
+g1.test.sh
+g5
+g56-lib.sh
+g5-console.log
+g5-dryrun.log
+g5.sh
+g5.test.sh
+g6
+g6-console.log
+g6-dryrun.log
+g6.sh
+g6.test.sh
+gate-test-lib.sh
+g-lib.sh
+go.log
+recriacao
+ls: cannot access 'runs/gate-netdegrade': No such file or directory
+rc=2
+
+### 2026-10-27T17:52:32Z host=server1@172.18.251.140
+$ cd ~/tcc-gate && grep -rlI $'\r' scripts/ runs/gate-netdegrade runs/gate-b29/*.sh | wc -l
+0
+grep: runs/gate-netdegrade: No such file or directory
+rc=0
+
+### 2026-10-27T17:52:32Z host=server1@172.18.251.140
+$ cd ~/tcc-gate && sha256sum scripts/inject-netdegrade.sh scripts/inject-netdegrade.test.sh scripts/inject-partition.sh scripts/inject-partition.test.sh runs/gate-netdegrade/*.sh runs/gate-b29/g5b.sh runs/gate-b29/g56-lib.sh runs/gate-b29/g-lib.sh 2>&1; git ls-files -s scripts/inject-netdegrade.test.sh scripts/inject-partition.test.sh runs/gate-netdegrade runs/gate-b29/g5b.sh
+4ebdd8a34a7d5c1e6981138272a4f0b90a67c44dd8626e9521884e185297abb1  scripts/inject-netdegrade.sh
+faf48fee6b60eed0abef083c5973c21726c1fe3994b5cd5a4351f124e4d68ab3  scripts/inject-netdegrade.test.sh
+59dd2beee5b003d85f96cae71866227d7bca1c87a9ceeab034180ce4254d94e1  scripts/inject-partition.sh
+39a257fc724bd90425cb5cb968796700b67b91606bf648e97095c2d1e858e904  scripts/inject-partition.test.sh
+sha256sum: 'runs/gate-netdegrade/*.sh': No such file or directory
+sha256sum: runs/gate-b29/g5b.sh: No such file or directory
+4f750fe3cf59f299585c12f66b3020973976e0e979474fde6354bf6998a18e2a  runs/gate-b29/g56-lib.sh
+af3436d5ede54f5f2047ba48620130a803b4bbd8929e2cbc242fbbe0ebb922dd  runs/gate-b29/g-lib.sh
+100755 18e0513f050b90b0687d14018595aa2468904c6f 0	scripts/inject-netdegrade.test.sh
+100755 fac0d38776f2bd0892b09325359040bbbf182b76 0	scripts/inject-partition.test.sh
+rc=0
+

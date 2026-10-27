@@ -1,0 +1,81 @@
+### 2026-10-27T18:05:14Z host=server1@172.18.251.140
+$ sudo -n podman ps -a --format "table {{.ID}} {{.Names}} {{.Image}} {{.Status}} {{.CreatedAt}} {{.Pod}} {{.Labels}}"
+CONTAINER ID  NAMES       IMAGE                                    STATUS      CREATED AT                               POD ID      LABELS
+34652367c14b  isn1        quay.io/infinispan/server:15.0.21.Final  Created     2026-10-16 08:54:38.646604913 +0000 UTC              map[PODMAN_SYSTEMD_UNIT:podman-compose@cluster.service architecture:x86_64 build-date:2025-08-20T07:28:04 com.docker.compose.container-number:1 com.docker.compose.project:cluster com.docker.compose.project.config_files:cluster/podman-compose.yml com.docker.compose.project.working_dir:/home/server1/tcc-gate/cluster com.docker.compose.service:isn1 com.redhat.component:openjdk-21-runtime-ubi9-container com.redhat.license_terms:https://www.redhat.com/en/about/red-hat-end-user-license-agreements#UBI description:Infinispan Server distribution-scope:public io.buildah.version:1.33.12 io.cekit.version:4.15.0 io.k8s.description:Provides a scalable in-memory distributed database designed for fast access to large volumes of data. io.k8s.display-name:Infinispan Server io.openshift.expose-services:8080:http io.openshift.s2i.scripts-url:image:///usr/local/s2i io.openshift.tags:datagrid,java,jboss,xpaas io.podman.compose.config-hash:00c99a49a1eb4cff11c50ebe45135abd1726ff98a1151118219a067b297b0cc3 io.podman.compose.project:cluster io.podman.compose.version:1.0.6 maintainer:Red Hat OpenJDK <openjdk@redhat.com> name:Infinispan Server org.jboss.product:openjdk org.jboss.product.openjdk.version:21 org.jboss.product.version:21 org.opencontainers.image.documentation:https://rh-openjdk.github.io/redhat-openjdk-containers/ org.opencontainers.image.revision:ubi9 org.opencontainers.image.source:https://github.com/rh-openjdk/redhat-openjdk-containers release:15.0.21.Final summary:Infinispan Server url:https://access.redhat.com/containers/#/registry.access.redhat.com/ubi9/openjdk-21-runtime/images/1.23-6.1755674729 usage:https://rh-openjdk.github.io/redhat-openjdk-containers/ vcs-ref:105c738875e251515467d46e7fb6c1a7225949a8 vcs-type:git vendor:Red Hat, Inc. version:15.0.21.Final]
+00ccf82ed842  isn2        quay.io/infinispan/server:15.0.21.Final  Created     2026-10-16 08:54:39.830633905 +0000 UTC              map[PODMAN_SYSTEMD_UNIT:podman-compose@cluster.service architecture:x86_64 build-date:2025-08-20T07:28:04 com.docker.compose.container-number:1 com.docker.compose.project:cluster com.docker.compose.project.config_files:cluster/podman-compose.yml com.docker.compose.project.working_dir:/home/server1/tcc-gate/cluster com.docker.compose.service:isn2 com.redhat.component:openjdk-21-runtime-ubi9-container com.redhat.license_terms:https://www.redhat.com/en/about/red-hat-end-user-license-agreements#UBI description:Infinispan Server distribution-scope:public io.buildah.version:1.33.12 io.cekit.version:4.15.0 io.k8s.description:Provides a scalable in-memory distributed database designed for fast access to large volumes of data. io.k8s.display-name:Infinispan Server io.openshift.expose-services:8080:http io.openshift.s2i.scripts-url:image:///usr/local/s2i io.openshift.tags:datagrid,java,jboss,xpaas io.podman.compose.config-hash:00c99a49a1eb4cff11c50ebe45135abd1726ff98a1151118219a067b297b0cc3 io.podman.compose.project:cluster io.podman.compose.version:1.0.6 maintainer:Red Hat OpenJDK <openjdk@redhat.com> name:Infinispan Server org.jboss.product:openjdk org.jboss.product.openjdk.version:21 org.jboss.product.version:21 org.opencontainers.image.documentation:https://rh-openjdk.github.io/redhat-openjdk-containers/ org.opencontainers.image.revision:ubi9 org.opencontainers.image.source:https://github.com/rh-openjdk/redhat-openjdk-containers release:15.0.21.Final summary:Infinispan Server url:https://access.redhat.com/containers/#/registry.access.redhat.com/ubi9/openjdk-21-runtime/images/1.23-6.1755674729 usage:https://rh-openjdk.github.io/redhat-openjdk-containers/ vcs-ref:105c738875e251515467d46e7fb6c1a7225949a8 vcs-type:git vendor:Red Hat, Inc. version:15.0.21.Final]
+3ce5b4bdbccd  isn3        quay.io/infinispan/server:15.0.21.Final  Created     2026-10-16 08:54:41.015448063 +0000 UTC              map[PODMAN_SYSTEMD_UNIT:podman-compose@cluster.service architecture:x86_64 build-date:2025-08-20T07:28:04 com.docker.compose.container-number:1 com.docker.compose.project:cluster com.docker.compose.project.config_files:cluster/podman-compose.yml com.docker.compose.project.working_dir:/home/server1/tcc-gate/cluster com.docker.compose.service:isn3 com.redhat.component:openjdk-21-runtime-ubi9-container com.redhat.license_terms:https://www.redhat.com/en/about/red-hat-end-user-license-agreements#UBI description:Infinispan Server distribution-scope:public io.buildah.version:1.33.12 io.cekit.version:4.15.0 io.k8s.description:Provides a scalable in-memory distributed database designed for fast access to large volumes of data. io.k8s.display-name:Infinispan Server io.openshift.expose-services:8080:http io.openshift.s2i.scripts-url:image:///usr/local/s2i io.openshift.tags:datagrid,java,jboss,xpaas io.podman.compose.config-hash:00c99a49a1eb4cff11c50ebe45135abd1726ff98a1151118219a067b297b0cc3 io.podman.compose.project:cluster io.podman.compose.version:1.0.6 maintainer:Red Hat OpenJDK <openjdk@redhat.com> name:Infinispan Server org.jboss.product:openjdk org.jboss.product.openjdk.version:21 org.jboss.product.version:21 org.opencontainers.image.documentation:https://rh-openjdk.github.io/redhat-openjdk-containers/ org.opencontainers.image.revision:ubi9 org.opencontainers.image.source:https://github.com/rh-openjdk/redhat-openjdk-containers release:15.0.21.Final summary:Infinispan Server url:https://access.redhat.com/containers/#/registry.access.redhat.com/ubi9/openjdk-21-runtime/images/1.23-6.1755674729 usage:https://rh-openjdk.github.io/redhat-openjdk-containers/ vcs-ref:105c738875e251515467d46e7fb6c1a7225949a8 vcs-type:git vendor:Red Hat, Inc. version:15.0.21.Final]
+rc=0
+
+### 2026-10-27T18:07:29Z host=server1@172.18.251.140
+$ sudo -n podman ps -a
+CONTAINER ID  IMAGE                                    COMMAND               CREATED      STATUS      PORTS                     NAMES
+34652367c14b  quay.io/infinispan/server:15.0.21.Final  -c infinispan.xml...  11 days ago  Created     0.0.0.0:11222->11222/tcp  isn1
+00ccf82ed842  quay.io/infinispan/server:15.0.21.Final  -c infinispan.xml...  11 days ago  Created     0.0.0.0:11223->11222/tcp  isn2
+3ce5b4bdbccd  quay.io/infinispan/server:15.0.21.Final  -c infinispan.xml...  11 days ago  Created     0.0.0.0:11224->11222/tcp  isn3
+rc=0
+
+### 2026-10-27T18:07:30Z host=server1@172.18.251.140
+$ podman ps -a  # rootless (para registro)
+CONTAINER ID  IMAGE       COMMAND     CREATED     STATUS      PORTS       NAMES
+rc=0
+
+### 2026-10-27T18:07:30Z host=server1@172.18.251.140
+$ for c in isn1 isn2 isn3; do sudo -n podman inspect -f "{{.Name}} Id={{.Id}} Created={{.Created}} Status={{.State.Status}} Running={{.State.Running}} Pid={{.State.Pid}} StartedAt={{.State.StartedAt}} FinishedAt={{.State.FinishedAt}} ExitCode={{.State.ExitCode}} OOMKilled={{.State.OOMKilled}} Error={{.State.Error}} RestartPolicy={{.HostConfig.RestartPolicy.Name}} RestartCount={{.RestartCount}} Image={{.ImageName}}" $c; done
+isn1 Id=34652367c14b9aa95da13477f6e417d8d303f9f8575acde7c0637812bca44604 Created=2026-10-16 08:54:38.646604913 +0000 UTC Status=created Running=false Pid=0 StartedAt=2026-10-16 08:54:38.758899275 +0000 UTC FinishedAt=0001-01-01 00:00:00 +0000 UTC ExitCode=0 OOMKilled=false Error= RestartPolicy= RestartCount=0 Image=quay.io/infinispan/server:15.0.21.Final
+isn2 Id=00ccf82ed8424ac90b10deb34f4083e6da3677dda082904c9bc31ce6763e0b3b Created=2026-10-16 08:54:39.830633905 +0000 UTC Status=created Running=false Pid=0 StartedAt=2026-10-16 08:54:39.959685667 +0000 UTC FinishedAt=0001-01-01 00:00:00 +0000 UTC ExitCode=0 OOMKilled=false Error= RestartPolicy= RestartCount=0 Image=quay.io/infinispan/server:15.0.21.Final
+isn3 Id=3ce5b4bdbccd453a55e430ef03ae760ef0c9ff3e86a145d1e77fc0c0f21ef5e5 Created=2026-10-16 08:54:41.015448063 +0000 UTC Status=created Running=false Pid=0 StartedAt=2026-10-16 08:54:41.138260104 +0000 UTC FinishedAt=0001-01-01 00:00:00 +0000 UTC ExitCode=0 OOMKilled=false Error= RestartPolicy= RestartCount=0 Image=quay.io/infinispan/server:15.0.21.Final
+rc=0
+
+### 2026-10-27T18:07:38Z host=server1@172.18.251.140
+$ for c in isn1 isn2 isn3; do echo "== $c labels"; sudo -n podman inspect -f "{{range \$k,\$v := .Config.Labels}}{{\$k}}={{\$v}}{{println}}{{end}}" $c | grep -i -E "compose|project|config_files|working_dir"; done
+== isn1 labels
+PODMAN_SYSTEMD_UNIT=podman-compose@cluster.service
+com.docker.compose.container-number=1
+com.docker.compose.project=cluster
+com.docker.compose.project.config_files=cluster/podman-compose.yml
+com.docker.compose.project.working_dir=/home/server1/tcc-gate/cluster
+com.docker.compose.service=isn1
+io.podman.compose.config-hash=00c99a49a1eb4cff11c50ebe45135abd1726ff98a1151118219a067b297b0cc3
+io.podman.compose.project=cluster
+io.podman.compose.version=1.0.6
+== isn2 labels
+PODMAN_SYSTEMD_UNIT=podman-compose@cluster.service
+com.docker.compose.container-number=1
+com.docker.compose.project=cluster
+com.docker.compose.project.config_files=cluster/podman-compose.yml
+com.docker.compose.project.working_dir=/home/server1/tcc-gate/cluster
+com.docker.compose.service=isn2
+io.podman.compose.config-hash=00c99a49a1eb4cff11c50ebe45135abd1726ff98a1151118219a067b297b0cc3
+io.podman.compose.project=cluster
+io.podman.compose.version=1.0.6
+== isn3 labels
+PODMAN_SYSTEMD_UNIT=podman-compose@cluster.service
+com.docker.compose.container-number=1
+com.docker.compose.project=cluster
+com.docker.compose.project.config_files=cluster/podman-compose.yml
+com.docker.compose.project.working_dir=/home/server1/tcc-gate/cluster
+com.docker.compose.service=isn3
+io.podman.compose.config-hash=00c99a49a1eb4cff11c50ebe45135abd1726ff98a1151118219a067b297b0cc3
+io.podman.compose.project=cluster
+io.podman.compose.version=1.0.6
+rc=0
+
+### 2026-10-27T18:07:38Z host=server1@172.18.251.140
+$ sudo -n podman network ls; sudo -n podman pod ps
+NETWORK ID    NAME                    DRIVER
+da2a8badf438  cluster_infinispan-net  bridge
+2f259bab93aa  podman                  bridge
+POD ID      NAME        STATUS      CREATED     INFRA ID    # OF CONTAINERS
+rc=0
+
+### 2026-10-27T18:07:40Z host=server1@172.18.251.140
+$ tc qdisc show; echo "(host netns; nos netns dos conteineres nao aplicavel: Pid=0, conteineres parados)"
+qdisc noqueue 0: dev lo root refcnt 2 
+qdisc mq 0: dev eth0 root 
+qdisc fq_codel 0: dev eth0 parent :4 limit 10240p flows 1024 quantum 1514 target 5ms interval 100ms memory_limit 32Mb ecn drop_batch 64 
+qdisc fq_codel 0: dev eth0 parent :3 limit 10240p flows 1024 quantum 1514 target 5ms interval 100ms memory_limit 32Mb ecn drop_batch 64 
+qdisc fq_codel 0: dev eth0 parent :2 limit 10240p flows 1024 quantum 1514 target 5ms interval 100ms memory_limit 32Mb ecn drop_batch 64 
+qdisc fq_codel 0: dev eth0 parent :1 limit 10240p flows 1024 quantum 1514 target 5ms interval 100ms memory_limit 32Mb ecn drop_batch 64 
+(host netns; nos netns dos conteineres nao aplicavel: Pid=0, conteineres parados)
+rc=0
+

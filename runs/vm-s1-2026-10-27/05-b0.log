@@ -1,0 +1,61 @@
+### 2026-10-27T17:55:38Z host=server1@172.18.251.140
+$ for c in nsenter tc flock sudo ping systemd-run curl awk tmux; do p=$(command -v $c) && echo "ok $c $p" || echo "FALTA $c"; done
+ok nsenter /usr/bin/nsenter
+ok tc /usr/sbin/tc
+ok flock /usr/bin/flock
+ok sudo /usr/bin/sudo
+ok ping /usr/bin/ping
+ok systemd-run /usr/bin/systemd-run
+ok curl /usr/bin/curl
+ok awk /usr/bin/awk
+ok tmux /usr/bin/tmux
+rc=0
+
+### 2026-10-27T17:55:40Z host=server1@172.18.251.140
+$ tc -V; ls -l /usr/lib/x86_64-linux-gnu/tc/normal.dist; uname -r; systemctl --version | head -1; flock --version; tmux -V; podman --version; sudo -n podman --version
+tc utility, iproute2-6.1.0, libbpf 1.3.0
+-rw-r--r-- 1 root root 23573 Oct  2  2025 /usr/lib/x86_64-linux-gnu/tc/normal.dist
+6.8.0-147-generic
+systemd 255 (255.4-1ubuntu8.18)
+flock from util-linux 2.39.3
+tmux 3.4
+podman version 4.9.3
+podman version 4.9.3
+rc=0
+
+### 2026-10-27T17:55:48Z host=server1@172.18.251.140
+$ for m in sch_prio sch_netem cls_u32; do echo "-- $m"; lsmod | grep "^$m " || echo "(nao em lsmod antes)"; [ -d /sys/module/$m ] && echo "/sys/module/$m existe (antes)" || echo "/sys/module/$m ausente (antes)"; done
+-- sch_prio
+(nao em lsmod antes)
+/sys/module/sch_prio ausente (antes)
+-- sch_netem
+(nao em lsmod antes)
+/sys/module/sch_netem ausente (antes)
+-- cls_u32
+(nao em lsmod antes)
+/sys/module/cls_u32 ausente (antes)
+rc=0
+
+### 2026-10-27T17:57:50Z host=server1@172.18.251.140
+$ for m in sch_prio sch_netem cls_u32; do sudo -n modprobe $m && echo "modprobe $m rc=0" || echo "FALHA modprobe $m"; if lsmod | grep -q "^$m " || [ -d /sys/module/$m ]; then echo "ok $m"; else echo "FALTA $m"; fi; done
+modprobe sch_prio rc=0
+ok sch_prio
+modprobe sch_netem rc=0
+ok sch_netem
+modprobe cls_u32 rc=0
+ok cls_u32
+rc=0
+
+### 2026-10-27T17:57:51Z host=server1@172.18.251.140
+$ lsmod | grep -E "^(sch_prio|sch_netem|cls_u32) "; ls -d /sys/module/sch_prio /sys/module/sch_netem /sys/module/cls_u32; for m in sch_prio sch_netem cls_u32; do modinfo -F filename $m; done
+cls_u32                28672  0
+sch_netem              24576  0
+sch_prio               20480  0
+/sys/module/cls_u32
+/sys/module/sch_netem
+/sys/module/sch_prio
+/lib/modules/6.8.0-147-generic/kernel/net/sched/sch_prio.ko.zst
+/lib/modules/6.8.0-147-generic/kernel/net/sched/sch_netem.ko.zst
+/lib/modules/6.8.0-147-generic/kernel/net/sched/cls_u32.ko.zst
+rc=0
+

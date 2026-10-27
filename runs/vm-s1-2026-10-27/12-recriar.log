@@ -1,0 +1,56 @@
+### 2026-10-27T18:16:29Z host=server1@172.18.251.140
+$ ls -l --time-style=full-iso ~/recriar.sh ~/rec1.out; echo "----- recriar.sh"; cat ~/recriar.sh; echo "----- rec1.out"; cat ~/rec1.out
+-rw-rw-r-- 1 server1 server1  940 2026-10-16 08:55:06.952493436 +0000 /home/server1/rec1.out
+-rwxr-xr-x 1 server1 server1 1622 2026-10-16 08:54:30.507785898 +0000 /home/server1/recriar.sh
+----- recriar.sh
+#!/bin/bash
+# uso: recriar.sh <dir-saida>
+D=$1; mkdir -p $D; cd ~/tcc-gate
+hs() { for p in 11222 11223 11224; do curl -s -m 3 --digest -u admin:infinispan "http://localhost:$p/rest/v2/cache-managers/default/health" | tr -d ' \n' | grep -o '"health_status":"[A-Z_]*","number_of_nodes":[0-9]*' || echo "$p:ERR"; done | paste -sd' '; }
+sudo podman-compose -f cluster/podman-compose.yml down > $D/down.log 2>&1; echo "down rc=$?"
+sudo podman images | grep infinispan/server
+sudo podman-compose -f cluster/podman-compose.yml up -d > $D/up.log 2>&1; echo "up rc=$?"
+T0=$(date +%s); echo "t0_up_epoch=$T0" > $D/validacao.txt
+OKS=; ESTAVEL=
+while [ $(( $(date +%s) - T0 )) -lt 180 ]; do
+  r=$(hs); echo "$(date +%s.%N) $r" >> $D/validacao.txt
+  if [ "$(echo "$r" | grep -o '"health_status":"HEALTHY","number_of_nodes":3' | wc -l)" = 3 ]; then
+    [ -z "$OKS" ] && OKS=$(date +%s)
+    [ $(( $(date +%s) - OKS )) -ge 20 ] && { ESTAVEL=$(date +%s); break; }
+  else OKS=; fi
+  sleep 2
+done
+if [ -n "$ESTAVEL" ]; then echo "ESTAVEL size=3 HEALTHY: primeira leitura boa +$((OKS-T0))s, estavel por $((ESTAVEL-OKS))s (total $((ESTAVEL-T0))s)" | tee -a $D/validacao.txt
+else echo "FALHA: nao fechou em 180s" | tee -a $D/validacao.txt; fi
+echo "timers tcc-heal: $(systemctl list-timers --all | grep -c tcc-heal)"
+for n in isn1 isn2 isn3; do echo -n "$n: "; sudo podman inspect -f '{{.State.StartedAt}}' $n; sudo nsenter -t "$(sudo podman inspect -f '{{.State.Pid}}' $n)" -n tc qdisc show dev eth0 | tr '\n' ';'; echo; done
+for n in isn1 isn2 isn3; do sudo podman logs $n 2>&1 | grep -E "ISPN000094|ISPN000093" | tail -1 | cut -c1-200; done
+----- rec1.out
+down rc=0
+quay.io/infinispan/server  15.0.21.Final  da9c871bb5b4  13 months ago  615 MB
+up rc=0
+ESTAVEL size=3 HEALTHY: primeira leitura boa +4s, estavel por 20s (total 24s)
+timers tcc-heal: 0
+isn1: 2026-10-16 08:54:38.758899275 +0000 UTC
+qdisc noqueue 0: root refcnt 2 ;
+isn2: 2026-10-16 08:54:39.959685667 +0000 UTC
+qdisc noqueue 0: root refcnt 2 ;
+isn3: 2026-10-16 08:54:41.138260104 +0000 UTC
+qdisc noqueue 0: root refcnt 2 ;
+[0m2026-10-16 08:54:45,343 INFO  [o.i.CLUSTER] ISPN000094: Received new cluster view for channel cluster-tcc: [isn2-15987|2] (3) [isn2-15987, isn1-19763, isn3-16479][m
+[0m2026-10-16 08:54:45,337 INFO  [o.i.CLUSTER] ISPN000094: Received new cluster view for channel cluster-tcc: [isn2-15987|2] (3) [isn2-15987, isn1-19763, isn3-16479][m
+[0m2026-10-16 08:54:45,362 INFO  [o.i.CLUSTER] ISPN000094: Received new cluster view for channel cluster-tcc: [isn2-15987|2] (3) [isn2-15987, isn1-19763, isn3-16479][m
+rc=0
+
+### 2026-10-27T18:16:31Z host=server1@172.18.251.140
+$ sha256sum ~/recriar.sh; grep -n "recriar" ~/.bash_history | tail -10
+5b1cca41a2d059acf76f0f1511053dde290a883f983cc266ad79ff9360480766  /home/server1/recriar.sh
+rc=0
+
+### 2026-10-27T18:16:50Z host=server1@172.18.251.140
+$ cd ~/tcc-gate && git diff --stat 507c21e 9eadbdb -- cluster/ ; echo "(vazio = cluster/ identico entre v3 e v4)"; git log --oneline -1 -- cluster/podman-compose.yml; sha256sum cluster/podman-compose.yml
+(vazio = cluster/ identico entre v3 e v4)
+3994779 docs(f3): configuracao de cluster JGroups TCP e artefatos de smoke test da VM Hyper-V
+46d5ff7cdbf01215c7f91649121b80cb1ac095138f71c832c1672178308a67cd  cluster/podman-compose.yml
+rc=0
+

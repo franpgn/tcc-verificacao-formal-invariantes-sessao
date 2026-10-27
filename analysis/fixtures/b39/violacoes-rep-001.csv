@@ -1,0 +1,12 @@
+instante,invariante,chave,mensagem,fase,classificacao
+2026-10-27T12:00:01.100Z,I1,sid-a1,leitura VALID depois de invalidacao confirmada,durante,
+2026-10-27T12:00:02Z,I1,sid-a2,leitura VALID depois de invalidacao confirmada,recuperacao,
+2026-10-27T12:00:03.5Z,I4,sid-a3,motivo confirmado LOGOUT lido BLOCK,durante,
+2026-10-27T12:00:04.123456789Z,I2,sid-a4,valida sob bloqueio,durante,REAL
+2026-10-27T12:00:05Z,I2,sid-a5,valida sob bloqueio,durante,ESPERADA-POR-DESENHO
+2026-10-27T12:00:06Z,I2,sid-a6,valida sob bloqueio,durante,INCERTA
+2026-10-27T12:00:07Z,I2,sid-a7,valida sob bloqueio,durante,DESCONHECIDA-SEM-LOGIN
+2026-10-27T12:00:08Z,I2_JANELA_CASCATA,sid-a8,"valida sob bloqueio, dentro da janela da cascata",durante,
+2026-10-27T12:00:09Z,I2_CASCATA_INCOMPLETA,sid-a9,"valida sob bloqueio, cascata do block em erro",durante,
+2026-10-27T12:00:10Z,I3,sid-a10,contador acima do limite,durante,
+2026-10-27T12:00:11Z,I5,ident-a11,divergencia entre replicas,recuperacao,

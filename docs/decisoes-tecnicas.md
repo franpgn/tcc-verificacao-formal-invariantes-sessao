@@ -415,3 +415,18 @@ Respostas a G1..G5 de `docs/revalidacao-rebaseline-runner-2026-10-23.md` (transm
 
 Integração: *fast-forward* de `feature/controlador-integracao` `642d81f` → `988fd3c` feito pelo
 coordenador; Surefire medido 761/0/0/1 (106 arquivos). Sem push.
+
+## Decisões do Gestor sobre os prompts da trilha do host (2026-10-27)
+
+Respostas a D1..D4 do Senior (prompts de `afa33c8`), transmitidas pelo coordenador:
+
+- **D1 (B-27):** sobrecarga de `rodarCliente` com 11 parâmetros (a de 10 delega com `livre()`) e
+  `ParametrosKnobs` em arquivo JSON próprio. Nenhum teste existente é editado.
+- **D2 (B-39.1):** a referência de p99 do controlador usa todos os eventos da operação, com qualquer
+  código de retorno, como o agregador conta, por posto mais próximo.
+- **D3 (B-40):** IC primário = intervalo t sobre d_b com 8 blocos; *bootstrap* de blocos e hierárquico
+  como sensibilidade; permutação exata mantida.
+- **D4 (B-25.1):** entra depois da campanha do *rebaseline* e antes do *bundle* da T-F, mantendo
+  `run-rebaseline.test.sh` verde sem edição (ou trazendo a adaptação do *runner* junto).
+
+Os ajustes 1..9 ao plano de 22/10 listados pelo Senior ficam valendo como errata até a revisão do plano.

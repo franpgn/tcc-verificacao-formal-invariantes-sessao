@@ -395,3 +395,23 @@ Registro das respostas às perguntas Q1..Q5 de `docs/validacao-rebaseline-runner
 - **Q4:** *rebase* da branch do *runner* sobre `642d81f` e *fast-forward* local de
   `feature/controlador-integracao` depois das correções e da revalidação curta do Senior; sem push.
 - **Q5:** ajustes da checklist do Gestor (seção 8 da V-RB) aprovados.
+
+## Decisões do Gestor sobre a revalidação do *runner* (2026-10-23)
+
+Respostas a G1..G5 de `docs/revalidacao-rebaseline-runner-2026-10-23.md` (transmitidas pelo coordenador):
+
+- **G1 (R1):** aprovado. `*.py text eol=lf` e `*.tsv text eol=lf` entram no `.gitattributes` no mesmo
+  commit que põe `runs/rebaseline/matriz.tsv` no git. O *bundle* é montado só por `git archive`.
+- **G2 (R2):** aprovado. O jar `5eced1363f1b318f533174e967be6a81080bcc95961d0f72a118dc0184dcefaf`
+  (18 824 990 bytes, ponta `988fd3c`) foi copiado pelo coordenador para
+  `dados-vm/rebaseline-2026-10/jar/session-workload-0.1.0-SNAPSHOT.jar` (somente leitura, com `.sha256`
+  ao lado) e é o jar do piloto e das noites. Não se reconstrói o jar para a campanha.
+- **G3 (D17):** cobertura manual. Em cada execução RECUSADA "interrompida" com CSV parcial, o Senior lê
+  o CSV no parecer da noite e verifica K9; o código não muda. Uma violação encontrada assim tem o efeito
+  de PARADA da fase.
+- **G4:** passo 4 da checklist ajustado: `2>&1` antes do `grep -c ISPN080001` e leitura de
+  `{{.State.FinishedAt.UnixMilli}}`.
+- **G5 (D15):** aceito como está; mover `.scratch/` antes do exit 6 fica para depois do piloto.
+
+Integração: *fast-forward* de `feature/controlador-integracao` `642d81f` → `988fd3c` feito pelo
+coordenador; Surefire medido 761/0/0/1 (106 arquivos). Sem push.

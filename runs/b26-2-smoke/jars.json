@@ -1,0 +1,7 @@
+{"workload": {"arquivo": "session-workload-0.1.0-SNAPSHOT.jar", "commit": "7d154f3", "construcao": "git archive 7d154f3 workload cluster (arvore limpa do commit 4) + mvn -q -o -f workload/pom.xml clean package -DskipTests, fora da worktree", "sha256": "8db45f1cd9d536b78b00a0ff384eea41b64f4f50b6b9fb4fdd101fdd386c6669"},
+ "classe": "br.unipampa.tcc.session.SondaTopologiaCli",
+ "java": "openjdk version 22.0.2 2024-07-16 (JAVA_HOME)",
+ "curl": "C:\Windows\System32\curl.exe (curl 8.21.0 Windows, Schannel), o que o ProcessBuilder do Windows resolve antes do PATH",
+ "podman": "podman 5.7.0, podman-compose 1.5.0 -p b262, containers b262-isn1..3, portas 12262..12264, rede b262_infinispan-net; maquina WSL podman-machine-default (ja em execucao antes, em execucao depois; nao foi parada nem reiniciada)",
+ "imagem": "quay.io/infinispan/server:15.0.21.Final",
+ "aviso": "Smoke local: tempos nao sao evidencia de deteccao na VM."}

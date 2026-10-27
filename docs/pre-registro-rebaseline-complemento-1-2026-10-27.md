@@ -187,3 +187,43 @@ Matriz, ordem, sementes, `matriz.tsv` (`8654900c…`), jar (`5eced136…`), *bun
 paradas (a)..(g), DT-010, DT-011, DT-013 e DT-014, análise do PR §7 e ponta do *runner* registrada no
 complemento da DT-009 parte 2. Este complemento só acrescenta a parada (h), as covariáveis, a
 declaração sobre T12 e o pré-registro dos limiares de K3.
+
+## 7. Adenda de 2026-10-27: forma de verificar (h) e item (e), T4
+
+> Acrescentada no mesmo dia, depois de novas decisões do Gestor (transmitidas pelo coordenador),
+> antes de qualquer dado do *rebaseline*. As seções 1 a 6 acima não foram editadas.
+
+### 7.1 Verificação de (h): manual, pela checklist
+
+O Gestor decidiu que a parada (h) é verificada **manualmente**, pelo procedimento da seção 1.3 (bloco
+de abertura antes do `go`, bloco de fim, conferência h1/h2/h3 no parecer da fase). O
+`scripts/run-rebaseline.sh` e o `analysis/rebaseline.py` **não mudam**. Os *hashes* do complemento da
+DT-009 parte 2 continuam valendo. Consequências, já previstas na seção 1.2:
+
+- (h) é aplicada de forma retrospectiva, no parecer da fase. O efeito sobre os dados é o mesmo da
+  parada automática: a execução em curso e as que começaram depois do evento ficam `descartada-infra`.
+- A classificação do código para uma execução interrompida com `stdout.log` continua sendo RECUSADA
+  "interrompida" (DT-014 item 2). Na análise, prevalece `descartada-infra`, com a regra da seção 1.2
+  para uma parada (a) ou (b) que só exista por causa dessas execuções.
+- Os blocos de abertura e de fim são pré-condição da fase. Sem o bloco de abertura, não há `go`. Sem o
+  bloco de fim, a fase não recebe parecer.
+
+### 7.2 Item (e): T4, `numSegments` = 64 em vez de 256
+
+Complementa PR §2 ("Outros fixos": *cluster* de 3 nós com o XML do B-42.1). Mesmo conteúdo da
+**DT-016**.
+
+- A tabela de parâmetros da metodologia (T4, `Metodologia.tex`) fixa `numSegments` = 256, o padrão
+  do Infinispan (fonte `infinispan_tuning`).
+- O *cluster* usa **64 segmentos** em todos os *caches* e em todas as execuções: a bateria de junho
+  (`feature/f3-baseline`), o gate (REP=1..3, G-5, G-6, S1..S7 com o XML atual da v4) e o
+  *rebaseline* (XML do B-42.1, quatro *caches*, todos com `segments="64"`). O valor vem do esqueleto
+  do *cluster* de 25/05 (commit `20b80b1`), com a justificativa informal de "menos *state transfer*
+  com 3 nós". Essa justificativa nunca foi registrada em DT nem tem fonte. `docs/configuracao-infinispan.md`
+  apontava o ponto como pendente.
+- **Decisão do Gestor:** manter 64 e declarar o desvio. Motivo: comparabilidade com a bateria de junho
+  e com as partições REP=1..3 do gate, todas com 64. Não há fonte que justifique 64 contra 256, e o
+  texto não deve afirmar que 64 é melhor para 3 nós. O efeito de 64 contra 256 sobre latência e
+  *state transfer* não foi medido e fica fora do escopo.
+- Declarado antes de qualquer dado do *rebaseline*. Para o texto acadêmico (via `docs/resumos-para-tcc/`),
+  T4 entra na lista de afastamentos declarados, ao lado de T10, T12, T14 e T18.

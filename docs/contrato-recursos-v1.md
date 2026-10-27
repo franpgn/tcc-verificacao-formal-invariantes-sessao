@@ -89,13 +89,21 @@ flowchart TD
   a cada `--podman-stats-s`, o `podman stats`. O teste R12 inspeciona esse bloco.
 - **Prazo absoluto.** `prazo_k = inicio + k × intervalo`. Um ciclo atrasado não dorme e o seguinte
   volta ao prazo original, sem acumular deriva.
+- **Atraso.** No início de cada ciclo `k ≥ 1`, `atraso_k = t_k − prazo_k`, e `atraso_max_ns` é o
+  maior deles. A medida cobre a leitura que estoura o prazo e também o `sleep` que acorda tarde.
+  O *smoke* achou 330 ms de atraso que a primeira versão, que só media antes de dormir, registrava
+  como 0.
 - **Escrita.** O CSV é aberto em *append* e cada amostra é gravada com uma única escrita, sem
   temporário. Uma queda preserva tudo até a última amostra. O meta só é escrito no fim, e por isso a
   ausência dele indica coleta interrompida.
-- **`podman stats`** roda em segundo plano para não bloquear a cadência. A saída crua vai para um
-  temporário oculto (`.recursos-podman-rep-NNN.tmp`), é recolhida num ciclo seguinte e o temporário
-  é removido no fim. A linha leva o `t_epoch_ns` do ciclo em que o comando foi lançado. O que estiver
-  rodando no encerramento é morto e registrado como `ok:false`.
+- **`podman stats`** roda em segundo plano para não bloquear a cadência. O stdout e o stderr vão
+  para temporários ocultos separados (`.recursos-podman-rep-NNN.tmp` e `.err.tmp`), são recolhidos
+  num ciclo seguinte e os dois temporários são removidos no fim. A linha leva o `t_epoch_ns` do ciclo
+  em que o comando foi lançado. Com rc 0 e stdout JSON, a linha sai `ok:true`, mesmo que haja aviso
+  no stderr. O Podman 5 com cgroup v1 escreve esse aviso, e a primeira versão, que juntava os dois
+  fluxos, gravava `ok:false` em todas as linhas. Com rc diferente de 0, `erro` traz o rc e o
+  começo do stderr. O comando que estiver rodando no encerramento é morto e registrado como
+  `ok:false`.
 
 ## 4. Decisões de implementação que o texto do contrato não fixa
 
@@ -124,5 +132,5 @@ flowchart TD
 | Ambiente | cgroup | Formato de `.State.CgroupPath` | Situação |
 |---|---|---|---|
 | VM Hyper-V (Ubuntu 24.04, `sudo podman`) | v2 (`cgroup2fs`, esperado) | `/machine.slice/libpod-<id>.scope` (típico; a confirmar) | validação no *smoke* do B-40, em janela liberada pelo Gestor |
-| `podman-machine-default` (WSL, Podman 5.7, *rootful*) | **híbrido v1** (`tmpfs` em `/sys/fs/cgroup`, v2 só em `/sys/fs/cgroup/unified`, sem `memory.current`) | `/libpod_parent/libpod-<id>` | `cg:` sai `erro:leitura` com a raiz `/sys/fs/cgroup/unified` (ver relatório do B-37) |
+| `podman-machine-default` (WSL, Podman 5.7, *rootful*) | **híbrido v1** (`tmpfs` em `/sys/fs/cgroup`, v2 só em `/sys/fs/cgroup/unified`, sem `memory.current`) | `/libpod_parent/libpod-<id>` (`podman run`); `/libpod_parent/<id-do-pod>/libpod-<id>` (`podman-compose`) | com a raiz padrão, exit 3; com `COLETOR_RAIZ_CGROUP=/sys/fs/cgroup/unified`, `cg:` sai `erro:leitura` (ver `docs/relatorio-b37-2026-10-27.md`) |
 | Git Bash (testes) | árvores falsas | os dois formatos acima, por *shim* | suíte `scripts/collect-resources.test.sh` |

@@ -201,9 +201,12 @@ ok "R2 nenhum arquivo criado" "0" "$(find "${OUTD}" -type f 2>/dev/null | wc -l 
 echo "== R3: conteiner ausente (inspect exit 125) => exit 3 antes de medir =="
 novo_caso r3 wsl
 rm -f "${SHIM_ESTADO}/cg-isn2"
-coletar --saida "${OUTD}" --rep 1 --containers "isn1 isn2 isn3" --max-amostras 2 >/dev/null 2>&1; RC=$?
+ERR="$(coletar --saida "${OUTD}" --rep 1 --containers "isn1 isn2 isn3" --max-amostras 2 2>&1 >/dev/null)"; RC=$?
 ok "R3a exit code" "3" "${RC}"
 ok "R3a nenhum CSV criado" "0" "$(find "${OUTD}" -name '*.csv' 2>/dev/null | wc -l | tr -d ' ')"
+# o exit 3 tem de vir do podman inspect que falhou para isn2 (e nao de um caminho fixo)
+ok "R3a inspect de isn2 consultado" "1" "$(contar '^inspect --format {{.State.CgroupPath}} isn2$' "${SHIM_ESTADO}/podman.log")"
+contem "R3a mensagem cita o conteiner ausente e o rc do inspect" "conteiner 'isn2' nao encontrado (podman inspect rc=125)" "${ERR}"
 novo_caso r3b wsl
 rm -rf "${CG}$(cat "${SHIM_ESTADO}/cg-isn3")"
 coletar --saida "${OUTD}" --rep 1 --containers "isn1 isn2 isn3" --max-amostras 2 >/dev/null 2>&1; RC=$?

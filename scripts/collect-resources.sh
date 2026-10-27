@@ -393,12 +393,17 @@ dormir() {   # $1 = ns (> 0)
 }
 
 laco() {
-    local k=0 t prazo restante fim_dur=""
+    local k=0 t prazo restante atraso fim_dur=""
     while :; do
         agora_ns; t="${AGORA_NS}"
         if [[ -z "${INICIO_NS}" ]]; then
             INICIO_NS="${t}"
             [[ -n "${DURACAO_S}" ]] && fim_dur=$(( t + 10#${DURACAO_S} * 1000000000 ))
+        else
+            # atraso do ciclo k em relacao ao seu prazo (leitura que estourou OU
+            # sleep que acordou tarde): t_k - (inicio + k * intervalo)
+            atraso=$(( t - (INICIO_NS + k * INTERVALO_NS) ))
+            (( atraso > ATRASO_MAX_NS )) && ATRASO_MAX_NS="${atraso}"
         fi
         ciclo "${t}"
         k=$(( k + 1 )); AMOSTRAS="${k}"
@@ -418,8 +423,6 @@ laco() {
         restante=$(( prazo - AGORA_NS ))
         if (( restante > 0 )); then
             dormir "${restante}"
-        elif (( -restante > ATRASO_MAX_NS )); then
-            ATRASO_MAX_NS=$(( -restante ))
         fi
         [[ -n "${FIM_PEDIDO}" ]] && return
     done

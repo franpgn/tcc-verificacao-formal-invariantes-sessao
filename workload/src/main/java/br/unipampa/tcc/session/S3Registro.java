@@ -78,7 +78,9 @@ public final class S3Registro implements Consumer<AcaoS3> {
             w.write(AcaoS3.HEADER);
             w.newLine();
             for (AcaoS3 a : copia) {
-                w.write(a.paraCsv(relogio != null ? relogio.paraEpochNanos(a.tNs()) : a.tNs()));
+                w.write(relogio != null
+                        ? a.paraCsv(relogio.paraEpochNanos(a.tNs()), relogio.paraEpochNanos(a.tFimNs()))
+                        : a.paraCsv(a.tNs(), a.tFimNs()));
                 w.newLine();
             }
         }

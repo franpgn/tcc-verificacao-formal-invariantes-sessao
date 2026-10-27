@@ -18,7 +18,7 @@ A inicialização ocorre via `cd cluster && podman-compose up -d`. O *health che
 | **T1** Modo de replicação | `cluster/infinispan-cluster.xml` | `<distributed-cache name="sessions" mode="SYNC" ...>` (cenário-alvo `ASYNC` será introduzido em B-03 como segundo *cache* ou perfil) |
 | **T2** Número de nós: 3 | `cluster/podman-compose.yml` | Serviços `isn1`, `isn2`, `isn3` |
 | **T3** `numOwners` = 2 | `cluster/infinispan-cluster.xml` | `owners="2"` em ambos os *caches* |
-| **T4** `numSegments` | `cluster/infinispan-cluster.xml` | `segments="64"` (valor herdado do esqueleto; T4 da tabela cita 256 como padrão Infinispan; o esqueleto adota 64 para reduzir tempo de *state transfer* em ambiente com três nós — desvio justificado a registrar em `docs/decisoes-tecnicas.md` em B-04 ou ajustar para 256 se o autor preferir aderência estrita à Tabela 1) |
+| **T4** `numSegments` | `cluster/infinispan-cluster.xml` | `segments="64"` em todos os *caches* (valor herdado do esqueleto de 25/05; T4 da tabela cita 256, o padrão do Infinispan). **Decidido em 2026-10-27 (DT-016):** 64 é mantido em todas as execuções (junho, gate, *rebaseline*) por comparabilidade, e o afastamento de T4 é declarado. A justificativa informal do esqueleto ("menos *state transfer* com 3 nós") não tem fonte nem medição e não é usada como argumento |
 | **T15** MTU | herdado da configuração de rede do Podman (*bridge* default 1500) | sem ajuste explícito; equivale ao parâmetro T15 |
 | **T16** Detecção de falha FD\_ALL3 | herdada do *stack* JGroups padrão (`default-jgroups-tcp.xml`) | `<stack-file name="cluster-stack" path="default-jgroups-tcp.xml"/>` aplica os defaults (8000 ms / 40000 ms) |
 | **T17** Falha F1 (*crash*) | `cluster/podman-compose.yml` define os *containers*; o *crash* será injetado por `scripts/inject-crash.sh` em B-11 | — |
@@ -100,7 +100,7 @@ state-transfer: enabled=true, timeout=60000
 |---|---|---|
 | Perfil `DIST_ASYNC` | B-03 (próximo) | `feature/cluster-async` |
 | Stack JGroups customizado (parâmetros explícitos de FD\_ALL3) | a decidir | — |
-| Pacote `numSegments=256` alinhado ao default Infinispan | a decidir (vide T4) | — |
+| Pacote `numSegments=256` alinhado ao default Infinispan | descartado (DT-016, 2026-10-27: 64 mantido) | — |
 
 ## Como subir o *cluster* localmente
 
@@ -138,5 +138,5 @@ done
 
 ## Decisões a registrar em `docs/decisoes-tecnicas.md`
 
-- T4: aceitar `numSegments=64` do esqueleto ou ajustar para 256.
+- T4: resolvido em 2026-10-27 pela DT-016 (`numSegments=64` mantido, desvio declarado).
 - Persistir credenciais `admin/infinispan` por enquanto; revisar para variável de ambiente em B-05.

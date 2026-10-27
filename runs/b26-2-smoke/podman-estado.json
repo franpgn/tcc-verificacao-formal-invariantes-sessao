@@ -1,0 +1,74 @@
+{
+ "antes": {
+  "ps": [
+   "e5ddf4dfbde5 openlife-ldap exited 0.0.0.0:389->389/tcp, 0.0.0.0:636->636/tcp",
+   "f4a98bda46f5 openlife-app-db exited 0.0.0.0:5432->5432/tcp",
+   "06a0c5eb5203 openlife-keycloak exited 0.0.0.0:8081->8080/tcp, 8443/tcp, 9000/tcp",
+   "1e4717703a9d 8d332899fbf6-infra exited 0.0.0.0:8080->8080/tcp",
+   "3701396ad256 doi-finder-api exited 0.0.0.0:8080->8080/tcp",
+   "c398c3547ef0 67d68fd82611-infra exited 0.0.0.0:8080->80/tcp",
+   "906e6372ed03 meu-banco exited 0.0.0.0:8080->80/tcp, 5432/tcp",
+   "957ab8f07395 meu-webserver exited 0.0.0.0:8080->80/tcp",
+   "aa8c3baa1b17 isn1 exited 0.0.0.0:11222->11222/tcp, 2157/tcp, 7800/tcp, 7900/tcp, 8080/tcp, 8443/tcp, 11221/tcp, 11223/tcp, 46655/tcp, 57600/tcp",
+   "8e6f3b9c34ba isn2 exited 0.0.0.0:11223->11222/tcp, 2157/tcp, 7800/tcp, 7900/tcp, 8080/tcp, 8443/tcp, 11221/tcp, 11223/tcp, 46655/tcp, 57600/tcp",
+   "196c17b6696d isn3 exited 0.0.0.0:11224->11222/tcp, 2157/tcp, 7800/tcp, 7900/tcp, 8080/tcp, 8443/tcp, 11221/tcp, 11223/tcp, 46655/tcp, 57600/tcp"
+  ],
+  "network": [
+   "af4c812ff9e0 cluster_infinispan-net bridge",
+   "b0901bbb843a keycloak_openlife-network bridge",
+   "2f259bab93aa podman bridge"
+  ],
+  "machine": [
+   "podman-machine-default true"
+  ]
+ },
+ "depois": {
+  "ps": [
+   "e5ddf4dfbde5 openlife-ldap exited 0.0.0.0:389->389/tcp, 0.0.0.0:636->636/tcp",
+   "f4a98bda46f5 openlife-app-db exited 0.0.0.0:5432->5432/tcp",
+   "06a0c5eb5203 openlife-keycloak exited 0.0.0.0:8081->8080/tcp, 8443/tcp, 9000/tcp",
+   "1e4717703a9d 8d332899fbf6-infra exited 0.0.0.0:8080->8080/tcp",
+   "3701396ad256 doi-finder-api exited 0.0.0.0:8080->8080/tcp",
+   "c398c3547ef0 67d68fd82611-infra exited 0.0.0.0:8080->80/tcp",
+   "906e6372ed03 meu-banco exited 0.0.0.0:8080->80/tcp, 5432/tcp",
+   "957ab8f07395 meu-webserver exited 0.0.0.0:8080->80/tcp",
+   "aa8c3baa1b17 isn1 exited 0.0.0.0:11222->11222/tcp, 2157/tcp, 7800/tcp, 7900/tcp, 8080/tcp, 8443/tcp, 11221/tcp, 11223/tcp, 46655/tcp, 57600/tcp",
+   "8e6f3b9c34ba isn2 exited 0.0.0.0:11223->11222/tcp, 2157/tcp, 7800/tcp, 7900/tcp, 8080/tcp, 8443/tcp, 11221/tcp, 11223/tcp, 46655/tcp, 57600/tcp",
+   "196c17b6696d isn3 exited 0.0.0.0:11224->11222/tcp, 2157/tcp, 7800/tcp, 7900/tcp, 8080/tcp, 8443/tcp, 11221/tcp, 11223/tcp, 46655/tcp, 57600/tcp"
+  ],
+  "network": [
+   "af4c812ff9e0 cluster_infinispan-net bridge",
+   "b0901bbb843a keycloak_openlife-network bridge",
+   "2f259bab93aa podman bridge"
+  ],
+  "machine": [
+   "podman-machine-default true"
+  ]
+ },
+ "igual": true,
+ "compose_up": [
+  "998cdd533fec09672cd465235baa199b5a201cd47f051601c8a4a42c6111ed7c",
+  "60c9a131a08d564cd4e454d7e20308b6972cd5610e96a0c7ea5b0869f12036b1",
+  "f38ecea32a960e897771e48a20a33a85d25959a99a78d6a0fd6edccc7058f499",
+  "583fd53cc99dd56fa1506253638ff81bdadabda37476d0e77a991425aab6cc59",
+  "b262-isn1",
+  "b262-isn2",
+  "b262-isn3"
+ ],
+ "compose_down": [
+  "b262-isn3",
+  "b262-isn2",
+  "b262-isn1",
+  "b262-isn3",
+  "b262-isn2",
+  "b262-isn1",
+  "998cdd533fec09672cd465235baa199b5a201cd47f051601c8a4a42c6111ed7c",
+  "b262_infinispan-net"
+ ],
+ "comandos": [
+  "podman ps -a --format '{{.ID}} {{.Names}} {{.State}} {{.Ports}}'",
+  "podman network ls --format '{{.ID}} {{.Name}} {{.Driver}}'",
+  "podman machine list --format '{{.Name}} {{.Running}}'",
+  "podman-compose -p b262 -f cluster/podman-compose.b262.yml up -d / down"
+ ]
+}

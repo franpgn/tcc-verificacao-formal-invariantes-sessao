@@ -1,0 +1,14 @@
+{
+ "unidade": "epoch-ns (date +%s%N no host Windows, Git Bash)",
+ "t_inicio_cli_ns": 1793127073327008600,
+ "t_stop_inicio_ns": 1793127103374566100,
+ "t_stop_fim_ns": 1793127105309867800,
+ "t_start_inicio_ns": 1793127135790047000,
+ "t_start_fim_ns": 1793127136621694700,
+ "podman_stop_saida": [
+  "b262-isn3"
+ ],
+ "podman_start_saida": [
+  "b262-isn3"
+ ]
+}

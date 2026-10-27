@@ -103,5 +103,6 @@
   "healthy_rebalancing_s": 0.0,
   "falhou": [],
   "passou": true
- }
+ },
+ "podman_estado_igual": true
 }

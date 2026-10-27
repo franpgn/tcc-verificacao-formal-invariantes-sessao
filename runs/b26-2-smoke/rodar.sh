@@ -5,6 +5,8 @@
 # porque o podman start local levou ~26 s; ver o relatorio).
 # Pre-condicao: cluster b262 de pe (cluster/podman-compose.b262.yml, projeto b262, portas 12262..12264).
 # Smoke local: tempos nao sao evidencia de deteccao na VM.
+# Os .txt gerados aqui (stderr, marcos t-*.txt, saida do podman) ficam fora do git (D-005,
+# runs/**/*.txt); foram consolidados em stderr.json, marcos.json e podman-estado.json.
 set -euo pipefail
 cd "$(dirname "$0")"
 : "${JAR:?defina JAR}"

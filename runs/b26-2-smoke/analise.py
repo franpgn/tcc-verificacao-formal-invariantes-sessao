@@ -124,34 +124,35 @@ def analisar_queda(amostras, resumo, custo, t_stop, t_start_inicio, t_start_fim)
     return r
 
 
-def ler_ns(caminho):
+def ler_json(caminho):
     with open(caminho, encoding="utf-8") as f:
-        return int(f.read().strip())
+        return json.load(f)
 
 
-def ler_texto(caminho):
-    with open(caminho, encoding="utf-8") as f:
-        return f.read()
+def stderr_de(d):
+    """stderr da CLI, guardado como stderr.json (runs/**/*.txt fica fora do git pela D-005)."""
+    return "\n".join(ler_json(os.path.join(d, "stderr.json"))["linhas"])
 
 
 def main(base):
     res = {"aviso": "Smoke local: tempos nao sao evidencia de deteccao na VM."}
     for caso in ("P1", "P2"):
-        am, rs = ler_jsonl(os.path.join(base, caso, "amostras.jsonl"))
-        res[caso] = analisar_estavel(am, rs, ler_custo(ler_texto(os.path.join(base, caso, "stderr.txt"))))
+        d = os.path.join(base, caso)
+        am, rs = ler_jsonl(os.path.join(d, "amostras.jsonl"))
+        res[caso] = analisar_estavel(am, rs, ler_custo(stderr_de(d)))
     for caso in ("P3a", "P3b"):
         d = os.path.join(base, caso)
         am, rs = ler_jsonl(os.path.join(d, "amostras.jsonl"))
-        res[caso] = analisar_queda(am, rs, ler_custo(ler_texto(os.path.join(d, "stderr.txt"))),
-                                   ler_ns(os.path.join(d, "t-stop-inicio.txt")),
-                                   ler_ns(os.path.join(d, "t-start-inicio.txt")),
-                                   ler_ns(os.path.join(d, "t-start-fim.txt")))
+        m = ler_json(os.path.join(d, "marcos.json"))
+        res[caso] = analisar_queda(am, rs, ler_custo(stderr_de(d)), m["t_stop_inicio_ns"],
+                                   m["t_start_inicio_ns"], m["t_start_fim_ns"])
+    res["podman_estado_igual"] = ler_json(os.path.join(base, "podman-estado.json"))["igual"]
     with open(os.path.join(base, "analise.json"), "w", encoding="utf-8", newline="\n") as f:
         json.dump(res, f, indent=1, ensure_ascii=False)
         f.write("\n")
     for caso in ("P1", "P2", "P3a", "P3b"):
         print(caso, "PASSOU" if res[caso]["passou"] else "FALHOU " + str(res[caso].get("falhou", "")))
-    return 0 if all(res[c]["passou"] for c in ("P1", "P2", "P3b")) else 1
+    return 0 if all(res[c]["passou"] for c in ("P1", "P2", "P3b")) and res["podman_estado_igual"] else 1
 
 
 if __name__ == "__main__":

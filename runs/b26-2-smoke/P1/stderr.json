@@ -1,0 +1,7 @@
+{
+ "fonte": "stderr da SondaTopologiaCli",
+ "linhas": [
+  "sonda-topologia replicacao=sync caches=sessions,counters nos=3 periodo_ms=2000 prazo_ms=1500 duracao_s=30",
+  "custo curl_lancados=45 rodadas=15 cpu_jvm_ms=671 erros_ouvinte=0"
+ ]
+}

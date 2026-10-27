@@ -7,6 +7,7 @@ import org.infinispan.client.hotrod.configuration.ConfigurationBuilder;
 import org.infinispan.commons.util.IntSet;
 import org.infinispan.commons.util.IntSets;
 
+import br.unipampa.tcc.controle.PortaoDeEmissao;
 import picocli.CommandLine;
 
 import java.net.InetSocketAddress;
@@ -777,7 +778,8 @@ public final class WorkloadMain {
     private static void rodarCliente(SessionOps ops, int tid, long deadline,
                                      Scenario cenario, long seed,
                                      long opsAlvo, AtomicLong totalOps,
-                                     BooleanSupplier parar, VersaoMistura mix, MisturaV3 misturaV3) {
+                                     BooleanSupplier parar, VersaoMistura mix, MisturaV3 misturaV3,
+                                     PortaoDeEmissao portao) {
         Random r = randomDaMistura(seed);
         KeyGenerator chaves = new KeyGenerator(seed);
         IdentidadesMistura ids = new IdentidadesMistura(tid, mix);
@@ -791,6 +793,17 @@ public final class WorkloadMain {
             executadas++;
             totalOps.incrementAndGet();
         }
+    }
+
+    /**
+     * B-27: o cliente de S1/S2 sem portao ({@link PortaoDeEmissao#livre()}). Assinatura de 10
+     * parametros mantida para os testes por reflexao (W6..W8) e para {@code executarRepeticao}.
+     */
+    private static void rodarCliente(SessionOps ops, int tid, long deadline,
+                                     Scenario cenario, long seed,
+                                     long opsAlvo, AtomicLong totalOps,
+                                     BooleanSupplier parar, VersaoMistura mix, MisturaV3 misturaV3) {
+        rodarCliente(ops, tid, deadline, cenario, seed, opsAlvo, totalOps, parar, mix, misturaV3, PortaoDeEmissao.livre());
     }
 
     /**

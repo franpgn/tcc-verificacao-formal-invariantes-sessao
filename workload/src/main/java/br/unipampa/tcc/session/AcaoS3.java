@@ -16,17 +16,22 @@ package br.unipampa.tcc.session;
  * @param tentativas     numero de tentativas feitas (1 + retentativas)
  * @param falhaPercebida {@code true} se todas as tentativas deram erro (o usuario viu a falha)
  * @param nota           observacao livre ({@code tentativa-incerta} para Block/Unblock com erro)
+ * @param tFimNs         B-27: fim da acao (depois da ultima tentativa, inclui backoff e esperas do
+ *                       portao), na mesma base de {@code tNs}
+ * @param esperaPortaoNs B-27: ns que a acao passou presa no portao de emissao (K1 + K3)
  */
 public record AcaoS3(long tNs, String ator, String operacao, String alvo, String resultado,
-                     int tentativas, boolean falhaPercebida, String nota) {
+                     int tentativas, boolean falhaPercebida, String nota, long tFimNs, long esperaPortaoNs) {
 
+    /** Contrato {@code docs/contrato-s3-acoes-v2.md}: as 8 primeiras colunas sao as do contrato 1. */
     public static final String HEADER =
-            "t_ns,ator,operacao,alvo,resultado,tentativas,falha_percebida,nota";
+            "t_ns,ator,operacao,alvo,resultado,tentativas,falha_percebida,nota,t_fim_ns,espera_portao_ns";
 
     /** Linha de CSV sem vírgulas nos campos livres. */
-    public String paraCsv(long tEpochNs) {
+    public String paraCsv(long tEpochNs, long tFimEpochNs) {
         return tEpochNs + "," + limpar(ator) + "," + limpar(operacao) + "," + limpar(alvo) + ","
-                + limpar(resultado) + "," + tentativas + "," + falhaPercebida + "," + limpar(nota);
+                + limpar(resultado) + "," + tentativas + "," + falhaPercebida + "," + limpar(nota) + ","
+                + tFimEpochNs + "," + esperaPortaoNs;
     }
 
     private static String limpar(String v) {

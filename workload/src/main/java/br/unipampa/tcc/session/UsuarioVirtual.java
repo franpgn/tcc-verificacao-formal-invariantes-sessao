@@ -53,7 +53,8 @@ public final class UsuarioVirtual implements AtorS3 {
     String sidAtual() { return sid; }
 
     private long pensarNs() {
-        return ContextoS3.exponencialNs(rng, S3Parametros.msParaNs(ctx.p.pensarMs));
+        // B-27 (K2): o sorteio e o mesmo; o portao so ajusta o valor depois (NORMAL devolve igual).
+        return ctx.portao.aplicarPensar(ContextoS3.exponencialNs(rng, S3Parametros.msParaNs(ctx.p.pensarMs)));
     }
 
     private long pausaVisitaNs() {

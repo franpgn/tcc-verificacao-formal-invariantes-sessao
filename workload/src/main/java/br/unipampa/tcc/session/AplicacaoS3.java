@@ -1,5 +1,7 @@
 package br.unipampa.tcc.session;
 
+import br.unipampa.tcc.controle.PortaoDeEmissao;
+
 import java.util.function.Supplier;
 
 /**
@@ -19,11 +21,21 @@ public final class AplicacaoS3 {
     private final RelogioS3 relogio;
     private final S3Parametros p;
     private final S3Registro registro;
+    private final PortaoDeEmissao portao;
 
     public AplicacaoS3(RelogioS3 relogio, S3Parametros p, S3Registro registro) {
+        this(relogio, p, registro, PortaoDeEmissao.livre());
+    }
+
+    /** B-27: com o portao de emissao (K1, K3 e K4 agem aqui). */
+    public AplicacaoS3(RelogioS3 relogio, S3Parametros p, S3Registro registro, PortaoDeEmissao portao) {
+        if (portao == null) {
+            throw new IllegalArgumentException("portao nulo (use PortaoDeEmissao.livre())");
+        }
         this.relogio = relogio;
         this.p = p;
         this.registro = registro;
+        this.portao = portao;
     }
 
     static boolean ehErro(OpResult r) {
@@ -65,7 +77,8 @@ public final class AplicacaoS3 {
         boolean falha = ehErro(r);
         String nota = houveErro && (SessionOps.OP_BLOCK.equals(operacao) || SessionOps.OP_UNBLOCK.equals(operacao))
                 ? "tentativa-incerta" : "";
-        registro.accept(new AcaoS3(inicio, ator, operacao, alvo, descrever(r), tentativas, falha, nota));
+        registro.accept(new AcaoS3(inicio, ator, operacao, alvo, descrever(r), tentativas, falha, nota,
+                inicio, 0L)); // B-27 commit 1: tFimNs e esperaPortaoNs provisorios
         return r;
     }
 

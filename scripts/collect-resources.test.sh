@@ -148,6 +148,19 @@ coletar() {
         bash "${COL}" "$@"
 }
 contar() { grep -c -e "$1" "$2" 2>/dev/null || true; }
+# esperar_fim <pid>: espera ate 5 s pelo coletor; se nao terminar, SIGKILL e
+# devolve 124 (a suite nunca trava num coletor que ignorou o sinal).
+esperar_fim() {
+    local i
+    for i in $(seq 1 50); do
+        kill -0 "$1" 2>/dev/null || break
+        sleep 0.1
+    done
+    if kill -0 "$1" 2>/dev/null; then
+        kill -KILL "$1" 2>/dev/null; wait "$1" 2>/dev/null; return 124
+    fi
+    wait "$1"
+}
 json_campo() {   # json_campo <arquivo> <campo>
     "${PY}" -c 'import json,sys; v=json.load(open(sys.argv[1],encoding="utf-8"))[sys.argv[2]]; print(v if not isinstance(v,(list,dict)) else json.dumps(v))' "$1" "$2" 2>/dev/null
 }
@@ -229,7 +242,8 @@ ok "R5 5 linhas por instante" "5 5 5" "$(grep -v -e '^t_epoch' -e ',coletor,' "$
 ok "R5 t crescente entre amostras" "sim" "$(grep -v -e '^t_epoch' -e ',coletor,' "${F}" 2>/dev/null | cut -d, -f1 | uniq | awk 'NR>1 && $1<=p {bad=1} {p=$1} END {print (NR==3 && !bad) ? "sim" : "nao"}')"
 ok "R5 ordem das fontes na amostra" "cg:isn1 cg:isn2 cg:isn3 pid:java vm" "$(sed -n '2,6p' "${F}" 2>/dev/null | cut -d, -f2 | tr '\n' ' ' | sed 's/ $//')"
 ok "R5 6 colunas em todas as linhas" "0" "$(awk -F, 'NF!=6' "${F}" 2>/dev/null | wc -l | tr -d ' ')"
-ok "R5 LF (sem CR)" "0" "$(grep -c $'\r' "${F}" 2>/dev/null || true)"
+# tr interpreta o \r (no Git Bash, $'\r' dentro de $(...) nao chega intacto ao grep)
+ok "R5 LF (sem CR)" "0" "$(tr -cd '\r' < "${F}" 2>/dev/null | wc -c | tr -d ' ')"
 
 echo "== R6: conversoes (CLK_TCK=100 pelo shim de getconf) =="
 L_CG1="$(grep ',cg:isn1,' "${F}" 2>/dev/null | head -1)"
@@ -313,7 +327,7 @@ CPID=$!
 sleep 1.2
 FILHOS_ANTES="$(ps -ef 2>/dev/null | awk -v p="${CPID}" '$3==p' | wc -l | tr -d ' ')"
 kill -TERM "${CPID}"
-wait "${CPID}"; RC=$?
+esperar_fim "${CPID}"; RC=$?
 ok "R9 exit code" "0" "${RC}"
 F="${OUTD}/recursos-rep-001.csv"
 ok "R9 linha coletor presente (ultima)" "coletor" "$(tail -1 "${F}" 2>/dev/null | cut -d, -f2)"
@@ -326,12 +340,16 @@ echo "  (info) filhos do coletor antes do sinal: ${FILHOS_ANTES}"
 ok "R9 coletor nao esta mais vivo" "morto" "$(kill -0 "${CPID}" 2>/dev/null && echo vivo || echo morto)"
 # SIGINT tambem encerra com 0 e motivo sinal
 novo_caso r9b wsl
+# Sem controle de jobs, um comando assincrono herda SIGINT ignorado e o bash nao
+# pode captura-lo; set -m reproduz o caso real (coletor em primeiro plano, Ctrl-C).
+set -m
 PATH="${SHIMS}:${PATH}" bash "${COL}" --saida "${OUTD}" --rep 1 --containers "isn1" \
     --intervalo-ms 200 --podman-stats-s 0 >/dev/null 2>&1 &
 CPID=$!
+set +m
 sleep 0.7
 kill -INT "${CPID}"
-wait "${CPID}"; RC=$?
+esperar_fim "${CPID}"; RC=$?
 ok "R9b SIGINT exit code" "0" "${RC}"
 ok "R9b motivo_fim sinal" "sinal" "$(json_campo "${OUTD}/recursos-meta-rep-001.json" motivo_fim)"
 
@@ -378,7 +396,7 @@ ok "R11 intervalo_ms" "500" "$(json_campo "${M}" intervalo_ms)"
 ok "R11 podman_stats_s" "0" "$(json_campo "${M}" podman_stats_s)"
 ok "R11 inicio = t da 1a amostra" "$(sed -n 2p "${OUTD}/recursos-rep-012.csv" 2>/dev/null | cut -d, -f1)" "$(json_campo "${M}" inicio_epoch_ns)"
 ok "R11 fontes" '[{"fonte": "cg:isn1", "cgroup": "/machine.slice/libpod-'"${ID1}"'.scope"}, {"fonte": "cg:isn2", "cgroup": "/machine.slice/libpod-'"${ID2}"'.scope"}, {"fonte": "cg:isn3", "cgroup": "/machine.slice/libpod-'"${ID3}"'.scope"}, {"fonte": "pid:java", "pid": 4242}]' "$(json_campo "${M}" fontes)"
-ok "R11 chaves do contrato" "atraso_max_ns amostras clk_tck contrato fim_epoch_ns fontes inicio_epoch_ns intervalo_ms motivo_fim nproc podman_stats_s sha256_script uname_r versao_coletor" "$("${PY}" -c 'import json,sys; print(" ".join(sorted(json.load(open(sys.argv[1],encoding="utf-8")))))' "${M}" 2>&1)"
+ok "R11 chaves do contrato" "amostras atraso_max_ns clk_tck contrato fim_epoch_ns fontes inicio_epoch_ns intervalo_ms motivo_fim nproc podman_stats_s sha256_script uname_r versao_coletor" "$("${PY}" -c 'import json,sys; print(" ".join(sorted(json.load(open(sys.argv[1],encoding="utf-8")))))' "${M}" 2>&1)"
 ok "R11 fim >= inicio" "sim" "$("${PY}" -c 'import json,sys; d=json.load(open(sys.argv[1],encoding="utf-8")); print("sim" if d["fim_epoch_ns"]>=d["inicio_epoch_ns"] else "nao")' "${M}" 2>&1)"
 # --duracao-s: 3 s a 1000 ms => 3 amostras, motivo duracao
 novo_caso r11b wsl

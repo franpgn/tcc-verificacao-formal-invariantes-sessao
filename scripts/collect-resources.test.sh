@@ -59,7 +59,8 @@ FMT_WSL="/libpod_parent/libpod-"
 
 # ---------------------------------------------------------------- shims
 # podman: inspect -> le ${SHIM_ESTADO}/cg-<nome> (ausente => exit 125);
-#         stats   -> JSON multi-linha, ou exit 125 se ${SHIM_ESTADO}/stats-falha.
+#         stats   -> JSON multi-linha, ou exit 125 se ${SHIM_ESTADO}/stats-falha;
+#                    com ${SHIM_ESTADO}/stats-aviso, aviso no stderr e rc 0.
 cat > "${SHIMS}/podman" <<'EOF'
 #!/usr/bin/env bash
 echo "$*" >> "${SHIM_ESTADO}/podman.log"
@@ -73,6 +74,10 @@ case "$1" in
     stats)
         if [[ -f "${SHIM_ESTADO}/stats-falha" ]]; then
             echo "Error: stats \"falhou\" de proposito" >&2; exit 125
+        fi
+        if [[ -f "${SHIM_ESTADO}/stats-aviso" ]]; then
+            # como o Podman 5 na maquina WSL (cgroup v1): aviso no stderr, rc 0
+            echo 'time="2026-10-27T16:06:30-03:00" level=warning msg="Using cgroups-v1 which is deprecated"' >&2
         fi
         printf '[\n {\n  "name": "isn1",\n  "cpu_percent": "1.5%%"\n }\n]\n'; exit 0 ;;
 esac
@@ -381,6 +386,21 @@ ok "R10b 8 amostras mesmo com stats falhando" "8" "$(json_campo "${OUTD}/recurso
 ok "R10b linhas ok:false validas com erro" "sim" "$("${PY}" -c 'import json,sys
 L=[json.loads(l) for l in open(sys.argv[1],encoding="utf-8")]
 print("sim" if L and all(d["ok"] is False and isinstance(d["erro"],str) and d["erro"] for d in L) else "nao")' "${J}" 2>&1 | tail -1)"
+# R10c (achado do smoke B-37): aviso no stderr com rc 0 nao pode virar ok:false
+# nem entrar no JSON de stats; o stderr so aparece em "erro" quando o rc != 0.
+novo_caso r10c wsl
+touch "${SHIM_ESTADO}/stats-aviso"
+PATH="${SHIMS}:${PATH}" bash "${COL}" --saida "${OUTD}" --rep 1 --containers "isn1 isn2 isn3"     --intervalo-ms 250 --podman-stats-s 1 --max-amostras 6 >/dev/null 2>&1; RC=$?
+J="${OUTD}/recursos-podman-rep-001.jsonl"
+ok "R10c exit code" "0" "${RC}"
+ok "R10c 1a linha ok:true apesar do aviso no stderr" "True isn1" "$("${PY}" -c 'import json,sys
+d=json.loads(open(sys.argv[1],encoding="utf-8").readline()); print(d["ok"], d["stats"][0]["name"], end="")' "${J}" 2>&1)"
+ok "R10c aviso fora do jsonl" "0" "$(grep -c 'level=warning' "${J}" 2>/dev/null || true)"
+ok "R10c nenhum temporario sobrando" "0" "$(find "${OUTD}" -name '.*tmp*' | wc -l | tr -d ' ')"
+novo_caso r10d wsl
+touch "${SHIM_ESTADO}/stats-falha"
+PATH="${SHIMS}:${PATH}" bash "${COL}" --saida "${OUTD}" --rep 1 --containers "isn1"     --intervalo-ms 250 --podman-stats-s 1 --max-amostras 2 >/dev/null 2>&1
+contem "R10d erro traz rc e stderr do podman" 'rc=125 Error: stats \"falhou\" de proposito' "$(head -1 "${OUTD}/recursos-podman-rep-001.jsonl" 2>/dev/null)"
 
 echo "== R11: meta =="
 novo_caso r11 ubuntu

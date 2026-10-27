@@ -1,0 +1,37 @@
+### cliente_inicio=2026-10-27T18:44:07.390Z host=Windows
+$ ssh -i ~/.ssh/id_ed25519_tccf3 -o IdentitiesOnly=yes -o BatchMode=yes server1@172.18.251.140 true   (tentativa 1)
+rc=0 duracao_ms=1058
+### cliente_fim=2026-10-27T18:44:08.510Z
+
+### cliente_inicio=2026-10-27T18:44:08.539Z host=Windows
+$ ssh -i ~/.ssh/id_ed25519_tccf3 -o IdentitiesOnly=yes -o BatchMode=yes server1@172.18.251.140 true   (tentativa 2)
+rc=0 duracao_ms=272
+### cliente_fim=2026-10-27T18:44:08.865Z
+
+### cliente_inicio=2026-10-27T18:44:09.545Z host=Windows
+$ ssh -i ~/.ssh/id_ed25519_tccf3 -o IdentitiesOnly=yes -o BatchMode=yes server1@172.18.251.140 true   (tentativa 3)
+rc=0 duracao_ms=261
+### cliente_fim=2026-10-27T18:44:09.863Z
+
+### cliente_inicio=2026-10-27T18:44:09.946Z host=server1@172.18.251.140
+$ hostname; uptime; uname -r; cat /proc/sys/kernel/random/boot_id; uptime -s; cat /proc/loadavg; free -m | head -2; ls -l /var/lock/tcc-vm.lock; flock -n /var/lock/tcc-vm.lock true && echo LOCK_LIVRE; systemctl list-timers --all | grep -c tcc-heal; systemctl list-units --all | grep -c tcc-heal; tmux ls 2>&1; pgrep -a java | head; env | grep -c G_TESTE; sudo -n true && echo SUDO_OK
+remoto_inicio=2026-10-27T18:44:10+00:00
+server1
+ 18:44:10 up 7 days,  2:12,  1 user,  load average: 0.06, 0.02, 0.15
+6.8.0-147-generic
+b7df4b03-6652-4808-9617-11096693e65b
+2026-10-20 16:31:44
+0.06 0.02 0.15 1/183 30930
+               total        used        free      shared  buff/cache   available
+Mem:            7940         593        4142           4        3460        7347
+-rw-rw-r-- 1 server1 server1 0 Oct 27 17:59 /var/lock/tcc-vm.lock
+LOCK_LIVRE
+0
+0
+error connecting to /tmp/tmux-1000/default (No such file or directory)
+0
+SUDO_OK
+remoto_fim=2026-10-27T18:44:10+00:00
+rc=0
+### cliente_fim=2026-10-27T18:44:10.205Z duracao_cliente_ms=259
+

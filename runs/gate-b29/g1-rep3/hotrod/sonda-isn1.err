@@ -1,0 +1,10 @@
+Oct 16, 2026 8:56:40 AM org.infinispan.client.hotrod.impl.transport.netty.NativeTransport useNativeIOUring
+INFO: ISPN004108: Native IOUring transport not available, using NIO instead: io.netty.incubator.channel.uring.IOUring
+Oct 16, 2026 8:56:40 AM org.infinispan.client.hotrod.RemoteCacheManager actualStart
+INFO: ISPN004021: Infinispan version: Infinispan 'I'm Still Standing' 15.0.0.Final
+Oct 16, 2026 8:56:40 AM org.infinispan.client.hotrod.impl.RemoteCacheImpl init
+INFO: ISPN004113: Query module not found. Queries are disabled.
+Oct 16, 2026 8:56:40 AM org.infinispan.client.hotrod.RemoteCacheManager actualStart
+INFO: ISPN004021: Infinispan version: Infinispan 'I'm Still Standing' 15.0.0.Final
+Oct 16, 2026 8:56:40 AM org.infinispan.client.hotrod.impl.RemoteCacheImpl init
+INFO: ISPN004113: Query module not found. Queries are disabled.

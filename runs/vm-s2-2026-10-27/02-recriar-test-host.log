@@ -1,0 +1,21 @@
+### host=Windows (Git Bash) 2026-10-27T18:46:08Z [fim aproximado; real 22,9 s]
+$ time bash runs/gate-b29/recriar.test.sh 2>&1 | tee runs/vm-s2-2026-10-27/02-recriar-test-host.log
+== T-rec-0: arquivo ==
+PASS: T-rec-0 bash -n
+PASS: T-rec-0 nenhum CR
+PASS: T-rec-0 sha256 verbatim da VM
+== T-rec-1: caminho ESTAVEL com shims ==
+PASS: T-rec-1 rc 0
+PASS: T-rec-1 down rc=0
+PASS: T-rec-1 up rc=0
+PASS: T-rec-1 ESTAVEL
+PASS: T-rec-1 timers 0
+PASS: T-rec-1 validacao.txt existe
+PASS: T-rec-1 down.log e up.log
+PASS: T-rec-1 down antes de up
+PASS: T-rec-1 compose so a partir de ~/tcc-gate
+PASS: T-rec-1 nenhum tc de escrita
+PASS: T-rec-1 tres tc qdisc show
+PASS: T-rec-1 nenhuma chamada inesperada
+RESUMO: 15 PASS, 0 FAIL
+rc=0 real=0m22.882s

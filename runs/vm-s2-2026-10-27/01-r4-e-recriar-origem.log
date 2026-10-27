@@ -1,0 +1,580 @@
+### cliente_inicio=2026-10-27T18:44:17.789Z host=server1@172.18.251.140
+$ sha256sum ~/recriar.sh; ls -l --time-style=full-iso ~/recriar.sh; cd ~/tcc-gate && git rev-parse HEAD && git status --porcelain --untracked-files=all; echo "--- lista dos nao versionados (novos_apos_checkout)"; git ls-files --others --exclude-standard; echo "--- detalhes"; find runs/gate-b29/g1-rep3/hotrod runs/gate-b29/recriacao -type f -newer /dev/null -printf "%TY-%Tm-%Td %TT %s %p\n" | sort -k3; echo "--- sha256"; find runs/gate-b29/g1-rep3/hotrod runs/gate-b29/recriacao -type f -exec sha256sum {} + | sort -k2; echo "--- ignorados em runs/gate-b29"; git ls-files --others --ignored --exclude-standard runs/gate-b29 | head -50
+remoto_inicio=2026-10-27T18:44:18+00:00
+5b1cca41a2d059acf76f0f1511053dde290a883f983cc266ad79ff9360480766  /home/server1/recriar.sh
+-rwxr-xr-x 1 server1 server1 1622 2026-10-16 08:54:30.507785898 +0000 /home/server1/recriar.sh
+9eadbdbe30f0bc8635f88e273c775b43c615e147
+?? runs/gate-b29/g1-rep3/hotrod/saude-11222-1792140999927742522.json
+?? runs/gate-b29/g1-rep3/hotrod/saude-11222-1792141004959639502.json
+?? runs/gate-b29/g1-rep3/hotrod/saude-11222-1792141009982845415.json
+?? runs/gate-b29/g1-rep3/hotrod/saude-11222-1792141014008521712.json
+?? runs/gate-b29/g1-rep3/hotrod/saude-11222-1792141019033773260.json
+?? runs/gate-b29/g1-rep3/hotrod/saude-11222-1792141024054826006.json
+?? runs/gate-b29/g1-rep3/hotrod/saude-11222-1792141029079157077.json
+?? runs/gate-b29/g1-rep3/hotrod/saude-11222-1792141034100133927.json
+?? runs/gate-b29/g1-rep3/hotrod/saude-11222-1792141039127692668.json
+?? runs/gate-b29/g1-rep3/hotrod/saude-11222-1792141044158861052.json
+?? runs/gate-b29/g1-rep3/hotrod/saude-11222-1792141049183039471.json
+?? runs/gate-b29/g1-rep3/hotrod/saude-11222-1792141054209676752.json
+?? runs/gate-b29/g1-rep3/hotrod/saude-11222-1792141059238708197.json
+?? runs/gate-b29/g1-rep3/hotrod/saude-11222-1792141064258093146.json
+?? runs/gate-b29/g1-rep3/hotrod/saude-11222-1792141069280706780.json
+?? runs/gate-b29/g1-rep3/hotrod/saude-11222-1792141074303493180.json
+?? runs/gate-b29/g1-rep3/hotrod/saude-11222-1792141079327447752.json
+?? runs/gate-b29/g1-rep3/hotrod/saude-11222-1792141084354315396.json
+?? runs/gate-b29/g1-rep3/hotrod/saude-11222-1792141089380912808.json
+?? runs/gate-b29/g1-rep3/hotrod/saude-11222-1792141094402957276.json
+?? runs/gate-b29/g1-rep3/hotrod/saude-11222-1792141099429933463.json
+?? runs/gate-b29/g1-rep3/hotrod/saude-11222-1792141104451728634.json
+?? runs/gate-b29/g1-rep3/hotrod/saude-11222-1792141109475511256.json
+?? runs/gate-b29/g1-rep3/hotrod/saude-11222-1792141114498198907.json
+?? runs/gate-b29/g1-rep3/hotrod/saude-11222-1792141119519291154.json
+?? runs/gate-b29/g1-rep3/hotrod/saude-11222-1792141124550283419.json
+?? runs/gate-b29/g1-rep3/hotrod/saude-11222-1792141129570481619.json
+?? runs/gate-b29/g1-rep3/hotrod/saude-11222-1792141134594238514.json
+?? runs/gate-b29/g1-rep3/hotrod/saude-11222-1792141139612494120.json
+?? runs/gate-b29/g1-rep3/hotrod/saude-11222-1792141144638376373.json
+?? runs/gate-b29/g1-rep3/hotrod/saude-11222-1792141149656229493.json
+?? runs/gate-b29/g1-rep3/hotrod/saude-11222-1792141154676847293.json
+?? runs/gate-b29/g1-rep3/hotrod/saude-11222-1792141159701036344.json
+?? runs/gate-b29/g1-rep3/hotrod/saude-11222-1792141164719417179.json
+?? runs/gate-b29/g1-rep3/hotrod/saude-11222-1792141169745395301.json
+?? runs/gate-b29/g1-rep3/hotrod/saude-11222-1792141174767507380.json
+?? runs/gate-b29/g1-rep3/hotrod/saude-11223-1792140999930239973.json
+?? runs/gate-b29/g1-rep3/hotrod/saude-11223-1792141004961169117.json
+?? runs/gate-b29/g1-rep3/hotrod/saude-11223-1792141009982921075.json
+?? runs/gate-b29/g1-rep3/hotrod/saude-11223-1792141014008997084.json
+?? runs/gate-b29/g1-rep3/hotrod/saude-11223-1792141019033844760.json
+?? runs/gate-b29/g1-rep3/hotrod/saude-11223-1792141024055497926.json
+?? runs/gate-b29/g1-rep3/hotrod/saude-11223-1792141029079289999.json
+?? runs/gate-b29/g1-rep3/hotrod/saude-11223-1792141034100252625.json
+?? runs/gate-b29/g1-rep3/hotrod/saude-11223-1792141039127787856.json
+?? runs/gate-b29/g1-rep3/hotrod/saude-11223-1792141044158956506.json
+?? runs/gate-b29/g1-rep3/hotrod/saude-11223-1792141049183794306.json
+?? runs/gate-b29/g1-rep3/hotrod/saude-11223-1792141054210003608.json
+?? runs/gate-b29/g1-rep3/hotrod/saude-11223-1792141059236846266.json
+?? runs/gate-b29/g1-rep3/hotrod/saude-11223-1792141064260106334.json
+?? runs/gate-b29/g1-rep3/hotrod/saude-11223-1792141069281344585.json
+?? runs/gate-b29/g1-rep3/hotrod/saude-11223-1792141074303599545.json
+?? runs/gate-b29/g1-rep3/hotrod/saude-11223-1792141079327320882.json
+?? runs/gate-b29/g1-rep3/hotrod/saude-11223-1792141084358686959.json
+?? runs/gate-b29/g1-rep3/hotrod/saude-11223-1792141089381040407.json
+?? runs/gate-b29/g1-rep3/hotrod/saude-11223-1792141094403483398.json
+?? runs/gate-b29/g1-rep3/hotrod/saude-11223-1792141099429954430.json
+?? runs/gate-b29/g1-rep3/hotrod/saude-11223-1792141104453672018.json
+?? runs/gate-b29/g1-rep3/hotrod/saude-11223-1792141109475632981.json
+?? runs/gate-b29/g1-rep3/hotrod/saude-11223-1792141114498677663.json
+?? runs/gate-b29/g1-rep3/hotrod/saude-11223-1792141119520448877.json
+?? runs/gate-b29/g1-rep3/hotrod/saude-11223-1792141124550307606.json
+?? runs/gate-b29/g1-rep3/hotrod/saude-11223-1792141129572461610.json
+?? runs/gate-b29/g1-rep3/hotrod/saude-11223-1792141134594386522.json
+?? runs/gate-b29/g1-rep3/hotrod/saude-11223-1792141139614301788.json
+?? runs/gate-b29/g1-rep3/hotrod/saude-11223-1792141144636435168.json
+?? runs/gate-b29/g1-rep3/hotrod/saude-11223-1792141149656391351.json
+?? runs/gate-b29/g1-rep3/hotrod/saude-11223-1792141154676847363.json
+?? runs/gate-b29/g1-rep3/hotrod/saude-11223-1792141159701098459.json
+?? runs/gate-b29/g1-rep3/hotrod/saude-11223-1792141164719416641.json
+?? runs/gate-b29/g1-rep3/hotrod/saude-11223-1792141169744604638.json
+?? runs/gate-b29/g1-rep3/hotrod/saude-11223-1792141174767758282.json
+?? runs/gate-b29/g1-rep3/hotrod/saude-11224-1792140999930655746.json
+?? runs/gate-b29/g1-rep3/hotrod/saude-11224-1792141004961920999.json
+?? runs/gate-b29/g1-rep3/hotrod/saude-11224-1792141009983248036.json
+?? runs/gate-b29/g1-rep3/hotrod/saude-11224-1792141014008722485.json
+?? runs/gate-b29/g1-rep3/hotrod/saude-11224-1792141019034564973.json
+?? runs/gate-b29/g1-rep3/hotrod/saude-11224-1792141024056436807.json
+?? runs/gate-b29/g1-rep3/hotrod/saude-11224-1792141029079605647.json
+?? runs/gate-b29/g1-rep3/hotrod/saude-11224-1792141034101789244.json
+?? runs/gate-b29/g1-rep3/hotrod/saude-11224-1792141039136792004.json
+?? runs/gate-b29/g1-rep3/hotrod/saude-11224-1792141044160696554.json
+?? runs/gate-b29/g1-rep3/hotrod/saude-11224-1792141049183194272.json
+?? runs/gate-b29/g1-rep3/hotrod/saude-11224-1792141054214354680.json
+?? runs/gate-b29/g1-rep3/hotrod/saude-11224-1792141059236739051.json
+?? runs/gate-b29/g1-rep3/hotrod/saude-11224-1792141064259940406.json
+?? runs/gate-b29/g1-rep3/hotrod/saude-11224-1792141069282261065.json
+?? runs/gate-b29/g1-rep3/hotrod/saude-11224-1792141074303643540.json
+?? runs/gate-b29/g1-rep3/hotrod/saude-11224-1792141079331308807.json
+?? runs/gate-b29/g1-rep3/hotrod/saude-11224-1792141084358804586.json
+?? runs/gate-b29/g1-rep3/hotrod/saude-11224-1792141089381059004.json
+?? runs/gate-b29/g1-rep3/hotrod/saude-11224-1792141094404220231.json
+?? runs/gate-b29/g1-rep3/hotrod/saude-11224-1792141099430372831.json
+?? runs/gate-b29/g1-rep3/hotrod/saude-11224-1792141104454318540.json
+?? runs/gate-b29/g1-rep3/hotrod/saude-11224-1792141109475676151.json
+?? runs/gate-b29/g1-rep3/hotrod/saude-11224-1792141114498728951.json
+?? runs/gate-b29/g1-rep3/hotrod/saude-11224-1792141119521047311.json
+?? runs/gate-b29/g1-rep3/hotrod/saude-11224-1792141124550768402.json
+?? runs/gate-b29/g1-rep3/hotrod/saude-11224-1792141129572682074.json
+?? runs/gate-b29/g1-rep3/hotrod/saude-11224-1792141134594396369.json
+?? runs/gate-b29/g1-rep3/hotrod/saude-11224-1792141139614353407.json
+?? runs/gate-b29/g1-rep3/hotrod/saude-11224-1792141144636392687.json
+?? runs/gate-b29/g1-rep3/hotrod/saude-11224-1792141149657588319.json
+?? runs/gate-b29/g1-rep3/hotrod/saude-11224-1792141154676847347.json
+?? runs/gate-b29/g1-rep3/hotrod/saude-11224-1792141159701188233.json
+?? runs/gate-b29/g1-rep3/hotrod/saude-11224-1792141164720841454.json
+?? runs/gate-b29/g1-rep3/hotrod/saude-11224-1792141169744526505.json
+?? runs/gate-b29/g1-rep3/hotrod/saude-11224-1792141174772400793.json
+?? runs/gate-b29/g1-rep3/hotrod/sonda-isn1.err
+?? runs/gate-b29/g1-rep3/hotrod/sonda-isn3.err
+?? runs/gate-b29/recriacao/pre-recriacao-inspect-isn1.json
+?? runs/gate-b29/recriacao/pre-recriacao-inspect-isn2.json
+?? runs/gate-b29/recriacao/pre-recriacao-inspect-isn3.json
+--- lista dos nao versionados (novos_apos_checkout)
+runs/gate-b29/g1-rep3/hotrod/saude-11222-1792140999927742522.json
+runs/gate-b29/g1-rep3/hotrod/saude-11222-1792141004959639502.json
+runs/gate-b29/g1-rep3/hotrod/saude-11222-1792141009982845415.json
+runs/gate-b29/g1-rep3/hotrod/saude-11222-1792141014008521712.json
+runs/gate-b29/g1-rep3/hotrod/saude-11222-1792141019033773260.json
+runs/gate-b29/g1-rep3/hotrod/saude-11222-1792141024054826006.json
+runs/gate-b29/g1-rep3/hotrod/saude-11222-1792141029079157077.json
+runs/gate-b29/g1-rep3/hotrod/saude-11222-1792141034100133927.json
+runs/gate-b29/g1-rep3/hotrod/saude-11222-1792141039127692668.json
+runs/gate-b29/g1-rep3/hotrod/saude-11222-1792141044158861052.json
+runs/gate-b29/g1-rep3/hotrod/saude-11222-1792141049183039471.json
+runs/gate-b29/g1-rep3/hotrod/saude-11222-1792141054209676752.json
+runs/gate-b29/g1-rep3/hotrod/saude-11222-1792141059238708197.json
+runs/gate-b29/g1-rep3/hotrod/saude-11222-1792141064258093146.json
+runs/gate-b29/g1-rep3/hotrod/saude-11222-1792141069280706780.json
+runs/gate-b29/g1-rep3/hotrod/saude-11222-1792141074303493180.json
+runs/gate-b29/g1-rep3/hotrod/saude-11222-1792141079327447752.json
+runs/gate-b29/g1-rep3/hotrod/saude-11222-1792141084354315396.json
+runs/gate-b29/g1-rep3/hotrod/saude-11222-1792141089380912808.json
+runs/gate-b29/g1-rep3/hotrod/saude-11222-1792141094402957276.json
+runs/gate-b29/g1-rep3/hotrod/saude-11222-1792141099429933463.json
+runs/gate-b29/g1-rep3/hotrod/saude-11222-1792141104451728634.json
+runs/gate-b29/g1-rep3/hotrod/saude-11222-1792141109475511256.json
+runs/gate-b29/g1-rep3/hotrod/saude-11222-1792141114498198907.json
+runs/gate-b29/g1-rep3/hotrod/saude-11222-1792141119519291154.json
+runs/gate-b29/g1-rep3/hotrod/saude-11222-1792141124550283419.json
+runs/gate-b29/g1-rep3/hotrod/saude-11222-1792141129570481619.json
+runs/gate-b29/g1-rep3/hotrod/saude-11222-1792141134594238514.json
+runs/gate-b29/g1-rep3/hotrod/saude-11222-1792141139612494120.json
+runs/gate-b29/g1-rep3/hotrod/saude-11222-1792141144638376373.json
+runs/gate-b29/g1-rep3/hotrod/saude-11222-1792141149656229493.json
+runs/gate-b29/g1-rep3/hotrod/saude-11222-1792141154676847293.json
+runs/gate-b29/g1-rep3/hotrod/saude-11222-1792141159701036344.json
+runs/gate-b29/g1-rep3/hotrod/saude-11222-1792141164719417179.json
+runs/gate-b29/g1-rep3/hotrod/saude-11222-1792141169745395301.json
+runs/gate-b29/g1-rep3/hotrod/saude-11222-1792141174767507380.json
+runs/gate-b29/g1-rep3/hotrod/saude-11223-1792140999930239973.json
+runs/gate-b29/g1-rep3/hotrod/saude-11223-1792141004961169117.json
+runs/gate-b29/g1-rep3/hotrod/saude-11223-1792141009982921075.json
+runs/gate-b29/g1-rep3/hotrod/saude-11223-1792141014008997084.json
+runs/gate-b29/g1-rep3/hotrod/saude-11223-1792141019033844760.json
+runs/gate-b29/g1-rep3/hotrod/saude-11223-1792141024055497926.json
+runs/gate-b29/g1-rep3/hotrod/saude-11223-1792141029079289999.json
+runs/gate-b29/g1-rep3/hotrod/saude-11223-1792141034100252625.json
+runs/gate-b29/g1-rep3/hotrod/saude-11223-1792141039127787856.json
+runs/gate-b29/g1-rep3/hotrod/saude-11223-1792141044158956506.json
+runs/gate-b29/g1-rep3/hotrod/saude-11223-1792141049183794306.json
+runs/gate-b29/g1-rep3/hotrod/saude-11223-1792141054210003608.json
+runs/gate-b29/g1-rep3/hotrod/saude-11223-1792141059236846266.json
+runs/gate-b29/g1-rep3/hotrod/saude-11223-1792141064260106334.json
+runs/gate-b29/g1-rep3/hotrod/saude-11223-1792141069281344585.json
+runs/gate-b29/g1-rep3/hotrod/saude-11223-1792141074303599545.json
+runs/gate-b29/g1-rep3/hotrod/saude-11223-1792141079327320882.json
+runs/gate-b29/g1-rep3/hotrod/saude-11223-1792141084358686959.json
+runs/gate-b29/g1-rep3/hotrod/saude-11223-1792141089381040407.json
+runs/gate-b29/g1-rep3/hotrod/saude-11223-1792141094403483398.json
+runs/gate-b29/g1-rep3/hotrod/saude-11223-1792141099429954430.json
+runs/gate-b29/g1-rep3/hotrod/saude-11223-1792141104453672018.json
+runs/gate-b29/g1-rep3/hotrod/saude-11223-1792141109475632981.json
+runs/gate-b29/g1-rep3/hotrod/saude-11223-1792141114498677663.json
+runs/gate-b29/g1-rep3/hotrod/saude-11223-1792141119520448877.json
+runs/gate-b29/g1-rep3/hotrod/saude-11223-1792141124550307606.json
+runs/gate-b29/g1-rep3/hotrod/saude-11223-1792141129572461610.json
+runs/gate-b29/g1-rep3/hotrod/saude-11223-1792141134594386522.json
+runs/gate-b29/g1-rep3/hotrod/saude-11223-1792141139614301788.json
+runs/gate-b29/g1-rep3/hotrod/saude-11223-1792141144636435168.json
+runs/gate-b29/g1-rep3/hotrod/saude-11223-1792141149656391351.json
+runs/gate-b29/g1-rep3/hotrod/saude-11223-1792141154676847363.json
+runs/gate-b29/g1-rep3/hotrod/saude-11223-1792141159701098459.json
+runs/gate-b29/g1-rep3/hotrod/saude-11223-1792141164719416641.json
+runs/gate-b29/g1-rep3/hotrod/saude-11223-1792141169744604638.json
+runs/gate-b29/g1-rep3/hotrod/saude-11223-1792141174767758282.json
+runs/gate-b29/g1-rep3/hotrod/saude-11224-1792140999930655746.json
+runs/gate-b29/g1-rep3/hotrod/saude-11224-1792141004961920999.json
+runs/gate-b29/g1-rep3/hotrod/saude-11224-1792141009983248036.json
+runs/gate-b29/g1-rep3/hotrod/saude-11224-1792141014008722485.json
+runs/gate-b29/g1-rep3/hotrod/saude-11224-1792141019034564973.json
+runs/gate-b29/g1-rep3/hotrod/saude-11224-1792141024056436807.json
+runs/gate-b29/g1-rep3/hotrod/saude-11224-1792141029079605647.json
+runs/gate-b29/g1-rep3/hotrod/saude-11224-1792141034101789244.json
+runs/gate-b29/g1-rep3/hotrod/saude-11224-1792141039136792004.json
+runs/gate-b29/g1-rep3/hotrod/saude-11224-1792141044160696554.json
+runs/gate-b29/g1-rep3/hotrod/saude-11224-1792141049183194272.json
+runs/gate-b29/g1-rep3/hotrod/saude-11224-1792141054214354680.json
+runs/gate-b29/g1-rep3/hotrod/saude-11224-1792141059236739051.json
+runs/gate-b29/g1-rep3/hotrod/saude-11224-1792141064259940406.json
+runs/gate-b29/g1-rep3/hotrod/saude-11224-1792141069282261065.json
+runs/gate-b29/g1-rep3/hotrod/saude-11224-1792141074303643540.json
+runs/gate-b29/g1-rep3/hotrod/saude-11224-1792141079331308807.json
+runs/gate-b29/g1-rep3/hotrod/saude-11224-1792141084358804586.json
+runs/gate-b29/g1-rep3/hotrod/saude-11224-1792141089381059004.json
+runs/gate-b29/g1-rep3/hotrod/saude-11224-1792141094404220231.json
+runs/gate-b29/g1-rep3/hotrod/saude-11224-1792141099430372831.json
+runs/gate-b29/g1-rep3/hotrod/saude-11224-1792141104454318540.json
+runs/gate-b29/g1-rep3/hotrod/saude-11224-1792141109475676151.json
+runs/gate-b29/g1-rep3/hotrod/saude-11224-1792141114498728951.json
+runs/gate-b29/g1-rep3/hotrod/saude-11224-1792141119521047311.json
+runs/gate-b29/g1-rep3/hotrod/saude-11224-1792141124550768402.json
+runs/gate-b29/g1-rep3/hotrod/saude-11224-1792141129572682074.json
+runs/gate-b29/g1-rep3/hotrod/saude-11224-1792141134594396369.json
+runs/gate-b29/g1-rep3/hotrod/saude-11224-1792141139614353407.json
+runs/gate-b29/g1-rep3/hotrod/saude-11224-1792141144636392687.json
+runs/gate-b29/g1-rep3/hotrod/saude-11224-1792141149657588319.json
+runs/gate-b29/g1-rep3/hotrod/saude-11224-1792141154676847347.json
+runs/gate-b29/g1-rep3/hotrod/saude-11224-1792141159701188233.json
+runs/gate-b29/g1-rep3/hotrod/saude-11224-1792141164720841454.json
+runs/gate-b29/g1-rep3/hotrod/saude-11224-1792141169744526505.json
+runs/gate-b29/g1-rep3/hotrod/saude-11224-1792141174772400793.json
+runs/gate-b29/g1-rep3/hotrod/sonda-isn1.err
+runs/gate-b29/g1-rep3/hotrod/sonda-isn3.err
+runs/gate-b29/recriacao/pre-recriacao-inspect-isn1.json
+runs/gate-b29/recriacao/pre-recriacao-inspect-isn2.json
+runs/gate-b29/recriacao/pre-recriacao-inspect-isn3.json
+--- detalhes
+2026-10-27 17:54:05.9698054670 1952 runs/gate-b29/recriacao/rec1/validacao.txt
+--- sha256
+312c47755825a9ae8aea763bd8d357597fb008535f0f035bd64d14be773b9a46  runs/gate-b29/g1-rep3/hotrod/indice.csv
+f46d0ca3d2d60138682084ddb4a1c9519cb84a04a07069a02049bc7f70087c7e  runs/gate-b29/g1-rep3/hotrod/resumo.txt
+1869bea7223184394332c6f343024248a99a14c72d4531b6cb36161330df2dd8  runs/gate-b29/g1-rep3/hotrod/saude-11222-1792140999927742522.json
+1869bea7223184394332c6f343024248a99a14c72d4531b6cb36161330df2dd8  runs/gate-b29/g1-rep3/hotrod/saude-11222-1792141004959639502.json
+1869bea7223184394332c6f343024248a99a14c72d4531b6cb36161330df2dd8  runs/gate-b29/g1-rep3/hotrod/saude-11222-1792141009982845415.json
+1869bea7223184394332c6f343024248a99a14c72d4531b6cb36161330df2dd8  runs/gate-b29/g1-rep3/hotrod/saude-11222-1792141014008521712.json
+1869bea7223184394332c6f343024248a99a14c72d4531b6cb36161330df2dd8  runs/gate-b29/g1-rep3/hotrod/saude-11222-1792141019033773260.json
+1869bea7223184394332c6f343024248a99a14c72d4531b6cb36161330df2dd8  runs/gate-b29/g1-rep3/hotrod/saude-11222-1792141024054826006.json
+1869bea7223184394332c6f343024248a99a14c72d4531b6cb36161330df2dd8  runs/gate-b29/g1-rep3/hotrod/saude-11222-1792141029079157077.json
+1869bea7223184394332c6f343024248a99a14c72d4531b6cb36161330df2dd8  runs/gate-b29/g1-rep3/hotrod/saude-11222-1792141034100133927.json
+1869bea7223184394332c6f343024248a99a14c72d4531b6cb36161330df2dd8  runs/gate-b29/g1-rep3/hotrod/saude-11222-1792141039127692668.json
+1869bea7223184394332c6f343024248a99a14c72d4531b6cb36161330df2dd8  runs/gate-b29/g1-rep3/hotrod/saude-11222-1792141044158861052.json
+f4a614dccc24e8935b813450008083b41bf5983e0a9fc4fd632cde6b30548dc9  runs/gate-b29/g1-rep3/hotrod/saude-11222-1792141049183039471.json
+f4a614dccc24e8935b813450008083b41bf5983e0a9fc4fd632cde6b30548dc9  runs/gate-b29/g1-rep3/hotrod/saude-11222-1792141054209676752.json
+f4a614dccc24e8935b813450008083b41bf5983e0a9fc4fd632cde6b30548dc9  runs/gate-b29/g1-rep3/hotrod/saude-11222-1792141059238708197.json
+f4a614dccc24e8935b813450008083b41bf5983e0a9fc4fd632cde6b30548dc9  runs/gate-b29/g1-rep3/hotrod/saude-11222-1792141064258093146.json
+f4a614dccc24e8935b813450008083b41bf5983e0a9fc4fd632cde6b30548dc9  runs/gate-b29/g1-rep3/hotrod/saude-11222-1792141069280706780.json
+f4a614dccc24e8935b813450008083b41bf5983e0a9fc4fd632cde6b30548dc9  runs/gate-b29/g1-rep3/hotrod/saude-11222-1792141074303493180.json
+f4a614dccc24e8935b813450008083b41bf5983e0a9fc4fd632cde6b30548dc9  runs/gate-b29/g1-rep3/hotrod/saude-11222-1792141079327447752.json
+f4a614dccc24e8935b813450008083b41bf5983e0a9fc4fd632cde6b30548dc9  runs/gate-b29/g1-rep3/hotrod/saude-11222-1792141084354315396.json
+f4a614dccc24e8935b813450008083b41bf5983e0a9fc4fd632cde6b30548dc9  runs/gate-b29/g1-rep3/hotrod/saude-11222-1792141089380912808.json
+f4a614dccc24e8935b813450008083b41bf5983e0a9fc4fd632cde6b30548dc9  runs/gate-b29/g1-rep3/hotrod/saude-11222-1792141094402957276.json
+f4a614dccc24e8935b813450008083b41bf5983e0a9fc4fd632cde6b30548dc9  runs/gate-b29/g1-rep3/hotrod/saude-11222-1792141099429933463.json
+f4a614dccc24e8935b813450008083b41bf5983e0a9fc4fd632cde6b30548dc9  runs/gate-b29/g1-rep3/hotrod/saude-11222-1792141104451728634.json
+f4a614dccc24e8935b813450008083b41bf5983e0a9fc4fd632cde6b30548dc9  runs/gate-b29/g1-rep3/hotrod/saude-11222-1792141109475511256.json
+f4a614dccc24e8935b813450008083b41bf5983e0a9fc4fd632cde6b30548dc9  runs/gate-b29/g1-rep3/hotrod/saude-11222-1792141114498198907.json
+f4a614dccc24e8935b813450008083b41bf5983e0a9fc4fd632cde6b30548dc9  runs/gate-b29/g1-rep3/hotrod/saude-11222-1792141119519291154.json
+f4a614dccc24e8935b813450008083b41bf5983e0a9fc4fd632cde6b30548dc9  runs/gate-b29/g1-rep3/hotrod/saude-11222-1792141124550283419.json
+f4a614dccc24e8935b813450008083b41bf5983e0a9fc4fd632cde6b30548dc9  runs/gate-b29/g1-rep3/hotrod/saude-11222-1792141129570481619.json
+f4a614dccc24e8935b813450008083b41bf5983e0a9fc4fd632cde6b30548dc9  runs/gate-b29/g1-rep3/hotrod/saude-11222-1792141134594238514.json
+f4a614dccc24e8935b813450008083b41bf5983e0a9fc4fd632cde6b30548dc9  runs/gate-b29/g1-rep3/hotrod/saude-11222-1792141139612494120.json
+1869bea7223184394332c6f343024248a99a14c72d4531b6cb36161330df2dd8  runs/gate-b29/g1-rep3/hotrod/saude-11222-1792141144638376373.json
+1869bea7223184394332c6f343024248a99a14c72d4531b6cb36161330df2dd8  runs/gate-b29/g1-rep3/hotrod/saude-11222-1792141149656229493.json
+1869bea7223184394332c6f343024248a99a14c72d4531b6cb36161330df2dd8  runs/gate-b29/g1-rep3/hotrod/saude-11222-1792141154676847293.json
+1869bea7223184394332c6f343024248a99a14c72d4531b6cb36161330df2dd8  runs/gate-b29/g1-rep3/hotrod/saude-11222-1792141159701036344.json
+1869bea7223184394332c6f343024248a99a14c72d4531b6cb36161330df2dd8  runs/gate-b29/g1-rep3/hotrod/saude-11222-1792141164719417179.json
+1869bea7223184394332c6f343024248a99a14c72d4531b6cb36161330df2dd8  runs/gate-b29/g1-rep3/hotrod/saude-11222-1792141169745395301.json
+1869bea7223184394332c6f343024248a99a14c72d4531b6cb36161330df2dd8  runs/gate-b29/g1-rep3/hotrod/saude-11222-1792141174767507380.json
+1869bea7223184394332c6f343024248a99a14c72d4531b6cb36161330df2dd8  runs/gate-b29/g1-rep3/hotrod/saude-11223-1792140999930239973.json
+1869bea7223184394332c6f343024248a99a14c72d4531b6cb36161330df2dd8  runs/gate-b29/g1-rep3/hotrod/saude-11223-1792141004961169117.json
+1869bea7223184394332c6f343024248a99a14c72d4531b6cb36161330df2dd8  runs/gate-b29/g1-rep3/hotrod/saude-11223-1792141009982921075.json
+1869bea7223184394332c6f343024248a99a14c72d4531b6cb36161330df2dd8  runs/gate-b29/g1-rep3/hotrod/saude-11223-1792141014008997084.json
+1869bea7223184394332c6f343024248a99a14c72d4531b6cb36161330df2dd8  runs/gate-b29/g1-rep3/hotrod/saude-11223-1792141019033844760.json
+1869bea7223184394332c6f343024248a99a14c72d4531b6cb36161330df2dd8  runs/gate-b29/g1-rep3/hotrod/saude-11223-1792141024055497926.json
+1869bea7223184394332c6f343024248a99a14c72d4531b6cb36161330df2dd8  runs/gate-b29/g1-rep3/hotrod/saude-11223-1792141029079289999.json
+1869bea7223184394332c6f343024248a99a14c72d4531b6cb36161330df2dd8  runs/gate-b29/g1-rep3/hotrod/saude-11223-1792141034100252625.json
+1869bea7223184394332c6f343024248a99a14c72d4531b6cb36161330df2dd8  runs/gate-b29/g1-rep3/hotrod/saude-11223-1792141039127787856.json
+1869bea7223184394332c6f343024248a99a14c72d4531b6cb36161330df2dd8  runs/gate-b29/g1-rep3/hotrod/saude-11223-1792141044158956506.json
+f4a614dccc24e8935b813450008083b41bf5983e0a9fc4fd632cde6b30548dc9  runs/gate-b29/g1-rep3/hotrod/saude-11223-1792141049183794306.json
+f4a614dccc24e8935b813450008083b41bf5983e0a9fc4fd632cde6b30548dc9  runs/gate-b29/g1-rep3/hotrod/saude-11223-1792141054210003608.json
+f4a614dccc24e8935b813450008083b41bf5983e0a9fc4fd632cde6b30548dc9  runs/gate-b29/g1-rep3/hotrod/saude-11223-1792141059236846266.json
+f4a614dccc24e8935b813450008083b41bf5983e0a9fc4fd632cde6b30548dc9  runs/gate-b29/g1-rep3/hotrod/saude-11223-1792141064260106334.json
+f4a614dccc24e8935b813450008083b41bf5983e0a9fc4fd632cde6b30548dc9  runs/gate-b29/g1-rep3/hotrod/saude-11223-1792141069281344585.json
+f4a614dccc24e8935b813450008083b41bf5983e0a9fc4fd632cde6b30548dc9  runs/gate-b29/g1-rep3/hotrod/saude-11223-1792141074303599545.json
+f4a614dccc24e8935b813450008083b41bf5983e0a9fc4fd632cde6b30548dc9  runs/gate-b29/g1-rep3/hotrod/saude-11223-1792141079327320882.json
+f4a614dccc24e8935b813450008083b41bf5983e0a9fc4fd632cde6b30548dc9  runs/gate-b29/g1-rep3/hotrod/saude-11223-1792141084358686959.json
+f4a614dccc24e8935b813450008083b41bf5983e0a9fc4fd632cde6b30548dc9  runs/gate-b29/g1-rep3/hotrod/saude-11223-1792141089381040407.json
+f4a614dccc24e8935b813450008083b41bf5983e0a9fc4fd632cde6b30548dc9  runs/gate-b29/g1-rep3/hotrod/saude-11223-1792141094403483398.json
+f4a614dccc24e8935b813450008083b41bf5983e0a9fc4fd632cde6b30548dc9  runs/gate-b29/g1-rep3/hotrod/saude-11223-1792141099429954430.json
+f4a614dccc24e8935b813450008083b41bf5983e0a9fc4fd632cde6b30548dc9  runs/gate-b29/g1-rep3/hotrod/saude-11223-1792141104453672018.json
+f4a614dccc24e8935b813450008083b41bf5983e0a9fc4fd632cde6b30548dc9  runs/gate-b29/g1-rep3/hotrod/saude-11223-1792141109475632981.json
+f4a614dccc24e8935b813450008083b41bf5983e0a9fc4fd632cde6b30548dc9  runs/gate-b29/g1-rep3/hotrod/saude-11223-1792141114498677663.json
+f4a614dccc24e8935b813450008083b41bf5983e0a9fc4fd632cde6b30548dc9  runs/gate-b29/g1-rep3/hotrod/saude-11223-1792141119520448877.json
+f4a614dccc24e8935b813450008083b41bf5983e0a9fc4fd632cde6b30548dc9  runs/gate-b29/g1-rep3/hotrod/saude-11223-1792141124550307606.json
+f4a614dccc24e8935b813450008083b41bf5983e0a9fc4fd632cde6b30548dc9  runs/gate-b29/g1-rep3/hotrod/saude-11223-1792141129572461610.json
+f4a614dccc24e8935b813450008083b41bf5983e0a9fc4fd632cde6b30548dc9  runs/gate-b29/g1-rep3/hotrod/saude-11223-1792141134594386522.json
+f4a614dccc24e8935b813450008083b41bf5983e0a9fc4fd632cde6b30548dc9  runs/gate-b29/g1-rep3/hotrod/saude-11223-1792141139614301788.json
+1869bea7223184394332c6f343024248a99a14c72d4531b6cb36161330df2dd8  runs/gate-b29/g1-rep3/hotrod/saude-11223-1792141144636435168.json
+1869bea7223184394332c6f343024248a99a14c72d4531b6cb36161330df2dd8  runs/gate-b29/g1-rep3/hotrod/saude-11223-1792141149656391351.json
+1869bea7223184394332c6f343024248a99a14c72d4531b6cb36161330df2dd8  runs/gate-b29/g1-rep3/hotrod/saude-11223-1792141154676847363.json
+1869bea7223184394332c6f343024248a99a14c72d4531b6cb36161330df2dd8  runs/gate-b29/g1-rep3/hotrod/saude-11223-1792141159701098459.json
+1869bea7223184394332c6f343024248a99a14c72d4531b6cb36161330df2dd8  runs/gate-b29/g1-rep3/hotrod/saude-11223-1792141164719416641.json
+1869bea7223184394332c6f343024248a99a14c72d4531b6cb36161330df2dd8  runs/gate-b29/g1-rep3/hotrod/saude-11223-1792141169744604638.json
+1869bea7223184394332c6f343024248a99a14c72d4531b6cb36161330df2dd8  runs/gate-b29/g1-rep3/hotrod/saude-11223-1792141174767758282.json
+1869bea7223184394332c6f343024248a99a14c72d4531b6cb36161330df2dd8  runs/gate-b29/g1-rep3/hotrod/saude-11224-1792140999930655746.json
+1869bea7223184394332c6f343024248a99a14c72d4531b6cb36161330df2dd8  runs/gate-b29/g1-rep3/hotrod/saude-11224-1792141004961920999.json
+1869bea7223184394332c6f343024248a99a14c72d4531b6cb36161330df2dd8  runs/gate-b29/g1-rep3/hotrod/saude-11224-1792141009983248036.json
+1869bea7223184394332c6f343024248a99a14c72d4531b6cb36161330df2dd8  runs/gate-b29/g1-rep3/hotrod/saude-11224-1792141014008722485.json
+1869bea7223184394332c6f343024248a99a14c72d4531b6cb36161330df2dd8  runs/gate-b29/g1-rep3/hotrod/saude-11224-1792141019034564973.json
+1869bea7223184394332c6f343024248a99a14c72d4531b6cb36161330df2dd8  runs/gate-b29/g1-rep3/hotrod/saude-11224-1792141024056436807.json
+1869bea7223184394332c6f343024248a99a14c72d4531b6cb36161330df2dd8  runs/gate-b29/g1-rep3/hotrod/saude-11224-1792141029079605647.json
+1869bea7223184394332c6f343024248a99a14c72d4531b6cb36161330df2dd8  runs/gate-b29/g1-rep3/hotrod/saude-11224-1792141034101789244.json
+1869bea7223184394332c6f343024248a99a14c72d4531b6cb36161330df2dd8  runs/gate-b29/g1-rep3/hotrod/saude-11224-1792141039136792004.json
+e46412823f910f5899fd6a5651602c04cb5e259f3e0be0f7cc0603eac36a4c7c  runs/gate-b29/g1-rep3/hotrod/saude-11224-1792141044160696554.json
+e46412823f910f5899fd6a5651602c04cb5e259f3e0be0f7cc0603eac36a4c7c  runs/gate-b29/g1-rep3/hotrod/saude-11224-1792141049183194272.json
+e46412823f910f5899fd6a5651602c04cb5e259f3e0be0f7cc0603eac36a4c7c  runs/gate-b29/g1-rep3/hotrod/saude-11224-1792141054214354680.json
+e46412823f910f5899fd6a5651602c04cb5e259f3e0be0f7cc0603eac36a4c7c  runs/gate-b29/g1-rep3/hotrod/saude-11224-1792141059236739051.json
+e46412823f910f5899fd6a5651602c04cb5e259f3e0be0f7cc0603eac36a4c7c  runs/gate-b29/g1-rep3/hotrod/saude-11224-1792141064259940406.json
+e46412823f910f5899fd6a5651602c04cb5e259f3e0be0f7cc0603eac36a4c7c  runs/gate-b29/g1-rep3/hotrod/saude-11224-1792141069282261065.json
+e46412823f910f5899fd6a5651602c04cb5e259f3e0be0f7cc0603eac36a4c7c  runs/gate-b29/g1-rep3/hotrod/saude-11224-1792141074303643540.json
+e46412823f910f5899fd6a5651602c04cb5e259f3e0be0f7cc0603eac36a4c7c  runs/gate-b29/g1-rep3/hotrod/saude-11224-1792141079331308807.json
+e46412823f910f5899fd6a5651602c04cb5e259f3e0be0f7cc0603eac36a4c7c  runs/gate-b29/g1-rep3/hotrod/saude-11224-1792141084358804586.json
+e46412823f910f5899fd6a5651602c04cb5e259f3e0be0f7cc0603eac36a4c7c  runs/gate-b29/g1-rep3/hotrod/saude-11224-1792141089381059004.json
+e46412823f910f5899fd6a5651602c04cb5e259f3e0be0f7cc0603eac36a4c7c  runs/gate-b29/g1-rep3/hotrod/saude-11224-1792141094404220231.json
+e46412823f910f5899fd6a5651602c04cb5e259f3e0be0f7cc0603eac36a4c7c  runs/gate-b29/g1-rep3/hotrod/saude-11224-1792141099430372831.json
+e46412823f910f5899fd6a5651602c04cb5e259f3e0be0f7cc0603eac36a4c7c  runs/gate-b29/g1-rep3/hotrod/saude-11224-1792141104454318540.json
+e46412823f910f5899fd6a5651602c04cb5e259f3e0be0f7cc0603eac36a4c7c  runs/gate-b29/g1-rep3/hotrod/saude-11224-1792141109475676151.json
+e46412823f910f5899fd6a5651602c04cb5e259f3e0be0f7cc0603eac36a4c7c  runs/gate-b29/g1-rep3/hotrod/saude-11224-1792141114498728951.json
+e46412823f910f5899fd6a5651602c04cb5e259f3e0be0f7cc0603eac36a4c7c  runs/gate-b29/g1-rep3/hotrod/saude-11224-1792141119521047311.json
+e46412823f910f5899fd6a5651602c04cb5e259f3e0be0f7cc0603eac36a4c7c  runs/gate-b29/g1-rep3/hotrod/saude-11224-1792141124550768402.json
+e46412823f910f5899fd6a5651602c04cb5e259f3e0be0f7cc0603eac36a4c7c  runs/gate-b29/g1-rep3/hotrod/saude-11224-1792141129572682074.json
+e46412823f910f5899fd6a5651602c04cb5e259f3e0be0f7cc0603eac36a4c7c  runs/gate-b29/g1-rep3/hotrod/saude-11224-1792141134594396369.json
+e46412823f910f5899fd6a5651602c04cb5e259f3e0be0f7cc0603eac36a4c7c  runs/gate-b29/g1-rep3/hotrod/saude-11224-1792141139614353407.json
+1869bea7223184394332c6f343024248a99a14c72d4531b6cb36161330df2dd8  runs/gate-b29/g1-rep3/hotrod/saude-11224-1792141144636392687.json
+1869bea7223184394332c6f343024248a99a14c72d4531b6cb36161330df2dd8  runs/gate-b29/g1-rep3/hotrod/saude-11224-1792141149657588319.json
+1869bea7223184394332c6f343024248a99a14c72d4531b6cb36161330df2dd8  runs/gate-b29/g1-rep3/hotrod/saude-11224-1792141154676847347.json
+1869bea7223184394332c6f343024248a99a14c72d4531b6cb36161330df2dd8  runs/gate-b29/g1-rep3/hotrod/saude-11224-1792141159701188233.json
+1869bea7223184394332c6f343024248a99a14c72d4531b6cb36161330df2dd8  runs/gate-b29/g1-rep3/hotrod/saude-11224-1792141164720841454.json
+1869bea7223184394332c6f343024248a99a14c72d4531b6cb36161330df2dd8  runs/gate-b29/g1-rep3/hotrod/saude-11224-1792141169744526505.json
+1869bea7223184394332c6f343024248a99a14c72d4531b6cb36161330df2dd8  runs/gate-b29/g1-rep3/hotrod/saude-11224-1792141174772400793.json
+994e9a9dbc95aa1fcd10b9b5319f070425b060d62de7f83281011bf12d1750aa  runs/gate-b29/g1-rep3/hotrod/sonda-isn1.csv
+f404f51e1acda2444ba4402832dd78b60159eb79248547869a1fa91b1dc20663  runs/gate-b29/g1-rep3/hotrod/sonda-isn1.err
+7b176535374ef60af6e57ea08b98266cd435a3c3a32ae5c26f83373f497a3b7e  runs/gate-b29/g1-rep3/hotrod/sonda-isn3.csv
+4ea05d40ad7a43e51ab28dc1391d4200adc0a1785b0f88e703ca3caea1093d40  runs/gate-b29/g1-rep3/hotrod/sonda-isn3.err
+eee159263c42b1d41e8d1fccf27ccacbcdd4fb069c20e15df4ccb3babbfadbd3  runs/gate-b29/recriacao/idade-pre.txt
+91ed2949c94cd9855b789369d15f019fe2180dcb7408e1c523feadc922d594ea  runs/gate-b29/recriacao/pre-recriacao-inspect-isn1.json
+4f70be1b95f2a6a7dd69b38a7f715150d9421c06105f420cff1454f231221beb  runs/gate-b29/recriacao/pre-recriacao-inspect-isn2.json
+2d2a468793eb0b008986b21c374a7294cc3467f3cc1725770e81c54bc6c62277  runs/gate-b29/recriacao/pre-recriacao-inspect-isn3.json
+9a6794cc73ba724aba7a2f3c14db48ad4ba493e2423a8fe6935aee2bb76b7621  runs/gate-b29/recriacao/pre-recriacao-isn1.log
+214938ae0835a51586031a22cd77258e3fdba26051b764f8e698e60e5147946f  runs/gate-b29/recriacao/pre-recriacao-isn2.log
+4bfda73b4b99f53f62678458efbc974bda3977f0cc1ea7b5da9072cf49faf23b  runs/gate-b29/recriacao/pre-recriacao-isn3.log
+0b6e6fa72baed49bd62f321bd552aed4f73b4f129ba7236c0951ce12d30a6fb3  runs/gate-b29/recriacao/rec1/down.log
+0f979c5e842469358f59ee10b1b379e0c9e79dcb11f115b08d6226db0344e5c6  runs/gate-b29/recriacao/rec1/up.log
+3f6cef6768a28b2d3e81a772373bc22a22ef599f01b56f7b6264e5c08e5e5a31  runs/gate-b29/recriacao/rec1/validacao.txt
+--- ignorados em runs/gate-b29
+runs/gate-b29/dryrun-g1.log
+runs/gate-b29/dryrun-heal.log
+runs/gate-b29/g0.log
+runs/gate-b29/g0b.log
+runs/gate-b29/g1-console-rep1.log
+runs/gate-b29/g1-console-rep3.log
+runs/gate-b29/g1-rep1/inj.log
+runs/gate-b29/g1-rep1/janela.log
+runs/gate-b29/g1-rep1/log-completo-isn1.txt
+runs/gate-b29/g1-rep1/log-completo-isn2.txt
+runs/gate-b29/g1-rep1/log-completo-isn3.txt
+runs/gate-b29/g1-rep1/log-vista-isn1.txt
+runs/gate-b29/g1-rep1/log-vista-isn2.txt
+runs/gate-b29/g1-rep1/log-vista-isn3.txt
+runs/gate-b29/g1-rep1/marcadores.txt
+runs/gate-b29/g1-rep1/saude-antes.txt
+runs/gate-b29/g1-rep1/saude-depois.txt
+runs/gate-b29/g1-rep1/t_merge.txt
+runs/gate-b29/g1-rep3/hotrod/indice.csv
+runs/gate-b29/g1-rep3/hotrod/resumo.txt
+runs/gate-b29/g1-rep3/hotrod/sonda-isn1.csv
+runs/gate-b29/g1-rep3/hotrod/sonda-isn3.csv
+runs/gate-b29/g1-rep3/inj.log
+runs/gate-b29/g1-rep3/janela.log
+runs/gate-b29/g1-rep3/log-completo-isn1.txt
+runs/gate-b29/g1-rep3/log-completo-isn2.txt
+runs/gate-b29/g1-rep3/log-completo-isn3.txt
+runs/gate-b29/g1-rep3/log-vista-isn1.txt
+runs/gate-b29/g1-rep3/log-vista-isn2.txt
+runs/gate-b29/g1-rep3/log-vista-isn3.txt
+runs/gate-b29/g1-rep3/saude-antes.txt
+runs/gate-b29/g1-rep3/saude-depois.txt
+runs/gate-b29/g1b-rep3.log
+runs/gate-b29/g5-console.log
+runs/gate-b29/g5-dryrun.log
+runs/gate-b29/g5/estado-final.txt
+runs/gate-b29/g5/estado-kill.txt
+runs/gate-b29/g5/estado-term.txt
+runs/gate-b29/g5/filhos-kill.txt
+runs/gate-b29/g5/filhos-term.txt
+runs/gate-b29/g5/heal.log
+runs/gate-b29/g5/inj-kill.log
+runs/gate-b29/g5/inj-term.log
+runs/gate-b29/g5/log-completo-isn1.txt
+runs/gate-b29/g5/log-completo-isn2.txt
+runs/gate-b29/g5/log-completo-isn3.txt
+runs/gate-b29/g5/log-vista-isn1.txt
+runs/gate-b29/g5/log-vista-isn2.txt
+runs/gate-b29/g5/log-vista-isn3.txt
+runs/gate-b29/g5/marcadores-kill.txt
+remoto_fim=2026-10-27T18:44:18+00:00
+rc=0
+### cliente_fim=2026-10-27T18:44:18.035Z duracao_cliente_ms=245
+
+### cliente_inicio=2026-10-27T18:44:39.092Z host=server1@172.18.251.140
+$ cd ~/tcc-gate && du -sb runs/gate-b29/g1-rep3/hotrod runs/gate-b29/recriacao; ls -l --time-style=full-iso runs/gate-b29/recriacao runs/gate-b29/recriacao/rec1; find runs/gate-b29/g1-rep3/hotrod -type f | wc -l; ls -l --time-style=full-iso runs/gate-b29/g1-rep3/hotrod | grep -v saude-1122
+remoto_inicio=2026-10-27T18:44:40+00:00
+227426	runs/gate-b29/g1-rep3/hotrod
+2888579	runs/gate-b29/recriacao
+runs/gate-b29/recriacao:
+total 2832
+-rw-rw-r-- 1 server1 server1     135 2026-10-16 08:54:12.519436705 +0000 idade-pre.txt
+-rw-rw-r-- 1 server1 server1   23506 2026-10-16 08:54:12.101428591 +0000 pre-recriacao-inspect-isn1.json
+-rw-rw-r-- 1 server1 server1   23643 2026-10-16 08:54:12.286432182 +0000 pre-recriacao-inspect-isn2.json
+-rw-rw-r-- 1 server1 server1   23643 2026-10-16 08:54:12.498436298 +0000 pre-recriacao-inspect-isn3.json
+-rw-rw-r-- 1 server1 server1  902358 2026-10-16 08:54:12.028427174 +0000 pre-recriacao-isn1.log
+-rw-rw-r-- 1 server1 server1  863676 2026-10-16 08:54:12.266431794 +0000 pre-recriacao-isn2.log
+-rw-rw-r-- 1 server1 server1 1044965 2026-10-16 08:54:12.479435929 +0000 pre-recriacao-isn3.log
+drwxrwxr-x 2 server1 server1    4096 2026-10-27 17:54:05.969805467 +0000 rec1
+
+runs/gate-b29/recriacao/rec1:
+total 16
+-rw-rw-r-- 1 server1 server1  329 2026-10-16 08:54:38.513941321 +0000 down.log
+-rw-rw-r-- 1 server1 server1 4372 2026-10-16 08:54:41.155992613 +0000 up.log
+-rw-rw-r-- 1 server1 server1 1952 2026-10-27 17:54:05.969805467 +0000 validacao.txt
+114
+total 632
+-rw-rw-r-- 1 server1 server1  9010 2026-10-16 08:59:34.779695332 +0000 indice.csv
+-rw-rw-r-- 1 server1 server1   362 2026-10-16 08:59:34.841696536 +0000 resumo.txt
+-rw-rw-r-- 1 server1 server1 15283 2026-10-16 08:59:34.795695642 +0000 sonda-isn1.csv
+-rw-rw-r-- 1 server1 server1   845 2026-10-16 08:56:40.545310829 +0000 sonda-isn1.err
+-rw-rw-r-- 1 server1 server1 72404 2026-10-16 08:59:34.797695681 +0000 sonda-isn3.csv
+-rw-rw-r-- 1 server1 server1 91056 2026-10-16 08:59:00.017019958 +0000 sonda-isn3.err
+remoto_fim=2026-10-27T18:44:40+00:00
+rc=0
+### cliente_fim=2026-10-27T18:44:39.401Z duracao_cliente_ms=323
+
+### cliente_inicio=2026-10-27T18:44:47.650Z host=Windows
+$ ssh ... "cd ~/tcc-gate && tar cf - runs/gate-b29/g1-rep3/hotrod runs/gate-b29/recriacao" | tar xf - -C <wt-gate-v4> ; scp ...:~/recriar.sh runs/gate-b29/recriar.sh
+rc_tar=0/0
+rc_scp=0
+--- sha256 no host (comparar com o bloco remoto acima)
+5b1cca41a2d059acf76f0f1511053dde290a883f983cc266ad79ff9360480766 *runs/gate-b29/recriar.sh
+312c47755825a9ae8aea763bd8d357597fb008535f0f035bd64d14be773b9a46 *runs/gate-b29/g1-rep3/hotrod/indice.csv
+f46d0ca3d2d60138682084ddb4a1c9519cb84a04a07069a02049bc7f70087c7e *runs/gate-b29/g1-rep3/hotrod/resumo.txt
+1869bea7223184394332c6f343024248a99a14c72d4531b6cb36161330df2dd8 *runs/gate-b29/g1-rep3/hotrod/saude-11222-1792140999927742522.json
+1869bea7223184394332c6f343024248a99a14c72d4531b6cb36161330df2dd8 *runs/gate-b29/g1-rep3/hotrod/saude-11222-1792141004959639502.json
+1869bea7223184394332c6f343024248a99a14c72d4531b6cb36161330df2dd8 *runs/gate-b29/g1-rep3/hotrod/saude-11222-1792141009982845415.json
+1869bea7223184394332c6f343024248a99a14c72d4531b6cb36161330df2dd8 *runs/gate-b29/g1-rep3/hotrod/saude-11222-1792141014008521712.json
+1869bea7223184394332c6f343024248a99a14c72d4531b6cb36161330df2dd8 *runs/gate-b29/g1-rep3/hotrod/saude-11222-1792141019033773260.json
+1869bea7223184394332c6f343024248a99a14c72d4531b6cb36161330df2dd8 *runs/gate-b29/g1-rep3/hotrod/saude-11222-1792141024054826006.json
+1869bea7223184394332c6f343024248a99a14c72d4531b6cb36161330df2dd8 *runs/gate-b29/g1-rep3/hotrod/saude-11222-1792141029079157077.json
+1869bea7223184394332c6f343024248a99a14c72d4531b6cb36161330df2dd8 *runs/gate-b29/g1-rep3/hotrod/saude-11222-1792141034100133927.json
+1869bea7223184394332c6f343024248a99a14c72d4531b6cb36161330df2dd8 *runs/gate-b29/g1-rep3/hotrod/saude-11222-1792141039127692668.json
+1869bea7223184394332c6f343024248a99a14c72d4531b6cb36161330df2dd8 *runs/gate-b29/g1-rep3/hotrod/saude-11222-1792141044158861052.json
+f4a614dccc24e8935b813450008083b41bf5983e0a9fc4fd632cde6b30548dc9 *runs/gate-b29/g1-rep3/hotrod/saude-11222-1792141049183039471.json
+f4a614dccc24e8935b813450008083b41bf5983e0a9fc4fd632cde6b30548dc9 *runs/gate-b29/g1-rep3/hotrod/saude-11222-1792141054209676752.json
+f4a614dccc24e8935b813450008083b41bf5983e0a9fc4fd632cde6b30548dc9 *runs/gate-b29/g1-rep3/hotrod/saude-11222-1792141059238708197.json
+f4a614dccc24e8935b813450008083b41bf5983e0a9fc4fd632cde6b30548dc9 *runs/gate-b29/g1-rep3/hotrod/saude-11222-1792141064258093146.json
+f4a614dccc24e8935b813450008083b41bf5983e0a9fc4fd632cde6b30548dc9 *runs/gate-b29/g1-rep3/hotrod/saude-11222-1792141069280706780.json
+f4a614dccc24e8935b813450008083b41bf5983e0a9fc4fd632cde6b30548dc9 *runs/gate-b29/g1-rep3/hotrod/saude-11222-1792141074303493180.json
+f4a614dccc24e8935b813450008083b41bf5983e0a9fc4fd632cde6b30548dc9 *runs/gate-b29/g1-rep3/hotrod/saude-11222-1792141079327447752.json
+f4a614dccc24e8935b813450008083b41bf5983e0a9fc4fd632cde6b30548dc9 *runs/gate-b29/g1-rep3/hotrod/saude-11222-1792141084354315396.json
+f4a614dccc24e8935b813450008083b41bf5983e0a9fc4fd632cde6b30548dc9 *runs/gate-b29/g1-rep3/hotrod/saude-11222-1792141089380912808.json
+f4a614dccc24e8935b813450008083b41bf5983e0a9fc4fd632cde6b30548dc9 *runs/gate-b29/g1-rep3/hotrod/saude-11222-1792141094402957276.json
+f4a614dccc24e8935b813450008083b41bf5983e0a9fc4fd632cde6b30548dc9 *runs/gate-b29/g1-rep3/hotrod/saude-11222-1792141099429933463.json
+f4a614dccc24e8935b813450008083b41bf5983e0a9fc4fd632cde6b30548dc9 *runs/gate-b29/g1-rep3/hotrod/saude-11222-1792141104451728634.json
+f4a614dccc24e8935b813450008083b41bf5983e0a9fc4fd632cde6b30548dc9 *runs/gate-b29/g1-rep3/hotrod/saude-11222-1792141109475511256.json
+f4a614dccc24e8935b813450008083b41bf5983e0a9fc4fd632cde6b30548dc9 *runs/gate-b29/g1-rep3/hotrod/saude-11222-1792141114498198907.json
+f4a614dccc24e8935b813450008083b41bf5983e0a9fc4fd632cde6b30548dc9 *runs/gate-b29/g1-rep3/hotrod/saude-11222-1792141119519291154.json
+f4a614dccc24e8935b813450008083b41bf5983e0a9fc4fd632cde6b30548dc9 *runs/gate-b29/g1-rep3/hotrod/saude-11222-1792141124550283419.json
+f4a614dccc24e8935b813450008083b41bf5983e0a9fc4fd632cde6b30548dc9 *runs/gate-b29/g1-rep3/hotrod/saude-11222-1792141129570481619.json
+f4a614dccc24e8935b813450008083b41bf5983e0a9fc4fd632cde6b30548dc9 *runs/gate-b29/g1-rep3/hotrod/saude-11222-1792141134594238514.json
+f4a614dccc24e8935b813450008083b41bf5983e0a9fc4fd632cde6b30548dc9 *runs/gate-b29/g1-rep3/hotrod/saude-11222-1792141139612494120.json
+1869bea7223184394332c6f343024248a99a14c72d4531b6cb36161330df2dd8 *runs/gate-b29/g1-rep3/hotrod/saude-11222-1792141144638376373.json
+1869bea7223184394332c6f343024248a99a14c72d4531b6cb36161330df2dd8 *runs/gate-b29/g1-rep3/hotrod/saude-11222-1792141149656229493.json
+1869bea7223184394332c6f343024248a99a14c72d4531b6cb36161330df2dd8 *runs/gate-b29/g1-rep3/hotrod/saude-11222-1792141154676847293.json
+1869bea7223184394332c6f343024248a99a14c72d4531b6cb36161330df2dd8 *runs/gate-b29/g1-rep3/hotrod/saude-11222-1792141159701036344.json
+1869bea7223184394332c6f343024248a99a14c72d4531b6cb36161330df2dd8 *runs/gate-b29/g1-rep3/hotrod/saude-11222-1792141164719417179.json
+1869bea7223184394332c6f343024248a99a14c72d4531b6cb36161330df2dd8 *runs/gate-b29/g1-rep3/hotrod/saude-11222-1792141169745395301.json
+1869bea7223184394332c6f343024248a99a14c72d4531b6cb36161330df2dd8 *runs/gate-b29/g1-rep3/hotrod/saude-11222-1792141174767507380.json
+1869bea7223184394332c6f343024248a99a14c72d4531b6cb36161330df2dd8 *runs/gate-b29/g1-rep3/hotrod/saude-11223-1792140999930239973.json
+1869bea7223184394332c6f343024248a99a14c72d4531b6cb36161330df2dd8 *runs/gate-b29/g1-rep3/hotrod/saude-11223-1792141004961169117.json
+1869bea7223184394332c6f343024248a99a14c72d4531b6cb36161330df2dd8 *runs/gate-b29/g1-rep3/hotrod/saude-11223-1792141009982921075.json
+1869bea7223184394332c6f343024248a99a14c72d4531b6cb36161330df2dd8 *runs/gate-b29/g1-rep3/hotrod/saude-11223-1792141014008997084.json
+1869bea7223184394332c6f343024248a99a14c72d4531b6cb36161330df2dd8 *runs/gate-b29/g1-rep3/hotrod/saude-11223-1792141019033844760.json
+1869bea7223184394332c6f343024248a99a14c72d4531b6cb36161330df2dd8 *runs/gate-b29/g1-rep3/hotrod/saude-11223-1792141024055497926.json
+1869bea7223184394332c6f343024248a99a14c72d4531b6cb36161330df2dd8 *runs/gate-b29/g1-rep3/hotrod/saude-11223-1792141029079289999.json
+1869bea7223184394332c6f343024248a99a14c72d4531b6cb36161330df2dd8 *runs/gate-b29/g1-rep3/hotrod/saude-11223-1792141034100252625.json
+1869bea7223184394332c6f343024248a99a14c72d4531b6cb36161330df2dd8 *runs/gate-b29/g1-rep3/hotrod/saude-11223-1792141039127787856.json
+1869bea7223184394332c6f343024248a99a14c72d4531b6cb36161330df2dd8 *runs/gate-b29/g1-rep3/hotrod/saude-11223-1792141044158956506.json
+f4a614dccc24e8935b813450008083b41bf5983e0a9fc4fd632cde6b30548dc9 *runs/gate-b29/g1-rep3/hotrod/saude-11223-1792141049183794306.json
+f4a614dccc24e8935b813450008083b41bf5983e0a9fc4fd632cde6b30548dc9 *runs/gate-b29/g1-rep3/hotrod/saude-11223-1792141054210003608.json
+f4a614dccc24e8935b813450008083b41bf5983e0a9fc4fd632cde6b30548dc9 *runs/gate-b29/g1-rep3/hotrod/saude-11223-1792141059236846266.json
+f4a614dccc24e8935b813450008083b41bf5983e0a9fc4fd632cde6b30548dc9 *runs/gate-b29/g1-rep3/hotrod/saude-11223-1792141064260106334.json
+f4a614dccc24e8935b813450008083b41bf5983e0a9fc4fd632cde6b30548dc9 *runs/gate-b29/g1-rep3/hotrod/saude-11223-1792141069281344585.json
+f4a614dccc24e8935b813450008083b41bf5983e0a9fc4fd632cde6b30548dc9 *runs/gate-b29/g1-rep3/hotrod/saude-11223-1792141074303599545.json
+f4a614dccc24e8935b813450008083b41bf5983e0a9fc4fd632cde6b30548dc9 *runs/gate-b29/g1-rep3/hotrod/saude-11223-1792141079327320882.json
+f4a614dccc24e8935b813450008083b41bf5983e0a9fc4fd632cde6b30548dc9 *runs/gate-b29/g1-rep3/hotrod/saude-11223-1792141084358686959.json
+f4a614dccc24e8935b813450008083b41bf5983e0a9fc4fd632cde6b30548dc9 *runs/gate-b29/g1-rep3/hotrod/saude-11223-1792141089381040407.json
+f4a614dccc24e8935b813450008083b41bf5983e0a9fc4fd632cde6b30548dc9 *runs/gate-b29/g1-rep3/hotrod/saude-11223-1792141094403483398.json
+f4a614dccc24e8935b813450008083b41bf5983e0a9fc4fd632cde6b30548dc9 *runs/gate-b29/g1-rep3/hotrod/saude-11223-1792141099429954430.json
+f4a614dccc24e8935b813450008083b41bf5983e0a9fc4fd632cde6b30548dc9 *runs/gate-b29/g1-rep3/hotrod/saude-11223-1792141104453672018.json
+f4a614dccc24e8935b813450008083b41bf5983e0a9fc4fd632cde6b30548dc9 *runs/gate-b29/g1-rep3/hotrod/saude-11223-1792141109475632981.json
+f4a614dccc24e8935b813450008083b41bf5983e0a9fc4fd632cde6b30548dc9 *runs/gate-b29/g1-rep3/hotrod/saude-11223-1792141114498677663.json
+f4a614dccc24e8935b813450008083b41bf5983e0a9fc4fd632cde6b30548dc9 *runs/gate-b29/g1-rep3/hotrod/saude-11223-1792141119520448877.json
+f4a614dccc24e8935b813450008083b41bf5983e0a9fc4fd632cde6b30548dc9 *runs/gate-b29/g1-rep3/hotrod/saude-11223-1792141124550307606.json
+f4a614dccc24e8935b813450008083b41bf5983e0a9fc4fd632cde6b30548dc9 *runs/gate-b29/g1-rep3/hotrod/saude-11223-1792141129572461610.json
+f4a614dccc24e8935b813450008083b41bf5983e0a9fc4fd632cde6b30548dc9 *runs/gate-b29/g1-rep3/hotrod/saude-11223-1792141134594386522.json
+f4a614dccc24e8935b813450008083b41bf5983e0a9fc4fd632cde6b30548dc9 *runs/gate-b29/g1-rep3/hotrod/saude-11223-1792141139614301788.json
+1869bea7223184394332c6f343024248a99a14c72d4531b6cb36161330df2dd8 *runs/gate-b29/g1-rep3/hotrod/saude-11223-1792141144636435168.json
+1869bea7223184394332c6f343024248a99a14c72d4531b6cb36161330df2dd8 *runs/gate-b29/g1-rep3/hotrod/saude-11223-1792141149656391351.json
+1869bea7223184394332c6f343024248a99a14c72d4531b6cb36161330df2dd8 *runs/gate-b29/g1-rep3/hotrod/saude-11223-1792141154676847363.json
+1869bea7223184394332c6f343024248a99a14c72d4531b6cb36161330df2dd8 *runs/gate-b29/g1-rep3/hotrod/saude-11223-1792141159701098459.json
+1869bea7223184394332c6f343024248a99a14c72d4531b6cb36161330df2dd8 *runs/gate-b29/g1-rep3/hotrod/saude-11223-1792141164719416641.json
+1869bea7223184394332c6f343024248a99a14c72d4531b6cb36161330df2dd8 *runs/gate-b29/g1-rep3/hotrod/saude-11223-1792141169744604638.json
+1869bea7223184394332c6f343024248a99a14c72d4531b6cb36161330df2dd8 *runs/gate-b29/g1-rep3/hotrod/saude-11223-1792141174767758282.json
+1869bea7223184394332c6f343024248a99a14c72d4531b6cb36161330df2dd8 *runs/gate-b29/g1-rep3/hotrod/saude-11224-1792140999930655746.json
+1869bea7223184394332c6f343024248a99a14c72d4531b6cb36161330df2dd8 *runs/gate-b29/g1-rep3/hotrod/saude-11224-1792141004961920999.json
+1869bea7223184394332c6f343024248a99a14c72d4531b6cb36161330df2dd8 *runs/gate-b29/g1-rep3/hotrod/saude-11224-1792141009983248036.json
+1869bea7223184394332c6f343024248a99a14c72d4531b6cb36161330df2dd8 *runs/gate-b29/g1-rep3/hotrod/saude-11224-1792141014008722485.json
+1869bea7223184394332c6f343024248a99a14c72d4531b6cb36161330df2dd8 *runs/gate-b29/g1-rep3/hotrod/saude-11224-1792141019034564973.json
+1869bea7223184394332c6f343024248a99a14c72d4531b6cb36161330df2dd8 *runs/gate-b29/g1-rep3/hotrod/saude-11224-1792141024056436807.json
+1869bea7223184394332c6f343024248a99a14c72d4531b6cb36161330df2dd8 *runs/gate-b29/g1-rep3/hotrod/saude-11224-1792141029079605647.json
+1869bea7223184394332c6f343024248a99a14c72d4531b6cb36161330df2dd8 *runs/gate-b29/g1-rep3/hotrod/saude-11224-1792141034101789244.json
+1869bea7223184394332c6f343024248a99a14c72d4531b6cb36161330df2dd8 *runs/gate-b29/g1-rep3/hotrod/saude-11224-1792141039136792004.json
+e46412823f910f5899fd6a5651602c04cb5e259f3e0be0f7cc0603eac36a4c7c *runs/gate-b29/g1-rep3/hotrod/saude-11224-1792141044160696554.json
+e46412823f910f5899fd6a5651602c04cb5e259f3e0be0f7cc0603eac36a4c7c *runs/gate-b29/g1-rep3/hotrod/saude-11224-1792141049183194272.json
+e46412823f910f5899fd6a5651602c04cb5e259f3e0be0f7cc0603eac36a4c7c *runs/gate-b29/g1-rep3/hotrod/saude-11224-1792141054214354680.json
+e46412823f910f5899fd6a5651602c04cb5e259f3e0be0f7cc0603eac36a4c7c *runs/gate-b29/g1-rep3/hotrod/saude-11224-1792141059236739051.json
+e46412823f910f5899fd6a5651602c04cb5e259f3e0be0f7cc0603eac36a4c7c *runs/gate-b29/g1-rep3/hotrod/saude-11224-1792141064259940406.json
+e46412823f910f5899fd6a5651602c04cb5e259f3e0be0f7cc0603eac36a4c7c *runs/gate-b29/g1-rep3/hotrod/saude-11224-1792141069282261065.json
+e46412823f910f5899fd6a5651602c04cb5e259f3e0be0f7cc0603eac36a4c7c *runs/gate-b29/g1-rep3/hotrod/saude-11224-1792141074303643540.json
+e46412823f910f5899fd6a5651602c04cb5e259f3e0be0f7cc0603eac36a4c7c *runs/gate-b29/g1-rep3/hotrod/saude-11224-1792141079331308807.json
+e46412823f910f5899fd6a5651602c04cb5e259f3e0be0f7cc0603eac36a4c7c *runs/gate-b29/g1-rep3/hotrod/saude-11224-1792141084358804586.json
+e46412823f910f5899fd6a5651602c04cb5e259f3e0be0f7cc0603eac36a4c7c *runs/gate-b29/g1-rep3/hotrod/saude-11224-1792141089381059004.json
+e46412823f910f5899fd6a5651602c04cb5e259f3e0be0f7cc0603eac36a4c7c *runs/gate-b29/g1-rep3/hotrod/saude-11224-1792141094404220231.json
+e46412823f910f5899fd6a5651602c04cb5e259f3e0be0f7cc0603eac36a4c7c *runs/gate-b29/g1-rep3/hotrod/saude-11224-1792141099430372831.json
+e46412823f910f5899fd6a5651602c04cb5e259f3e0be0f7cc0603eac36a4c7c *runs/gate-b29/g1-rep3/hotrod/saude-11224-1792141104454318540.json
+e46412823f910f5899fd6a5651602c04cb5e259f3e0be0f7cc0603eac36a4c7c *runs/gate-b29/g1-rep3/hotrod/saude-11224-1792141109475676151.json
+e46412823f910f5899fd6a5651602c04cb5e259f3e0be0f7cc0603eac36a4c7c *runs/gate-b29/g1-rep3/hotrod/saude-11224-1792141114498728951.json
+e46412823f910f5899fd6a5651602c04cb5e259f3e0be0f7cc0603eac36a4c7c *runs/gate-b29/g1-rep3/hotrod/saude-11224-1792141119521047311.json
+e46412823f910f5899fd6a5651602c04cb5e259f3e0be0f7cc0603eac36a4c7c *runs/gate-b29/g1-rep3/hotrod/saude-11224-1792141124550768402.json
+e46412823f910f5899fd6a5651602c04cb5e259f3e0be0f7cc0603eac36a4c7c *runs/gate-b29/g1-rep3/hotrod/saude-11224-1792141129572682074.json
+e46412823f910f5899fd6a5651602c04cb5e259f3e0be0f7cc0603eac36a4c7c *runs/gate-b29/g1-rep3/hotrod/saude-11224-1792141134594396369.json
+e46412823f910f5899fd6a5651602c04cb5e259f3e0be0f7cc0603eac36a4c7c *runs/gate-b29/g1-rep3/hotrod/saude-11224-1792141139614353407.json
+1869bea7223184394332c6f343024248a99a14c72d4531b6cb36161330df2dd8 *runs/gate-b29/g1-rep3/hotrod/saude-11224-1792141144636392687.json
+1869bea7223184394332c6f343024248a99a14c72d4531b6cb36161330df2dd8 *runs/gate-b29/g1-rep3/hotrod/saude-11224-1792141149657588319.json
+1869bea7223184394332c6f343024248a99a14c72d4531b6cb36161330df2dd8 *runs/gate-b29/g1-rep3/hotrod/saude-11224-1792141154676847347.json
+1869bea7223184394332c6f343024248a99a14c72d4531b6cb36161330df2dd8 *runs/gate-b29/g1-rep3/hotrod/saude-11224-1792141159701188233.json
+1869bea7223184394332c6f343024248a99a14c72d4531b6cb36161330df2dd8 *runs/gate-b29/g1-rep3/hotrod/saude-11224-1792141164720841454.json
+1869bea7223184394332c6f343024248a99a14c72d4531b6cb36161330df2dd8 *runs/gate-b29/g1-rep3/hotrod/saude-11224-1792141169744526505.json
+1869bea7223184394332c6f343024248a99a14c72d4531b6cb36161330df2dd8 *runs/gate-b29/g1-rep3/hotrod/saude-11224-1792141174772400793.json
+994e9a9dbc95aa1fcd10b9b5319f070425b060d62de7f83281011bf12d1750aa *runs/gate-b29/g1-rep3/hotrod/sonda-isn1.csv
+f404f51e1acda2444ba4402832dd78b60159eb79248547869a1fa91b1dc20663 *runs/gate-b29/g1-rep3/hotrod/sonda-isn1.err
+7b176535374ef60af6e57ea08b98266cd435a3c3a32ae5c26f83373f497a3b7e *runs/gate-b29/g1-rep3/hotrod/sonda-isn3.csv
+4ea05d40ad7a43e51ab28dc1391d4200adc0a1785b0f88e703ca3caea1093d40 *runs/gate-b29/g1-rep3/hotrod/sonda-isn3.err
+eee159263c42b1d41e8d1fccf27ccacbcdd4fb069c20e15df4ccb3babbfadbd3 *runs/gate-b29/recriacao/idade-pre.txt
+91ed2949c94cd9855b789369d15f019fe2180dcb7408e1c523feadc922d594ea *runs/gate-b29/recriacao/pre-recriacao-inspect-isn1.json
+4f70be1b95f2a6a7dd69b38a7f715150d9421c06105f420cff1454f231221beb *runs/gate-b29/recriacao/pre-recriacao-inspect-isn2.json
+2d2a468793eb0b008986b21c374a7294cc3467f3cc1725770e81c54bc6c62277 *runs/gate-b29/recriacao/pre-recriacao-inspect-isn3.json
+9a6794cc73ba724aba7a2f3c14db48ad4ba493e2423a8fe6935aee2bb76b7621 *runs/gate-b29/recriacao/pre-recriacao-isn1.log
+214938ae0835a51586031a22cd77258e3fdba26051b764f8e698e60e5147946f *runs/gate-b29/recriacao/pre-recriacao-isn2.log
+4bfda73b4b99f53f62678458efbc974bda3977f0cc1ea7b5da9072cf49faf23b *runs/gate-b29/recriacao/pre-recriacao-isn3.log
+0b6e6fa72baed49bd62f321bd552aed4f73b4f129ba7236c0951ce12d30a6fb3 *runs/gate-b29/recriacao/rec1/down.log
+0f979c5e842469358f59ee10b1b379e0c9e79dcb11f115b08d6226db0344e5c6 *runs/gate-b29/recriacao/rec1/up.log
+3f6cef6768a28b2d3e81a772373bc22a22ef599f01b56f7b6264e5c08e5e5a31 *runs/gate-b29/recriacao/rec1/validacao.txt
+### cliente_fim=2026-10-27T18:44:48.563Z
+

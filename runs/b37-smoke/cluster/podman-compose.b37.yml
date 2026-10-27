@@ -1,0 +1,87 @@
+# Cluster Infinispan, 3 nós, para experimentação local.
+# Uso (smoke B-37): podman-compose -p b37 -f podman-compose.b37.yml up -d
+#
+# Imagem oficial: quay.io/infinispan/server
+# Porta Hot Rod: 11222
+# Porta gerenciamento (REST/Console): 11222 (mesma; protocolos co-existem)
+# A rede 'infinispan-net' é criada automaticamente por podman-compose.
+#
+# Para reproduzir cenários de falha (F1 crash, F3 latência), use os scripts em
+# scripts/. Cenários F2 (partição) e F4 (state transfer) são opcionais em TCC-I.
+
+version: "3.8"
+
+networks:
+  infinispan-net:
+    driver: bridge
+
+services:
+  isn1:
+    image: quay.io/infinispan/server:15.0.21.Final
+    container_name: b37-isn1
+    hostname: isn1
+    command: ["-c", "infinispan.xml", "-Dinfinispan.hotrod.external-port=12537"]
+    environment:
+      - USER=admin
+      - PASS=infinispan
+      - INFINISPAN_CLUSTER_NAME=cluster-tcc
+    volumes:
+      - ./infinispan-cluster.xml:/opt/infinispan/server/conf/infinispan.xml:ro
+      - ./jgroups-tcp.xml:/opt/infinispan/server/conf/jgroups-tcp.xml:ro
+    ports:
+      - "12537:11222"
+    networks:
+      - infinispan-net
+    healthcheck:
+      test: ["CMD", "curl", "-f", "--digest", "-u", "admin:infinispan", "http://localhost:11222/rest/v2/cache-managers/default/health/status"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  isn2:
+    image: quay.io/infinispan/server:15.0.21.Final
+    container_name: b37-isn2
+    hostname: isn2
+    command: ["-c", "infinispan.xml", "-Dinfinispan.hotrod.external-port=12538"]
+    environment:
+      - USER=admin
+      - PASS=infinispan
+      - INFINISPAN_CLUSTER_NAME=cluster-tcc
+    volumes:
+      - ./infinispan-cluster.xml:/opt/infinispan/server/conf/infinispan.xml:ro
+      - ./jgroups-tcp.xml:/opt/infinispan/server/conf/jgroups-tcp.xml:ro
+    ports:
+      - "12538:11222"
+    networks:
+      - infinispan-net
+    healthcheck:
+      test: ["CMD", "curl", "-f", "--digest", "-u", "admin:infinispan", "http://localhost:11222/rest/v2/cache-managers/default/health/status"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    depends_on:
+      - isn1
+
+  isn3:
+    image: quay.io/infinispan/server:15.0.21.Final
+    container_name: b37-isn3
+    hostname: isn3
+    command: ["-c", "infinispan.xml", "-Dinfinispan.hotrod.external-port=12539"]
+    environment:
+      - USER=admin
+      - PASS=infinispan
+      - INFINISPAN_CLUSTER_NAME=cluster-tcc
+    volumes:
+      - ./infinispan-cluster.xml:/opt/infinispan/server/conf/infinispan.xml:ro
+      - ./jgroups-tcp.xml:/opt/infinispan/server/conf/jgroups-tcp.xml:ro
+    ports:
+      - "12539:11222"
+    networks:
+      - infinispan-net
+    healthcheck:
+      test: ["CMD", "curl", "-f", "--digest", "-u", "admin:infinispan", "http://localhost:11222/rest/v2/cache-managers/default/health/status"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    depends_on:
+      - isn1

@@ -25,6 +25,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.locks.LockSupport;
 
 /**
  * Ponto de entrada do workload.
@@ -774,6 +775,8 @@ public final class WorkloadMain {
      * dominios separados, o {@code Random} da mistura ({@link #randomDaMistura(long)}), o
      * {@link KeyGenerator} e o sorteio do token antigo da v3. Mesma {@code seed}, mesma sequencia de
      * intencoes da thread (tipos de operacao, chaves, tokens antigos e identidades de Login).
+     * B-27: cada operacao passa pelo {@code portao} (K1 admissao; K2 pausa em CONSERVADOR). Com
+     * {@link PortaoDeEmissao#livre()} o laco e o de antes.
      */
     private static void rodarCliente(SessionOps ops, int tid, long deadline,
                                      Scenario cenario, long seed,
@@ -789,9 +792,25 @@ public final class WorkloadMain {
         long executadas = 0;
         while (System.currentTimeMillis() < deadline && executadas < opsAlvo
                 && !parar.getAsBoolean()) {
-            executarOperacao(ops, cenario, r, chaves, ids, v3);
+            // B-27 (K1): permissao do portao; interrompido na espera, restaura a flag e sai do laco.
+            try {
+                portao.entrar();
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                break;
+            }
+            try {
+                executarOperacao(ops, cenario, r, chaves, ids, v3);
+            } finally {
+                portao.sair();
+            }
             executadas++;
             totalOps.incrementAndGet();
+            // B-27 (K2): pausa so em CONSERVADOR (0 em NORMAL e no portao livre).
+            long pausa = portao.pausaAposOperacaoNs();
+            if (pausa > 0) {
+                LockSupport.parkNanos(pausa);
+            }
         }
     }
 

@@ -23,6 +23,15 @@ package br.unipampa.tcc.session;
 public record AcaoS3(long tNs, String ator, String operacao, String alvo, String resultado,
                      int tentativas, boolean falhaPercebida, String nota, long tFimNs, long esperaPortaoNs) {
 
+    public AcaoS3 {
+        if (tFimNs < tNs) {
+            throw new IllegalArgumentException("tFimNs < tNs: " + tFimNs + " < " + tNs);
+        }
+        if (esperaPortaoNs < 0) {
+            throw new IllegalArgumentException("esperaPortaoNs negativa: " + esperaPortaoNs);
+        }
+    }
+
     /** Contrato {@code docs/contrato-s3-acoes-v2.md}: as 8 primeiras colunas sao as do contrato 1. */
     public static final String HEADER =
             "t_ns,ator,operacao,alvo,resultado,tentativas,falha_percebida,nota,t_fim_ns,espera_portao_ns";

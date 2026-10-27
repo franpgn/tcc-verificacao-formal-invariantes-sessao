@@ -53,33 +53,66 @@ public final class AplicacaoS3 {
     /**
      * Executa {@code chamada} com ate {@code retentativas} retentativas de aplicacao.
      *
+     * <p>B-27: antes da primeira tentativa o portao pode adiar a operacao (K3, so administrativas
+     * em CONSERVADOR); cada tentativa passa por {@code entrar()}/{@code sair()} (K1); a espera entre
+     * tentativas e {@code portao.esperaRetentativaNs} sobre a base que continua dobrando (K4). Com
+     * {@link PortaoDeEmissao#livre()} ou em NORMAL o resultado e numericamente o de antes. A acao
+     * registra {@code tFimNs} (depois da ultima tentativa) e {@code esperaPortaoNs} (K1 + K3). Se a
+     * espera do portao for interrompida, a flag e restaurada e a operacao segue mesmo assim (o
+     * portao nunca descarta).</p>
+     *
      * @return o ultimo resultado (de erro se todas as tentativas falharam)
      */
     public OpResult executar(String ator, String operacao, String alvo, int retentativas,
                              Supplier<OpResult> chamada) {
         long inicio = relogio.agoraNs();
-        OpResult r = chamada.get();
+        long[] esperaPortao = {0L};
+        try {
+            esperaPortao[0] += portao.aguardarAdministrativa(ator, operacao, alvo);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
+        OpResult r = tentar(chamada, esperaPortao);
         int tentativas = 1;
         boolean houveErro = ehErro(r);
         long espera = S3Parametros.msParaNs(p.backoffMs);
         while (ehErro(r) && tentativas <= retentativas) {
             try {
-                relogio.dormirNs(espera);
+                relogio.dormirNs(portao.esperaRetentativaNs(ator, espera, tentativas, inicio));
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
                 break;
             }
             espera *= 2;
-            r = chamada.get();
+            r = tentar(chamada, esperaPortao);
             tentativas++;
             houveErro |= ehErro(r);
         }
+        long fim = relogio.agoraNs();
         boolean falha = ehErro(r);
         String nota = houveErro && (SessionOps.OP_BLOCK.equals(operacao) || SessionOps.OP_UNBLOCK.equals(operacao))
                 ? "tentativa-incerta" : "";
         registro.accept(new AcaoS3(inicio, ator, operacao, alvo, descrever(r), tentativas, falha, nota,
-                inicio, 0L)); // B-27 commit 1: tFimNs e esperaPortaoNs provisorios
+                fim, esperaPortao[0]));
         return r;
+    }
+
+    /** Uma tentativa com a permissao do K1 (devolvida em {@code finally}); soma a espera do K1. */
+    private OpResult tentar(Supplier<OpResult> chamada, long[] esperaPortao) {
+        boolean entrou = false;
+        try {
+            esperaPortao[0] += portao.entrar();
+            entrou = true;
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
+        try {
+            return chamada.get();
+        } finally {
+            if (entrou) {
+                portao.sair();
+            }
+        }
     }
 
     /** Total de falhas percebidas pelo usuario (todas as operacoes). */

@@ -1,0 +1,20 @@
+t0_up_epoch=1793126935
+1793126935.374591210 11222:ERR 11223:ERR 11224:ERR
+1793126937.407731753 11222:ERR 11223:ERR 11224:ERR
+1793126939.438146927 11222:ERR 11223:ERR 11224:ERR
+1793126941.452700089 11222:ERR 11223:ERR 11224:ERR
+1793126943.465476492 11222:ERR 11223:ERR 11224:ERR
+1793126945.478034870 11222:ERR 11223:ERR 11224:ERR
+1793126947.683123108 11222:ERR "health_status":"HEALTHY_REBALANCING","number_of_nodes":3 11224:ERR
+1793126949.873679157 "health_status":"HEALTHY","number_of_nodes":3 "health_status":"HEALTHY","number_of_nodes":3 "health_status":"HEALTHY","number_of_nodes":3
+1793126951.907273826 "health_status":"HEALTHY","number_of_nodes":3 "health_status":"HEALTHY","number_of_nodes":3 "health_status":"HEALTHY","number_of_nodes":3
+1793126953.950417886 "health_status":"HEALTHY","number_of_nodes":3 "health_status":"HEALTHY","number_of_nodes":3 "health_status":"HEALTHY","number_of_nodes":3
+1793126955.983086038 "health_status":"HEALTHY","number_of_nodes":3 "health_status":"HEALTHY","number_of_nodes":3 "health_status":"HEALTHY","number_of_nodes":3
+1793126958.015135977 "health_status":"HEALTHY","number_of_nodes":3 "health_status":"HEALTHY","number_of_nodes":3 "health_status":"HEALTHY","number_of_nodes":3
+1793126960.046039746 "health_status":"HEALTHY","number_of_nodes":3 "health_status":"HEALTHY","number_of_nodes":3 "health_status":"HEALTHY","number_of_nodes":3
+1793126962.074531044 "health_status":"HEALTHY","number_of_nodes":3 "health_status":"HEALTHY","number_of_nodes":3 "health_status":"HEALTHY","number_of_nodes":3
+1793126964.100412918 "health_status":"HEALTHY","number_of_nodes":3 "health_status":"HEALTHY","number_of_nodes":3 "health_status":"HEALTHY","number_of_nodes":3
+1793126966.126622984 "health_status":"HEALTHY","number_of_nodes":3 "health_status":"HEALTHY","number_of_nodes":3 "health_status":"HEALTHY","number_of_nodes":3
+1793126968.153054363 "health_status":"HEALTHY","number_of_nodes":3 "health_status":"HEALTHY","number_of_nodes":3 "health_status":"HEALTHY","number_of_nodes":3
+1793126970.181079511 "health_status":"HEALTHY","number_of_nodes":3 "health_status":"HEALTHY","number_of_nodes":3 "health_status":"HEALTHY","number_of_nodes":3
+ESTAVEL size=3 HEALTHY: primeira leitura boa +14s, estavel por 21s (total 35s)

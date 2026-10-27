@@ -1,0 +1,22 @@
+podman-compose version: 1.0.6
+['podman', '--version', '']
+using podman version: 4.9.3
+** excluding:  set()
+podman stop -t 10 isn3
+isn3
+exit code: 0
+podman stop -t 10 isn2
+isn2
+exit code: 0
+podman stop -t 10 isn1
+isn1
+exit code: 0
+podman rm isn3
+isn3
+exit code: 0
+podman rm isn2
+isn2
+exit code: 0
+podman rm isn1
+isn1
+exit code: 0

@@ -1,0 +1,367 @@
+### cliente_inicio=2026-10-27T18:46:25.999Z host=server1@172.18.251.140
+$ uname -r; dpkg -l | grep -E "^ii  linux-(image|headers|modules|modules-extra|generic|virtual|tools|hwe|kernel)" ; apt-mark showhold; echo "--- apt periodic"; cat /etc/apt/apt.conf.d/20auto-upgrades 2>&1; grep -rn "Unattended-Upgrade\|Update-Package-Lists" /etc/apt/apt.conf.d/ 2>/dev/null; echo "--- systemd"; systemctl is-enabled apt-daily-upgrade.timer apt-daily.timer unattended-upgrades.service 2>&1; systemctl is-active apt-daily-upgrade.timer apt-daily.timer unattended-upgrades.service 2>&1; systemctl list-timers --all | grep -E "apt|unatt"; pgrep -a "apt|dpkg|unattended" ; ls /boot/vmlinuz*
+remoto_inicio=2026-10-27T18:46:27+00:00
+6.8.0-147-generic
+ii  linux-generic                         6.8.0-147.147                                    amd64        Complete Generic Linux kernel and headers
+ii  linux-headers-6.8.0-124               6.8.0-124.124                                    all          Header files related to Linux kernel version 6.8.0
+ii  linux-headers-6.8.0-124-generic       6.8.0-124.124                                    amd64        Linux kernel headers for version 6.8.0 on 64 bit x86 SMP
+ii  linux-headers-6.8.0-147               6.8.0-147.147                                    all          Header files related to Linux kernel version 6.8.0
+ii  linux-headers-6.8.0-147-generic       6.8.0-147.147                                    amd64        Linux kernel headers for version 6.8.0 on 64 bit x86 SMP
+ii  linux-headers-generic                 6.8.0-147.147                                    amd64        Generic Linux kernel headers
+ii  linux-image-6.8.0-124-generic         6.8.0-124.124                                    amd64        Signed kernel image generic
+ii  linux-image-6.8.0-147-generic         6.8.0-147.147                                    amd64        Signed kernel image generic
+ii  linux-image-generic                   6.8.0-147.147                                    amd64        Generic Linux kernel image
+ii  linux-modules-6.8.0-124-generic       6.8.0-124.124                                    amd64        Linux kernel extra modules for version 6.8.0 on 64 bit x86 SMP
+ii  linux-modules-6.8.0-147-generic       6.8.0-147.147                                    amd64        Linux kernel extra modules for version 6.8.0 on 64 bit x86 SMP
+ii  linux-modules-extra-6.8.0-124-generic 6.8.0-124.124                                    amd64        Linux kernel extra modules for version 6.8.0 on 64 bit x86 SMP
+ii  linux-modules-extra-6.8.0-147-generic 6.8.0-147.147                                    amd64        Linux kernel extra modules for version 6.8.0 on 64 bit x86 SMP
+ii  linux-tools-6.8.0-124                 6.8.0-124.124                                    amd64        Linux kernel version specific tools for version 6.8.0-124
+ii  linux-tools-6.8.0-124-generic         6.8.0-124.124                                    amd64        Linux kernel version specific tools for version 6.8.0-124
+ii  linux-tools-6.8.0-147                 6.8.0-147.147                                    amd64        Linux kernel version specific tools for version 6.8.0-147
+ii  linux-tools-6.8.0-147-generic         6.8.0-147.147                                    amd64        Linux kernel version specific tools for version 6.8.0-147
+ii  linux-tools-common                    6.8.0-147.147                                    all          Linux kernel version specific tools for version 6.8.0
+--- apt periodic
+APT::Periodic::Update-Package-Lists "1";
+APT::Periodic::Unattended-Upgrade "1";
+/etc/apt/apt.conf.d/10periodic:1:APT::Periodic::Update-Package-Lists "1";
+/etc/apt/apt.conf.d/20auto-upgrades:1:APT::Periodic::Update-Package-Lists "1";
+/etc/apt/apt.conf.d/20auto-upgrades:2:APT::Periodic::Unattended-Upgrade "1";
+/etc/apt/apt.conf.d/50unattended-upgrades:6:Unattended-Upgrade::Allowed-Origins {
+/etc/apt/apt.conf.d/50unattended-upgrades:21:Unattended-Upgrade::Package-Blacklist {
+/etc/apt/apt.conf.d/50unattended-upgrades:44:Unattended-Upgrade::DevRelease "auto";
+/etc/apt/apt.conf.d/50unattended-upgrades:50://Unattended-Upgrade::AutoFixInterruptedDpkg "true";
+/etc/apt/apt.conf.d/50unattended-upgrades:56://Unattended-Upgrade::MinimalSteps "true";
+/etc/apt/apt.conf.d/50unattended-upgrades:67://Unattended-Upgrade::InstallOnShutdown "false";
+/etc/apt/apt.conf.d/50unattended-upgrades:73://Unattended-Upgrade::Mail "";
+/etc/apt/apt.conf.d/50unattended-upgrades:79://Unattended-Upgrade::MailReport "on-change";
+/etc/apt/apt.conf.d/50unattended-upgrades:83://Unattended-Upgrade::Remove-Unused-Kernel-Packages "true";
+/etc/apt/apt.conf.d/50unattended-upgrades:86://Unattended-Upgrade::Remove-New-Unused-Dependencies "true";
+/etc/apt/apt.conf.d/50unattended-upgrades:90://Unattended-Upgrade::Remove-Unused-Dependencies "false";
+/etc/apt/apt.conf.d/50unattended-upgrades:94://Unattended-Upgrade::Automatic-Reboot "false";
+/etc/apt/apt.conf.d/50unattended-upgrades:97:// when Unattended-Upgrade::Automatic-Reboot is set to true
+/etc/apt/apt.conf.d/50unattended-upgrades:98://Unattended-Upgrade::Automatic-Reboot-WithUsers "true";
+/etc/apt/apt.conf.d/50unattended-upgrades:103://Unattended-Upgrade::Automatic-Reboot-Time "02:00";
+/etc/apt/apt.conf.d/50unattended-upgrades:110:// Unattended-Upgrade::SyslogEnable "false";
+/etc/apt/apt.conf.d/50unattended-upgrades:113:// Unattended-Upgrade::SyslogFacility "daemon";
+/etc/apt/apt.conf.d/50unattended-upgrades:117:// Unattended-Upgrade::OnlyOnACPower "true";
+/etc/apt/apt.conf.d/50unattended-upgrades:121:// Unattended-Upgrade::Skip-Updates-On-Metered-Connections "true";
+/etc/apt/apt.conf.d/50unattended-upgrades:124:// Unattended-Upgrade::Verbose "false";
+/etc/apt/apt.conf.d/50unattended-upgrades:128:// Unattended-Upgrade::Debug "false";
+/etc/apt/apt.conf.d/50unattended-upgrades:131:// Unattended-Upgrade::Allow-downgrade "false";
+/etc/apt/apt.conf.d/50unattended-upgrades:143:// Unattended-Upgrade::Allow-APT-Mark-Fallback "true";
+--- systemd
+enabled
+enabled
+enabled
+active
+active
+active
+Tue 2026-10-27 23:25:52 UTC 4h 39min Tue 2026-10-27 17:02:17 UTC  1h 44min ago apt-daily.timer                apt-daily.service
+-                                  - Wed 2026-10-21 06:56:28 UTC    6 days ago apt-daily-upgrade.timer        apt-daily-upgrade.service
+809 /usr/bin/python3 /usr/share/unattended-upgrades/unattended-upgrade-shutdown --wait-for-signal
+2680 /bin/sh /usr/lib/apt/apt.systemd.daily install
+2685 /bin/sh /usr/lib/apt/apt.systemd.daily lock_is_held install
+2714 /usr/bin/python3 /usr/bin/unattended-upgrade
+2769 /usr/bin/python3 /usr/bin/unattended-upgrade
+2858 /usr/bin/python3 /usr/bin/unattended-upgrade
+/boot/vmlinuz
+/boot/vmlinuz-6.8.0-124-generic
+/boot/vmlinuz-6.8.0-147-generic
+/boot/vmlinuz.old
+remoto_fim=2026-10-27T18:46:27+00:00
+rc=0
+### cliente_fim=2026-10-27T18:46:26.499Z duracao_cliente_ms=499
+
+### cliente_inicio=2026-10-27T18:46:34.418Z host=server1@172.18.251.140
+$ ps -o pid,ppid,stat,lstart,etime,wchan:20,cmd -p 809,2680,2685,2714,2769,2858; pstree -p 2680 2>/dev/null | head; systemctl status apt-daily-upgrade.service --no-pager 2>&1 | head -15; echo "--- log u-u"; sudo tail -30 /var/log/unattended-upgrades/unattended-upgrades.log; echo "--- dpkg log recente"; tail -15 /var/log/dpkg.log; sudo fuser -v /var/lib/dpkg/lock-frontend /var/lib/dpkg/lock /var/cache/apt/archives/lock 2>&1
+remoto_inicio=2026-10-27T18:46:35+00:00
+    PID    PPID STAT                  STARTED     ELAPSED WCHAN                CMD
+    809       1 Ssl  Tue Oct 20 16:31:46 2026  7-02:14:48 -                    /usr/bin/python3 /usr/share/unattended-upgrades/unattended-upgrade-shutdown --wait-for-signal
+   2680       1 Ss   Wed Oct 21 06:56:28 2026  6-11:50:06 -                    /bin/sh /usr/lib/apt/apt.systemd.daily install
+   2685    2680 S    Wed Oct 21 06:56:28 2026  6-11:50:06 -                    /bin/sh /usr/lib/apt/apt.systemd.daily lock_is_held install
+   2714    2685 Sl   Wed Oct 21 06:56:28 2026  6-11:50:06 -                    /usr/bin/python3 /usr/bin/unattended-upgrade
+   2769    2714 S    Wed Oct 21 06:56:30 2026  6-11:50:04 -                    /usr/bin/python3 /usr/bin/unattended-upgrade
+   2858    2769 S    Wed Oct 21 06:56:32 2026  6-11:50:02 -                    /usr/bin/python3 /usr/bin/unattended-upgrade
+apt.systemd.dai(2680)---apt.systemd.dai(2685)---unattended-upgr(2714)-+-unattended-upgr(2769)---unattended-upgr(2858)---sh(2873)---+
+                                                                      |-{unattended-upgr}(2761)
+                                                                      |-{unattended-upgr}(2762)
+                                                                      `-{unattended-upgr}(2763)
+● apt-daily-upgrade.service - Daily apt upgrade and clean activities
+     Loaded: loaded (/usr/lib/systemd/system/apt-daily-upgrade.service; static)
+     Active: activating (start) since Wed 2026-10-21 06:56:28 UTC; 6 days ago
+TriggeredBy: ● apt-daily-upgrade.timer
+       Docs: man:apt(8)
+   Main PID: 2680 (apt.systemd.dai)
+      Tasks: 12 (limit: 9414)
+     Memory: 187.7M (peak: 219.9M)
+        CPU: 6min 1.529s
+     CGroup: /system.slice/apt-daily-upgrade.service
+             ├─2680 /bin/sh /usr/lib/apt/apt.systemd.daily install
+             ├─2685 /bin/sh /usr/lib/apt/apt.systemd.daily lock_is_held install
+             ├─2714 /usr/bin/python3 /usr/bin/unattended-upgrade
+             ├─2769 /usr/bin/python3 /usr/bin/unattended-upgrade
+             ├─2858 /usr/bin/python3 /usr/bin/unattended-upgrade
+--- log u-u
+2026-10-17 06:48:21,655 INFO Allowed origins are: o=Ubuntu,a=noble, o=Ubuntu,a=noble-security, o=UbuntuESMApps,a=noble-apps-security, o=UbuntuESM,a=noble-infra-security
+2026-10-17 06:48:21,655 INFO Initial blacklist: 
+2026-10-17 06:48:21,655 INFO Initial whitelist (not strict): 
+2026-10-17 06:48:53,078 INFO Packages that will be upgraded: amd64-microcode bind9-dnsutils bind9-host bind9-libs bsdextrautils bsdutils coreutils cpio curl diffutils dirmngr distro-info-data dracut-install eject fdisk gawk gir1.2-glib-2.0 gnupg gnupg-l10n gnupg-utils gpg gpg-agent gpg-wks-client gpgconf gpgsm gpgv gzip keyboxd krb5-locales libaom3 libarchive13t64 libasound2-data libasound2t64 libattr1 libblkid1 libbz2-1.0 libc-bin libc-dev-bin libc-devtools libc6 libc6-dev libcurl3t64-gnutls libcurl4t64 libevent-core-2.1-7t64 libexpat1 libfdisk1 libfreetype6 libgcrypt20 libgif7 libglib2.0-0t64 libglib2.0-bin libglib2.0-data libgssapi-krb5-2 libheif-plugin-aomdec libheif-plugin-aomenc libheif1 libisns0t64 libk5crypto3 libkrb5-3 libkrb5support0 libmount1 libncurses6 libncursesw6 libnghttp2-14 libnss-systemd libnss3 libntfs-3g89t64 libp11-kit0 libpam-modules libpam-modules-bin libpam-runtime libpam-systemd libpam0g libpcap0.8t64 libperl5.38t64 libpng16-16t64 libpolkit-agent-1-0 libpolkit-gobject-1-0 libpython3.12-minimal libpython3.12-stdlib libpython3.12t64 librsvg2-2 librsvg2-common libsgutils2-1.46-2 libslirp0 libsmartcols1 libsqlite3-0 libssh-4 libssl3t64 libsystemd-shared libsystemd0 libtinfo6 libudev1 libudisks2-0 libuuid1 libx11-6 libx11-data libx11-dev libx11-xcb1 libxml2 libxpm4 linux-generic linux-headers-generic linux-image-generic linux-libc-dev linux-tools-common locales mount ncurses-base ncurses-bin ncurses-term ntfs-3g openjdk-17-jdk openjdk-17-jdk-headless openjdk-17-jre openjdk-17-jre-headless openssh-client openssh-server openssh-sftp-server openssl perl perl-base perl-modules-5.38 polkitd python3-httplib2 python3-idna python3-jwt python3-pil python3-pyasn1 python3-requests python3-urllib3 python3.12 python3.12-minimal python3.12-venv rsyslog sg3-utils sg3-utils-udev snapd sudo systemd systemd-dev systemd-resolved systemd-sysv systemd-timesyncd tar tzdata ubuntu-pro-client ubuntu-pro-client-l10n udev udisks2 util-linux uuid-runtime vim vim-common vim-runtime vim-tiny wget wireless-regdb xxd zlib1g
+2026-10-17 06:48:53,078 INFO Writing dpkg log to /var/log/unattended-upgrades/unattended-upgrades-dpkg.log
+2026-10-17 06:53:35,884 INFO All upgrades installed
+2026-10-18 06:42:11,751 WARNING Could not figure out development release: Distribution data outdated. Please check for an update for distro-info-data. See /usr/share/doc/distro-info-data/README.Debian for details.
+2026-10-18 06:42:11,751 INFO Starting unattended upgrades script
+2026-10-18 06:42:11,752 INFO Allowed origins are: o=Ubuntu,a=noble, o=Ubuntu,a=noble-security, o=UbuntuESMApps,a=noble-apps-security, o=UbuntuESM,a=noble-infra-security
+2026-10-18 06:42:11,752 INFO Initial blacklist: 
+2026-10-18 06:42:11,752 INFO Initial whitelist (not strict): 
+2026-10-18 06:42:12,553 INFO No packages found that can be upgraded unattended and no pending auto-removals
+2026-10-20 16:42:30,141 WARNING Could not figure out development release: Distribution data outdated. Please check for an update for distro-info-data. See /usr/share/doc/distro-info-data/README.Debian for details.
+2026-10-20 16:42:30,141 INFO Starting unattended upgrades script
+2026-10-20 16:42:30,141 INFO Allowed origins are: o=Ubuntu,a=noble, o=Ubuntu,a=noble-security, o=UbuntuESMApps,a=noble-apps-security, o=UbuntuESM,a=noble-infra-security
+2026-10-20 16:42:30,142 INFO Initial blacklist: 
+2026-10-20 16:42:30,142 INFO Initial whitelist (not strict): 
+2026-10-20 16:42:31,008 INFO No packages found that can be upgraded unattended and no pending auto-removals
+2026-10-20 18:20:36,080 WARNING Could not figure out development release: Distribution data outdated. Please check for an update for distro-info-data. See /usr/share/doc/distro-info-data/README.Debian for details.
+2026-10-20 18:20:36,081 INFO Starting unattended upgrades script
+2026-10-20 18:20:36,081 INFO Allowed origins are: o=Ubuntu,a=noble, o=Ubuntu,a=noble-security, o=UbuntuESMApps,a=noble-apps-security, o=UbuntuESM,a=noble-infra-security
+2026-10-20 18:20:36,081 INFO Initial blacklist: 
+2026-10-20 18:20:36,081 INFO Initial whitelist (not strict): 
+2026-10-21 06:56:29,030 WARNING Could not figure out development release: Distribution data outdated. Please check for an update for distro-info-data. See /usr/share/doc/distro-info-data/README.Debian for details.
+2026-10-21 06:56:29,030 INFO Starting unattended upgrades script
+2026-10-21 06:56:29,030 INFO Allowed origins are: o=Ubuntu,a=noble, o=Ubuntu,a=noble-security, o=UbuntuESMApps,a=noble-apps-security, o=UbuntuESM,a=noble-infra-security
+2026-10-21 06:56:29,030 INFO Initial blacklist: 
+2026-10-21 06:56:29,030 INFO Initial whitelist (not strict): 
+2026-10-21 06:56:30,735 INFO Packages that will be upgraded: ca-certificates git git-man liblzma5 libxtst6 python3-jwt tzdata xz-utils
+2026-10-21 06:56:30,735 INFO Writing dpkg log to /var/log/unattended-upgrades/unattended-upgrades-dpkg.log
+--- dpkg log recente
+2026-10-21 06:56:31 status unpacked xz-utils:amd64 5.6.1+really5.4.5-1ubuntu0.3
+2026-10-21 06:56:31 status half-installed xz-utils:amd64 5.6.1+really5.4.5-1ubuntu0.3
+2026-10-21 06:56:31 status triggers-pending man-db:amd64 2.12.0-4build2
+2026-10-21 06:56:31 status unpacked xz-utils:amd64 5.6.1+really5.4.5-1ubuntu0.4
+2026-10-21 06:56:31 startup packages configure
+2026-10-21 06:56:31 configure xz-utils:amd64 5.6.1+really5.4.5-1ubuntu0.4 <none>
+2026-10-21 06:56:31 status unpacked xz-utils:amd64 5.6.1+really5.4.5-1ubuntu0.4
+2026-10-21 06:56:31 status half-configured xz-utils:amd64 5.6.1+really5.4.5-1ubuntu0.4
+2026-10-21 06:56:31 status installed xz-utils:amd64 5.6.1+really5.4.5-1ubuntu0.4
+2026-10-21 06:56:31 trigproc man-db:amd64 2.12.0-4build2 <none>
+2026-10-21 06:56:31 status half-configured man-db:amd64 2.12.0-4build2
+2026-10-21 06:56:32 status installed man-db:amd64 2.12.0-4build2
+2026-10-21 06:56:32 trigproc libc-bin:amd64 2.39-0ubuntu8.9 <none>
+2026-10-21 06:56:32 status half-configured libc-bin:amd64 2.39-0ubuntu8.9
+2026-10-21 06:56:32 status installed libc-bin:amd64 2.39-0ubuntu8.9
+                     USER        PID ACCESS COMMAND
+/var/lib/dpkg/lock-frontend:
+                     root       2714 F.... unattended-upgr
+/var/cache/apt/archives/lock:
+                     root       2714 F.... unattended-upgr
+remoto_fim=2026-10-27T18:46:35+00:00
+rc=0
+### cliente_fim=2026-10-27T18:46:34.665Z duracao_cliente_ms=249
+
+### cliente_inicio=2026-10-27T18:46:45.147Z host=server1@172.18.251.140
+$ pstree -pal 2858; echo ---; sudo tail -40 /var/log/unattended-upgrades/unattended-upgrades-dpkg.log; echo ---; sudo dpkg --audit; echo "audit_rc=$?"; dpkg -l | grep -vE "^(ii|rc|Desired|\||\+)" | head
+remoto_inicio=2026-10-27T18:46:46+00:00
+unattended-upgr,2858 /usr/bin/unattended-upgrade
+  `-sh,2873 -c -- test -x /usr/lib/needrestart/apt-pinvoke && /usr/lib/needrestart/apt-pinvoke -m u || true
+      `-frontend,2874 /usr/share/debconf/frontend /usr/sbin/needrestart -m u
+          `-needrestart,2881 /usr/sbin/needrestart -m u
+              `-systemctl,2954 restart fwupd-refresh.service fwupd.service multipathd.service polkit.service rsyslog.service systemd-journald.service systemd-networkd.service systemd-resolved.service systemd-timesyncd.service systemd-udevd.service udisks2.service
+---
+Unpacking gzip (1.12-1ubuntu3.2) over (1.12-1ubuntu3.1) ...
+Setting up gzip (1.12-1ubuntu3.2) ...
+Processing triggers for install-info (7.1-3build2) ...
+Processing triggers for man-db (2.12.0-4build2) ...
+
+Restarting services...
+
+Service restarts being deferred:
+ systemctl restart apt-daily-upgrade.service
+ systemctl restart apt-daily.service
+ /etc/needrestart/restart.d/dbus.service
+ systemctl restart systemd-logind.service
+ systemctl restart unattended-upgrades.service
+
+No containers need to be restarted.
+
+User sessions running outdated binaries:
+ server1 @ session #23: login[1780]
+ server1 @ user manager service: systemd[1887]
+
+No VM guests are running outdated hypervisor (qemu) binaries on this host.
+Log ended: 2026-10-17  06:53:35
+
+Log started: 2026-10-21  06:56:30
+(Reading database ... (Reading database ... 5%(Reading database ... 10%(Reading database ... 15%(Reading database ... 20%(Reading database ... 25%(Reading database ... 30%(Reading database ... 35%(Reading database ... 40%(Reading database ... 45%(Reading database ... 50%(Reading database ... 55%(Reading database ... 60%(Reading database ... 65%(Reading database ... 70%(Reading database ... 75%(Reading database ... 80%(Reading database ... 85%(Reading database ... 90%(Reading database ... 95%(Reading database ... 100%(Reading database ... 147481 files and directories currently installed.)
+Preparing to unpack .../liblzma5_5.6.1+really5.4.5-1ubuntu0.4_amd64.deb ...
+Unpacking liblzma5:amd64 (5.6.1+really5.4.5-1ubuntu0.4) over (5.6.1+really5.4.5-1ubuntu0.3) ...
+Setting up liblzma5:amd64 (5.6.1+really5.4.5-1ubuntu0.4) ...
+(Reading database ... (Reading database ... 5%(Reading database ... 10%(Reading database ... 15%(Reading database ... 20%(Reading database ... 25%(Reading database ... 30%(Reading database ... 35%(Reading database ... 40%(Reading database ... 45%(Reading database ... 50%(Reading database ... 55%(Reading database ... 60%(Reading database ... 65%(Reading database ... 70%(Reading database ... 75%(Reading database ... 80%(Reading database ... 85%(Reading database ... 90%(Reading database ... 95%(Reading database ... 100%(Reading database ... 147481 files and directories currently installed.)
+Preparing to unpack .../xz-utils_5.6.1+really5.4.5-1ubuntu0.4_amd64.deb ...
+Unpacking xz-utils (5.6.1+really5.4.5-1ubuntu0.4) over (5.6.1+really5.4.5-1ubuntu0.3) ...
+Setting up xz-utils (5.6.1+really5.4.5-1ubuntu0.4) ...
+Processing triggers for man-db (2.12.0-4build2) ...
+Processing triggers for libc-bin (2.39-0ubuntu8.9) ...
+
+Running kernel seems to be up-to-date.
+
+Restarting services...
+ /etc/needrestart/restart.d/systemd-manager
+ systemctl restart fwupd-refresh.service fwupd.service multipathd.service polkit.service rsyslog.service systemd-journald.service systemd-networkd.service systemd-resolved.service systemd-timesyncd.service systemd-udevd.service udisks2.service
+---
+audit_rc=0
+remoto_fim=2026-10-27T18:46:46+00:00
+rc=0
+### cliente_fim=2026-10-27T18:46:45.471Z duracao_cliente_ms=323
+
+### cliente_inicio=2026-10-27T18:46:54.672Z host=server1@172.18.251.140
+$ systemctl is-system-running; systemctl list-jobs --no-pager; echo ---; for s in fwupd-refresh fwupd multipathd polkit rsyslog systemd-journald systemd-networkd systemd-resolved systemd-timesyncd systemd-udevd udisks2; do printf "%s " $s; systemctl show $s.service -p ActiveState,SubState,ActiveEnterTimestamp --value | paste -sd" "; done; echo ---; ps -o pid,stat,lstart,wchan:30,cmd -p 2954,2881; sudo cat /proc/2954/stack 2>/dev/null | head; journalctl -b --since "2026-10-21 06:56:00" --until "2026-10-21 07:10:00" --no-pager -o short-precise | head -80
+remoto_inicio=2026-10-27T18:46:55+00:00
+degraded
+JOB   UNIT                      TYPE  STATE
+13045 apt-daily-upgrade.service start running
+956   fwupd-refresh.service     start running
+
+2 jobs listed.
+---
+fwupd-refresh activating start 
+fwupd active running Wed 2026-10-21 06:56:33 UTC
+multipathd active running Wed 2026-10-21 06:56:32 UTC
+polkit active running Wed 2026-10-21 06:56:32 UTC
+rsyslog active running Wed 2026-10-21 06:56:32 UTC
+systemd-journald active running Wed 2026-10-21 06:56:32 UTC
+systemd-networkd active running Wed 2026-10-21 06:56:32 UTC
+systemd-resolved active running Wed 2026-10-21 06:56:32 UTC
+systemd-timesyncd active running Wed 2026-10-21 06:56:32 UTC
+systemd-udevd active running Wed 2026-10-21 06:56:32 UTC
+udisks2 active running Wed 2026-10-21 06:56:32 UTC
+---
+    PID STAT                  STARTED WCHAN                          CMD
+   2881 S    Wed Oct 21 06:56:32 2026 -                              /usr/bin/perl /usr/sbin/needrestart -m u
+   2954 S    Wed Oct 21 06:56:32 2026 -                              systemctl restart fwupd-refresh.service fwupd.service multipathd.service polkit.service rsyslog.service systemd-journald.service systemd-networkd.service systemd-resolved.service systemd-timesyncd.service systemd-udevd.service udisks2.service
+[<0>] do_poll.constprop.0+0x319/0x3c0
+[<0>] do_sys_poll+0x1ef/0x290
+[<0>] __x64_sys_ppoll+0xde/0x170
+[<0>] x64_sys_call+0x2343/0x25a0
+[<0>] do_syscall_64+0x87/0x180
+[<0>] entry_SYSCALL_64_after_hwframe+0x78/0x80
+Oct 21 06:56:28.797064 server1 systemd[1]: Starting apt-daily-upgrade.service - Daily apt upgrade and clean activities...
+Oct 21 06:56:30.822429 server1 apt.systemd.daily[2714]: /usr/bin/unattended-upgrade:567: DeprecationWarning: This process (pid=2714) is multi-threaded, use of fork() may lead to deadlocks in the child.
+Oct 21 06:56:30.822429 server1 apt.systemd.daily[2714]:   pid = os.fork()
+Oct 21 06:56:32.487818 server1 dbus-daemon[771]: [system] Activating via systemd: service name='org.freedesktop.PackageKit' unit='packagekit.service' requested by ':1.23' (uid=0 pid=2862 comm="/usr/bin/gdbus call --system --dest org.freedeskto" label="unconfined")
+Oct 21 06:56:32.493026 server1 systemd[1]: Starting packagekit.service - PackageKit Daemon...
+Oct 21 06:56:32.494387 server1 PackageKit[2866]: daemon start
+Oct 21 06:56:32.502640 server1 dbus-daemon[771]: [system] Successfully activated service 'org.freedesktop.PackageKit'
+Oct 21 06:56:32.502706 server1 systemd[1]: Started packagekit.service - PackageKit Daemon.
+Oct 21 06:56:32.699620 server1 systemd[1]: Reexecuting requested from client PID 2897 ('systemctl') (unit apt-daily-upgrade.service)...
+Oct 21 06:56:32.701130 server1 systemd[1]: Reexecuting.
+Oct 21 06:56:32.734905 server1 systemd[1]: systemd 255.4-1ubuntu8.18 running in system mode (+PAM +AUDIT +SELINUX +APPARMOR +IMA +SMACK +SECCOMP +GCRYPT -GNUTLS +OPENSSL +ACL +BLKID +CURL +ELFUTILS +FIDO2 +IDN2 -IDN +IPTC +KMOD +LIBCRYPTSETUP +LIBFDISK +PCRE2 -PWQUALITY +P11KIT +QRENCODE +TPM2 +BZIP2 +LZ4 +XZ +ZLIB +ZSTD -BPF_FRAMEWORK -XKBCOMMON +UTMP +SYSVINIT default-hierarchy=unified)
+Oct 21 06:56:32.734960 server1 systemd[1]: Detected virtualization microsoft.
+Oct 21 06:56:32.734970 server1 systemd[1]: Detected architecture x86-64.
+Oct 21 06:56:32.851460 server1 systemd[1]: fwupd-refresh.service: Main process exited, code=killed, status=15/TERM
+Oct 21 06:56:32.851501 server1 systemd[1]: fwupd-refresh.service: Failed with result 'signal'.
+Oct 21 06:56:32.851606 server1 systemd[1]: Stopped fwupd-refresh.service - Refresh fwupd metadata and update motd.
+Oct 21 06:56:32.851646 server1 systemd[1]: fwupd-refresh.service: Consumed 1.827s CPU time, 18.8M memory peak, 0B memory swap peak.
+Oct 21 06:56:32.859063 server1 systemd[1]: Starting fwupd-refresh.service - Refresh fwupd metadata and update motd...
+Oct 21 06:56:32.859965 server1 multipathd[414]: multipathd: shut down
+Oct 21 06:56:32.860063 server1 fwupd[1058]: 06:56:32.859 FuMain               Received SIGTERM
+Oct 21 06:56:32.859189 server1 systemd[1]: Stopping fwupd.service - Firmware update daemon...
+Oct 21 06:56:32.859566 server1 systemd[1]: Stopping multipathd.service - Device-Mapper Multipath Device Controller...
+Oct 21 06:56:32.860975 server1 ModemManager[833]: <msg> caught signal, shutting down...
+Oct 21 06:56:32.861052 server1 systemd[1]: Stopping ModemManager.service - Modem Manager...
+Oct 21 06:56:32.861788 server1 systemd[1]: Stopping rsyslog.service - System Logging Service...
+Oct 21 06:56:32.862064 server1 rsyslogd[810]: [origin software="rsyslogd" swVersion="8.2312.0" x-pid="810" x-info="https://www.rsyslog.com"] exiting on signal 15.
+Oct 21 06:56:32.862237 server1 systemd-journald[360]: Journal stopped
+Oct 21 06:56:32.922272 server1 systemd-journald[360]: Received SIGTERM from PID 1 (systemd).
+Oct 21 06:56:32.922335 server1 systemd[1]: Stopping systemd-journald.service - Journal Service...
+Oct 21 06:56:32.922352 server1 systemd[1]: rsyslog.service: Deactivated successfully.
+Oct 21 06:56:32.922359 server1 systemd[1]: Stopped rsyslog.service - System Logging Service.
+Oct 21 06:56:32.922368 server1 systemd[1]: netplan-ovs-cleanup.service - OpenVSwitch configuration for cleanup was skipped because of an unmet condition check (ConditionFileIsExecutable=/usr/bin/ovs-vsctl).
+Oct 21 06:56:32.922376 server1 systemd[1]: Starting rsyslog.service - System Logging Service...
+Oct 21 06:56:32.922385 server1 systemd[1]: systemd-networkd-wait-online.service: Deactivated successfully.
+Oct 21 06:56:32.922392 server1 systemd[1]: Stopped systemd-networkd-wait-online.service - Wait for Network to be Configured.
+Oct 21 06:56:32.922399 server1 systemd[1]: Stopping systemd-networkd-wait-online.service - Wait for Network to be Configured...
+Oct 21 06:56:32.922408 server1 systemd[1]: Stopping systemd-networkd.service - Network Configuration...
+Oct 21 06:56:32.922415 server1 systemd[1]: Stopping systemd-resolved.service - Network Name Resolution...
+Oct 21 06:56:32.922425 server1 systemd[1]: Stopping systemd-timesyncd.service - Network Time Synchronization...
+Oct 21 06:56:32.922429 server1 systemd[1]: ModemManager.service: Deactivated successfully.
+Oct 21 06:56:32.922436 server1 systemd[1]: Stopped ModemManager.service - Modem Manager.
+Oct 21 06:56:32.922444 server1 systemd[1]: Stopping polkit.service - Authorization Manager...
+Oct 21 06:56:32.922449 server1 systemd[1]: Stopping udisks2.service - Disk Manager...
+Oct 21 06:56:32.922455 server1 systemd[1]: systemd-timesyncd.service: Deactivated successfully.
+Oct 21 06:56:32.922462 server1 systemd[1]: Stopped systemd-timesyncd.service - Network Time Synchronization.
+Oct 21 06:56:32.922466 server1 systemd[1]: systemd-resolved.service: Deactivated successfully.
+Oct 21 06:56:32.922471 server1 systemd[1]: Stopped systemd-resolved.service - Network Name Resolution.
+Oct 21 06:56:32.922476 server1 systemd[1]: fwupd.service: Deactivated successfully.
+Oct 21 06:56:32.922482 server1 systemd[1]: Stopped fwupd.service - Firmware update daemon.
+Oct 21 06:56:32.922489 server1 systemd[1]: Starting modprobe@sd_mod.service - Load Kernel Module sd_mod...
+Oct 21 06:56:32.922495 server1 systemd[1]: Starting systemd-resolved.service - Network Name Resolution...
+Oct 21 06:56:32.922502 server1 systemd[1]: Starting systemd-timesyncd.service - Network Time Synchronization...
+Oct 21 06:56:32.922512 server1 systemd[1]: systemd-journald.service: Deactivated successfully.
+Oct 21 06:56:32.922517 server1 systemd[1]: Stopped systemd-journald.service - Journal Service.
+Oct 21 06:56:32.922523 server1 systemd[1]: multipathd.service: Deactivated successfully.
+Oct 21 06:56:32.922527 server1 systemd[1]: Stopped multipathd.service - Device-Mapper Multipath Device Controller.
+Oct 21 06:56:32.922532 server1 systemd[1]: multipathd.service: Consumed 2.920s CPU time, 22.1M memory peak, 0B memory swap peak.
+Oct 21 06:56:32.922536 server1 systemd[1]: systemd-networkd.service: Deactivated successfully.
+Oct 21 06:56:32.922543 server1 systemd[1]: Stopped systemd-networkd.service - Network Configuration.
+Oct 21 06:56:32.922547 server1 systemd[1]: polkit.service: Deactivated successfully.
+Oct 21 06:56:32.922552 server1 systemd[1]: Stopped polkit.service - Authorization Manager.
+Oct 21 06:56:32.922558 server1 systemd[1]: udisks2.service: Deactivated successfully.
+Oct 21 06:56:32.922561 server1 systemd[1]: Stopped udisks2.service - Disk Manager.
+Oct 21 06:56:32.922566 server1 systemd[1]: modprobe@sd_mod.service: Deactivated successfully.
+Oct 21 06:56:32.922570 server1 systemd[1]: Finished modprobe@sd_mod.service - Load Kernel Module sd_mod.
+Oct 21 06:56:32.922573 server1 systemd[1]: Starting systemd-journald.service - Journal Service...
+Oct 21 06:56:32.922577 server1 systemd[1]: Starting modprobe@sd_mod.service - Load Kernel Module sd_mod...
+Oct 21 06:56:32.922594 server1 systemd[1]: Starting multipathd.service - Device-Mapper Multipath Device Controller...
+Oct 21 06:56:32.922598 server1 systemd[1]: Starting polkit.service - Authorization Manager...
+Oct 21 06:56:32.922620 server1 systemd[1]: Stopping systemd-udevd.service - Rule-based Manager for Device Events and Files...
+Oct 21 06:56:32.922645 server1 systemd-journald[2993]: Collecting audit messages is disabled.
+Oct 21 06:56:32.922664 server1 systemd[1]: Starting udisks2.service - Disk Manager...
+Oct 21 06:56:32.922677 server1 kernel: kauditd_printk_skb: 114 callbacks suppressed
+Oct 21 06:56:32.922689 server1 kernel: audit: type=1400 audit(1792565792.900:125): apparmor="STATUS" operation="profile_replace" info="same as current profile, skipping" profile="unconfined" name="rsyslogd" pid=2983 comm="apparmor_parser"
+Oct 21 06:56:32.922698 server1 systemd[1]: modprobe@sd_mod.service: Deactivated successfully.
+Oct 21 06:56:32.922702 server1 systemd[1]: Finished modprobe@sd_mod.service - Load Kernel Module sd_mod.
+Oct 21 06:56:32.922706 server1 systemd[1]: Starting fwupd.service - Firmware update daemon...
+Oct 21 06:56:32.922710 server1 systemd[1]: Started systemd-timesyncd.service - Network Time Synchronization.
+Oct 21 06:56:32.922714 server1 systemd[1]: systemd-udevd.service: Deactivated successfully.
+Oct 21 06:56:32.922721 server1 systemd[1]: Stopped systemd-udevd.service - Rule-based Manager for Device Events and Files.
+remoto_fim=2026-10-27T18:46:55+00:00
+rc=0
+### cliente_fim=2026-10-27T18:46:54.933Z duracao_cliente_ms=272
+
+### cliente_inicio=2026-10-27T18:47:29.056Z host=server1@172.18.251.140
+$ systemctl --failed --no-pager; systemctl status fwupd-refresh.service --no-pager 2>&1 | head -12; systemctl show fwupd-refresh.service -p Type,TimeoutStartUSec,ExecMainPID,ExecMainStartTimestamp; systemctl show unattended-upgrades.service -p TimeoutStopUSec,ExecStop; apt list --upgradable 2>/dev/null | grep -i linux; apt-cache policy linux-image-generic | head -4
+remoto_inicio=2026-10-27T18:47:30+00:00
+  UNIT              LOAD   ACTIVE SUB    DESCRIPTION
+● apt-daily.service loaded failed failed Daily apt download activities
+
+Legend: LOAD   → Reflects whether the unit definition was properly loaded.
+        ACTIVE → The high-level unit activation state, i.e. generalization of SUB.
+        SUB    → The low-level unit activation state, values depend on unit type.
+
+1 loaded units listed.
+● fwupd-refresh.service - Refresh fwupd metadata and update motd
+     Loaded: loaded (/usr/lib/systemd/system/fwupd-refresh.service; static)
+     Active: activating (start) since Wed 2026-10-21 06:56:32 UTC; 6 days ago
+TriggeredBy: ● fwupd-refresh.timer
+       Docs: man:fwupdmgr(1)
+   Main PID: 2956 (fwupdmgr)
+      Tasks: 5 (limit: 9414)
+     Memory: 9.5M (peak: 10.0M)
+        CPU: 18.351s
+     CGroup: /system.slice/fwupd-refresh.service
+             └─2956 /usr/bin/fwupdmgr refresh
+
+Type=oneshot
+TimeoutStartUSec=infinity
+ExecMainStartTimestamp=Wed 2026-10-21 06:56:32 UTC
+ExecMainPID=2956
+TimeoutStopUSec=30min
+console-setup-linux/noble-updates 1.226ubuntu1.1 all [upgradable from: 1.226ubuntu1]
+linux-firmware/noble-updates 20240318.git3b128b60.0ubuntu3.1 amd64 [upgradable from: 20240318.git3b128b60-0ubuntu2.27]
+linux-image-generic:
+  Installed: 6.8.0-147.147
+  Candidate: 6.8.0-147.147
+  Version table:
+remoto_fim=2026-10-27T18:47:30+00:00
+rc=0
+### cliente_fim=2026-10-27T18:47:29.804Z duracao_cliente_ms=739
+

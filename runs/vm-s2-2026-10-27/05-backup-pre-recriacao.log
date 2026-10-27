@@ -1,0 +1,163 @@
+### cliente_inicio=2026-10-27T18:48:01.744Z host=server1@172.18.251.140
+$ B=~/backup-s2-2026-10-27-pre-recriacao; mkdir -p $B && cd $B && pwd; cat /proc/sys/kernel/random/boot_id; sudo podman ps -a --format "{{.Names}} {{.ID}} {{.Status}} {{.CreatedAt}}"; for n in isn1 isn2 isn3; do sudo podman inspect $n > pre-recriacao-inspect-$n.json; echo "inspect $n rc=$?"; sudo podman diff $n > diff-$n.txt; echo "diff $n rc=$? linhas=$(wc -l < diff-$n.txt)"; done; grep -h "server/data" diff-isn*.txt | sort | uniq -c
+remoto_inicio=2026-10-27T18:48:02+00:00
+/home/server1/backup-s2-2026-10-27-pre-recriacao
+b7df4b03-6652-4808-9617-11096693e65b
+isn1 34652367c14b Created 2026-10-16 08:54:38.646604913 +0000 UTC
+isn2 00ccf82ed842 Created 2026-10-16 08:54:39.830633905 +0000 UTC
+isn3 3ce5b4bdbccd Created 2026-10-16 08:54:41.015448063 +0000 UTC
+inspect isn1 rc=0
+diff isn1 rc=0 linhas=24
+inspect isn2 rc=0
+diff isn2 rc=0 linhas=24
+inspect isn3 rc=0
+diff isn3 rc=0 linhas=24
+      3 A /opt/infinispan/server/data
+      3 A /opt/infinispan/server/data/backups
+      3 A /opt/infinispan/server/data/___event_log_cache.dat
+      3 A /opt/infinispan/server/data/___global.lck
+      3 A /opt/infinispan/server/data/___global.state
+      3 A /opt/infinispan/server/data/org.infinispan.COUNTER.dat
+      3 A /opt/infinispan/server/data/___protobuf_metadata.dat
+      3 A /opt/infinispan/server/data/___script_cache.dat
+remoto_fim=2026-10-27T18:48:02+00:00
+rc=0
+### cliente_fim=2026-10-27T18:48:02.194Z duracao_cliente_ms=444
+
+### cliente_inicio=2026-10-27T18:48:10.298Z host=server1@172.18.251.140
+$ B=~/backup-s2-2026-10-27-pre-recriacao; cd $B; cat diff-isn1.txt; for n in isn1 isn2 isn3; do sudo podman cp $n:/opt/infinispan/server/data data-$n; echo "cp $n rc=$?"; done; sudo chown -R server1:server1 $B; find . -path "./data-*" -type f -printf "%TY-%Tm-%Td %TT %8s %p\n" | sort -k4; echo "--- conteudo de ___global.state e ___global.lck"; for n in isn1 isn2 isn3; do echo "== $n"; cat data-$n/___global.state; echo "[lck bytes=$(stat -c %s data-$n/___global.lck)]"; done; sha256sum pre-recriacao-inspect-*.json data-*/___global.*
+remoto_inicio=2026-10-27T18:48:11+00:00
+C /opt/infinispan/server
+C /opt/infinispan/server/conf
+C /opt
+C /opt/infinispan
+A /opt/infinispan/server/conf/generated-identities.batch
+C /opt/infinispan/server/conf/groups.properties
+A /opt/infinispan/server/conf/jgroups-tcp.xml
+C /opt/infinispan/server/conf/users.properties
+A /opt/infinispan/server/data
+A /opt/infinispan/server/data/___event_log_cache.dat
+A /opt/infinispan/server/data/___global.lck
+A /opt/infinispan/server/data/___global.state
+A /opt/infinispan/server/data/___protobuf_metadata.dat
+A /opt/infinispan/server/data/___script_cache.dat
+A /opt/infinispan/server/data/backups
+A /opt/infinispan/server/data/org.infinispan.COUNTER.dat
+A /opt/infinispan/server/log
+A /opt/infinispan/server/log/gc.log
+A /opt/infinispan/server/log/server.log
+A /opt/infinispan/server/log/server.log.2026-10-16-1
+A /opt/infinispan/server/log/server.log.2026-10-17-1
+C /tmp
+A /tmp/hsperfdata_default
+A /tmp/hsperfdata_default/168
+cp isn1 rc=0
+cp isn2 rc=0
+cp isn3 rc=0
+2026-10-16 09:06:07.0000000000     1480 ./data-isn1/___event_log_cache.dat
+2026-10-16 08:54:45.0000000000        0 ./data-isn1/___global.lck
+2026-10-16 08:54:45.0000000000      126 ./data-isn1/___global.state
+2026-10-16 08:54:45.0000000000        4 ./data-isn1/org.infinispan.COUNTER.dat
+2026-10-16 08:54:45.0000000000        4 ./data-isn1/___protobuf_metadata.dat
+2026-10-16 08:54:45.0000000000        4 ./data-isn1/___script_cache.dat
+2026-10-16 09:06:07.0000000000    58163 ./data-isn2/___event_log_cache.dat
+2026-10-16 08:54:44.0000000000        0 ./data-isn2/___global.lck
+2026-10-16 08:54:44.0000000000      126 ./data-isn2/___global.state
+2026-10-16 08:54:45.0000000000        4 ./data-isn2/org.infinispan.COUNTER.dat
+2026-10-16 08:54:45.0000000000        4 ./data-isn2/___protobuf_metadata.dat
+2026-10-16 08:54:45.0000000000        4 ./data-isn2/___script_cache.dat
+2026-10-16 08:54:46.0000000000        4 ./data-isn3/___event_log_cache.dat
+2026-10-16 08:54:45.0000000000        0 ./data-isn3/___global.lck
+2026-10-16 08:54:45.0000000000      126 ./data-isn3/___global.state
+2026-10-16 08:54:46.0000000000        4 ./data-isn3/org.infinispan.COUNTER.dat
+2026-10-16 08:54:46.0000000000        4 ./data-isn3/___protobuf_metadata.dat
+2026-10-16 08:54:46.0000000000        4 ./data-isn3/___script_cache.dat
+--- conteudo de ___global.state e ___global.lck
+== isn1
+@version=15.0.21.Final
+version-major=15
+@timestamp=2026-10-16T08\:54\:45.019560841Z
+uuid=b68a47d1-ebdb-4646-ad29-569cd1356549
+[lck bytes=0]
+== isn2
+@version=15.0.21.Final
+version-major=15
+@timestamp=2026-10-16T08\:54\:44.308646540Z
+uuid=a8f93ae1-be10-42bf-9a46-5dfbab21ffe0
+[lck bytes=0]
+== isn3
+@version=15.0.21.Final
+version-major=15
+@timestamp=2026-10-16T08\:54\:45.410368900Z
+uuid=2a3f5f43-fd39-498b-87cb-484c3c1507ea
+[lck bytes=0]
+815b85bd3e5ddbf7ec7039648b8c47d70bd6a8c94c361c484e7405f89ecaaaa8  pre-recriacao-inspect-isn1.json
+011ce132e45877e5782e2f4bd51dcd6fffff4276640bd7db9f887ab28c376dc9  pre-recriacao-inspect-isn2.json
+316d35fe64762406e844ff4dad4d3bb5706e407752cb2432bb84af6d7fa5ec8d  pre-recriacao-inspect-isn3.json
+e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855  data-isn1/___global.lck
+b0bb8cad0dc9c8e41f4ea501da43c9513657cbadd174aef42606374988f2dbd0  data-isn1/___global.state
+e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855  data-isn2/___global.lck
+38bef588da118f30ed1b838ca0e652754ab575db9d741cb5a04a9953b1aca379  data-isn2/___global.state
+e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855  data-isn3/___global.lck
+5a48d23b033f793b24b3695ba5016d77a52d2f484f8e9e16d03be83773e63b4e  data-isn3/___global.state
+remoto_fim=2026-10-27T18:48:11+00:00
+rc=0
+### cliente_fim=2026-10-27T18:48:10.876Z duracao_cliente_ms=581
+
+### cliente_inicio=2026-10-27T18:48:18.499Z host=server1@172.18.251.140
+$ B=~/backup-s2-2026-10-27-pre-recriacao; cd $B; for n in isn1 isn2 isn3; do sudo podman cp $n:/opt/infinispan/server/log log-$n; echo "cp log $n rc=$?"; done; sudo chown -R server1:server1 $B; du -sh $B; ls -l log-isn*; for n in isn1 isn2 isn3; do echo "== $n"; tail -3 log-$n/server.log | cut -c1-200; done
+remoto_inicio=2026-10-27T18:48:19+00:00
+cp log isn1 rc=0
+cp log isn2 rc=0
+cp log isn3 rc=0
+27M	/home/server1/backup-s2-2026-10-27-pre-recriacao
+log-isn1:
+total 8152
+-rw-rw-r-- 1 server1 server1  122933 Oct 18 07:22 gc.log
+-rw-rw-r-- 1 server1 server1 1320981 Oct 18 07:50 server.log
+-rw-rw-r-- 1 server1 server1 2798513 Oct 16 23:59 server.log.2026-10-16-1
+-rw-rw-r-- 1 server1 server1 4094732 Oct 17 23:59 server.log.2026-10-17-1
+
+log-isn2:
+total 8204
+-rw-rw-r-- 1 server1 server1  126018 Oct 18 07:00 gc.log
+-rw-rw-r-- 1 server1 server1 1320981 Oct 18 07:50 server.log
+-rw-rw-r-- 1 server1 server1 2853012 Oct 16 23:59 server.log.2026-10-16-1
+-rw-rw-r-- 1 server1 server1 4095013 Oct 17 23:59 server.log.2026-10-17-1
+
+log-isn3:
+total 10052
+-rw-rw-r-- 1 server1 server1   71268 Oct 18 07:29 gc.log
+-rw-rw-r-- 1 server1 server1 1321262 Oct 18 07:50 server.log
+-rw-rw-r-- 1 server1 server1 4797375 Oct 16 23:59 server.log.2026-10-16-1
+-rw-rw-r-- 1 server1 server1 4094732 Oct 17 23:59 server.log.2026-10-17-1
+== isn1
+2026-10-18 07:49:49,435 WARN  (non-blocking-thread--p2-t2) [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health/status, remote=/127.0
+2026-10-18 07:49:55,430 WARN  (non-blocking-thread--p2-t3) [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health/status, remote=/127.0
+2026-10-18 07:50:01,433 WARN  (non-blocking-thread--p2-t4) [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health/status, remote=/127.0
+== isn2
+2026-10-18 07:49:27,436 WARN  (non-blocking-thread--p2-t8) [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health/status, remote=/127.0
+2026-10-18 07:49:33,436 WARN  (non-blocking-thread--p2-t1) [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health/status, remote=/127.0
+                                                                                                                                                                                                        
+== isn3
+2026-10-18 07:49:47,435 WARN  (non-blocking-thread--p2-t5) [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health/status, remote=/127.0
+2026-10-18 07:49:53,436 WARN  (non-blocking-thread--p2-t6) [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health/status, remote=/127.0
+                                                                                                                                                                                                        
+remoto_fim=2026-10-27T18:48:19+00:00
+rc=0
+### cliente_fim=2026-10-27T18:48:19.175Z duracao_cliente_ms=676
+
+### cliente_inicio=2026-10-27T18:48:27.746Z host=Windows
+$ ssh ... "cd ~/backup-s2-2026-10-27-pre-recriacao && tar cf - pre-recriacao-inspect-isn*.json diff-isn*.txt data-isn*" | tar xf - -C runs/vm-s2-2026-10-27/recriacao
+rc=0/0
+815b85bd3e5ddbf7ec7039648b8c47d70bd6a8c94c361c484e7405f89ecaaaa8 *pre-recriacao-inspect-isn1.json
+011ce132e45877e5782e2f4bd51dcd6fffff4276640bd7db9f887ab28c376dc9 *pre-recriacao-inspect-isn2.json
+316d35fe64762406e844ff4dad4d3bb5706e407752cb2432bb84af6d7fa5ec8d *pre-recriacao-inspect-isn3.json
+e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855 *data-isn1/___global.lck
+b0bb8cad0dc9c8e41f4ea501da43c9513657cbadd174aef42606374988f2dbd0 *data-isn1/___global.state
+e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855 *data-isn2/___global.lck
+38bef588da118f30ed1b838ca0e652754ab575db9d741cb5a04a9953b1aca379 *data-isn2/___global.state
+e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855 *data-isn3/___global.lck
+5a48d23b033f793b24b3695ba5016d77a52d2f484f8e9e16d03be83773e63b4e *data-isn3/___global.state
+### cliente_fim=2026-10-27T18:48:28.031Z
+

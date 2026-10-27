@@ -1,0 +1,49 @@
+### cliente_inicio=2026-10-27T18:48:37.823Z host=server1@172.18.251.140
+$ cd ~/tcc-gate && git rev-parse HEAD && git status --porcelain -- cluster/ | wc -l && git ls-files cluster/ && sha256sum cluster/* 2>/dev/null; sha256sum ~/recriar.sh; sudo podman images --format "{{.Repository}}:{{.Tag}} {{.ID}}" | grep infinispan; sudo podman network ls
+remoto_inicio=2026-10-27T18:48:38+00:00
+9eadbdbe30f0bc8635f88e273c775b43c615e147
+0
+cluster/infinispan-cluster.xml
+cluster/jgroups-tcp.xml
+cluster/podman-compose.yml
+8792dea39fce873b8793fdf691be790e67c5aa207b47e39555f804555f1d15af  cluster/infinispan-cluster.xml
+dd79343070cf9107571de238851d1117255ebdb1c7887075e23d76638d7bcf14  cluster/jgroups-tcp.xml
+46d5ff7cdbf01215c7f91649121b80cb1ac095138f71c832c1672178308a67cd  cluster/podman-compose.yml
+5b1cca41a2d059acf76f0f1511053dde290a883f983cc266ad79ff9360480766  /home/server1/recriar.sh
+quay.io/infinispan/server:15.0.21.Final da9c871bb5b4
+NETWORK ID    NAME                    DRIVER
+da2a8badf438  cluster_infinispan-net  bridge
+2f259bab93aa  podman                  bridge
+remoto_fim=2026-10-27T18:48:38+00:00
+rc=0
+### cliente_fim=2026-10-27T18:48:38.235Z duracao_cliente_ms=426
+
+### cliente_inicio=2026-10-27T18:48:49.853Z host=server1@172.18.251.140
+$ flock -n /var/lock/tcc-vm.lock bash ~/recriar.sh /home/server1/tcc-gate/runs/vm-s2-2026-10-27/rec-s2; echo "rc_recriar=$?"; date -Is; sudo podman ps -a --format "{{.Names}} {{.ID}} {{.Status}} {{.CreatedAt}}"; for n in isn1 isn2 isn3; do sudo podman inspect -f "$n Created={{.Created}} StartedAt={{.State.StartedAt}} Pid={{.State.Pid}} Restart={{.HostConfig.RestartPolicy.Name}}" $n; done
+remoto_inicio=2026-10-27T18:48:50+00:00
+down rc=0
+quay.io/infinispan/server  15.0.21.Final  da9c871bb5b4  13 months ago  615 MB
+up rc=0
+ESTAVEL size=3 HEALTHY: primeira leitura boa +14s, estavel por 21s (total 35s)
+timers tcc-heal: 0
+isn1: 2026-10-27 18:48:51.840360006 +0000 UTC
+qdisc noqueue 0: root refcnt 2 ;
+isn2: 2026-10-27 18:48:53.060694166 +0000 UTC
+qdisc noqueue 0: root refcnt 2 ;
+isn3: 2026-10-27 18:48:54.277439189 +0000 UTC
+qdisc noqueue 0: root refcnt 2 ;
+[0m2026-10-27 18:49:06,181 INFO  [o.i.CLUSTER] ISPN000094: Received new cluster view for channel cluster-tcc: [isn2-7049|2] (3) [isn2-7049, isn1-64005, isn3-27776][m
+[0m2026-10-27 18:49:06,159 INFO  [o.i.CLUSTER] ISPN000094: Received new cluster view for channel cluster-tcc: [isn2-7049|2] (3) [isn2-7049, isn1-64005, isn3-27776][m
+[0m2026-10-27 18:49:06,201 INFO  [o.i.CLUSTER] ISPN000094: Received new cluster view for channel cluster-tcc: [isn2-7049|2] (3) [isn2-7049, isn1-64005, isn3-27776][m
+rc_recriar=0
+2026-10-27T18:50:21+00:00
+isn1 7a196f163609 Up About a minute (healthy) 2026-10-27 18:48:51.49904166 +0000 UTC
+isn2 1c89dacd64c2 Up About a minute (healthy) 2026-10-27 18:48:52.910202032 +0000 UTC
+isn3 5bf9476b5b97 Up About a minute (healthy) 2026-10-27 18:48:54.126582945 +0000 UTC
+isn1 Created=2026-10-27 18:48:51.49904166 +0000 UTC StartedAt=2026-10-27 18:48:51.840360006 +0000 UTC Pid=33273 Restart=
+isn2 Created=2026-10-27 18:48:52.910202032 +0000 UTC StartedAt=2026-10-27 18:48:53.060694166 +0000 UTC Pid=33404 Restart=
+isn3 Created=2026-10-27 18:48:54.126582945 +0000 UTC StartedAt=2026-10-27 18:48:54.277439189 +0000 UTC Pid=33811 Restart=
+remoto_fim=2026-10-27T18:50:21+00:00
+rc=0
+### cliente_fim=2026-10-27T18:50:21.236Z duracao_cliente_ms=91389
+

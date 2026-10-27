@@ -1,0 +1,47 @@
+### cliente_inicio=2026-10-27T18:47:39.105Z host=server1@172.18.251.140
+$ sudo -n systemctl disable --now apt-daily-upgrade.timer apt-daily.timer; echo "rc_disable_timers=$?"; sudo -n systemctl disable unattended-upgrades.service; echo "rc_disable_uu_service=$?"; sudo -n apt-mark hold linux-image-6.8.0-147-generic linux-modules-6.8.0-147-generic linux-modules-extra-6.8.0-147-generic linux-headers-6.8.0-147 linux-headers-6.8.0-147-generic linux-generic linux-image-generic linux-headers-generic; echo "rc_hold=$?"; apt-mark showhold
+remoto_inicio=2026-10-27T18:47:39+00:00
+Removed "/etc/systemd/system/timers.target.wants/apt-daily-upgrade.timer".
+Removed "/etc/systemd/system/timers.target.wants/apt-daily.timer".
+rc_disable_timers=0
+Synchronizing state of unattended-upgrades.service with SysV service script with /usr/lib/systemd/systemd-sysv-install.
+Executing: /usr/lib/systemd/systemd-sysv-install disable unattended-upgrades
+Removed "/etc/systemd/system/multi-user.target.wants/unattended-upgrades.service".
+rc_disable_uu_service=0
+dpkg: error: dpkg frontend lock was locked by another process with pid 2714
+Note: removing the lock file is always wrong, can damage the locked area
+and the entire system. See <https://wiki.debian.org/Teams/Dpkg/FAQ#db-lock>.
+E: Sub-process dpkg --set-selections returned an error code (2)
+E: Executing dpkg failed. Are you root?
+rc_hold=100
+remoto_fim=2026-10-27T18:47:40+00:00
+rc=0
+### cliente_fim=2026-10-27T18:47:39.939Z duracao_cliente_ms=834
+
+### cliente_inicio=2026-10-27T18:47:51.125Z host=server1@172.18.251.140
+$ echo "--- estado depois"; uname -r; apt-mark showhold | wc -l; systemctl is-enabled apt-daily-upgrade.timer apt-daily.timer unattended-upgrades.service 2>&1; systemctl is-active apt-daily-upgrade.timer apt-daily.timer unattended-upgrades.service apt-daily-upgrade.service 2>&1; systemctl list-timers --all --no-pager | grep -E "apt|fwupd"; systemctl list-jobs --no-pager; sudo fuser /var/lib/dpkg/lock-frontend 2>&1; grep -E "Automatic-Reboot \"" /etc/apt/apt.conf.d/* ; echo "(sem linha = Automatic-Reboot padrao false)"
+remoto_inicio=2026-10-27T18:47:52+00:00
+--- estado depois
+6.8.0-147-generic
+0
+disabled
+disabled
+disabled
+inactive
+inactive
+active
+activating
+-                                  - Wed 2026-10-21 06:56:32 UTC    6 days ago fwupd-refresh.timer            fwupd-refresh.service
+JOB    UNIT                      TYPE  STATE
+148523 motd-news.service         start running
+13045  apt-daily-upgrade.service start running
+956    fwupd-refresh.service     start running
+
+3 jobs listed.
+/var/lib/dpkg/lock-frontend:  2714
+/etc/apt/apt.conf.d/50unattended-upgrades://Unattended-Upgrade::Automatic-Reboot "false";
+(sem linha = Automatic-Reboot padrao false)
+remoto_fim=2026-10-27T18:47:52+00:00
+rc=0
+### cliente_fim=2026-10-27T18:47:51.457Z duracao_cliente_ms=332
+

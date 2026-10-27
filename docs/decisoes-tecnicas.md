@@ -483,3 +483,29 @@ transmitidas ao Senior pelo coordenador:
   Windows Update pausado na janela da campanha, `AutomaticStopAction=ShutDown` na VM `tcc-f3`. VM:
   `apt-mark hold` do kernel e `unattended-upgrades` pausado durante a campanha, feitos numa sessão de VM
   aprovada antes do piloto, com saídas nos brutos.
+
+## DT-016: `numSegments` = 64, desvio declarado de T4, PRÉ-REGISTRO (2026-10-27)
+
+> **Aprovada pelo Gestor em 2026-10-27** (decisão transmitida ao Senior pelo coordenador). Registrada
+> antes de qualquer dado do *rebaseline*. Texto também no item (e) (seção 7.2) de
+> `docs/pre-registro-rebaseline-complemento-1-2026-10-27.md`.
+
+- **Origem:** T4 da tabela de parâmetros da metodologia fixa 256 segmentos (padrão do Infinispan, fonte
+  `infinispan_tuning`). O *cluster* usa `segments="64"` desde o esqueleto de 25/05 (`20b80b1`), com a
+  justificativa informal de "menos *state transfer* com 3 nós", sem DT e sem fonte.
+  `docs/configuracao-infinispan.md` registrava o ponto como pendente.
+- **Decisão:** 64 segmentos em todos os *caches* e em todas as execuções: bateria de junho, gate
+  (REP=1..3, G-5, G-6, S1..S7) e *rebaseline*. O valor é mantido por **comparabilidade** com junho e com
+  as partições REP=1..3, não por um ganho demonstrado. Nenhuma fonte justifica 64 contra 256, e o efeito
+  da diferença não foi medido.
+- **Efeito:** nenhum arquivo do *cluster* muda. T4 passa a ser afastamento declarado no texto
+  acadêmico, sem afirmar vantagem de 64.
+
+## Decisões do Gestor de 2026-10-27, complemento às decisões sobre a V-S1
+
+- **Verificação de (h):** manual, pela checklist da seção 1.3 do complemento 1 (opção ii). O *runner*
+  e a análise não mudam, e os *hashes* da DT-009 parte 2 continuam valendo. Registro na seção 7.1 do
+  complemento 1.
+- **P-28:** fica em `docs/registro-de-problemas.md` desta branch (`docs/plano-implementacao-controlador`),
+  sem *cherry-pick* para `feature/controlador-integracao`.
+- **T4:** DT-016.

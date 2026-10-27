@@ -6,8 +6,9 @@ import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * B-27: o perfil em vigor no cliente (escrito pelo laco de controle do B-28.2, lido pelo
- * {@link PortaoDeEmissao}). Comeca em {@link Perfil#NORMAL}. Os ouvintes sao chamados depois da
- * escrita, fora de qualquer lock do portao, uma vez por mudanca efetiva.
+ * {@link PortaoDeEmissao}). Comeca em {@link Perfil#NORMAL}. Os ouvintes sao chamados na thread
+ * de quem definiu, depois da escrita e fora de qualquer lock (o portao toma o proprio lock dentro
+ * do seu ouvinte), uma vez por mudanca efetiva.
  */
 public final class PerfilAtual {
 
@@ -23,7 +24,12 @@ public final class PerfilAtual {
         if (novo == null) {
             throw new IllegalArgumentException("perfil nulo");
         }
-        atual.set(novo); // B-27 commit 1: sem notificacao (provisorio)
+        Perfil antes = atual.getAndSet(novo);
+        if (antes != novo) {
+            for (Runnable r : ouvintes) {
+                r.run();
+            }
+        }
     }
 
     /** Registra um ouvinte de mudanca de perfil. */

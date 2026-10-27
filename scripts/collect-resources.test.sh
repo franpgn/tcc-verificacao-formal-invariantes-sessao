@@ -112,7 +112,10 @@ E="${SHIM_ESTADO}"
 echo "$1" >> "${E}/sleeps.log"
 s="${1%%.*}"; f="${1#*.}"; f="${f}000000000"; f="${f:0:9}"
 read -r t < "${E}/relogio-ns"
-echo $(( t + 10#${s} * 1000000000 + 10#${f} )) > "${E}/relogio-ns"
+# excesso opcional do n-esimo sleep (acordar atrasado), em ms, lista em sleep-excesso-ms
+n="$(wc -l < "${E}/sleeps.log")"
+x="$(sed -n "${n}p" "${E}/sleep-excesso-ms" 2>/dev/null)"
+echo $(( t + 10#${s} * 1000000000 + 10#${f} + ${x:-0} * 1000000 )) > "${E}/relogio-ns"
 if [[ -x "${E}/gancho-sleep" ]]; then "${E}/gancho-sleep"; fi
 exit 0
 EOF
@@ -153,6 +156,16 @@ coletar() {
         bash "${COL}" "$@"
 }
 contar() { grep -c -e "$1" "$2" 2>/dev/null || true; }
+# offsets_ms: le instantes (ns, um por linha) e imprime (t - t0)/1e6 em aritmetica
+# inteira do bash (o awk usa double e perde precisao em epoch ns).
+offsets_ms() {
+    local t t0="" out="" sep=""
+    while read -r t; do
+        [[ -n "${t0}" ]] || t0="${t}"
+        out+="${sep}$(( (t - t0) / 1000000 ))"; sep=" "
+    done
+    echo "${out}"
+}
 # esperar_fim <pid>: espera ate 5 s pelo coletor; se nao terminar, SIGKILL e
 # devolve 124 (a suite nunca trava num coletor que ignorou o sinal).
 esperar_fim() {
@@ -316,7 +329,7 @@ coletar --saida "${OUTD}" --rep 1 --containers "isn1 isn2 isn3" --max-amostras 4
 ok "R8a exit code" "0" "${RC}"
 ok "R8a sleeps de 0,7 s (custo 300 ms)" "0.700000 0.700000 0.700000" "$(tr '\n' ' ' < "${SHIM_ESTADO}/sleeps.log" 2>/dev/null | sed 's/ $//')"
 ok "R8a atraso_max_ns 0" "0" "$(json_campo "${OUTD}/recursos-meta-rep-001.json" atraso_max_ns)"
-ok "R8a t das amostras a cada 1 s exato" "1000000000 1000000000 1000000000" "$(grep ',cg:isn1,' "${OUTD}/recursos-rep-001.csv" 2>/dev/null | cut -d, -f1 | awk 'NR>1 {printf "%s%s", s, $1-p; s=" "} {p=$1}')"
+ok "R8a t das amostras a cada 1 s exato" "0 1000 2000 3000" "$(grep ',cg:isn1,' "${OUTD}/recursos-rep-001.csv" 2>/dev/null | cut -d, -f1 | offsets_ms)"
 novo_caso r8b wsl
 printf '300\n1200\n300\n300\n' > "${SHIM_ESTADO}/custos-ms"
 echo 300 > "${SHIM_ESTADO}/custo-padrao-ms"
@@ -325,7 +338,20 @@ ok "R8b exit code" "0" "${RC}"
 # ciclo 0: 0,7 s; ciclo 1 (custo 1,2 s): sem sleep; ciclo 2 recupera o prazo: 0,5 s
 ok "R8b sleeps (ciclo atrasado sem sleep; volta ao prazo)" "0.700000 0.500000" "$(tr '\n' ' ' < "${SHIM_ESTADO}/sleeps.log" 2>/dev/null | sed 's/ $//')"
 ok "R8b atraso_max_ns = 200 ms" "200000000" "$(json_campo "${OUTD}/recursos-meta-rep-001.json" atraso_max_ns)"
-ok "R8b amostras em 0, 1,0, 2,2, 3,0 s" "0 1000 2200 3000" "$(grep ',cg:isn1,' "${OUTD}/recursos-rep-001.csv" 2>/dev/null | cut -d, -f1 | awk 'NR==1 {b=$1} {printf "%s%d", s, ($1-b)/1000000; s=" "}')"
+ok "R8b amostras em 0, 1,0, 2,2, 3,0 s" "0 1000 2200 3000" "$(grep ',cg:isn1,' "${OUTD}/recursos-rep-001.csv" 2>/dev/null | cut -d, -f1 | offsets_ms)"
+# R8c (achado do smoke B-37): o sleep acorda 330 ms atrasado no 2o ciclo; o
+# atraso conta no inicio do ciclo (t_k - prazo_k), nao so quando a leitura estoura.
+novo_caso r8c wsl
+echo 300 > "${SHIM_ESTADO}/custo-padrao-ms"
+printf '0
+330
+0
+0
+' > "${SHIM_ESTADO}/sleep-excesso-ms"
+coletar --saida "${OUTD}" --rep 1 --containers "isn1" --max-amostras 4 --podman-stats-s 0 >/dev/null 2>&1; RC=$?
+ok "R8c exit code" "0" "${RC}"
+ok "R8c amostras em 0, 1,0, 2,33, 3,0 s" "0 1000 2330 3000" "$(grep ',cg:isn1,' "${OUTD}/recursos-rep-001.csv" 2>/dev/null | cut -d, -f1 | offsets_ms)"
+ok "R8c atraso_max_ns = 330 ms (sleep que acorda tarde)" "330000000" "$(json_campo "${OUTD}/recursos-meta-rep-001.json" atraso_max_ns)"
 
 echo "== R9: SIGTERM no coletor real (relogio e sleep reais, 200 ms) =="
 novo_caso r9 wsl

@@ -115,16 +115,18 @@ class PortaoS1S2Test {
         }
     }
 
-    @Test
-    @DisplayName("K1d: operacao que lanca dentro do laco da sobrecarga devolve a permissao (sair em finally)")
-    void sairEmFinally() throws Exception {
-        PortaoDeEmissao p = portao(Perfil.NORMAL, ParametrosKnobs.padrao(), 1);
-        AtomicInteger emVooNaChamada = new AtomicInteger(-1);
-        OpsGravadas lanca = new OpsGravadas(new FakeCaches.Cache<>(), new FakeCaches.Cache<>(), new LatencyRegistry(),
-                null) {
+    /** Ops que lanca {@code erro} em toda operacao da mistura, anotando o emVoo do portao na chamada. */
+    private static OpsGravadas lancando(PortaoDeEmissao p, AtomicInteger emVooNaChamada, AtomicInteger nChamadas,
+                                        java.util.function.Supplier<? extends Throwable> erro) {
+        return new OpsGravadas(new FakeCaches.Cache<>(), new FakeCaches.Cache<>(), new LatencyRegistry(), null) {
             private OpResult falhar() {
                 emVooNaChamada.set(p.emVoo());
-                throw new IllegalStateException("operacao que lanca");
+                nChamadas.incrementAndGet();
+                Throwable t = erro.get();
+                if (t instanceof RuntimeException re) {
+                    throw re;
+                }
+                throw (Error) t;
             }
 
             @Override public OpResult login(String identidade, String credencial) { return falhar(); }
@@ -137,13 +139,37 @@ class PortaoS1S2Test {
 
             @Override public OpResult resetFailures(String identidade) { return falhar(); }
         };
-        InvocationTargetException e = assertThrows(InvocationTargetException.class,
-                () -> rodarCliente11().invoke(null, lanca, 0, Long.MAX_VALUE, Scenario.S1, 5L, 10L, new AtomicLong(),
-                        (BooleanSupplier) () -> false, VersaoMistura.V2, null, p));
-        assertInstanceOf(IllegalStateException.class, e.getCause());
+    }
+
+    @Test
+    @DisplayName("K1d: operacao que lanca dentro do laco da sobrecarga devolve a permissao (sair em finally)")
+    void sairEmFinally() throws Exception {
+        // RuntimeException: executarOperacao a engole (WorkloadMain, catch Exception); o laco segue e
+        // cada operacao devolve a permissao.
+        PortaoDeEmissao p = portao(Perfil.NORMAL, ParametrosKnobs.padrao(), 1);
+        AtomicInteger emVooNaChamada = new AtomicInteger(-1);
+        AtomicInteger chamadas = new AtomicInteger();
+        AtomicLong total = new AtomicLong();
+        rodarCliente11().invoke(null, lancando(p, emVooNaChamada, chamadas, () -> new IllegalStateException("x")),
+                0, Long.MAX_VALUE, Scenario.S1, 5L, 10L, total, (BooleanSupplier) () -> false, VersaoMistura.V2,
+                null, p);
+        assertEquals(10, total.get(), "nominal 1: as 10 operacoes passaram (nenhuma permissao perdida)");
+        assertEquals(10, chamadas.get());
         assertEquals(1, emVooNaChamada.get(), "a operacao roda com a permissao");
-        assertEquals(0, p.emVoo(), "permissao devolvida apesar da excecao");
+        assertEquals(0, p.emVoo());
+
+        // Error (nao engolido): sai do laco pela excecao e a permissao volta pelo finally
+        PortaoDeEmissao q = portao(Perfil.NORMAL, ParametrosKnobs.padrao(), 1);
+        AtomicInteger emVooQ = new AtomicInteger(-1);
+        InvocationTargetException e = assertThrows(InvocationTargetException.class,
+                () -> rodarCliente11().invoke(null, lancando(q, emVooQ, new AtomicInteger(),
+                                () -> new AssertionError("erro que escapa")), 0, Long.MAX_VALUE, Scenario.S1, 5L, 10L,
+                        new AtomicLong(), (BooleanSupplier) () -> false, VersaoMistura.V2, null, q));
+        assertInstanceOf(AssertionError.class, e.getCause());
+        assertEquals(1, emVooQ.get(), "a operacao roda com a permissao");
+        assertEquals(0, q.emVoo(), "permissao devolvida apesar da excecao");
         p.encerrar();
+        q.encerrar();
     }
 
     @Test

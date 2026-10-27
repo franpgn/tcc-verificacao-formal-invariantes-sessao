@@ -430,3 +430,56 @@ Respostas a D1..D4 do Senior (prompts de `afa33c8`), transmitidas pelo coordenad
   `run-rebaseline.test.sh` verde sem edição (ou trazendo a adaptação do *runner* junto).
 
 Os ajustes 1..9 ao plano de 22/10 listados pelo Senior ficam valendo como errata até a revisão do plano.
+
+## DT-015: limiares do `VerificadorSanidade` (K3) no *rebaseline*, PRÉ-REGISTRO (2026-10-27)
+
+> **Aprovada pelo Gestor em 2026-10-27** (decisão transmitida ao Senior pelo coordenador). Registrada
+> antes de qualquer execução do piloto. Texto também no item (d) de
+> `docs/pre-registro-rebaseline-complemento-1-2026-10-27.md`.
+
+- **Origem:** limiares provisórios do diagnóstico de 22/10 aceitos na V-B43.3a-i
+  (`docs/validacao-b43-3a-i-2026-10-22.md`, seção 5.2) e versão confirmada na revalidação das ressalvas
+  (`docs/validacao-b43-3a-i-ressalvas-2026-10-22.md`, item 2). O PR §6 (K3) exige exit 0 e veredito OK
+  do verificador, mas não fixava os limiares como pré-registro.
+- **Decisão:** os limiares do *rebaseline* são os do jar congelado `5eced136…` (ponta `988fd3c`,
+  `Sanidade.Limiares.provisorios()` e `Sanidade.VERSAO`):
+  - Login OK/(OK + BLOCKED) ≥ 0,95;
+  - Validate VALID > 0;
+  - Validate ausente, (NONE + NOT_FOUND)/Validate, ≤ 5 %;
+  - mistura: ± 2,0 p.p. por operação em relação ao peso nominal do cenário;
+  - versão do critério no JSON: `b43-3a-i/1`.
+- **Não muda:** o código e o jar. O nome `provisorios()` fica; para o *rebaseline* os valores são os
+  definitivos. A calibração separada sugerida na V-B43.3a-i não foi feita como etapa própria; uma
+  recusa sistemática no piloto por razão que não seja defeito segue o PR §8 (entrada nova antes da
+  noite 1, com subida da versão do critério).
+- **Efeito:** K3 passa a ter limiares pré-registrados. O parecer de cada fase confere, numa amostra de
+  JSON do verificador, `versao = b43-3a-i/1` e os limiares 0,95, 0,05 e 2,0.
+
+## Decisões do Gestor sobre a V-S1 (2026-10-27)
+
+Respostas a P-1..P-6 de `docs/validacao-v-s1-2026-10-27.md` (branch `test/b29-gate-v4`, `012a621`),
+transmitidas ao Senior pelo coordenador:
+
+- **P-1:** aprovado. O *cluster* é recriado com o XML atual da v4 (`cluster/`, idêntico ao da v3 e ao da
+  REP=3), por `podman-compose down` + `up -d`, como preâmbulo do S2, nas condições da V-S1 seção 5.1
+  (`recriar.sh` versionado verbatim, `podman inspect` e cópia dos `___global.*` antes do `down`,
+  portão 5.1 completo antes do L-0, instante de criação e `topologyId` registrados). S2..S7 com o XML
+  atual; o XML do B-42.1 só depois da V-S7, como manda o PR §5.
+- **P-2:** S4 redefinida como **REP=4R**, réplica da célula da REP=3: *cluster* novo, `COLETA=minima`,
+  saúde a 2 s, `G1_LOG_POS_S=30`, janela de 90 s em `isn3`, `REP=4` explícito no `go`. A idade do
+  *cluster* (≈ 1 h contra ≈ 10 min na REP=3) é registrada e declarada como diferença. Mais de 60 s
+  para, com a leitura "a célula novo + mínima não é estável".
+- **P-3:** a REP=2 (188 s) fica como **limitação declarada**, sem explicação. A REP=5 da seção 5.5 de
+  `decisoes-senior-2026-10-16.md` é dispensada.
+- **P-4:** P-28 aberto em `docs/registro-de-problemas.md` (desligamento abrupto do *host* em 18/10).
+- **P-5:** aprovado com os itens (a) a (d) de `docs/pre-registro-rebaseline-complemento-1-2026-10-27.md`:
+  (a) parada (h) por `boot_id` da VM, `StartedAt` de `isn1`/`isn3`, ou de `isn2` fora de uma execução
+  F1, com descarte da execução em curso por infraestrutura e sem política de reinício nos contêineres;
+  (b) `uname -r` e versão do podman registrados por noite; (c) T12 não aplicado, carga em laço fechado
+  com 4 *threads* e vazão medida, declarado antes dos dados; (d) DT-015. O PR aprovado não é editado.
+  A forma de verificar (h) (checagem no *runner* ou passo manual da checklist) está em aberto; o
+  complemento fixa o procedimento manual, que vale em qualquer das duas formas.
+- **P-6:** aprovado inteiro. *Host*: alimentação conferida, sem suspensão nem hibernação nas noites,
+  Windows Update pausado na janela da campanha, `AutomaticStopAction=ShutDown` na VM `tcc-f3`. VM:
+  `apt-mark hold` do kernel e `unattended-upgrades` pausado durante a campanha, feitos numa sessão de VM
+  aprovada antes do piloto, com saídas nos brutos.

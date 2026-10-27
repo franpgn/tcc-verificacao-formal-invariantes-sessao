@@ -116,12 +116,12 @@ class PortaoS1S2Test {
     }
 
     /** Ops que lanca {@code erro} em toda operacao da mistura, anotando o emVoo do portao na chamada. */
-    private static OpsGravadas lancando(PortaoDeEmissao p, AtomicInteger emVooNaChamada, AtomicInteger chamadas,
+    private static OpsGravadas lancando(PortaoDeEmissao p, AtomicInteger emVooNaChamada, AtomicInteger nChamadas,
                                         java.util.function.Supplier<? extends Throwable> erro) {
         return new OpsGravadas(new FakeCaches.Cache<>(), new FakeCaches.Cache<>(), new LatencyRegistry(), null) {
             private OpResult falhar() {
                 emVooNaChamada.set(p.emVoo());
-                chamadas.incrementAndGet();
+                nChamadas.incrementAndGet();
                 Throwable t = erro.get();
                 if (t instanceof RuntimeException re) {
                     throw re;

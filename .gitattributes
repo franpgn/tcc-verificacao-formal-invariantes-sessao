@@ -12,3 +12,5 @@
 Containerfile text eol=lf
 Dockerfile    text eol=lf
 .gitattributes text eol=lf
+*.py          text eol=lf
+*.tsv         text eol=lf

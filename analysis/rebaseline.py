@@ -524,12 +524,18 @@ def k6(ex, d, falha):
     lim = "disparo em [%.1f, %.1f] s da ancora; injetor exit 0" % INJ_TOL
     ok = ok_off and ex.get("injetor_exit") == 0
     if falha == "F1":
-        stop = re.search(r"\bstop isn2\b", log) is not None
+        # F1 = crash silencioso (complemento 2 / DT-017): isolamento do eth0 e SIGKILL (ExitCode 137)
+        modo = re.search(r"\bmodo=silencioso\b", log) is not None
+        isol = re.search(r"\beth0 down\b", log) is not None
+        kill = re.search(r"\bkill isn2\b", log) is not None
+        e137 = re.search(r"\bExitCode=137\b", log) is not None
         start = re.search(r"\bstart isn2\b", log) is not None
         volta = (ex.get("cluster_pos_f1") or {}).get("ok") is True
-        v.update({"log_stop": stop, "log_start": start, "cluster_de_volta": volta})
-        return (v, lim + "; log com stop e start de isn2; cluster de volta a 3 nos HEALTHY",
-                ok and stop and start and volta)
+        v.update({"log_modo": modo, "log_isolamento": isol, "log_kill": kill, "log_exit137": e137,
+                  "log_start": start, "cluster_de_volta": volta})
+        return (v, lim + "; log com modo=silencioso, eth0 down, kill isn2, ExitCode=137 e start isn2; "
+                "cluster de volta a 3 nos HEALTHY",
+                ok and modo and isol and kill and e137 and start and volta)
     am = {a.get("alvo_s"): a.get("netem") for a in (ex.get("netem_amostras") or [])}
     pos = (ex.get("netem_pos") or {}).get("netem")
     # C4: "ausente depois" do injetor; se o runner teve de remover o netem (remocao_extra), K6 falha

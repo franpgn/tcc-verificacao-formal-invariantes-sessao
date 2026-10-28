@@ -181,6 +181,30 @@ Sem VM (rodam em qualquer host; `bash scripts/inject-netdegrade.test.sh`). Os te
 
 Resultado desta rodada: Git Bash (Windows, MSYS bash 3.6) 298 PASS / 0 FAIL / 1 SKIP (T-nd-21: sem `flock`); Ubuntu (WSL2, bash 5.1.16, `flock` real) 306 PASS / 0 FAIL / 0 SKIP (medido na integracao 2026-10-16; a rodada original da branch era 284/292, antes das correcoes R3/R4 e do shim de readlink). Mutação de sanidade (5 mutantes do script, WSL): removida a checagem de `clsact` → 3 FAIL; `eh_nosso` sempre verdadeiro → falhas em T-nd-9/10/11; `--direction in` tocando o alvo → falhas em T-nd-3/10; tolerância do ping ×10 → 3 FAIL (T-nd-15); sem o `trap` explícito de `TERM` → 0 FAIL (mutante equivalente: o bash executa o `trap EXIT` ao morrer por `SIGTERM`).
 
+## Critérios de aceite do F1 como *crash* silencioso (`inject-crash.sh`, 2026-10-28)
+
+Sem VM (`bash scripts/inject-crash.test.sh`, ~30 s no Git Bash). Os casos usam *shims* de `podman`, `sudo`, `readlink`, `nsenter`, `ip` e `sleep` no `PATH`, que registram as chamadas e simulam o estado do *container* (running/exited, ExitCode) e da interface (UP/DOWN) por PID. Eles verificam a **lógica** do injetor, **não** que o `link set down` real cala o JGroups sem FIN nem que o FD\_ALL3 detecta a queda em ~40 s (isso é o *smoke* local e o ensaio na VM, §4 de `docs/prompt-f1-kill-2026-10-27.md`). Escritos antes do código (TDD): contra o `inject-crash.sh` de `c055399`, 56 PASS / 57 FAIL.
+
+| ID | Caso | Esperado |
+|---|---|---|
+| C1 | modo padrão | `silencioso`; ordem exata: `readlink` do alvo, `readlink` do PID 1, `ip link show`, `ip link set down`, `ip -o link show`, `podman kill <nó> --signal KILL`, ExitCode, `sleep`, `podman start` |
+| C2 | modos `silencioso` e `kill` | `podman stop` nunca é chamado |
+| C3 | guarda de *netns* e PID | *netns* do alvo = do PID 1, PID 0, vazio, não numérico ou 1: exit 4, nenhum `ip`/`nsenter`/`kill`; alvo ausente ou parado: exit 4 |
+| C4 | interface inexistente | exit 4 sem `kill` nem `link set` |
+| C5 | `link set down` que não pega | tentativa de `link set up`, exit 1, sem `kill` nem `start` |
+| C6 | ExitCode 143 | `start` feito, linha `ExitCode=143`, exit 1 |
+| C7 | `kill` que não derruba em ~10 s | exit 5, sem espera nem `start` |
+| C8 | `podman start` com erro | exit 5 |
+| C9 | TERM depois do isolamento e antes do `kill` | o *trap* dá `kill` e `start`; exit 143; sem espera |
+| C10 | TERM durante a espera | `start` uma vez; exit 143 em < 10 s com `--duration 30` |
+| C11 | carimbo por linha | formato `AAAA-MM-DDTHH:MM:SS.mmmZ`; carimbos diferentes antes e depois de uma espera real de 2 s |
+| C12 | `--dry-run` e `--help` | sem `podman`/`sudo`/`nsenter`/`ip` (*shims* proibidos não chamados), plano com `link set dev eth0 down` e `kill`; `--help` documenta `--modo`, `--iface`, FD\_SOCK2 e FD\_ALL3 |
+| C13 | modos `kill` e `stop` | `kill`: sem `readlink`/`ip`; `stop`: `stop`, `sleep`, `start` (junho) |
+| C14 | argumentos | `--modo x`, `--duration 0`, `--iface` vazio ou inválido, `--modo` sem valor, *flag* desconhecida: exit 2 |
+| C15 | linhas de K6 | o *log* casa `\bmodo=silencioso\b`, `\beth0 down\b`, `\bkill isn2\b`, `\bExitCode=137\b`, `\bstart isn2\b` |
+
+K6 de F1 (`analysis/rebaseline.py`, classe `A9bK6F1Silencioso` de `analysis/test_rebaseline.py`): *log* completo ACEITA; cada um dos 5 sinais ausente RECUSA; `stop isn2` no lugar de `kill isn2` RECUSA; *log* de junho RECUSA; `ExitCode=143` RECUSA; modo `kill` RECUSA. O *shim* do `podman` de `scripts/run-rebaseline.test.sh` ganhou `kill` (exited, ExitCode 137) e `{{.State.ExitCode}}`, e há um *shim* novo de `ip`; R3, R4 e R8 medem `podman|kill|isn2` no lugar de `podman|stop|isn2`, com os mesmos limites. Resultados e mutantes em `docs/relatorio-f1-silencioso-2026-10-27.md`.
+
 ## Como reproduzir
 
 ```bash
@@ -204,6 +228,8 @@ bash scripts/inject-jitter.test.sh        # 31 PASS
 bash scripts/inject-partition.test.sh     # 99-101 PASS (T-par-6 e T-par-15 podem ser SKIP)
 # 8. testes sem-VM do inject-netdegrade (F4; shims, qualquer host; ~4 min no Git Bash)
 bash scripts/inject-netdegrade.test.sh    # 284-292 PASS (T-nd-21 e SKIP onde nao ha flock)
+# 9. testes sem-VM do inject-crash (F1 silencioso; shims, qualquer host)
+bash scripts/inject-crash.test.sh         # 113 PASS
 ```
 
 ## B-32: propriedades operacionais no TLC (2026-10-09)

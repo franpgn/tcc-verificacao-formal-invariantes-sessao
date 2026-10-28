@@ -618,6 +618,78 @@ class A9K6(Base):
         self.assertFalse(ch["criterios"]["K6"]["ok"])
 
 
+class A9bK6F1Silencioso(Base):
+    """K6 de F1 como crash silencioso (opcao B, docs/prompt-f1-kill-2026-10-27.md, item 4 do prompt)."""
+
+    LINHAS = (
+        "[2026-10-24T01:01:04.020Z] inject-crash.sh: Plano: NODE=isn2 MODO=silencioso DURACAO=60s IFACE=eth0 DRY_RUN=0",
+        "[2026-10-24T01:01:04.021Z] inject-crash.sh: modo=silencioso",
+        "[2026-10-24T01:01:04.180Z] inject-crash.sh: isolando isn2: ip link set dev eth0 down (pid 4242)",
+        "[2026-10-24T01:01:04.260Z] inject-crash.sh: sudo podman kill isn2 (--signal KILL)",
+        "[2026-10-24T01:01:04.610Z] inject-crash.sh: isn2 ExitCode=137",
+        "[2026-10-24T01:01:04.611Z] inject-crash.sh: aguardando 60s",
+        "[2026-10-24T01:02:04.640Z] inject-crash.sh: sudo podman start isn2",
+        "[2026-10-24T01:02:05.100Z] inject-crash.sh: OK: F1 (modo=silencioso) injetada e reentrada de isn2 acionada",
+    )
+    # indice da linha que carrega cada um dos 5 sinais exigidos
+    CHAVES = {"log_modo": 1, "log_isolamento": 2, "log_kill": 3, "log_exit137": 4, "log_start": 6}
+
+    def _k6(self, log, n=0, **kw):
+        d = montar_exec(self.saida, self.linha("S1-sync-F1", n=n), injetor_log=log, **kw)
+        return self.checar(d)
+
+    def test_log_completo_aceita(self):
+        rc, ch = self._k6("\n".join(self.LINHAS) + "\n")
+        self.assertEqual((rc, ch["veredito"]), (0, "ACEITA"), ch["motivos"])
+        v = ch["criterios"]["K6"]["valor"]
+        for chave in list(self.CHAVES) + ["cluster_de_volta"]:
+            self.assertIs(v[chave], True, chave)
+        self.assertNotIn("log_stop", v)
+        self.assertIn("kill", ch["criterios"]["K6"]["limite"])
+
+    def test_cada_linha_ausente_recusa(self):
+        for n, (chave, idx) in enumerate(sorted(self.CHAVES.items())):
+            linhas = [l for j, l in enumerate(self.LINHAS) if j != idx]
+            if chave == "log_modo":   # a linha OK final tambem diz modo=silencioso
+                linhas = [l.replace("(modo=silencioso)", "") for l in linhas]
+            rc, ch = self._k6("\n".join(linhas) + "\n", n=n)
+            self.assertEqual((rc, ch["veredito"]), (10, "RECUSADA"), chave)
+            self.assertIs(ch["criterios"]["K6"]["valor"][chave], False, chave)
+            self.assertFalse(ch["criterios"]["K6"]["ok"], chave)
+
+    def test_stop_no_lugar_de_kill_recusa(self):
+        linhas = list(self.LINHAS)
+        linhas[3] = "[2026-10-24T01:01:04.260Z] inject-crash.sh: sudo podman stop isn2"
+        rc, ch = self._k6("\n".join(linhas) + "\n")
+        self.assertEqual((rc, ch["veredito"]), (10, "RECUSADA"))
+        self.assertIs(ch["criterios"]["K6"]["valor"]["log_kill"], False)
+
+    def test_log_de_junho_recusa(self):
+        junho = ("[2026-06-20T01:01:04Z] inject-crash.sh: Plano: NODE=isn2 DURACAO=60s DRY_RUN=0\n"
+                 "[2026-06-20T01:01:04Z] inject-crash.sh: sudo podman stop isn2\n"
+                 "[2026-06-20T01:01:04Z] inject-crash.sh: aguardando 60s\n"
+                 "[2026-06-20T01:01:04Z] inject-crash.sh: sudo podman start isn2\n"
+                 "[2026-06-20T01:01:04Z] inject-crash.sh: OK: F1 (crash) injetada e reentrada de isn2 acionada\n")
+        rc, ch = self._k6(junho)
+        self.assertEqual((rc, ch["veredito"]), (10, "RECUSADA"))
+        v = ch["criterios"]["K6"]["valor"]
+        self.assertIs(v["log_kill"], False)
+        self.assertIs(v["log_modo"], False)
+
+    def test_exitcode_143_recusa(self):
+        linhas = list(self.LINHAS)
+        linhas[4] = "[2026-10-24T01:01:04.610Z] inject-crash.sh: isn2 ExitCode=143"
+        rc, ch = self._k6("\n".join(linhas) + "\n")
+        self.assertEqual((rc, ch["veredito"]), (10, "RECUSADA"))
+        self.assertIs(ch["criterios"]["K6"]["valor"]["log_exit137"], False)
+
+    def test_modo_kill_recusa(self):
+        """O modo kill (sem isolamento) nao e o F1 do rebaseline."""
+        linhas = [l.replace("silencioso", "kill") for j, l in enumerate(self.LINHAS) if j != 2]
+        rc, ch = self._k6("\n".join(linhas) + "\n")
+        self.assertEqual((rc, ch["veredito"]), (10, "RECUSADA"))
+
+
 # ============================================================================ A10: estado
 
 class A10Estado(Base):

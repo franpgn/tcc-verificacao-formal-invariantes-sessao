@@ -6,7 +6,10 @@
 # o GO chega ao g1 so pelo stdin do Gestor (o s4.sh nao o digita); cada pre-condicao que falha aborta ANTES do down;
 # portao ruim aborta antes do g1; g1 sem GO encerra o g1b e nao roda o portao pos; t_merge > 60 s sai com rc 5;
 # avaliar_portao aceita a saida real do portao do S3 (00-portao51-pre-console.txt) e recusa cada criterio violado;
-# a tabela de hashes embutida e igual aos arquivos deste repositorio.
+# a tabela de hashes embutida e igual aos arquivos deste repositorio (e esses 7 arquivos nao mudaram desde f276676);
+# boot_id esperado = o do boot de 2026-10-28 06:39 UTC (o antigo b7df4b03... agora aborta no passo 0);
+# passo 1 com conteineres em Created (pos-reboot) e podman logs vazio segue ate o prompt RECRIAR, grava
+# pre-recriacao/journal-boot-anterior.txt e .State.Status; falha do journalctl vira so aviso.
 # NAO prova: podman, tmux, flock, Infinispan ou os scripts reais (estes tem testes proprios). NAO toca na VM nem em rede.
 # Rodar:  bash runs/vm-s4-2026-10-28/s4.test.sh      Exit 0 se tudo passar. Leva ~1-2 min.
 set -uo pipefail
@@ -25,23 +28,24 @@ T="$(mktemp -d)"; trap 'rm -rf "$T"' EXIT
 BIN="$T/bin"; mkdir -p "$BIN"
 FIXTURE="$T/portao-ok.txt"
 sed -n '/^amostras=/,/^fim /p' "$REPO/runs/vm-s3-2026-10-28/00-portao51-pre-console.txt" > "$FIXTURE"
-BOOT=b7df4b03-6652-4808-9617-11096693e65b; echo "$BOOT" > "$T/boot_id"
+BOOT=5d7119b8-3b50-435d-bd0d-cbdb6bd410df; echo "$BOOT" > "$T/boot_id"
+BOOT_ANTIGO=b7df4b03-6652-4808-9617-11096693e65b; echo "$BOOT_ANTIGO" > "$T/boot_id_antigo"
 
 # ---------------- shims
 cat > "$BIN/sudo" <<'EOF'
 #!/usr/bin/env bash
 echo "sudo $*" >> "$SHIM_LOG"
 [ "$1" = -n ] && { [ -z "${SHIM_SUDO_FALHA:-}" ]; exit $?; }
-case "$1" in podman) shift; exec podman "$@";; nsenter) echo "qdisc noqueue 0: root refcnt 2"; exit 0;; esac
+case "$1" in podman) shift; exec podman "$@";; journalctl) shift; exec journalctl "$@";; nsenter) echo "qdisc noqueue 0: root refcnt 2"; exit 0;; esac
 echo "shim sudo: inesperado: $*" >&2; exit 99
 EOF
 cat > "$BIN/podman" <<'EOF'
 #!/usr/bin/env bash
 echo "podman $*" >> "$SHIM_LOG"
 case "$1" in
-  ps) for n in isn1 isn2 isn3; do echo "$n abc Up 10 hours (healthy) criado=2026-10-27 18:48:5x"; done;;
-  logs) echo "2026-10-27 18:49:06,181 INFO  [o.i.CLUSTER] ISPN000094: Received new cluster view for channel cluster-tcc: [isn2-7049|2] (3) [isn2-7049, isn1-64005, isn3-27776]";;
-  inspect) case "$*" in *StartedAt*) echo "2026-10-28 06:00:00.000000000 +0000 UTC";; *Pid*) echo 4003;; *Id*) echo 7a196f163609aaaa;;
+  ps) for n in isn1 isn2 isn3; do if [ -n "${SHIM_ESTADO:-}" ]; then echo "$n abc Created criado=2026-10-27 18:48:5x"; else echo "$n abc Up 10 hours (healthy) criado=2026-10-27 18:48:5x"; fi; done;;
+  logs) [ -n "${SHIM_LOGS_VAZIO:-}" ] || echo "2026-10-27 18:49:06,181 INFO  [o.i.CLUSTER] ISPN000094: Received new cluster view for channel cluster-tcc: [isn2-7049|2] (3) [isn2-7049, isn1-64005, isn3-27776]";;
+  inspect) case "$*" in *State.Status*) echo "${SHIM_ESTADO:-running}";; *StartedAt*) echo "2026-10-28 06:00:00.000000000 +0000 UTC";; *Pid*) echo 4003;; *Id*) echo 7a196f163609aaaa;;
                         *Created*) echo "2026-10-28 06:00:00.0 +0000 UTC";; *) echo '[{"Name":"x"}]';; esac;;
 esac
 exit 0
@@ -59,6 +63,20 @@ cat > "$BIN/systemctl" <<'EOF'
 #!/usr/bin/env bash
 echo "systemctl $*" >> "$SHIM_LOG"
 [ -z "${SHIM_TIMERS:-}" ] || echo "Wed 2026-10-28 n/a tcc-heal-1-2.timer tcc-heal-1-2.service"
+exit 0
+EOF
+# journalctl: -b -1 com CONTAINER_NAME=... devolve linhas dos conteineres; SHIM_JOURNAL_FALHA=1 simula boot anterior indisponivel
+cat > "$BIN/journalctl" <<'EOF'
+#!/usr/bin/env bash
+echo "journalctl $*" >> "$SHIM_LOG"
+[ -z "${SHIM_JOURNAL_FALHA:-}" ] || { echo "Specifying boot ID or boot offset has no effect, no persistent journal was found." >&2; exit 1; }
+case "$*" in
+  *--list-boots*) echo " -1 b7df4b03665248089617110966 Mon 2026-10-27 18:40:01 UTC Tue 2026-10-28 06:36:24 UTC"
+                  echo "  0 5d7119b83b50435dbd0dcbdb6b Tue 2026-10-28 06:39:35 UTC Tue 2026-10-28 07:00:00 UTC";;
+  *CONTAINER_NAME=*) n=$(printf '%s\n' "$@" | sed -n 's/^CONTAINER_NAME=//p' | head -1)
+      echo "2026-10-27T18:49:06.181000+00:00 vm $n[1234]: 2026-10-27 18:49:06,181 INFO  [o.i.CLUSTER] ISPN000094: Received new cluster view for channel cluster-tcc: [isn2-7049|2] (3) [isn2-7049, isn1-64005, isn3-27776]";;
+  *) echo "2026-10-27T18:48:55.000000+00:00 vm podman[999]: container create 7a196f16 (image=infinispan, name=isn1)";;
+esac
 exit 0
 EOF
 cat > "$BIN/java" <<'EOF'
@@ -139,6 +157,11 @@ ok "T-s4-0 nenhum CR" 0 "$(tr -cd '\r' < "$S4" | wc -c | tr -d ' ')"
 ok "T-s4-0 tabela embutida = arquivos do repositorio (7 OK)" 7 "$(cd "$REPO" && bash "$S4" --hashes | sha256sum -c - 2>/dev/null | grep -c ': OK$')"
 contem "T-s4-0 inject-partition = S0 (59dd2bee...94e1)" "59dd2beee5b003d85f96cae71866227d7bca1c87a9ceeab034180ce4254d94e1  scripts/inject-partition.sh" "$(bash "$S4" --hashes)"
 contem "T-s4-0 g-lib = S0 (af3436d5...22dd)" "af3436d5ede54f5f2047ba48620130a803b4bbd8929e2cbc242fbbe0ebb922dd  runs/gate-b29/g-lib.sh" "$(bash "$S4" --hashes)"
+ok "T-s4-0 os 7 arquivos da tabela iguais aos de f276676" 0 "$(cd "$REPO" && git diff --name-only f276676 -- scripts/inject-partition.sh runs/gate-b29/g-lib.sh \
+  runs/gate-b29/g56-lib.sh runs/gate-b29/g1.sh runs/gate-b29/g1b.sh runs/gate-b29/recriar.sh runs/vm-s2-2026-10-27/portao51.sh | wc -l | tr -d ' ')"
+contem "T-s4-0 boot_id esperado = boot de 2026-10-28 06:39 UTC" "BOOT_ESPERADO=$BOOT" "$(cat "$S4")"
+nao "T-s4-0 boot_id antigo nao e mais o esperado" "BOOT_ESPERADO=$BOOT_ANTIGO" "$(cat "$S4")"
+contem "T-s4-0 prompt RECRIAR inalterado" 'read -rp "Recriar o cluster agora (podman-compose down/up)? [digite RECRIAR] " R' "$(cat "$S4")"
 
 echo "== T-s4-1: avaliar_portao com a saida real do portao do S3 e mutacoes =="
 X=$(S4_TESTE=1 bash "$S4" --avaliar-portao "$FIXTURE"); ok "T-s4-1 fixture S3 aceita (rc)" 0 $?
@@ -163,13 +186,16 @@ contem "T-s4-2 TCC_DIR exportado pelo s4.sh" "TCC_DIR=$T/home/tcc-gate (exportad
 ok "T-s4-2 saida em runs/vm-s4-2026-10-28/vm-*" 1 "$([ -n "$OUT" ] && [ -d "$OUT" ] && echo 1 || echo 0)"
 for f in 00-pre.log 01-pre-recriacao.log 02-recriacao.log 03-pos-recriacao.log 04-portao51-pre.log 04-portao51-pre.avaliacao \
          05-pre-g1.log 05-g1.log 05-g1b.log 06-pos-g1.log 07-portao51-pos.log 07-portao51-pos.avaliacao go.log g1-rep4.sha256 s4-console.log rc.txt \
-         recriacao/validacao.txt pre-recriacao/inspect-isn1.json pre-recriacao/logs-isn3.txt; do
+         recriacao/validacao.txt pre-recriacao/inspect-isn1.json pre-recriacao/logs-isn3.txt pre-recriacao/journal-boot-anterior.txt; do
   ok "T-s4-2 gravado $f" 1 "$([ -s "$OUT/$f" ] && echo 1 || echo 0)"; done
 contem "T-s4-2 hashes conferidos" "hashes: iguais a referencia" "$(cat "$OUT/00-pre.log")"
 contem "T-s4-2 boot_id registrado" "boot_id: $BOOT" "$(cat "$OUT/00-pre.log")"
 contem "T-s4-2 uname -r registrado" "uname -r: 6.8.0-147-generic" "$(cat "$OUT/00-pre.log")"
 contem "T-s4-2 lock ocupado registrado" "OCUPADO (este flock)" "$(cat "$OUT/00-pre.log")"
 contem "T-s4-2 vista antiga registrada" "isn3 ultima vista: 2026-10-27 18:49:06,181" "$(cat "$OUT/01-pre-recriacao.log")"
+contem "T-s4-2 estado de isn1 registrado" "isn1 State.Status=running" "$(cat "$OUT/01-pre-recriacao.log")"
+contem "T-s4-2 journal do boot anterior pedido com -b -1" "journalctl -b -1 --no-pager -o short-iso-precise" "$(cat "$T/shim.log")"
+nao "T-s4-2 sem aviso na copia" "AVISO" "$(cat "$OUT/01-pre-recriacao.log")"
 contem "T-s4-2 go.log antigo registrado" "go antigo" "$(cat "$OUT/00-pre.log")"
 ok "T-s4-2 rc.txt na ordem (pre, copia, recriacao, portao pre, g1, g1b, portao pos)" \
   "pre copia-cluster-antigo recriacao pos-recriacao 04-portao51-pre 04-portao51-pre-avaliacao g1 g1b 07-portao51-pos 07-portao51-pos-avaliacao" \
@@ -211,6 +237,7 @@ precond "lock livre" "LIVRE" SHIM_LOCK=livre
 precond "sudo -n falha" "sudo -n true falhou" SHIM_SUDO_FALHA=1
 precond "kernel diferente" "kernel 6.8.0-150-generic" SHIM_KERNEL=6.8.0-150-generic
 precond "boot_id diferente" "houve reboot?" S4_BOOT_ESPERADO=00000000-0000-0000-0000-000000000000
+precond "boot_id antigo (S2/S3) apos o reboot de 2026-10-28" "boot_id $BOOT_ANTIGO (esperado $BOOT" S4_BOOT_ID_FILE="$T/boot_id_antigo"
 precond "timer tcc-heal armado" "1 timers tcc-heal armados" SHIM_TIMERS=1
 precond "G1_DUR herdado" "variaveis herdadas que mudariam o g1/g1b: G1_DUR" G1_DUR=30
 precond "COLETA herdada" "variaveis herdadas que mudariam o g1/g1b: COLETA" COLETA=completa
@@ -259,6 +286,30 @@ echo "== T-s4-10: t_merge > 60 s: PARAR, rc 5, portao pos ainda roda =="
 nova_arvore; roda $'RECRIAR\nGO\n' S4T_TMERGE=188
 ok "T-s4-10 rc 5" 5 "$RC"; contem "T-s4-10 PARAR" "PARAR: t_merge_s=188" "$SAIDA"
 ok "T-s4-10 portao pos rodou" 2 "$(grep -c '^PORTAO' "$T/shim.log")"
+
+echo "== T-s4-11: pos-reboot: conteineres em Created e podman logs vazio; o passo 1 segue ate o prompt =="
+nova_arvore; roda $'RECRIAR\nGO\n' SHIM_ESTADO=created SHIM_LOGS_VAZIO=1
+ok "T-s4-11 rc 0 (segue ate o fim)" 0 "$RC"
+L1="$(cat "$OUT/01-pre-recriacao.log")"
+for n in isn1 isn2 isn3; do contem "T-s4-11 $n State.Status=created" "$n State.Status=created" "$L1"; done
+contem "T-s4-11 sem vista em podman logs, declarado" "isn1 ultima vista: nenhuma em podman logs" "$L1"
+contem "T-s4-11 ultima vista pelo journal do boot anterior" "isn3 ultima vista (journal -b -1): 2026-10-27T18:49:06.181000+00:00" "$L1"
+ok "T-s4-11 journal-boot-anterior.txt gravado" 1 "$([ -s "$OUT/pre-recriacao/journal-boot-anterior.txt" ] && echo 1 || echo 0)"
+contem "T-s4-11 journal com as linhas dos conteineres" "isn2[1234]:" "$(cat "$OUT/pre-recriacao/journal-boot-anterior.txt")"
+contem "T-s4-11 copia rc=0" "copia-cluster-antigo rc=0" "$(cat "$OUT/rc.txt")"
+contem "T-s4-11 chegou ao prompt RECRIAR" "resposta: RECRIAR" "$(cat "$OUT/rc.txt")"
+ok "T-s4-11 recriar chamado uma vez" 1 "$(grep -c '^RECRIAR' "$T/shim.log")"
+
+echo "== T-s4-12: journalctl -b -1 falha: so aviso, o passo 1 segue ate o prompt =="
+nova_arvore; roda $'RECRIAR\nGO\n' SHIM_ESTADO=created SHIM_LOGS_VAZIO=1 SHIM_JOURNAL_FALHA=1
+ok "T-s4-12 rc 0" 0 "$RC"
+contem "T-s4-12 aviso no 01-pre-recriacao.log" "AVISO: journalctl -b -1 falhou" "$(cat "$OUT/01-pre-recriacao.log")"
+contem "T-s4-12 erro do journalctl guardado no arquivo" "no persistent journal" "$(cat "$OUT/pre-recriacao/journal-boot-anterior.txt")"
+nao "T-s4-12 nao abortou" "S4 ABORTADO" "$SAIDA"
+contem "T-s4-12 copia rc=0" "copia-cluster-antigo rc=0" "$(cat "$OUT/rc.txt")"
+contem "T-s4-12 chegou ao prompt RECRIAR" "resposta: RECRIAR" "$(cat "$OUT/rc.txt")"
+nova_arvore; roda $'nao\n' SHIM_JOURNAL_FALHA=1
+ok "T-s4-12 com aviso e sem RECRIAR: rc 1" 1 "$RC"; nada_destrutivo "T-s4-12"
 
 echo "RESUMO: $P PASS, $F FAIL"
 [ "$F" = 0 ]

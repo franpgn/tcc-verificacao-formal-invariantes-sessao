@@ -124,9 +124,11 @@ case "${cmd}" in
             *StartedAt.UnixMilli*) echo "$(( $(cat "${ST}/iniciado-${no}" 2>/dev/null || echo 1792700000) * 1000 ))" ;;
             *StartedAt.Unix*) cat "${ST}/iniciado-${no}" 2>/dev/null || echo 1792700000 ;;
             *FinishedAt.UnixMilli*) cat "${ST}/parado-ms-${no}" 2>/dev/null || echo -62135596800000 ;;
+            *State.ExitCode*) cat "${ST}/exitcode-${no}" 2>/dev/null || echo 0 ;;
             *) echo '[{}]' ;;
         esac ;;
     stop) echo stopped > "${ST}/status-$1"; echo parou >> "${ST}/parou-$1"; vms > "${ST}/parado-ms-$1"; echo "$1" ;;
+    kill) no="$1"; echo exited > "${ST}/status-${no}"; echo parou >> "${ST}/parou-${no}"; vms > "${ST}/parado-ms-${no}"; echo 137 > "${ST}/exitcode-${no}"; echo "${no}" ;;
     start)
         if [[ "$(cat "${ST}/status-$1" 2>/dev/null || echo running)" != running ]]; then
             # nova vida do processo: ISPN080001 na subida e o aviso ISPN006010 da JVM nova (DT-013)
@@ -193,6 +195,26 @@ case "$*" in
     "qdisc show dev eth0")
         if [[ -f "${f}" ]]; then echo "qdisc netem 8001: root refcnt 2 limit 1000 delay 20ms  13ms"
         else echo "qdisc noqueue 0: root refcnt 2"; fi ;;
+esac
+EOF
+    cat > "${SH}/ip" <<'EOF'
+#!/usr/bin/env bash
+source "${RB_SHIM_DIR}/_comum.sh"
+registrar ip "pid=${RB_NETNS_PID:-?}" "$@"
+ST="${RB_ESTADO}"
+f="${ST}/link-${RB_NETNS_PID:-0}"
+mostrar() {
+    if [[ "$(cat "${f}" 2>/dev/null || echo up)" == down ]]; then
+        echo "2: eth0@if7: <BROADCAST,MULTICAST> mtu 1500 qdisc noqueue state DOWN mode DEFAULT group default qlen 1000"
+    else
+        echo "2: eth0@if7: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue state UP mode DEFAULT group default qlen 1000"
+    fi
+}
+case "$*" in
+    "link show dev eth0"|"-o link show dev eth0") mostrar ;;
+    "link set dev eth0 down") echo down > "${f}" ;;
+    "link set dev eth0 up") echo up > "${f}" ;;
+    *) echo "Device does not exist." >&2; exit 1 ;;
 esac
 EOF
     cat > "${SH}/curl" <<'EOF'
@@ -364,7 +386,7 @@ echo "go piloto 1999-01-01" > "${RB_TTY_ARQUIVO}"
 rodar_runner piloto
 ok "R3 gate da noite errado -> exit 5" "5" "${RC}"
 ok "R3 sem java" "0" "$(grep -c ' java|-jar' "${ST}/chamadas.log")"
-ok "R3 nenhum injetor (podman stop)" "0" "$(grep -c 'podman|stop' "${ST}/chamadas.log")"
+ok "R3 nenhum injetor (podman kill)" "0" "$(grep -c 'podman|kill' "${ST}/chamadas.log")"
 ok "R3 nenhum netem" "0" "$(grep -c 'tc|.*add' "${ST}/chamadas.log")"
 
 novo_caso r3b
@@ -393,7 +415,7 @@ matriz "${CASO}/m.tsv" piloto "1000 S1-sync-F1" "1001 S1-sync-F3"
 printf 'go piloto %s\ngo f3 9999\n' "${HOJE}" > "${RB_TTY_ARQUIVO}"
 rodar_runner piloto
 ok "R3 gate f3 errado -> exit 5" "5" "${RC}"
-ok "R3 F1 anterior rodou (podman stop)" "1" "$(grep -c ' podman|stop|isn2' "${ST}/chamadas.log")"
+ok "R3 F1 anterior rodou (podman kill)" "1" "$(grep -c ' podman|kill|isn2' "${ST}/chamadas.log")"
 ok "R3 nenhum netem sem o gate f3" "0" "$(grep -c 'tc|.*|qdisc|add' "${ST}/chamadas.log")"
 ok "R3 workload da F3 nao lancado" "1" "$(grep -c ' java|-jar' "${ST}/chamadas.log")"
 verdade "R3 (C2) go f3 errado nao deixa exec-1001" test -z "$(ls -d "${OUT}"/exec-1001-* 2>/dev/null)"
@@ -417,15 +439,15 @@ ok "R4 exit 0" "0" "${RC}"
 D="$(exec_dir 1000)"
 ANC="$(cat "${ST}/ancora-150000")"
 DISP="$(json "${D}/execucao.json" 'd["disparo_ms"]')"
-STOP="$(grep 'podman|stop|isn2' "${ST}/chamadas.log" | head -1 | cut -d' ' -f1)"
-echo "   (ancora do java ${ANC}; disparo do runner +$(( DISP - ANC )) ms; podman stop +$(( STOP - ANC )) ms)"
+STOP="$(grep 'podman|kill|isn2' "${ST}/chamadas.log" | head -1 | cut -d' ' -f1)"
+echo "   (ancora do java ${ANC}; disparo do runner +$(( DISP - ANC )) ms; podman kill +$(( STOP - ANC )) ms)"
 verdade "R4 disparo em N + 49 s (+-1 s)" test "$(( DISP - ANC ))" -ge 48000 -a "$(( DISP - ANC ))" -le 50000
-# O instante do podman stop depende tambem do proprio injetor real e do host (no Git Bash ja se viu uma
-# pausa de ~40 s reais antes do stop, V-RB 2.1). K6 mede o disparo do runner (acima, +-1 s); aqui so se
+# O instante do podman kill depende tambem do proprio injetor real e do host (no Git Bash ja se viu uma
+# pausa de ~40 s reais antes do kill, V-RB 2.1). K6 mede o disparo do runner (acima, +-1 s); aqui so se
 # exige que o injetor nunca aja ANTES de N + 48 s; acima de N + 51 s e aviso, nao falha (o instante
 # efetivo vai para falha_efetiva, C5, e e conferido no parecer do piloto).
-verdade "R4 podman stop do injetor nunca antes de N + 48 s" test "$(( STOP - ANC ))" -ge 48000 -a "${STOP}" -ge "${DISP}"
-if [[ "$(( STOP - ANC ))" -gt 51000 ]]; then echo "   AVISO R4: podman stop a +$(( STOP - ANC )) ms (pausa do host ou do injetor; nao e falha do runner)"; fi
+verdade "R4 podman kill do injetor nunca antes de N + 48 s" test "$(( STOP - ANC ))" -ge 48000 -a "${STOP}" -ge "${DISP}"
+if [[ "$(( STOP - ANC ))" -gt 51000 ]]; then echo "   AVISO R4: podman kill a +$(( STOP - ANC )) ms (pausa do host ou do injetor; nao e falha do runner)"; fi
 OFF="$(json "${D}/execucao.json" 'd["inj_inicio_offset_s"]')"
 verdade "R4 inj_inicio_offset_s em [48,50]" "${REAL_PY}" -c "import sys; sys.exit(0 if 48 <= ${OFF} <= 50 else 1)"
 PAR="$(json "${D}/execucao.json" 'd["falha_efetiva"]["f1_parado_desde_ancora_s"]')"
@@ -442,7 +464,7 @@ D="$(exec_dir 1000)"
 ok "R4 sem ancora: segue (exit 0)" "0" "${RC}"
 ok "R4 sem ancora: workload morto" "1" "$(cat "${ST}"/java-morto-150000 2>/dev/null | grep -c morto)"
 ok "R4 sem ancora: recusa K6 registrada" "sem ancora" "$(json "${D}/execucao.json" 'd["recusa_k6"]')"
-ok "R4 sem ancora: nenhum injetor" "0" "$(grep -c 'podman|stop' "${ST}/chamadas.log")"
+ok "R4 sem ancora: nenhum injetor" "0" "$(grep -c 'podman|kill' "${ST}/chamadas.log")"
 fi
 
 # ============================================================================= R5
@@ -530,12 +552,12 @@ printf 'go piloto %s\n' "${HOJE}" > "${RB_TTY_ARQUIVO}"
 PATH="${PATH_TESTE}" bash "${RUNNER}" --matriz "${MAT}" --matriz-sha256 "${MAT_SHA}" --jar "${JAR}" --jar-sha256 "${JAR_SHA}" \
     --fase piloto --saida "${OUT}" --cluster-criado-apos 2026-10-23T00:00:00Z > "${CASO}/out.txt" 2>&1 &
 PID=$!
-verdade "R8 F1 em curso (podman stop isn2)" esperar_por 'podman|stop|isn2' 120
+verdade "R8 F1 em curso (podman kill isn2)" esperar_por 'podman|kill|isn2' 120
 "${REAL_SLEEP}" 0.5
 kill -TERM "${PID}"; wait "${PID}"; RC=$?
 verdade "R8 runner terminou com erro" test "${RC}" -ne 0
-STOP="$(linha_de 'podman|stop|isn2')"; START="$(linha_de 'podman|start|isn2')"
-verdade "R8 podman start isn2 depois do stop" test "${START}" -gt "${STOP}"
+STOP="$(linha_de 'podman|kill|isn2')"; START="$(linha_de 'podman|start|isn2')"
+verdade "R8 podman start isn2 depois do kill" test "${START}" -gt "${STOP}"
 ok "R8 isn2 running" "running" "$(cat "${ST}/status-isn2")"
 verdade "R8 brutos preservados" test -s "$(exec_dir 1000)/stdout.log"
 

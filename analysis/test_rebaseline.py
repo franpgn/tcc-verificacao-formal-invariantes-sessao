@@ -166,10 +166,11 @@ def montar_exec(raiz, linha, *, seed=None, rep=1, rows=None, stdout_kw=None, exe
         ex.update({"injetor_exit": 0, "inj_inicio_offset_s": 49.012, "disparo_utc": "2026-10-24T01:01:04.012Z",
                    "cluster_pos_f1": {"ok": True, "espera_s": 35.0}})
         if injetor_log is None:
-            injetor_log = ("[2026-10-24T01:01:04Z] inject-crash.sh: sudo podman stop isn2\n"
-                           "[2026-10-24T01:01:04Z] inject-crash.sh: aguardando 60s\n"
-                           "[2026-10-24T01:01:04Z] inject-crash.sh: sudo podman start isn2\n"
-                           "[2026-10-24T01:01:04Z] inject-crash.sh: OK: F1 (crash) injetada\n")
+            injetor_log = ("[2026-10-24T01:01:04.021Z] inject-crash.sh: modo=silencioso\n"
+                           "[2026-10-24T01:01:04.180Z] inject-crash.sh: isolando isn2: ip link set dev eth0 down (pid 4242)\n"
+                           "[2026-10-24T01:01:04.260Z] inject-crash.sh: sudo podman kill isn2 (--signal KILL)\n"
+                           "[2026-10-24T01:01:04.610Z] inject-crash.sh: isn2 ExitCode=137\n"
+                           "[2026-10-24T01:02:04.640Z] inject-crash.sh: sudo podman start isn2\n")
     elif falha == "F3":
         ex.update({"injetor_exit": 0, "inj_inicio_offset_s": 49.005, "disparo_utc": "2026-10-24T01:01:04.005Z",
                    "netem_amostras": [{"alvo_s": 70, "offset_s": 70.1, "netem": True,
@@ -608,7 +609,7 @@ class A9K6(Base):
         self.assertFalse(ch["criterios"]["K6"]["ok"])
 
     def test_f1_log_sem_start(self):
-        rc, ch = self._k6("S1-sync-F1", injetor_log="[x] inject-crash.sh: sudo podman stop isn2\n")
+        rc, ch = self._k6("S1-sync-F1", injetor_log="[x] inject-crash.sh: sudo podman kill isn2 (--signal KILL)\n")
         self.assertEqual(rc, 10)
 
     def test_sem_ancora(self):

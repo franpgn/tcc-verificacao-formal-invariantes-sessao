@@ -13,7 +13,7 @@
 # saida, sinais, carimbo por linha) e verificada sem kernel. Os shims NAO provam:
 #   - que 'ip link set dev eth0 down' no netns real cala o JGroups sem FIN (isso e o
 #     smoke local, secao 4.1 do plano, e o ensaio na VM, secao 4.2);
-#   - que o 'podman kill --signal KILL' real da ExitCode 137 nem que o FD_ALL3 detecta
+#   - que o 'podman kill <no> --signal KILL' real da ExitCode 137 nem que o FD_ALL3 detecta
 #     a queda em ~40 s;
 #   - que o formato real de 'ip -o link show' e o que o shim imita (o parser le a
 #     lista de flags entre '<' e '>', formato documentado do iproute2).
@@ -59,9 +59,12 @@ verdade() { # verdade <descricao> <comando...>
 }
 
 conta() { grep -cF -e "$1" "${SHIM_LOG}" 2>/dev/null; }
+# conta_ini <prefixo>: linhas do SHIM_LOG que COMECAM pelo prefixo (o shim do nsenter
+# tambem registra a linha do ip que ele repassa; o prefixo separa os dois).
+conta_ini() { awk -v p="$1" 'index($0, p) == 1 {n++} END {print n + 0}' "${SHIM_LOG}"; }
 
-# ordem_exata <descricao> <padrao1> ...: as linhas do SHIM_LOG que casam ALGUM dos
-# padroes, na ordem do log, tem de ser exatamente a lista dada (nem mais, nem menos).
+# ordem_exata <descricao> <prefixo1> ...: as linhas do SHIM_LOG que COMECAM por algum
+# dos prefixos, na ordem do log, tem de ser exatamente a lista dada (nem mais, nem menos).
 ordem_exata() {
     local desc="$1"; shift
     local esperado obtido linha pad
@@ -69,7 +72,7 @@ ordem_exata() {
     obtido=""
     while IFS= read -r linha; do
         for pad in "$@"; do
-            if [[ "${linha}" == *"${pad}"* ]]; then obtido+="${pad}"$'\n'; break; fi
+            if [[ "${linha}" == "${pad}"* ]]; then obtido+="${pad}"$'\n'; break; fi
         done
     done < "${SHIM_LOG}"
     obtido="${obtido%$'\n'}"
@@ -108,7 +111,7 @@ cat > "${SHIMDIR}/podman" <<'EOF'
 #!/usr/bin/env bash
 echo "podman $*" >> "${SHIM_LOG}"
 cmd="$1"; shift
-no="${*: -1}"
+no="${*: -1}"; [[ "${cmd}" == inspect ]] || no="$1"
 st="${SHIM_STATE}/status-${no}"
 case "${cmd}" in
     inspect)
@@ -251,7 +254,7 @@ ordem_exata "C1 ordem: readlink alvo, readlink 1, ip link show, set down, -o sho
     "ip link show dev eth0" \
     "ip link set dev eth0 down" \
     "ip -o link show dev eth0" \
-    "podman kill --signal KILL isn2" \
+    "podman kill isn2 --signal KILL" \
     "podman inspect -f {{.State.ExitCode}} isn2" \
     "sleep 60" \
     "podman start isn2"
@@ -308,7 +311,7 @@ echo "== C5: 'link set down' nao pega -> tentativa de up, exit 1, sem kill =="
 reset_shims
 SHIM_LINK_STUCK=1 roda_shim --duration 60
 ok "C5 exit 1" "1" "${RC}"
-ok "C5 tentativa de up" "1" "$(conta 'ip link set dev eth0 up')"
+ok "C5 tentativa de up" "1" "$(conta_ini 'ip link set dev eth0 up')"
 ok "C5 nenhum kill" "0" "$(conta 'podman kill')"
 ok "C5 nenhum start (nada foi derrubado)" "0" "$(conta 'podman start')"
 
@@ -353,7 +356,7 @@ kill -TERM "${BGPID}" 2>/dev/null
 wait "${BGPID}" 2>/dev/null; RC=$?
 unset SHIM_BLOCK_VERIFY
 ok "C9 exit 143" "143" "${RC}"
-verdade "C9 kill chamado pelo trap" test "$(conta 'podman kill --signal KILL isn2')" -ge 1
+verdade "C9 kill chamado pelo trap" test "$(conta 'podman kill isn2 --signal KILL')" -ge 1
 ok "C9 start chamado uma vez" "1" "$(conta 'podman start isn2')"
 ok "C9 sem espera da duracao" "0" "$(conta 'sleep 60')"
 ok "C9 isn2 de volta a running" "running" "$(cat "${SHIM_STATE}/status-isn2")"
@@ -399,7 +402,7 @@ rm -f "${PROIBIDO}/chamadas"
 OUT="$(PATH="${PROIBIDO}:${PATH_SEM_PODMAN}" bash "${CRASH}" --dry-run 2>&1)"; RC=$?
 ok "C12 exit 0" "0" "${RC}"
 contem "C12 plano com isolamento" "nsenter -t <pid> -n ip link set dev eth0 down" "${OUT}"
-contem "C12 plano com kill" "kill --signal KILL isn2" "${OUT}"
+contem "C12 plano com kill" "kill isn2 --signal KILL" "${OUT}"
 contem "C12 plano com start" "start isn2" "${OUT}"
 contem "C12 plano com modo" "modo=silencioso" "${OUT}"
 contem "C12 nada executado" "dry-run: nada executado" "${OUT}"
@@ -407,7 +410,7 @@ ok "C12 nenhum podman/sudo/nsenter/ip chamado" "0" "$(cat "${PROIBIDO}/chamadas"
 OUT="$(PATH="${PROIBIDO}:${PATH_SEM_PODMAN}" bash "${CRASH}" --dry-run --modo kill 2>&1)"; RC=$?
 ok "C12b --modo kill --dry-run exit 0" "0" "${RC}"
 nao_contem "C12b modo kill sem isolamento no plano" "link set" "${OUT}"
-contem "C12b modo kill com kill" "kill --signal KILL isn2" "${OUT}"
+contem "C12b modo kill com kill" "kill isn2 --signal KILL" "${OUT}"
 OUT="$(PATH="${PATH_SEM_PODMAN}" bash "${CRASH}" --help 2>&1)"; RC=$?
 ok "C12c --help exit 0" "0" "${RC}"
 for f in --node --duration --modo --iface --dry-run --help PODMAN FD_SOCK2 FD_ALL3; do
@@ -422,7 +425,7 @@ ok "C13a modo kill exit 0" "0" "${RC}"
 ok "C13a sem readlink" "0" "$(conta 'readlink')"
 ok "C13a sem ip" "0" "$(conta 'ip ')"
 ordem_exata "C13a ordem kill, ExitCode, sleep, start" \
-    "podman kill --signal KILL isn2" "podman inspect -f {{.State.ExitCode}} isn2" "sleep 60" "podman start isn2"
+    "podman kill isn2 --signal KILL" "podman inspect -f {{.State.ExitCode}} isn2" "sleep 60" "podman start isn2"
 contem "C13a linha modo=kill" "modo=kill" "${OUT}"
 reset_shims
 roda_shim --modo stop --duration 60

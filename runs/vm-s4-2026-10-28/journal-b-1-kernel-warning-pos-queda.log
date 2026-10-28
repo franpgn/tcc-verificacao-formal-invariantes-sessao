@@ -1,0 +1,4 @@
+## journalctl -b -1 -k --since 2026-10-28 06:34 (coletado 2026-10-28T15:21:14+00:00)
+-- No entries --
+## journalctl -b -1 -p warning --since 2026-10-28 06:34
+-- No entries --

@@ -1,0 +1,37 @@
+# Roteiro do S4 (REP=4R), 2026-10-28
+
+Preparado pelo Worker. Não foi executado na VM. Referências: `decisoes-senior-2026-10-16.md` §5.1 e §5.5, `docs/validacao-v-s1-2026-10-27.md` §5.2 (REP=4R), `runs/vm-s3-2026-10-28/V-S3.md` (seção "O que vem no S4" e `04-*`).
+
+## Decisões do Gestor (2026-10-28) aplicadas
+
+1. O cluster é recriado com `runs/gate-b29/recriar.sh` logo antes do S4. Depois vêm o portão 5.1 e o S4. L-0 e L-0c não são refeitos.
+2. **Desvio da §5.5, registrado:** a referência de hashes é o bundle v4c (`902654b`), e não o "bundle igual ao de S0". `inject-partition.sh` e `g-lib.sh` continuam iguais aos de S0. `g1.sh`, `g1b.sh`, `g56-lib.sh`, `recriar.sh` e `portao51.sh` são iguais ao v4c. A tabela fica embutida no `s4.sh` e o `s4.test.sh` (T-s4-0) a confere contra o repositório.
+3. **Registro da R-3 da V-S3.** No S3, o invólucro do Gestor foi `echo "rc=${PIPESTATUS[0]} fim=$(date -Is)" | tee -a $D/l0c.log`, com `D=runs/vm-s3-2026-10-28`. Ele foi digitado na linha seguinte a `bash -x runs/gate-netdegrade/l0c.sh 2>&1 | tee $D/l0c.log`. Leitura do Worker, a validar pelo Senior: numa linha nova do shell interativo, `PIPESTATUS` ainda se refere ao último pipeline em primeiro plano, que é o `bash -x ... | tee` da linha anterior. Então o `rc=0` é o do `l0c.sh`, desde que nenhum `PROMPT_COMMAND` tenha rodado um pipeline entre as duas linhas (isso não foi conferido na VM). Os 56 s entre o fim do script e a linha `rc=0` são compatíveis com o tempo de digitar ou colar a segunda linha. No S4, o `s4.sh` lê o `PIPESTATUS[0]` na mesma linha do pipeline e grava em `rc.txt`.
+
+## O que o `s4.sh` faz
+
+| Passo | Ação | Arquivo em `vm-<UTC>/` | Se falhar |
+|---|---|---|---|
+| 0 | Pré-condições, só leitura: `TCC_DIR=$HOME/tcc-gate` (exporta se vazio, aborta se diferente), tmux, lock OCUPADO, `sudo -n`, `uname -r` = 6.8.0-147-generic, `boot_id` = `b7df4b03…e65b`, HEAD, 0 arquivos versionados modificados, sha256 da tabela, ambiente sem `G1_*`/`REP`/`COLETA`/..., java e jar, `g1-rep4` inexistente, 0 timers, `go.log` e `podman ps` | `00-pre.log` | rc 1, nada tocado |
+| 1 | `inspect` e `logs` dos 3 contêineres antigos e a última vista. Depois pede `RECRIAR` | `01-pre-recriacao.log`, `pre-recriacao/` | rc 1 |
+| 2 | `recriar.sh` (down/up, ESTÁVEL). Não tem go próprio | `02-recriacao.log`, `recriacao/` | rc 2 |
+| 2b | IDs, criação, `StartedAt`, vista e topology id do cluster novo | `03-pos-recriacao.log` | (registro) |
+| 3 | Portão 5.1 (`portao51.sh`) com `.log` e `.csv`. A duração é ≥ 130 s e o fim fica ≥ up + 345 s, para que a regra de "0 mudanças de vista em 5 min" valha. A avaliação é automática | `04-portao51-pre.{log,csv,avaliacao}` | rc 3: **S4 não roda** |
+| 4 | `g1b` (REP=4 COLETA=minima) na janela tmux `s4-g1b`, sem lock próprio. Em seguida `REP=4 G1_DUR=90 G1_LOG_SAUDE_S=2 G1_LOG_POS_S=30 g1.sh`. **O GO é digitado pelo Gestor no prompt do `g1.sh`** | `05-pre-g1.log`, `05-g1.log`, `05-g1b.log` | rc 4. Sem `event=start`, o g1b é encerrado. Com o injetor já iniciado, o dead-man cura em 180 s |
+| 5 | Espera o g1b e registra marcadores, `t_merge.txt`, `go.log` e sha256 de `g1-rep4/`. Depois roda o portão 5.1 pós, com fim ≥ fim do g1 + 345 s | `06-pos-g1.log`, `go.log`, `g1-rep4.sha256`, `07-portao51-pos.*` | rc 5 se `t_merge_s` > 60 s (PARAR, não seguir para o S5). rc 6 se o portão pós falhar |
+
+O console inteiro vai para `s4-console.log` e o rc de cada passo para `rc.txt`.
+
+## Diferenças declaradas em relação à REP=3
+
+- Idade do cluster no `start`: cerca de 6 a 7 min. Na REP=3 foi 121 s. A diferença vem do portão 5.1 completo, que exige 5 min sem mudança de vista e não existia em 16/10.
+- Kernel 6.8.0-147, contra 6.8.0-124 nas REP=1..3 (V-S1, R-3). Esta é a primeira partição real no kernel novo.
+- O GO é digitado pelo Gestor. Na REP=3 foi por `tmux send-keys` com autorização.
+
+## Duração estimada
+
+Cerca de 18 min do comando ao fim. O prompt do GO aparece por volta do minuto 8 (pré 1 a 2 min, recriação cerca de 1,5 min, portão pré até up + 345 s). A janela e o merge levam cerca de 3 min (96 s de injeção, cerca de 46 s de merge e mais 30 s de log), e o portão pós leva cerca de 6 min. O Gestor precisa ficar presente do GO até o fim do merge. Nada de TLC, `mvn` ou carga pesada no host, do início do portão pré até o fim do portão pós.
+
+## Teste
+
+`bash runs/vm-s4-2026-10-28/s4.test.sh`: 181 PASS, 0 FAIL (Git Bash, ~2,5 min). Ele não prova podman, tmux, flock nem Infinispan reais.

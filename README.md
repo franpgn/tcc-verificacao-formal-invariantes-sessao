@@ -28,7 +28,7 @@ A Tabela 1 do Capítulo 3 §3.3.5 da monografia (*Parâmetros experimentais e fu
 | T14 | 10 min sem falha; 30 min com falha | `scripts/run-baseline.sh` |
 | T15 | MTU 1500 | `cluster/podman-compose.yml` |
 | T16 | FD\_ALL3 padrão (8 s / 40 s) | `cluster/infinispan-cluster.xml` |
-| T17 | F1: *crash* de 60 s | `scripts/inject-crash.sh` |
+| T17 | F1: *crash* silencioso de 60 s (isolamento do `eth0` + `podman kill --signal KILL`, detecção pelo FD\_ALL3) | `scripts/inject-crash.sh` |
 | T18 | F3: +50 ms p99 lognormal | `scripts/inject-jitter.sh` |
 | T19 | M1-M7 expostas via OpenMetrics | `cluster/` + `scripts/collect-metrics.sh` |
 | T20 | Endpoint OpenMetrics | nativo do Infinispan 15 |

@@ -538,35 +538,82 @@ transmitidas ao Senior pelo coordenador:
   mudam. *Bundle* novo registrado na adenda abaixo. F1 de junho e dos *gates* passa a ser descrito
   como parada ordenada no texto acadêmico.
 
-### Adenda da DT-009 parte 2: ponta e *bundle* depois da DT-017 (2026-10-28, hashes a preencher)
+### Adenda da DT-009 parte 2: ponta e *bundle* depois da DT-017 (2026-10-28)
 
-> Os campos "a preencher após a entrega do Worker" são preenchidos, numa edição só e antes do piloto,
-> depois da validação e integração de `fix/f1-crash-silencioso`. Até lá, o *bundle* da parte 2
-> (`e304ba4b…`) **não** serve para o piloto nem para as noites, porque traz o F1 antigo.
+> Os campos que estavam "a preencher após a entrega do Worker" foram preenchidos numa edição só, em
+> 2026-10-28 (tarde), depois da validação, da re-medição pelo coordenador e da integração de
+> `fix/f1-crash-silencioso`, antes do piloto e antes de qualquer dado do *rebaseline*. O *bundle* da
+> parte 2 (`e304ba4b…`) **não** serve para o piloto nem para as noites, porque traz o F1 antigo; vale
+> o desta adenda (`003814e9…`).
 
 - **Origem:** DT-017; integração de `fix/f1-crash-silencioso` em `feature/controlador-integracao`
-  (validação `docs/validacao-f1-silencioso-<data>.md`, a preencher). São identificadores, não
+  (validação `docs/validacao-f1-silencioso-2026-10-28.md`). São identificadores, não
   escolhas. Registrada antes de qualquer execução do piloto. Também registra que a ponta `988fd3c` da
   parte 2 foi seguida por `3c9db71` e `c055399` (matriz no git, G1, G3, G4). Nesses dois *commits* o
   único arquivo do *bundle* tocado foi `runs/rebaseline/matriz.tsv`, que entrou no git com o SHA-256
   já registrado; os demais *blobs* em `c055399` têm os SHA-256 da parte 2 (conferido pelo Senior em
   2026-10-27 para `inject-crash.sh`, `rebaseline.py` e `run-rebaseline.sh`).
-- **Ponta:** a preencher após a entrega do Worker (SHA de 40 caracteres), base `c055399`.
+- **Ponta:** `20805b092bd12231e1d744c2eb9f073214321207` (`feature/controlador-integracao` depois do
+  *fast-forward* 2e8872a → 20805b0). A branch foi entregue com base `c055399`; o coordenador fez um
+  *rebase* linear de `c055399..2e5c6ba` sobre `2e8872a`, sem conflito e sem arquivo em comum. *Ref* de
+  *backup* `backup/f1-crash-silencioso-pre-rebase` = `2e5c6ba`. Mapa: `2a82d42`→`6bbf88c`,
+  `0d955c0`→`c5a7af9`, `0e83ec3`→`1ac38a6`, `db53600`→`1f113bb`, `2e5c6ba`→`20805b0`. Os arquivos
+  do F1 ficaram idênticos aos da original. O último commit (`20805b0`, P3) só muda o comentário de
+  `scripts/run-baseline.sh`, fora do *bundle*.
 - **Jar:** inalterado, `5eced1363f1b318f533174e967be6a81080bcc95961d0f72a118dc0184dcefaf` (cópia G2).
+  Re-hasheado pelo coordenador em 2026-10-28 no arquivo congelado real
+  (`dados-vm/rebaseline-2026-10/jar/session-workload-0.1.0-SNAPSHOT.jar`, só leitura; `sha256sum -c`
+  do `.sha256` ao lado: OK). Isso fecha a lacuna da seção 1 da validação.
 - ***Bundle* da VM** (`git archive` da ponta, LF):
 
   | Arquivo | SHA-256 |
   |---|---|
-  | `analysis/rebaseline.py` | a preencher após a entrega do Worker |
+  | `analysis/rebaseline.py` | `3005f49ae5696dcd9ace324b08295187100fcde39c111115a89c517bc4e3c7cd` |
   | `runs/rebaseline/matriz.tsv` | `8654900cd23b9b46e65163a5d106bd6f86113632d2ce621ff962f637cd645c35` |
-  | `scripts/inject-crash.sh` | a preencher após a entrega do Worker |
+  | `scripts/inject-crash.sh` | `5b4d571986256d96c73405ac887eca55c783787ad0bc0a0c5dec558856ddc0cf` |
   | `scripts/inject-jitter.sh` | `7e68962b1b7f508ee84ca7561a20c0bba36c43ea4597d7390e7c8091cd24e529` |
   | `scripts/rebaseline_matriz.py` | `3531916a863832fd5aea050910111c69f0c9130c0bd325c3ad3f238e44a3533a` |
   | `scripts/run-rebaseline.sh` | `d95305fee402b1f882d387a40e81d4f83df72d7fe4b6daf810516e0627267366` |
   | `workload/target/session-workload-0.1.0-SNAPSHOT.jar` | `5eced1363f1b318f533174e967be6a81080bcc95961d0f72a118dc0184dcefaf` |
 
-  SHA-256 da lista no formato do `sha256sum`: a preencher após a entrega do Worker (substitui
-  `e304ba4b…` para o piloto e as noites). Na VM, `sha256sum -c` arquivo a arquivo.
+  SHA-256 da lista acima no formato do `sha256sum` (`<hash> *<caminho>`, em ordem):
+  `003814e93929ea7360f7eba35933907f954201ddf6faca2ce0ae9d3c8c2133a4` (substitui `e304ba4b…` para o
+  piloto e as noites). Na VM, `sha256sum -c` arquivo a arquivo.
+- **Conferência dos *hashes*.** Três medições independentes dão os mesmos valores: o Worker
+  (`git archive` de `0e83ec3` e `db53600`), o Senior na validação (mesmo método) e o coordenador
+  (cópia `git archive` de `db53600` e de `20805b0`, jar congelado re-hasheado). O Senior conferiu
+  também, nesta edição, os *blobs* de `20805b0` por `git show 20805b0:<caminho> | sha256sum` e a
+  lista resultante (`003814e9…`). Os quatro arquivos fora do F1 (`matriz.tsv`, `inject-jitter.sh`,
+  `rebaseline_matriz.py`, `run-rebaseline.sh`) e o jar têm os mesmos *hashes* da parte 2.
+- **Re-medição na ponta** (coordenador, Worker independente, 2026-10-28): em `db53600`,
+  `inject-crash.test.sh` 113/0 (contra o injetor de `c055399`: 56/57); mutantes M2 86/27, M3 110/3,
+  M4 108/5, M5 108/5; `run-rebaseline.test.sh` 1 rodada 130/0 (1114 s, aviso R4 a +51 440 ms,
+  esperado, acima do piso N + 48 s); `inject-jitter` 35/0, `inject-partition` 125/0/2 *skip*,
+  `inject-netdegrade` 298/0/1 *skip*; `test_rebaseline.py` 69 OK, `test_rebaseline_matriz.py` 8 OK,
+  `test_contrato_csv.py` 9 OK, `test_contrato_csv_v2.py` 6 OK. Em cópia `git archive` de `20805b0`:
+  Surefire 863 testes / 0 falhas / 0 erros / 1 *skip*, 122 arquivos (igual a `2e8872a`; o F1 não tem
+  Java); `unittest discover -s analysis` 187 OK, 1 *skip* (181 + 6 do F1); `inject-crash.test.sh`
+  113/0; *hashes* do *bundle* iguais aos da tabela.
+- **Nota de execução (P1 da validação, aprovada pelo Gestor em 2026-10-28):** a forma literal do
+  comando no injetor é `podman kill isn2 --signal KILL` (a *flag* depois do nome), com a mesma
+  semântica do `podman kill --signal KILL isn2` escrito no complemento 2 e na DT-017. O *smoke* deu
+  ExitCode 137 em todos os `kill`; o ensaio da VM (complemento 2 / prompt §4.2) confirma no Podman da
+  VM. O complemento 2 e a DT-017 não são editados.
+- **Nota interpretativa (P2 da validação, aprovada pelo Gestor em 2026-10-28):** a conferência h3 do
+  complemento 2 §4 lê-se "`died` de `isn2` dentro de uma execução F1 com código de saída **≠ 137** ⇒
+  recusa K6 dessa execução", e não só "= 143". É mais estrita que o texto e coerente com a DT-017
+  (o positivo é 137). Motivo: no *smoke* local uma parada ordenada saiu com ExitCode 0, que escaparia
+  da regra literal. O K6 já recusa esse caso, porque exige `ExitCode=137` e `kill isn2` no *log*.
+- **Data do *smoke* do complemento 2 §4** (*lock* `___global.lck` deixado pelo SIGKILL não impede a
+  subida na 15.0.21): *smoke* local de **2026-10-27/28**, brutos em
+  `runs/smoke-f1-silencioso-2026-10-27/` (o nome do diretório leva a data do plano; os eventos dos
+  ensaios têm carimbo de 2026-10-28 UTC, o último às 05:26:32Z). Nos ensaios de `kill` e silencioso
+  o `.lck` parado tinha 0 byte, `ISPN000693` não apareceu e `ISPN000389` ("Loaded global state")
+  apareceu na vida nova (relatório do Worker `docs/relatorio-f1-silencioso-2026-10-27.md` §7). Faixa
+  de detecção observada no modo silencioso: Δdet 36,5 a 41,9 s (FD_ALL3), registrada como observação,
+  sem mínimo fixado.
+- **Pendente (só na VM):** instante UTC de criação do *cluster* depois do S7 e do ensaio do F1
+  (`--cluster-criado-apos`), como na parte 2.
 - **Dependências na VM** para o F1 novo: `nsenter` (util-linux) e `ip` (iproute2), as mesmas do F3;
   conferidas pelo pré-voo do *runner* (`nsenter`, `tc`) e por `command -v ip` no bloco de abertura
   da fase.

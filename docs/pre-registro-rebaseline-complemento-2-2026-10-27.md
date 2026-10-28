@@ -76,7 +76,8 @@ exit 6 do *runner* (infraestrutura).
   não foi o pré-registrado); fora de execução F1 já é (h).
 - **Estado global do Infinispan:** um `___global.lck` deixado pelo SIGKILL não impede a subida na
   15.0.21 (o *lock* é do sistema operacional e morre com o processo; `unclean-shutdown-action=FAIL`
-  só é consultado se o *lock* estiver em uso). Confirmado no *smoke* local de <data> (preencher).
+  só é consultado se o *lock* estiver em uso). Confirmado no *smoke* local de 2026-10-27/28
+  (`runs/smoke-f1-silencioso-2026-10-27/`; data preenchida em 2026-10-28 com a adenda da DT-009 parte 2).
 - **Jar:** não muda (`5eced136…`). **`run-rebaseline.sh`:** não muda (`d95305fe…`). **Matriz,
   ordem, sementes, análise do PR §7:** não mudam.
 

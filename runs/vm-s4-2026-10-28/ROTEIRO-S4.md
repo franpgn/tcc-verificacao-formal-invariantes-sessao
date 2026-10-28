@@ -12,8 +12,8 @@ Preparado pelo Worker. Não foi executado na VM. Referências: `decisoes-senior-
 
 | Passo | Ação | Arquivo em `vm-<UTC>/` | Se falhar |
 |---|---|---|---|
-| 0 | Pré-condições, só leitura: `TCC_DIR=$HOME/tcc-gate` (exporta se vazio, aborta se diferente), tmux, lock OCUPADO, `sudo -n`, `uname -r` = 6.8.0-147-generic, `boot_id` = `b7df4b03…e65b`, HEAD, 0 arquivos versionados modificados, sha256 da tabela, ambiente sem `G1_*`/`REP`/`COLETA`/..., java e jar, `g1-rep4` inexistente, 0 timers, `go.log` e `podman ps` | `00-pre.log` | rc 1, nada tocado |
-| 1 | `inspect` e `logs` dos 3 contêineres antigos e a última vista. Depois pede `RECRIAR` | `01-pre-recriacao.log`, `pre-recriacao/` | rc 1 |
+| 0 | Pré-condições, só leitura: `TCC_DIR=$HOME/tcc-gate` (exporta se vazio, aborta se diferente), tmux, lock OCUPADO, `sudo -n`, `uname -r` = 6.8.0-147-generic, `boot_id` = `5d7119b8…10df` (boot de 2026-10-28 06:39 UTC; até a tentativa 1 era `b7df4b03…e65b`), HEAD, 0 arquivos versionados modificados, sha256 da tabela, ambiente sem `G1_*`/`REP`/`COLETA`/..., java e jar, `g1-rep4` inexistente, 0 timers, `go.log` e `podman ps` | `00-pre.log` | rc 1, nada tocado |
+| 1 | `inspect`, `.State.Status` e `logs` dos 3 contêineres antigos, a última vista e o journal do boot anterior (`journalctl -b -1`). Uma falha de leitura vira AVISO no log. Depois pede `RECRIAR` | `01-pre-recriacao.log`, `pre-recriacao/` (com `journal-boot-anterior.txt`) | rc 1 |
 | 2 | `recriar.sh` (down/up, ESTÁVEL). Não tem go próprio | `02-recriacao.log`, `recriacao/` | rc 2 |
 | 2b | IDs, criação, `StartedAt`, vista e topology id do cluster novo | `03-pos-recriacao.log` | (registro) |
 | 3 | Portão 5.1 (`portao51.sh`) com `.log` e `.csv`. A duração é ≥ 130 s e o fim fica ≥ up + 345 s, para que a regra de "0 mudanças de vista em 5 min" valha. A avaliação é automática | `04-portao51-pre.{log,csv,avaliacao}` | rc 3: **S4 não roda** |
@@ -32,6 +32,27 @@ O console inteiro vai para `s4-console.log` e o rc de cada passo para `rc.txt`.
 
 Cerca de 18 min do comando ao fim. O prompt do GO aparece por volta do minuto 8 (pré 1 a 2 min, recriação cerca de 1,5 min, portão pré até up + 345 s). A janela e o merge levam cerca de 3 min (96 s de injeção, cerca de 46 s de merge e mais 30 s de log), e o portão pós leva cerca de 6 min. O Gestor precisa ficar presente do GO até o fim do merge. Nada de TLC, `mvn` ou carga pesada no host, do início do portão pré até o fim do portão pós.
 
+## Tentativa 1 abortada (2026-10-28)
+
+- O Gestor rodou o `s4.sh` às 06:35:54 UTC. O passo 0 passou.
+- Por volta das 06:36:24 UTC o host Windows caiu com BSOD 0x154, logo no início do passo 1. `pre-recriacao/inspect-isn1.json` ficou com 0 bytes e `01-pre-recriacao.log` ficou vazio.
+- Não rodaram o prompt RECRIAR, o `recriar.sh`, o portão 5.1, o g1/g1b nem o GO. O `go.log` não mudou. Nada foi injetado e o cluster não foi recriado.
+- A VM reiniciou às 06:39:35 UTC. O boot_id novo é `5d7119b8-3b50-435d-bd0d-cbdb6bd410df` (antes `b7df4b03-6652-4808-9617-11096693e65b`, o de S2 e S3). O kernel continua 6.8.0-147-generic. O IP da VM agora é 172.31.251.37.
+- `sudo podman ps -a` mostra isn1, isn2 e isn3 em `Created`, criados em 2026-10-27 18:48:5x UTC. Não há timers tcc.
+- A saída parcial ficou só na VM, em `~/tcc-gate/runs/vm-s4-2026-10-28/vm-20261028T063554Z/` (`00-pre.log`, `s4-console.log`, `rc.txt` vazio, `01-pre-recriacao.log` vazio, `pre-recriacao/inspect-isn1.json` vazio). O host não tem cópia.
+
+Ajustes no `s4.sh` para a tentativa 2: `BOOT_ESPERADO` passa a ser o boot novo, de modo que o antigo aborta no passo 0. O passo 1 registra o `.State.Status` de cada contêiner e grava `pre-recriacao/journal-boot-anterior.txt`, que reúne `journalctl --list-boots`, `journalctl -b -1 -o short-iso-precise CONTAINER_NAME=isnN` para cada nó e as linhas de podman/conmon do boot anterior que citam isn1..3. Isso é necessário porque, com os contêineres em `Created`, o `podman logs` pode sair vazio ou trazer só o boot atual. Uma falha nessa leitura vira AVISO e não aborta. O prompt RECRIAR e o restante da sequência não mudaram, e os 7 scripts da tabela de hashes também não. O sha256 do `s4.sh` novo é `e9e46bf11a1ddecb8754efc656bd0c219beb8a94becc10da6959ee41e7869367`.
+
+**Antes da tentativa 2, o Gestor deve fazer na VM** (por analogia à DT-014, sem apagar nada), depois de levar o `s4.sh` novo para a VM (o caminho depende da aprovação do push da branch):
+
+```bash
+cd ~/tcc-gate/runs/vm-s4-2026-10-28
+mv vm-20261028T063554Z vm-20261028T063554Z.abortada-host-crash
+sha256sum s4.sh   # esperado e9e46bf11a1ddecb8754efc656bd0c219beb8a94becc10da6959ee41e7869367
+```
+
+O `s4.sh` não lê saídas anteriores e cria um `vm-<UTC>` novo. A renomeação só serve para que a tentativa 1 não se confunda com a 2. Se o `journalctl -b -1` não tiver o boot anterior (journal não persistente), o passo 1 registra o AVISO e segue até o prompt RECRIAR.
+
 ## Teste
 
-`bash runs/vm-s4-2026-10-28/s4.test.sh`: 181 PASS, 0 FAIL (Git Bash, ~2,5 min). Ele não prova podman, tmux, flock nem Infinispan reais.
+`bash runs/vm-s4-2026-10-28/s4.test.sh`: 216 PASS, 0 FAIL (Git Bash, ~3 min; eram 181 antes dos casos da tentativa 1). Ele não prova podman, tmux, flock, journalctl nem Infinispan reais.

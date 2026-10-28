@@ -7,6 +7,7 @@
 set -uo pipefail
 AQUI="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$AQUI/gate-test-lib-v4.sh"
+export SHIM_SYSTEMD_255=1   # shim de systemctl show responde como o systemd 255 da VM (so AccuracyUSec)
 G5B_DIR="${G5B_DIR:-$AQUI}"
 G5B="$G5B_DIR/g5b.sh"
 RA="$TCC/runs/gate-b29/g5b-A"; RB="$TCC/runs/gate-b29/g5b-B"
@@ -190,7 +191,7 @@ norm() { awk '/^armar\(\)/,/em \$\(\( \$1 \+ \$\{2:-90\} \)\)s"; }/' "$1" | tr -
 ok "T-b-9 corpo do armar identico (sem a propriedade)" "$(norm "$AQUI/g-lib.sh")" "$(norm "$G5B")"
 reset_shims_v4; cenario_curto; export G5B_ACC=0; roda "GO" "$G5B" A; unset G5B_ACC
 ok "T-b-9 ACC=0: rc 0" "0" "$RC"; nao_contem "T-b-9 ACC=0 sem timer-property" "timer-property" "$(grep systemd-run "$SHIM_LOG")"
-contem "T-b-9 ACC=0 AccuracySec default 1min" "AccuracySec=1min" "$(cat "$RA/unit-armada.txt")"
+contem "T-b-9 ACC=0 AccuracyUSec default 1min" "AccuracyUSec=1min" "$(cat "$RA/unit-armada.txt")"
 
 matar_timers
 resumo_final

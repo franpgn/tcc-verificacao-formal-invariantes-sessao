@@ -64,8 +64,8 @@ UNIT="$DMS"
 { echo "unit=$UNIT t_antes_armar_ns=$T0 t_depois_armar_ns=$T1 prazo_s=$PRAZO"
   echo "--- systemctl cat ${UNIT}.service"; sudo systemctl cat "${UNIT}.service" 2>&1 || true
   echo "--- systemctl cat ${UNIT}.timer";   sudo systemctl cat "${UNIT}.timer" 2>&1 || true
-  echo "--- AccuracySec (default 1min: o disparo pode atrasar ate esse valor)"
-  sudo systemctl show "${UNIT}.timer" -p AccuracySec -p OnActiveSec -p NextElapseUSecMonotonic 2>&1 || true
+  echo "--- AccuracyUSec (systemd 255: AccuracySec so na escrita; default 1min: o disparo pode atrasar ate esse valor)"
+  sudo systemctl show "${UNIT}.timer" -p AccuracyUSec -p OnActiveSec -p NextElapseUSecMonotonic 2>&1 || true
   echo "--- list-timers"; systemctl list-timers --all 2>&1 | grep tcc-heal || echo "(nenhum)"; } > "$OUT/unit-armada.txt"
 cat "$OUT/unit-armada.txt"
 grep -q 'inject-netdegrade.sh --heal' "$OUT/unit-armada.txt" && ok "unit armada executa inject-netdegrade.sh --heal" \
@@ -95,7 +95,7 @@ echo "t_limpeza_ns=$T_LIMPEZA delta_desde_antes_de_armar_ms=$D0 delta_desde_depo
 [ "$D0" -ge $(( MIN * 1000 )) ] && ok "disparo nao antes de ${MIN} s (delta=${D0} ms desde antes de armar)" \
   || falha "disparo ANTES de ${MIN} s (delta=${D0} ms)"
 [ "$D1" -le $(( MAX * 1000 )) ] && ok "disparo ate ${MAX} s (delta=${D1} ms desde depois de armar)" \
-  || falha "disparo DEPOIS de ${MAX} s (delta=${D1} ms; ver AccuracySec em unit-armada.txt)"
+  || falha "disparo DEPOIS de ${MAX} s (delta=${D1} ms; ver AccuracyUSec em unit-armada.txt)"
 
 # 4. evidencias do systemd e do estado final
 { sudo journalctl -u "${UNIT}.service" --no-pager -o short-iso 2>&1 || true; } > "$OUT/journal-unit.txt"

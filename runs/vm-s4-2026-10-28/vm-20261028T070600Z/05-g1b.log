@@ -1,0 +1,15 @@
+g1b (S4): REP=4 COLETA=minima TCC_DIR=/home/server1/tcc-gate inicio 2026-10-28T07:12:06+00:00
+g1b: janela iniciada (start_ns=1793171534519348479); sondas e coleta (minima) ligadas 2026-10-28T07:12:15+00:00
+g1b: event=end visto; mais 75s de coleta
+rep=4
+coleta=minima
+start_ns=1793171534519348479
+end_ns=1793171630559796415
+amostras_de_saude=35 intervalo_s=5 pos_fim_s=75
+jar=workload/target/session-workload-0.1.0-SNAPSHOT.jar
+jar_sha256=3594c690cfacd2be1f88e58d2a65a4cd944a06688abcb9ae5b4d3df2f7dc7bee
+java=openjdk version "17.0.20.1" 2026-08-18
+sonda-isn3: linhas=274 erros=224
+sonda-isn1: linhas=274 erros=10
+g1b: pronto. Copie runs/gate-b29/g1-rep4/hotrod para o host (ver docs/relatorio-sonda-hotrod-2026-10-16.md).
+g1b rc=0 fim=2026-10-28T07:15:05+00:00

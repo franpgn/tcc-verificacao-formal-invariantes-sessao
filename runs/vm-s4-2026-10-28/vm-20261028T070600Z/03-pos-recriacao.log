@@ -1,0 +1,31 @@
+== cluster novo 2026-10-28T07:06:47+00:00 (t0_up_epoch=1793171180 2026-10-28T07:06:20+00:00)
+isn1 id=8ac12fb133b6 criado=2026-10-28 07:06:17.164328 +0000 UTC StartedAt=2026-10-28 07:06:17.381804963 +0000 UTC
+isn2 id=bf59d899e74e criado=2026-10-28 07:06:18.497396994 +0000 UTC StartedAt=2026-10-28 07:06:18.610673974 +0000 UTC
+isn3 id=7cb75f4666d4 criado=2026-10-28 07:06:19.702961494 +0000 UTC StartedAt=2026-10-28 07:06:19.823131494 +0000 UTC
+-- isn1 vista e rebalance (topology id)
+2026-10-28 07:06:25,702 INFO  [o.i.LIFECYCLE] [Context=___protobuf_metadata][Scope=isn1-23890]ISPN100010: Finished rebalance with members [isn3-54173, isn1-23890, isn2-18212], topology id 6
+2026-10-28 07:06:25,727 INFO  [o.i.LIFECYCLE] [Context=org.infinispan.CONFIG][Scope=isn1-23890]ISPN100010: Finished rebalance with members [isn3-54173, isn1-23890, isn2-18212], topology id 6
+2026-10-28 07:06:25,768 INFO  [o.i.LIFECYCLE] [Context=org.infinispan.COUNTER][Scope=isn1-23890]ISPN100010: Finished rebalance with members [isn3-54173, isn1-23890, isn2-18212], topology id 6
+2026-10-28 07:06:25,824 INFO  [o.i.LIFECYCLE] [Context=___script_cache][Scope=isn1-23890]ISPN100010: Finished rebalance with members [isn3-54173, isn1-23890, isn2-18212], topology id 6
+2026-10-28 07:06:25,835 INFO  [o.i.LIFECYCLE] [Context=___hotRodTopologyCache_hotrod-default][Scope=isn1-23890]ISPN100010: Finished rebalance with members [isn3-54173, isn1-23890], topology id 2
+2026-10-28 07:06:25,879 INFO  [o.i.LIFECYCLE] [Context=counters][Scope=isn1-23890]ISPN100010: Finished rebalance with members [isn3-54173, isn1-23890, isn2-18212], topology id 6
+2026-10-28 07:06:25,898 INFO  [o.i.LIFECYCLE] [Context=sessions][Scope=isn1-23890]ISPN100010: Finished rebalance with members [isn3-54173, isn1-23890, isn2-18212], topology id 6
+2026-10-28 07:06:26,025 INFO  [o.i.LIFECYCLE] [Context=___hotRodTopologyCache_hotrod-default][Scope=isn1-23890]ISPN100010: Finished rebalance with members [isn3-54173, isn1-23890, isn2-18212], topology id 6
+-- isn2 vista e rebalance (topology id)
+2026-10-28 07:06:25,636 INFO  [o.i.LIFECYCLE] [Context=org.infinispan.CLIENT_SERVER_TX_TABLE][Scope=isn2-18212]ISPN100010: Finished rebalance with members [isn3-54173, isn1-23890, isn2-18212], topology id 6
+2026-10-28 07:06:25,707 INFO  [o.i.LIFECYCLE] [Context=___protobuf_metadata][Scope=isn2-18212]ISPN100010: Finished rebalance with members [isn3-54173, isn1-23890, isn2-18212], topology id 6
+2026-10-28 07:06:25,717 INFO  [o.i.LIFECYCLE] [Context=org.infinispan.CONFIG][Scope=isn2-18212]ISPN100010: Finished rebalance with members [isn3-54173, isn1-23890, isn2-18212], topology id 6
+2026-10-28 07:06:25,769 INFO  [o.i.LIFECYCLE] [Context=org.infinispan.COUNTER][Scope=isn2-18212]ISPN100010: Finished rebalance with members [isn3-54173, isn1-23890, isn2-18212], topology id 6
+2026-10-28 07:06:25,824 INFO  [o.i.LIFECYCLE] [Context=___script_cache][Scope=isn2-18212]ISPN100010: Finished rebalance with members [isn3-54173, isn1-23890, isn2-18212], topology id 6
+2026-10-28 07:06:25,881 INFO  [o.i.LIFECYCLE] [Context=counters][Scope=isn2-18212]ISPN100010: Finished rebalance with members [isn3-54173, isn1-23890, isn2-18212], topology id 6
+2026-10-28 07:06:25,901 INFO  [o.i.LIFECYCLE] [Context=sessions][Scope=isn2-18212]ISPN100010: Finished rebalance with members [isn3-54173, isn1-23890, isn2-18212], topology id 6
+2026-10-28 07:06:26,025 INFO  [o.i.LIFECYCLE] [Context=___hotRodTopologyCache_hotrod-default][Scope=isn2-18212]ISPN100010: Finished rebalance with members [isn3-54173, isn1-23890, isn2-18212], topology id 6
+-- isn3 vista e rebalance (topology id)
+2026-10-28 07:06:25,846 INFO  [o.i.CLUSTER] [Context=___hotRodTopologyCache_hotrod-default]ISPN100010: Finished rebalance with members [isn3-54173, isn1-23890], topology id 5
+2026-10-28 07:06:25,862 INFO  [o.i.CLUSTER] [Context=___script_cache]ISPN100010: Finished rebalance with members [isn3-54173, isn1-23890, isn2-18212], topology id 9
+2026-10-28 07:06:25,878 INFO  [o.i.LIFECYCLE] [Context=counters][Scope=isn3-54173]ISPN100010: Finished rebalance with members [isn3-54173, isn1-23890, isn2-18212], topology id 6
+2026-10-28 07:06:25,888 INFO  [o.i.CLUSTER] [Context=counters]ISPN100010: Finished rebalance with members [isn3-54173, isn1-23890, isn2-18212], topology id 9
+2026-10-28 07:06:25,895 INFO  [o.i.LIFECYCLE] [Context=sessions][Scope=isn3-54173]ISPN100010: Finished rebalance with members [isn3-54173, isn1-23890, isn2-18212], topology id 6
+2026-10-28 07:06:25,908 INFO  [o.i.CLUSTER] [Context=sessions]ISPN100010: Finished rebalance with members [isn3-54173, isn1-23890, isn2-18212], topology id 9
+2026-10-28 07:06:26,023 INFO  [o.i.LIFECYCLE] [Context=___hotRodTopologyCache_hotrod-default][Scope=isn3-54173]ISPN100010: Finished rebalance with members [isn3-54173, isn1-23890, isn2-18212], topology id 6
+2026-10-28 07:06:26,034 INFO  [o.i.CLUSTER] [Context=___hotRodTopologyCache_hotrod-default]ISPN100010: Finished rebalance with members [isn3-54173, isn1-23890, isn2-18212], topology id 9

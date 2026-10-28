@@ -1,0 +1,190 @@
+Oct 28, 2026 7:12:15 AM org.infinispan.client.hotrod.impl.transport.netty.NativeTransport useNativeIOUring
+INFO: ISPN004108: Native IOUring transport not available, using NIO instead: io.netty.incubator.channel.uring.IOUring
+Oct 28, 2026 7:12:16 AM org.infinispan.client.hotrod.RemoteCacheManager actualStart
+INFO: ISPN004021: Infinispan version: Infinispan 'I'm Still Standing' 15.0.0.Final
+Oct 28, 2026 7:12:16 AM org.infinispan.client.hotrod.impl.RemoteCacheImpl init
+INFO: ISPN004113: Query module not found. Queries are disabled.
+Oct 28, 2026 7:12:20 AM org.infinispan.client.hotrod.impl.operations.RetryOnFailureOperation logAndRetryOrFail
+ERROR: ISPN004007: Exception encountered. Retry 1 out of 1
+java.net.SocketTimeoutException: PutOperation{sessions, key=sonda-isn1, value=[B0xACED00057372002462722E756E697061..[525], flags=6, connection=127.0.0.1/127.0.0.1:11222} timed out after 2000 ms
+	at org.infinispan.client.hotrod.impl.operations.HotRodOperation.run(HotRodOperation.java:183)
+	at io.netty.util.concurrent.PromiseTask.runTask(PromiseTask.java:98)
+	at io.netty.util.concurrent.ScheduledFutureTask.run(ScheduledFutureTask.java:153)
+	at io.netty.util.concurrent.AbstractEventExecutor.runTask(AbstractEventExecutor.java:173)
+	at io.netty.util.concurrent.AbstractEventExecutor.safeExecute(AbstractEventExecutor.java:166)
+	at io.netty.util.concurrent.SingleThreadEventExecutor.runAllTasks(SingleThreadEventExecutor.java:470)
+	at io.netty.channel.epoll.EpollEventLoop.run(EpollEventLoop.java:416)
+	at io.netty.util.concurrent.SingleThreadEventExecutor$4.run(SingleThreadEventExecutor.java:997)
+	at io.netty.util.internal.ThreadExecutorMap$2.run(ThreadExecutorMap.java:74)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1136)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)
+	at java.base/java.lang.Thread.run(Thread.java:840)
+
+Oct 28, 2026 7:12:24 AM org.infinispan.client.hotrod.impl.operations.RetryOnFailureOperation logAndRetryOrFail
+ERROR: ISPN004007: Exception encountered. Retry 1 out of 1
+java.net.SocketTimeoutException: RemoveOperation{sessions, key=sonda-isn1, flags=0, connection=127.0.0.1/127.0.0.1:11222} timed out after 2000 ms
+	at org.infinispan.client.hotrod.impl.operations.HotRodOperation.run(HotRodOperation.java:183)
+	at io.netty.util.concurrent.PromiseTask.runTask(PromiseTask.java:98)
+	at io.netty.util.concurrent.ScheduledFutureTask.run(ScheduledFutureTask.java:153)
+	at io.netty.util.concurrent.AbstractEventExecutor.runTask(AbstractEventExecutor.java:173)
+	at io.netty.util.concurrent.AbstractEventExecutor.safeExecute(AbstractEventExecutor.java:166)
+	at io.netty.util.concurrent.SingleThreadEventExecutor.runAllTasks(SingleThreadEventExecutor.java:470)
+	at io.netty.channel.epoll.EpollEventLoop.run(EpollEventLoop.java:416)
+	at io.netty.util.concurrent.SingleThreadEventExecutor$4.run(SingleThreadEventExecutor.java:997)
+	at io.netty.util.internal.ThreadExecutorMap$2.run(ThreadExecutorMap.java:74)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1136)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)
+	at java.base/java.lang.Thread.run(Thread.java:840)
+
+Oct 28, 2026 7:12:24 AM org.infinispan.client.hotrod.RemoteCacheManager actualStart
+INFO: ISPN004021: Infinispan version: Infinispan 'I'm Still Standing' 15.0.0.Final
+Oct 28, 2026 7:12:24 AM org.infinispan.client.hotrod.impl.RemoteCacheImpl init
+INFO: ISPN004113: Query module not found. Queries are disabled.
+Oct 28, 2026 7:12:28 AM org.infinispan.client.hotrod.impl.operations.RetryOnFailureOperation logAndRetryOrFail
+ERROR: ISPN004007: Exception encountered. Retry 1 out of 1
+java.net.SocketTimeoutException: PutOperation{counters, key=sonda-isn1, value=[B0xACED00057372002562722E756E697061..[380], flags=6, connection=127.0.0.1/127.0.0.1:11222} timed out after 2000 ms
+	at org.infinispan.client.hotrod.impl.operations.HotRodOperation.run(HotRodOperation.java:183)
+	at io.netty.util.concurrent.PromiseTask.runTask(PromiseTask.java:98)
+	at io.netty.util.concurrent.ScheduledFutureTask.run(ScheduledFutureTask.java:153)
+	at io.netty.util.concurrent.AbstractEventExecutor.runTask(AbstractEventExecutor.java:173)
+	at io.netty.util.concurrent.AbstractEventExecutor.safeExecute(AbstractEventExecutor.java:166)
+	at io.netty.util.concurrent.SingleThreadEventExecutor.runAllTasks(SingleThreadEventExecutor.java:470)
+	at io.netty.channel.epoll.EpollEventLoop.run(EpollEventLoop.java:416)
+	at io.netty.util.concurrent.SingleThreadEventExecutor$4.run(SingleThreadEventExecutor.java:997)
+	at io.netty.util.internal.ThreadExecutorMap$2.run(ThreadExecutorMap.java:74)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1136)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)
+	at java.base/java.lang.Thread.run(Thread.java:840)
+
+Oct 28, 2026 7:12:32 AM org.infinispan.client.hotrod.impl.operations.RetryOnFailureOperation logAndRetryOrFail
+ERROR: ISPN004007: Exception encountered. Retry 1 out of 1
+java.net.SocketTimeoutException: RemoveOperation{counters, key=sonda-isn1, flags=0, connection=127.0.0.1/127.0.0.1:11222} timed out after 2000 ms
+	at org.infinispan.client.hotrod.impl.operations.HotRodOperation.run(HotRodOperation.java:183)
+	at io.netty.util.concurrent.PromiseTask.runTask(PromiseTask.java:98)
+	at io.netty.util.concurrent.ScheduledFutureTask.run(ScheduledFutureTask.java:153)
+	at io.netty.util.concurrent.AbstractEventExecutor.runTask(AbstractEventExecutor.java:173)
+	at io.netty.util.concurrent.AbstractEventExecutor.safeExecute(AbstractEventExecutor.java:166)
+	at io.netty.util.concurrent.SingleThreadEventExecutor.runAllTasks(SingleThreadEventExecutor.java:470)
+	at io.netty.channel.epoll.EpollEventLoop.run(EpollEventLoop.java:416)
+	at io.netty.util.concurrent.SingleThreadEventExecutor$4.run(SingleThreadEventExecutor.java:997)
+	at io.netty.util.internal.ThreadExecutorMap$2.run(ThreadExecutorMap.java:74)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1136)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)
+	at java.base/java.lang.Thread.run(Thread.java:840)
+
+Oct 28, 2026 7:12:33 AM org.infinispan.client.hotrod.impl.protocol.Codec20 checkForErrorsInResponseStatus
+WARN: ISPN004005: Error received from the server: org.infinispan.remoting.RemoteException: ISPN000217: Received exception from isn2-18212, see cause for remote stack trace
+org.infinispan.commons.TimeoutException: ISPN000299: Unable to acquire lock after 15 seconds for key WrappedByteArray[ACED0005\t000A\s\o\n\d\a\-\i\s\n\1 (17 bytes)] and requestor CommandInvocation:isn1-23890:41. Lock is held by CommandInvocation:isn1-23890:40
+Oct 28, 2026 7:12:33 AM org.infinispan.client.hotrod.impl.protocol.Codec20 checkForErrorsInResponseStatus
+WARN: ISPN004005: Error received from the server: org.infinispan.commons.TimeoutException: ISPN000476: Timed out waiting for responses for request 52 from isn2-18212 after 17.5 seconds
+Oct 28, 2026 7:12:36 AM org.infinispan.client.hotrod.impl.operations.RetryOnFailureOperation logAndRetryOrFail
+ERROR: ISPN004007: Exception encountered. Retry 1 out of 1
+java.net.SocketTimeoutException: PutOperation{sessions, key=sonda-isn1, value=[B0xACED00057372002462722E756E697061..[525], flags=6, connection=127.0.0.1/127.0.0.1:11222} timed out after 2000 ms
+	at org.infinispan.client.hotrod.impl.operations.HotRodOperation.run(HotRodOperation.java:183)
+	at io.netty.util.concurrent.PromiseTask.runTask(PromiseTask.java:98)
+	at io.netty.util.concurrent.ScheduledFutureTask.run(ScheduledFutureTask.java:153)
+	at io.netty.util.concurrent.AbstractEventExecutor.runTask(AbstractEventExecutor.java:173)
+	at io.netty.util.concurrent.AbstractEventExecutor.safeExecute(AbstractEventExecutor.java:166)
+	at io.netty.util.concurrent.SingleThreadEventExecutor.runAllTasks(SingleThreadEventExecutor.java:470)
+	at io.netty.channel.epoll.EpollEventLoop.run(EpollEventLoop.java:416)
+	at io.netty.util.concurrent.SingleThreadEventExecutor$4.run(SingleThreadEventExecutor.java:997)
+	at io.netty.util.internal.ThreadExecutorMap$2.run(ThreadExecutorMap.java:74)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1136)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)
+	at java.base/java.lang.Thread.run(Thread.java:840)
+
+Oct 28, 2026 7:12:40 AM org.infinispan.client.hotrod.impl.operations.RetryOnFailureOperation logAndRetryOrFail
+ERROR: ISPN004007: Exception encountered. Retry 1 out of 1
+java.net.SocketTimeoutException: RemoveOperation{sessions, key=sonda-isn1, flags=0, connection=127.0.0.1/127.0.0.1:11222} timed out after 2000 ms
+	at org.infinispan.client.hotrod.impl.operations.HotRodOperation.run(HotRodOperation.java:183)
+	at io.netty.util.concurrent.PromiseTask.runTask(PromiseTask.java:98)
+	at io.netty.util.concurrent.ScheduledFutureTask.run(ScheduledFutureTask.java:153)
+	at io.netty.util.concurrent.AbstractEventExecutor.runTask(AbstractEventExecutor.java:173)
+	at io.netty.util.concurrent.AbstractEventExecutor.safeExecute(AbstractEventExecutor.java:166)
+	at io.netty.util.concurrent.SingleThreadEventExecutor.runAllTasks(SingleThreadEventExecutor.java:470)
+	at io.netty.channel.epoll.EpollEventLoop.run(EpollEventLoop.java:416)
+	at io.netty.util.concurrent.SingleThreadEventExecutor$4.run(SingleThreadEventExecutor.java:997)
+	at io.netty.util.internal.ThreadExecutorMap$2.run(ThreadExecutorMap.java:74)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1136)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)
+	at java.base/java.lang.Thread.run(Thread.java:840)
+
+Oct 28, 2026 7:12:41 AM org.infinispan.client.hotrod.impl.protocol.Codec20 checkForErrorsInResponseStatus
+WARN: ISPN004005: Error received from the server: org.infinispan.remoting.RemoteException: ISPN000217: Received exception from isn2-18212, see cause for remote stack trace
+org.infinispan.commons.TimeoutException: ISPN000299: Unable to acquire lock after 15 seconds for key WrappedByteArray[ACED0005\t000A\s\o\n\d\a\-\i\s\n\1 (17 bytes)] and requestor CommandInvocation:isn1-23890:45. Lock is held by CommandInvocation:isn1-23890:44
+Oct 28, 2026 7:12:41 AM org.infinispan.client.hotrod.impl.protocol.Codec20 checkForErrorsInResponseStatus
+WARN: ISPN004005: Error received from the server: org.infinispan.commons.TimeoutException: ISPN000476: Timed out waiting for responses for request 58 from isn2-18212 after 17.5 seconds
+Oct 28, 2026 7:12:44 AM org.infinispan.client.hotrod.impl.operations.RetryOnFailureOperation logAndRetryOrFail
+ERROR: ISPN004007: Exception encountered. Retry 1 out of 1
+java.net.SocketTimeoutException: PutOperation{counters, key=sonda-isn1, value=[B0xACED00057372002562722E756E697061..[380], flags=6, connection=127.0.0.1/127.0.0.1:11222} timed out after 2000 ms
+	at org.infinispan.client.hotrod.impl.operations.HotRodOperation.run(HotRodOperation.java:183)
+	at io.netty.util.concurrent.PromiseTask.runTask(PromiseTask.java:98)
+	at io.netty.util.concurrent.ScheduledFutureTask.run(ScheduledFutureTask.java:153)
+	at io.netty.util.concurrent.AbstractEventExecutor.runTask(AbstractEventExecutor.java:173)
+	at io.netty.util.concurrent.AbstractEventExecutor.safeExecute(AbstractEventExecutor.java:166)
+	at io.netty.util.concurrent.SingleThreadEventExecutor.runAllTasks(SingleThreadEventExecutor.java:470)
+	at io.netty.channel.epoll.EpollEventLoop.run(EpollEventLoop.java:416)
+	at io.netty.util.concurrent.SingleThreadEventExecutor$4.run(SingleThreadEventExecutor.java:997)
+	at io.netty.util.internal.ThreadExecutorMap$2.run(ThreadExecutorMap.java:74)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1136)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)
+	at java.base/java.lang.Thread.run(Thread.java:840)
+
+Oct 28, 2026 7:12:48 AM org.infinispan.client.hotrod.impl.operations.RetryOnFailureOperation logAndRetryOrFail
+ERROR: ISPN004007: Exception encountered. Retry 1 out of 1
+java.net.SocketTimeoutException: RemoveOperation{counters, key=sonda-isn1, flags=0, connection=127.0.0.1/127.0.0.1:11222} timed out after 2000 ms
+	at org.infinispan.client.hotrod.impl.operations.HotRodOperation.run(HotRodOperation.java:183)
+	at io.netty.util.concurrent.PromiseTask.runTask(PromiseTask.java:98)
+	at io.netty.util.concurrent.ScheduledFutureTask.run(ScheduledFutureTask.java:153)
+	at io.netty.util.concurrent.AbstractEventExecutor.runTask(AbstractEventExecutor.java:173)
+	at io.netty.util.concurrent.AbstractEventExecutor.safeExecute(AbstractEventExecutor.java:166)
+	at io.netty.util.concurrent.SingleThreadEventExecutor.runAllTasks(SingleThreadEventExecutor.java:470)
+	at io.netty.channel.epoll.EpollEventLoop.run(EpollEventLoop.java:416)
+	at io.netty.util.concurrent.SingleThreadEventExecutor$4.run(SingleThreadEventExecutor.java:997)
+	at io.netty.util.internal.ThreadExecutorMap$2.run(ThreadExecutorMap.java:74)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1136)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)
+	at java.base/java.lang.Thread.run(Thread.java:840)
+
+Oct 28, 2026 7:12:49 AM org.infinispan.client.hotrod.impl.protocol.Codec20 checkForErrorsInResponseStatus
+WARN: ISPN004005: Error received from the server: org.infinispan.remoting.RemoteException: ISPN000217: Received exception from isn2-18212, see cause for remote stack trace
+org.infinispan.commons.TimeoutException: ISPN000299: Unable to acquire lock after 15 seconds for key WrappedByteArray[ACED0005\t000A\s\o\n\d\a\-\i\s\n\1 (17 bytes)] and requestor CommandInvocation:isn1-23890:49. Lock is held by CommandInvocation:isn1-23890:48
+Oct 28, 2026 7:12:49 AM org.infinispan.client.hotrod.impl.protocol.Codec20 checkForErrorsInResponseStatus
+WARN: ISPN004005: Error received from the server: org.infinispan.commons.TimeoutException: ISPN000476: Timed out waiting for responses for request 64 from isn2-18212 after 17.5 seconds
+Oct 28, 2026 7:12:52 AM org.infinispan.client.hotrod.impl.operations.RetryOnFailureOperation logAndRetryOrFail
+ERROR: ISPN004007: Exception encountered. Retry 1 out of 1
+java.net.SocketTimeoutException: PutOperation{sessions, key=sonda-isn1, value=[B0xACED00057372002462722E756E697061..[525], flags=6, connection=127.0.0.1/127.0.0.1:11222} timed out after 2000 ms
+	at org.infinispan.client.hotrod.impl.operations.HotRodOperation.run(HotRodOperation.java:183)
+	at io.netty.util.concurrent.PromiseTask.runTask(PromiseTask.java:98)
+	at io.netty.util.concurrent.ScheduledFutureTask.run(ScheduledFutureTask.java:153)
+	at io.netty.util.concurrent.AbstractEventExecutor.runTask(AbstractEventExecutor.java:173)
+	at io.netty.util.concurrent.AbstractEventExecutor.safeExecute(AbstractEventExecutor.java:166)
+	at io.netty.util.concurrent.SingleThreadEventExecutor.runAllTasks(SingleThreadEventExecutor.java:470)
+	at io.netty.channel.epoll.EpollEventLoop.run(EpollEventLoop.java:416)
+	at io.netty.util.concurrent.SingleThreadEventExecutor$4.run(SingleThreadEventExecutor.java:997)
+	at io.netty.util.internal.ThreadExecutorMap$2.run(ThreadExecutorMap.java:74)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1136)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)
+	at java.base/java.lang.Thread.run(Thread.java:840)
+
+Oct 28, 2026 7:12:56 AM org.infinispan.client.hotrod.impl.operations.RetryOnFailureOperation logAndRetryOrFail
+ERROR: ISPN004007: Exception encountered. Retry 1 out of 1
+java.net.SocketTimeoutException: RemoveOperation{sessions, key=sonda-isn1, flags=0, connection=127.0.0.1/127.0.0.1:11222} timed out after 2000 ms
+	at org.infinispan.client.hotrod.impl.operations.HotRodOperation.run(HotRodOperation.java:183)
+	at io.netty.util.concurrent.PromiseTask.runTask(PromiseTask.java:98)
+	at io.netty.util.concurrent.ScheduledFutureTask.run(ScheduledFutureTask.java:153)
+	at io.netty.util.concurrent.AbstractEventExecutor.runTask(AbstractEventExecutor.java:173)
+	at io.netty.util.concurrent.AbstractEventExecutor.safeExecute(AbstractEventExecutor.java:166)
+	at io.netty.util.concurrent.SingleThreadEventExecutor.runAllTasks(SingleThreadEventExecutor.java:470)
+	at io.netty.channel.epoll.EpollEventLoop.run(EpollEventLoop.java:416)
+	at io.netty.util.concurrent.SingleThreadEventExecutor$4.run(SingleThreadEventExecutor.java:997)
+	at io.netty.util.internal.ThreadExecutorMap$2.run(ThreadExecutorMap.java:74)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1136)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)
+	at java.base/java.lang.Thread.run(Thread.java:840)
+
+Oct 28, 2026 7:12:57 AM org.infinispan.client.hotrod.impl.protocol.Codec20 checkForErrorsInResponseStatus
+WARN: ISPN004005: Error received from the server: org.infinispan.remoting.RemoteException: ISPN000217: Received exception from isn2-18212, see cause for remote stack trace
+org.infinispan.commons.TimeoutException: ISPN000299: Unable to acquire lock after 15 seconds for key WrappedByteArray[ACED0005\t000A\s\o\n\d\a\-\i\s\n\1 (17 bytes)] and requestor CommandInvocation:isn1-23890:53. Lock is held by CommandInvocation:isn1-23890:52
+Oct 28, 2026 7:12:57 AM org.infinispan.client.hotrod.impl.protocol.Codec20 checkForErrorsInResponseStatus
+WARN: ISPN004005: Error received from the server: org.infinispan.commons.TimeoutException: ISPN000476: Timed out waiting for responses for request 70 from isn2-18212 after 17.5 seconds

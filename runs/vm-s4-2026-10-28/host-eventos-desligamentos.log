@@ -1,0 +1,80 @@
+# Leitura so-leitura do log System do host Windows pelo Senior em 2026-10-28T07:33:10Z (Get-WinEvent; horarios locais UTC-3)
+## Kernel-Power 41 desde 2026-08-01: BugcheckCode, PowerButtonTimestamp (pbts), LongPowerButtonPressDetected, SleepInProgress
+2026-10-28 03:38:27 bug=0x154 pbts=0 long=false sleep=0
+2026-10-20 13:31:14 bug=0x0 pbts=0 long=false sleep=0
+2026-10-09 12:53:48 bug=0x0 pbts=0 long=false sleep=0
+2026-10-01 18:05:33 bug=0x0 pbts=0 long=false sleep=0
+2026-09-28 13:37:05 bug=0x0 pbts=0 long=false sleep=0
+2026-09-27 17:33:49 bug=0x0 pbts=0 long=false sleep=0
+2026-09-27 13:02:30 bug=0x0 pbts=0 long=false sleep=0
+2026-09-27 13:00:55 bug=0x0 pbts=0 long=false sleep=0
+2026-09-27 12:59:56 bug=0x0 pbts=0 long=false sleep=0
+2026-09-27 12:59:13 bug=0x0 pbts=0 long=false sleep=0
+2026-09-27 12:57:08 bug=0x0 pbts=0 long=false sleep=0
+2026-09-27 12:51:46 bug=0x0 pbts=0 long=false sleep=0
+2026-09-27 12:25:55 bug=0x0 pbts=0 long=false sleep=0
+2026-09-26 15:11:43 bug=0x0 pbts=0 long=false sleep=0
+2026-09-24 14:34:37 bug=0x0 pbts=0 long=false sleep=0
+2026-09-16 20:40:29 bug=0x0 pbts=0 long=false sleep=0
+2026-09-13 21:24:43 bug=0x1CA pbts=0 long=false sleep=0
+2026-08-25 22:14:07 bug=0x0 pbts=134319725123560392 long=false sleep=0
+2026-08-23 12:28:29 bug=0x0 pbts=0 long=false sleep=0
+2026-08-23 12:25:38 bug=0x0 pbts=0 long=false sleep=0
+2026-08-21 02:30:06 bug=0x0 pbts=0 long=false sleep=0
+2026-08-15 09:33:33 bug=0x0 pbts=0 long=false sleep=0
+2026-08-15 08:33:16 bug=0x0 pbts=0 long=false sleep=0
+2026-08-15 07:50:57 bug=0x0 pbts=0 long=false sleep=0
+2026-08-11 23:18:05 bug=0x0 pbts=134309746432776229 long=false sleep=1
+2026-08-09 19:44:23 bug=0x0 pbts=0 long=false sleep=0
+2026-08-06 16:52:08 bug=0x0 pbts=0 long=false sleep=0
+2026-08-06 09:05:02 bug=0x0 pbts=0 long=false sleep=0
+2026-08-06 09:02:30 bug=0x0 pbts=0 long=false sleep=0
+2026-08-06 08:34:10 bug=0x0 pbts=0 long=false sleep=0
+2026-08-06 08:32:50 bug=0x0 pbts=0 long=false sleep=0
+2026-08-06 08:14:30 bug=0x0 pbts=0 long=false sleep=0
+2026-08-06 07:56:15 bug=0x0 pbts=0 long=false sleep=0
+2026-08-06 07:50:29 bug=0x0 pbts=0 long=false sleep=0
+## EventLog 6008 e WER 1001 desde 2026-08-01
+2026-10-28 03:39:12 id=1001 The computer has rebooted from a bugcheck.  The bugcheck was: 0x00000154 (0xffffaf8f05e3a000, 0xffff978124615740, 0x0000000000000002, 0x0000000000000000). A dump was saved in: C:\WINDOWS\Minidumps\102826-88640-01.dmp. Report Id: 3f2836f2-95fd-45cc-a20b-5c58b2fc3c6c.
+2026-10-28 03:39:13 id=6008 The previous system shutdown at 03:35:33 on ?28/?10/?2026 was unexpected.
+2026-10-20 13:31:25 id=6008 The previous system shutdown at 04:49:35 on ?18/?10/?2026 was unexpected.
+2026-10-09 12:53:57 id=6008 The previous system shutdown at 02:21:42 on ?08/?10/?2026 was unexpected.
+2026-10-01 18:05:42 id=6008 The previous system shutdown at 18:04:43 on ?01/?10/?2026 was unexpected.
+2026-09-28 13:37:12 id=6008 The previous system shutdown at 22:09:57 on ?27/?09/?2026 was unexpected.
+2026-09-27 17:34:02 id=6008 The previous system shutdown at 13:02:37 on ?27/?09/?2026 was unexpected.
+2026-09-27 13:02:37 id=6008 The previous system shutdown at 13:02:01 on ?27/?09/?2026 was unexpected.
+2026-09-27 13:01:01 id=6008 The previous system shutdown at 13:00:04 on ?27/?09/?2026 was unexpected.
+2026-09-27 13:00:04 id=6008 The previous system shutdown at 12:59:21 on ?27/?09/?2026 was unexpected.
+2026-09-27 12:59:21 id=6008 The previous system shutdown at 12:57:14 on ?27/?09/?2026 was unexpected.
+2026-09-27 12:57:14 id=6008 The previous system shutdown at 12:51:53 on ?27/?09/?2026 was unexpected.
+2026-09-27 12:51:53 id=6008 The previous system shutdown at 12:26:02 on ?27/?09/?2026 was unexpected.
+2026-09-27 12:26:02 id=6008 The previous system shutdown at 12:21:25 on ?27/?09/?2026 was unexpected.
+2026-09-26 15:11:52 id=6008 The previous system shutdown at 15:11:12 on ?26/?09/?2026 was unexpected.
+2026-09-24 14:34:46 id=6008 The previous system shutdown at 14:33:23 on ?24/?09/?2026 was unexpected.
+2026-09-16 20:40:39 id=6008 The previous system shutdown at 16:34:12 on ?16/?09/?2026 was unexpected.
+2026-09-13 21:25:14 id=1001 The computer has rebooted from a bugcheck.  The bugcheck was: 0x000001ca (0x00000000064dd960, 0x00000248a7d06d61, 0x00000248a7d37b13, 0x000000000000000d). A dump was saved in: C:\WINDOWS\MEMORY.DMP. Report Id: 68e42bd6-f921-480c-a3b7-3fc5fb2ff6a8.
+2026-09-13 21:25:00 id=6008 The previous system shutdown at 01:15:09 on ?12/?09/?2026 was unexpected.
+2026-08-25 22:14:14 id=6008 The previous system shutdown at 12:28:35 on ?23/?08/?2026 was unexpected.
+2026-08-23 12:28:35 id=6008 The previous system shutdown at 12:25:45 on ?23/?08/?2026 was unexpected.
+2026-08-23 12:25:45 id=6008 The previous system shutdown at 12:24:06 on ?23/?08/?2026 was unexpected.
+2026-08-21 02:30:15 id=6008 The previous system shutdown at 02:24:50 on ?21/?08/?2026 was unexpected.
+2026-08-15 09:33:44 id=6008 The previous system shutdown at 08:35:15 on ?15/?08/?2026 was unexpected.
+2026-08-15 08:35:15 id=6008 The previous system shutdown at 08:33:24 on ?15/?08/?2026 was unexpected.
+2026-08-15 08:33:24 id=6008 The previous system shutdown at 07:56:07 on ?15/?08/?2026 was unexpected.
+2026-08-15 07:51:07 id=6008 The previous system shutdown at 07:49:46 on ?15/?08/?2026 was unexpected.
+2026-08-11 23:18:19 id=6008 The previous system shutdown at 23:13:48 on ?11/?08/?2026 was unexpected.
+2026-08-09 19:44:29 id=6008 The previous system shutdown at 15:32:17 on ?07/?08/?2026 was unexpected.
+2026-08-06 16:52:16 id=6008 The previous system shutdown at 09:05:10 on ?06/?08/?2026 was unexpected.
+2026-08-06 09:05:10 id=6008 The previous system shutdown at 09:02:38 on ?06/?08/?2026 was unexpected.
+2026-08-06 09:02:38 id=6008 The previous system shutdown at 08:34:17 on ?06/?08/?2026 was unexpected.
+2026-08-06 08:34:17 id=6008 The previous system shutdown at 08:32:58 on ?06/?08/?2026 was unexpected.
+2026-08-06 08:32:58 id=6008 The previous system shutdown at 08:14:37 on ?06/?08/?2026 was unexpected.
+2026-08-06 08:14:37 id=6008 The previous system shutdown at 07:56:22 on ?06/?08/?2026 was unexpected.
+2026-08-06 07:56:22 id=6008 The previous system shutdown at 07:50:40 on ?06/?08/?2026 was unexpected.
+2026-08-06 07:50:40 id=6008 The previous system shutdown at 07:13:50 on ?06/?08/?2026 was unexpected.
+## WHEA-Logger desde 2026-08-01 (contagem)
+0
+## Hardware
+Intel(R) Core(TM) i5-14600KF
+Micro-Star International Co., Ltd. PRO H610M-G DDR4 (MS-7D46)
+BIOS 1.O0 07/31/2025 21:00:00

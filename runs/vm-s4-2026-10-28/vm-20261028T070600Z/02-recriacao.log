@@ -1,0 +1,14 @@
+down rc=0
+quay.io/infinispan/server  15.0.21.Final  da9c871bb5b4  13 months ago  615 MB
+up rc=0
+ESTAVEL size=3 HEALTHY: primeira leitura boa +7s, estavel por 20s (total 27s)
+timers tcc-heal: 0
+isn1: 2026-10-28 07:06:17.381804963 +0000 UTC
+qdisc noqueue 0: root refcnt 2 ;
+isn2: 2026-10-28 07:06:18.610673974 +0000 UTC
+qdisc noqueue 0: root refcnt 2 ;
+isn3: 2026-10-28 07:06:19.823131494 +0000 UTC
+qdisc noqueue 0: root refcnt 2 ;
+[0m2026-10-28 07:06:25,222 INFO  [o.i.CLUSTER] ISPN000094: Received new cluster view for channel cluster-tcc: [isn3-54173|2] (3) [isn3-54173, isn1-23890, isn2-18212][m
+[0m2026-10-28 07:06:25,241 INFO  [o.i.CLUSTER] ISPN000094: Received new cluster view for channel cluster-tcc: [isn3-54173|2] (3) [isn3-54173, isn1-23890, isn2-18212][m
+[0m2026-10-28 07:06:25,216 INFO  [o.i.CLUSTER] ISPN000094: Received new cluster view for channel cluster-tcc: [isn3-54173|2] (3) [isn3-54173, isn1-23890, isn2-18212][m

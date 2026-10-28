@@ -1,0 +1,135 @@
+=== t=+8s 2026-10-28T07:12:21+00:00
+-- contadores por filtro
+egress(dst) 6pkt
+egress(dst) 42pkt
+ingress(src) 6pkt
+ingress(src) 7pkt
+-- isn3 -> isn1:7800 (esperado rc=124/1, falha)
+rc=124
+-- isn1 -> isn2:7800 (esperado rc=0)
+rc=0
+-- host -> isn3 Hot Rod/REST :11224 (esperado conectar; erro de aplicacao, nao timeout)
+http=200 t=0.002926s
+-- saude 11222/11223/11224
+"health_status":"HEALTHY","number_of_nodes":3
+"health_status":"HEALTHY","number_of_nodes":3
+"health_status":"HEALTHY","number_of_nodes":3
+-- ss -tn isn3 (IPv4/IPv6)
+State    Recv-Q Send-Q Local Address:Port  Peer Address:Port Process
+ESTAB    0      0          10.89.1.4:11222    10.89.1.1:52290       
+ESTAB    0      0          10.89.1.4:57800    10.89.1.3:44259       
+ESTAB    0      0          10.89.1.4:59223    10.89.1.2:57800       
+SYN-SENT 0      1          10.89.1.4:52547    10.89.1.3:7800        
+ESTAB    0      1946       10.89.1.4:7800     10.89.1.2:59359       
+=== t=+25s 2026-10-28T07:12:38+00:00
+-- contadores por filtro
+egress(dst) 71pkt
+egress(dst) 93pkt
+ingress(src) 8pkt
+ingress(src) 9pkt
+-- isn3 -> isn1:7800 (esperado rc=124/1, falha)
+rc=124
+-- isn1 -> isn2:7800 (esperado rc=0)
+rc=0
+-- host -> isn3 Hot Rod/REST :11224 (esperado conectar; erro de aplicacao, nao timeout)
+http=200 t=0.003340s
+-- saude 11222/11223/11224
+"health_status":"HEALTHY","number_of_nodes":3
+"health_status":"HEALTHY","number_of_nodes":3
+"health_status":"HEALTHY","number_of_nodes":3
+-- ss -tn isn3 (IPv4/IPv6)
+State    Recv-Q Send-Q Local Address:Port  Peer Address:Port Process
+ESTAB    0      0          10.89.1.4:11222    10.89.1.1:52290       
+ESTAB    0      0          10.89.1.4:57800    10.89.1.3:44259       
+ESTAB    0      0          10.89.1.4:59223    10.89.1.2:57800       
+SYN-SENT 0      1          10.89.1.4:60147    10.89.1.3:7800        
+ESTAB    0      0          10.89.1.4:11222    10.89.1.1:60306       
+ESTAB    0      0          10.89.1.4:11222    10.89.1.1:34860       
+ESTAB    0      0          10.89.1.4:11222    10.89.1.1:52834       
+=== t=+45s 2026-10-28T07:12:58+00:00
+-- contadores por filtro
+egress(dst) 111pkt
+egress(dst) 126pkt
+ingress(src) 9pkt
+ingress(src) 11pkt
+-- isn3 -> isn1:7800 (esperado rc=124/1, falha)
+rc=124
+-- isn1 -> isn2:7800 (esperado rc=0)
+rc=0
+-- host -> isn3 Hot Rod/REST :11224 (esperado conectar; erro de aplicacao, nao timeout)
+http=200 t=0.003465s
+-- saude 11222/11223/11224
+"health_status":"HEALTHY","number_of_nodes":2
+"health_status":"HEALTHY","number_of_nodes":2
+"health_status":"DEGRADED","number_of_nodes":1
+-- ss -tn isn3 (IPv4/IPv6)
+State      Recv-Q Send-Q Local Address:Port  Peer Address:Port Process
+ESTAB      0      0          10.89.1.4:11222    10.89.1.1:45566       
+ESTAB      0      0          10.89.1.4:11222    10.89.1.1:52290       
+ESTAB      0      0          10.89.1.4:11222    10.89.1.1:45596       
+ESTAB      0      0          10.89.1.4:57800    10.89.1.3:44259       
+FIN-WAIT-1 0      1          10.89.1.4:59223    10.89.1.2:57800       
+ESTAB      0      0          10.89.1.4:11222    10.89.1.1:45502       
+ESTAB      0      0          10.89.1.4:11222    10.89.1.1:46476       
+ESTAB      0      0          10.89.1.4:11222    10.89.1.1:45600       
+ESTAB      0      0          10.89.1.4:11222    10.89.1.1:46502       
+ESTAB      0      0          10.89.1.4:11222    10.89.1.1:46492       
+ESTAB      0      0          10.89.1.4:11222    10.89.1.1:45542       
+=== t=+65s 2026-10-28T07:13:18+00:00
+-- contadores por filtro
+egress(dst) 140pkt
+egress(dst) 135pkt
+ingress(src) 10pkt
+ingress(src) 37pkt
+-- isn3 -> isn1:7800 (esperado rc=124/1, falha)
+rc=124
+-- isn1 -> isn2:7800 (esperado rc=0)
+rc=0
+-- host -> isn3 Hot Rod/REST :11224 (esperado conectar; erro de aplicacao, nao timeout)
+http=200 t=0.003072s
+-- saude 11222/11223/11224
+"health_status":"HEALTHY","number_of_nodes":2
+"health_status":"HEALTHY","number_of_nodes":2
+"health_status":"DEGRADED","number_of_nodes":1
+-- ss -tn isn3 (IPv4/IPv6)
+State Recv-Q Send-Q Local Address:Port  Peer Address:Port Process
+ESTAB 0      0          10.89.1.4:11222    10.89.1.1:46602       
+ESTAB 0      0          10.89.1.4:11222    10.89.1.1:45566       
+ESTAB 0      0          10.89.1.4:11222    10.89.1.1:52290       
+ESTAB 0      0          10.89.1.4:11222    10.89.1.1:33084       
+ESTAB 0      0          10.89.1.4:11222    10.89.1.1:45596       
+ESTAB 0      0          10.89.1.4:11222    10.89.1.1:33118       
+ESTAB 0      0          10.89.1.4:57800    10.89.1.3:44259       
+ESTAB 0      0          10.89.1.4:11222    10.89.1.1:45502       
+ESTAB 0      0          10.89.1.4:11222    10.89.1.1:46476       
+ESTAB 0      0          10.89.1.4:11222    10.89.1.1:45600       
+ESTAB 0      0          10.89.1.4:11222    10.89.1.1:46502       
+=== t=+82s 2026-10-28T07:13:35+00:00
+-- contadores por filtro
+egress(dst) 146pkt
+egress(dst) 136pkt
+ingress(src) 11pkt
+ingress(src) 38pkt
+-- isn3 -> isn1:7800 (esperado rc=124/1, falha)
+rc=124
+-- isn1 -> isn2:7800 (esperado rc=0)
+rc=0
+-- host -> isn3 Hot Rod/REST :11224 (esperado conectar; erro de aplicacao, nao timeout)
+http=200 t=0.002482s
+-- saude 11222/11223/11224
+"health_status":"HEALTHY","number_of_nodes":2
+"health_status":"HEALTHY","number_of_nodes":2
+"health_status":"DEGRADED","number_of_nodes":1
+-- ss -tn isn3 (IPv4/IPv6)
+State Recv-Q Send-Q Local Address:Port  Peer Address:Port Process
+ESTAB 0      0          10.89.1.4:11222    10.89.1.1:46602       
+ESTAB 0      0          10.89.1.4:11222    10.89.1.1:45566       
+ESTAB 0      0          10.89.1.4:11222    10.89.1.1:52290       
+ESTAB 0      0          10.89.1.4:11222    10.89.1.1:33084       
+ESTAB 0      0          10.89.1.4:11222    10.89.1.1:45596       
+ESTAB 0      0          10.89.1.4:11222    10.89.1.1:33118       
+ESTAB 0      0          10.89.1.4:11222    10.89.1.1:41000       
+ESTAB 0      0          10.89.1.4:57800    10.89.1.3:44259       
+ESTAB 0      0          10.89.1.4:11222    10.89.1.1:45502       
+ESTAB 0      0          10.89.1.4:11222    10.89.1.1:46476       
+ESTAB 0      0          10.89.1.4:11222    10.89.1.1:51130       

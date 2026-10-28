@@ -1,0 +1,24 @@
+G-1 (REP=4, janela de 90 s em isn3): go do Gestor registrado no relatorio? [digite GO] go G-1 (REP=4, janela de 90 s em isn3) 2026-10-28T07:12:13+00:00 vm=172.31.251.37 sha=1266c129904e73469926d95708e7c83290498c41
+"health_status":"HEALTHY","number_of_nodes":3
+"health_status":"HEALTHY","number_of_nodes":3
+"health_status":"HEALTHY","number_of_nodes":3
+ok sem clsact em isn3: qdisc noqueue 0: root refcnt 2
+log de saude: runs/gate-b29/g1-rep4/saude-log.csv a cada 2 s (pid 11216)
+dead-man armado: tcc-heal-11014-26462 em 180s
+injetor rc=0 (esperado 0)
+ok sem clsact em isn3: qdisc noqueue 0: root refcnt 2
+dead-man desarmado: tcc-heal-11014-26462
+t_merge_s=44 (desde event=end)
+"health_status":"HEALTHY","number_of_nodes":3
+"health_status":"HEALTHY","number_of_nodes":3
+"health_status":"HEALTHY","number_of_nodes":3
+Terminated
+t_merge_s=44 (desde event=end)
+t_saude_primeira_ns=1793171675372238491
+t_saude_primeira_iso=2026-10-28T07:14:35.372238491Z
+t_merge_saude_s=44 (1a amostra HEALTHY/3 do saude-log, desde event=end)
+t_saude_todas_ns=1793171675372332723
+t_saude_todas_iso=2026-10-28T07:14:35.372332723Z
+t_merge_saude_todas_s=44 (HEALTHY/3 ja visto nas 3 portas)
+G-1 concluido (REP=4)
+log de saude: 261 linhas em runs/gate-b29/g1-rep4/saude-log.csv

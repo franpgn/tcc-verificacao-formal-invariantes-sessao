@@ -1,0 +1,13 @@
+== depois do g1 2026-10-28T07:15:05+00:00
+fault=F2 node=isn3 event=start t_epoch_ns=1793171534519348479
+fault=F2 node=isn3 event=end t_epoch_ns=1793171630559796415
+t_merge_s=44 (desde event=end)
+t_saude_primeira_ns=1793171675372238491
+t_saude_primeira_iso=2026-10-28T07:14:35.372238491Z
+t_merge_saude_s=44 (1a amostra HEALTHY/3 do saude-log, desde event=end)
+t_saude_todas_ns=1793171675372332723
+t_saude_todas_iso=2026-10-28T07:14:35.372332723Z
+t_merge_saude_todas_s=44 (HEALTHY/3 ja visto nas 3 portas)
+go G-6 (F3 jitter em isn2 + F2 particao em isn3, 90/130 s) 2026-10-16T09:03:46+00:00 vm=192.168.137.150 sha=507c21ee6812d4ea69788277907b92b56ff13311
+go G-1 (REP=4, janela de 90 s em isn3) 2026-10-28T07:12:13+00:00 vm=172.31.251.37 sha=1266c129904e73469926d95708e7c83290498c41
+arquivos em runs/gate-b29/g1-rep4: 124

@@ -1,0 +1,855 @@
+[33m2026-10-28 07:12:10,280 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health/status, remote=/127.0.0.1:52194, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:12:13,912 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:52208, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:12:13,913 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:52208, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:12:13,977 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:52214, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:12:13,978 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:52214, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:12:15,427 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:52222, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:12:15,431 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:52222, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:12:15,613 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health/status, remote=/127.0.0.1:52250, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:12:16,004 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:52272, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:12:16,008 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:52272, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:12:17,030 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:52274, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:12:17,033 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:52274, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:12:19,059 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:49328, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:12:19,060 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:49328, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:12:20,452 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:49340, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:12:20,455 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:49340, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:12:21,075 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:49352, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:12:21,077 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:49352, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:12:21,131 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health/status, remote=/127.0.0.1:49372, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:12:23,096 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:49374, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:12:23,097 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:49374, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:12:24,024 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:49380, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:12:24,025 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:49380, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:12:25,114 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:49392, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:12:25,117 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:49392, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:12:25,475 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:49394, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:12:25,477 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:49394, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:12:26,285 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health/status, remote=/127.0.0.1:49398, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:12:27,136 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:49428, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:12:27,138 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:49428, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:12:29,155 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:44564, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:12:29,157 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:44564, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:12:30,497 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:44572, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:12:30,498 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:44572, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:12:31,176 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:44582, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:12:31,178 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:44582, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:12:32,321 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health/status, remote=/127.0.0.1:44602, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[1;31m2026-10-28 07:12:33,089 ERROR [o.i.i.i.InvocationContextInterceptor] ISPN000136: Error executing command PutKeyValueCommand on Cache 'sessions', writing keys [WrappedByteArray[ACED0005\t000A\s\o\n\d\a\-\i\s\n\1 (17 bytes)]] org.infinispan.remoting.RemoteException: ISPN000217: Received exception from isn2-18212, see cause for remote stack trace
+	at org.infinispan.remoting.transport.ResponseCollectors.wrapRemoteException(ResponseCollectors.java:26)
+	at org.infinispan.remoting.transport.ValidSingleResponseCollector.withException(ValidSingleResponseCollector.java:37)
+	at org.infinispan.remoting.transport.ValidSingleResponseCollector.addResponse(ValidSingleResponseCollector.java:21)
+	at org.infinispan.remoting.transport.impl.SingleTargetRequest.addResponse(SingleTargetRequest.java:75)
+	at org.infinispan.remoting.transport.impl.SingleTargetRequest.onResponse(SingleTargetRequest.java:46)
+	at org.infinispan.remoting.transport.impl.RequestRepository.addResponse(RequestRepository.java:51)
+	at org.infinispan.remoting.transport.jgroups.JGroupsTransport.processResponse(JGroupsTransport.java:1567)
+	at org.infinispan.remoting.transport.jgroups.JGroupsTransport.processMessage(JGroupsTransport.java:1468)
+	at org.infinispan.remoting.transport.jgroups.JGroupsTransport$ChannelCallbacks.up(JGroupsTransport.java:1660)
+	at org.jgroups.JChannel.up(JChannel.java:748)
+	at org.jgroups.stack.ProtocolStack.up(ProtocolStack.java:941)
+	at org.jgroups.protocols.FRAG2.up(FRAG2.java:139)
+	at org.jgroups.protocols.FlowControl.up(FlowControl.java:245)
+	at org.jgroups.protocols.FlowControl.up(FlowControl.java:245)
+	at org.jgroups.protocols.pbcast.GMS.up(GMS.java:850)
+	at org.jgroups.protocols.pbcast.STABLE.up(STABLE.java:235)
+	at org.jgroups.protocols.UNICAST3.deliverMessage(UNICAST3.java:1144)
+	at org.jgroups.protocols.UNICAST3.addMessage(UNICAST3.java:880)
+	at org.jgroups.protocols.UNICAST3.handleDataReceived(UNICAST3.java:862)
+	at org.jgroups.protocols.UNICAST3.up(UNICAST3.java:474)
+	at org.jgroups.protocols.pbcast.NAKACK2.up(NAKACK2.java:669)
+	at org.jgroups.protocols.VERIFY_SUSPECT2.up(VERIFY_SUSPECT2.java:105)
+	at org.jgroups.protocols.FailureDetection.up(FailureDetection.java:180)
+	at org.jgroups.protocols.FD_SOCK2.up(FD_SOCK2.java:190)
+	at org.jgroups.protocols.MERGE3.up(MERGE3.java:274)
+	at org.jgroups.protocols.Discovery.up(Discovery.java:296)
+	at org.jgroups.stack.Protocol.up(Protocol.java:360)
+	at org.jgroups.protocols.TP.passMessageUp(TP.java:1230)
+	at org.jgroups.util.SubmitToThreadPool$SingleMessageHandler.run(SubmitToThreadPool.java:95)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1144)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:642)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+Caused by: org.infinispan.commons.TimeoutException: ISPN000299: Unable to acquire lock after 15 seconds for key WrappedByteArray[ACED0005\t000A\s\o\n\d\a\-\i\s\n\1 (17 bytes)] and requestor CommandInvocation:isn1-23890:41. Lock is held by CommandInvocation:isn1-23890:40
+	at java.base/jdk.internal.reflect.DirectConstructorHandleAccessor.newInstance(DirectConstructorHandleAccessor.java:62)
+	at java.base/java.lang.reflect.Constructor.newInstanceWithCaller(Constructor.java:502)
+	at java.base/java.lang.reflect.Constructor.newInstance(Constructor.java:486)
+	at org.infinispan.marshall.exts.ThrowableExternalizer.newThrowableInstance(ThrowableExternalizer.java:286)
+	at org.infinispan.marshall.exts.ThrowableExternalizer.readGenericThrowable(ThrowableExternalizer.java:264)
+	at org.infinispan.marshall.exts.ThrowableExternalizer.readObject(ThrowableExternalizer.java:239)
+	at org.infinispan.marshall.exts.ThrowableExternalizer.readObject(ThrowableExternalizer.java:44)
+	at org.infinispan.marshall.core.GlobalMarshaller.readWithExternalizer(GlobalMarshaller.java:727)
+	at org.infinispan.marshall.core.GlobalMarshaller.readNonNullableObject(GlobalMarshaller.java:708)
+	at org.infinispan.marshall.core.GlobalMarshaller.readNullableObject(GlobalMarshaller.java:357)
+	at org.infinispan.marshall.core.BytesObjectInput.readObject(BytesObjectInput.java:32)
+	at org.infinispan.remoting.responses.ExceptionResponse$Externalizer.readObject(ExceptionResponse.java:49)
+	at org.infinispan.remoting.responses.ExceptionResponse$Externalizer.readObject(ExceptionResponse.java:41)
+	at org.infinispan.marshall.core.GlobalMarshaller.readWithExternalizer(GlobalMarshaller.java:727)
+	at org.infinispan.marshall.core.GlobalMarshaller.readNonNullableObject(GlobalMarshaller.java:708)
+	at org.infinispan.marshall.core.GlobalMarshaller.readNullableObject(GlobalMarshaller.java:357)
+	at org.infinispan.marshall.core.GlobalMarshaller.objectFromObjectInput(GlobalMarshaller.java:191)
+	at org.infinispan.marshall.core.GlobalMarshaller.objectFromByteBuffer(GlobalMarshaller.java:220)
+	at org.infinispan.remoting.transport.jgroups.JGroupsTransport.processResponse(JGroupsTransport.java:1559)
+	... 25 more
+[m
+[1;31m2026-10-28 07:12:33,090 ERROR [o.i.s.h.BaseRequestProcessor] ISPN005003: Exception reported org.infinispan.remoting.RemoteException: ISPN000217: Received exception from isn2-18212, see cause for remote stack trace
+	at org.infinispan.remoting.transport.ResponseCollectors.wrapRemoteException(ResponseCollectors.java:26)
+	at org.infinispan.remoting.transport.ValidSingleResponseCollector.withException(ValidSingleResponseCollector.java:37)
+	at org.infinispan.remoting.transport.ValidSingleResponseCollector.addResponse(ValidSingleResponseCollector.java:21)
+	at org.infinispan.remoting.transport.impl.SingleTargetRequest.addResponse(SingleTargetRequest.java:75)
+	at org.infinispan.remoting.transport.impl.SingleTargetRequest.onResponse(SingleTargetRequest.java:46)
+	at org.infinispan.remoting.transport.impl.RequestRepository.addResponse(RequestRepository.java:51)
+	at org.infinispan.remoting.transport.jgroups.JGroupsTransport.processResponse(JGroupsTransport.java:1567)
+	at org.infinispan.remoting.transport.jgroups.JGroupsTransport.processMessage(JGroupsTransport.java:1468)
+	at org.infinispan.remoting.transport.jgroups.JGroupsTransport$ChannelCallbacks.up(JGroupsTransport.java:1660)
+	at org.jgroups.JChannel.up(JChannel.java:748)
+	at org.jgroups.stack.ProtocolStack.up(ProtocolStack.java:941)
+	at org.jgroups.protocols.FRAG2.up(FRAG2.java:139)
+	at org.jgroups.protocols.FlowControl.up(FlowControl.java:245)
+	at org.jgroups.protocols.FlowControl.up(FlowControl.java:245)
+	at org.jgroups.protocols.pbcast.GMS.up(GMS.java:850)
+	at org.jgroups.protocols.pbcast.STABLE.up(STABLE.java:235)
+	at org.jgroups.protocols.UNICAST3.deliverMessage(UNICAST3.java:1144)
+	at org.jgroups.protocols.UNICAST3.addMessage(UNICAST3.java:880)
+	at org.jgroups.protocols.UNICAST3.handleDataReceived(UNICAST3.java:862)
+	at org.jgroups.protocols.UNICAST3.up(UNICAST3.java:474)
+	at org.jgroups.protocols.pbcast.NAKACK2.up(NAKACK2.java:669)
+	at org.jgroups.protocols.VERIFY_SUSPECT2.up(VERIFY_SUSPECT2.java:105)
+	at org.jgroups.protocols.FailureDetection.up(FailureDetection.java:180)
+	at org.jgroups.protocols.FD_SOCK2.up(FD_SOCK2.java:190)
+	at org.jgroups.protocols.MERGE3.up(MERGE3.java:274)
+	at org.jgroups.protocols.Discovery.up(Discovery.java:296)
+	at org.jgroups.stack.Protocol.up(Protocol.java:360)
+	at org.jgroups.protocols.TP.passMessageUp(TP.java:1230)
+	at org.jgroups.util.SubmitToThreadPool$SingleMessageHandler.run(SubmitToThreadPool.java:95)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1144)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:642)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+Caused by: org.infinispan.commons.TimeoutException: ISPN000299: Unable to acquire lock after 15 seconds for key WrappedByteArray[ACED0005\t000A\s\o\n\d\a\-\i\s\n\1 (17 bytes)] and requestor CommandInvocation:isn1-23890:41. Lock is held by CommandInvocation:isn1-23890:40
+	at java.base/jdk.internal.reflect.DirectConstructorHandleAccessor.newInstance(DirectConstructorHandleAccessor.java:62)
+	at java.base/java.lang.reflect.Constructor.newInstanceWithCaller(Constructor.java:502)
+	at java.base/java.lang.reflect.Constructor.newInstance(Constructor.java:486)
+	at org.infinispan.marshall.exts.ThrowableExternalizer.newThrowableInstance(ThrowableExternalizer.java:286)
+	at org.infinispan.marshall.exts.ThrowableExternalizer.readGenericThrowable(ThrowableExternalizer.java:264)
+	at org.infinispan.marshall.exts.ThrowableExternalizer.readObject(ThrowableExternalizer.java:239)
+	at org.infinispan.marshall.exts.ThrowableExternalizer.readObject(ThrowableExternalizer.java:44)
+	at org.infinispan.marshall.core.GlobalMarshaller.readWithExternalizer(GlobalMarshaller.java:727)
+	at org.infinispan.marshall.core.GlobalMarshaller.readNonNullableObject(GlobalMarshaller.java:708)
+	at org.infinispan.marshall.core.GlobalMarshaller.readNullableObject(GlobalMarshaller.java:357)
+	at org.infinispan.marshall.core.BytesObjectInput.readObject(BytesObjectInput.java:32)
+	at org.infinispan.remoting.responses.ExceptionResponse$Externalizer.readObject(ExceptionResponse.java:49)
+	at org.infinispan.remoting.responses.ExceptionResponse$Externalizer.readObject(ExceptionResponse.java:41)
+	at org.infinispan.marshall.core.GlobalMarshaller.readWithExternalizer(GlobalMarshaller.java:727)
+	at org.infinispan.marshall.core.GlobalMarshaller.readNonNullableObject(GlobalMarshaller.java:708)
+	at org.infinispan.marshall.core.GlobalMarshaller.readNullableObject(GlobalMarshaller.java:357)
+	at org.infinispan.marshall.core.GlobalMarshaller.objectFromObjectInput(GlobalMarshaller.java:191)
+	at org.infinispan.marshall.core.GlobalMarshaller.objectFromByteBuffer(GlobalMarshaller.java:220)
+	at org.infinispan.remoting.transport.jgroups.JGroupsTransport.processResponse(JGroupsTransport.java:1559)
+	... 25 more
+[m
+[33m2026-10-28 07:12:33,204 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:44612, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:12:33,206 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:44612, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[1;31m2026-10-28 07:12:33,583 ERROR [o.i.i.i.InvocationContextInterceptor] ISPN000136: Error executing command PutKeyValueCommand on Cache 'sessions', writing keys [WrappedByteArray[ACED0005\t000A\s\o\n\d\a\-\i\s\n\1 (17 bytes)]] org.infinispan.commons.TimeoutException: ISPN000476: Timed out waiting for responses for request 52 from isn2-18212 after 17.5 seconds
+	at org.infinispan.remoting.transport.impl.SingleTargetRequest.onTimeout(SingleTargetRequest.java:93)
+	at org.infinispan.remoting.transport.AbstractRequest.call(AbstractRequest.java:89)
+	at org.infinispan.remoting.transport.AbstractRequest.call(AbstractRequest.java:23)
+	at java.base/java.util.concurrent.FutureTask.run(FutureTask.java:317)
+	at java.base/java.util.concurrent.ScheduledThreadPoolExecutor$ScheduledFutureTask.run(ScheduledThreadPoolExecutor.java:304)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1144)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:642)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+[m
+[33m2026-10-28 07:12:35,227 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:44626, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:12:35,230 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:44626, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:12:35,517 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:44632, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:12:35,519 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:44632, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:12:37,247 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:44634, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:12:37,249 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:44634, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:12:38,153 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health/status, remote=/127.0.0.1:44654, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:12:39,268 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:53768, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:12:39,270 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:53768, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:12:40,539 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:53774, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:12:40,543 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:53774, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:12:41,097 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:53784, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:12:41,099 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:53784, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[1;31m2026-10-28 07:12:41,173 ERROR [o.i.i.i.InvocationContextInterceptor] ISPN000136: Error executing command PutKeyValueCommand on Cache 'counters', writing keys [WrappedByteArray[ACED0005\t000A\s\o\n\d\a\-\i\s\n\1 (17 bytes)]] org.infinispan.remoting.RemoteException: ISPN000217: Received exception from isn2-18212, see cause for remote stack trace
+	at org.infinispan.remoting.transport.ResponseCollectors.wrapRemoteException(ResponseCollectors.java:26)
+	at org.infinispan.remoting.transport.ValidSingleResponseCollector.withException(ValidSingleResponseCollector.java:37)
+	at org.infinispan.remoting.transport.ValidSingleResponseCollector.addResponse(ValidSingleResponseCollector.java:21)
+	at org.infinispan.remoting.transport.impl.SingleTargetRequest.addResponse(SingleTargetRequest.java:75)
+	at org.infinispan.remoting.transport.impl.SingleTargetRequest.onResponse(SingleTargetRequest.java:46)
+	at org.infinispan.remoting.transport.impl.RequestRepository.addResponse(RequestRepository.java:51)
+	at org.infinispan.remoting.transport.jgroups.JGroupsTransport.processResponse(JGroupsTransport.java:1567)
+	at org.infinispan.remoting.transport.jgroups.JGroupsTransport.processMessage(JGroupsTransport.java:1468)
+	at org.infinispan.remoting.transport.jgroups.JGroupsTransport$ChannelCallbacks.up(JGroupsTransport.java:1660)
+	at org.jgroups.JChannel.up(JChannel.java:748)
+	at org.jgroups.stack.ProtocolStack.up(ProtocolStack.java:941)
+	at org.jgroups.protocols.FRAG2.up(FRAG2.java:139)
+	at org.jgroups.protocols.FlowControl.up(FlowControl.java:245)
+	at org.jgroups.protocols.FlowControl.up(FlowControl.java:245)
+	at org.jgroups.protocols.pbcast.GMS.up(GMS.java:850)
+	at org.jgroups.protocols.pbcast.STABLE.up(STABLE.java:235)
+	at org.jgroups.protocols.UNICAST3.deliverMessage(UNICAST3.java:1144)
+	at org.jgroups.protocols.UNICAST3.addMessage(UNICAST3.java:880)
+	at org.jgroups.protocols.UNICAST3.handleDataReceived(UNICAST3.java:862)
+	at org.jgroups.protocols.UNICAST3.up(UNICAST3.java:474)
+	at org.jgroups.protocols.pbcast.NAKACK2.up(NAKACK2.java:669)
+	at org.jgroups.protocols.VERIFY_SUSPECT2.up(VERIFY_SUSPECT2.java:105)
+	at org.jgroups.protocols.FailureDetection.up(FailureDetection.java:180)
+	at org.jgroups.protocols.FD_SOCK2.up(FD_SOCK2.java:190)
+	at org.jgroups.protocols.MERGE3.up(MERGE3.java:274)
+	at org.jgroups.protocols.Discovery.up(Discovery.java:296)
+	at org.jgroups.stack.Protocol.up(Protocol.java:360)
+	at org.jgroups.protocols.TP.passMessageUp(TP.java:1230)
+	at org.jgroups.util.SubmitToThreadPool$SingleMessageHandler.run(SubmitToThreadPool.java:95)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1144)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:642)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+Caused by: org.infinispan.commons.TimeoutException: ISPN000299: Unable to acquire lock after 15 seconds for key WrappedByteArray[ACED0005\t000A\s\o\n\d\a\-\i\s\n\1 (17 bytes)] and requestor CommandInvocation:isn1-23890:45. Lock is held by CommandInvocation:isn1-23890:44
+	at java.base/jdk.internal.reflect.DirectConstructorHandleAccessor.newInstance(DirectConstructorHandleAccessor.java:62)
+	at java.base/java.lang.reflect.Constructor.newInstanceWithCaller(Constructor.java:502)
+	at java.base/java.lang.reflect.Constructor.newInstance(Constructor.java:486)
+	at org.infinispan.marshall.exts.ThrowableExternalizer.newThrowableInstance(ThrowableExternalizer.java:286)
+	at org.infinispan.marshall.exts.ThrowableExternalizer.readGenericThrowable(ThrowableExternalizer.java:264)
+	at org.infinispan.marshall.exts.ThrowableExternalizer.readObject(ThrowableExternalizer.java:239)
+	at org.infinispan.marshall.exts.ThrowableExternalizer.readObject(ThrowableExternalizer.java:44)
+	at org.infinispan.marshall.core.GlobalMarshaller.readWithExternalizer(GlobalMarshaller.java:727)
+	at org.infinispan.marshall.core.GlobalMarshaller.readNonNullableObject(GlobalMarshaller.java:708)
+	at org.infinispan.marshall.core.GlobalMarshaller.readNullableObject(GlobalMarshaller.java:357)
+	at org.infinispan.marshall.core.BytesObjectInput.readObject(BytesObjectInput.java:32)
+	at org.infinispan.remoting.responses.ExceptionResponse$Externalizer.readObject(ExceptionResponse.java:49)
+	at org.infinispan.remoting.responses.ExceptionResponse$Externalizer.readObject(ExceptionResponse.java:41)
+	at org.infinispan.marshall.core.GlobalMarshaller.readWithExternalizer(GlobalMarshaller.java:727)
+	at org.infinispan.marshall.core.GlobalMarshaller.readNonNullableObject(GlobalMarshaller.java:708)
+	at org.infinispan.marshall.core.GlobalMarshaller.readNullableObject(GlobalMarshaller.java:357)
+	at org.infinispan.marshall.core.GlobalMarshaller.objectFromObjectInput(GlobalMarshaller.java:191)
+	at org.infinispan.marshall.core.GlobalMarshaller.objectFromByteBuffer(GlobalMarshaller.java:220)
+	at org.infinispan.remoting.transport.jgroups.JGroupsTransport.processResponse(JGroupsTransport.java:1559)
+	... 25 more
+[m
+[1;31m2026-10-28 07:12:41,174 ERROR [o.i.s.h.BaseRequestProcessor] ISPN005003: Exception reported org.infinispan.remoting.RemoteException: ISPN000217: Received exception from isn2-18212, see cause for remote stack trace
+	at org.infinispan.remoting.transport.ResponseCollectors.wrapRemoteException(ResponseCollectors.java:26)
+	at org.infinispan.remoting.transport.ValidSingleResponseCollector.withException(ValidSingleResponseCollector.java:37)
+	at org.infinispan.remoting.transport.ValidSingleResponseCollector.addResponse(ValidSingleResponseCollector.java:21)
+	at org.infinispan.remoting.transport.impl.SingleTargetRequest.addResponse(SingleTargetRequest.java:75)
+	at org.infinispan.remoting.transport.impl.SingleTargetRequest.onResponse(SingleTargetRequest.java:46)
+	at org.infinispan.remoting.transport.impl.RequestRepository.addResponse(RequestRepository.java:51)
+	at org.infinispan.remoting.transport.jgroups.JGroupsTransport.processResponse(JGroupsTransport.java:1567)
+	at org.infinispan.remoting.transport.jgroups.JGroupsTransport.processMessage(JGroupsTransport.java:1468)
+	at org.infinispan.remoting.transport.jgroups.JGroupsTransport$ChannelCallbacks.up(JGroupsTransport.java:1660)
+	at org.jgroups.JChannel.up(JChannel.java:748)
+	at org.jgroups.stack.ProtocolStack.up(ProtocolStack.java:941)
+	at org.jgroups.protocols.FRAG2.up(FRAG2.java:139)
+	at org.jgroups.protocols.FlowControl.up(FlowControl.java:245)
+	at org.jgroups.protocols.FlowControl.up(FlowControl.java:245)
+	at org.jgroups.protocols.pbcast.GMS.up(GMS.java:850)
+	at org.jgroups.protocols.pbcast.STABLE.up(STABLE.java:235)
+	at org.jgroups.protocols.UNICAST3.deliverMessage(UNICAST3.java:1144)
+	at org.jgroups.protocols.UNICAST3.addMessage(UNICAST3.java:880)
+	at org.jgroups.protocols.UNICAST3.handleDataReceived(UNICAST3.java:862)
+	at org.jgroups.protocols.UNICAST3.up(UNICAST3.java:474)
+	at org.jgroups.protocols.pbcast.NAKACK2.up(NAKACK2.java:669)
+	at org.jgroups.protocols.VERIFY_SUSPECT2.up(VERIFY_SUSPECT2.java:105)
+	at org.jgroups.protocols.FailureDetection.up(FailureDetection.java:180)
+	at org.jgroups.protocols.FD_SOCK2.up(FD_SOCK2.java:190)
+	at org.jgroups.protocols.MERGE3.up(MERGE3.java:274)
+	at org.jgroups.protocols.Discovery.up(Discovery.java:296)
+	at org.jgroups.stack.Protocol.up(Protocol.java:360)
+	at org.jgroups.protocols.TP.passMessageUp(TP.java:1230)
+	at org.jgroups.util.SubmitToThreadPool$SingleMessageHandler.run(SubmitToThreadPool.java:95)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1144)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:642)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+Caused by: org.infinispan.commons.TimeoutException: ISPN000299: Unable to acquire lock after 15 seconds for key WrappedByteArray[ACED0005\t000A\s\o\n\d\a\-\i\s\n\1 (17 bytes)] and requestor CommandInvocation:isn1-23890:45. Lock is held by CommandInvocation:isn1-23890:44
+	at java.base/jdk.internal.reflect.DirectConstructorHandleAccessor.newInstance(DirectConstructorHandleAccessor.java:62)
+	at java.base/java.lang.reflect.Constructor.newInstanceWithCaller(Constructor.java:502)
+	at java.base/java.lang.reflect.Constructor.newInstance(Constructor.java:486)
+	at org.infinispan.marshall.exts.ThrowableExternalizer.newThrowableInstance(ThrowableExternalizer.java:286)
+	at org.infinispan.marshall.exts.ThrowableExternalizer.readGenericThrowable(ThrowableExternalizer.java:264)
+	at org.infinispan.marshall.exts.ThrowableExternalizer.readObject(ThrowableExternalizer.java:239)
+	at org.infinispan.marshall.exts.ThrowableExternalizer.readObject(ThrowableExternalizer.java:44)
+	at org.infinispan.marshall.core.GlobalMarshaller.readWithExternalizer(GlobalMarshaller.java:727)
+	at org.infinispan.marshall.core.GlobalMarshaller.readNonNullableObject(GlobalMarshaller.java:708)
+	at org.infinispan.marshall.core.GlobalMarshaller.readNullableObject(GlobalMarshaller.java:357)
+	at org.infinispan.marshall.core.BytesObjectInput.readObject(BytesObjectInput.java:32)
+	at org.infinispan.remoting.responses.ExceptionResponse$Externalizer.readObject(ExceptionResponse.java:49)
+	at org.infinispan.remoting.responses.ExceptionResponse$Externalizer.readObject(ExceptionResponse.java:41)
+	at org.infinispan.marshall.core.GlobalMarshaller.readWithExternalizer(GlobalMarshaller.java:727)
+	at org.infinispan.marshall.core.GlobalMarshaller.readNonNullableObject(GlobalMarshaller.java:708)
+	at org.infinispan.marshall.core.GlobalMarshaller.readNullableObject(GlobalMarshaller.java:357)
+	at org.infinispan.marshall.core.GlobalMarshaller.objectFromObjectInput(GlobalMarshaller.java:191)
+	at org.infinispan.marshall.core.GlobalMarshaller.objectFromByteBuffer(GlobalMarshaller.java:220)
+	at org.infinispan.remoting.transport.jgroups.JGroupsTransport.processResponse(JGroupsTransport.java:1559)
+	... 25 more
+[m
+[33m2026-10-28 07:12:41,288 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:53798, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:12:41,290 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:53798, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[1;31m2026-10-28 07:12:41,669 ERROR [o.i.i.i.InvocationContextInterceptor] ISPN000136: Error executing command PutKeyValueCommand on Cache 'counters', writing keys [WrappedByteArray[ACED0005\t000A\s\o\n\d\a\-\i\s\n\1 (17 bytes)]] org.infinispan.commons.TimeoutException: ISPN000476: Timed out waiting for responses for request 58 from isn2-18212 after 17.5 seconds
+	at org.infinispan.remoting.transport.impl.SingleTargetRequest.onTimeout(SingleTargetRequest.java:93)
+	at org.infinispan.remoting.transport.AbstractRequest.call(AbstractRequest.java:89)
+	at org.infinispan.remoting.transport.AbstractRequest.call(AbstractRequest.java:23)
+	at java.base/java.util.concurrent.FutureTask.run(FutureTask.java:317)
+	at java.base/java.util.concurrent.ScheduledThreadPoolExecutor$ScheduledFutureTask.run(ScheduledThreadPoolExecutor.java:304)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1144)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:642)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+[m
+[33m2026-10-28 07:12:43,309 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:53810, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:12:43,312 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:53810, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:12:43,316 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health/status, remote=/127.0.0.1:53814, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:12:45,335 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:53830, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:12:45,337 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:53830, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:12:45,564 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:53836, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:12:45,566 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:53836, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:12:47,354 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:53842, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:12:47,356 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:53842, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[1;31m2026-10-28 07:12:49,186 ERROR [o.i.i.i.InvocationContextInterceptor] ISPN000136: Error executing command PutKeyValueCommand on Cache 'sessions', writing keys [WrappedByteArray[ACED0005\t000A\s\o\n\d\a\-\i\s\n\1 (17 bytes)]] org.infinispan.remoting.RemoteException: ISPN000217: Received exception from isn2-18212, see cause for remote stack trace
+	at org.infinispan.remoting.transport.ResponseCollectors.wrapRemoteException(ResponseCollectors.java:26)
+	at org.infinispan.remoting.transport.ValidSingleResponseCollector.withException(ValidSingleResponseCollector.java:37)
+	at org.infinispan.remoting.transport.ValidSingleResponseCollector.addResponse(ValidSingleResponseCollector.java:21)
+	at org.infinispan.remoting.transport.impl.SingleTargetRequest.addResponse(SingleTargetRequest.java:75)
+	at org.infinispan.remoting.transport.impl.SingleTargetRequest.onResponse(SingleTargetRequest.java:46)
+	at org.infinispan.remoting.transport.impl.RequestRepository.addResponse(RequestRepository.java:51)
+	at org.infinispan.remoting.transport.jgroups.JGroupsTransport.processResponse(JGroupsTransport.java:1567)
+	at org.infinispan.remoting.transport.jgroups.JGroupsTransport.processMessage(JGroupsTransport.java:1468)
+	at org.infinispan.remoting.transport.jgroups.JGroupsTransport$ChannelCallbacks.up(JGroupsTransport.java:1660)
+	at org.jgroups.JChannel.up(JChannel.java:748)
+	at org.jgroups.stack.ProtocolStack.up(ProtocolStack.java:941)
+	at org.jgroups.protocols.FRAG2.up(FRAG2.java:139)
+	at org.jgroups.protocols.FlowControl.up(FlowControl.java:245)
+	at org.jgroups.protocols.FlowControl.up(FlowControl.java:245)
+	at org.jgroups.protocols.pbcast.GMS.up(GMS.java:850)
+	at org.jgroups.protocols.pbcast.STABLE.up(STABLE.java:235)
+	at org.jgroups.protocols.UNICAST3.deliverMessage(UNICAST3.java:1144)
+	at org.jgroups.protocols.UNICAST3.addMessage(UNICAST3.java:880)
+	at org.jgroups.protocols.UNICAST3.handleDataReceived(UNICAST3.java:862)
+	at org.jgroups.protocols.UNICAST3.up(UNICAST3.java:474)
+	at org.jgroups.protocols.pbcast.NAKACK2.up(NAKACK2.java:669)
+	at org.jgroups.protocols.VERIFY_SUSPECT2.up(VERIFY_SUSPECT2.java:105)
+	at org.jgroups.protocols.FailureDetection.up(FailureDetection.java:180)
+	at org.jgroups.protocols.FD_SOCK2.up(FD_SOCK2.java:190)
+	at org.jgroups.protocols.MERGE3.up(MERGE3.java:274)
+	at org.jgroups.protocols.Discovery.up(Discovery.java:296)
+	at org.jgroups.stack.Protocol.up(Protocol.java:360)
+	at org.jgroups.protocols.TP.passMessageUp(TP.java:1230)
+	at org.jgroups.util.SubmitToThreadPool$SingleMessageHandler.run(SubmitToThreadPool.java:95)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1144)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:642)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+Caused by: org.infinispan.commons.TimeoutException: ISPN000299: Unable to acquire lock after 15 seconds for key WrappedByteArray[ACED0005\t000A\s\o\n\d\a\-\i\s\n\1 (17 bytes)] and requestor CommandInvocation:isn1-23890:49. Lock is held by CommandInvocation:isn1-23890:48
+	at java.base/jdk.internal.reflect.DirectConstructorHandleAccessor.newInstance(DirectConstructorHandleAccessor.java:62)
+	at java.base/java.lang.reflect.Constructor.newInstanceWithCaller(Constructor.java:502)
+	at java.base/java.lang.reflect.Constructor.newInstance(Constructor.java:486)
+	at org.infinispan.marshall.exts.ThrowableExternalizer.newThrowableInstance(ThrowableExternalizer.java:286)
+	at org.infinispan.marshall.exts.ThrowableExternalizer.readGenericThrowable(ThrowableExternalizer.java:264)
+	at org.infinispan.marshall.exts.ThrowableExternalizer.readObject(ThrowableExternalizer.java:239)
+	at org.infinispan.marshall.exts.ThrowableExternalizer.readObject(ThrowableExternalizer.java:44)
+	at org.infinispan.marshall.core.GlobalMarshaller.readWithExternalizer(GlobalMarshaller.java:727)
+	at org.infinispan.marshall.core.GlobalMarshaller.readNonNullableObject(GlobalMarshaller.java:708)
+	at org.infinispan.marshall.core.GlobalMarshaller.readNullableObject(GlobalMarshaller.java:357)
+	at org.infinispan.marshall.core.BytesObjectInput.readObject(BytesObjectInput.java:32)
+	at org.infinispan.remoting.responses.ExceptionResponse$Externalizer.readObject(ExceptionResponse.java:49)
+	at org.infinispan.remoting.responses.ExceptionResponse$Externalizer.readObject(ExceptionResponse.java:41)
+	at org.infinispan.marshall.core.GlobalMarshaller.readWithExternalizer(GlobalMarshaller.java:727)
+	at org.infinispan.marshall.core.GlobalMarshaller.readNonNullableObject(GlobalMarshaller.java:708)
+	at org.infinispan.marshall.core.GlobalMarshaller.readNullableObject(GlobalMarshaller.java:357)
+	at org.infinispan.marshall.core.GlobalMarshaller.objectFromObjectInput(GlobalMarshaller.java:191)
+	at org.infinispan.marshall.core.GlobalMarshaller.objectFromByteBuffer(GlobalMarshaller.java:220)
+	at org.infinispan.remoting.transport.jgroups.JGroupsTransport.processResponse(JGroupsTransport.java:1559)
+	... 25 more
+[m
+[1;31m2026-10-28 07:12:49,186 ERROR [o.i.s.h.BaseRequestProcessor] ISPN005003: Exception reported org.infinispan.remoting.RemoteException: ISPN000217: Received exception from isn2-18212, see cause for remote stack trace
+	at org.infinispan.remoting.transport.ResponseCollectors.wrapRemoteException(ResponseCollectors.java:26)
+	at org.infinispan.remoting.transport.ValidSingleResponseCollector.withException(ValidSingleResponseCollector.java:37)
+	at org.infinispan.remoting.transport.ValidSingleResponseCollector.addResponse(ValidSingleResponseCollector.java:21)
+	at org.infinispan.remoting.transport.impl.SingleTargetRequest.addResponse(SingleTargetRequest.java:75)
+	at org.infinispan.remoting.transport.impl.SingleTargetRequest.onResponse(SingleTargetRequest.java:46)
+	at org.infinispan.remoting.transport.impl.RequestRepository.addResponse(RequestRepository.java:51)
+	at org.infinispan.remoting.transport.jgroups.JGroupsTransport.processResponse(JGroupsTransport.java:1567)
+	at org.infinispan.remoting.transport.jgroups.JGroupsTransport.processMessage(JGroupsTransport.java:1468)
+	at org.infinispan.remoting.transport.jgroups.JGroupsTransport$ChannelCallbacks.up(JGroupsTransport.java:1660)
+	at org.jgroups.JChannel.up(JChannel.java:748)
+	at org.jgroups.stack.ProtocolStack.up(ProtocolStack.java:941)
+	at org.jgroups.protocols.FRAG2.up(FRAG2.java:139)
+	at org.jgroups.protocols.FlowControl.up(FlowControl.java:245)
+	at org.jgroups.protocols.FlowControl.up(FlowControl.java:245)
+	at org.jgroups.protocols.pbcast.GMS.up(GMS.java:850)
+	at org.jgroups.protocols.pbcast.STABLE.up(STABLE.java:235)
+	at org.jgroups.protocols.UNICAST3.deliverMessage(UNICAST3.java:1144)
+	at org.jgroups.protocols.UNICAST3.addMessage(UNICAST3.java:880)
+	at org.jgroups.protocols.UNICAST3.handleDataReceived(UNICAST3.java:862)
+	at org.jgroups.protocols.UNICAST3.up(UNICAST3.java:474)
+	at org.jgroups.protocols.pbcast.NAKACK2.up(NAKACK2.java:669)
+	at org.jgroups.protocols.VERIFY_SUSPECT2.up(VERIFY_SUSPECT2.java:105)
+	at org.jgroups.protocols.FailureDetection.up(FailureDetection.java:180)
+	at org.jgroups.protocols.FD_SOCK2.up(FD_SOCK2.java:190)
+	at org.jgroups.protocols.MERGE3.up(MERGE3.java:274)
+	at org.jgroups.protocols.Discovery.up(Discovery.java:296)
+	at org.jgroups.stack.Protocol.up(Protocol.java:360)
+	at org.jgroups.protocols.TP.passMessageUp(TP.java:1230)
+	at org.jgroups.util.SubmitToThreadPool$SingleMessageHandler.run(SubmitToThreadPool.java:95)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1144)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:642)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+Caused by: org.infinispan.commons.TimeoutException: ISPN000299: Unable to acquire lock after 15 seconds for key WrappedByteArray[ACED0005\t000A\s\o\n\d\a\-\i\s\n\1 (17 bytes)] and requestor CommandInvocation:isn1-23890:49. Lock is held by CommandInvocation:isn1-23890:48
+	at java.base/jdk.internal.reflect.DirectConstructorHandleAccessor.newInstance(DirectConstructorHandleAccessor.java:62)
+	at java.base/java.lang.reflect.Constructor.newInstanceWithCaller(Constructor.java:502)
+	at java.base/java.lang.reflect.Constructor.newInstance(Constructor.java:486)
+	at org.infinispan.marshall.exts.ThrowableExternalizer.newThrowableInstance(ThrowableExternalizer.java:286)
+	at org.infinispan.marshall.exts.ThrowableExternalizer.readGenericThrowable(ThrowableExternalizer.java:264)
+	at org.infinispan.marshall.exts.ThrowableExternalizer.readObject(ThrowableExternalizer.java:239)
+	at org.infinispan.marshall.exts.ThrowableExternalizer.readObject(ThrowableExternalizer.java:44)
+	at org.infinispan.marshall.core.GlobalMarshaller.readWithExternalizer(GlobalMarshaller.java:727)
+	at org.infinispan.marshall.core.GlobalMarshaller.readNonNullableObject(GlobalMarshaller.java:708)
+	at org.infinispan.marshall.core.GlobalMarshaller.readNullableObject(GlobalMarshaller.java:357)
+	at org.infinispan.marshall.core.BytesObjectInput.readObject(BytesObjectInput.java:32)
+	at org.infinispan.remoting.responses.ExceptionResponse$Externalizer.readObject(ExceptionResponse.java:49)
+	at org.infinispan.remoting.responses.ExceptionResponse$Externalizer.readObject(ExceptionResponse.java:41)
+	at org.infinispan.marshall.core.GlobalMarshaller.readWithExternalizer(GlobalMarshaller.java:727)
+	at org.infinispan.marshall.core.GlobalMarshaller.readNonNullableObject(GlobalMarshaller.java:708)
+	at org.infinispan.marshall.core.GlobalMarshaller.readNullableObject(GlobalMarshaller.java:357)
+	at org.infinispan.marshall.core.GlobalMarshaller.objectFromObjectInput(GlobalMarshaller.java:191)
+	at org.infinispan.marshall.core.GlobalMarshaller.objectFromByteBuffer(GlobalMarshaller.java:220)
+	at org.infinispan.remoting.transport.jgroups.JGroupsTransport.processResponse(JGroupsTransport.java:1559)
+	... 25 more
+[m
+[33m2026-10-28 07:12:49,340 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health/status, remote=/127.0.0.1:44104, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:12:49,371 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:44108, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:12:49,373 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:44108, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[1;31m2026-10-28 07:12:49,684 ERROR [o.i.i.i.InvocationContextInterceptor] ISPN000136: Error executing command PutKeyValueCommand on Cache 'sessions', writing keys [WrappedByteArray[ACED0005\t000A\s\o\n\d\a\-\i\s\n\1 (17 bytes)]] org.infinispan.commons.TimeoutException: ISPN000476: Timed out waiting for responses for request 64 from isn2-18212 after 17.5 seconds
+	at org.infinispan.remoting.transport.impl.SingleTargetRequest.onTimeout(SingleTargetRequest.java:93)
+	at org.infinispan.remoting.transport.AbstractRequest.call(AbstractRequest.java:89)
+	at org.infinispan.remoting.transport.AbstractRequest.call(AbstractRequest.java:23)
+	at java.base/java.util.concurrent.FutureTask.run(FutureTask.java:317)
+	at java.base/java.util.concurrent.ScheduledThreadPoolExecutor$ScheduledFutureTask.run(ScheduledThreadPoolExecutor.java:304)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1144)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:642)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+[m
+[33m2026-10-28 07:12:50,585 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:44124, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:12:50,587 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:44124, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:12:51,391 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:44128, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:12:51,392 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:44128, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:12:53,408 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:44136, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:12:53,410 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:44136, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:12:55,314 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health/status, remote=/127.0.0.1:44150, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:12:55,431 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:44166, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:12:55,432 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:44166, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:12:55,605 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:44178, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:12:55,608 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:44178, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[1;31m2026-10-28 07:12:57,201 ERROR [o.i.i.i.InvocationContextInterceptor] ISPN000136: Error executing command PutKeyValueCommand on Cache 'counters', writing keys [WrappedByteArray[ACED0005\t000A\s\o\n\d\a\-\i\s\n\1 (17 bytes)]] org.infinispan.remoting.RemoteException: ISPN000217: Received exception from isn2-18212, see cause for remote stack trace
+	at org.infinispan.remoting.transport.ResponseCollectors.wrapRemoteException(ResponseCollectors.java:26)
+	at org.infinispan.remoting.transport.ValidSingleResponseCollector.withException(ValidSingleResponseCollector.java:37)
+	at org.infinispan.remoting.transport.ValidSingleResponseCollector.addResponse(ValidSingleResponseCollector.java:21)
+	at org.infinispan.remoting.transport.impl.SingleTargetRequest.addResponse(SingleTargetRequest.java:75)
+	at org.infinispan.remoting.transport.impl.SingleTargetRequest.onResponse(SingleTargetRequest.java:46)
+	at org.infinispan.remoting.transport.impl.RequestRepository.addResponse(RequestRepository.java:51)
+	at org.infinispan.remoting.transport.jgroups.JGroupsTransport.processResponse(JGroupsTransport.java:1567)
+	at org.infinispan.remoting.transport.jgroups.JGroupsTransport.processMessage(JGroupsTransport.java:1468)
+	at org.infinispan.remoting.transport.jgroups.JGroupsTransport$ChannelCallbacks.up(JGroupsTransport.java:1660)
+	at org.jgroups.JChannel.up(JChannel.java:748)
+	at org.jgroups.stack.ProtocolStack.up(ProtocolStack.java:941)
+	at org.jgroups.protocols.FRAG2.up(FRAG2.java:139)
+	at org.jgroups.protocols.FlowControl.up(FlowControl.java:245)
+	at org.jgroups.protocols.FlowControl.up(FlowControl.java:245)
+	at org.jgroups.protocols.pbcast.GMS.up(GMS.java:850)
+	at org.jgroups.protocols.pbcast.STABLE.up(STABLE.java:235)
+	at org.jgroups.protocols.UNICAST3.deliverMessage(UNICAST3.java:1144)
+	at org.jgroups.protocols.UNICAST3.addMessage(UNICAST3.java:880)
+	at org.jgroups.protocols.UNICAST3.handleDataReceived(UNICAST3.java:862)
+	at org.jgroups.protocols.UNICAST3.up(UNICAST3.java:474)
+	at org.jgroups.protocols.pbcast.NAKACK2.up(NAKACK2.java:669)
+	at org.jgroups.protocols.VERIFY_SUSPECT2.up(VERIFY_SUSPECT2.java:105)
+	at org.jgroups.protocols.FailureDetection.up(FailureDetection.java:180)
+	at org.jgroups.protocols.FD_SOCK2.up(FD_SOCK2.java:190)
+	at org.jgroups.protocols.MERGE3.up(MERGE3.java:274)
+	at org.jgroups.protocols.Discovery.up(Discovery.java:296)
+	at org.jgroups.stack.Protocol.up(Protocol.java:360)
+	at org.jgroups.protocols.TP.passMessageUp(TP.java:1230)
+	at org.jgroups.util.SubmitToThreadPool$SingleMessageHandler.run(SubmitToThreadPool.java:95)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1144)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:642)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+Caused by: org.infinispan.commons.TimeoutException: ISPN000299: Unable to acquire lock after 15 seconds for key WrappedByteArray[ACED0005\t000A\s\o\n\d\a\-\i\s\n\1 (17 bytes)] and requestor CommandInvocation:isn1-23890:53. Lock is held by CommandInvocation:isn1-23890:52
+	at java.base/jdk.internal.reflect.DirectConstructorHandleAccessor.newInstance(DirectConstructorHandleAccessor.java:62)
+	at java.base/java.lang.reflect.Constructor.newInstanceWithCaller(Constructor.java:502)
+	at java.base/java.lang.reflect.Constructor.newInstance(Constructor.java:486)
+	at org.infinispan.marshall.exts.ThrowableExternalizer.newThrowableInstance(ThrowableExternalizer.java:286)
+	at org.infinispan.marshall.exts.ThrowableExternalizer.readGenericThrowable(ThrowableExternalizer.java:264)
+	at org.infinispan.marshall.exts.ThrowableExternalizer.readObject(ThrowableExternalizer.java:239)
+	at org.infinispan.marshall.exts.ThrowableExternalizer.readObject(ThrowableExternalizer.java:44)
+	at org.infinispan.marshall.core.GlobalMarshaller.readWithExternalizer(GlobalMarshaller.java:727)
+	at org.infinispan.marshall.core.GlobalMarshaller.readNonNullableObject(GlobalMarshaller.java:708)
+	at org.infinispan.marshall.core.GlobalMarshaller.readNullableObject(GlobalMarshaller.java:357)
+	at org.infinispan.marshall.core.BytesObjectInput.readObject(BytesObjectInput.java:32)
+	at org.infinispan.remoting.responses.ExceptionResponse$Externalizer.readObject(ExceptionResponse.java:49)
+	at org.infinispan.remoting.responses.ExceptionResponse$Externalizer.readObject(ExceptionResponse.java:41)
+	at org.infinispan.marshall.core.GlobalMarshaller.readWithExternalizer(GlobalMarshaller.java:727)
+	at org.infinispan.marshall.core.GlobalMarshaller.readNonNullableObject(GlobalMarshaller.java:708)
+	at org.infinispan.marshall.core.GlobalMarshaller.readNullableObject(GlobalMarshaller.java:357)
+	at org.infinispan.marshall.core.GlobalMarshaller.objectFromObjectInput(GlobalMarshaller.java:191)
+	at org.infinispan.marshall.core.GlobalMarshaller.objectFromByteBuffer(GlobalMarshaller.java:220)
+	at org.infinispan.remoting.transport.jgroups.JGroupsTransport.processResponse(JGroupsTransport.java:1559)
+	... 25 more
+[m
+[1;31m2026-10-28 07:12:57,201 ERROR [o.i.s.h.BaseRequestProcessor] ISPN005003: Exception reported org.infinispan.remoting.RemoteException: ISPN000217: Received exception from isn2-18212, see cause for remote stack trace
+	at org.infinispan.remoting.transport.ResponseCollectors.wrapRemoteException(ResponseCollectors.java:26)
+	at org.infinispan.remoting.transport.ValidSingleResponseCollector.withException(ValidSingleResponseCollector.java:37)
+	at org.infinispan.remoting.transport.ValidSingleResponseCollector.addResponse(ValidSingleResponseCollector.java:21)
+	at org.infinispan.remoting.transport.impl.SingleTargetRequest.addResponse(SingleTargetRequest.java:75)
+	at org.infinispan.remoting.transport.impl.SingleTargetRequest.onResponse(SingleTargetRequest.java:46)
+	at org.infinispan.remoting.transport.impl.RequestRepository.addResponse(RequestRepository.java:51)
+	at org.infinispan.remoting.transport.jgroups.JGroupsTransport.processResponse(JGroupsTransport.java:1567)
+	at org.infinispan.remoting.transport.jgroups.JGroupsTransport.processMessage(JGroupsTransport.java:1468)
+	at org.infinispan.remoting.transport.jgroups.JGroupsTransport$ChannelCallbacks.up(JGroupsTransport.java:1660)
+	at org.jgroups.JChannel.up(JChannel.java:748)
+	at org.jgroups.stack.ProtocolStack.up(ProtocolStack.java:941)
+	at org.jgroups.protocols.FRAG2.up(FRAG2.java:139)
+	at org.jgroups.protocols.FlowControl.up(FlowControl.java:245)
+	at org.jgroups.protocols.FlowControl.up(FlowControl.java:245)
+	at org.jgroups.protocols.pbcast.GMS.up(GMS.java:850)
+	at org.jgroups.protocols.pbcast.STABLE.up(STABLE.java:235)
+	at org.jgroups.protocols.UNICAST3.deliverMessage(UNICAST3.java:1144)
+	at org.jgroups.protocols.UNICAST3.addMessage(UNICAST3.java:880)
+	at org.jgroups.protocols.UNICAST3.handleDataReceived(UNICAST3.java:862)
+	at org.jgroups.protocols.UNICAST3.up(UNICAST3.java:474)
+	at org.jgroups.protocols.pbcast.NAKACK2.up(NAKACK2.java:669)
+	at org.jgroups.protocols.VERIFY_SUSPECT2.up(VERIFY_SUSPECT2.java:105)
+	at org.jgroups.protocols.FailureDetection.up(FailureDetection.java:180)
+	at org.jgroups.protocols.FD_SOCK2.up(FD_SOCK2.java:190)
+	at org.jgroups.protocols.MERGE3.up(MERGE3.java:274)
+	at org.jgroups.protocols.Discovery.up(Discovery.java:296)
+	at org.jgroups.stack.Protocol.up(Protocol.java:360)
+	at org.jgroups.protocols.TP.passMessageUp(TP.java:1230)
+	at org.jgroups.util.SubmitToThreadPool$SingleMessageHandler.run(SubmitToThreadPool.java:95)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1144)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:642)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+Caused by: org.infinispan.commons.TimeoutException: ISPN000299: Unable to acquire lock after 15 seconds for key WrappedByteArray[ACED0005\t000A\s\o\n\d\a\-\i\s\n\1 (17 bytes)] and requestor CommandInvocation:isn1-23890:53. Lock is held by CommandInvocation:isn1-23890:52
+	at java.base/jdk.internal.reflect.DirectConstructorHandleAccessor.newInstance(DirectConstructorHandleAccessor.java:62)
+	at java.base/java.lang.reflect.Constructor.newInstanceWithCaller(Constructor.java:502)
+	at java.base/java.lang.reflect.Constructor.newInstance(Constructor.java:486)
+	at org.infinispan.marshall.exts.ThrowableExternalizer.newThrowableInstance(ThrowableExternalizer.java:286)
+	at org.infinispan.marshall.exts.ThrowableExternalizer.readGenericThrowable(ThrowableExternalizer.java:264)
+	at org.infinispan.marshall.exts.ThrowableExternalizer.readObject(ThrowableExternalizer.java:239)
+	at org.infinispan.marshall.exts.ThrowableExternalizer.readObject(ThrowableExternalizer.java:44)
+	at org.infinispan.marshall.core.GlobalMarshaller.readWithExternalizer(GlobalMarshaller.java:727)
+	at org.infinispan.marshall.core.GlobalMarshaller.readNonNullableObject(GlobalMarshaller.java:708)
+	at org.infinispan.marshall.core.GlobalMarshaller.readNullableObject(GlobalMarshaller.java:357)
+	at org.infinispan.marshall.core.BytesObjectInput.readObject(BytesObjectInput.java:32)
+	at org.infinispan.remoting.responses.ExceptionResponse$Externalizer.readObject(ExceptionResponse.java:49)
+	at org.infinispan.remoting.responses.ExceptionResponse$Externalizer.readObject(ExceptionResponse.java:41)
+	at org.infinispan.marshall.core.GlobalMarshaller.readWithExternalizer(GlobalMarshaller.java:727)
+	at org.infinispan.marshall.core.GlobalMarshaller.readNonNullableObject(GlobalMarshaller.java:708)
+	at org.infinispan.marshall.core.GlobalMarshaller.readNullableObject(GlobalMarshaller.java:357)
+	at org.infinispan.marshall.core.GlobalMarshaller.objectFromObjectInput(GlobalMarshaller.java:191)
+	at org.infinispan.marshall.core.GlobalMarshaller.objectFromByteBuffer(GlobalMarshaller.java:220)
+	at org.infinispan.remoting.transport.jgroups.JGroupsTransport.processResponse(JGroupsTransport.java:1559)
+	... 25 more
+[m
+[33m2026-10-28 07:12:57,452 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:44184, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:12:57,453 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:44184, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[1;31m2026-10-28 07:12:57,698 ERROR [o.i.i.i.InvocationContextInterceptor] ISPN000136: Error executing command PutKeyValueCommand on Cache 'counters', writing keys [WrappedByteArray[ACED0005\t000A\s\o\n\d\a\-\i\s\n\1 (17 bytes)]] org.infinispan.commons.TimeoutException: ISPN000476: Timed out waiting for responses for request 70 from isn2-18212 after 17.5 seconds
+	at org.infinispan.remoting.transport.impl.SingleTargetRequest.onTimeout(SingleTargetRequest.java:93)
+	at org.infinispan.remoting.transport.AbstractRequest.call(AbstractRequest.java:89)
+	at org.infinispan.remoting.transport.AbstractRequest.call(AbstractRequest.java:23)
+	at java.base/java.util.concurrent.FutureTask.run(FutureTask.java:317)
+	at java.base/java.util.concurrent.ScheduledThreadPoolExecutor$ScheduledFutureTask.run(ScheduledThreadPoolExecutor.java:304)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1144)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:642)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+[m
+[0m2026-10-28 07:12:58,035 INFO  [o.i.CLUSTER] ISPN000094: Received new cluster view for channel cluster-tcc: [isn1-23890|3] (2) [isn1-23890, isn2-18212][m
+[0m2026-10-28 07:12:58,036 INFO  [o.i.CLUSTER] [Scope=isn1-23890]ISPN100001: Node isn3-54173 left the cluster[m
+[0m2026-10-28 07:12:58,036 INFO  [o.i.CLUSTER] [Scope=isn1-23890]ISPN100001: Node isn3-54173 left the cluster[m
+[0m2026-10-28 07:12:58,049 INFO  [o.i.CLUSTER] [Context=___hotRodTopologyCache_hotrod-default]ISPN100007: After merge (or coordinator change), recovered members [isn3-54173, isn1-23890, isn2-18212] with topology id 10[m
+[0m2026-10-28 07:12:58,055 INFO  [o.i.CLUSTER] [Context=counters]ISPN100007: After merge (or coordinator change), recovered members [isn1-23890, isn2-18212] with topology id 10[m
+[0m2026-10-28 07:12:58,056 INFO  [o.i.CLUSTER] [Context=___hotRodTopologyCache_hotrod-default]ISPN100008: Updating cache members list [isn1-23890, isn2-18212], topology id 11[m
+[0m2026-10-28 07:12:58,056 INFO  [o.i.CLUSTER] [Context=counters]ISPN100012: Starting conflict resolution with members [isn1-23890, isn2-18212], topology id 10[m
+[0m2026-10-28 07:12:58,056 INFO  [o.i.CLUSTER] [Context=sessions]ISPN100007: After merge (or coordinator change), recovered members [isn1-23890, isn2-18212] with topology id 10[m
+[0m2026-10-28 07:12:58,057 INFO  [o.i.CLUSTER] [Context=sessions]ISPN100012: Starting conflict resolution with members [isn1-23890, isn2-18212], topology id 10[m
+[0m2026-10-28 07:12:58,058 INFO  [o.i.CLUSTER] [Context=org.infinispan.CONFIG]ISPN100007: After merge (or coordinator change), recovered members [isn3-54173, isn1-23890, isn2-18212] with topology id 10[m
+[0m2026-10-28 07:12:58,058 INFO  [o.i.CLUSTER] [Context=___protobuf_metadata]ISPN100007: After merge (or coordinator change), recovered members [isn3-54173, isn1-23890, isn2-18212] with topology id 10[m
+[0m2026-10-28 07:12:58,060 INFO  [o.i.CLUSTER] [Context=org.infinispan.CONFIG]ISPN100008: Updating cache members list [isn1-23890, isn2-18212], topology id 11[m
+[0m2026-10-28 07:12:58,060 INFO  [o.i.CLUSTER] [Context=___protobuf_metadata]ISPN100008: Updating cache members list [isn1-23890, isn2-18212], topology id 11[m
+[0m2026-10-28 07:12:58,061 INFO  [o.i.CLUSTER] [Context=___protobuf_metadata]ISPN100002: Starting rebalance with members [isn1-23890, isn2-18212], phase READ_OLD_WRITE_ALL, topology id 12[m
+[0m2026-10-28 07:12:58,063 INFO  [o.i.CLUSTER] [Context=___hotRodTopologyCache_hotrod-default]ISPN100002: Starting rebalance with members [isn1-23890, isn2-18212], phase READ_OLD_WRITE_ALL, topology id 12[m
+[0m2026-10-28 07:12:58,062 INFO  [o.i.CLUSTER] [Context=org.infinispan.CONFIG]ISPN100002: Starting rebalance with members [isn1-23890, isn2-18212], phase READ_OLD_WRITE_ALL, topology id 12[m
+[0m2026-10-28 07:12:58,064 INFO  [o.i.LIFECYCLE] [Context=org.infinispan.CONFIG][Scope=isn1-23890]ISPN100002: Starting rebalance with members [isn1-23890, isn2-18212], phase READ_OLD_WRITE_ALL, topology id 12[m
+[0m2026-10-28 07:12:58,064 INFO  [o.i.LIFECYCLE] [Context=___hotRodTopologyCache_hotrod-default][Scope=isn1-23890]ISPN100002: Starting rebalance with members [isn1-23890, isn2-18212], phase READ_OLD_WRITE_ALL, topology id 12[m
+[0m2026-10-28 07:12:58,064 INFO  [o.i.LIFECYCLE] [Context=___protobuf_metadata][Scope=isn1-23890]ISPN100002: Starting rebalance with members [isn1-23890, isn2-18212], phase READ_OLD_WRITE_ALL, topology id 12[m
+[0m2026-10-28 07:12:58,064 INFO  [o.i.CLUSTER] [Context=org.infinispan.COUNTER]ISPN100007: After merge (or coordinator change), recovered members [isn3-54173, isn1-23890, isn2-18212] with topology id 10[m
+[0m2026-10-28 07:12:58,066 INFO  [o.i.CLUSTER] [Context=org.infinispan.COUNTER]ISPN100008: Updating cache members list [isn1-23890, isn2-18212], topology id 11[m
+[0m2026-10-28 07:12:58,065 INFO  [o.i.LIFECYCLE] [Context=___protobuf_metadata][Scope=isn1-23890]ISPN100010: Finished rebalance with members [isn1-23890, isn2-18212], topology id 12[m
+[0m2026-10-28 07:12:58,065 INFO  [o.i.CLUSTER] [Context=org.infinispan.CLIENT_SERVER_TX_TABLE]ISPN100007: After merge (or coordinator change), recovered members [isn3-54173, isn1-23890, isn2-18212] with topology id 10[m
+[0m2026-10-28 07:12:58,065 INFO  [o.i.CLUSTER] [Context=___script_cache]ISPN100007: After merge (or coordinator change), recovered members [isn3-54173, isn1-23890, isn2-18212] with topology id 10[m
+[0m2026-10-28 07:12:58,070 INFO  [o.i.CLUSTER] [Context=___script_cache]ISPN100008: Updating cache members list [isn1-23890, isn2-18212], topology id 11[m
+[0m2026-10-28 07:12:58,065 INFO  [o.i.LIFECYCLE] [Context=org.infinispan.CONFIG][Scope=isn1-23890]ISPN100010: Finished rebalance with members [isn1-23890, isn2-18212], topology id 12[m
+[0m2026-10-28 07:12:58,072 INFO  [o.i.CLUSTER] [Context=___protobuf_metadata]ISPN100009: Advancing to rebalance phase READ_ALL_WRITE_ALL, topology id 13[m
+[0m2026-10-28 07:12:58,074 INFO  [o.i.CLUSTER] [Context=org.infinispan.COUNTER]ISPN100002: Starting rebalance with members [isn1-23890, isn2-18212], phase READ_OLD_WRITE_ALL, topology id 12[m
+[0m2026-10-28 07:12:58,074 INFO  [o.i.CLUSTER] [Context=org.infinispan.CLIENT_SERVER_TX_TABLE]ISPN100008: Updating cache members list [isn1-23890, isn2-18212], topology id 11[m
+[0m2026-10-28 07:12:58,070 INFO  [o.i.CLUSTER] [Context=org.infinispan.CONFIG]ISPN100009: Advancing to rebalance phase READ_ALL_WRITE_ALL, topology id 13[m
+[0m2026-10-28 07:12:58,075 INFO  [o.i.CLUSTER] [Context=___script_cache]ISPN100002: Starting rebalance with members [isn1-23890, isn2-18212], phase READ_OLD_WRITE_ALL, topology id 12[m
+[0m2026-10-28 07:12:58,077 INFO  [o.i.LIFECYCLE] [Context=___script_cache][Scope=isn1-23890]ISPN100002: Starting rebalance with members [isn1-23890, isn2-18212], phase READ_OLD_WRITE_ALL, topology id 12[m
+[0m2026-10-28 07:12:58,075 INFO  [o.i.LIFECYCLE] [Context=org.infinispan.COUNTER][Scope=isn1-23890]ISPN100002: Starting rebalance with members [isn1-23890, isn2-18212], phase READ_OLD_WRITE_ALL, topology id 12[m
+[0m2026-10-28 07:12:58,079 INFO  [o.i.LIFECYCLE] [Context=___script_cache][Scope=isn1-23890]ISPN100010: Finished rebalance with members [isn1-23890, isn2-18212], topology id 12[m
+[0m2026-10-28 07:12:58,079 INFO  [o.i.CLUSTER] [Context=___protobuf_metadata]ISPN100009: Advancing to rebalance phase READ_NEW_WRITE_ALL, topology id 14[m
+[0m2026-10-28 07:12:58,076 INFO  [o.i.CLUSTER] [Context=org.infinispan.CLIENT_SERVER_TX_TABLE]ISPN100002: Starting rebalance with members [isn1-23890, isn2-18212], phase READ_OLD_WRITE_ALL, topology id 12[m
+[0m2026-10-28 07:12:58,080 INFO  [o.i.CLUSTER] [Context=org.infinispan.CONFIG]ISPN100009: Advancing to rebalance phase READ_NEW_WRITE_ALL, topology id 14[m
+[0m2026-10-28 07:12:58,081 INFO  [o.i.LIFECYCLE] [Context=org.infinispan.CLIENT_SERVER_TX_TABLE][Scope=isn1-23890]ISPN100002: Starting rebalance with members [isn1-23890, isn2-18212], phase READ_OLD_WRITE_ALL, topology id 12[m
+[0m2026-10-28 07:12:58,081 INFO  [o.i.LIFECYCLE] [Context=org.infinispan.COUNTER][Scope=isn1-23890]ISPN100010: Finished rebalance with members [isn1-23890, isn2-18212], topology id 12[m
+[0m2026-10-28 07:12:58,084 INFO  [o.i.CLUSTER] [Context=___script_cache]ISPN100009: Advancing to rebalance phase READ_ALL_WRITE_ALL, topology id 13[m
+[0m2026-10-28 07:12:58,087 INFO  [o.i.CLUSTER] [Context=___hotRodTopologyCache_hotrod-default]ISPN100009: Advancing to rebalance phase READ_ALL_WRITE_ALL, topology id 13[m
+[0m2026-10-28 07:12:58,089 INFO  [o.i.CLUSTER] [Context=org.infinispan.CONFIG]ISPN100010: Finished rebalance with members [isn1-23890, isn2-18212], topology id 15[m
+[0m2026-10-28 07:12:58,089 INFO  [o.i.CLUSTER] [Context=org.infinispan.CLIENT_SERVER_TX_TABLE]ISPN100009: Advancing to rebalance phase READ_ALL_WRITE_ALL, topology id 13[m
+[0m2026-10-28 07:12:58,091 INFO  [o.i.CLUSTER] [Context=___script_cache]ISPN100009: Advancing to rebalance phase READ_NEW_WRITE_ALL, topology id 14[m
+[0m2026-10-28 07:12:58,088 INFO  [o.i.LIFECYCLE] [Context=org.infinispan.CLIENT_SERVER_TX_TABLE][Scope=isn1-23890]ISPN100010: Finished rebalance with members [isn1-23890, isn2-18212], topology id 12[m
+[0m2026-10-28 07:12:58,091 INFO  [o.i.CLUSTER] [Context=___protobuf_metadata]ISPN100010: Finished rebalance with members [isn1-23890, isn2-18212], topology id 15[m
+[0m2026-10-28 07:12:58,091 INFO  [o.i.LIFECYCLE] [Context=___hotRodTopologyCache_hotrod-default][Scope=isn1-23890]ISPN100010: Finished rebalance with members [isn1-23890, isn2-18212], topology id 12[m
+[0m2026-10-28 07:12:58,096 INFO  [o.i.CLUSTER] [Context=___hotRodTopologyCache_hotrod-default]ISPN100009: Advancing to rebalance phase READ_NEW_WRITE_ALL, topology id 14[m
+[0m2026-10-28 07:12:58,097 INFO  [o.i.CLUSTER] [Context=___script_cache]ISPN100010: Finished rebalance with members [isn1-23890, isn2-18212], topology id 15[m
+[0m2026-10-28 07:12:58,098 INFO  [o.i.CLUSTER] [Context=org.infinispan.CLIENT_SERVER_TX_TABLE]ISPN100009: Advancing to rebalance phase READ_NEW_WRITE_ALL, topology id 14[m
+[0m2026-10-28 07:12:58,101 INFO  [o.i.CLUSTER] [Context=___hotRodTopologyCache_hotrod-default]ISPN100010: Finished rebalance with members [isn1-23890, isn2-18212], topology id 15[m
+[0m2026-10-28 07:12:58,103 INFO  [o.i.CLUSTER] [Context=org.infinispan.CLIENT_SERVER_TX_TABLE]ISPN100010: Finished rebalance with members [isn1-23890, isn2-18212], topology id 15[m
+[0m2026-10-28 07:12:58,129 INFO  [o.i.LIFECYCLE] ISPN000973: Task 'state-transfer-org.infinispan.COUNTER' started at 2026-10-28T07:12:58.081622897Z and done 2026-10-28T07:12:58.129385731Z[m
+[0m2026-10-28 07:12:58,152 INFO  [o.i.CLUSTER] [Context=org.infinispan.COUNTER]ISPN100009: Advancing to rebalance phase READ_ALL_WRITE_ALL, topology id 13[m
+[0m2026-10-28 07:12:58,157 INFO  [o.i.CLUSTER] [Context=org.infinispan.COUNTER]ISPN100009: Advancing to rebalance phase READ_NEW_WRITE_ALL, topology id 14[m
+[0m2026-10-28 07:12:58,160 INFO  [o.i.CLUSTER] [Context=org.infinispan.COUNTER]ISPN100010: Finished rebalance with members [isn1-23890, isn2-18212], topology id 15[m
+[33m2026-10-28 07:12:59,470 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:35242, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:12:59,475 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:35242, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:13:00,627 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:35248, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:13:00,630 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:35248, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:13:00,719 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health/status, remote=/127.0.0.1:35280, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:13:01,187 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:35290, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:13:01,189 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:35290, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:13:01,493 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:35298, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:13:01,496 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:35298, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[0m2026-10-28 07:13:02,417 INFO  [o.i.CLUSTER] [Context=sessions]ISPN100013: Finished conflict resolution with members [isn1-23890, isn2-18212], topology id 10[m
+[0m2026-10-28 07:13:02,418 INFO  [o.i.CLUSTER] [Context=sessions]ISPN100002: Starting rebalance with members [isn1-23890, isn2-18212], phase READ_OLD_WRITE_ALL, topology id 12[m
+[0m2026-10-28 07:13:02,418 INFO  [o.i.LIFECYCLE] [Context=sessions][Scope=isn1-23890]ISPN100002: Starting rebalance with members [isn1-23890, isn2-18212], phase READ_OLD_WRITE_ALL, topology id 12[m
+[0m2026-10-28 07:13:02,419 INFO  [o.i.LIFECYCLE] [Context=sessions][Scope=isn1-23890]ISPN100010: Finished rebalance with members [isn1-23890, isn2-18212], topology id 12[m
+[0m2026-10-28 07:13:03,018 INFO  [o.i.LIFECYCLE] ISPN000973: Task 'state-transfer-sessions' started at 2026-10-28T07:13:02.419600622Z and done 2026-10-28T07:13:03.018400809Z[m
+[0m2026-10-28 07:13:03,319 INFO  [o.i.CLUSTER] [Context=sessions]ISPN100009: Advancing to rebalance phase READ_ALL_WRITE_ALL, topology id 13[m
+[0m2026-10-28 07:13:03,321 INFO  [o.i.CLUSTER] [Context=sessions]ISPN100009: Advancing to rebalance phase READ_NEW_WRITE_ALL, topology id 14[m
+[0m2026-10-28 07:13:03,321 INFO  [o.i.CLUSTER] [Context=counters]ISPN100013: Finished conflict resolution with members [isn1-23890, isn2-18212], topology id 10[m
+[0m2026-10-28 07:13:03,322 INFO  [o.i.CLUSTER] [Context=counters]ISPN100002: Starting rebalance with members [isn1-23890, isn2-18212], phase READ_OLD_WRITE_ALL, topology id 12[m
+[0m2026-10-28 07:13:03,322 INFO  [o.i.CLUSTER] [Context=sessions]ISPN100010: Finished rebalance with members [isn1-23890, isn2-18212], topology id 15[m
+[0m2026-10-28 07:13:03,322 INFO  [o.i.LIFECYCLE] [Context=counters][Scope=isn1-23890]ISPN100002: Starting rebalance with members [isn1-23890, isn2-18212], phase READ_OLD_WRITE_ALL, topology id 12[m
+[0m2026-10-28 07:13:03,324 INFO  [o.i.LIFECYCLE] [Context=counters][Scope=isn1-23890]ISPN100010: Finished rebalance with members [isn1-23890, isn2-18212], topology id 12[m
+[0m2026-10-28 07:13:03,324 INFO  [o.i.LIFECYCLE] ISPN000973: Task 'state-transfer-counters' started at 2026-10-28T07:13:03.323932109Z and done 2026-10-28T07:13:03.324954034Z[m
+[0m2026-10-28 07:13:03,326 INFO  [o.i.CLUSTER] [Context=counters]ISPN100009: Advancing to rebalance phase READ_ALL_WRITE_ALL, topology id 13[m
+[0m2026-10-28 07:13:03,328 INFO  [o.i.CLUSTER] [Context=counters]ISPN100009: Advancing to rebalance phase READ_NEW_WRITE_ALL, topology id 14[m
+[0m2026-10-28 07:13:03,333 INFO  [o.i.CLUSTER] [Context=counters]ISPN100010: Finished rebalance with members [isn1-23890, isn2-18212], topology id 15[m
+[33m2026-10-28 07:13:03,511 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:35308, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:13:03,513 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:35308, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:13:05,528 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:35322, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:13:05,530 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:35322, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:13:05,651 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:35338, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:13:05,654 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:35338, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:13:06,421 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health/status, remote=/127.0.0.1:35352, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:13:07,549 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:35356, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:13:07,551 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:35356, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:13:09,572 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:44824, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:13:09,573 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:44824, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:13:10,672 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:44830, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:13:10,673 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:44830, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:13:11,591 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:44832, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:13:11,593 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:44832, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:13:12,290 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health/status, remote=/127.0.0.1:44846, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:13:13,609 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:44854, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:13:13,611 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:44854, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:13:15,630 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:44858, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:13:15,632 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:44858, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:13:15,691 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:44860, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:13:15,692 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:44860, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:13:17,649 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:44868, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:13:17,652 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:44868, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:13:18,307 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health/status, remote=/127.0.0.1:44894, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:13:19,668 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:39960, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:13:19,670 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:39960, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:13:20,712 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:39962, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:13:20,713 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:39962, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:13:21,262 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:39964, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:13:21,263 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:39964, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:13:21,689 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:39980, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:13:21,691 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:39980, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:13:23,707 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:39990, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:13:23,708 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:39990, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:13:24,466 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health/status, remote=/127.0.0.1:40016, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:13:25,726 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:40028, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:13:25,728 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:40028, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:13:25,733 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:40030, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:13:25,738 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:40030, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:13:27,751 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:40044, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:13:27,752 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:40044, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:13:29,768 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:41114, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:13:29,770 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:41114, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:13:30,356 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health/status, remote=/127.0.0.1:41132, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:13:30,756 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:41144, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:13:30,757 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:41144, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:13:31,791 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:41158, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:13:31,793 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:41158, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:13:33,810 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:41162, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:13:33,812 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:41162, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:13:35,775 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:41166, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:13:35,776 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:41166, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:13:35,827 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:41170, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:13:35,829 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:41170, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:13:36,149 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health/status, remote=/127.0.0.1:41184, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:13:37,849 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:41212, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:13:37,851 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:41212, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:13:38,332 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:41216, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:13:38,333 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:41216, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:13:39,866 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:58056, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:13:39,868 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:58056, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:13:40,795 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:58062, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:13:40,797 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:58062, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:13:41,304 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health/status, remote=/127.0.0.1:58090, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:13:41,885 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:58100, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:13:41,886 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:58100, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:13:43,905 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:58104, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:13:43,906 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:58104, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:13:45,816 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:58114, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:13:45,818 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:58114, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:13:45,923 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:58122, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:13:45,925 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:58122, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:13:47,285 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health/status, remote=/127.0.0.1:58134, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:13:47,942 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:58168, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:13:47,943 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:58168, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:13:49,961 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:56386, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:13:49,962 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:56386, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:13:50,650 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:56390, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:13:50,651 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:56390, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:13:50,835 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:56400, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:13:50,836 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:56400, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:13:51,978 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:56404, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:13:51,979 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:56404, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:13:52,672 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:56408, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:13:52,674 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:56408, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:13:53,361 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health/status, remote=/127.0.0.1:56438, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:13:53,997 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:56442, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:13:53,998 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:56442, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:13:54,693 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:56448, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:13:54,695 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:56448, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:13:55,012 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:56462, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:13:55,013 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:56462, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:13:55,853 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:56466, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:13:55,855 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:56466, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:13:56,713 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:56482, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:13:56,714 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:56482, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:13:57,029 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:56490, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:13:57,030 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:56490, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:13:58,732 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:45900, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:13:58,733 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:45900, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:13:59,046 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:45914, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:13:59,047 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:45914, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:13:59,354 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health/status, remote=/127.0.0.1:45948, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:14:00,753 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:45950, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:14:00,754 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:45950, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:14:00,871 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:45964, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:14:00,873 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:45964, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:14:01,065 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:45974, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:14:01,067 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:45974, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:14:02,774 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:45976, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:14:02,775 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:45976, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:14:03,082 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:45992, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:14:03,084 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:45992, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:14:04,796 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:45998, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:14:04,797 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:45998, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:14:05,103 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:46010, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:14:05,104 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:46010, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:14:05,321 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health/status, remote=/127.0.0.1:46020, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:14:05,889 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:46028, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:14:05,890 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:46028, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:14:06,816 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:46036, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:14:06,817 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:46036, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:14:07,119 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:46038, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:14:07,121 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:46038, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:14:08,836 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:33834, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:14:08,837 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:33834, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:14:09,136 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:33836, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:14:09,139 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:33836, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:14:10,857 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:33846, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:14:10,858 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:33846, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:14:10,907 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:33848, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:14:10,909 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:33848, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:14:10,979 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health/status, remote=/127.0.0.1:33872, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:14:11,156 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:33890, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:14:11,157 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:33890, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:14:12,877 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:33904, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:14:12,879 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:33904, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:14:13,175 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:33916, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:14:13,177 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:33916, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:14:14,899 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:33924, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:14:14,900 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:33924, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:14:15,193 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:33932, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:14:15,195 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:33932, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:14:15,926 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:33934, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:14:15,928 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:33934, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:14:16,613 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health/status, remote=/127.0.0.1:33962, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:14:16,919 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:33980, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:14:16,920 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:33980, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:14:17,209 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:33984, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:14:17,211 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:33984, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:14:18,940 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:36722, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:14:18,941 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:36722, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:14:19,233 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:36732, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:14:19,234 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:36732, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:14:20,946 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:36734, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:14:20,947 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:36734, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:14:20,960 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:36740, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:14:20,961 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:36740, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:14:21,250 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:36744, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:14:21,252 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:36744, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:14:22,276 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health/status, remote=/127.0.0.1:36754, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:14:22,981 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:36780, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:14:22,983 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:36780, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:14:23,267 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:36784, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:14:23,269 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:36784, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:14:25,002 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:36788, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:14:25,003 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:36788, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:14:25,287 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:36800, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:14:25,289 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:36800, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:14:25,964 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:36810, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:14:25,966 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:36810, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:14:27,023 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:36820, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:14:27,024 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:36820, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:14:27,306 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:36826, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:14:27,307 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:36826, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:14:28,382 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health/status, remote=/127.0.0.1:36638, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:14:29,042 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:36648, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:14:29,043 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:36648, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:14:29,324 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:36654, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:14:29,325 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:36654, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:14:30,983 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:36656, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:14:30,984 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:36656, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:14:31,062 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:36658, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:14:31,064 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:36658, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:14:31,341 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:36664, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:14:31,342 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:36664, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:14:33,082 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:36670, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:14:33,083 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:36670, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:14:33,358 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:36678, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:14:33,361 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:36678, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[0m2026-10-28 07:14:34,086 INFO  [o.i.CLUSTER] ISPN000093: Received new, MERGED cluster view for channel cluster-tcc: MergeView::[isn3-54173|4] (3) [isn3-54173, isn1-23890, isn2-18212], 2 subgroups: [isn1-23890|3] (2) [isn1-23890, isn2-18212], [isn3-54173|3] (1) [isn3-54173][m
+[0m2026-10-28 07:14:34,086 INFO  [o.i.CLUSTER] [Scope=isn1-23890]ISPN100000: Node isn3-54173 joined the cluster[m
+[0m2026-10-28 07:14:34,087 INFO  [o.i.CLUSTER] [Scope=isn1-23890]ISPN100000: Node isn3-54173 joined the cluster[m
+[0m2026-10-28 07:14:34,108 INFO  [o.i.LIFECYCLE] [Context=org.infinispan.CONFIG][Scope=isn1-23890]ISPN100002: Starting rebalance with members [isn1-23890, isn2-18212, isn3-54173], phase READ_OLD_WRITE_ALL, topology id 18[m
+[0m2026-10-28 07:14:34,111 INFO  [o.i.LIFECYCLE] [Context=org.infinispan.CLIENT_SERVER_TX_TABLE][Scope=isn1-23890]ISPN100002: Starting rebalance with members [isn1-23890, isn2-18212, isn3-54173], phase READ_OLD_WRITE_ALL, topology id 18[m
+[0m2026-10-28 07:14:34,111 INFO  [o.i.LIFECYCLE] [Context=org.infinispan.CONFIG][Scope=isn1-23890]ISPN100010: Finished rebalance with members [isn1-23890, isn2-18212, isn3-54173], topology id 18[m
+[0m2026-10-28 07:14:34,112 INFO  [o.i.LIFECYCLE] [Context=___hotRodTopologyCache_hotrod-default][Scope=isn1-23890]ISPN100002: Starting rebalance with members [isn1-23890, isn2-18212, isn3-54173], phase READ_OLD_WRITE_ALL, topology id 18[m
+[0m2026-10-28 07:14:34,117 INFO  [o.i.LIFECYCLE] [Context=___script_cache][Scope=isn1-23890]ISPN100002: Starting rebalance with members [isn1-23890, isn2-18212, isn3-54173], phase READ_OLD_WRITE_ALL, topology id 18[m
+[0m2026-10-28 07:14:34,118 INFO  [o.i.LIFECYCLE] [Context=___script_cache][Scope=isn1-23890]ISPN100010: Finished rebalance with members [isn1-23890, isn2-18212, isn3-54173], topology id 18[m
+[0m2026-10-28 07:14:34,120 INFO  [o.i.LIFECYCLE] [Context=___hotRodTopologyCache_hotrod-default][Scope=isn1-23890]ISPN100010: Finished rebalance with members [isn1-23890, isn2-18212, isn3-54173], topology id 18[m
+[0m2026-10-28 07:14:34,122 INFO  [o.i.LIFECYCLE] [Context=org.infinispan.COUNTER][Scope=isn1-23890]ISPN100002: Starting rebalance with members [isn1-23890, isn2-18212, isn3-54173], phase READ_OLD_WRITE_ALL, topology id 18[m
+[0m2026-10-28 07:14:34,126 INFO  [o.i.LIFECYCLE] [Context=org.infinispan.COUNTER][Scope=isn1-23890]ISPN100010: Finished rebalance with members [isn1-23890, isn2-18212, isn3-54173], topology id 18[m
+[0m2026-10-28 07:14:34,122 INFO  [o.i.LIFECYCLE] [Context=org.infinispan.CLIENT_SERVER_TX_TABLE][Scope=isn1-23890]ISPN100010: Finished rebalance with members [isn1-23890, isn2-18212, isn3-54173], topology id 18[m
+[0m2026-10-28 07:14:34,127 INFO  [o.i.LIFECYCLE] [Context=___protobuf_metadata][Scope=isn1-23890]ISPN100002: Starting rebalance with members [isn1-23890, isn2-18212, isn3-54173], phase READ_OLD_WRITE_ALL, topology id 18[m
+[0m2026-10-28 07:14:34,133 INFO  [o.i.LIFECYCLE] [Context=___protobuf_metadata][Scope=isn1-23890]ISPN100010: Finished rebalance with members [isn1-23890, isn2-18212, isn3-54173], topology id 18[m
+[0m2026-10-28 07:14:34,302 INFO  [o.i.LIFECYCLE] [Context=sessions][Scope=isn1-23890]ISPN100002: Starting rebalance with members [isn3-54173, isn1-23890, isn2-18212], phase READ_OLD_WRITE_ALL, topology id 18[m
+[0m2026-10-28 07:14:34,305 INFO  [o.i.LIFECYCLE] [Context=counters][Scope=isn1-23890]ISPN100002: Starting rebalance with members [isn3-54173, isn1-23890, isn2-18212], phase READ_OLD_WRITE_ALL, topology id 18[m
+[0m2026-10-28 07:14:34,305 INFO  [o.i.LIFECYCLE] [Context=sessions][Scope=isn1-23890]ISPN100010: Finished rebalance with members [isn3-54173, isn1-23890, isn2-18212], topology id 18[m
+[0m2026-10-28 07:14:34,307 INFO  [o.i.LIFECYCLE] [Context=counters][Scope=isn1-23890]ISPN100010: Finished rebalance with members [isn3-54173, isn1-23890, isn2-18212], topology id 18[m
+[33m2026-10-28 07:14:34,328 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health/status, remote=/127.0.0.1:36708, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:14:35,102 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:36728, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:14:35,103 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:36728, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:14:35,123 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:36738, subject=null}] has been deprecated. Please consult the upgrade guide[m
+[33m2026-10-28 07:14:35,124 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health, remote=/10.89.1.1:36738, subject=null}] has been deprecated. Please consult the upgrade guide[m

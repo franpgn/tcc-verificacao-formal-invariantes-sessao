@@ -1,0 +1,35 @@
+== pre-condicoes 2026-10-28T07:06:00+00:00
+hostname=server1 ip=172.31.251.37 usuario=server1
+tmux: /tmp/tmux-1000/default,1994,0
+lock /var/lock/tcc-vm.lock: OCUPADO (este flock)
+sudo -n: ok
+uname -r: 6.8.0-147-generic
+boot_id: 5d7119b8-3b50-435d-bd0d-cbdb6bd410df
+HEAD: 1266c129904e73469926d95708e7c83290498c41 (docs: ROTEIRO-S4 com a tentativa 1 abortada (BSOD 0x154 do host em 2026-10-28) e o preparo da tentativa 2)
+contem 902654b (v4c): sim
+arquivos versionados modificados: 0
+-- sha256 (referencia v4c, aceita pelo Gestor em 2026-10-28)
+scripts/inject-partition.sh: OK
+runs/gate-b29/g-lib.sh: OK
+runs/gate-b29/g56-lib.sh: OK
+runs/gate-b29/g1.sh: OK
+runs/gate-b29/g1b.sh: OK
+runs/gate-b29/recriar.sh: OK
+runs/vm-s2-2026-10-27/portao51.sh: OK
+hashes: iguais a referencia
+s4.sh: e9e46bf11a1ddecb8754efc656bd0c219beb8a94becc10da6959ee41e7869367
+ambiente: sem G1_*/REP/COLETA/... herdados
+java: openjdk version "17.0.20.1" 2026-08-18
+jar: workload/target/session-workload-0.1.0-SNAPSHOT.jar 3594c690cfacd2be1f88e58d2a65a4cd944a06688abcb9ae5b4d3df2f7dc7bee
+runs/gate-b29/g1-rep4: inexistente
+timers tcc-heal: 0
+-- runs/gate-b29/go.log (particoes anteriores registradas)
+go 2026-10-16T05:11:03+00:00 vm=192.168.137.150 sha=4978e1c6ee634d59ba48927773f496d7bf51b3ee
+go 2026-10-16T06:48:16+00:00 vm=192.168.137.150 sha=544879150d70e146d4b3f5a4847c13d8f824f5b9
+go G-1 (REP=3, janela de 90 s em isn3) 2026-10-16T08:56:39+00:00 vm=192.168.137.150 sha=507c21ee6812d4ea69788277907b92b56ff13311
+go G-5 (kill -TERM e kill -KILL do injetor em isn3, 40 s) 2026-10-16T09:02:02+00:00 vm=192.168.137.150 sha=507c21ee6812d4ea69788277907b92b56ff13311
+go G-6 (F3 jitter em isn2 + F2 particao em isn3, 90/130 s) 2026-10-16T09:03:46+00:00 vm=192.168.137.150 sha=507c21ee6812d4ea69788277907b92b56ff13311
+-- conteineres (antes da recriacao)
+isn1 7a196f163609 Created criado=2026-10-27 18:48:51.49904166 +0000 UTC
+isn2 1c89dacd64c2 Created criado=2026-10-27 18:48:52.910202032 +0000 UTC
+isn3 5bf9476b5b97 Created criado=2026-10-27 18:48:54.126582945 +0000 UTC

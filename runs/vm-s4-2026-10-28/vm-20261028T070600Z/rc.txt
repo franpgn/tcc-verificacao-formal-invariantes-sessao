@@ -1,0 +1,13 @@
+pre rc=0 fim=2026-10-28T07:06:03+00:00
+copia-cluster-antigo rc=0 fim=2026-10-28T07:06:11+00:00
+resposta: RECRIAR 2026-10-28T07:06:15+00:00
+recriacao rc=0 fim=2026-10-28T07:06:47+00:00
+pos-recriacao rc=0 fim=2026-10-28T07:06:48+00:00
+04-portao51-pre rc=0 fim=2026-10-28T07:12:06+00:00
+04-portao51-pre-avaliacao rc=0 fim=2026-10-28T07:12:06+00:00
+g1b iniciado na janela tmux @1 (s4-g1b) 2026-10-28T07:12:06+00:00
+g1 rc=0 fim=2026-10-28T07:15:05+00:00
+g1b rc=0 fim=2026-10-28T07:15:05+00:00
+07-portao51-pos rc=0 fim=2026-10-28T07:20:54+00:00
+07-portao51-pos-avaliacao rc=0 fim=2026-10-28T07:20:54+00:00
+S4 fim 2026-10-28T07:20:54+00:00 rc=0. Saia do tmux com exit (libera o lock).

@@ -1,0 +1,94 @@
+[2026-10-28T07:12:14Z] inject-partition.sh: PID do container isn3: 3075
+[2026-10-28T07:12:14Z] inject-partition.sh: IP do par isn1: 10.89.1.2
+[2026-10-28T07:12:14Z] inject-partition.sh: IP do par isn2: 10.89.1.3
+[2026-10-28T07:12:14Z] inject-partition.sh: pre-limpeza idempotente (clsact remanescente de execucao anterior)
+[2026-10-28T07:12:14Z] inject-partition.sh: sondando clsact/u32/drop em isn3 (pid 3075, eth0) via nsenter
+[2026-10-28T07:12:14Z] inject-partition.sh: sudo nsenter -t 3075 -n tc qdisc add dev eth0 clsact
+[2026-10-28T07:12:14Z] inject-partition.sh: isn3 x isn1 (10.89.1.2): filtro ingress src + egress dst, acao drop
+[2026-10-28T07:12:14Z] inject-partition.sh: isn3 x isn2 (10.89.1.3): filtro ingress src + egress dst, acao drop
+[2026-10-28T07:12:14Z] inject-partition.sh: particao aplicada em isn3 contra isn1 isn2
+[2026-10-28T07:12:20Z] inject-partition.sh: OK: isn3 nao conecta a nenhum par em :7800
+[2026-10-28T07:12:20Z] inject-partition.sh: aguardando 90s com F2 ativa
+[2026-10-28T07:13:50Z] inject-partition.sh: contadores de descarte em isn3: ingress=49 pkt, egress=287 pkt
+    ingress: filter protocol ip pref 1 u32 chain 0 
+    ingress: filter protocol ip pref 1 u32 chain 0 fh 801: ht divisor 1 
+    ingress: filter protocol ip pref 1 u32 chain 0 fh 801::800 order 2048 key ht 801 bkt 0 terminal flowid not_in_hw 
+    ingress:   match 0a590102/ffffffff at 16
+    ingress: 	action order 1: gact action drop
+    ingress: 	 random type none pass val 0
+    ingress: 	 index 2 ref 1 bind 1 installed 96 sec used 12 sec firstused 96 sec
+    ingress: 	Action statistics:
+    ingress: 	Sent 66072 bytes 151 pkt (dropped 150, overlimits 0 requeues 0) 
+    ingress: 	backlog 0b 0p requeues 0
+    ingress: 
+    ingress: filter protocol ip pref 1 u32 chain 0 fh 801::801 order 2049 key ht 801 bkt 0 terminal flowid not_in_hw 
+    ingress:   match 0a590103/ffffffff at 16
+    ingress: 	action order 1: gact action drop
+    ingress: 	 random type none pass val 0
+    ingress: 	 index 4 ref 1 bind 1 installed 96 sec used 19 sec firstused 94 sec
+    ingress: 	Action statistics:
+    ingress: 	Sent 85707 bytes 136 pkt (dropped 134, overlimits 0 requeues 0) 
+    ingress: 	backlog 0b 0p requeues 0
+    ingress: 
+    ingress: filter protocol ip pref 1 u32 chain 0 fh 800: ht divisor 1 
+    ingress: filter protocol ip pref 1 u32 chain 0 fh 800::800 order 2048 key ht 800 bkt 0 terminal flowid not_in_hw 
+    ingress:   match 0a590102/ffffffff at 12
+    ingress: 	action order 1: gact action drop
+    ingress: 	 random type none pass val 0
+    ingress: 	 index 1 ref 1 bind 1 installed 96 sec used 19 sec firstused 93 sec
+    ingress: 	Action statistics:
+    ingress: 	Sent 1110 bytes 11 pkt (dropped 11, overlimits 0 requeues 0) 
+    ingress: 	backlog 0b 0p requeues 0
+    ingress: 
+    ingress: filter protocol ip pref 1 u32 chain 0 fh 800::801 order 2049 key ht 800 bkt 0 terminal flowid not_in_hw 
+    ingress:   match 0a590103/ffffffff at 12
+    ingress: 	action order 1: gact action drop
+    ingress: 	 random type none pass val 0
+    ingress: 	 index 3 ref 1 bind 1 installed 96 sec used 25 sec firstused 94 sec
+    ingress: 	Action statistics:
+    ingress: 	Sent 10227 bytes 38 pkt (dropped 38, overlimits 0 requeues 0) 
+    ingress: 	backlog 0b 0p requeues 0
+    ingress: 
+    egress:  filter protocol ip pref 1 u32 chain 0 
+    egress:  filter protocol ip pref 1 u32 chain 0 fh 801: ht divisor 1 
+    egress:  filter protocol ip pref 1 u32 chain 0 fh 801::800 order 2048 key ht 801 bkt 0 terminal flowid not_in_hw 
+    egress:    match 0a590102/ffffffff at 16
+    egress:  	action order 1: gact action drop
+    egress:  	 random type none pass val 0
+    egress:  	 index 2 ref 1 bind 1 installed 96 sec used 12 sec firstused 96 sec
+    egress:  	Action statistics:
+    egress:  	Sent 66072 bytes 151 pkt (dropped 150, overlimits 0 requeues 0) 
+    egress:  	backlog 0b 0p requeues 0
+    egress:  
+    egress:  filter protocol ip pref 1 u32 chain 0 fh 801::801 order 2049 key ht 801 bkt 0 terminal flowid not_in_hw 
+    egress:    match 0a590103/ffffffff at 16
+    egress:  	action order 1: gact action drop
+    egress:  	 random type none pass val 0
+    egress:  	 index 4 ref 1 bind 1 installed 96 sec used 19 sec firstused 94 sec
+    egress:  	Action statistics:
+    egress:  	Sent 85707 bytes 136 pkt (dropped 134, overlimits 0 requeues 0) 
+    egress:  	backlog 0b 0p requeues 0
+    egress:  
+    egress:  filter protocol ip pref 1 u32 chain 0 fh 800: ht divisor 1 
+    egress:  filter protocol ip pref 1 u32 chain 0 fh 800::800 order 2048 key ht 800 bkt 0 terminal flowid not_in_hw 
+    egress:    match 0a590102/ffffffff at 12
+    egress:  	action order 1: gact action drop
+    egress:  	 random type none pass val 0
+    egress:  	 index 1 ref 1 bind 1 installed 96 sec used 19 sec firstused 93 sec
+    egress:  	Action statistics:
+    egress:  	Sent 1110 bytes 11 pkt (dropped 11, overlimits 0 requeues 0) 
+    egress:  	backlog 0b 0p requeues 0
+    egress:  
+    egress:  filter protocol ip pref 1 u32 chain 0 fh 800::801 order 2049 key ht 800 bkt 0 terminal flowid not_in_hw 
+    egress:    match 0a590103/ffffffff at 12
+    egress:  	action order 1: gact action drop
+    egress:  	 random type none pass val 0
+    egress:  	 index 3 ref 1 bind 1 installed 96 sec used 25 sec firstused 94 sec
+    egress:  	Action statistics:
+    egress:  	Sent 10227 bytes 38 pkt (dropped 38, overlimits 0 requeues 0) 
+    egress:  	backlog 0b 0p requeues 0
+    egress:  
+[2026-10-28T07:13:50Z] inject-partition.sh: sudo nsenter -t 3075 -n tc qdisc del dev eth0 clsact
+[2026-10-28T07:13:50Z] inject-partition.sh: OK: F2 (particao) injetada por 90s em isn3 e removida; sem clsact residual
+injetor rc=0 (esperado 0)
+ok sem clsact em isn3: qdisc noqueue 0: root refcnt 2

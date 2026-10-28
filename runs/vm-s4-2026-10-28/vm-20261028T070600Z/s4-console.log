@@ -1,0 +1,202 @@
+S4 (REP=4R) inicio 2026-10-28T07:06:00+00:00 saida=/home/server1/tcc-gate/runs/vm-s4-2026-10-28/vm-20261028T070600Z
+TCC_DIR=/home/server1/tcc-gate (exportado pelo s4.sh)
+== pre-condicoes 2026-10-28T07:06:00+00:00
+hostname=server1 ip=172.31.251.37 usuario=server1
+tmux: /tmp/tmux-1000/default,1994,0
+lock /var/lock/tcc-vm.lock: OCUPADO (este flock)
+sudo -n: ok
+uname -r: 6.8.0-147-generic
+boot_id: 5d7119b8-3b50-435d-bd0d-cbdb6bd410df
+HEAD: 1266c129904e73469926d95708e7c83290498c41 (docs: ROTEIRO-S4 com a tentativa 1 abortada (BSOD 0x154 do host em 2026-10-28) e o preparo da tentativa 2)
+contem 902654b (v4c): sim
+arquivos versionados modificados: 0
+-- sha256 (referencia v4c, aceita pelo Gestor em 2026-10-28)
+scripts/inject-partition.sh: OK
+runs/gate-b29/g-lib.sh: OK
+runs/gate-b29/g56-lib.sh: OK
+runs/gate-b29/g1.sh: OK
+runs/gate-b29/g1b.sh: OK
+runs/gate-b29/recriar.sh: OK
+runs/vm-s2-2026-10-27/portao51.sh: OK
+hashes: iguais a referencia
+s4.sh: e9e46bf11a1ddecb8754efc656bd0c219beb8a94becc10da6959ee41e7869367
+ambiente: sem G1_*/REP/COLETA/... herdados
+java: openjdk version "17.0.20.1" 2026-08-18
+jar: workload/target/session-workload-0.1.0-SNAPSHOT.jar 3594c690cfacd2be1f88e58d2a65a4cd944a06688abcb9ae5b4d3df2f7dc7bee
+runs/gate-b29/g1-rep4: inexistente
+timers tcc-heal: 0
+-- runs/gate-b29/go.log (particoes anteriores registradas)
+go 2026-10-16T05:11:03+00:00 vm=192.168.137.150 sha=4978e1c6ee634d59ba48927773f496d7bf51b3ee
+go 2026-10-16T06:48:16+00:00 vm=192.168.137.150 sha=544879150d70e146d4b3f5a4847c13d8f824f5b9
+go G-1 (REP=3, janela de 90 s em isn3) 2026-10-16T08:56:39+00:00 vm=192.168.137.150 sha=507c21ee6812d4ea69788277907b92b56ff13311
+go G-5 (kill -TERM e kill -KILL do injetor em isn3, 40 s) 2026-10-16T09:02:02+00:00 vm=192.168.137.150 sha=507c21ee6812d4ea69788277907b92b56ff13311
+go G-6 (F3 jitter em isn2 + F2 particao em isn3, 90/130 s) 2026-10-16T09:03:46+00:00 vm=192.168.137.150 sha=507c21ee6812d4ea69788277907b92b56ff13311
+-- conteineres (antes da recriacao)
+isn1 7a196f163609 Created criado=2026-10-27 18:48:51.49904166 +0000 UTC
+isn2 1c89dacd64c2 Created criado=2026-10-27 18:48:52.910202032 +0000 UTC
+isn3 5bf9476b5b97 Created criado=2026-10-27 18:48:54.126582945 +0000 UTC
+pre rc=0 fim=2026-10-28T07:06:03+00:00
+== cluster antigo 2026-10-28T07:06:03+00:00
+isn1 State.Status=created StartedAt=2026-10-27 18:48:51.840360006 +0000 UTC logs=7282 linhas
+isn1 ultima vista: 2026-10-27 18:49:06,181 INFO  [o.i.CLUSTER] ISPN000094: Received new cluster view for channel cluster-tcc: [isn2-7049|2] (3) [isn2-7049, isn1-64005, isn3-27776]
+isn2 State.Status=created StartedAt=2026-10-27 18:48:53.060694166 +0000 UTC logs=7381 linhas
+isn2 ultima vista: 2026-10-27 18:49:06,159 INFO  [o.i.CLUSTER] ISPN000094: Received new cluster view for channel cluster-tcc: [isn2-7049|2] (3) [isn2-7049, isn1-64005, isn3-27776]
+isn3 State.Status=created StartedAt=2026-10-27 18:48:54.277439189 +0000 UTC logs=7304 linhas
+isn3 ultima vista: 2026-10-27 18:49:06,201 INFO  [o.i.CLUSTER] ISPN000094: Received new cluster view for channel cluster-tcc: [isn2-7049|2] (3) [isn2-7049, isn1-64005, isn3-27776]
+-- journal do boot anterior (-b -1) -> pre-recriacao/journal-boot-anterior.txt
+isn1 ultima vista (journal -b -1): 2026-10-27T18:49:06.182130+00:00 server1 isn1[33271]: 2026-10-27 18:49:06,181 INFO  [o.i.CLUSTER] ISPN000094: Received new cluster view for channel cluster-tcc: [isn2-7049|2] (3) [isn2-7049, isn1-6400
+isn2 ultima vista (journal -b -1): 2026-10-27T18:49:06.159581+00:00 server1 isn2[33402]: 2026-10-27 18:49:06,159 INFO  [o.i.CLUSTER] ISPN000094: Received new cluster view for channel cluster-tcc: [isn2-7049|2] (3) [isn2-7049, isn1-6400
+isn3 ultima vista (journal -b -1): 2026-10-27T18:49:06.205492+00:00 server1 isn3[33809]: 2026-10-27 18:49:06,201 INFO  [o.i.CLUSTER] ISPN000094: Received new cluster view for channel cluster-tcc: [isn2-7049|2] (3) [isn2-7049, isn1-6400
+journal do boot anterior: 42820 linhas
+copia-cluster-antigo rc=0 fim=2026-10-28T07:06:11+00:00
+Recriar o cluster agora (podman-compose down/up)? [digite RECRIAR] down rc=0
+quay.io/infinispan/server  15.0.21.Final  da9c871bb5b4  13 months ago  615 MB
+up rc=0
+ESTAVEL size=3 HEALTHY: primeira leitura boa +7s, estavel por 20s (total 27s)
+timers tcc-heal: 0
+isn1: 2026-10-28 07:06:17.381804963 +0000 UTC
+qdisc noqueue 0: root refcnt 2 ;
+isn2: 2026-10-28 07:06:18.610673974 +0000 UTC
+qdisc noqueue 0: root refcnt 2 ;
+isn3: 2026-10-28 07:06:19.823131494 +0000 UTC
+qdisc noqueue 0: root refcnt 2 ;
+[0m2026-10-28 07:06:25,222 INFO  [o.i.CLUSTER] ISPN000094: Received new cluster view for channel cluster-tcc: [isn3-54173|2] (3) [isn3-54173, isn1-23890, isn2-18212][m
+[0m2026-10-28 07:06:25,241 INFO  [o.i.CLUSTER] ISPN000094: Received new cluster view for channel cluster-tcc: [isn3-54173|2] (3) [isn3-54173, isn1-23890, isn2-18212][m
+[0m2026-10-28 07:06:25,216 INFO  [o.i.CLUSTER] ISPN000094: Received new cluster view for channel cluster-tcc: [isn3-54173|2] (3) [isn3-54173, isn1-23890, isn2-18212][m
+recriacao rc=0 fim=2026-10-28T07:06:47+00:00
+== cluster novo 2026-10-28T07:06:47+00:00 (t0_up_epoch=1793171180 2026-10-28T07:06:20+00:00)
+isn1 id=8ac12fb133b6 criado=2026-10-28 07:06:17.164328 +0000 UTC StartedAt=2026-10-28 07:06:17.381804963 +0000 UTC
+isn2 id=bf59d899e74e criado=2026-10-28 07:06:18.497396994 +0000 UTC StartedAt=2026-10-28 07:06:18.610673974 +0000 UTC
+isn3 id=7cb75f4666d4 criado=2026-10-28 07:06:19.702961494 +0000 UTC StartedAt=2026-10-28 07:06:19.823131494 +0000 UTC
+-- isn1 vista e rebalance (topology id)
+2026-10-28 07:06:25,702 INFO  [o.i.LIFECYCLE] [Context=___protobuf_metadata][Scope=isn1-23890]ISPN100010: Finished rebalance with members [isn3-54173, isn1-23890, isn2-18212], topology id 6
+2026-10-28 07:06:25,727 INFO  [o.i.LIFECYCLE] [Context=org.infinispan.CONFIG][Scope=isn1-23890]ISPN100010: Finished rebalance with members [isn3-54173, isn1-23890, isn2-18212], topology id 6
+2026-10-28 07:06:25,768 INFO  [o.i.LIFECYCLE] [Context=org.infinispan.COUNTER][Scope=isn1-23890]ISPN100010: Finished rebalance with members [isn3-54173, isn1-23890, isn2-18212], topology id 6
+2026-10-28 07:06:25,824 INFO  [o.i.LIFECYCLE] [Context=___script_cache][Scope=isn1-23890]ISPN100010: Finished rebalance with members [isn3-54173, isn1-23890, isn2-18212], topology id 6
+2026-10-28 07:06:25,835 INFO  [o.i.LIFECYCLE] [Context=___hotRodTopologyCache_hotrod-default][Scope=isn1-23890]ISPN100010: Finished rebalance with members [isn3-54173, isn1-23890], topology id 2
+2026-10-28 07:06:25,879 INFO  [o.i.LIFECYCLE] [Context=counters][Scope=isn1-23890]ISPN100010: Finished rebalance with members [isn3-54173, isn1-23890, isn2-18212], topology id 6
+2026-10-28 07:06:25,898 INFO  [o.i.LIFECYCLE] [Context=sessions][Scope=isn1-23890]ISPN100010: Finished rebalance with members [isn3-54173, isn1-23890, isn2-18212], topology id 6
+2026-10-28 07:06:26,025 INFO  [o.i.LIFECYCLE] [Context=___hotRodTopologyCache_hotrod-default][Scope=isn1-23890]ISPN100010: Finished rebalance with members [isn3-54173, isn1-23890, isn2-18212], topology id 6
+-- isn2 vista e rebalance (topology id)
+2026-10-28 07:06:25,636 INFO  [o.i.LIFECYCLE] [Context=org.infinispan.CLIENT_SERVER_TX_TABLE][Scope=isn2-18212]ISPN100010: Finished rebalance with members [isn3-54173, isn1-23890, isn2-18212], topology id 6
+2026-10-28 07:06:25,707 INFO  [o.i.LIFECYCLE] [Context=___protobuf_metadata][Scope=isn2-18212]ISPN100010: Finished rebalance with members [isn3-54173, isn1-23890, isn2-18212], topology id 6
+2026-10-28 07:06:25,717 INFO  [o.i.LIFECYCLE] [Context=org.infinispan.CONFIG][Scope=isn2-18212]ISPN100010: Finished rebalance with members [isn3-54173, isn1-23890, isn2-18212], topology id 6
+2026-10-28 07:06:25,769 INFO  [o.i.LIFECYCLE] [Context=org.infinispan.COUNTER][Scope=isn2-18212]ISPN100010: Finished rebalance with members [isn3-54173, isn1-23890, isn2-18212], topology id 6
+2026-10-28 07:06:25,824 INFO  [o.i.LIFECYCLE] [Context=___script_cache][Scope=isn2-18212]ISPN100010: Finished rebalance with members [isn3-54173, isn1-23890, isn2-18212], topology id 6
+2026-10-28 07:06:25,881 INFO  [o.i.LIFECYCLE] [Context=counters][Scope=isn2-18212]ISPN100010: Finished rebalance with members [isn3-54173, isn1-23890, isn2-18212], topology id 6
+2026-10-28 07:06:25,901 INFO  [o.i.LIFECYCLE] [Context=sessions][Scope=isn2-18212]ISPN100010: Finished rebalance with members [isn3-54173, isn1-23890, isn2-18212], topology id 6
+2026-10-28 07:06:26,025 INFO  [o.i.LIFECYCLE] [Context=___hotRodTopologyCache_hotrod-default][Scope=isn2-18212]ISPN100010: Finished rebalance with members [isn3-54173, isn1-23890, isn2-18212], topology id 6
+-- isn3 vista e rebalance (topology id)
+2026-10-28 07:06:25,846 INFO  [o.i.CLUSTER] [Context=___hotRodTopologyCache_hotrod-default]ISPN100010: Finished rebalance with members [isn3-54173, isn1-23890], topology id 5
+2026-10-28 07:06:25,862 INFO  [o.i.CLUSTER] [Context=___script_cache]ISPN100010: Finished rebalance with members [isn3-54173, isn1-23890, isn2-18212], topology id 9
+2026-10-28 07:06:25,878 INFO  [o.i.LIFECYCLE] [Context=counters][Scope=isn3-54173]ISPN100010: Finished rebalance with members [isn3-54173, isn1-23890, isn2-18212], topology id 6
+2026-10-28 07:06:25,888 INFO  [o.i.CLUSTER] [Context=counters]ISPN100010: Finished rebalance with members [isn3-54173, isn1-23890, isn2-18212], topology id 9
+2026-10-28 07:06:25,895 INFO  [o.i.LIFECYCLE] [Context=sessions][Scope=isn3-54173]ISPN100010: Finished rebalance with members [isn3-54173, isn1-23890, isn2-18212], topology id 6
+2026-10-28 07:06:25,908 INFO  [o.i.CLUSTER] [Context=sessions]ISPN100010: Finished rebalance with members [isn3-54173, isn1-23890, isn2-18212], topology id 9
+2026-10-28 07:06:26,023 INFO  [o.i.LIFECYCLE] [Context=___hotRodTopologyCache_hotrod-default][Scope=isn3-54173]ISPN100010: Finished rebalance with members [isn3-54173, isn1-23890, isn2-18212], topology id 6
+2026-10-28 07:06:26,034 INFO  [o.i.CLUSTER] [Context=___hotRodTopologyCache_hotrod-default]ISPN100010: Finished rebalance with members [isn3-54173, isn1-23890, isn2-18212], topology id 9
+pos-recriacao rc=0 fim=2026-10-28T07:06:48+00:00
+portao 04-portao51-pre: 317 s a partir de 2026-10-28T07:06:48+00:00 (base 2026-10-28T07:06:20+00:00 + 345 s)
+amostras=64 amostras_ruins=0 janela_s=317 maior_sequencia_boa_s=317 ultima_sequencia_boa_desde=2026-10-28T07:06:48+00:00
+size sessions porta 11222: 0
+size sessions porta 11223: 0
+size sessions porta 11224: 0
+size counters porta 11222: 0
+size counters porta 11223: 0
+size counters porta 11224: 0
+timers tcc-heal: 0 units tcc-heal: 0
+isn1 pid=2528 tc qdisc show (todas as interfaces): qdisc noqueue 0: dev lo root refcnt 2 qdisc noqueue 0: dev eth0 root refcnt 2
+isn1 proibidos(clsact|prio|netem|ingress)=0 eth0_noqueue=1
+isn1 tc filter eth0: []
+isn2 pid=2666 tc qdisc show (todas as interfaces): qdisc noqueue 0: dev lo root refcnt 2 qdisc noqueue 0: dev eth0 root refcnt 2
+isn2 proibidos(clsact|prio|netem|ingress)=0 eth0_noqueue=1
+isn2 tc filter eth0: []
+isn3 pid=3075 tc qdisc show (todas as interfaces): qdisc noqueue 0: dev lo root refcnt 2 qdisc noqueue 0: dev eth0 root refcnt 2
+isn3 proibidos(clsact|prio|netem|ingress)=0 eth0_noqueue=1
+isn3 tc filter eth0: []
+lock: OCUPADO
+isn1 mudancas de vista nos ultimos 5 min (ISPN000094|ISPN000093|ISPN100000|ISPN100001|MergeView): 0
+isn1 ultima mudanca de vista: 2026-10-28 07:06:25,222 INFO  [o.i.CLUSTER] ISPN000094: Received new cluster view for channel cluster-tcc: [isn3-54173|2] (3) [isn3-54173, isn1-23890, isn2-18212]
+isn2 mudancas de vista nos ultimos 5 min (ISPN000094|ISPN000093|ISPN100000|ISPN100001|MergeView): 0
+isn2 ultima mudanca de vista: 2026-10-28 07:06:25,241 INFO  [o.i.CLUSTER] ISPN000094: Received new cluster view for channel cluster-tcc: [isn3-54173|2] (3) [isn3-54173, isn1-23890, isn2-18212]
+isn3 mudancas de vista nos ultimos 5 min (ISPN000094|ISPN000093|ISPN100000|ISPN100001|MergeView): 0
+isn3 ultima mudanca de vista: 2026-10-28 07:06:25,216 INFO  [o.i.CLUSTER] ISPN000094: Received new cluster view for channel cluster-tcc: [isn3-54173|2] (3) [isn3-54173, isn1-23890, isn2-18212]
+fim 2026-10-28T07:12:06+00:00
+04-portao51-pre rc=0 fim=2026-10-28T07:12:06+00:00
+PORTAO 5.1: OK (amostras_ruins=0, maior_sequencia_boa_s=317)
+04-portao51-pre-avaliacao rc=0 fim=2026-10-28T07:12:06+00:00
+g1b iniciado na janela tmux @1 (s4-g1b) 2026-10-28T07:12:06+00:00
+== antes do g1 2026-10-28T07:12:06+00:00
+isn1 StartedAt=2026-10-28 07:06:17.381804963 +0000 UTC idade_s=349
+isn2 StartedAt=2026-10-28 07:06:18.610673974 +0000 UTC idade_s=348
+isn3 StartedAt=2026-10-28 07:06:19.823131494 +0000 UTC idade_s=347
+>>> G-1: confira no prompt 'G-1 (REP=4, janela de 90 s em isn3)' e digite GO (qualquer outra coisa aborta).
+G-1 (REP=4, janela de 90 s em isn3): go do Gestor registrado no relatorio? [digite GO] go G-1 (REP=4, janela de 90 s em isn3) 2026-10-28T07:12:13+00:00 vm=172.31.251.37 sha=1266c129904e73469926d95708e7c83290498c41
+"health_status":"HEALTHY","number_of_nodes":3
+"health_status":"HEALTHY","number_of_nodes":3
+"health_status":"HEALTHY","number_of_nodes":3
+ok sem clsact em isn3: qdisc noqueue 0: root refcnt 2
+log de saude: runs/gate-b29/g1-rep4/saude-log.csv a cada 2 s (pid 11216)
+dead-man armado: tcc-heal-11014-26462 em 180s
+injetor rc=0 (esperado 0)
+ok sem clsact em isn3: qdisc noqueue 0: root refcnt 2
+dead-man desarmado: tcc-heal-11014-26462
+t_merge_s=44 (desde event=end)
+"health_status":"HEALTHY","number_of_nodes":3
+"health_status":"HEALTHY","number_of_nodes":3
+"health_status":"HEALTHY","number_of_nodes":3
+Terminated
+t_merge_s=44 (desde event=end)
+t_saude_primeira_ns=1793171675372238491
+t_saude_primeira_iso=2026-10-28T07:14:35.372238491Z
+t_merge_saude_s=44 (1a amostra HEALTHY/3 do saude-log, desde event=end)
+t_saude_todas_ns=1793171675372332723
+t_saude_todas_iso=2026-10-28T07:14:35.372332723Z
+t_merge_saude_todas_s=44 (HEALTHY/3 ja visto nas 3 portas)
+G-1 concluido (REP=4)
+log de saude: 261 linhas em runs/gate-b29/g1-rep4/saude-log.csv
+g1 rc=0 fim=2026-10-28T07:15:05+00:00
+g1b rc=0 fim=2026-10-28T07:15:05+00:00
+== depois do g1 2026-10-28T07:15:05+00:00
+fault=F2 node=isn3 event=start t_epoch_ns=1793171534519348479
+fault=F2 node=isn3 event=end t_epoch_ns=1793171630559796415
+t_merge_s=44 (desde event=end)
+t_saude_primeira_ns=1793171675372238491
+t_saude_primeira_iso=2026-10-28T07:14:35.372238491Z
+t_merge_saude_s=44 (1a amostra HEALTHY/3 do saude-log, desde event=end)
+t_saude_todas_ns=1793171675372332723
+t_saude_todas_iso=2026-10-28T07:14:35.372332723Z
+t_merge_saude_todas_s=44 (HEALTHY/3 ja visto nas 3 portas)
+go G-6 (F3 jitter em isn2 + F2 particao em isn3, 90/130 s) 2026-10-16T09:03:46+00:00 vm=192.168.137.150 sha=507c21ee6812d4ea69788277907b92b56ff13311
+go G-1 (REP=4, janela de 90 s em isn3) 2026-10-28T07:12:13+00:00 vm=172.31.251.37 sha=1266c129904e73469926d95708e7c83290498c41
+arquivos em runs/gate-b29/g1-rep4: 124
+portao 07-portao51-pos: 345 s a partir de 2026-10-28T07:15:05+00:00 (base 2026-10-28T07:15:05+00:00 + 345 s)
+amostras=70 amostras_ruins=0 janela_s=348 maior_sequencia_boa_s=348 ultima_sequencia_boa_desde=2026-10-28T07:15:05+00:00
+size sessions porta 11222: 0
+size sessions porta 11223: 0
+size sessions porta 11224: 0
+size counters porta 11222: 0
+size counters porta 11223: 0
+size counters porta 11224: 0
+timers tcc-heal: 0 units tcc-heal: 0
+isn1 pid=2528 tc qdisc show (todas as interfaces): qdisc noqueue 0: dev lo root refcnt 2 qdisc noqueue 0: dev eth0 root refcnt 2
+isn1 proibidos(clsact|prio|netem|ingress)=0 eth0_noqueue=1
+isn1 tc filter eth0: []
+isn2 pid=2666 tc qdisc show (todas as interfaces): qdisc noqueue 0: dev lo root refcnt 2 qdisc noqueue 0: dev eth0 root refcnt 2
+isn2 proibidos(clsact|prio|netem|ingress)=0 eth0_noqueue=1
+isn2 tc filter eth0: []
+isn3 pid=3075 tc qdisc show (todas as interfaces): qdisc noqueue 0: dev lo root refcnt 2 qdisc noqueue 0: dev eth0 root refcnt 2
+isn3 proibidos(clsact|prio|netem|ingress)=0 eth0_noqueue=1
+isn3 tc filter eth0: []
+lock: OCUPADO
+isn1 mudancas de vista nos ultimos 5 min (ISPN000094|ISPN000093|ISPN100000|ISPN100001|MergeView): 0
+isn1 ultima mudanca de vista: 2026-10-28 07:14:34,086 INFO  [o.i.CLUSTER] ISPN000093: Received new, MERGED cluster view for channel cluster-tcc: MergeView::[isn3-54173|4] (3) [isn3-54173, isn1-23890, isn2-18212], 2 subgroups: [isn
+isn2 mudancas de vista nos ultimos 5 min (ISPN000094|ISPN000093|ISPN100000|ISPN100001|MergeView): 0
+isn2 ultima mudanca de vista: 2026-10-28 07:14:34,088 INFO  [o.i.CLUSTER] ISPN000093: Received new, MERGED cluster view for channel cluster-tcc: MergeView::[isn3-54173|4] (3) [isn3-54173, isn1-23890, isn2-18212], 2 subgroups: [isn
+isn3 mudancas de vista nos ultimos 5 min (ISPN000094|ISPN000093|ISPN100000|ISPN100001|MergeView): 0
+isn3 ultima mudanca de vista: 2026-10-28 07:14:34,088 INFO  [o.i.CLUSTER] ISPN000093: Received new, MERGED cluster view for channel cluster-tcc: MergeView::[isn3-54173|4] (3) [isn3-54173, isn1-23890, isn2-18212], 2 subgroups: [isn
+fim 2026-10-28T07:20:54+00:00
+07-portao51-pos rc=0 fim=2026-10-28T07:20:54+00:00
+PORTAO 5.1: OK (amostras_ruins=0, maior_sequencia_boa_s=348)
+07-portao51-pos-avaliacao rc=0 fim=2026-10-28T07:20:54+00:00
+S4 fim 2026-10-28T07:20:54+00:00 rc=0. Saia do tmux com exit (libera o lock).

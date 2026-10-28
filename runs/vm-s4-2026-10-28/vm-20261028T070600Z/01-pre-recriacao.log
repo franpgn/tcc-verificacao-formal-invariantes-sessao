@@ -1,0 +1,12 @@
+== cluster antigo 2026-10-28T07:06:03+00:00
+isn1 State.Status=created StartedAt=2026-10-27 18:48:51.840360006 +0000 UTC logs=7282 linhas
+isn1 ultima vista: 2026-10-27 18:49:06,181 INFO  [o.i.CLUSTER] ISPN000094: Received new cluster view for channel cluster-tcc: [isn2-7049|2] (3) [isn2-7049, isn1-64005, isn3-27776]
+isn2 State.Status=created StartedAt=2026-10-27 18:48:53.060694166 +0000 UTC logs=7381 linhas
+isn2 ultima vista: 2026-10-27 18:49:06,159 INFO  [o.i.CLUSTER] ISPN000094: Received new cluster view for channel cluster-tcc: [isn2-7049|2] (3) [isn2-7049, isn1-64005, isn3-27776]
+isn3 State.Status=created StartedAt=2026-10-27 18:48:54.277439189 +0000 UTC logs=7304 linhas
+isn3 ultima vista: 2026-10-27 18:49:06,201 INFO  [o.i.CLUSTER] ISPN000094: Received new cluster view for channel cluster-tcc: [isn2-7049|2] (3) [isn2-7049, isn1-64005, isn3-27776]
+-- journal do boot anterior (-b -1) -> pre-recriacao/journal-boot-anterior.txt
+isn1 ultima vista (journal -b -1): 2026-10-27T18:49:06.182130+00:00 server1 isn1[33271]: 2026-10-27 18:49:06,181 INFO  [o.i.CLUSTER] ISPN000094: Received new cluster view for channel cluster-tcc: [isn2-7049|2] (3) [isn2-7049, isn1-6400
+isn2 ultima vista (journal -b -1): 2026-10-27T18:49:06.159581+00:00 server1 isn2[33402]: 2026-10-27 18:49:06,159 INFO  [o.i.CLUSTER] ISPN000094: Received new cluster view for channel cluster-tcc: [isn2-7049|2] (3) [isn2-7049, isn1-6400
+isn3 ultima vista (journal -b -1): 2026-10-27T18:49:06.205492+00:00 server1 isn3[33809]: 2026-10-27 18:49:06,201 INFO  [o.i.CLUSTER] ISPN000094: Received new cluster view for channel cluster-tcc: [isn2-7049|2] (3) [isn2-7049, isn1-6400
+journal do boot anterior: 42820 linhas

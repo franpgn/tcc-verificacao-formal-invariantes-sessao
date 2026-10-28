@@ -1,0 +1,16 @@
+t0_up_epoch=1793171180
+1793171180.896984304 11222:ERR 11223:ERR 11224:ERR
+1793171182.910417473 11222:ERR 11223:ERR 11224:ERR
+1793171185.020423621 11222:ERR 11223:ERR "health_status":"HEALTHY","number_of_nodes":2
+1793171187.199990498 "health_status":"HEALTHY","number_of_nodes":3 "health_status":"HEALTHY","number_of_nodes":3 "health_status":"HEALTHY","number_of_nodes":3
+1793171189.234529084 "health_status":"HEALTHY","number_of_nodes":3 "health_status":"HEALTHY","number_of_nodes":3 "health_status":"HEALTHY","number_of_nodes":3
+1793171191.268294084 "health_status":"HEALTHY","number_of_nodes":3 "health_status":"HEALTHY","number_of_nodes":3 "health_status":"HEALTHY","number_of_nodes":3
+1793171193.300877735 "health_status":"HEALTHY","number_of_nodes":3 "health_status":"HEALTHY","number_of_nodes":3 "health_status":"HEALTHY","number_of_nodes":3
+1793171195.330568990 "health_status":"HEALTHY","number_of_nodes":3 "health_status":"HEALTHY","number_of_nodes":3 "health_status":"HEALTHY","number_of_nodes":3
+1793171197.359727851 "health_status":"HEALTHY","number_of_nodes":3 "health_status":"HEALTHY","number_of_nodes":3 "health_status":"HEALTHY","number_of_nodes":3
+1793171199.391324796 "health_status":"HEALTHY","number_of_nodes":3 "health_status":"HEALTHY","number_of_nodes":3 "health_status":"HEALTHY","number_of_nodes":3
+1793171201.418445998 "health_status":"HEALTHY","number_of_nodes":3 "health_status":"HEALTHY","number_of_nodes":3 "health_status":"HEALTHY","number_of_nodes":3
+1793171203.445604443 "health_status":"HEALTHY","number_of_nodes":3 "health_status":"HEALTHY","number_of_nodes":3 "health_status":"HEALTHY","number_of_nodes":3
+1793171205.472845676 "health_status":"HEALTHY","number_of_nodes":3 "health_status":"HEALTHY","number_of_nodes":3 "health_status":"HEALTHY","number_of_nodes":3
+1793171207.501468845 "health_status":"HEALTHY","number_of_nodes":3 "health_status":"HEALTHY","number_of_nodes":3 "health_status":"HEALTHY","number_of_nodes":3
+ESTAVEL size=3 HEALTHY: primeira leitura boa +7s, estavel por 20s (total 27s)

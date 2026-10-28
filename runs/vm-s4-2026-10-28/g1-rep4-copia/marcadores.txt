@@ -1,0 +1,2 @@
+fault=F2 node=isn3 event=start t_epoch_ns=1793171534519348479
+fault=F2 node=isn3 event=end t_epoch_ns=1793171630559796415

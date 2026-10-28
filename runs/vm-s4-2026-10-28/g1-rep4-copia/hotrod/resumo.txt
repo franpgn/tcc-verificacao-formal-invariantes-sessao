@@ -1,0 +1,10 @@
+rep=4
+coleta=minima
+start_ns=1793171534519348479
+end_ns=1793171630559796415
+amostras_de_saude=35 intervalo_s=5 pos_fim_s=75
+jar=workload/target/session-workload-0.1.0-SNAPSHOT.jar
+jar_sha256=3594c690cfacd2be1f88e58d2a65a4cd944a06688abcb9ae5b4d3df2f7dc7bee
+java=openjdk version "17.0.20.1" 2026-08-18
+sonda-isn3: linhas=274 erros=224
+sonda-isn1: linhas=274 erros=10

@@ -1,0 +1,7 @@
+t_merge_s=44 (desde event=end)
+t_saude_primeira_ns=1793171675372238491
+t_saude_primeira_iso=2026-10-28T07:14:35.372238491Z
+t_merge_saude_s=44 (1a amostra HEALTHY/3 do saude-log, desde event=end)
+t_saude_todas_ns=1793171675372332723
+t_saude_todas_iso=2026-10-28T07:14:35.372332723Z
+t_merge_saude_todas_s=44 (HEALTHY/3 ja visto nas 3 portas)

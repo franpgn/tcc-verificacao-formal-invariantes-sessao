@@ -1,0 +1,18 @@
+	at org.jgroups.protocols.MERGE3.up(MERGE3.java:274)
+	at org.jgroups.protocols.MERGE3.up(MERGE3.java:274)
+	at org.jgroups.protocols.MERGE3.up(MERGE3.java:274)
+	at org.jgroups.protocols.MERGE3.up(MERGE3.java:274)
+	at org.jgroups.protocols.MERGE3.up(MERGE3.java:274)
+	at org.jgroups.protocols.MERGE3.up(MERGE3.java:274)
+	at org.jgroups.protocols.MERGE3.up(MERGE3.java:274)
+	at org.jgroups.protocols.MERGE3.up(MERGE3.java:274)
+[0m2026-10-28 07:12:58,035 INFO  [o.i.CLUSTER] ISPN000094: Received new cluster view for channel cluster-tcc: [isn1-23890|3] (2) [isn1-23890, isn2-18212][m
+[0m2026-10-28 07:12:58,049 INFO  [o.i.CLUSTER] [Context=___hotRodTopologyCache_hotrod-default]ISPN100007: After merge (or coordinator change), recovered members [isn3-54173, isn1-23890, isn2-18212] with topology id 10[m
+[0m2026-10-28 07:12:58,055 INFO  [o.i.CLUSTER] [Context=counters]ISPN100007: After merge (or coordinator change), recovered members [isn1-23890, isn2-18212] with topology id 10[m
+[0m2026-10-28 07:12:58,056 INFO  [o.i.CLUSTER] [Context=sessions]ISPN100007: After merge (or coordinator change), recovered members [isn1-23890, isn2-18212] with topology id 10[m
+[0m2026-10-28 07:12:58,058 INFO  [o.i.CLUSTER] [Context=org.infinispan.CONFIG]ISPN100007: After merge (or coordinator change), recovered members [isn3-54173, isn1-23890, isn2-18212] with topology id 10[m
+[0m2026-10-28 07:12:58,058 INFO  [o.i.CLUSTER] [Context=___protobuf_metadata]ISPN100007: After merge (or coordinator change), recovered members [isn3-54173, isn1-23890, isn2-18212] with topology id 10[m
+[0m2026-10-28 07:12:58,064 INFO  [o.i.CLUSTER] [Context=org.infinispan.COUNTER]ISPN100007: After merge (or coordinator change), recovered members [isn3-54173, isn1-23890, isn2-18212] with topology id 10[m
+[0m2026-10-28 07:12:58,065 INFO  [o.i.CLUSTER] [Context=org.infinispan.CLIENT_SERVER_TX_TABLE]ISPN100007: After merge (or coordinator change), recovered members [isn3-54173, isn1-23890, isn2-18212] with topology id 10[m
+[0m2026-10-28 07:12:58,065 INFO  [o.i.CLUSTER] [Context=___script_cache]ISPN100007: After merge (or coordinator change), recovered members [isn3-54173, isn1-23890, isn2-18212] with topology id 10[m
+[0m2026-10-28 07:14:34,086 INFO  [o.i.CLUSTER] ISPN000093: Received new, MERGED cluster view for channel cluster-tcc: MergeView::[isn3-54173|4] (3) [isn3-54173, isn1-23890, isn2-18212], 2 subgroups: [isn1-23890|3] (2) [isn1-23890, isn2-18212], [isn3-54173|3] (1) [isn3-54173][m

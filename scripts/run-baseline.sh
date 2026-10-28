@@ -8,7 +8,7 @@
 # comparacao.json (none x F1, none x F3) por cenario de carga.
 #
 # Falha F1 (crash silencioso de no): durante a janela de medicao, um no e
-# suspenso via scripts/inject-crash.sh (podman stop) por DURACAO_CRASH
+# derrubado via scripts/inject-crash.sh (modo padrao silencioso, DT-017: eth0 down + podman kill) por DURACAO_CRASH
 # segundos e reativado. Nao requer netem/VM (isso e F3).
 #
 # Falha F3 (jitter/atraso): durante a janela de medicao, um no recebe uma

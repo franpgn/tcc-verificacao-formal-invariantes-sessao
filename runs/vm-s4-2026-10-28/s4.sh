@@ -5,7 +5,8 @@
 # Sequencia (decisoes do Gestor de 2026-10-28; decisoes-senior-2026-10-16 §5.5 com a redefinicao REP=4R da V-S1 §5.2):
 #   0. pre-condicoes (TCC_DIR, tmux, lock ocupado por este flock, sudo -n, uname -r, boot_id, HEAD, hashes dos scripts,
 #      java/jar, g1-rep4 inexistente, 0 timers, ambiente sem G1_*/REP/COLETA...) e vista atual; aborta antes de tocar no cluster;
-#   1. copia de leitura do cluster antigo (inspect + logs) e confirmacao do Gestor: digitar RECRIAR;
+#   1. copia de leitura do cluster antigo (inspect, .State.Status, logs e journal do boot anterior; falha de leitura
+#      vira AVISO) e confirmacao do Gestor: digitar RECRIAR;
 #   2. recriacao com runs/gate-b29/recriar.sh (down/up; sem go proprio);
 #   3. portao 5.1 com runs/vm-s2-2026-10-27/portao51.sh (.log gravado), duracao >= 130 s e fim >= up+345 s (5 min sem
 #      mudanca de vista + folga); se falhar, PARA (S4 nao roda);
@@ -22,7 +23,9 @@ SELF="$AQUI/s4.sh"
 TESTE="${S4_TESTE:-0}"
 
 KERNEL_ESPERADO=6.8.0-147-generic
-BOOT_ESPERADO=b7df4b03-6652-4808-9617-11096693e65b   # o mesmo de S2 e S3 (V-S3, criterio 16)
+# boot de 2026-10-28 06:39:35 UTC: a VM reiniciou depois do crash do host (BSOD 0x154 as 06:36 UTC, na tentativa 1
+# do S4). Deixa de ser o boot de S2 e S3 (b7df4b03-6652-4808-9617-11096693e65b, V-S3 criterio 16).
+BOOT_ESPERADO=5d7119b8-3b50-435d-bd0d-cbdb6bd410df
 BOOT_ID_FILE=/proc/sys/kernel/random/boot_id
 LOCK=/var/lock/tcc-vm.lock
 PORTAO_MIN_S=130          # duracao minima do portao (S2/S3 usaram 130)
@@ -126,15 +129,34 @@ RC=${PIPESTATUS[0]}; passo_rc pre "$RC"
 [ "$RC" = 0 ] || abortar 1 "pre-condicoes (ver $OUT/00-pre.log)"
 
 # ---- 1. copia de leitura do cluster antigo e vista atual
+# Depois de um reboot da VM (2026-10-28) os conteineres ficam em Created: podman logs pode sair vazio ou so com o boot
+# atual. Por isso o journal do boot anterior (-b -1) tambem e copiado. Toda falha de leitura aqui e AVISO, nao aborta.
 mkdir -p "$OUT/pre-recriacao"
+JB="$OUT/pre-recriacao/journal-boot-anterior.txt"
 {
   echo "== cluster antigo $(date -Is)"
   for n in isn1 isn2 isn3; do
-    sudo podman inspect "$n" > "$OUT/pre-recriacao/inspect-$n.json" 2>&1
-    sudo podman logs "$n" > "$OUT/pre-recriacao/logs-$n.txt" 2>&1
-    echo "$n StartedAt=$(sudo podman inspect -f '{{.State.StartedAt}}' "$n" 2>&1) logs=$(wc -l < "$OUT/pre-recriacao/logs-$n.txt") linhas"
-    echo "$n ultima vista: $(grep -E 'ISPN000094|ISPN000093' "$OUT/pre-recriacao/logs-$n.txt" | tail -1 | sed 's/\x1b\[[0-9;]*m//g' | cut -c1-200)"
+    sudo podman inspect "$n" > "$OUT/pre-recriacao/inspect-$n.json" 2>&1 || echo "AVISO: podman inspect $n falhou"
+    sudo podman logs "$n" > "$OUT/pre-recriacao/logs-$n.txt" 2>&1 || echo "AVISO: podman logs $n falhou"
+    echo "$n State.Status=$(sudo podman inspect -f '{{.State.Status}}' "$n" 2>&1) StartedAt=$(sudo podman inspect -f '{{.State.StartedAt}}' "$n" 2>&1) logs=$(wc -l < "$OUT/pre-recriacao/logs-$n.txt") linhas"
+    v=$(grep -E 'ISPN000094|ISPN000093' "$OUT/pre-recriacao/logs-$n.txt" | tail -1 | sed 's/\x1b\[[0-9;]*m//g' | cut -c1-200)
+    echo "$n ultima vista: ${v:-nenhuma em podman logs (ver journal-boot-anterior.txt)}"
   done
+  echo "-- journal do boot anterior (-b -1) -> pre-recriacao/journal-boot-anterior.txt"
+  JAV=""
+  { echo "## journalctl --list-boots (ultimos 3)"; sudo journalctl --list-boots --no-pager 2>&1 | tail -3; } > "$JB"
+  for n in isn1 isn2 isn3; do
+    echo "## journalctl -b -1 --no-pager -o short-iso-precise CONTAINER_NAME=$n" >> "$JB"
+    sudo journalctl -b -1 --no-pager -o short-iso-precise CONTAINER_NAME="$n" > "$JB.$n" 2>&1; r=$?
+    cat "$JB.$n" >> "$JB"; echo "## rc=$r" >> "$JB"; [ "$r" = 0 ] || JAV="$JAV $n:rc=$r"
+    v=$(grep -E 'ISPN000094|ISPN000093' "$JB.$n" | tail -1 | sed 's/\x1b\[[0-9;]*m//g' | cut -c1-200); rm -f "$JB.$n"
+    echo "$n ultima vista (journal -b -1): ${v:-nenhuma}"
+  done
+  echo "## journalctl -b -1 --no-pager -o short-iso-precise SYSLOG_IDENTIFIER=podman SYSLOG_IDENTIFIER=conmon | grep isn[123]" >> "$JB"
+  sudo journalctl -b -1 --no-pager -o short-iso-precise SYSLOG_IDENTIFIER=podman SYSLOG_IDENTIFIER=conmon 2>>"$JB" | grep -E 'isn[123]' >> "$JB"
+  r=${PIPESTATUS[0]}; echo "## rc=$r" >> "$JB"; [ "$r" = 0 ] || JAV="$JAV podman/conmon:rc=$r"
+  if [ -n "$JAV" ]; then echo "AVISO: journalctl -b -1 falhou ($JAV); a copia segue sem ele (ver journal-boot-anterior.txt)"
+  else echo "journal do boot anterior: $(wc -l < "$JB") linhas"; fi
 } 2>&1 | tee "$OUT/01-pre-recriacao.log"
 passo_rc copia-cluster-antigo "${PIPESTATUS[0]}"
 [ -t 0 ] || [ "$TESTE" = 1 ] || abortar 1 "sem terminal (a confirmacao e interativa)"

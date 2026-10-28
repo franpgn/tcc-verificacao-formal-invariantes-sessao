@@ -12,3 +12,10 @@
 Containerfile text eol=lf
 Dockerfile    text eol=lf
 .gitattributes text eol=lf
+
+# Brutos copiados da VM (runs/vm-s1.., vm-s2.., ...): sem conversao de fim de linha, nem no add nem no checkout.
+# Os manifestos sha256 (copia-host.sha256, g1-rep4.sha256, ...) foram gerados sobre os bytes LF da VM; com
+# core.autocrlf=true um checkout novo os converteria para CRLF e o 'sha256sum -c' falharia (V-S4, R-8 e P-4).
+# Vem depois de '*.sh text eol=lf': a ultima linha que casa vence, entao os .sh daqui tambem ficam -text
+# (no git ja sao LF; o checkout os grava como estao).
+runs/vm-s*/** -text

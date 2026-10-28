@@ -649,3 +649,59 @@ Todas pela recomendação do Senior; transmitidas pelo coordenador.
 - **V-S2 R-1 (`wt-gate-v4/runs/vm-s2-2026-10-27/V-S2.md`):** opção (a). O Worker corrige
   `l0c.sh:68` para `systemctl show <timer> -p AccuracyUSec`, ajusta o teste por *shims* e gera
   *bundle* novo com *hash*; a VM recebe esse *bundle* antes do S3. Em andamento.
+
+## Decisões do Gestor de 2026-10-28 (tarde)
+
+Transmitidas ao Senior pelo coordenador.
+
+- **Estabilidade do *host* (resposta à P-2 da V-S4).** Decisão do Gestor, literal: o Gestor atribui
+  os desligamentos abruptos do *host* a quedas de energia na região e decidiu que **não** serão
+  feitas verificações de hardware (*dumps*, *microcode*, *memtest*). Os itens (i) a (iii) da
+  recomendação da P-2 (abrir os *dumps* com `!analyze -v`, conferir o *microcode* e os limites de
+  potência do BIOS 1.O0, teste de memória e de CPU) **não** são adotados.
+  - **Fato registrado, sem contestar a decisão** (V-S4, `wt-gate-v4/runs/vm-s4-2026-10-28/V-S4.md`,
+    seção "Host", e `host-eventos-desligamentos.log`, leitura só de eventos do Windows): dois dos
+    eventos têm *bugcheck* registrado, 0x1CA em 2026-09-13 21:24:43 local (*dump* em
+    `C:\WINDOWS\MEMORY.DMP`) e 0x154 (`UNEXPECTED_STORE_EXCEPTION`) em 2026-10-28 03:38:27 local
+    (*minidump* `C:\WINDOWS\Minidumps\102826-88640-01.dmp`), ambos com WER 1001. Foram **17**
+    `Kernel-Power 41` desde 01/09 (34 desde 01/08); os demais têm `BugcheckCode=0`.
+  - **Consequência operacional** (nada novo é pedido): as salvaguardas das campanhas contra uma queda
+    do *host* são a parada (h) por `boot_id` da VM e `StartedAt` dos contêineres (complemento 1,
+    item (a), verificada pela checklist manual da seção 1.3, decisão de 27/10) e a DT-014 (execução
+    interrompida descartada e refeita por infraestrutura). A mitigação da P-6 da V-S1 (alimentação,
+    sem suspensão, Windows Update pausado, `apt-mark hold`) continua valendo.
+- **V-S4 (`wt-gate-v4/runs/vm-s4-2026-10-28/V-S4.md`): P-1..P-7 aprovadas pela recomendação**, com
+  a ressalva acima para a P-2.
+  - **P-1:** V-S4 aprovada (APROVADO com ressalvas); preparação do S5 liberada.
+  - **P-2:** ver o item anterior. Para S5 a S7 (curtos, com o Gestor presente) vale o resto da
+    recomendação: registro de `boot_id` no início e no fim do invólucro e o critério de validade
+    "intervalo máximo do `saude-log` ≤ 2 × intervalo".
+  - **P-3:** só o `.gz` do `journal-boot-anterior.txt` no git; o original (50 409 360 bytes, SHA-256
+    em `copia-host.sha256`) fica no disco do *host*.
+  - **P-4:** `.gitattributes` com `-text` para os brutos de `runs/vm-s*/` (S2, S3 e S4), num commit
+    `chore:` separado, feito pelo Worker em `wt-gate-v4` (`test/b29-gate-v4`).
+  - **P-5:** R-1 fechada pelo coordenador: na VM, `sha256sum -c copia-host.sha256` deu 35/35 OK,
+    rc = 0. O coordenador coletou também `journalctl -b -1 -k --since "2026-10-28 06:34"` e
+    `journalctl -b -1 -p warning --since "2026-10-28 06:34"`; os dois deram "-- No entries --"
+    (`wt-gate-v4/runs/vm-s4-2026-10-28/journal-b-1-kernel-warning-pos-queda.log`, a commitar pelo
+    Worker de `wt-gate-v4`). *Lock* da VM livre; *cluster* HEALTHY.
+  - **P-6:** GO novo para o L-1. O S5 roda com o Gestor presente, digitando o GO no *prompt*, como no
+    S4; o GO de `docs/decisoes-senior-2026-10-16.md:458` não vale mais.
+  - **P-7:** queda de 28/10 e histórico do *host* acrescentados ao P-28 de
+    `docs/registro-de-problemas.md` (onde o P-28 mora, decisão de 27/10).
+- **F1 silencioso (`docs/validacao-f1-silencioso-2026-10-28.md` §4): P1, P2 e P3 aprovadas pela
+  recomendação.** P1 e P2 entram como notas na adenda da DT-009 parte 2, acima; o complemento 2 e a
+  DT-017 não são editados. P3: o commit do comentário de `scripts/run-baseline.sh:11` (`2e5c6ba` na
+  branch original, `20805b0` depois do *rebase*) **já existia quando a resposta chegou**: o Worker o
+  fez antes da aprovação. O conteúdo é o recomendado (uma linha, fora do *bundle*, sem efeito em
+  *hash*), e a aprovação vale para ele como está. Fica registrado que a ordem foi invertida.
+- **Re-medição da §5 da validação (coordenador, Worker independente, cópia de `db53600`): tudo
+  conforme.** Números e *hashes* na adenda da DT-009 parte 2. O jar congelado real foi re-hasheado
+  (`5eced136…`), o que fecha a lacuna da §1 da validação. Relatório do coordenador no *scratchpad*
+  da sessão (`remedicao-f1-e-surefire.md`), fora do git.
+- **Integração (coordenador):** *rebase* linear de `c055399..2e5c6ba` sobre
+  `feature/controlador-integracao` (`2e8872a`), sem conflito; *ref* de *backup*
+  `backup/f1-crash-silencioso-pre-rebase` = `2e5c6ba`; mapa de SHAs na adenda; *fast-forward*
+  local `2e8872a` → **`20805b0`**. Medido em cópia `git archive` de `20805b0`: Surefire 863/0/0/1 em
+  122 arquivos, `unittest discover -s analysis` 187 OK (1 *skip*), `inject-crash.test.sh` 113/0.
+  Nada foi para `origin`.

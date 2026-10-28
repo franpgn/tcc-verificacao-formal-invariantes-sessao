@@ -898,6 +898,24 @@ correspondente adicionado em `Mesclar` (`spec/SessionStore.tla`, commit `b7d8e0a
 - **Mitigação (P-6, aprovada).** *Host*: alimentação conferida, suspensão e hibernação desligadas nas noites, Windows Update
   pausado na janela da campanha, `AutomaticStopAction=ShutDown` na VM. VM: `apt-mark hold` do kernel e `unattended-upgrades`
   pausado durante a campanha, aplicados numa sessão de VM aprovada antes do piloto.
+- **Recorrência em 2026-10-28 (S4, V-S4 P-7).** O *host* caiu de novo durante a primeira tentativa do S4: a execução
+  `vm-20261028T063554Z` ficou abortada (`wt-gate-v4/runs/vm-s4-2026-10-28/vm-20261028T063554Z.abortada-host-crash/`) e o S4 foi
+  refeito em `vm-20261028T070600Z`. Pelo 6008 a queda foi às 03:35 local (06:35 UTC); `Kernel-Power 41` às 03:38:27 local com
+  `BugcheckCode=0x154` (`UNEXPECTED_STORE_EXCEPTION`), WER 1001 às 03:39:12 com *minidump*
+  `C:\WINDOWS\Minidumps\102826-88640-01.dmp`. Na VM, `journalctl -b -1 -k` e `-p warning` desde 06:34 UTC vieram vazios
+  ("-- No entries --", `journal-b-1-kernel-warning-pos-queda.log`): a VM não registrou nada antes de cair. Depois do *boot*, os
+  contêineres ficaram em `Created` e o *netns* foi recriado, como em 18/10.
+- **Histórico do *host* (V-S4, seção "Host", `host-eventos-desligamentos.log`, leitura só de eventos do Windows em
+  2026-10-28T07:33Z).** 34 `Kernel-Power 41` desde 01/08, **17 desde 01/09**. Só 2 (agosto) têm `PowerButtonTimestamp`. Só 2 têm
+  *bugcheck*: 0x1CA em 2026-09-13 21:24:43 local (*dump* `C:\WINDOWS\MEMORY.DMP`) e 0x154 em 2026-10-28; os demais têm
+  `BugcheckCode=0`. Rajadas em 06/08 (8 em ~2 h) e 27/09 (8 em ~10 h). Pelo 6008, ao menos 4 quedas de madrugada (12/09 01:15,
+  08/10 02:21, 18/10 04:49, 28/10 03:35, local). 0 eventos WHEA desde 01/08. Hardware: i5-14600KF, MSI PRO H610M-G DDR4, BIOS 1.O0
+  de 31/07/2025.
+- **Decisão do Gestor (2026-10-28, tarde).** O Gestor atribui os desligamentos abruptos do *host* a quedas de energia na região e
+  decidiu que não serão feitas verificações de hardware (*dumps*, *microcode*, *memtest*). Registrado sem contestar: os eventos de
+  13/09 (0x1CA) e de 28/10 (0x154) têm *bugcheck* registrado. Consequência operacional: as salvaguardas das campanhas são a parada
+  (h) por `boot_id`/`StartedAt` (complemento 1, item (a), checklist manual da seção 1.3) e a DT-014 (execução interrompida). Registro
+  em `docs/decisoes-tecnicas.md`, seção "Decisões do Gestor de 2026-10-28 (tarde)".
 - **Status:** `ABERTO-MITIGADO`. Fecha quando as medidas da P-6 estiverem aplicadas e conferidas nos brutos (leitura elevada de
   `Get-VM tcc-f3` e saída de `apt-mark showhold` na VM).
 

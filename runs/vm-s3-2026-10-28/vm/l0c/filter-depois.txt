@@ -1,0 +1,1 @@
++ sudo nsenter -t 33811 -n tc filter show dev eth0

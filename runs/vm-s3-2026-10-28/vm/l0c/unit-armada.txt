@@ -1,0 +1,27 @@
+unit=tcc-heal-356755-18620 t_antes_armar_ns=1793163565338636232 t_depois_armar_ns=1793163565349298377 prazo_s=30
+--- systemctl cat tcc-heal-356755-18620.service
+# /run/systemd/transient/tcc-heal-356755-18620.service
+# This is a transient unit file, created programmatically via the systemd API. Do not edit.
+[Unit]
+Description=/usr/bin/bash scripts/inject-netdegrade.sh --heal
+
+[Service]
+WorkingDirectory=/home/server1/tcc-gate
+Environment="PODMAN=sudo podman"
+ExecStart=
+ExecStart="/usr/bin/bash" "scripts/inject-netdegrade.sh" "--heal"
+--- systemctl cat tcc-heal-356755-18620.timer
+# /run/systemd/transient/tcc-heal-356755-18620.timer
+# This is a transient unit file, created programmatically via the systemd API. Do not edit.
+[Unit]
+Description=/usr/bin/bash scripts/inject-netdegrade.sh --heal
+
+[Timer]
+OnActiveSec=30s
+AccuracySec=1s
+RemainAfterElapse=no
+--- AccuracyUSec (systemd 255: AccuracySec so na escrita; default 1min: o disparo pode atrasar ate esse valor)
+NextElapseUSecMonotonic=1w 12h 28min 10.870770s
+AccuracyUSec=1s
+--- list-timers
+Wed 2026-10-28 04:59:55 UTC           29s -                                      - tcc-heal-356755-18620.timer                                            tcc-heal-356755-18620.service

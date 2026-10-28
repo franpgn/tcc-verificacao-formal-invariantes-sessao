@@ -1,0 +1,3 @@
+ok sem prio em isn1
+ok sem prio em isn2
+ok sem prio em isn3

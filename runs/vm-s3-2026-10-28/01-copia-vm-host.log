@@ -1,0 +1,59 @@
+### copia VM->host por tar (ssh ... tar cf - runs/vm-s3-2026-10-28 runs/gate-netdegrade/l0c), 2026-10-28T05:06:01Z (relogio do cliente)
+### sha256 na VM:
+c1691571330122658f571bf71a454f88e91e36733e045c0111a98efb8d133d7a  runs/vm-s3-2026-10-28/l0c-inicio.txt
+feeb47385a637cd93140fd60f59570db1188bd17994506fb97ea7fe26aa5be92  runs/vm-s3-2026-10-28/l0c.log
+6bf05bb4b7f0cfed8fe956efae3ef38bf477fac1e4a7e85ad3e955e340057708  runs/vm-s3-2026-10-28/portao51-pre.csv
+c5ff5f95c788e068927f70bfdf95c62cbc3f305d6392fde62509adfcdad0818a  runs/gate-netdegrade/l0c/estado-systemd.txt
+e2cc40b4a62a70a1f6335aee5abcc0444ebdaa8b432576f7aa44d41172314aeb  runs/gate-netdegrade/l0c/filter-depois.txt
+90b7e0258181900d33fcf887a54a28311d35bc1532271b7b61140d8e7c6afd69  runs/gate-netdegrade/l0c/journal-unit.txt
+c029d4c428ff69651acb0926fa07fd60e5fe88e18d3488883c50c7e783298f3d  runs/gate-netdegrade/l0c/pos-sem-prio.txt
+c029d4c428ff69651acb0926fa07fd60e5fe88e18d3488883c50c7e783298f3d  runs/gate-netdegrade/l0c/pre-sem-prio.txt
+c778b61f0c14b7c7f8ae0938722ed07d4eb8872579ffa07591f4825f81bc9198  runs/gate-netdegrade/l0c/qdisc-antes.txt
+c778b61f0c14b7c7f8ae0938722ed07d4eb8872579ffa07591f4825f81bc9198  runs/gate-netdegrade/l0c/qdisc-depois.txt
+e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855  runs/gate-netdegrade/l0c/qdisc-diff.txt
+dfe519e6bf55a22e5a63a312b0c90cec1d084fb0b28485faaea0d790ac6d84c0  runs/gate-netdegrade/l0c/qdisc-durante.txt
+774c1b6522d7a27d9366e52f25374b997897312dba3a334a277908a13079a7d4  runs/gate-netdegrade/l0c/resultado.txt
+656237990c25fd82c0c82bde20bb2c9acd43ee4db4ca6914040c2fd4f8d4326c  runs/gate-netdegrade/l0c/tempos.txt
+91d3c6da6c56e8e535cc69026e3be65a99de985b3318a59aa6ee4d6b608a181d  runs/gate-netdegrade/l0c/unit-armada.txt
+8ca678ea6838c16e2b4d596a0b60c37f1686b6a671d4bcd1428d59852602bce6  runs/gate-netdegrade/go.log
+### sha256 no host (worktree):
+c1691571330122658f571bf71a454f88e91e36733e045c0111a98efb8d133d7a *vm/l0c-inicio.txt
+feeb47385a637cd93140fd60f59570db1188bd17994506fb97ea7fe26aa5be92 *vm/l0c.log
+6bf05bb4b7f0cfed8fe956efae3ef38bf477fac1e4a7e85ad3e955e340057708 *vm/portao51-pre.csv
+c5ff5f95c788e068927f70bfdf95c62cbc3f305d6392fde62509adfcdad0818a *vm/l0c/estado-systemd.txt
+e2cc40b4a62a70a1f6335aee5abcc0444ebdaa8b432576f7aa44d41172314aeb *vm/l0c/filter-depois.txt
+90b7e0258181900d33fcf887a54a28311d35bc1532271b7b61140d8e7c6afd69 *vm/l0c/journal-unit.txt
+c029d4c428ff69651acb0926fa07fd60e5fe88e18d3488883c50c7e783298f3d *vm/l0c/pos-sem-prio.txt
+c029d4c428ff69651acb0926fa07fd60e5fe88e18d3488883c50c7e783298f3d *vm/l0c/pre-sem-prio.txt
+c778b61f0c14b7c7f8ae0938722ed07d4eb8872579ffa07591f4825f81bc9198 *vm/l0c/qdisc-antes.txt
+c778b61f0c14b7c7f8ae0938722ed07d4eb8872579ffa07591f4825f81bc9198 *vm/l0c/qdisc-depois.txt
+e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855 *vm/l0c/qdisc-diff.txt
+dfe519e6bf55a22e5a63a312b0c90cec1d084fb0b28485faaea0d790ac6d84c0 *vm/l0c/qdisc-durante.txt
+774c1b6522d7a27d9366e52f25374b997897312dba3a334a277908a13079a7d4 *vm/l0c/resultado.txt
+656237990c25fd82c0c82bde20bb2c9acd43ee4db4ca6914040c2fd4f8d4326c *vm/l0c/tempos.txt
+91d3c6da6c56e8e535cc69026e3be65a99de985b3318a59aa6ee4d6b608a181d *vm/l0c/unit-armada.txt
+8ca678ea6838c16e2b4d596a0b60c37f1686b6a671d4bcd1428d59852602bce6 *vm/go.log
+### CR por arquivo (tr -cd '\r' | wc -c) e LF:
+vm/go.log CR=0 LF=2
+vm/l0c-inicio.txt CR=0 LF=1
+vm/l0c.log CR=0 LF=834
+vm/portao51-pre.csv CR=0 LF=82
+vm/l0c/estado-systemd.txt CR=0 LF=3
+vm/l0c/filter-depois.txt CR=0 LF=1
+vm/l0c/journal-unit.txt CR=0 LF=63
+vm/l0c/pos-sem-prio.txt CR=0 LF=3
+vm/l0c/pre-sem-prio.txt CR=0 LF=3
+vm/l0c/qdisc-antes.txt CR=0 LF=1
+vm/l0c/qdisc-depois.txt CR=0 LF=1
+vm/l0c/qdisc-diff.txt CR=0 LF=0
+vm/l0c/qdisc-durante.txt CR=0 LF=10
+vm/l0c/resultado.txt CR=0 LF=11
+vm/l0c/tempos.txt CR=0 LF=1
+vm/l0c/unit-armada.txt CR=0 LF=27
+00-portao51-pre-console.txt CR=0 LF=31
+02-pos-l0c-leitura.log CR=0 LF=95
+03-sudo-pre-armar-e-pos.log CR=0 LF=58
+04-s4-pre-hashes-e-cluster.log CR=0 LF=13
+### portao51-pre-console.txt: colado pelo Gestor (sem par na VM, o .log nao foi gravado); sha256 do arquivo do scratchpad e do worktree:
+7b2c9b70d7e5e7cec8bdb2edcdd6f329213034e6bbfacbf5c0ff95553d4c3d90 *scratchpad/portao51-pre-s3-console.txt
+7b2c9b70d7e5e7cec8bdb2edcdd6f329213034e6bbfacbf5c0ff95553d4c3d90 *00-portao51-pre-console.txt

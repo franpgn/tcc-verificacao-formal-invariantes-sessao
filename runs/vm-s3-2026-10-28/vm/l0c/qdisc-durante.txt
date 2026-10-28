@@ -1,0 +1,10 @@
++ T tc qdisc show dev eth0
++ sudo nsenter -t 33811 -n tc qdisc show dev eth0
+qdisc prio 1: root refcnt 5 bands 3 priomap 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+qdisc netem 30: parent 1:3 limit 1000 delay 1ms
++ T tc filter show dev eth0
++ sudo nsenter -t 33811 -n tc filter show dev eth0
+filter parent 1: protocol ip pref 1 u32 chain 0 
+filter parent 1: protocol ip pref 1 u32 chain 0 fh 800: ht divisor 1 
+filter parent 1: protocol ip pref 1 u32 chain 0 fh 800::800 order 2048 key ht 800 bkt 0 *flowid 1:3 not_in_hw 
+  match c0000201/ffffffff at 16

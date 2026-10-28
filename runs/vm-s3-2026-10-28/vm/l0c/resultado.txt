@@ -1,0 +1,11 @@
+PASS unit armada executa inject-netdegrade.sh --heal
+PASS prio/netem presentes em isn3 (degradacao inerte instalada)
+PASS disparo nao antes de 30 s (delta=31338 ms desde antes de armar)
+PASS disparo ate 40 s (delta=31327 ms desde depois de armar)
+PASS journal: a unit executou o --heal do injetor
+PASS journal: unit encerrou com sucesso
+PASS journal sem 'Failed with result'
+PASS unit nao esta failed
+PASS 0 timers tcc-heal ao fim (sem desarmar)
+PASS tc qdisc show de isn3 identico ao de antes (cura sem intervencao)
+PASS isn1, isn2, isn3 sem prio/netem ao fim (antes e depois: isn1/isn2 sem alteracao observavel)

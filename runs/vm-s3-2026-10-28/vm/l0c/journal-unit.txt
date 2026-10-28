@@ -1,0 +1,63 @@
+2026-10-28T04:59:55+00:00 server1 systemd[1]: Started tcc-heal-356755-18620.service - /usr/bin/bash scripts/inject-netdegrade.sh --heal.
+2026-10-28T04:59:55+00:00 server1 bash[357483]: [2026-10-28T04:59:55Z] inject-netdegrade.sh: Heal: removendo a qdisc prio 1: do injetor em isn1 isn2 isn3 (iface eth0); raiz alheia nao e tocada
+2026-10-28T04:59:55+00:00 server1 sudo[357488]:     root : PWD=/home/server1/tcc-gate ; USER=root ; COMMAND=/usr/bin/podman inspect isn1
+2026-10-28T04:59:55+00:00 server1 sudo[357488]: pam_unix(sudo:session): session opened for user root(uid=0) by (uid=0)
+2026-10-28T04:59:55+00:00 server1 sudo[357488]: pam_unix(sudo:session): session closed for user root
+2026-10-28T04:59:55+00:00 server1 sudo[357499]:     root : PWD=/home/server1/tcc-gate ; USER=root ; COMMAND=/usr/bin/podman inspect -f {{.State.Status}} isn1
+2026-10-28T04:59:55+00:00 server1 sudo[357499]: pam_unix(sudo:session): session opened for user root(uid=0) by (uid=0)
+2026-10-28T04:59:55+00:00 server1 sudo[357499]: pam_unix(sudo:session): session closed for user root
+2026-10-28T04:59:55+00:00 server1 sudo[357510]:     root : PWD=/home/server1/tcc-gate ; USER=root ; COMMAND=/usr/bin/podman inspect -f {{.State.Pid}} isn1
+2026-10-28T04:59:55+00:00 server1 sudo[357510]: pam_unix(sudo:session): session opened for user root(uid=0) by (uid=0)
+2026-10-28T04:59:55+00:00 server1 sudo[357510]: pam_unix(sudo:session): session closed for user root
+2026-10-28T04:59:55+00:00 server1 sudo[357521]:     root : PWD=/home/server1/tcc-gate ; USER=root ; COMMAND=/usr/bin/readlink /proc/33273/ns/net
+2026-10-28T04:59:55+00:00 server1 sudo[357521]: pam_unix(sudo:session): session opened for user root(uid=0) by (uid=0)
+2026-10-28T04:59:55+00:00 server1 sudo[357521]: pam_unix(sudo:session): session closed for user root
+2026-10-28T04:59:55+00:00 server1 sudo[357524]:     root : PWD=/home/server1/tcc-gate ; USER=root ; COMMAND=/usr/bin/readlink /proc/1/ns/net
+2026-10-28T04:59:55+00:00 server1 sudo[357524]: pam_unix(sudo:session): session opened for user root(uid=0) by (uid=0)
+2026-10-28T04:59:55+00:00 server1 sudo[357524]: pam_unix(sudo:session): session closed for user root
+2026-10-28T04:59:55+00:00 server1 sudo[357527]:     root : PWD=/home/server1/tcc-gate ; USER=root ; COMMAND=/usr/bin/nsenter -t 33273 -n tc qdisc show dev eth0
+2026-10-28T04:59:55+00:00 server1 sudo[357527]: pam_unix(sudo:session): session opened for user root(uid=0) by (uid=0)
+2026-10-28T04:59:55+00:00 server1 sudo[357527]: pam_unix(sudo:session): session closed for user root
+2026-10-28T04:59:55+00:00 server1 bash[357483]: [2026-10-28T04:59:55Z] inject-netdegrade.sh:   isn1 (pid 33273): sem qdisc do injetor (nada a fazer)
+2026-10-28T04:59:55+00:00 server1 sudo[357531]:     root : PWD=/home/server1/tcc-gate ; USER=root ; COMMAND=/usr/bin/podman inspect isn2
+2026-10-28T04:59:55+00:00 server1 sudo[357531]: pam_unix(sudo:session): session opened for user root(uid=0) by (uid=0)
+2026-10-28T04:59:55+00:00 server1 sudo[357531]: pam_unix(sudo:session): session closed for user root
+2026-10-28T04:59:55+00:00 server1 sudo[357543]:     root : PWD=/home/server1/tcc-gate ; USER=root ; COMMAND=/usr/bin/podman inspect -f {{.State.Status}} isn2
+2026-10-28T04:59:55+00:00 server1 sudo[357543]: pam_unix(sudo:session): session opened for user root(uid=0) by (uid=0)
+2026-10-28T04:59:55+00:00 server1 sudo[357543]: pam_unix(sudo:session): session closed for user root
+2026-10-28T04:59:55+00:00 server1 sudo[357555]:     root : PWD=/home/server1/tcc-gate ; USER=root ; COMMAND=/usr/bin/podman inspect -f {{.State.Pid}} isn2
+2026-10-28T04:59:55+00:00 server1 sudo[357555]: pam_unix(sudo:session): session opened for user root(uid=0) by (uid=0)
+2026-10-28T04:59:55+00:00 server1 sudo[357555]: pam_unix(sudo:session): session closed for user root
+2026-10-28T04:59:55+00:00 server1 sudo[357567]:     root : PWD=/home/server1/tcc-gate ; USER=root ; COMMAND=/usr/bin/readlink /proc/33404/ns/net
+2026-10-28T04:59:55+00:00 server1 sudo[357567]: pam_unix(sudo:session): session opened for user root(uid=0) by (uid=0)
+2026-10-28T04:59:55+00:00 server1 sudo[357567]: pam_unix(sudo:session): session closed for user root
+2026-10-28T04:59:55+00:00 server1 sudo[357570]:     root : PWD=/home/server1/tcc-gate ; USER=root ; COMMAND=/usr/bin/readlink /proc/1/ns/net
+2026-10-28T04:59:55+00:00 server1 sudo[357570]: pam_unix(sudo:session): session opened for user root(uid=0) by (uid=0)
+2026-10-28T04:59:55+00:00 server1 sudo[357570]: pam_unix(sudo:session): session closed for user root
+2026-10-28T04:59:55+00:00 server1 sudo[357573]:     root : PWD=/home/server1/tcc-gate ; USER=root ; COMMAND=/usr/bin/nsenter -t 33404 -n tc qdisc show dev eth0
+2026-10-28T04:59:55+00:00 server1 sudo[357573]: pam_unix(sudo:session): session opened for user root(uid=0) by (uid=0)
+2026-10-28T04:59:55+00:00 server1 sudo[357573]: pam_unix(sudo:session): session closed for user root
+2026-10-28T04:59:55+00:00 server1 bash[357483]: [2026-10-28T04:59:55Z] inject-netdegrade.sh:   isn2 (pid 33404): sem qdisc do injetor (nada a fazer)
+2026-10-28T04:59:55+00:00 server1 sudo[357577]:     root : PWD=/home/server1/tcc-gate ; USER=root ; COMMAND=/usr/bin/podman inspect isn3
+2026-10-28T04:59:55+00:00 server1 sudo[357577]: pam_unix(sudo:session): session opened for user root(uid=0) by (uid=0)
+2026-10-28T04:59:55+00:00 server1 sudo[357577]: pam_unix(sudo:session): session closed for user root
+2026-10-28T04:59:55+00:00 server1 sudo[357588]:     root : PWD=/home/server1/tcc-gate ; USER=root ; COMMAND=/usr/bin/podman inspect -f {{.State.Status}} isn3
+2026-10-28T04:59:55+00:00 server1 sudo[357588]: pam_unix(sudo:session): session opened for user root(uid=0) by (uid=0)
+2026-10-28T04:59:55+00:00 server1 sudo[357588]: pam_unix(sudo:session): session closed for user root
+2026-10-28T04:59:55+00:00 server1 sudo[357599]:     root : PWD=/home/server1/tcc-gate ; USER=root ; COMMAND=/usr/bin/podman inspect -f {{.State.Pid}} isn3
+2026-10-28T04:59:55+00:00 server1 sudo[357599]: pam_unix(sudo:session): session opened for user root(uid=0) by (uid=0)
+2026-10-28T04:59:55+00:00 server1 sudo[357599]: pam_unix(sudo:session): session closed for user root
+2026-10-28T04:59:55+00:00 server1 sudo[357610]:     root : PWD=/home/server1/tcc-gate ; USER=root ; COMMAND=/usr/bin/readlink /proc/33811/ns/net
+2026-10-28T04:59:55+00:00 server1 sudo[357610]: pam_unix(sudo:session): session opened for user root(uid=0) by (uid=0)
+2026-10-28T04:59:55+00:00 server1 sudo[357610]: pam_unix(sudo:session): session closed for user root
+2026-10-28T04:59:55+00:00 server1 sudo[357613]:     root : PWD=/home/server1/tcc-gate ; USER=root ; COMMAND=/usr/bin/readlink /proc/1/ns/net
+2026-10-28T04:59:55+00:00 server1 sudo[357613]: pam_unix(sudo:session): session opened for user root(uid=0) by (uid=0)
+2026-10-28T04:59:55+00:00 server1 sudo[357613]: pam_unix(sudo:session): session closed for user root
+2026-10-28T04:59:55+00:00 server1 sudo[357616]:     root : PWD=/home/server1/tcc-gate ; USER=root ; COMMAND=/usr/bin/nsenter -t 33811 -n tc qdisc show dev eth0
+2026-10-28T04:59:55+00:00 server1 sudo[357616]: pam_unix(sudo:session): session opened for user root(uid=0) by (uid=0)
+2026-10-28T04:59:55+00:00 server1 sudo[357616]: pam_unix(sudo:session): session closed for user root
+2026-10-28T04:59:55+00:00 server1 sudo[357619]:     root : PWD=/home/server1/tcc-gate ; USER=root ; COMMAND=/usr/bin/nsenter -t 33811 -n tc qdisc del dev eth0 root
+2026-10-28T04:59:55+00:00 server1 sudo[357619]: pam_unix(sudo:session): session opened for user root(uid=0) by (uid=0)
+2026-10-28T04:59:55+00:00 server1 sudo[357619]: pam_unix(sudo:session): session closed for user root
+2026-10-28T04:59:55+00:00 server1 bash[357483]: [2026-10-28T04:59:55Z] inject-netdegrade.sh:   isn3 (pid 33811): prio 1: removida
+2026-10-28T04:59:55+00:00 server1 systemd[1]: tcc-heal-356755-18620.service: Deactivated successfully.

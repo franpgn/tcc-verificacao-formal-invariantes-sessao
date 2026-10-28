@@ -1,0 +1,58 @@
+2026-10-28T04:59:09.622023+00:00 COMMAND=/usr/bin/podman inspect -f {{.State.Pid}} isn3
+2026-10-28T04:59:25.128472+00:00 COMMAND=/usr/bin/readlink /proc/1/ns/net
+2026-10-28T04:59:25.133020+00:00 COMMAND=/usr/bin/readlink /proc/33811/ns/net
+2026-10-28T04:59:25.137218+00:00 COMMAND=/usr/bin/podman inspect -f {{.State.Pid}} isn1
+2026-10-28T04:59:25.206835+00:00 COMMAND=/usr/bin/readlink /proc/1/ns/net
+2026-10-28T04:59:25.212775+00:00 COMMAND=/usr/bin/readlink /proc/33273/ns/net
+2026-10-28T04:59:25.220115+00:00 COMMAND=/usr/bin/nsenter -t 33273 -n tc qdisc show dev eth0
+2026-10-28T04:59:25.229263+00:00 COMMAND=/usr/bin/podman inspect -f {{.State.Pid}} isn2
+2026-10-28T04:59:25.265764+00:00 COMMAND=/usr/bin/readlink /proc/1/ns/net
+2026-10-28T04:59:25.271276+00:00 COMMAND=/usr/bin/readlink /proc/33404/ns/net
+2026-10-28T04:59:25.275617+00:00 COMMAND=/usr/bin/nsenter -t 33404 -n tc qdisc show dev eth0
+2026-10-28T04:59:25.282242+00:00 COMMAND=/usr/bin/podman inspect -f {{.State.Pid}} isn3
+2026-10-28T04:59:25.318289+00:00 COMMAND=/usr/bin/readlink /proc/1/ns/net
+2026-10-28T04:59:25.322438+00:00 COMMAND=/usr/bin/readlink /proc/33811/ns/net
+2026-10-28T04:59:25.328121+00:00 COMMAND=/usr/bin/nsenter -t 33811 -n tc qdisc show dev eth0
+2026-10-28T04:59:25.334488+00:00 COMMAND=/usr/bin/nsenter -t 33811 -n tc qdisc show dev eth0
+2026-10-28T04:59:25.341377+00:00 COMMAND=/usr/bin/systemd-run --quiet --unit=tcc-heal-356755-18620 --on-active=30s --timer-property=AccuracySec=1s '--setenv=PODMAN=sudo podman' --working-directory=/home/server1/tcc-gate bash scripts/inject-netdegrade.sh --heal
+2026-10-28T04:59:25.355190+00:00 COMMAND=/usr/bin/systemctl cat tcc-heal-356755-18620.service
+2026-10-28T04:59:25.366669+00:00 COMMAND=/usr/bin/systemctl cat tcc-heal-356755-18620.timer
+2026-10-28T04:59:25.379114+00:00 COMMAND=/usr/bin/systemctl show tcc-heal-356755-18620.timer -p AccuracyUSec -p OnActiveSec -p NextElapseUSecMonotonic
+2026-10-28T04:59:25.405567+00:00 COMMAND=/usr/bin/nsenter -t 33811 -n tc qdisc add dev eth0 root handle 1: prio bands 3 priomap 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+2026-10-28T04:59:25.411037+00:00 COMMAND=/usr/bin/nsenter -t 33811 -n tc qdisc add dev eth0 parent 1:3 handle 30: netem delay 1ms
+2026-10-28T04:59:25.417762+00:00 COMMAND=/usr/bin/nsenter -t 33811 -n tc filter add dev eth0 parent 1: protocol ip prio 1 u32 match ip dst 192.0.2.1/32 flowid 1:3
+2026-10-28T04:59:25.427514+00:00 COMMAND=/usr/bin/nsenter -t 33811 -n tc qdisc show dev eth0
+2026-10-28T04:59:25.433538+00:00 COMMAND=/usr/bin/nsenter -t 33811 -n tc filter show dev eth0
+2026-10-28T04:59:25.439647+00:00 COMMAND=/usr/bin/nsenter -t 33811 -n tc qdisc show dev eth0
+2026-10-28T04:59:25.447258+00:00 COMMAND=/usr/bin/nsenter -t 33811 -n tc qdisc show dev eth0
+---
+2026-10-28T04:59:58.082989+00:00 server1 isn1[33271]: 2026-10-28 04:59:58,082 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health/status, remote=/
+2026-10-28T04:59:58.098056+00:00 server1 systemd[1]: tmp-crun.la4Bo6.mount: Deactivated successfully.
+2026-10-28T04:59:58.103139+00:00 server1 isn2[33402]: 2026-10-28 04:59:58,103 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health/status, remote=/
+2026-10-28T04:59:58.120015+00:00 server1 isn3[33809]: 2026-10-28 04:59:58,119 WARN  [o.i.r.RestRequestHandler] ISPN012026: The REST invocation [NettyRestRequest{GET /rest/v2/cache-managers/default/health/status, remote=/
+2026-10-28T04:59:58.173922+00:00 server1 podman[357630]: 2026-10-28 04:59:58.173708262 +0000 UTC m=+0.126147293 container health_status 7a196f16360946668e1b3180421e34706235d3e8da534c84d586c142b9144a07 (image=quay.io/infi
+2026-10-28T04:59:58.191615+00:00 server1 podman[357628]: 2026-10-28 04:59:58.191405558 +0000 UTC m=+0.146334483 container health_status 1c89dacd64c237ccc6a4aa843323e87338c97f467465ea15e543f3d1e91b12b4 (image=quay.io/infi
+2026-10-28T04:59:58.209332+00:00 server1 podman[357629]: 2026-10-28 04:59:58.209145291 +0000 UTC m=+0.162058447 container health_status 5bf9476b5b97ab0c4ff20323cd654a491c436f83657cb75fe381a93e68f91056 (image=quay.io/infi
+2026-10-28T04:59:58.687910+00:00 server1 sudo[357685]:  server1 : TTY=pts/1 ; PWD=/home/server1/tcc-gate ; USER=root ; COMMAND=/usr/bin/journalctl -u tcc-heal-356755-18620.service --no-pager -o short-iso
+2026-10-28T04:59:58.715682+00:00 server1 sudo[357708]:  server1 : TTY=pts/1 ; PWD=/home/server1/tcc-gate ; USER=root ; COMMAND=/usr/bin/nsenter -t 33811 -n tc qdisc show dev eth0
+2026-10-28T04:59:58.721489+00:00 server1 sudo[357714]:  server1 : TTY=pts/1 ; PWD=/home/server1/tcc-gate ; USER=root ; COMMAND=/usr/bin/nsenter -t 33811 -n tc filter show dev eth0
+2026-10-28T04:59:58.726513+00:00 server1 sudo[357720]:  server1 : TTY=pts/1 ; PWD=/home/server1/tcc-gate ; USER=root ; COMMAND=/usr/bin/podman inspect -f {{.State.Pid}} isn1
+2026-10-28T04:59:58.749427+00:00 server1 systemd[1]: Started podman-357722.scope.
+2026-10-28T04:59:58.757550+00:00 server1 sudo[357732]:  server1 : TTY=pts/1 ; PWD=/home/server1/tcc-gate ; USER=root ; COMMAND=/usr/bin/readlink /proc/1/ns/net
+2026-10-28T04:59:58.759976+00:00 server1 systemd[1]: podman-357722.scope: Deactivated successfully.
+2026-10-28T04:59:58.761512+00:00 server1 sudo[357735]:  server1 : TTY=pts/1 ; PWD=/home/server1/tcc-gate ; USER=root ; COMMAND=/usr/bin/readlink /proc/33273/ns/net
+2026-10-28T04:59:58.765440+00:00 server1 sudo[357738]:  server1 : TTY=pts/1 ; PWD=/home/server1/tcc-gate ; USER=root ; COMMAND=/usr/bin/nsenter -t 33273 -n tc qdisc show dev eth0
+2026-10-28T04:59:58.771317+00:00 server1 sudo[357744]:  server1 : TTY=pts/1 ; PWD=/home/server1/tcc-gate ; USER=root ; COMMAND=/usr/bin/podman inspect -f {{.State.Pid}} isn2
+2026-10-28T04:59:58.794481+00:00 server1 systemd[1]: Started podman-357746.scope.
+2026-10-28T04:59:58.802535+00:00 server1 sudo[357757]:  server1 : TTY=pts/1 ; PWD=/home/server1/tcc-gate ; USER=root ; COMMAND=/usr/bin/readlink /proc/1/ns/net
+2026-10-28T04:59:58.804942+00:00 server1 systemd[1]: podman-357746.scope: Deactivated successfully.
+2026-10-28T04:59:58.807052+00:00 server1 sudo[357760]:  server1 : TTY=pts/1 ; PWD=/home/server1/tcc-gate ; USER=root ; COMMAND=/usr/bin/readlink /proc/33404/ns/net
+2026-10-28T04:59:58.811201+00:00 server1 sudo[357763]:  server1 : TTY=pts/1 ; PWD=/home/server1/tcc-gate ; USER=root ; COMMAND=/usr/bin/nsenter -t 33404 -n tc qdisc show dev eth0
+2026-10-28T04:59:58.816709+00:00 server1 sudo[357769]:  server1 : TTY=pts/1 ; PWD=/home/server1/tcc-gate ; USER=root ; COMMAND=/usr/bin/podman inspect -f {{.State.Pid}} isn3
+2026-10-28T04:59:58.839498+00:00 server1 systemd[1]: Started podman-357771.scope.
+2026-10-28T04:59:58.847611+00:00 server1 sudo[357781]:  server1 : TTY=pts/1 ; PWD=/home/server1/tcc-gate ; USER=root ; COMMAND=/usr/bin/readlink /proc/1/ns/net
+2026-10-28T04:59:58.851323+00:00 server1 sudo[357784]:  server1 : TTY=pts/1 ; PWD=/home/server1/tcc-gate ; USER=root ; COMMAND=/usr/bin/readlink /proc/33811/ns/net
+2026-10-28T04:59:58.851839+00:00 server1 systemd[1]: podman-357771.scope: Deactivated successfully.
+2026-10-28T04:59:58.855712+00:00 server1 sudo[357787]:  server1 : TTY=pts/1 ; PWD=/home/server1/tcc-gate ; USER=root ; COMMAND=/usr/bin/nsenter -t 33811 -n tc qdisc show dev eth0
+2026-10-28T05:00:04.045316+00:00 server1 systemd[1]: Starting sysstat-collect.service - system activity accounting tool...
+2026-10-28T05:00:04.047747+00:00 server1 systemd[1]: sysstat-collect.service: Deactivated successfully.

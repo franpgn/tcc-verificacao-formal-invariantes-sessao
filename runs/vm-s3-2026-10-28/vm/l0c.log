@@ -1,0 +1,834 @@
++ set -euo pipefail
++ PRAZO=30
++ MIN=30
++ MAX=40
++ LIMITE=90
++ '[' '' = --dry-run ']'
+++ dirname runs/gate-netdegrade/l0c.sh
++ source runs/gate-netdegrade/l-lib.sh
+++ cd /home/server1/tcc-gate
+++ export 'PODMAN=sudo podman'
+++ PODMAN='sudo podman'
+++ LOG=runs/gate-netdegrade
+++ INJ='bash scripts/inject-netdegrade.sh'
+++ LOCK_DIR=/tmp
+++ mkdir -p runs/gate-netdegrade
++ '[' 1 = 1 ']'
++ exigir_go L-0c
++ '[' -t 0 ']'
++ read -rp 'L-0c -- go do Gestor registrado no relatorio anterior? [digite GO] ' r
+L-0c -- go do Gestor registrado no relatorio anterior? [digite GO] + '[' GO = GO ']'
++ tee -a runs/gate-netdegrade/go.log
+++ date -Is
+++ hostname -I
+++ awk '{print $1}'
++ echo 'go 2026-10-28T04:59:09+00:00 vm=172.18.251.140 bloco=L-0c'
+go 2026-10-28T04:59:09+00:00 vm=172.18.251.140 bloco=L-0c
++ OUT=runs/gate-netdegrade/l0c
++ mkdir -p runs/gate-netdegrade/l0c
++ R=runs/gate-netdegrade/l0c/resultado.txt
++ :
+++ pid_de isn3
+++ local p
++++ sudo podman inspect -f '{{.State.Pid}}' isn3
+++ p=33811
+++ guarda 33811
+++ local pid=33811 ns1 nsn
+++ '[' -n 33811 ']'
+++ '[' 33811 '!=' 0 ']'
++++ sudo readlink /proc/1/ns/net
+++ ns1='net:[4026531840]'
++++ sudo readlink /proc/33811/ns/net
+++ nsn='net:[4026532291]'
+++ '[' -n 'net:[4026531840]' ']'
+++ '[' -n 'net:[4026532291]' ']'
+++ '[' 'net:[4026532291]' '!=' 'net:[4026531840]' ']'
+++ echo 33811
++ PID=33811
++ LIMPO=0
++ for n in isn1 isn2 isn3
++ sem_prio isn1
++ local p out
++ tee runs/gate-netdegrade/l0c/pre-sem-prio.txt
+++ pid_de isn1
+++ local p
++++ sudo podman inspect -f '{{.State.Pid}}' isn1
+++ p=33273
+++ guarda 33273
+++ local pid=33273 ns1 nsn
+++ '[' -n 33273 ']'
+++ '[' 33273 '!=' 0 ']'
++++ sudo readlink /proc/1/ns/net
+++ ns1='net:[4026531840]'
++++ sudo readlink /proc/33273/ns/net
+++ nsn='net:[4026532162]'
+++ '[' -n 'net:[4026531840]' ']'
+++ '[' -n 'net:[4026532162]' ']'
+++ '[' 'net:[4026532162]' '!=' 'net:[4026531840]' ']'
+++ echo 33273
++ p=33273
+++ sudo nsenter -t 33273 -n tc qdisc show dev eth0
++ out='qdisc noqueue 0: root refcnt 2 '
++ printf '%s\n' 'qdisc noqueue 0: root refcnt 2 '
++ grep -Eq 'prio|netem'
++ echo 'ok sem prio em isn1'
++ for n in isn1 isn2 isn3
++ sem_prio isn2
+ok sem prio em isn1
++ local p out
+++ pid_de isn2
+++ local p
++++ sudo podman inspect -f '{{.State.Pid}}' isn2
+++ p=33404
+++ guarda 33404
+++ local pid=33404 ns1 nsn
+++ '[' -n 33404 ']'
+++ '[' 33404 '!=' 0 ']'
++++ sudo readlink /proc/1/ns/net
+++ ns1='net:[4026531840]'
++++ sudo readlink /proc/33404/ns/net
+++ nsn='net:[4026532228]'
+++ '[' -n 'net:[4026531840]' ']'
+++ '[' -n 'net:[4026532228]' ']'
+++ '[' 'net:[4026532228]' '!=' 'net:[4026531840]' ']'
+++ echo 33404
++ p=33404
+++ sudo nsenter -t 33404 -n tc qdisc show dev eth0
++ out='qdisc noqueue 0: root refcnt 2 '
++ printf '%s\n' 'qdisc noqueue 0: root refcnt 2 '
++ grep -Eq 'prio|netem'
++ echo 'ok sem prio em isn2'
++ for n in isn1 isn2 isn3
+ok sem prio em isn2
++ sem_prio isn3
++ local p out
+++ pid_de isn3
+++ local p
++++ sudo podman inspect -f '{{.State.Pid}}' isn3
+++ p=33811
+++ guarda 33811
+++ local pid=33811 ns1 nsn
+++ '[' -n 33811 ']'
+++ '[' 33811 '!=' 0 ']'
++++ sudo readlink /proc/1/ns/net
+++ ns1='net:[4026531840]'
++++ sudo readlink /proc/33811/ns/net
+++ nsn='net:[4026532291]'
+++ '[' -n 'net:[4026531840]' ']'
+++ '[' -n 'net:[4026532291]' ']'
+++ '[' 'net:[4026532291]' '!=' 'net:[4026531840]' ']'
+++ echo 33811
++ p=33811
+++ sudo nsenter -t 33811 -n tc qdisc show dev eth0
++ out='qdisc noqueue 0: root refcnt 2 '
++ printf '%s\n' 'qdisc noqueue 0: root refcnt 2 '
++ grep -Eq 'prio|netem'
++ echo 'ok sem prio em isn3'
+ok sem prio em isn3
++ T tc qdisc show dev eth0
++ sudo nsenter -t 33811 -n tc qdisc show dev eth0
++ cat runs/gate-netdegrade/l0c/qdisc-antes.txt
+qdisc noqueue 0: root refcnt 2 
++ trap abortar EXIT
+++ ns
+++ date +%s%N
++ T0=1793163565338636232
++ armar -60
++ DMS=tcc-heal-356755-18620
++ sudo systemd-run --quiet --unit=tcc-heal-356755-18620 --on-active=30s --timer-property=AccuracySec=1s '--setenv=PODMAN=sudo podman' --working-directory=/home/server1/tcc-gate bash scripts/inject-netdegrade.sh --heal
+++ ns
+++ date +%s%N
++ T1=1793163565349298377
++ UNIT=tcc-heal-356755-18620
++ echo 'unit=tcc-heal-356755-18620 t_antes_armar_ns=1793163565338636232 t_depois_armar_ns=1793163565349298377 prazo_s=30'
++ echo '--- systemctl cat tcc-heal-356755-18620.service'
++ sudo systemctl cat tcc-heal-356755-18620.service
++ echo '--- systemctl cat tcc-heal-356755-18620.timer'
++ sudo systemctl cat tcc-heal-356755-18620.timer
++ echo '--- AccuracyUSec (systemd 255: AccuracySec so na escrita; default 1min: o disparo pode atrasar ate esse valor)'
++ sudo systemctl show tcc-heal-356755-18620.timer -p AccuracyUSec -p OnActiveSec -p NextElapseUSecMonotonic
++ echo '--- list-timers'
++ systemctl list-timers --all
++ grep tcc-heal
++ cat runs/gate-netdegrade/l0c/unit-armada.txt
+unit=tcc-heal-356755-18620 t_antes_armar_ns=1793163565338636232 t_depois_armar_ns=1793163565349298377 prazo_s=30
+--- systemctl cat tcc-heal-356755-18620.service
+# /run/systemd/transient/tcc-heal-356755-18620.service
+# This is a transient unit file, created programmatically via the systemd API. Do not edit.
+[Unit]
+Description=/usr/bin/bash scripts/inject-netdegrade.sh --heal
+
+[Service]
+WorkingDirectory=/home/server1/tcc-gate
+Environment="PODMAN=sudo podman"
+ExecStart=
+ExecStart="/usr/bin/bash" "scripts/inject-netdegrade.sh" "--heal"
+--- systemctl cat tcc-heal-356755-18620.timer
+# /run/systemd/transient/tcc-heal-356755-18620.timer
+# This is a transient unit file, created programmatically via the systemd API. Do not edit.
+[Unit]
+Description=/usr/bin/bash scripts/inject-netdegrade.sh --heal
+
+[Timer]
+OnActiveSec=30s
+AccuracySec=1s
+RemainAfterElapse=no
+--- AccuracyUSec (systemd 255: AccuracySec so na escrita; default 1min: o disparo pode atrasar ate esse valor)
+NextElapseUSecMonotonic=1w 12h 28min 10.870770s
+AccuracyUSec=1s
+--- list-timers
+Wed 2026-10-28 04:59:55 UTC           29s -                                      - tcc-heal-356755-18620.timer                                            tcc-heal-356755-18620.service
++ grep -q 'inject-netdegrade.sh --heal' runs/gate-netdegrade/l0c/unit-armada.txt
++ ok 'unit armada executa inject-netdegrade.sh --heal'
++ echo 'PASS unit armada executa inject-netdegrade.sh --heal'
++ tee -a runs/gate-netdegrade/l0c/resultado.txt
+PASS unit armada executa inject-netdegrade.sh --heal
++ T tc qdisc add dev eth0 root handle 1: prio bands 3 priomap 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
++ sudo nsenter -t 33811 -n tc qdisc add dev eth0 root handle 1: prio bands 3 priomap 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
++ T tc qdisc add dev eth0 parent 1:3 handle 30: netem delay 1ms
++ sudo nsenter -t 33811 -n tc qdisc add dev eth0 parent 1:3 handle 30: netem delay 1ms
++ T tc filter add dev eth0 parent 1: protocol ip prio 1 u32 match ip dst 192.0.2.1/32 flowid 1:3
++ sudo nsenter -t 33811 -n tc filter add dev eth0 parent 1: protocol ip prio 1 u32 match ip dst 192.0.2.1/32 flowid 1:3
++ tem_prio
++ local o
+++ T tc qdisc show dev eth0
+++ sudo nsenter -t 33811 -n tc qdisc show dev eth0
++ o='qdisc prio 1: root refcnt 5 bands 3 priomap 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+qdisc netem 30: parent 1:3 limit 1000 delay 1ms'
++ grep -Eq 'prio|netem'
++ ok 'prio/netem presentes em isn3 (degradacao inerte instalada)'
++ echo 'PASS prio/netem presentes em isn3 (degradacao inerte instalada)'
++ tee -a runs/gate-netdegrade/l0c/resultado.txt
+PASS prio/netem presentes em isn3 (degradacao inerte instalada)
++ T_LIMPEZA=
++ :
+++ ns
+++ date +%s%N
++ agora=1793163565444710914
++ tem_prio
++ local o
+++ T tc qdisc show dev eth0
+++ sudo nsenter -t 33811 -n tc qdisc show dev eth0
++ o='qdisc prio 1: root refcnt 5 bands 3 priomap 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+qdisc netem 30: parent 1:3 limit 1000 delay 1ms'
++ grep -Eq 'prio|netem'
++ '[' 0 -lt 90 ']'
++ sleep 1
++ :
+++ ns
+++ date +%s%N
++ agora=1793163566452229536
++ tem_prio
++ local o
+++ T tc qdisc show dev eth0
+++ sudo nsenter -t 33811 -n tc qdisc show dev eth0
++ o='qdisc prio 1: root refcnt 5 bands 3 priomap 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+qdisc netem 30: parent 1:3 limit 1000 delay 1ms'
++ grep -Eq 'prio|netem'
++ '[' 1 -lt 90 ']'
++ sleep 1
++ :
+++ ns
+++ date +%s%N
++ agora=1793163567459799146
++ tem_prio
++ local o
+++ T tc qdisc show dev eth0
+++ sudo nsenter -t 33811 -n tc qdisc show dev eth0
++ o='qdisc prio 1: root refcnt 5 bands 3 priomap 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+qdisc netem 30: parent 1:3 limit 1000 delay 1ms'
++ grep -Eq 'prio|netem'
++ '[' 2 -lt 90 ']'
++ sleep 1
++ :
+++ ns
+++ date +%s%N
++ agora=1793163568469298799
++ tem_prio
++ local o
+++ T tc qdisc show dev eth0
+++ sudo nsenter -t 33811 -n tc qdisc show dev eth0
++ o='qdisc prio 1: root refcnt 5 bands 3 priomap 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+qdisc netem 30: parent 1:3 limit 1000 delay 1ms'
++ grep -Eq 'prio|netem'
++ '[' 3 -lt 90 ']'
++ sleep 1
++ :
+++ ns
+++ date +%s%N
++ agora=1793163569477469147
++ tem_prio
++ local o
+++ T tc qdisc show dev eth0
+++ sudo nsenter -t 33811 -n tc qdisc show dev eth0
++ o='qdisc prio 1: root refcnt 5 bands 3 priomap 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+qdisc netem 30: parent 1:3 limit 1000 delay 1ms'
++ grep -Eq 'prio|netem'
++ '[' 4 -lt 90 ']'
++ sleep 1
++ :
+++ ns
+++ date +%s%N
++ agora=1793163570488809579
++ tem_prio
++ local o
+++ T tc qdisc show dev eth0
+++ sudo nsenter -t 33811 -n tc qdisc show dev eth0
++ o='qdisc prio 1: root refcnt 5 bands 3 priomap 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+qdisc netem 30: parent 1:3 limit 1000 delay 1ms'
++ grep -Eq 'prio|netem'
++ '[' 5 -lt 90 ']'
++ sleep 1
++ :
+++ ns
+++ date +%s%N
++ agora=1793163571497886591
++ tem_prio
++ local o
+++ T tc qdisc show dev eth0
+++ sudo nsenter -t 33811 -n tc qdisc show dev eth0
++ o='qdisc prio 1: root refcnt 5 bands 3 priomap 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+qdisc netem 30: parent 1:3 limit 1000 delay 1ms'
++ grep -Eq 'prio|netem'
++ '[' 6 -lt 90 ']'
++ sleep 1
++ :
+++ ns
+++ date +%s%N
++ agora=1793163572505096717
++ tem_prio
++ local o
+++ T tc qdisc show dev eth0
+++ sudo nsenter -t 33811 -n tc qdisc show dev eth0
++ o='qdisc prio 1: root refcnt 5 bands 3 priomap 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+qdisc netem 30: parent 1:3 limit 1000 delay 1ms'
++ grep -Eq 'prio|netem'
++ '[' 7 -lt 90 ']'
++ sleep 1
++ :
+++ ns
+++ date +%s%N
++ agora=1793163573512109800
++ tem_prio
++ local o
+++ T tc qdisc show dev eth0
+++ sudo nsenter -t 33811 -n tc qdisc show dev eth0
++ o='qdisc prio 1: root refcnt 5 bands 3 priomap 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+qdisc netem 30: parent 1:3 limit 1000 delay 1ms'
++ grep -Eq 'prio|netem'
++ '[' 8 -lt 90 ']'
++ sleep 1
++ :
+++ ns
+++ date +%s%N
++ agora=1793163574519488914
++ tem_prio
++ local o
+++ T tc qdisc show dev eth0
+++ sudo nsenter -t 33811 -n tc qdisc show dev eth0
++ o='qdisc prio 1: root refcnt 5 bands 3 priomap 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+qdisc netem 30: parent 1:3 limit 1000 delay 1ms'
++ grep -Eq 'prio|netem'
++ '[' 9 -lt 90 ']'
++ sleep 1
++ :
+++ ns
+++ date +%s%N
++ agora=1793163575526888933
++ tem_prio
++ local o
+++ T tc qdisc show dev eth0
+++ sudo nsenter -t 33811 -n tc qdisc show dev eth0
++ o='qdisc prio 1: root refcnt 5 bands 3 priomap 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+qdisc netem 30: parent 1:3 limit 1000 delay 1ms'
++ grep -Eq 'prio|netem'
++ '[' 10 -lt 90 ']'
++ sleep 1
++ :
+++ ns
+++ date +%s%N
++ agora=1793163576534630764
++ tem_prio
++ local o
+++ T tc qdisc show dev eth0
+++ sudo nsenter -t 33811 -n tc qdisc show dev eth0
++ o='qdisc prio 1: root refcnt 5 bands 3 priomap 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+qdisc netem 30: parent 1:3 limit 1000 delay 1ms'
++ grep -Eq 'prio|netem'
++ '[' 11 -lt 90 ']'
++ sleep 1
++ :
+++ ns
+++ date +%s%N
++ agora=1793163577541865104
++ tem_prio
++ local o
+++ T tc qdisc show dev eth0
+++ sudo nsenter -t 33811 -n tc qdisc show dev eth0
++ o='qdisc prio 1: root refcnt 5 bands 3 priomap 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+qdisc netem 30: parent 1:3 limit 1000 delay 1ms'
++ grep -Eq 'prio|netem'
++ '[' 12 -lt 90 ']'
++ sleep 1
++ :
+++ ns
+++ date +%s%N
++ agora=1793163578548805439
++ tem_prio
++ local o
+++ T tc qdisc show dev eth0
+++ sudo nsenter -t 33811 -n tc qdisc show dev eth0
++ o='qdisc prio 1: root refcnt 5 bands 3 priomap 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+qdisc netem 30: parent 1:3 limit 1000 delay 1ms'
++ grep -Eq 'prio|netem'
++ '[' 13 -lt 90 ']'
++ sleep 1
++ :
+++ ns
+++ date +%s%N
++ agora=1793163579555760919
++ tem_prio
++ local o
+++ T tc qdisc show dev eth0
+++ sudo nsenter -t 33811 -n tc qdisc show dev eth0
++ o='qdisc prio 1: root refcnt 5 bands 3 priomap 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+qdisc netem 30: parent 1:3 limit 1000 delay 1ms'
++ grep -Eq 'prio|netem'
++ '[' 14 -lt 90 ']'
++ sleep 1
++ :
+++ ns
+++ date +%s%N
++ agora=1793163580562759332
++ tem_prio
++ local o
+++ T tc qdisc show dev eth0
+++ sudo nsenter -t 33811 -n tc qdisc show dev eth0
++ o='qdisc prio 1: root refcnt 5 bands 3 priomap 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+qdisc netem 30: parent 1:3 limit 1000 delay 1ms'
++ grep -Eq 'prio|netem'
++ '[' 15 -lt 90 ']'
++ sleep 1
++ :
+++ ns
+++ date +%s%N
++ agora=1793163581569805744
++ tem_prio
++ local o
+++ T tc qdisc show dev eth0
+++ sudo nsenter -t 33811 -n tc qdisc show dev eth0
++ o='qdisc prio 1: root refcnt 5 bands 3 priomap 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+qdisc netem 30: parent 1:3 limit 1000 delay 1ms'
++ grep -Eq 'prio|netem'
++ '[' 16 -lt 90 ']'
++ sleep 1
++ :
+++ ns
+++ date +%s%N
++ agora=1793163582577354319
++ tem_prio
++ local o
+++ T tc qdisc show dev eth0
+++ sudo nsenter -t 33811 -n tc qdisc show dev eth0
++ o='qdisc prio 1: root refcnt 5 bands 3 priomap 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+qdisc netem 30: parent 1:3 limit 1000 delay 1ms'
++ grep -Eq 'prio|netem'
++ '[' 17 -lt 90 ']'
++ sleep 1
++ :
+++ ns
+++ date +%s%N
++ agora=1793163583584078329
++ tem_prio
++ local o
+++ T tc qdisc show dev eth0
+++ sudo nsenter -t 33811 -n tc qdisc show dev eth0
++ o='qdisc prio 1: root refcnt 5 bands 3 priomap 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+qdisc netem 30: parent 1:3 limit 1000 delay 1ms'
++ grep -Eq 'prio|netem'
++ '[' 18 -lt 90 ']'
++ sleep 1
++ :
+++ ns
+++ date +%s%N
++ agora=1793163584591363649
++ tem_prio
++ local o
+++ T tc qdisc show dev eth0
+++ sudo nsenter -t 33811 -n tc qdisc show dev eth0
++ o='qdisc prio 1: root refcnt 5 bands 3 priomap 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+qdisc netem 30: parent 1:3 limit 1000 delay 1ms'
++ grep -Eq 'prio|netem'
++ '[' 19 -lt 90 ']'
++ sleep 1
++ :
+++ ns
+++ date +%s%N
++ agora=1793163585598373859
++ tem_prio
++ local o
+++ T tc qdisc show dev eth0
+++ sudo nsenter -t 33811 -n tc qdisc show dev eth0
++ o='qdisc prio 1: root refcnt 5 bands 3 priomap 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+qdisc netem 30: parent 1:3 limit 1000 delay 1ms'
++ grep -Eq 'prio|netem'
++ '[' 20 -lt 90 ']'
++ sleep 1
++ :
+++ ns
+++ date +%s%N
++ agora=1793163586605573894
++ tem_prio
++ local o
+++ T tc qdisc show dev eth0
+++ sudo nsenter -t 33811 -n tc qdisc show dev eth0
++ o='qdisc prio 1: root refcnt 5 bands 3 priomap 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+qdisc netem 30: parent 1:3 limit 1000 delay 1ms'
++ grep -Eq 'prio|netem'
++ '[' 21 -lt 90 ']'
++ sleep 1
++ :
+++ ns
+++ date +%s%N
++ agora=1793163587613123868
++ tem_prio
++ local o
+++ T tc qdisc show dev eth0
+++ sudo nsenter -t 33811 -n tc qdisc show dev eth0
++ o='qdisc prio 1: root refcnt 5 bands 3 priomap 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+qdisc netem 30: parent 1:3 limit 1000 delay 1ms'
++ grep -Eq 'prio|netem'
++ '[' 22 -lt 90 ']'
++ sleep 1
++ :
+++ ns
+++ date +%s%N
++ agora=1793163588620226716
++ tem_prio
++ local o
+++ T tc qdisc show dev eth0
+++ sudo nsenter -t 33811 -n tc qdisc show dev eth0
++ o='qdisc prio 1: root refcnt 5 bands 3 priomap 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+qdisc netem 30: parent 1:3 limit 1000 delay 1ms'
++ grep -Eq 'prio|netem'
++ '[' 23 -lt 90 ']'
++ sleep 1
++ :
+++ ns
+++ date +%s%N
++ agora=1793163589627119408
++ tem_prio
++ local o
+++ T tc qdisc show dev eth0
+++ sudo nsenter -t 33811 -n tc qdisc show dev eth0
++ o='qdisc prio 1: root refcnt 5 bands 3 priomap 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+qdisc netem 30: parent 1:3 limit 1000 delay 1ms'
++ grep -Eq 'prio|netem'
++ '[' 24 -lt 90 ']'
++ sleep 1
++ :
+++ ns
+++ date +%s%N
++ agora=1793163590634385865
++ tem_prio
++ local o
+++ T tc qdisc show dev eth0
+++ sudo nsenter -t 33811 -n tc qdisc show dev eth0
++ o='qdisc prio 1: root refcnt 5 bands 3 priomap 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+qdisc netem 30: parent 1:3 limit 1000 delay 1ms'
++ grep -Eq 'prio|netem'
++ '[' 25 -lt 90 ']'
++ sleep 1
++ :
+++ ns
+++ date +%s%N
++ agora=1793163591641415296
++ tem_prio
++ local o
+++ T tc qdisc show dev eth0
+++ sudo nsenter -t 33811 -n tc qdisc show dev eth0
++ o='qdisc prio 1: root refcnt 5 bands 3 priomap 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+qdisc netem 30: parent 1:3 limit 1000 delay 1ms'
++ grep -Eq 'prio|netem'
++ '[' 26 -lt 90 ']'
++ sleep 1
++ :
+++ ns
+++ date +%s%N
++ agora=1793163592648476757
++ tem_prio
++ local o
+++ T tc qdisc show dev eth0
+++ sudo nsenter -t 33811 -n tc qdisc show dev eth0
++ o='qdisc prio 1: root refcnt 5 bands 3 priomap 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+qdisc netem 30: parent 1:3 limit 1000 delay 1ms'
++ grep -Eq 'prio|netem'
++ '[' 27 -lt 90 ']'
++ sleep 1
++ :
+++ ns
+++ date +%s%N
++ agora=1793163593655295315
++ tem_prio
++ local o
+++ T tc qdisc show dev eth0
+++ sudo nsenter -t 33811 -n tc qdisc show dev eth0
++ o='qdisc prio 1: root refcnt 5 bands 3 priomap 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+qdisc netem 30: parent 1:3 limit 1000 delay 1ms'
++ grep -Eq 'prio|netem'
++ '[' 28 -lt 90 ']'
++ sleep 1
++ :
+++ ns
+++ date +%s%N
++ agora=1793163594662723749
++ tem_prio
++ local o
+++ T tc qdisc show dev eth0
+++ sudo nsenter -t 33811 -n tc qdisc show dev eth0
++ o='qdisc prio 1: root refcnt 5 bands 3 priomap 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+qdisc netem 30: parent 1:3 limit 1000 delay 1ms'
++ grep -Eq 'prio|netem'
++ '[' 29 -lt 90 ']'
++ sleep 1
++ :
+++ ns
+++ date +%s%N
++ agora=1793163595669808493
++ tem_prio
++ local o
+++ T tc qdisc show dev eth0
+++ sudo nsenter -t 33811 -n tc qdisc show dev eth0
++ o='qdisc prio 1: root refcnt 5 bands 3 priomap 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+qdisc netem 30: parent 1:3 limit 1000 delay 1ms'
++ grep -Eq 'prio|netem'
++ '[' 30 -lt 90 ']'
++ sleep 1
++ :
+++ ns
+++ date +%s%N
++ agora=1793163596677229356
++ tem_prio
++ local o
+++ T tc qdisc show dev eth0
+++ sudo nsenter -t 33811 -n tc qdisc show dev eth0
++ o='qdisc noqueue 0: root refcnt 2 '
++ grep -Eq 'prio|netem'
++ T_LIMPEZA=1793163596677229356
++ break
++ '[' -n 1793163596677229356 ']'
++ sleep 2
++ D0=31338
++ D1=31327
++ echo 't_limpeza_ns=1793163596677229356 delta_desde_antes_de_armar_ms=31338 delta_desde_depois_de_armar_ms=31327'
++ tee runs/gate-netdegrade/l0c/tempos.txt
+t_limpeza_ns=1793163596677229356 delta_desde_antes_de_armar_ms=31338 delta_desde_depois_de_armar_ms=31327
++ '[' 31338 -ge 30000 ']'
++ ok 'disparo nao antes de 30 s (delta=31338 ms desde antes de armar)'
++ echo 'PASS disparo nao antes de 30 s (delta=31338 ms desde antes de armar)'
++ tee -a runs/gate-netdegrade/l0c/resultado.txt
+PASS disparo nao antes de 30 s (delta=31338 ms desde antes de armar)
++ '[' 31327 -le 40000 ']'
++ ok 'disparo ate 40 s (delta=31327 ms desde depois de armar)'
++ echo 'PASS disparo ate 40 s (delta=31327 ms desde depois de armar)'
++ tee -a runs/gate-netdegrade/l0c/resultado.txt
+PASS disparo ate 40 s (delta=31327 ms desde depois de armar)
++ sudo journalctl -u tcc-heal-356755-18620.service --no-pager -o short-iso
+++ systemctl is-failed tcc-heal-356755-18620.service
+++ true
++ echo '--- is-failed: inactive'
++ echo '--- list-timers'
++ systemctl list-timers --all
++ grep tcc-heal
++ echo '(nenhum)'
++ cat runs/gate-netdegrade/l0c/journal-unit.txt runs/gate-netdegrade/l0c/estado-systemd.txt
+2026-10-28T04:59:55+00:00 server1 systemd[1]: Started tcc-heal-356755-18620.service - /usr/bin/bash scripts/inject-netdegrade.sh --heal.
+2026-10-28T04:59:55+00:00 server1 bash[357483]: [2026-10-28T04:59:55Z] inject-netdegrade.sh: Heal: removendo a qdisc prio 1: do injetor em isn1 isn2 isn3 (iface eth0); raiz alheia nao e tocada
+2026-10-28T04:59:55+00:00 server1 sudo[357488]:     root : PWD=/home/server1/tcc-gate ; USER=root ; COMMAND=/usr/bin/podman inspect isn1
+2026-10-28T04:59:55+00:00 server1 sudo[357488]: pam_unix(sudo:session): session opened for user root(uid=0) by (uid=0)
+2026-10-28T04:59:55+00:00 server1 sudo[357488]: pam_unix(sudo:session): session closed for user root
+2026-10-28T04:59:55+00:00 server1 sudo[357499]:     root : PWD=/home/server1/tcc-gate ; USER=root ; COMMAND=/usr/bin/podman inspect -f {{.State.Status}} isn1
+2026-10-28T04:59:55+00:00 server1 sudo[357499]: pam_unix(sudo:session): session opened for user root(uid=0) by (uid=0)
+2026-10-28T04:59:55+00:00 server1 sudo[357499]: pam_unix(sudo:session): session closed for user root
+2026-10-28T04:59:55+00:00 server1 sudo[357510]:     root : PWD=/home/server1/tcc-gate ; USER=root ; COMMAND=/usr/bin/podman inspect -f {{.State.Pid}} isn1
+2026-10-28T04:59:55+00:00 server1 sudo[357510]: pam_unix(sudo:session): session opened for user root(uid=0) by (uid=0)
+2026-10-28T04:59:55+00:00 server1 sudo[357510]: pam_unix(sudo:session): session closed for user root
+2026-10-28T04:59:55+00:00 server1 sudo[357521]:     root : PWD=/home/server1/tcc-gate ; USER=root ; COMMAND=/usr/bin/readlink /proc/33273/ns/net
+2026-10-28T04:59:55+00:00 server1 sudo[357521]: pam_unix(sudo:session): session opened for user root(uid=0) by (uid=0)
+2026-10-28T04:59:55+00:00 server1 sudo[357521]: pam_unix(sudo:session): session closed for user root
+2026-10-28T04:59:55+00:00 server1 sudo[357524]:     root : PWD=/home/server1/tcc-gate ; USER=root ; COMMAND=/usr/bin/readlink /proc/1/ns/net
+2026-10-28T04:59:55+00:00 server1 sudo[357524]: pam_unix(sudo:session): session opened for user root(uid=0) by (uid=0)
+2026-10-28T04:59:55+00:00 server1 sudo[357524]: pam_unix(sudo:session): session closed for user root
+2026-10-28T04:59:55+00:00 server1 sudo[357527]:     root : PWD=/home/server1/tcc-gate ; USER=root ; COMMAND=/usr/bin/nsenter -t 33273 -n tc qdisc show dev eth0
+2026-10-28T04:59:55+00:00 server1 sudo[357527]: pam_unix(sudo:session): session opened for user root(uid=0) by (uid=0)
+2026-10-28T04:59:55+00:00 server1 sudo[357527]: pam_unix(sudo:session): session closed for user root
+2026-10-28T04:59:55+00:00 server1 bash[357483]: [2026-10-28T04:59:55Z] inject-netdegrade.sh:   isn1 (pid 33273): sem qdisc do injetor (nada a fazer)
+2026-10-28T04:59:55+00:00 server1 sudo[357531]:     root : PWD=/home/server1/tcc-gate ; USER=root ; COMMAND=/usr/bin/podman inspect isn2
+2026-10-28T04:59:55+00:00 server1 sudo[357531]: pam_unix(sudo:session): session opened for user root(uid=0) by (uid=0)
+2026-10-28T04:59:55+00:00 server1 sudo[357531]: pam_unix(sudo:session): session closed for user root
+2026-10-28T04:59:55+00:00 server1 sudo[357543]:     root : PWD=/home/server1/tcc-gate ; USER=root ; COMMAND=/usr/bin/podman inspect -f {{.State.Status}} isn2
+2026-10-28T04:59:55+00:00 server1 sudo[357543]: pam_unix(sudo:session): session opened for user root(uid=0) by (uid=0)
+2026-10-28T04:59:55+00:00 server1 sudo[357543]: pam_unix(sudo:session): session closed for user root
+2026-10-28T04:59:55+00:00 server1 sudo[357555]:     root : PWD=/home/server1/tcc-gate ; USER=root ; COMMAND=/usr/bin/podman inspect -f {{.State.Pid}} isn2
+2026-10-28T04:59:55+00:00 server1 sudo[357555]: pam_unix(sudo:session): session opened for user root(uid=0) by (uid=0)
+2026-10-28T04:59:55+00:00 server1 sudo[357555]: pam_unix(sudo:session): session closed for user root
+2026-10-28T04:59:55+00:00 server1 sudo[357567]:     root : PWD=/home/server1/tcc-gate ; USER=root ; COMMAND=/usr/bin/readlink /proc/33404/ns/net
+2026-10-28T04:59:55+00:00 server1 sudo[357567]: pam_unix(sudo:session): session opened for user root(uid=0) by (uid=0)
+2026-10-28T04:59:55+00:00 server1 sudo[357567]: pam_unix(sudo:session): session closed for user root
+2026-10-28T04:59:55+00:00 server1 sudo[357570]:     root : PWD=/home/server1/tcc-gate ; USER=root ; COMMAND=/usr/bin/readlink /proc/1/ns/net
+2026-10-28T04:59:55+00:00 server1 sudo[357570]: pam_unix(sudo:session): session opened for user root(uid=0) by (uid=0)
+2026-10-28T04:59:55+00:00 server1 sudo[357570]: pam_unix(sudo:session): session closed for user root
+2026-10-28T04:59:55+00:00 server1 sudo[357573]:     root : PWD=/home/server1/tcc-gate ; USER=root ; COMMAND=/usr/bin/nsenter -t 33404 -n tc qdisc show dev eth0
+2026-10-28T04:59:55+00:00 server1 sudo[357573]: pam_unix(sudo:session): session opened for user root(uid=0) by (uid=0)
+2026-10-28T04:59:55+00:00 server1 sudo[357573]: pam_unix(sudo:session): session closed for user root
+2026-10-28T04:59:55+00:00 server1 bash[357483]: [2026-10-28T04:59:55Z] inject-netdegrade.sh:   isn2 (pid 33404): sem qdisc do injetor (nada a fazer)
+2026-10-28T04:59:55+00:00 server1 sudo[357577]:     root : PWD=/home/server1/tcc-gate ; USER=root ; COMMAND=/usr/bin/podman inspect isn3
+2026-10-28T04:59:55+00:00 server1 sudo[357577]: pam_unix(sudo:session): session opened for user root(uid=0) by (uid=0)
+2026-10-28T04:59:55+00:00 server1 sudo[357577]: pam_unix(sudo:session): session closed for user root
+2026-10-28T04:59:55+00:00 server1 sudo[357588]:     root : PWD=/home/server1/tcc-gate ; USER=root ; COMMAND=/usr/bin/podman inspect -f {{.State.Status}} isn3
+2026-10-28T04:59:55+00:00 server1 sudo[357588]: pam_unix(sudo:session): session opened for user root(uid=0) by (uid=0)
+2026-10-28T04:59:55+00:00 server1 sudo[357588]: pam_unix(sudo:session): session closed for user root
+2026-10-28T04:59:55+00:00 server1 sudo[357599]:     root : PWD=/home/server1/tcc-gate ; USER=root ; COMMAND=/usr/bin/podman inspect -f {{.State.Pid}} isn3
+2026-10-28T04:59:55+00:00 server1 sudo[357599]: pam_unix(sudo:session): session opened for user root(uid=0) by (uid=0)
+2026-10-28T04:59:55+00:00 server1 sudo[357599]: pam_unix(sudo:session): session closed for user root
+2026-10-28T04:59:55+00:00 server1 sudo[357610]:     root : PWD=/home/server1/tcc-gate ; USER=root ; COMMAND=/usr/bin/readlink /proc/33811/ns/net
+2026-10-28T04:59:55+00:00 server1 sudo[357610]: pam_unix(sudo:session): session opened for user root(uid=0) by (uid=0)
+2026-10-28T04:59:55+00:00 server1 sudo[357610]: pam_unix(sudo:session): session closed for user root
+2026-10-28T04:59:55+00:00 server1 sudo[357613]:     root : PWD=/home/server1/tcc-gate ; USER=root ; COMMAND=/usr/bin/readlink /proc/1/ns/net
+2026-10-28T04:59:55+00:00 server1 sudo[357613]: pam_unix(sudo:session): session opened for user root(uid=0) by (uid=0)
+2026-10-28T04:59:55+00:00 server1 sudo[357613]: pam_unix(sudo:session): session closed for user root
+2026-10-28T04:59:55+00:00 server1 sudo[357616]:     root : PWD=/home/server1/tcc-gate ; USER=root ; COMMAND=/usr/bin/nsenter -t 33811 -n tc qdisc show dev eth0
+2026-10-28T04:59:55+00:00 server1 sudo[357616]: pam_unix(sudo:session): session opened for user root(uid=0) by (uid=0)
+2026-10-28T04:59:55+00:00 server1 sudo[357616]: pam_unix(sudo:session): session closed for user root
+2026-10-28T04:59:55+00:00 server1 sudo[357619]:     root : PWD=/home/server1/tcc-gate ; USER=root ; COMMAND=/usr/bin/nsenter -t 33811 -n tc qdisc del dev eth0 root
+2026-10-28T04:59:55+00:00 server1 sudo[357619]: pam_unix(sudo:session): session opened for user root(uid=0) by (uid=0)
+2026-10-28T04:59:55+00:00 server1 sudo[357619]: pam_unix(sudo:session): session closed for user root
+2026-10-28T04:59:55+00:00 server1 bash[357483]: [2026-10-28T04:59:55Z] inject-netdegrade.sh:   isn3 (pid 33811): prio 1: removida
+2026-10-28T04:59:55+00:00 server1 systemd[1]: tcc-heal-356755-18620.service: Deactivated successfully.
+--- is-failed: inactive
+--- list-timers
+(nenhum)
++ grep -q 'Heal: removendo' runs/gate-netdegrade/l0c/journal-unit.txt
++ ok 'journal: a unit executou o --heal do injetor'
++ echo 'PASS journal: a unit executou o --heal do injetor'
++ tee -a runs/gate-netdegrade/l0c/resultado.txt
+PASS journal: a unit executou o --heal do injetor
++ grep -Eq 'Deactivated successfully|Succeeded' runs/gate-netdegrade/l0c/journal-unit.txt
++ ok 'journal: unit encerrou com sucesso'
++ echo 'PASS journal: unit encerrou com sucesso'
++ tee -a runs/gate-netdegrade/l0c/resultado.txt
+PASS journal: unit encerrou com sucesso
++ grep -q 'Failed with result' runs/gate-netdegrade/l0c/journal-unit.txt
++ ok 'journal sem '\''Failed with result'\'''
++ echo 'PASS journal sem '\''Failed with result'\'''
++ tee -a runs/gate-netdegrade/l0c/resultado.txt
+PASS journal sem 'Failed with result'
++ grep -q '^--- is-failed: failed' runs/gate-netdegrade/l0c/estado-systemd.txt
++ ok 'unit nao esta failed'
++ echo 'PASS unit nao esta failed'
++ tee -a runs/gate-netdegrade/l0c/resultado.txt
+PASS unit nao esta failed
++ grep -q '(nenhum)' runs/gate-netdegrade/l0c/estado-systemd.txt
++ ok '0 timers tcc-heal ao fim (sem desarmar)'
++ echo 'PASS 0 timers tcc-heal ao fim (sem desarmar)'
++ tee -a runs/gate-netdegrade/l0c/resultado.txt
+PASS 0 timers tcc-heal ao fim (sem desarmar)
++ T tc qdisc show dev eth0
++ sudo nsenter -t 33811 -n tc qdisc show dev eth0
++ diff runs/gate-netdegrade/l0c/qdisc-antes.txt runs/gate-netdegrade/l0c/qdisc-depois.txt
++ ok 'tc qdisc show de isn3 identico ao de antes (cura sem intervencao)'
++ echo 'PASS tc qdisc show de isn3 identico ao de antes (cura sem intervencao)'
++ tee -a runs/gate-netdegrade/l0c/resultado.txt
+PASS tc qdisc show de isn3 identico ao de antes (cura sem intervencao)
++ T tc filter show dev eth0
++ for n in isn1 isn2 isn3
++ sem_prio isn1
++ tee runs/gate-netdegrade/l0c/pos-sem-prio.txt
++ local p out
+++ pid_de isn1
+++ local p
++++ sudo podman inspect -f '{{.State.Pid}}' isn1
+++ p=33273
+++ guarda 33273
+++ local pid=33273 ns1 nsn
+++ '[' -n 33273 ']'
+++ '[' 33273 '!=' 0 ']'
++++ sudo readlink /proc/1/ns/net
+++ ns1='net:[4026531840]'
++++ sudo readlink /proc/33273/ns/net
+++ nsn='net:[4026532162]'
+++ '[' -n 'net:[4026531840]' ']'
+++ '[' -n 'net:[4026532162]' ']'
+++ '[' 'net:[4026532162]' '!=' 'net:[4026531840]' ']'
+++ echo 33273
++ p=33273
+++ sudo nsenter -t 33273 -n tc qdisc show dev eth0
++ out='qdisc noqueue 0: root refcnt 2 '
++ printf '%s\n' 'qdisc noqueue 0: root refcnt 2 '
++ grep -Eq 'prio|netem'
++ echo 'ok sem prio em isn1'
+ok sem prio em isn1
++ for n in isn1 isn2 isn3
++ sem_prio isn2
++ local p out
+++ pid_de isn2
+++ local p
++++ sudo podman inspect -f '{{.State.Pid}}' isn2
+++ p=33404
+++ guarda 33404
+++ local pid=33404 ns1 nsn
+++ '[' -n 33404 ']'
+++ '[' 33404 '!=' 0 ']'
++++ sudo readlink /proc/1/ns/net
+++ ns1='net:[4026531840]'
++++ sudo readlink /proc/33404/ns/net
+++ nsn='net:[4026532228]'
+++ '[' -n 'net:[4026531840]' ']'
+++ '[' -n 'net:[4026532228]' ']'
+++ '[' 'net:[4026532228]' '!=' 'net:[4026531840]' ']'
+++ echo 33404
++ p=33404
+++ sudo nsenter -t 33404 -n tc qdisc show dev eth0
++ out='qdisc noqueue 0: root refcnt 2 '
++ printf '%s\n' 'qdisc noqueue 0: root refcnt 2 '
++ grep -Eq 'prio|netem'
++ echo 'ok sem prio em isn2'
++ for n in isn1 isn2 isn3
+ok sem prio em isn2
++ sem_prio isn3
++ local p out
+++ pid_de isn3
+++ local p
++++ sudo podman inspect -f '{{.State.Pid}}' isn3
+++ p=33811
+++ guarda 33811
+++ local pid=33811 ns1 nsn
+++ '[' -n 33811 ']'
+++ '[' 33811 '!=' 0 ']'
++++ sudo readlink /proc/1/ns/net
+++ ns1='net:[4026531840]'
++++ sudo readlink /proc/33811/ns/net
+++ nsn='net:[4026532291]'
+++ '[' -n 'net:[4026531840]' ']'
+++ '[' -n 'net:[4026532291]' ']'
+++ '[' 'net:[4026532291]' '!=' 'net:[4026531840]' ']'
+++ echo 33811
++ p=33811
+++ sudo nsenter -t 33811 -n tc qdisc show dev eth0
++ out='qdisc noqueue 0: root refcnt 2 '
++ printf '%s\n' 'qdisc noqueue 0: root refcnt 2 '
++ grep -Eq 'prio|netem'
++ echo 'ok sem prio em isn3'
+ok sem prio em isn3
++ ok 'isn1, isn2, isn3 sem prio/netem ao fim (antes e depois: isn1/isn2 sem alteracao observavel)'
++ echo 'PASS isn1, isn2, isn3 sem prio/netem ao fim (antes e depois: isn1/isn2 sem alteracao observavel)'
++ tee -a runs/gate-netdegrade/l0c/resultado.txt
+PASS isn1, isn2, isn3 sem prio/netem ao fim (antes e depois: isn1/isn2 sem alteracao observavel)
++ LIMPO=1
++ echo 'L-0c concluido: ver runs/gate-netdegrade/l0c/resultado.txt'
+L-0c concluido: ver runs/gate-netdegrade/l0c/resultado.txt
++ abortar
++ local rc=0
++ '[' 1 = 1 ']'
++ return 0
+rc=0 fim=2026-10-28T05:00:54+00:00

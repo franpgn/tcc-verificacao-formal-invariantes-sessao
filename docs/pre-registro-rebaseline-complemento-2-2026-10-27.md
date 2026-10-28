@@ -1,11 +1,13 @@
-# Complemento 2 ao pré-registro do *rebaseline*: F1 como *crash* silencioso (RASCUNHO, 2026-10-27)
+# Complemento 2 ao pré-registro do *rebaseline*: F1 como *crash* silencioso (2026-10-27)
 
-> **RASCUNHO do Senior, 2026-10-27. Não aprovado.** Depende das decisões Q1, Q5 e Q6 de
-> `docs/prompt-f1-kill-2026-10-27.md`. Escrito para a opção B (recomendada); as diferenças da opção
-> A estão marcadas "[A]". Depois da aprovação: (i) o cabeçalho passa a "Aprovado pelo Gestor em
-> <data>", (ii) o texto da seção 6 entra em `docs/decisoes-tecnicas.md` como DT-017, (iii) a seção 7
-> é preenchida com os *hashes* depois da integração e entra em `decisoes-tecnicas.md` como adenda da
-> DT-009 parte 2. Tudo antes do piloto e antes de qualquer dado do *rebaseline*.
+> **Aprovado pelo Gestor em 2026-10-28** (decisões Q1 = B, Q2..Q6 = Sim de
+> `docs/prompt-f1-kill-2026-10-27.md` §9, transmitidas ao Senior pelo coordenador). Vale a **opção B**.
+> Os trechos marcados "[A]" descrevem a alternativa rejeitada na Q1 e ficam só como registro; não
+> valem para o piloto nem para as noites. A seção 6 entrou em `docs/decisoes-tecnicas.md` como
+> **DT-017**, e a seção 7 entrou como adenda da DT-009 parte 2, com a ponta, os SHA-256 novos de
+> `scripts/inject-crash.sh` e `analysis/rebaseline.py` e o SHA-256 da lista **a preencher após a
+> entrega do Worker** (`fix/f1-crash-silencioso`) e a integração. O *smoke* local da seção 4 (data
+> "preencher") também sai dessa entrega. Tudo antes do piloto e antes de qualquer dado do *rebaseline*.
 >
 > Complementa `docs/pre-registro-rebaseline-aprovado-2026-10-23.md` (PR) e
 > `docs/pre-registro-rebaseline-complemento-1-2026-10-27.md` (C1). **Nenhum dos dois é editado.**

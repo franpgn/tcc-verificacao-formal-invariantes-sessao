@@ -463,3 +463,9 @@ Para o Escritor, via `docs/resumos-para-tcc/`, depois da decisão e do *smoke*:
 | **Q4** | Ensaio na VM (seção 4.2) antes do piloto, depois da V-S7 e antes da recriação final do *cluster*? | **Sim com B** (1 sessão). Com A, dispensável |
 | **Q5** | Registro: **complemento 2** novo + **DT-017** + adenda da DT-009 parte 2 com os *hashes* novos (rascunhos em `docs/pre-registro-rebaseline-complemento-2-2026-10-27.md`), sem editar o PR nem o complemento 1? | **Sim**. O F1 muda o PR §2 e o K6 do PR §6 e contradiz o §1.4 do complemento 1; adenda dentro do complemento 1 misturaria assuntos |
 | **Q6** | Manter `--modo stop` no injetor (não usado no *rebaseline*) para reproduzir junho e para o *smoke* comparativo? | **Sim**. Rastreabilidade de junho e evidência da escolha; `run-baseline.sh` passa a usar o padrão novo, o que é declarado |
+
+### 9.1 Decisões do Gestor (2026-10-28)
+
+Q1 = **B**, Q2 = Sim, Q3 = Sim, Q4 = Sim (1 sessão), Q5 = Sim, Q6 = Sim, todas pela recomendação.
+Complemento 2 aprovado; DT-017 e adenda da DT-009 parte 2 (hashes a preencher após a entrega do
+Worker) em `docs/decisoes-tecnicas.md`.

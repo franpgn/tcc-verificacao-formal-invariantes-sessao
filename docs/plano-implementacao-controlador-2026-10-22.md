@@ -464,6 +464,16 @@ começar). **Nenhum teste existente pode ser enfraquecido**; S1/S2 *golden* cont
 | **B-40** pré-registro e smoke | `test/b40-smoke-controlador` | `docs/preregistro-avaliacao-controlador-<data>.md`; smoke local (1 repetição curta por modo) | — | pré-registro commitado **antes** de qualquer execução da avaliação | todos acima; calibração (3.5) | local sim; smoke VM curto não |
 | **B-41** avaliação | `test/b41-avaliacao-controlador` | `runs/ctrl-*`, `docs/relatorio-b41-<data>.md` | — | seção 8 | B-40, T-F concluída | **não** |
 
+> **Requisitos adicionais do B-28.2 e do P3 (Gestor, 2026-10-28, H4..H8 da
+> `docs/validacao-b26-2-b27-2026-10-27.md`).** Todo prompt do B-28.2 e da leitura do P3 deve incluir:
+> H4, a sonda normaliza `falha:TimeoutException` para `timeout`, com teste, sem reabrir o B-26.2;
+> H5, protocolo local do P3 fixo em 180 s (ou HEALTHY com 3 nós + 30 s); H6, `nosEsperados` = número
+> de itens de `--servers`, sem opção nova, gravado na linha de metadados do JSONL; H7, "I1 = I4 = 0"
+> conta como zero violações, sem `i1_concorrentes` no critério; H8, P3 lido em duas partes e cópia do
+> `mix64` amarrada por `formulaMix64`. Também valem G3 e G4 da `docs/validacao-b37-b39-2026-10-27.md`
+> para o B-40 (diferença de taxas como principal; `fix/b39-guarda-parametros-energia` antes). Texto em
+> `docs/decisoes-tecnicas.md`, "Decisões do Gestor de 2026-10-28".
+
 Paralelismo: B-28.1, B-37, B-39, B-25.1 e B-42.1 começam juntos (arquivos disjuntos). B-26.1,
 B-26.2 e B-27 começam assim que B-28.1 publica os tipos (podem partir da branch de B-28.1).
 B-27 e B-28.2 tocam `WorkloadMain` e são sequenciais. B-26.1 e B-42.1 tocam `SessionOps` em

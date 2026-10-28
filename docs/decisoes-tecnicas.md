@@ -509,3 +509,96 @@ transmitidas ao Senior pelo coordenador:
 - **P-28:** fica em `docs/registro-de-problemas.md` desta branch (`docs/plano-implementacao-controlador`),
   sem *cherry-pick* para `feature/controlador-integracao`.
 - **T4:** DT-016.
+
+## DT-017: F1 do *rebaseline* é *crash* silencioso (isolamento da interface e SIGKILL), PRÉ-REGISTRO (2026-10-28)
+
+> **Aprovada pelo Gestor em 2026-10-28** (Q1 = B, Q2..Q6 = Sim; decisão transmitida ao Senior pelo
+> coordenador). Registrada antes de qualquer execução do piloto. Texto completo em
+> `docs/pre-registro-rebaseline-complemento-2-2026-10-27.md`.
+
+- **Origem:** decisão do Gestor de 2026-10-27 (F1 deixa de ser `podman stop`); levantamento e opções
+  em `docs/prompt-f1-kill-2026-10-27.md`; respostas Q1..Q6 de 2026-10-28.
+- **Motivo:** `podman stop` é saída ordenada (SIGTERM, *leave*, `ISPN000390`, exit 143), não o
+  "*crash* silencioso" de `Metodologia.tex` (F1, T16, T17). Com FD_SOCK2 na pilha, um SIGKILL
+  sozinho é detectado pelo fechamento das conexões em segundos, não pelo FD_ALL3.
+- **Decisão:** F1 = guarda de *netns*, `ip link set dev eth0 down` no *netns* de `isn2`,
+  `podman kill --signal KILL isn2` (ExitCode 137), 60 s, `podman start isn2`, pelo modo padrão
+  `silencioso` de `inject-crash.sh`. K6 de F1 exige no `injetor.log` `modo=silencioso`, `eth0 down`,
+  `kill isn2`, `ExitCode=137` e `start isn2`. Parecer da fase confere `died` de `isn2` com 137.
+- **Rejeitado:** manter `podman stop` (não é *crash*); `podman kill` sozinho (opção A da Q1, não é
+  silencioso: detecção pelo FD_SOCK2); retirar o FD_SOCK2 da pilha (muda um fixo do PR §2);
+  `podman pause` (não mata a JVM, a volta é *merge*, não *crash-recovery*).
+- **Efeito:** muda `scripts/inject-crash.sh`, a função `k6` de `analysis/rebaseline.py` e os testes
+  (edições autorizadas na Q2). B-25.1 entra agora só com o carimbo por linha e o exit 5 no `start` com
+  erro; marcadores `fault=F1` e `inject-jitter.sh` ficam para depois da campanha (Q3, D4 mantida).
+  `--modo stop` continua no injetor, fora do *rebaseline*, para reproduzir junho e para o *smoke*
+  comparativo; `run-baseline.sh` passa a usar o modo padrão novo, o que é declarado (Q6). Ensaio na VM
+  (complemento 2 / prompt §4.2) em 1 sessão, depois da V-S7 e antes da recriação final do *cluster* e
+  do piloto (Q4). Jar, `run-rebaseline.sh`, matriz, sementes, K1..K5, K7..K10, paradas e análise não
+  mudam. *Bundle* novo registrado na adenda abaixo. F1 de junho e dos *gates* passa a ser descrito
+  como parada ordenada no texto acadêmico.
+
+### Adenda da DT-009 parte 2: ponta e *bundle* depois da DT-017 (2026-10-28, hashes a preencher)
+
+> Os campos "a preencher após a entrega do Worker" são preenchidos, numa edição só e antes do piloto,
+> depois da validação e integração de `fix/f1-crash-silencioso`. Até lá, o *bundle* da parte 2
+> (`e304ba4b…`) **não** serve para o piloto nem para as noites, porque traz o F1 antigo.
+
+- **Origem:** DT-017; integração de `fix/f1-crash-silencioso` em `feature/controlador-integracao`
+  (validação `docs/validacao-f1-silencioso-<data>.md`, a preencher). São identificadores, não
+  escolhas. Registrada antes de qualquer execução do piloto. Também registra que a ponta `988fd3c` da
+  parte 2 foi seguida por `3c9db71` e `c055399` (matriz no git, G1, G3, G4). Nesses dois *commits* o
+  único arquivo do *bundle* tocado foi `runs/rebaseline/matriz.tsv`, que entrou no git com o SHA-256
+  já registrado; os demais *blobs* em `c055399` têm os SHA-256 da parte 2 (conferido pelo Senior em
+  2026-10-27 para `inject-crash.sh`, `rebaseline.py` e `run-rebaseline.sh`).
+- **Ponta:** a preencher após a entrega do Worker (SHA de 40 caracteres), base `c055399`.
+- **Jar:** inalterado, `5eced1363f1b318f533174e967be6a81080bcc95961d0f72a118dc0184dcefaf` (cópia G2).
+- ***Bundle* da VM** (`git archive` da ponta, LF):
+
+  | Arquivo | SHA-256 |
+  |---|---|
+  | `analysis/rebaseline.py` | a preencher após a entrega do Worker |
+  | `runs/rebaseline/matriz.tsv` | `8654900cd23b9b46e65163a5d106bd6f86113632d2ce621ff962f637cd645c35` |
+  | `scripts/inject-crash.sh` | a preencher após a entrega do Worker |
+  | `scripts/inject-jitter.sh` | `7e68962b1b7f508ee84ca7561a20c0bba36c43ea4597d7390e7c8091cd24e529` |
+  | `scripts/rebaseline_matriz.py` | `3531916a863832fd5aea050910111c69f0c9130c0bd325c3ad3f238e44a3533a` |
+  | `scripts/run-rebaseline.sh` | `d95305fee402b1f882d387a40e81d4f83df72d7fe4b6daf810516e0627267366` |
+  | `workload/target/session-workload-0.1.0-SNAPSHOT.jar` | `5eced1363f1b318f533174e967be6a81080bcc95961d0f72a118dc0184dcefaf` |
+
+  SHA-256 da lista no formato do `sha256sum`: a preencher após a entrega do Worker (substitui
+  `e304ba4b…` para o piloto e as noites). Na VM, `sha256sum -c` arquivo a arquivo.
+- **Dependências na VM** para o F1 novo: `nsenter` (util-linux) e `ip` (iproute2), as mesmas do F3;
+  conferidas pelo pré-voo do *runner* (`nsenter`, `tc`) e por `command -v ip` no bloco de abertura
+  da fase.
+
+## Decisões do Gestor de 2026-10-28
+
+Todas pela recomendação do Senior; transmitidas pelo coordenador.
+
+- **F1 (`docs/prompt-f1-kill-2026-10-27.md` §9):** Q1 = B, Q2 = Sim, Q3 = Sim, Q4 = Sim, Q5 = Sim,
+  Q6 = Sim. Complemento 2 aprovado; DT-017 e adenda da DT-009 parte 2 acima. PR e complemento 1 não
+  editados. Implementação em andamento (Worker, `fix/f1-crash-silencioso`).
+- **V-B26.2/B27 (`docs/validacao-b26-2-b27-2026-10-27.md` §5):** H1..H8 aprovadas. H1..H3
+  (rebase local de `72613cf` + `ce64576` antes de `7ad2fb8` com mapa de SHAs e *ref* de *backup*;
+  `.gitattributes` `* -text` em `runs/b26-2-smoke/` com `--renormalize`; ordem B-26.2 → B-27 → B-37 →
+  B-39) em execução por um Worker. **H4..H8 são requisitos dos prompts do B-28.2 e da leitura do P3**
+  e devem ser copiados para eles:
+  - **H4:** no B-28.2, a sonda normaliza `falha:TimeoutException` para `timeout`, com teste, sem
+    reabrir o B-26.2.
+  - **H5:** protocolo local do P3 fixo em 180 s (ou HEALTHY com 3 nós + 30 s).
+  - **H6:** `nosEsperados` = número de itens de `--servers`, sem opção nova de CLI, gravado na linha de
+    metadados do JSONL.
+  - **H7:** "I1 = I4 = 0" conta como zero violações; `i1_concorrentes` fica fora do critério (DT-001).
+  - **H8:** P3 lido em duas partes, e a cópia do `mix64` fica amarrada por `formulaMix64`.
+- **V-B37/B39 (`docs/validacao-b37-b39-2026-10-27.md` §8):** G1..G5 aprovadas.
+  - **G1:** integrar B-37 e depois B-39, na ordem da seção 7 (compatível com a H3).
+  - **G2:** `comparar_bracos.py` roda com `python -E -P`, não `-I`.
+  - **G3:** com taxas que têm zeros, a análise principal é a diferença de taxas; a razão com exclusão é
+    sensibilidade. Fixar no pré-registro do B-40.
+  - **G4:** `fix/b39-guarda-parametros-energia` (B39-R1: exit 2 quando `w_recovery_s` ou
+    `marcadores` divergirem; B39-R2: marca própria `sem-amostra-valida`) entra **antes** do B-40.
+  - **G5:** exceção no `.gitignore` para `recursos-rep-*.csv` e `eol=lf` para json/jsonl/csv/md ficam
+    para depois da campanha do *rebaseline*, em `chore/` separadas.
+- **V-S2 R-1 (`wt-gate-v4/runs/vm-s2-2026-10-27/V-S2.md`):** opção (a). O Worker corrige
+  `l0c.sh:68` para `systemctl show <timer> -p AccuracyUSec`, ajusta o teste por *shims* e gera
+  *bundle* novo com *hash*; a VM recebe esse *bundle* antes do S3. Em andamento.

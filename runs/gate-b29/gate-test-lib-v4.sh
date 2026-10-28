@@ -112,7 +112,14 @@ case "$1" in
   list-timers) for f in "$S"/timer.*; do [[ -e "$f" ]] && echo "${f##*/timer.}.timer  n/a"; done; true;;
   cat) u="${2%.service}"; u="${u%.timer}"
        case "$2" in *.timer) echo "[Timer]"; cat "$S/timerdef.$u" 2>/dev/null;; *) cat "$S/unit.$u" 2>/dev/null;; esac;;
-  show) u="${2%.timer}"; grep -q AccuracySec "$S/timerdef.$u" 2>/dev/null || echo "AccuracySec=1min"; cat "$S/timerdef.$u" 2>/dev/null; true;;
+  show) u="${2%.timer}"
+       if [ "${SHIM_SYSTEMD_255:-0}" = 1 ]; then
+         # systemd 255 (VM, 15-s3-propriedade-accuracy.log): a propriedade e AccuracyUSec; `-p AccuracySec` sai vazio
+         a=$(sed -n 's/^AccuracySec=//p' "$S/timerdef.$u" 2>/dev/null); shift 2
+         while [ $# -gt 0 ]; do [ "$1" = -p ] && [ "${2:-}" = AccuracyUSec ] && echo "AccuracyUSec=${a:-1min}"; shift; done
+       else
+         grep -q AccuracySec "$S/timerdef.$u" 2>/dev/null || echo "AccuracySec=1min"; cat "$S/timerdef.$u" 2>/dev/null
+       fi; true;;
   is-failed) u="${2%.service}"
        if grep -q "Failed with result" "$S/journal.$u" 2>/dev/null; then echo failed; exit 0; else echo inactive; exit 1; fi;;
 esac

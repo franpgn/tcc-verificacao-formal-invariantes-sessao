@@ -7,6 +7,7 @@
 set -uo pipefail
 AQUI="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$AQUI/../gate-b29/gate-test-lib-v4.sh"
+export SHIM_SYSTEMD_255=1   # shim de systemctl show responde como o systemd 255 da VM (so AccuracyUSec)
 L_DIR="${L_DIR:-$AQUI}"
 L0="$L_DIR/l0.sh"; L1="$L_DIR/l1.sh"; L0C="$L_DIR/l0c.sh"; LLIB="$L_DIR/l-lib.sh"
 VERB="$L_DIR/verbatim.sh"
@@ -142,10 +143,10 @@ ok "T-l-8 --heal chamado UMA vez (pela unit; sem heal manual do abort)" "1" "$(c
 ok "T-l-8 nenhum nsenter fora de isn1/isn2/isn3 (4001..4003)" "0" "$(grep '^nsenter' "$SHIM_LOG" | grep -vcE 'nsenter -t 400[123] -n')"
 ok "T-l-8 filtro so para 192.0.2.1 (TEST-NET)" "0" "$(grep 'tc filter add' "$SHIM_LOG" | grep -vc '192.0.2.1/32')"
 ok "T-l-8 tempos gravados" "1" "$(grep -c 't_limpeza_ns=' "$RL/l0c/tempos.txt")"
-contem "T-l-8 unit-armada registra AccuracySec" "AccuracySec=" "$(cat "$RL/l0c/unit-armada.txt")"
+contem "T-l-8 unit-armada registra AccuracyUSec" "AccuracyUSec=" "$(cat "$RL/l0c/unit-armada.txt")"
 contem "T-l-8 unit-armada tem o corpo --heal" "inject-netdegrade.sh --heal" "$(cat "$RL/l0c/unit-armada.txt")"
 contem "T-l-8 timer com AccuracySec=1s (sem isso o disparo atrasa ate 1 min)" "AccuracySec=1s" "$(grep systemd-run "$SHIM_LOG")"
-contem "T-l-8 unit-armada mostra AccuracySec=1s" "AccuracySec=1s" "$(cat "$RL/l0c/unit-armada.txt")"
+contem "T-l-8 unit-armada mostra AccuracyUSec=1s" "AccuracyUSec=1s" "$(cat "$RL/l0c/unit-armada.txt")"
 # o armar redefinido em l0c.sh e o de l-lib.sh + SO a propriedade (corpo da unit identico)
 norm() { awk '/^armar\(\)/,/--heal; }/' "$1" | tr -d '\\n' | tr -s ' ' | sed 's/^armar() *//; s/ --timer-property=AccuracySec=1s//'; }
 ok "T-l-8 armar de l0c = armar de l-lib + AccuracySec" "$(norm "$LLIB")" "$(norm "$L0C")"
@@ -154,7 +155,7 @@ contem "T-l-8 go.log registrou L-0c" "bloco=L-0c" "$(cat "$RL/go.log")"
 echo "== T-l-8b: L0C_ACC=0 usa o armar verbatim (sem --timer-property) =="
 reset_shims_v4; export L0C_PRAZO=3 L0C_MIN=3 L0C_MAX=9 L0C_LIMITE=20 L0C_ACC=0; roda_tty "GO" "$L0C"; unset L0C_ACC
 ok "T-l-8b rc 0" "0" "$RC"; nao_contem "T-l-8b sem timer-property" "timer-property" "$(grep systemd-run "$SHIM_LOG")"
-contem "T-l-8b AccuracySec default 1min registrado" "AccuracySec=1min" "$(cat "$RL/l0c/unit-armada.txt")"
+contem "T-l-8b AccuracyUSec default 1min registrado" "AccuracyUSec=1min" "$(cat "$RL/l0c/unit-armada.txt")"
 
 echo "== T-l-9: l0c.sh mutantes de comportamento do dead-man =="
 reset_shims_v4; export L0C_PRAZO=3 L0C_MIN=3 L0C_MAX=9 L0C_LIMITE=7 SHIM_DM_NOFIRE=1; roda_tty "GO" "$L0C"

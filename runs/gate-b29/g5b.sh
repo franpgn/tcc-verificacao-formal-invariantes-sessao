@@ -106,7 +106,7 @@ UNIT="$DMS"
 { echo "unit=$UNIT modo=$MODO dur=$DUR margem=$MARGEM prazo_s=$(( DUR + MARGEM ))"
   echo "--- systemctl cat ${UNIT}.service"; sudo systemctl cat "${UNIT}.service" 2>&1 || true
   echo "--- systemctl cat ${UNIT}.timer";   sudo systemctl cat "${UNIT}.timer" 2>&1 || true
-  echo "--- AccuracySec"; sudo systemctl show "${UNIT}.timer" -p AccuracySec -p OnActiveSec 2>&1 || true
+  echo "--- AccuracyUSec (systemd 255: AccuracySec so na escrita)"; sudo systemctl show "${UNIT}.timer" -p AccuracyUSec -p OnActiveSec 2>&1 || true
   echo "--- list-timers"; systemctl list-timers --all 2>&1 | grep tcc-heal || echo "(nenhum)"; } > "$OUT/unit-armada.txt"
 grep -q 'inject-partition.sh --heal --minority isn3' "$OUT/unit-armada.txt" && ok "unit armada executa inject-partition.sh --heal --minority isn3" \
   || falha "corpo da unit nao chama inject-partition.sh --heal --minority isn3"
@@ -179,7 +179,7 @@ else
   echo "delta_desde_antes_de_armar_ms=$D0 delta_desde_depois_de_armar_ms=$D1 prazo_s=$PRAZO tolerancia_s=$TOL" | tee "$OUT/tempos.txt"
   [ "$D0" -ge $(( PRAZO * 1000 )) ] && ok "disparo nao antes de ${PRAZO} s (delta=${D0} ms desde antes de armar)" || falha "disparo ANTES de ${PRAZO} s (delta=${D0} ms)"
   [ "$D1" -le $(( (PRAZO + TOL) * 1000 )) ] && ok "disparo ate ${PRAZO}+${TOL} s (delta=${D1} ms desde depois de armar)" \
-    || falha "disparo DEPOIS de ${PRAZO}+${TOL} s (delta=${D1} ms; ver AccuracySec em unit-armada.txt)"
+    || falha "disparo DEPOIS de ${PRAZO}+${TOL} s (delta=${D1} ms; ver AccuracyUSec em unit-armada.txt)"
   [ "$(grep -c -- '--heal' "$OUT/chamadas-injetor.txt")" = 0 ] && ok "nenhum --heal manual registrado: o dead-man foi o UNICO agente de cura" \
     || falha "houve --heal manual (bloco invalido)"
   sleep 2

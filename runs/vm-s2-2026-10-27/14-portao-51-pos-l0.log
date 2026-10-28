@@ -1,0 +1,30 @@
+### cliente_inicio=2026-10-28T03:18:55.344Z host=Windows
+$ ssh ... "cd ~/tcc-gate && sha256sum runs/vm-s2-2026-10-27/portao51.sh && bash runs/vm-s2-2026-10-27/portao51.sh 130 /dev/stderr" 2> vm/portao51-2.csv  (CSV por stderr: nada gravado na VM)
+2598b37d4969b1bd717ddbe514110fb6a0077e1332e38c1b76c5caea61802338  runs/vm-s2-2026-10-27/portao51.sh
+amostras=27 amostras_ruins=0 janela_s=131 maior_sequencia_boa_s=131 ultima_sequencia_boa_desde=2026-10-28T03:18:56+00:00
+size sessions porta 11222: 0
+size sessions porta 11223: 0
+size sessions porta 11224: 0
+size counters porta 11222: 0
+size counters porta 11223: 0
+size counters porta 11224: 0
+timers tcc-heal: 0 units tcc-heal: 0
+isn1 pid=33273 tc qdisc show (todas as interfaces): qdisc noqueue 0: dev lo root refcnt 2 qdisc noqueue 0: dev eth0 root refcnt 2
+isn1 proibidos(clsact|prio|netem|ingress)=0 eth0_noqueue=1
+isn1 tc filter eth0: []
+isn2 pid=33404 tc qdisc show (todas as interfaces): qdisc noqueue 0: dev lo root refcnt 2 qdisc noqueue 0: dev eth0 root refcnt 2
+isn2 proibidos(clsact|prio|netem|ingress)=0 eth0_noqueue=1
+isn2 tc filter eth0: []
+isn3 pid=33811 tc qdisc show (todas as interfaces): qdisc noqueue 0: dev lo root refcnt 2 qdisc noqueue 0: dev eth0 root refcnt 2
+isn3 proibidos(clsact|prio|netem|ingress)=0 eth0_noqueue=1
+isn3 tc filter eth0: []
+lock: LIVRE
+isn1 mudancas de vista nos ultimos 5 min (ISPN000094|ISPN000093|ISPN100000|ISPN100001|MergeView): 0
+isn1 ultima mudanca de vista: 2026-10-27 18:49:06,181 INFO  [o.i.CLUSTER] ISPN000094: Received new cluster view for channel cluster-tcc: [isn2-7049|2] (3) [isn2-7049, isn1-64005, isn3-27776]
+isn2 mudancas de vista nos ultimos 5 min (ISPN000094|ISPN000093|ISPN100000|ISPN100001|MergeView): 0
+isn2 ultima mudanca de vista: 2026-10-27 18:49:06,159 INFO  [o.i.CLUSTER] ISPN000094: Received new cluster view for channel cluster-tcc: [isn2-7049|2] (3) [isn2-7049, isn1-64005, isn3-27776]
+isn3 mudancas de vista nos ultimos 5 min (ISPN000094|ISPN000093|ISPN100000|ISPN100001|MergeView): 0
+isn3 ultima mudanca de vista: 2026-10-27 18:49:06,201 INFO  [o.i.CLUSTER] ISPN000094: Received new cluster view for channel cluster-tcc: [isn2-7049|2] (3) [isn2-7049, isn1-64005, isn3-27776]
+fim 2026-10-28T03:21:08+00:00
+rc=0
+### cliente_fim=2026-10-28T03:21:07.689Z

@@ -1,0 +1,19 @@
+### cliente_inicio=2026-10-28T03:17:53.105Z host=Windows
+$ ssh ... "cd ~/tcc-gate/runs && tar cf - vm-s2-2026-10-27/l0-console.log vm-s2-2026-10-27/l0-inicio.txt gate-netdegrade/go.log" | tar xf - (para vm/)
+rc=0/0
+--- vm
+cfcf3f9574f765577857299dbbdee8e55b4b875581469d18743360edbb3b70a5  vm-s2-2026-10-27/l0-console.log
+35f36b4aaac37afc78f227f2ef24c400664615cfc70db08d2503a828bfced5b4  vm-s2-2026-10-27/l0-inicio.txt
+3b4b617d324108180c6dc23d84bb9421d1b6857648ecdbb68f1e71f0ef47e23b  gate-netdegrade/go.log
+1 gate-netdegrade/go.log
+0
+--- host
+cfcf3f9574f765577857299dbbdee8e55b4b875581469d18743360edbb3b70a5 *l0-console.log
+35f36b4aaac37afc78f227f2ef24c400664615cfc70db08d2503a828bfced5b4 *l0-inicio.txt
+3b4b617d324108180c6dc23d84bb9421d1b6857648ecdbb68f1e71f0ef47e23b *go.log
+CR em l0-console.log: 134
+### cliente_fim=2026-10-28T03:17:53.747Z
+--- correcao: o 'grep -c $'\r'' do Git Bash acima conta linhas, nao CR (falso positivo). Contagem por bytes:
+vm/l0-console.log CR=0 LF=134
+vm/l0-inicio.txt CR=0 LF=1
+vm/go.log CR=0 LF=1

@@ -1,0 +1,176 @@
+### cliente_inicio=2026-10-28T03:18:28.340Z (script so leitura enviado por stdin; unica escrita: /tmp/vs2-tc-depois.<pid>, removido)
+### vm_inicio=2026-10-28T03:18:29+00:00 uname=6.8.0-147-generic head=9eadbdb
+isn3 pid=33811 netns=net:[4026532291] pid1_netns=net:[4026531840]
+--- [A] tc depois vs antes
+$ cat /tmp/vs2-tc-depois.298715
+qdisc noqueue 0: root refcnt 2 
+rc=0
+$ diff runs/vm-s2-2026-10-27/l0-tc-antes.txt /tmp/vs2-tc-depois.298715 && echo IGUAL
+IGUAL
+rc=0
+$ sudo nsenter -t 33811 -n tc filter show dev eth0 | wc -l
+0
+rc=0
+$ sudo nsenter -t 33811 -n tc qdisc show
+qdisc noqueue 0: dev lo root refcnt 2 
+qdisc noqueue 0: dev eth0 root refcnt 2 
+rc=0
+--- [B] ip addr e ss no netns de isn3
+$ sudo nsenter -t 33811 -n ip -4 addr show
+1: lo: <LOOPBACK,UP,LOWER_UP> mtu 65536 qdisc noqueue state UNKNOWN group default qlen 1000
+    inet 127.0.0.1/8 scope host lo
+       valid_lft forever preferred_lft forever
+2: eth0@if6: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue state UP group default qlen 1000 link-netnsid 0
+    inet 10.89.1.4/24 brd 10.89.1.255 scope global eth0
+       valid_lft forever preferred_lft forever
+rc=0
+$ sudo nsenter -t 33811 -n ip -6 addr show
+1: lo: <LOOPBACK,UP,LOWER_UP> mtu 65536 state UNKNOWN qlen 1000
+    inet6 ::1/128 scope host 
+       valid_lft forever preferred_lft forever
+2: eth0@if6: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 state UP qlen 1000
+    inet6 fe80::d4f3:9eff:fe63:a1cd/64 scope link 
+       valid_lft forever preferred_lft forever
+rc=0
+$ sudo nsenter -t 33811 -n ip -6 addr show scope global | grep -c inet6
+0
+rc=1
+$ sudo nsenter -t 33811 -n ss -tn
+State Recv-Q Send-Q Local Address:Port  Peer Address:Port Process
+ESTAB 0      0          10.89.1.4:33935    10.89.1.3:57800       
+ESTAB 0      0          10.89.1.4:52099    10.89.1.2:7800        
+ESTAB 0      0          10.89.1.4:52527    10.89.1.3:7800        
+ESTAB 0      0          10.89.1.4:57800    10.89.1.2:53399       
+rc=0
+$ sudo nsenter -t 33811 -n ss -tna | grep -E ':(7800|57800)\b' | grep -c '\['
+0
+rc=1
+$ sudo nsenter -t 33811 -n ss -tna
+State     Recv-Q Send-Q Local Address:Port  Peer Address:Port Process
+LISTEN    0      50           0.0.0.0:57800      0.0.0.0:*           
+LISTEN    0      50         10.89.1.4:7800       0.0.0.0:*           
+LISTEN    0      4096         0.0.0.0:11222      0.0.0.0:*           
+TIME-WAIT 0      0          127.0.0.1:52342    127.0.0.1:11222       
+TIME-WAIT 0      0          127.0.0.1:52458    127.0.0.1:11222       
+TIME-WAIT 0      0          127.0.0.1:57152    127.0.0.1:11222       
+TIME-WAIT 0      0          127.0.0.1:38262    127.0.0.1:11222       
+TIME-WAIT 0      0          127.0.0.1:50862    127.0.0.1:11222       
+TIME-WAIT 0      0          127.0.0.1:49230    127.0.0.1:11222       
+TIME-WAIT 0      0          127.0.0.1:52438    127.0.0.1:11222       
+TIME-WAIT 0      0          127.0.0.1:57188    127.0.0.1:11222       
+TIME-WAIT 0      0          127.0.0.1:38282    127.0.0.1:11222       
+ESTAB     0      0          10.89.1.4:33935    10.89.1.3:57800       
+TIME-WAIT 0      0          127.0.0.1:49214    127.0.0.1:11222       
+ESTAB     0      0          10.89.1.4:52099    10.89.1.2:7800        
+TIME-WAIT 0      0          127.0.0.1:52000    127.0.0.1:11222       
+ESTAB     0      0          10.89.1.4:52527    10.89.1.3:7800        
+ESTAB     0      0          10.89.1.4:57800    10.89.1.2:53399       
+rc=0
+--- [C] dead-man: timers/units/journal
+$ systemctl list-timers --all --no-legend | grep -c tcc-heal
+0
+rc=1
+$ systemctl list-units --all --no-legend | grep -c tcc-heal
+0
+rc=1
+$ systemctl status tcc-heal-296720-10277.timer tcc-heal-296720-10277.service --no-pager
+Unit tcc-heal-296720-10277.timer could not be found.
+Unit tcc-heal-296720-10277.service could not be found.
+rc=4
+$ journalctl --no-pager -o short-iso-precise --since '2026-10-28 03:10:00' -u tcc-heal-296720-10277.timer -u tcc-heal-296720-10277.service
+2026-10-28T03:16:00.192103+00:00 server1 systemd[1]: Started tcc-heal-296720-10277.timer - /usr/bin/bash scripts/inject-netdegrade.sh --heal.
+2026-10-28T03:16:00.296984+00:00 server1 systemd[1]: tcc-heal-296720-10277.timer: Deactivated successfully.
+2026-10-28T03:16:00.297035+00:00 server1 systemd[1]: Stopped tcc-heal-296720-10277.timer - /usr/bin/bash scripts/inject-netdegrade.sh --heal.
+rc=0
+$ journalctl --no-pager -o short-iso-precise --since '2026-10-28 03:10:00' | grep -E 'tcc-heal|inject-netdegrade|--heal'
+2026-10-28T03:16:00.168497+00:00 server1 sudo[296800]:  server1 : TTY=pts/1 ; PWD=/home/server1/tcc-gate ; USER=root ; COMMAND=/usr/bin/systemd-run --quiet --unit=tcc-heal-296720-10277 --on-active=210s '--setenv=PODMAN=sudo podman' --working-directory=/home/server1/tcc-gate bash scripts/inject-netdegrade.sh --heal
+2026-10-28T03:16:00.192103+00:00 server1 systemd[1]: Started tcc-heal-296720-10277.timer - /usr/bin/bash scripts/inject-netdegrade.sh --heal.
+2026-10-28T03:16:00.275795+00:00 server1 sudo[296848]:  server1 : TTY=pts/1 ; PWD=/home/server1/tcc-gate ; USER=root ; COMMAND=/usr/bin/systemctl stop tcc-heal-296720-10277.timer
+2026-10-28T03:16:00.296984+00:00 server1 systemd[1]: tcc-heal-296720-10277.timer: Deactivated successfully.
+2026-10-28T03:16:00.297035+00:00 server1 systemd[1]: Stopped tcc-heal-296720-10277.timer - /usr/bin/bash scripts/inject-netdegrade.sh --heal.
+2026-10-28T03:16:28.030156+00:00 server1 sudo[297164]:  server1 : PWD=/home/server1/tcc-gate ; USER=root ; COMMAND=/usr/bin/journalctl --since '2026-10-28 03:00' -u tcc-heal* --no-pager
+rc=0
+--- [D] sudo/systemd-run/tc desde 03:10 (tentativa abortada 03:12 nao deve ter tc)
+$ journalctl --no-pager -o short-iso-precise --since '2026-10-28 03:10:00' _COMM=sudo | grep -E 'COMMAND=' | sed 's/.*COMMAND=/COMMAND=/' | sort | uniq -c
+      2 COMMAND=/usr/bin/fuser -v /var/lock/tcc-vm.lock
+      1 COMMAND=/usr/bin/journalctl --since '2026-10-28 03:00' -u tcc-heal* --no-pager
+      2 COMMAND=/usr/bin/nsenter -t 33811 -n ip -4 addr show
+      1 COMMAND=/usr/bin/nsenter -t 33811 -n ip -6 addr show
+      1 COMMAND=/usr/bin/nsenter -t 33811 -n ip -6 addr show dev eth0 scope global
+      1 COMMAND=/usr/bin/nsenter -t 33811 -n ip -6 addr show scope global
+      2 COMMAND=/usr/bin/nsenter -t 33811 -n ss -tn
+      2 COMMAND=/usr/bin/nsenter -t 33811 -n ss -tna
+      1 COMMAND=/usr/bin/nsenter -t 33811 -n tc filter add dev eth0 parent 1: protocol ip prio 1 u32 match ip dst 192.0.2.1/32 flowid 1:3
+      3 COMMAND=/usr/bin/nsenter -t 33811 -n tc filter show dev eth0
+      1 COMMAND=/usr/bin/nsenter -t 33811 -n tc qdisc add dev eth0 parent 1:3 handle 30: netem loss 20% 25% delay 20ms 5ms distribution normal duplicate 1% reorder 25% 50% corrupt 1%
+      1 COMMAND=/usr/bin/nsenter -t 33811 -n tc qdisc add dev eth0 root handle 1: prio bands 3 priomap 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+      1 COMMAND=/usr/bin/nsenter -t 33811 -n tc qdisc change dev eth0 parent 1:3 handle 30: netem loss gemodel 5% 25% 100% 0%
+      1 COMMAND=/usr/bin/nsenter -t 33811 -n tc qdisc del dev eth0 root
+      1 COMMAND=/usr/bin/nsenter -t 33811 -n tc qdisc show
+      6 COMMAND=/usr/bin/nsenter -t 33811 -n tc qdisc show dev eth0
+      7 COMMAND=/usr/bin/podman inspect -f {{.State.Pid}} isn3
+      1 COMMAND=/usr/bin/podman logs --since 2026-10-28T03:00:00 isn1
+      1 COMMAND=/usr/bin/podman logs --since 2026-10-28T03:00:00 isn2
+      1 COMMAND=/usr/bin/podman logs --since 2026-10-28T03:00:00 isn3
+      2 COMMAND=/usr/bin/podman ps --format '{{.Names}} {{.Status}}'
+      3 COMMAND=/usr/bin/readlink /proc/1/ns/net
+      3 COMMAND=/usr/bin/readlink /proc/33811/ns/net
+      1 COMMAND=/usr/bin/systemctl stop tcc-heal-296720-10277.timer
+      1 COMMAND=/usr/bin/systemd-run --quiet --unit=tcc-heal-296720-10277 --on-active=210s '--setenv=PODMAN=sudo podman' --working-directory=/home/server1/tcc-gate bash scripts/inject-netdegrade.sh --heal
+      2 COMMAND=/usr/bin/true
+rc=0
+$ journalctl --no-pager -o short-iso-precise --since '2026-10-28 03:10:00' _COMM=sudo | grep -E 'COMMAND=.*(tc|systemd-run|systemctl)'
+2026-10-28T03:13:59.406442+00:00 server1 sudo[295584]:  server1 : PWD=/home/server1/tcc-gate ; USER=root ; COMMAND=/usr/bin/nsenter -t 33811 -n tc qdisc show dev eth0
+2026-10-28T03:13:59.410683+00:00 server1 sudo[295586]:  server1 : PWD=/home/server1/tcc-gate ; USER=root ; COMMAND=/usr/bin/nsenter -t 33811 -n tc filter show dev eth0
+2026-10-28T03:13:59.431877+00:00 server1 sudo[295592]:  server1 : PWD=/home/server1/tcc-gate ; USER=root ; COMMAND=/usr/bin/fuser -v /var/lock/tcc-vm.lock
+2026-10-28T03:15:19.123788+00:00 server1 sudo[296348]:  server1 : PWD=/home/server1/tcc-gate ; USER=root ; COMMAND=/usr/bin/nsenter -t 33811 -n tc qdisc show dev eth0
+2026-10-28T03:16:00.168497+00:00 server1 sudo[296800]:  server1 : TTY=pts/1 ; PWD=/home/server1/tcc-gate ; USER=root ; COMMAND=/usr/bin/systemd-run --quiet --unit=tcc-heal-296720-10277 --on-active=210s '--setenv=PODMAN=sudo podman' --working-directory=/home/server1/tcc-gate bash scripts/inject-netdegrade.sh --heal
+2026-10-28T03:16:00.199733+00:00 server1 sudo[296806]:  server1 : TTY=pts/1 ; PWD=/home/server1/tcc-gate ; USER=root ; COMMAND=/usr/bin/nsenter -t 33811 -n tc qdisc show dev eth0
+2026-10-28T03:16:00.204553+00:00 server1 sudo[296809]:  server1 : TTY=pts/1 ; PWD=/home/server1/tcc-gate ; USER=root ; COMMAND=/usr/bin/nsenter -t 33811 -n tc qdisc add dev eth0 root handle 1: prio bands 3 priomap 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+2026-10-28T03:16:00.209562+00:00 server1 sudo[296812]:  server1 : TTY=pts/1 ; PWD=/home/server1/tcc-gate ; USER=root ; COMMAND=/usr/bin/nsenter -t 33811 -n tc qdisc add dev eth0 parent 1:3 handle 30: netem loss 20% 25% delay 20ms 5ms distribution normal duplicate 1% reorder 25% 50% corrupt 1%
+2026-10-28T03:16:00.215468+00:00 server1 sudo[296815]:  server1 : TTY=pts/1 ; PWD=/home/server1/tcc-gate ; USER=root ; COMMAND=/usr/bin/nsenter -t 33811 -n tc qdisc change dev eth0 parent 1:3 handle 30: netem loss gemodel 5% 25% 100% 0%
+2026-10-28T03:16:00.220823+00:00 server1 sudo[296818]:  server1 : TTY=pts/1 ; PWD=/home/server1/tcc-gate ; USER=root ; COMMAND=/usr/bin/nsenter -t 33811 -n tc filter add dev eth0 parent 1: protocol ip prio 1 u32 match ip dst 192.0.2.1/32 flowid 1:3
+2026-10-28T03:16:00.225624+00:00 server1 sudo[296821]:  server1 : TTY=pts/1 ; PWD=/home/server1/tcc-gate ; USER=root ; COMMAND=/usr/bin/nsenter -t 33811 -n tc qdisc del dev eth0 root
+2026-10-28T03:16:00.270496+00:00 server1 sudo[296843]:  server1 : TTY=pts/1 ; PWD=/home/server1/tcc-gate ; USER=root ; COMMAND=/usr/bin/nsenter -t 33811 -n tc qdisc show dev eth0
+2026-10-28T03:16:00.275795+00:00 server1 sudo[296848]:  server1 : TTY=pts/1 ; PWD=/home/server1/tcc-gate ; USER=root ; COMMAND=/usr/bin/systemctl stop tcc-heal-296720-10277.timer
+2026-10-28T03:16:28.006756+00:00 server1 sudo[297156]:  server1 : PWD=/home/server1/tcc-gate ; USER=root ; COMMAND=/usr/bin/nsenter -t 33811 -n tc qdisc show dev eth0
+2026-10-28T03:16:28.010711+00:00 server1 sudo[297158]:  server1 : PWD=/home/server1/tcc-gate ; USER=root ; COMMAND=/usr/bin/nsenter -t 33811 -n tc filter show dev eth0
+2026-10-28T03:16:28.030156+00:00 server1 sudo[297164]:  server1 : PWD=/home/server1/tcc-gate ; USER=root ; COMMAND=/usr/bin/journalctl --since '2026-10-28 03:00' -u tcc-heal* --no-pager
+2026-10-28T03:16:28.291867+00:00 server1 sudo[297168]:  server1 : PWD=/home/server1/tcc-gate ; USER=root ; COMMAND=/usr/bin/fuser -v /var/lock/tcc-vm.lock
+2026-10-28T03:18:29.820799+00:00 server1 sudo[298733]:  server1 : PWD=/home/server1/tcc-gate ; USER=root ; COMMAND=/usr/bin/nsenter -t 33811 -n tc qdisc show dev eth0
+2026-10-28T03:18:29.828641+00:00 server1 sudo[298738]:  server1 : PWD=/home/server1/tcc-gate ; USER=root ; COMMAND=/usr/bin/nsenter -t 33811 -n tc filter show dev eth0
+2026-10-28T03:18:29.832926+00:00 server1 sudo[298741]:  server1 : PWD=/home/server1/tcc-gate ; USER=root ; COMMAND=/usr/bin/nsenter -t 33811 -n tc qdisc show
+rc=0
+--- [E] podman logs desde 03:00
+isn1 health=healthy started=2026-10-27 18:48:51.840360006 +0000 UTC
+isn1 ISPN000094|093|436|SUSPECT desde 03:00: 0
+isn1 WARN|ERROR desde 03:00: 185
+isn1 ultima mudanca de vista: 2026-10-27 18:49:06,181 INFO  [o.i.CLUSTER] ISPN000094: Received new cluster view for channel cluster-tcc: [isn2-7049|2] (3) [isn2-7049, isn1-64005, isn3-27776]
+isn2 health=healthy started=2026-10-27 18:48:53.060694166 +0000 UTC
+isn2 ISPN000094|093|436|SUSPECT desde 03:00: 0
+isn2 WARN|ERROR desde 03:00: 186
+isn2 ultima mudanca de vista: 2026-10-27 18:49:06,159 INFO  [o.i.CLUSTER] ISPN000094: Received new cluster view for channel cluster-tcc: [isn2-7049|2] (3) [isn2-7049, isn1-64005, isn3-27776]
+isn3 health=healthy started=2026-10-27 18:48:54.277439189 +0000 UTC
+isn3 ISPN000094|093|436|SUSPECT desde 03:00: 0
+isn3 WARN|ERROR desde 03:00: 186
+isn3 ultima mudanca de vista: 2026-10-27 18:49:06,201 INFO  [o.i.CLUSTER] ISPN000094: Received new cluster view for channel cluster-tcc: [isn2-7049|2] (3) [isn2-7049, isn1-64005, isn3-27776]
+--- [F] tmux e lock
+$ tmux ls
+no server running on /tmp/tmux-1000/default
+rc=1
+$ flock -n /var/lock/tcc-vm.lock true && echo LIVRE || echo OCUPADO
+LIVRE
+rc=0
+$ ls -la /tmp/inject-netdegrade-*.lock /tmp/inject-partition-*.lock
+ls: cannot access '/tmp/inject-netdegrade-*.lock': No such file or directory
+ls: cannot access '/tmp/inject-partition-*.lock': No such file or directory
+rc=2
+$ git status --short
+?? runs/gate-b29/g1-rep3/hotrod/
+?? runs/gate-b29/recriacao/pre-recriacao-inspect-isn1.json
+?? runs/gate-b29/recriacao/pre-recriacao-inspect-isn2.json
+?? runs/gate-b29/recriacao/pre-recriacao-inspect-isn3.json
+?? runs/vm-s2-2026-10-27/
+rc=0
+### vm_fim=2026-10-28T03:18:31+00:00
+### cliente_fim=2026-10-28T03:18:29.838Z

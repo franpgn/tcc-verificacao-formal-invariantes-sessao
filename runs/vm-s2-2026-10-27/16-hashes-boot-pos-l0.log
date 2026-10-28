@@ -1,0 +1,13 @@
+### cliente_inicio=2026-10-28T03:22:05.774Z (so leitura: hashes e boot_id pos-L-0)
+9eadbdbe30f0bc8635f88e273c775b43c615e147
+9bdd1faeca0399d11886ee5c77189825c18f5bf69d78797c579c1fd71e9d73fd  runs/gate-netdegrade/l-lib.sh
+38325ff08f9f368014f6de5fbfa5a64a46e5d1e1a4e7c620ace939a18e6731f7  runs/gate-netdegrade/l0.sh
+8c8c35416a5d2ff89449bb12edd2c93672fcece8768c4dc4897a5c40be9d3955  runs/gate-netdegrade/l0c.sh
+4ebdd8a34a7d5c1e6981138272a4f0b90a67c44dd8626e9521884e185297abb1  scripts/inject-netdegrade.sh
+2598b37d4969b1bd717ddbe514110fb6a0077e1332e38c1b76c5caea61802338  runs/vm-s2-2026-10-27/portao51.sh
+6.8.0-147-generic
+b7df4b03-6652-4808-9617-11096693e65b
+cls_u32                28672  0
+sch_netem              24576  0
+sch_prio               20480  0
+### cliente_fim=2026-10-28T03:22:05.988Z

@@ -1,0 +1,134 @@
++ set -euo pipefail
+++ dirname runs/gate-netdegrade/l0.sh
++ source runs/gate-netdegrade/l-lib.sh
+++ cd /home/server1/tcc-gate
+++ export 'PODMAN=sudo podman'
+++ PODMAN='sudo podman'
+++ LOG=runs/gate-netdegrade
+++ INJ='bash scripts/inject-netdegrade.sh'
+++ LOCK_DIR=/tmp
+++ mkdir -p runs/gate-netdegrade
++ exigir_go L-0
++ '[' -t 0 ']'
++ read -rp 'L-0 -- go do Gestor registrado no relatorio anterior? [digite GO] ' r
+L-0 -- go do Gestor registrado no relatorio anterior? [digite GO] + '[' GO = GO ']'
++ tee -a runs/gate-netdegrade/go.log
+++ date -Is
+++ hostname -I
+++ awk '{print $1}'
++ echo 'go 2026-10-28T03:16:00+00:00 vm=172.18.251.140 bloco=L-0'
+go 2026-10-28T03:16:00+00:00 vm=172.18.251.140 bloco=L-0
+++ pid_de isn3
+++ local p
++++ sudo podman inspect -f '{{.State.Pid}}' isn3
+++ p=33811
+++ guarda 33811
+++ local pid=33811 ns1 nsn
+++ '[' -n 33811 ']'
+++ '[' 33811 '!=' 0 ']'
++++ sudo readlink /proc/1/ns/net
+++ ns1='net:[4026531840]'
++++ sudo readlink /proc/33811/ns/net
+++ nsn='net:[4026532291]'
+++ '[' -n 'net:[4026531840]' ']'
+++ '[' -n 'net:[4026532291]' ']'
+++ '[' 'net:[4026532291]' '!=' 'net:[4026531840]' ']'
+++ echo 33811
++ PID=33811
++ armar 120
++ DMS=tcc-heal-296720-10277
++ sudo systemd-run --quiet --unit=tcc-heal-296720-10277 --on-active=210s '--setenv=PODMAN=sudo podman' --working-directory=/home/server1/tcc-gate bash scripts/inject-netdegrade.sh --heal
++ T ip -4 addr show
++ sudo nsenter -t 33811 -n ip -4 addr show
+1: lo: <LOOPBACK,UP,LOWER_UP> mtu 65536 qdisc noqueue state UNKNOWN group default qlen 1000
+    inet 127.0.0.1/8 scope host lo
+       valid_lft forever preferred_lft forever
+2: eth0@if6: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue state UP group default qlen 1000 link-netnsid 0
+    inet 10.89.1.4/24 brd 10.89.1.255 scope global eth0
+       valid_lft forever preferred_lft forever
++ T tc qdisc show dev eth0
++ sudo nsenter -t 33811 -n tc qdisc show dev eth0
+qdisc noqueue 0: root refcnt 2 
++ T tc qdisc add dev eth0 root handle 1: prio bands 3 priomap 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
++ sudo nsenter -t 33811 -n tc qdisc add dev eth0 root handle 1: prio bands 3 priomap 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
++ T tc qdisc add dev eth0 parent 1:3 handle 30: netem loss 20% 25% delay 20ms 5ms distribution normal duplicate 1% reorder 25% 50% corrupt 1%
++ sudo nsenter -t 33811 -n tc qdisc add dev eth0 parent 1:3 handle 30: netem loss 20% 25% delay 20ms 5ms distribution normal duplicate 1% reorder 25% 50% corrupt 1%
++ T tc qdisc change dev eth0 parent 1:3 handle 30: netem loss gemodel 5% 25% 100% 0%
++ sudo nsenter -t 33811 -n tc qdisc change dev eth0 parent 1:3 handle 30: netem loss gemodel 5% 25% 100% 0%
++ T tc filter add dev eth0 parent 1: protocol ip prio 1 u32 match ip dst 192.0.2.1/32 flowid 1:3
++ sudo nsenter -t 33811 -n tc filter add dev eth0 parent 1: protocol ip prio 1 u32 match ip dst 192.0.2.1/32 flowid 1:3
++ T tc qdisc del dev eth0 root
++ sudo nsenter -t 33811 -n tc qdisc del dev eth0 root
++ sem_prio isn3
++ local p out
+++ pid_de isn3
+++ local p
++++ sudo podman inspect -f '{{.State.Pid}}' isn3
+++ p=33811
+++ guarda 33811
+++ local pid=33811 ns1 nsn
+++ '[' -n 33811 ']'
+++ '[' 33811 '!=' 0 ']'
++++ sudo readlink /proc/1/ns/net
+++ ns1='net:[4026531840]'
++++ sudo readlink /proc/33811/ns/net
+++ nsn='net:[4026532291]'
+++ '[' -n 'net:[4026531840]' ']'
+++ '[' -n 'net:[4026532291]' ']'
+++ '[' 'net:[4026532291]' '!=' 'net:[4026531840]' ']'
+++ echo 33811
++ p=33811
+++ sudo nsenter -t 33811 -n tc qdisc show dev eth0
++ out='qdisc noqueue 0: root refcnt 2 '
++ printf '%s\n' 'qdisc noqueue 0: root refcnt 2 '
++ grep -Eq 'prio|netem'
++ echo 'ok sem prio em isn3'
+ok sem prio em isn3
++ desarmar
++ sudo systemctl stop tcc-heal-296720-10277.timer
++ DMS=
++ bash scripts/inject-netdegrade.sh --target isn3 --severity N3 --direction both --dry-run
+[2026-10-28T03:16:00Z] inject-netdegrade.sh: Plano: TARGET=isn3 PARES=isn1 isn2 DIRECAO=both NODES=isn1,isn2,isn3 IFACE=eth0 DURACAO=120s MARKER=<nenhum> MODELO=random SEVERIDADE=N3 DRY_RUN=1
+[2026-10-28T03:16:00Z] inject-netdegrade.sh:   severidade N3 -> perda 20%
+[2026-10-28T03:16:00Z] inject-netdegrade.sh: Comandos previstos (prio + netem + u32 por IP de destino, via nsenter a partir do host):
+[2026-10-28T03:16:00Z] inject-netdegrade.sh:   ip(isn3)=$(sudo podman inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}} {{end}}' isn3)
+[2026-10-28T03:16:00Z] inject-netdegrade.sh:   ip(isn1)=$(sudo podman inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}} {{end}}' isn1)
+[2026-10-28T03:16:00Z] inject-netdegrade.sh:   ip(isn2)=$(sudo podman inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}} {{end}}' isn2)
+[2026-10-28T03:16:00Z] inject-netdegrade.sh:   pid=$(sudo podman inspect -f '{{.State.Pid}}' isn3)   # no isn3
+[2026-10-28T03:16:00Z] inject-netdegrade.sh:   flock /tmp/inject-netdegrade-isn3.lock e /tmp/inject-partition-isn3.lock (exclusao com F2; exit 7 se F2 ativa)
+[2026-10-28T03:16:00Z] inject-netdegrade.sh:   pid=$(sudo podman inspect -f '{{.State.Pid}}' isn1)   # no isn1
+[2026-10-28T03:16:00Z] inject-netdegrade.sh:   flock /tmp/inject-netdegrade-isn1.lock e /tmp/inject-partition-isn1.lock (exclusao com F2; exit 7 se F2 ativa)
+[2026-10-28T03:16:00Z] inject-netdegrade.sh:   pid=$(sudo podman inspect -f '{{.State.Pid}}' isn2)   # no isn2
+[2026-10-28T03:16:00Z] inject-netdegrade.sh:   flock /tmp/inject-netdegrade-isn2.lock e /tmp/inject-partition-isn2.lock (exclusao com F2; exit 7 se F2 ativa)
+[2026-10-28T03:16:00Z] inject-netdegrade.sh:   sudo nsenter -t <pid> -n tc qdisc show dev eth0   # no isn3: raiz alheia (F3) ou clsact (F2) -> exit 7
+[2026-10-28T03:16:00Z] inject-netdegrade.sh:   sudo nsenter -t <pid> -n tc qdisc del dev eth0 root   # pre-limpeza, no isn3: so se for a prio 1: do injetor (idempotente)
+[2026-10-28T03:16:00Z] inject-netdegrade.sh:   sondagem em isn3: prio + netem com os parametros reais + filtro u32 em 192.0.2.1/32 (TEST-NET-1) + remocao da raiz (exit 5 se rejeitado)
+[2026-10-28T03:16:00Z] inject-netdegrade.sh:   sudo nsenter -t <pid> -n tc qdisc show dev eth0   # no isn1: raiz alheia (F3) ou clsact (F2) -> exit 7
+[2026-10-28T03:16:00Z] inject-netdegrade.sh:   sudo nsenter -t <pid> -n tc qdisc del dev eth0 root   # pre-limpeza, no isn1: so se for a prio 1: do injetor (idempotente)
+[2026-10-28T03:16:00Z] inject-netdegrade.sh:   sondagem em isn1: prio + netem com os parametros reais + filtro u32 em 192.0.2.1/32 (TEST-NET-1) + remocao da raiz (exit 5 se rejeitado)
+[2026-10-28T03:16:00Z] inject-netdegrade.sh:   sudo nsenter -t <pid> -n tc qdisc show dev eth0   # no isn2: raiz alheia (F3) ou clsact (F2) -> exit 7
+[2026-10-28T03:16:00Z] inject-netdegrade.sh:   sudo nsenter -t <pid> -n tc qdisc del dev eth0 root   # pre-limpeza, no isn2: so se for a prio 1: do injetor (idempotente)
+[2026-10-28T03:16:00Z] inject-netdegrade.sh:   sondagem em isn2: prio + netem com os parametros reais + filtro u32 em 192.0.2.1/32 (TEST-NET-1) + remocao da raiz (exit 5 se rejeitado)
+[2026-10-28T03:16:00Z] inject-netdegrade.sh:   sudo nsenter -t <pid> -n tc qdisc add dev eth0 root handle 1: prio bands 3 priomap 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0   # no isn3
+[2026-10-28T03:16:00Z] inject-netdegrade.sh:   sudo nsenter -t <pid> -n tc qdisc add dev eth0 parent 1:3 handle 30: netem loss 20%   # no isn3 (saida)
+[2026-10-28T03:16:00Z] inject-netdegrade.sh:   sudo nsenter -t <pid> -n tc filter add dev eth0 parent 1: protocol ip prio 1 u32 match ip dst <ip-par>/32 flowid 1:3   # no isn3 par isn1
+[2026-10-28T03:16:00Z] inject-netdegrade.sh:   sudo nsenter -t <pid> -n tc filter add dev eth0 parent 1: protocol ip prio 1 u32 match ip dst <ip-par>/32 flowid 1:3   # no isn3 par isn2
+[2026-10-28T03:16:00Z] inject-netdegrade.sh:   sudo nsenter -t <pid> -n tc qdisc add dev eth0 root handle 1: prio bands 3 priomap 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0   # no isn1
+[2026-10-28T03:16:00Z] inject-netdegrade.sh:   sudo nsenter -t <pid> -n tc qdisc add dev eth0 parent 1:3 handle 30: netem loss 20%   # no isn1 (entrada)
+[2026-10-28T03:16:00Z] inject-netdegrade.sh:   sudo nsenter -t <pid> -n tc filter add dev eth0 parent 1: protocol ip prio 1 u32 match ip dst <ip-alvo>/32 flowid 1:3   # no isn1 alvo isn3
+[2026-10-28T03:16:00Z] inject-netdegrade.sh:   sudo nsenter -t <pid> -n tc qdisc add dev eth0 root handle 1: prio bands 3 priomap 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0   # no isn2
+[2026-10-28T03:16:00Z] inject-netdegrade.sh:   sudo nsenter -t <pid> -n tc qdisc add dev eth0 parent 1:3 handle 30: netem loss 20%   # no isn2 (entrada)
+[2026-10-28T03:16:00Z] inject-netdegrade.sh:   sudo nsenter -t <pid> -n tc filter add dev eth0 parent 1: protocol ip prio 1 u32 match ip dst <ip-alvo>/32 flowid 1:3   # no isn2 alvo isn3
+[2026-10-28T03:16:00Z] inject-netdegrade.sh:   sudo nsenter -t <pid> -n ping -n -q -c 200 -i 0.2 -W 5 <ip-par>   # perda esperada 0.360000 (fracao), tolerancia binomial (max(3 sigma, 2/n)); par isn1
+[2026-10-28T03:16:00Z] inject-netdegrade.sh:   sudo nsenter -t <pid> -n ping -n -q -c 200 -i 0.2 -W 5 <ip-par>   # perda esperada 0.360000 (fracao), tolerancia binomial (max(3 sigma, 2/n)); par isn2
+[2026-10-28T03:16:00Z] inject-netdegrade.sh:   sleep 120   (descontado o tempo gasto nos pings)
+[2026-10-28T03:16:00Z] inject-netdegrade.sh:   sudo nsenter -t <pid> -n tc -s qdisc show dev eth0   # contadores Sent/dropped da banda 3, no isn3
+[2026-10-28T03:16:00Z] inject-netdegrade.sh:   sudo nsenter -t <pid> -n tc -s qdisc show dev eth0   # contadores Sent/dropped da banda 3, no isn1
+[2026-10-28T03:16:00Z] inject-netdegrade.sh:   sudo nsenter -t <pid> -n tc -s qdisc show dev eth0   # contadores Sent/dropped da banda 3, no isn2
+[2026-10-28T03:16:00Z] inject-netdegrade.sh:   sudo nsenter -t <pid> -n tc qdisc del dev eth0 root   # limpeza, no isn3
+[2026-10-28T03:16:00Z] inject-netdegrade.sh:   sudo nsenter -t <pid> -n tc qdisc del dev eth0 root   # limpeza, no isn1
+[2026-10-28T03:16:00Z] inject-netdegrade.sh:   sudo nsenter -t <pid> -n tc qdisc del dev eth0 root   # limpeza, no isn2
+[2026-10-28T03:16:00Z] inject-netdegrade.sh: dry-run: nada executado (sem podman/nsenter/sudo/tc)
++ echo 'L-0 concluido sem residuo'
+L-0 concluido sem residuo
+rc_l0=0 fim=2026-10-28T03:16:08+00:00

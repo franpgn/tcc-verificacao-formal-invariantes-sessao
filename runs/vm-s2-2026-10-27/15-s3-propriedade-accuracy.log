@@ -1,0 +1,8 @@
+### cliente_inicio=2026-10-28T03:21:26.087Z (so leitura; prepara S3: nome da propriedade de precisao do timer)
+systemd 255 (255.4-1ubuntu8.18)
+$ systemctl show logrotate.timer -p AccuracySec
+rc=0
+$ systemctl show logrotate.timer -p AccuracyUSec
+AccuracyUSec=1h
+rc=0
+### cliente_fim=2026-10-28T03:21:26.461Z

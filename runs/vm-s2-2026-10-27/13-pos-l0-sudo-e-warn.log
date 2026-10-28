@@ -1,0 +1,39 @@
+### cliente_inicio=2026-10-28T03:18:43.369Z (so leitura)
+--- [G] sudo de 03:10:00 a 03:16:01 (inclui a tentativa abortada de 03:12)
+2026-10-28T03:11:59.649442+00:00 /usr/bin/true
+2026-10-28T03:13:11.934836+00:00 /usr/bin/true
+2026-10-28T03:13:59.387802+00:00 /usr/bin/podman inspect -f {{.State.Pid}} isn3
+2026-10-28T03:13:59.406442+00:00 /usr/bin/nsenter -t 33811 -n tc qdisc show dev eth0
+2026-10-28T03:13:59.410683+00:00 /usr/bin/nsenter -t 33811 -n tc filter show dev eth0
+2026-10-28T03:13:59.431877+00:00 /usr/bin/fuser -v /var/lock/tcc-vm.lock
+2026-10-28T03:13:59.441408+00:00 /usr/bin/podman ps --format '{{.Names}} {{.Status}}'
+2026-10-28T03:15:19.106099+00:00 /usr/bin/podman inspect -f {{.State.Pid}} isn3
+2026-10-28T03:15:19.123788+00:00 /usr/bin/nsenter -t 33811 -n tc qdisc show dev eth0
+2026-10-28T03:16:00.127636+00:00 /usr/bin/podman inspect -f {{.State.Pid}} isn3
+2026-10-28T03:16:00.159509+00:00 /usr/bin/readlink /proc/1/ns/net
+2026-10-28T03:16:00.163404+00:00 /usr/bin/readlink /proc/33811/ns/net
+2026-10-28T03:16:00.168497+00:00 /usr/bin/systemd-run --quiet --unit=tcc-heal-296720-10277 --on-active=210s '--setenv=PODMAN=sudo podman' --working-directory=/home/server1/tcc-gate bash scripts/inject-netdegrade.sh --heal
+2026-10-28T03:16:00.195397+00:00 /usr/bin/nsenter -t 33811 -n ip -4 addr show
+2026-10-28T03:16:00.199733+00:00 /usr/bin/nsenter -t 33811 -n tc qdisc show dev eth0
+2026-10-28T03:16:00.204553+00:00 /usr/bin/nsenter -t 33811 -n tc qdisc add dev eth0 root handle 1: prio bands 3 priomap 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+2026-10-28T03:16:00.209562+00:00 /usr/bin/nsenter -t 33811 -n tc qdisc add dev eth0 parent 1:3 handle 30: netem loss 20% 25% delay 20ms 5ms distribution normal duplicate 1% reorder 25% 50% corrupt 1%
+2026-10-28T03:16:00.215468+00:00 /usr/bin/nsenter -t 33811 -n tc qdisc change dev eth0 parent 1:3 handle 30: netem loss gemodel 5% 25% 100% 0%
+2026-10-28T03:16:00.220823+00:00 /usr/bin/nsenter -t 33811 -n tc filter add dev eth0 parent 1: protocol ip prio 1 u32 match ip dst 192.0.2.1/32 flowid 1:3
+2026-10-28T03:16:00.225624+00:00 /usr/bin/nsenter -t 33811 -n tc qdisc del dev eth0 root
+2026-10-28T03:16:00.230786+00:00 /usr/bin/podman inspect -f {{.State.Pid}} isn3
+2026-10-28T03:16:00.262261+00:00 /usr/bin/readlink /proc/1/ns/net
+2026-10-28T03:16:00.266336+00:00 /usr/bin/readlink /proc/33811/ns/net
+2026-10-28T03:16:00.270496+00:00 /usr/bin/nsenter -t 33811 -n tc qdisc show dev eth0
+2026-10-28T03:16:00.275795+00:00 /usr/bin/systemctl stop tcc-heal-296720-10277.timer
+--- [H] classes de WARN/ERROR desde 03:00 (sem timestamp, contagem)
+## isn1
+    187 WARN  [o.i.r.RestRequestHandler] ISPNN: The REST invocation [NettyRestRequest{GET /rest/vN/cache-managers/default/health/status, remote=/N.N.N.N:N, subject=null
+## isn2
+    188 WARN  [o.i.r.RestRequestHandler] ISPNN: The REST invocation [NettyRestRequest{GET /rest/vN/cache-managers/default/health/status, remote=/N.N.N.N:N, subject=null
+## isn3
+    188 WARN  [o.i.r.RestRequestHandler] ISPNN: The REST invocation [NettyRestRequest{GET /rest/vN/cache-managers/default/health/status, remote=/N.N.N.N:N, subject=null
+--- [I] WARN/ERROR por minuto, isn3, 03:00-03:19
+    188 [33m2026-10-28 
+--- [J] mesmas classes em janela de controle (27/10 23:00-23:19), isn3
+190
+### cliente_fim=2026-10-28T03:18:43.824Z

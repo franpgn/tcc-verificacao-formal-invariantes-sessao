@@ -705,3 +705,18 @@ Transmitidas ao Senior pelo coordenador.
   local `2e8872a` → **`20805b0`**. Medido em cópia `git archive` de `20805b0`: Surefire 863/0/0/1 em
   122 arquivos, `unittest discover -s analysis` 187 OK (1 *skip*), `inject-crash.test.sh` 113/0.
   Nada foi para `origin`.
+
+## Decisões do Gestor de 2026-10-30
+
+Transmitidas ao Senior pelo coordenador, sobre o parecer de conferência do texto da monografia
+(`conferencia-senior-texto-2026-10-30.md`, no *scratchpad* da sessão).
+
+- **E-4, atuação do controlador sobre a configuração do *cluster*: etapa planejada.** Registrada como
+  **B-44** e como errata da restrição "só lado cliente" em
+  `docs/plano-implementacao-controlador-2026-10-22.md`, seção 12, com nota na seção 4. A primeira
+  etapa (K1..K4, B-28.2, B-40, B-41) não muda. B-44.1 (verificação do que é reconfigurável sem reinício
+  no Infinispan 15.0.21) depende de B-28.2; B-44.2 em diante dependem de B-41 e de aprovação do Gestor
+  (lista em 12.6). Os candidatos da seção 12.2 **não foram verificados** nesta data.
+- **Renovação de sessão.** Constava do objetivo da Proposta, mas não entrou nas operações O1..O7
+  definidas no recorte do Trabalho de Conclusão de Curso I; está fora do escopo desde o início (não há
+  operação de renovação no modelo nem na carga). Registro para o texto acadêmico; nada muda no código.

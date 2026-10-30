@@ -374,6 +374,11 @@ mais linhas `{"tipo":"k3",...}` para cada adiamento.
 
 ## 4. Conformidade com a restrição §4
 
+> **Errata de 2026-10-30 (decisão do Gestor, seção 12).** A restrição "só lado cliente" (G4) vale para a
+> **primeira etapa** do controlador (B-26..B-28, B-38..B-41), que é o que este plano implementa e avalia.
+> Uma **segunda etapa planejada**, B-44, atua sobre a configuração do *cluster* em tempo de execução e,
+> por isso, sai desta seção: tem análise de conformidade com o modelo própria (12.3) e avaliação própria.
+
 O controlador lê eventos que o próprio cliente gerou, contadores do auditor e a saúde REST
 (leitura). Escreve só o perfil local. As ações K1..K4 escolhem **quando** o cliente emite uma
 operação que ele já emitiria; nenhuma operação nova é criada, nenhuma é suprimida (K3 tem prazo
@@ -463,6 +468,7 @@ começar). **Nenhum teste existente pode ser enfraquecido**; S1/S2 *golden* cont
 | **B-42.3** `run-baseline.sh --replication` | `feature/b42-3-baseline-replicacao` | `scripts/run-baseline.sh`, teste de `--dry-run` por ramo | diretório `runs/<cen>-<falha>-<perfil>/`; `meta.json` com perfil | `--dry-run` de todos os ramos | B-42.1 e **T-D** (mesmo arquivo; entra depois) | sim, exceto o smoke |
 | **B-40** pré-registro e smoke | `test/b40-smoke-controlador` | `docs/preregistro-avaliacao-controlador-<data>.md`; smoke local (1 repetição curta por modo) | — | pré-registro commitado **antes** de qualquer execução da avaliação | todos acima; calibração (3.5) | local sim; smoke VM curto não |
 | **B-41** avaliação | `test/b41-avaliacao-controlador` | `runs/ctrl-*`, `docs/relatorio-b41-<data>.md` | — | seção 8 | B-40, T-F concluída | **não** |
+| **B-44** atuação sobre a configuração do *cluster* (2ª etapa do controlador; errata de 2026-10-30, seção 12) | B-44.1 `docs/b44-1-reconfiguracao-infinispan`; B-44.2..B-44.4 a definir | B-44.1: `docs/reconfiguracao-runtime-infinispan-<data>.md` + bruto em `runs/b44-1-reconfig/`; demais: seção 12 | B-44.1: cada atributo com fonte (doc 15.0.x, seção, ou código 15.0.21, arquivo:linha) **e** prova empírica no *cluster* local (`get-mutable-attributes`, alteração, leitura de volta, sem reinício, com carga leve) | seção 12.5 | B-44.1: B-28.2. B-44.2+: B-41 concluída e aprovação do Gestor (12.6) | B-44.1 sim; B-44.4 **não** |
 
 > **Requisitos adicionais do B-28.2 e do P3 (Gestor, 2026-10-28, H4..H8 da
 > `docs/validacao-b26-2-b27-2026-10-27.md`).** Todo prompt do B-28.2 e da leitura do P3 deve incluir:
@@ -627,3 +633,74 @@ diferentes, `steal` (exclusão > 5 %), o controlador reduzir carga e com isso "m
 
 B-28.1 (núcleo de decisão puro): não depende de nada, destrava B-26.x, B-27 e B-38, e não toca
 nenhum arquivo existente. O prompt completo está no relatório de entrega do Senior.
+
+---
+
+## 12. Errata de 2026-10-30: segunda etapa do controlador (B-44), atuação sobre a configuração do *cluster*
+
+### 12.1 Decisão e motivo
+
+Decisão do Gestor (30/10/2026, sobre o parecer de conferência do texto, item E-4): a atuação do
+controlador sobre a configuração do *cluster*, prevista no objetivo específico (4) da Proposta, é
+**etapa planejada**, e não só trabalho futuro. Este plano (22/10) havia posto "qualquer configuração do
+servidor" fora do espaço de ação (§3.4) pela restrição G4. A errata **não** muda a primeira etapa:
+K1..K4, B-28.2, B-40 e B-41 continuam só no cliente, e B-41 continua medindo só a atuação no cliente.
+B-44 é uma etapa posterior, com escopo, pré-registro e avaliação próprios.
+
+Por que depois: (i) a configuração do servidor é variável do experimento no *rebaseline* e na T-F, e
+mudá-la durante essas campanhas confundiria a comparação; (ii) sem o controlador ligado ao laço de
+carga (B-28.2) e sem o resultado da etapa cliente (B-41) não há base para saber se a atuação no
+servidor acrescenta algo; (iii) parte das ações candidatas produz comportamentos fora dos admitidos
+pelo modelo formal (12.3), o que exige decisão antes de implementar.
+
+### 12.2 Parâmetros candidatos (hipótese de partida; **nada verificado no 15.0.21 nesta data**)
+
+O Senior não consultou a documentação nesta sessão; a lista vem do conhecimento geral do Infinispan
+13+ (API REST v2 e CLI `alter cache`). B-44.1 confirma ou descarta cada item, com fonte e prova.
+
+| Candidato | Mecanismo esperado | Expectativa (a confirmar) | Efeito pretendido | Classe (12.3) |
+|---|---|---|---|---|
+| `clustering.remote-timeout` por *cache* | `?action=set-mutable-attribute` / `alter cache` | mutável sem reinício | sob degradação, esperar mais antes do erro, ou falhar mais cedo | (a) só temporal |
+| `locking.acquire-timeout` | idem, se constar de `get-mutable-attributes` | incerto | menos espera por trava sob contenção | (a), se mutável |
+| rebalanceamento ligado/desligado (*cache* ou global) | operação REST de administração | disponível em tempo de execução | adiar *state transfer* enquanto a topologia oscila | (b) muda o momento da convergência |
+| disponibilidade da partição (`set-availability`) | operação REST de administração | disponível | forçar `AVAILABLE`/`DEGRADED` | (c) fora do modelo |
+| `state-transfer.timeout` | — | provavelmente imutável | — | provável descarte |
+| modo SYNC/ASYNC, `owners`, `segments`, `partition-handling` (`when-split`, `merge-policy`) | só recriando o *cache* | imutável sem recriar (perde dados) | — | fora |
+
+Trocar no cliente o par de *caches* irmãos (`sessions` e `sessions-async`) **não** equivale a mudar o
+modo de replicação: são dados distintos, sem migração. Fica fora.
+
+### 12.3 O que muda na conformidade com o modelo (seção 4)
+
+A etapa cliente produz um subconjunto dos traços de `Next`. Em B-44, cada parâmetro precisa de classe
+antes de entrar: **(a) só temporal**, em que o servidor aceita ou recusa as mesmas operações, em outro
+tempo, e os traços continuam admitidos; **(b) altera o momento da convergência** (rebalanceamento),
+admitido pelo modelo, que não fixa quando a entrega ocorre, mas muda o que se mede como tempo de
+convergência; **(c) altera a semântica sob partição** (`set-availability`, política de fusão): o modelo
+bloqueia a minoria (`PodeAgir`), então esses comportamentos ficam fora dele e exigiriam nova ação no
+TLA+ antes de qualquer uso. Regra proposta: só (a) entra sem nova decisão.
+
+### 12.4 Subtarefas
+
+- **B-44.1** (sem VM, *cluster* local, depois de B-28.2): verificação documental (doc 15.0.x, seção) e
+  empírica (`get-mutable-attributes` em cada *cache*; alterar, ler de volta, conferir ausência de
+  reinício e de rebalanceamento, sob carga leve) de cada candidato de 12.2. Saída: tabela final
+  candidato × mutável × efeito × classe.
+- **B-44.2** (sem VM): atuador sobre a API REST acionado pelo mesmo núcleo de decisão, com `shadow`
+  registrando a ação sem aplicar, testes com servidor simulado e reversão garantida ao sair do
+  CONSERVADOR e no encerramento.
+- **B-44.3**: pré-registro da avaliação da etapa servidor (braço cliente contra cliente+servidor, mesmo
+  desenho em blocos da seção 8).
+- **B-44.4** (VM): execução, com orçamento estimado em B-44.3.
+
+### 12.5 Critérios de aceite de B-44.1
+
+Cada candidato com fonte e prova empírica; nenhuma afirmação "mutável" sem leitura de volta do valor
+e sem log do servidor mostrando que o *cache* não reiniciou; classe (a), (b) ou (c) justificada.
+
+### 12.6 O que exige aprovação posterior do Gestor
+
+1. A lista final de parâmetros depois de B-44.1.
+2. Qualquer parâmetro das classes (b) ou (c); para (c), também a extensão do modelo TLA+.
+3. O pré-registro e o tempo de máquina de B-44.3 e B-44.4.
+4. Se B-44.4 roda antes da entrega final do TCC ou depois dela.

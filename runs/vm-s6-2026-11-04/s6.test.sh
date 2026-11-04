@@ -549,6 +549,7 @@ av "A6 sem clsact antes do KILL" "FALHA: A6 estado.txt sem clsact antes do KILL"
 av "A6 sem clsact depois do KILL" "FALHA: A6 qdisc-apos-kill.txt sem clsact" "sed -i '/clsact/d' g5b-A-copia/qdisc-apos-kill.txt"
 av "A6 persistencia de 2 s menos 1 ms" "FALHA: A6 t_persistencia_ok - t_kill" "$CR; poe t_persistencia_ok \$(( \$(cr t_kill) + 1999000000 ))"
 av "A6 amostra de persistencia fora do intervalo" "FALHA: A6 persistencia.txt" "echo '1 clsact presente, sem end' >> g5b-A-copia/persistencia.txt"
+av "A6 persistencia.txt vazio (MS-4)" "FALHA: A6 persistencia.txt: 0 amostra(s)" ": > g5b-A-copia/persistencia.txt"
 av "A6 MergeView entre o KILL e a persistencia" "FALHA: A6 05-vistas.log" \
    "$CR; t=\$(( (\$(cr t_kill) + 1000000000) / 1000000000 )); echo \"\$(date -u -d @\$t +'%Y-%m-%d %H:%M:%S'),000 INFO  [o.i.CLUSTER] ISPN000093: MergeView::[isn2|6] (3) [a, b, c]\" >> 05-vistas.log"
 av "A6 MergeView com instante ilegivel" "MergeView com instante ilegivel" "echo 'xx ISPN000093: MergeView::[isn2|6] (3) [a, b, c]' >> 05-vistas.log"
@@ -579,6 +580,8 @@ av "D-2 amostra sem clsact durante o corte" "FALHA: D-2 serie tc de isn3 incoere
 av "D-2 clsact depois do heal" "FALHA: D-2 serie tc de isn3 incoerente" \
    "$CR; h=\$(( \$(cr t_heal) + 1000000000 )); awk -F, -v h=\"\$h\" 'BEGIN{OFS=\",\"} NR>1 && \$1+0>=h+0 && !d {\$2=\"1\"; d=1} {print}' janela/tc-isn3.csv > x && mv x janela/tc-isn3.csv"
 av "D-2 serie vazia" "FALHA: D-2" "head -1 janela/tc-isn3.csv > x && mv x janela/tc-isn3.csv"
+av "D-2 serie truncada logo depois do heal (MS-5)" "FALHA: D-2 serie tc de isn3 incoerente" \
+   "$CR; h=\$(( \$(cr t_heal) + 1000000000 )); awk -F, -v h=\"\$h\" 'NR==1 || \$1+0 < h+0' janela/tc-isn3.csv > x && mv x janela/tc-isn3.csv"
 av "D-3 AccuracyUSec=1min" "FALHA: D-3 timer: AccuracyUSec=1min" "sed -i 's/^AccuracyUSec=1s/AccuracyUSec=1min/' g5b-A-copia/unit-armada.txt"
 av "D-3 prazo diferente (99 s)" "FALHA: D-3 timer" "sed -i 's/^OnActiveSec=98s/OnActiveSec=99s/' g5b-A-copia/unit-armada.txt"
 avok "D-3 prazo no formato do systemd real (1min 38s)" "OnActiveSec=1min 38s" "sed -i 's/^OnActiveSec=98s/OnActiveSec=1min 38s/' g5b-A-copia/unit-armada.txt"

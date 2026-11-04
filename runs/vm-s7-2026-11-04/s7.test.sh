@@ -581,6 +581,7 @@ av "B1/A5 marcador end presente" "FALHA: B1/A5" "echo 'fault=F2 node=isn3 event=
 av "B1/A6 sem clsact antes do KILL" "FALHA: B1/A6 estado.txt sem clsact antes do KILL" "sed -i '/clsact/d' g5b-B-copia/estado.txt"
 av "B1/A6 sem clsact depois do KILL" "FALHA: B1/A6 qdisc-apos-kill.txt sem clsact" "sed -i '/clsact/d' g5b-B-copia/qdisc-apos-kill.txt"
 av "B1/A6 persistencia de 2 s menos 1 ms" "FALHA: B1/A6 t_persistencia_ok - t_kill" "$CR; poe t_persistencia_ok \$(( \$(cr t_kill) + 1999000000 ))"
+av "B1/A6 persistencia.txt vazio (MS-4)" "FALHA: B1/A6 persistencia.txt: 0 amostra(s)" ": > g5b-B-copia/persistencia.txt"
 av "B1/A6 MergeView entre o KILL e a persistencia" "FALHA: B1/A6 05-vistas.log" \
    "$CR; t=\$(( (\$(cr t_kill) + 1000000000) / 1000000000 )); echo \"\$(date -u -d @\$t +'%Y-%m-%d %H:%M:%S'),000 INFO  [o.i.CLUSTER] ISPN000093: MergeView::[isn2|6] (3) [a, b, c]\" >> 05-vistas.log"
 av "B1/A11 portao pos FALHA" "FALHA: B1/A11 portao 5.1 pos" "echo 'FALHA portao: amostras_ruins=1' > 06-portao51-pos.avaliacao"
@@ -616,6 +617,8 @@ av "B6 timer ao fim" "FALHA: B6 timer tcc-heal ao fim" "sed -i 's/^(nenhum)\$/tc
 av "B6 systemctl stop no journal do sudo (desarmado)" "FALHA: B6 1 'systemctl stop'" "jsudo 1 'COMMAND=/usr/bin/systemctl stop tcc-heal-1-2.timer' session-3.scope"
 av "B7 sem t_mergeview" "FALHA: B7 cronologia" "sed -i '/^t_mergeview=/d' g5b-B-copia/cronologia.txt"
 av "B7 t_saudavel antes de t_mergeview" "FALHA: B7 cronologia" "$CR; poe t_saudavel \$(( \$(cr t_mergeview) - 1 ))"
+av "D-1 cura manual (del da sessao) depois de t_fire (MS-3)" "FALHA: D-1 detector do sudo: 1 tc qdisc del ... clsact da sessao desde t_kill" \
+   "$CR; jsudo \$(( \$(cr t_fire) / 1000 + 1000000 )) 'COMMAND=/usr/bin/nsenter -t 4003 -n tc qdisc del dev eth0 clsact' session-9.scope"
 av "D-1 cura manual (del da sessao) depois do KILL" "FALHA: D-1 detector do sudo: 1 tc qdisc del ... clsact da sessao desde t_kill" \
    "$CR; jsudo \$(( \$(cr t_kill) / 1000 + 500000 )) 'COMMAND=/usr/bin/nsenter -t 4003 -n tc qdisc del dev eth0 clsact' session-9.scope"
 av "D-1 o del da unit vira sessao (M4: sem filtro de origem)" "FALHA: D-1 detector do sudo: 1 tc qdisc del ... clsact da sessao" \
@@ -629,6 +632,8 @@ av "D-2 amostra sem clsact durante o corte" "FALHA: D-2 serie tc de isn3 incoere
 av "D-2 clsact depois do disparo" "FALHA: D-2 serie tc de isn3 incoerente" \
    "$CR; h=\$(( \$(cr t_fire) + 1000000000 )); awk -F, -v h=\"\$h\" 'BEGIN{OFS=\",\"} NR>1 && \$1+0>=h+0 && !d {\$2=\"1\"; d=1} {print}' janela/tc-isn3.csv > x && mv x janela/tc-isn3.csv"
 av "D-2 serie vazia" "FALHA: D-2" "head -1 janela/tc-isn3.csv > x && mv x janela/tc-isn3.csv"
+av "D-2 serie truncada logo depois do disparo (MS-5)" "FALHA: D-2 serie tc de isn3 incoerente" \
+   "$CR; h=\$(( \$(cr t_fire) + 1000000000 )); awk -F, -v h=\"\$h\" 'NR==1 || \$1+0 < h+0' janela/tc-isn3.csv > x && mv x janela/tc-isn3.csv"
 av "D-3 AccuracyUSec=1min" "FALHA: D-3 timer: AccuracyUSec=1min" "sed -i 's/^AccuracyUSec=1s/AccuracyUSec=1min/' g5b-B-copia/unit-armada.txt"
 av "D-3 prazo_s diferente (15)" "FALHA: D-3 timer" "sed -i '1s/prazo_s=14/prazo_s=15/' g5b-B-copia/unit-armada.txt"
 av "sem parametros.txt" "FALHA: sem" "rm parametros.txt"
@@ -731,6 +736,7 @@ nova_arvore; : > "$T/shim.log"
 X=$(env -u TCC_DIR HOME="$T/home" PATH="$BIN:$PATH" SHIM_LOG="$T/shim.log" SHIM_STATE="$T/state" S7_TESTE=1 S7_DUR=8 S7_T_KILL_S=4 S7_MARGEM_S=6 S7_TOL_S=5 S7_G5B_FOLGA=3 S7_D2_PRE_FIRE_S=2 \
   S7T_G5B_REAL="$REPO/runs/gate-b29/g5b.sh" bash "$G/runs/vm-s7-2026-11-04/s7.sh" --dry-run --boot-esperado "$BOOT" --bloco-anterior "$ANT" 2>&1); r=$?
 ok "T-12 rc 0" 0 "$r"; contem "T-12 plano do S7" "S7 (G-5b-B) dry-run: nada executado" "$X"
+contem "T-12 plano do passo 3 com o modo B (R-2)" "e bash runs/gate-b29/g5b.sh B neste terminal" "$X"; nao "T-12 plano sem 'g5b.sh A' (R-2)" "g5b.sh A " "$X"
 contem "T-12 inclui o dry-run do g5b.sh B" "G-5b-B (dry-run; nada executado): duracao=8s, KILL em +4s do start" "$X"
 ok "T-12 nenhum sudo/podman/tc/systemctl/journalctl/flock" 0 "$(grep -cE '^(sudo|podman|tc|systemctl|journalctl|flock) ' "$T/shim.log")"
 ok "T-12 nenhum vm-* criado" 0 "$(ls -d "$G/runs/vm-s7-2026-11-04"/vm-* 2>/dev/null | wc -l | tr -d ' ')"

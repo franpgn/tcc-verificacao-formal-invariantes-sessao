@@ -222,7 +222,7 @@ roda() {
     SHIM_LOG="$T/shim.log" SHIM_STATE="$T/state" S5T_FIXTURE="$FIXTURE" S5T_BOOT_FILE="$T/boot_id" \
     S5_TESTE=1 S5_HASHES="$T/hashes" S5_JAR_ESPERADO="$JARH" S5_BOOT_ID_FILE="$T/boot_id" S5_PORTAO_MIN_S=1 S5_PORTAO_FOLGA_S=0 \
     S5_BASE_S=7 S5_SAUDE_S=2 S5_PING_BASE_N=6 S5_PING_JANELA_N=4 S5_TC_AMOSTRAS="1 2" S5_ESPERA_START_S=30 S5_POS_FIM_S=1 \
-    S5_L1_ESPERA_COLETOR_S=30 "$@" bash "$T/home/tcc-gate/runs/vm-s5-2026-10-28/s5.sh" --boot-esperado "${ARG_BOOT:-$BOOT}" 2>&1)"; RC=$?
+    S5_L1_ESPERA_COLETOR_S=30 S5_BASE_MIN_N=3 "$@" bash "$T/home/tcc-gate/runs/vm-s5-2026-10-28/s5.sh" --boot-esperado "${ARG_BOOT:-$BOOT}" 2>&1)"; RC=$?
   OUT="$(ls -d "$T/home/tcc-gate/runs/vm-s5-2026-10-28"/vm-* 2>/dev/null | head -1)"
   sleep 0.3
 }
@@ -251,6 +251,13 @@ contem "T-s5-0 BOOT_ESPERADO = o argumento --boot-esperado" 'BOOT_ESPERADO="$BOO
 nao "T-s5-0 sem override de boot_id esperado no modo de teste" "S5_BOOT_ESPERADO" "$(cat "$S5")"
 ok "T-s5-0 FOLGA_LAT_S definido uma unica vez (a decisao do Gestor muda so esta linha)" 1 "$(grep -c '^FOLGA_LAT_S=' "$S5")"
 contem "T-s5-0 FOLGA_LAT_S gravado em parametros.txt (a avaliacao le dali)" 'echo "FOLGA_LAT_S=$FOLGA_LAT_S"' "$(cat "$S5")"
+# rastreabilidade dos limiares (docs/rastreabilidade-limiares-s5-s7-2026-11-04.md, 4.1 e 4.2; decisao do Gestor, 2026-11-04)
+ok "T-s5-0 FOLGA_LAT_S=0 (mediana da janela <= p95 da base, leitura literal do §5.6)" 1 "$(grep -cE '^FOLGA_LAT_S=0( |$)' "$S5")"
+ok "T-s5-0 BASE_MIN_N=20 (com n < 20 o p95 por posto mais proximo e o maximo)" 1 "$(grep -cE '^BASE_MIN_N=20( |$)' "$S5")"
+contem "T-s5-0 BASE_MIN_N gravado em parametros.txt (a avaliacao le dali)" 'echo "BASE_MIN_N=$BASE_MIN_N"' "$(cat "$S5")"
+ok "T-s5-0 nenhum minimo de amostras fixo em 3 na base" 0 "$(grep -cE 'nb" -ge 3|-ge 3 \]' "$S5")"
+H=$(( 60 / 2 )); ok "T-s5-0 a base de producao (BASE_S/SAUDE_S = $H) cobre o minimo de 20 por fonte" 1 "$([ "$H" -ge 20 ] && echo 1 || echo 0)"
+contem "T-s5-0 BASE_S=60 e SAUDE_S=2 (a conta acima)" "BASE_S=60" "$(cat "$S5")"
 contem "T-s5-0 jar esperado = o do S4 (3594c690...7bee)" "JAR_ESPERADO=3594c690cfacd2be1f88e58d2a65a4cd944a06688abcb9ae5b4d3df2f7dc7bee" "$(cat "$S5")"
 contem "T-s5-0 l1.sh chamado sem tocar no arquivo" 'bash runs/gate-netdegrade/l1.sh 2>&1 | tee "$OUT/04-l1.log"; RC=${PIPESTATUS[0]}' "$(cat "$S5")"
 ok "T-s5-0 todo passo com '| tee \"\$OUT/NN-...' le o PIPESTATUS na mesma linha" 0 \
@@ -306,6 +313,8 @@ contem "T-s5-2 boot_id registrado no inicio" "boot_id: $BOOT" "$PRE"
 contem "T-s5-2 argumento registrado" "argumentos: --boot-esperado $BOOT" "$PRE"
 contem "T-s5-2 boot_id esperado registrado (Q-11)" "boot_id esperado (--boot-esperado): $BOOT" "$PRE"
 contem "T-s5-2 BOOT_ESPERADO em parametros.txt = o argumento" "BOOT_ESPERADO=$BOOT" "$(cat "$OUT/parametros.txt")"
+contem "T-s5-2 FOLGA_LAT_S=0 em parametros.txt" "FOLGA_LAT_S=0" "$(grep -x 'FOLGA_LAT_S=0' "$OUT/parametros.txt")"
+contem "T-s5-2 BASE_MIN_N em parametros.txt" "BASE_MIN_N=3" "$(cat "$OUT/parametros.txt")"
 contem "T-s5-2 go.log versionado com a linha 'go ' do S4 aceito (Q-12)" "runs/gate-b29/go.log: HEAD e prefixo exato; 1 linha(s) 'go ' acrescentada(s) (aceito, Q-12)" "$PRE"
 contem "T-s5-2 go.log versionado registrado" "go G-1 (REP=4, janela de 90 s em isn3)" "$PRE"
 contem "T-s5-2 boot_id registrado no fim" "boot_id fim: $BOOT" "$(cat "$OUT/07-boot-fim.txt")"
@@ -430,6 +439,9 @@ nova_arvore; roda $'GO\n' SHIM_SONDA_SEM_FINAL=1
 ok "T-s5-5 rc 2" 2 "$RC"; contem "T-s5-5 motivo" "remove-final" "$(cat "$OUT/01-base.log")"
 ok "T-s5-5 sem portao" 0 "$(grep -c '^PORTAO' "$T/shim.log")"; ok "T-s5-5 l1 nao chamado" 0 "$(grep -c '^L1STUB' "$T/shim.log")"
 
+nova_arvore; roda $'GO\n' S5_BASE_MIN_N=50
+ok "T-s5-5 base com menos de BASE_MIN_N amostras por fonte: rc 2" 2 "$RC"; contem "T-s5-5 motivo BASE_MIN_N" "menos de 50 amostras de 11222" "$(cat "$OUT/01-base.log")"
+
 echo "== T-s5-6: portao pre ruim PARA (sem l1) =="
 nova_arvore; roda $'GO\n' S5T_PORTAO_RUIM=1
 ok "T-s5-6 rc 3" 3 "$RC"; contem "T-s5-6 mensagem" "portao 5.1 pre falhou: S5 NAO roda" "$SAIDA"
@@ -508,7 +520,16 @@ av   "NIC da VM com netem depois do L-1" "FALHA: NIC da VM" "sed -i 's/^nic eth0
 av   "timer tcc-heal depois do L-1" "FALHA: timers/units tcc-heal depois do L-1" "sed -i 's/^timers tcc-heal: 0 units tcc-heal: 0$/timers tcc-heal: 1 units tcc-heal: 1/' 05-pos-l1.log"
 av   "portao pos FALHA" "FALHA: portao 5.1 pos" "echo 'FALHA portao: amostras_ruins=1' > 06-portao51-pos.avaliacao"
 av   "sem parametros.txt" "FALHA: sem" "rm parametros.txt"
-# a regra de latencia usa o FOLGA_LAT_S gravado em parametros.txt (pronta para a decisao do Gestor sobre o "+1 ms")
+# a regra de latencia usa o FOLGA_LAT_S gravado em parametros.txt; com FOLGA_LAT_S=0 a copia boa e o caso de igualdade
+# (o shim do curl da 0,003 s em todas as amostras: mediana da janela = p95 da base) e 1 us acima ja recusa
+contem "T-s5-11 copia boa: mediana = p95 da base aceita com folga 0 (fronteira)" "OK: REST de controle isn1 (11222) time_total: mediana durante 0.003000 s <= p95 da base 0.003000 s + 0 s" "$(bash "$S5" --avaliar "$B")"
+av   "mediana da janela 1 us acima do p95 da base (folga 0)" "FALHA: REST de controle isn1 (11222) time_total: mediana durante 0.003001 s" \
+     "awk -F, 'BEGIN{OFS=\",\"} NR>1 && \$2==\"11222\" {\$5=\"0.003001\"} {print}' janela/saude.csv > x && mv x janela/saude.csv"
+# minimo de amostras da base lido de parametros.txt (BASE_MIN_N): o menor n de base dos canais da regra de latencia
+NB=$(cd "$B" && { for p in 11222 11224 ssh22; do awk -F, -v p="$p" 'NR > 1 && $2 == p' base/saude.csv | wc -l; done; grep -c 'time=' base/ping.txt; } | sort -n | head -1 | tr -d ' ')
+avok "BASE_MIN_N igual ao menor n da base ($NB) aceita (fronteira)" "S5: VALIDO" "sed -i 's/^BASE_MIN_N=.*/BASE_MIN_N=$NB/' parametros.txt"
+av   "BASE_MIN_N = menor n da base + 1 recusa" "amostras insuficientes (n base=$NB >= $((NB + 1))" "sed -i 's/^BASE_MIN_N=.*/BASE_MIN_N=$((NB + 1))/' parametros.txt"
+av   "parametros.txt sem BASE_MIN_N" "FALHA: parametros.txt sem BASE_MIN_N" "sed -i '/^BASE_MIN_N=/d' parametros.txt"
 av   "FOLGA_LAT_S negativa em parametros.txt recusa a latencia" "FALHA: REST de isn3 (11224) time_total: mediana durante" "sed -i 's/^FOLGA_LAT_S=.*/FOLGA_LAT_S=-1/' parametros.txt"
 avok "a regra da latencia cita o FOLGA_LAT_S de parametros.txt" "+ 0.0025 s" "sed -i 's/^FOLGA_LAT_S=.*/FOLGA_LAT_S=0.0025/' parametros.txt"
 avok "DEGRADED no saude-log e RESULTADO" "RESULTADO: 1 amostra(s) do saude-log na janela fora de HEALTHY/3" \

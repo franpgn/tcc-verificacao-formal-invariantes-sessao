@@ -328,7 +328,7 @@ S7 (G-5b-B) dry-run: nada executado. --boot-esperado=${BOOT_ARG:-?} --bloco-ante
   1. bash runs/gate-b29/g5b.sh B --dry-run: duracao=${DUR}s, KILL em +${T_KILL_S}s, margem do dead-man=${MARGEM_S}s
   2. portao 5.1 pre (${PORTAO_MIN_S} s); se falhar, PARA (rc 3)
   3. coletor (saude a cada ${SAUDE_S} s e tc qdisc de isn3 a cada ${TC_S} s, so leitura, a partir do GO; espera o GO ate ${ESPERA_GO_S} s)
-     e bash runs/gate-b29/g5b.sh A neste terminal: o GO e digitado pelo Gestor no prompt do g5b.sh
+     e bash runs/gate-b29/g5b.sh B neste terminal: o GO e digitado pelo Gestor no prompt do g5b.sh
   4. copias de g5b-B e go.log, journal da unit e do sudo, timers, tc dos 3 netns, NIC, vistas
   5. portao 5.1 pos (fim >= fim do g5b.sh + ${PORTAO_FOLGA_S} s)   6. boot_id do fim   7. avaliacao e MANIFEST.sha256
 --- bash runs/gate-b29/g5b.sh B --dry-run
@@ -566,7 +566,7 @@ portao() { # portao <nome> <duracao-s>
 }
 portao 02-portao51-pre "$PORTAO_MIN_S" || abortar 3 "portao 5.1 pre falhou: S7 NAO roda (ver 02-portao51-pre.log/.avaliacao)"
 
-# ---- 3. coletor e g5b.sh A (GO digitado pelo Gestor no prompt do g5b.sh)
+# ---- 3. coletor e g5b.sh B (GO digitado pelo Gestor no prompt do g5b.sh)
 T3_EPOCH=$(date +%s); T3_ISO=$(date -Is -d "@$T3_EPOCH")
 echo "T3_EPOCH=$T3_EPOCH" >> "$OUT/parametros.txt"
 coletor & CPID=$!

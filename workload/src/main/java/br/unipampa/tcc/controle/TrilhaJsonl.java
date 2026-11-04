@@ -72,6 +72,11 @@ public final class TrilhaJsonl implements Closeable {
         return descartadas;
     }
 
+    /** Linhas que nao chegaram ao arquivo: erros de escrita mais descartadas depois do fechamento (N3). */
+    public synchronized long linhasPerdidas() {
+        return errosEscrita + descartadas;
+    }
+
     @Override
     public synchronized void close() {
         if (saida == null) {

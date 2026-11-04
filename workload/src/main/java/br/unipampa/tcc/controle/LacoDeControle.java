@@ -208,6 +208,8 @@ public final class LacoDeControle implements AutoCloseable {
             if (t != null) {
                 t.interrupt();
                 try {
+                    // N2 (V-W3): o join nao decide nada; logo abaixo o encerramento toma travaTick e espera
+                    // o tick em curso de qualquer forma. Os 5 s so evitam esperar para sempre um tick preso.
                     t.join(TimeUnit.SECONDS.toMillis(5));
                 } catch (InterruptedException e) {
                     Thread.currentThread().interrupt();
@@ -243,6 +245,7 @@ public final class LacoDeControle implements AutoCloseable {
             fo.put("descartados_no_encerramento", r.descartadosNoEncerramento());
             fo.put("violacoes_descartadas_no_encerramento", r.violacoesDescartadasNoEncerramento());
             extrasObservaveis.accept(fo);
+            fo.put("linhas_perdidas", c.observaveis().linhasPerdidas());
             c.observaveis().escrever(fo);
             ExecutorDeAcoes.Contadores k = r.acoes();
             ObjectNode fd = FormatoJsonl.linha("fim");
@@ -257,7 +260,11 @@ public final class LacoDeControle implements AutoCloseable {
             fd.put("reversoes", k.reversoes());
             fd.put("reversoes_falhas", k.reversoesFalhas());
             fd.put("acoes_descartadas", k.descartadas());
+            fd.put("acoes_ja_ativas", k.jaAtivas());
             fd.put("executor_no_prazo", r.executorNoPrazo());
+            fd.put("prazo_chamada_ns", c.executor().prazoChamadaNs());
+            fd.put("prazo_encerramento_ns", c.executor().prazoEncerramentoUsadoNs());
+            fd.put("linhas_perdidas", c.decisoes().linhasPerdidas());
             c.decisoes().escrever(fd);
             c.observaveis().close();
             c.decisoes().close();
@@ -336,5 +343,13 @@ public final class LacoDeControle implements AutoCloseable {
     /** Ticks executados. */
     public long ticks() {
         return ticks.get();
+    }
+
+    /**
+     * N3 (V-W3): linhas dos dois JSONL que nao chegaram ao arquivo ate agora. Inclui as que chegam depois
+     * da linha {@code fim} (executor fora do prazo), que por isso nao podem estar nela.
+     */
+    public long linhasPerdidas() {
+        return c.observaveis().linhasPerdidas() + c.decisoes().linhasPerdidas();
     }
 }

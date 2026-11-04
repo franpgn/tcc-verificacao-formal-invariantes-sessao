@@ -11,6 +11,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 
 /**
@@ -27,7 +28,10 @@ import java.util.function.Consumer;
  *       de novo e ignorado; reverter o que nao esta ativo nao faz nada. Aplicacao que falha e revertida
  *       na hora; reversao que falha fica na pilha e e tentada de novo no encerramento.</li>
  *   <li><b>Encerramento</b> ({@link #encerrar()}): descarta as aplicacoes ainda na fila, desfaz a pilha
- *       inteira e espera no maximo {@code prazoEncerramentoNs}.</li>
+ *       inteira e espera no maximo {@code T_enc = (A + 1) x T_cham} (V-W3, R2; decisao do coordenador de
+ *       2026-11-04): {@code T_cham} e o prazo de cada chamada ({@code prazoChamadaNs}, 2 s, origem no
+ *       B-26.2) e {@code A} e o tamanho da pilha no encerramento, contando a aplicacao em curso; o
+ *       {@code +1} cobre a chamada em curso quando o encerramento chega. Nenhum prazo fixo.</li>
  *   <li><b>Gancho de desligamento da JVM</b> (camada 2): registrado no {@link #iniciar()} em
  *       {@code active}; se a JVM sair sem o encerramento normal (excecao, {@code System.exit}, sinal),
  *       ele desfaz a pilha com o mesmo prazo. O encerramento normal o remove.</li>
@@ -46,6 +50,7 @@ public final class ExecutorDeAcoes implements AutoCloseable {
 
     static final String PREVISTA = "PREVISTA";
     static final String DESCARTADA = "DESCARTADA";
+    static final String JA_ATIVA = "JA_ATIVA";
 
     /** Registro do gancho de desligamento (a JVM em producao; um duble nos testes). */
     public interface Gancho {
@@ -73,9 +78,12 @@ public final class ExecutorDeAcoes implements AutoCloseable {
         }
     }
 
-    /** Contadores para a linha de fim do JSONL. */
+    /**
+     * Contadores para a linha de fim do JSONL. {@code jaAtivas}: pedidos de aplicacao de acao que ainda
+     * estava na pilha (reversao anterior falhou), gravados como {@code JA_ATIVA} (V-W3, R4).
+     */
     public record Contadores(long pedidas, long ignoradas, long executadas, long falhas, long reversoes,
-                             long reversoesFalhas, long descartadas) {
+                             long reversoesFalhas, long descartadas, long jaAtivas) {
     }
 
     private enum TipoTarefa { APLICAR, REVERTER, REVERTER_TUDO, FIM }
@@ -90,7 +98,6 @@ public final class ExecutorDeAcoes implements AutoCloseable {
     private final ModoAtuacao modo;
     private final AtuadorCluster atuador;
     private final long prazoChamadaNs;
-    private final long prazoEncerramentoNs;
     private final FonteDeTempo tempo;
     private final Consumer<RegistroAcao> trilha;
     private final Gancho gancho;
@@ -105,12 +112,19 @@ public final class ExecutorDeAcoes implements AutoCloseable {
     private long reversoes;
     private long reversoesFalhas;
     private long descartadas;
+    private long jaAtivas;
     private boolean fechado;
 
     // --- so active
     private final LinkedBlockingQueue<Tarefa> fila = new LinkedBlockingQueue<>();
     /** Pilha das acoes aplicadas; so a thread executora mexe. Topo = primeiro. */
     private final Deque<AcaoCluster> pilha = new ArrayDeque<>();
+    /** Tamanho da pilha, legivel fora da thread executora (calculo de T_enc). */
+    private final AtomicInteger tamanhoPilha = new AtomicInteger();
+    /** Ha uma aplicacao em curso na thread executora (conta em A). */
+    private volatile boolean aplicando;
+    /** T_enc usado no encerramento; {@code null} antes dele. */
+    private volatile Long prazoEncerramentoUsadoNs;
     private final Object travaPendentes = new Object();
     private int pendentes;
     private volatile boolean encerrando;
@@ -122,25 +136,33 @@ public final class ExecutorDeAcoes implements AutoCloseable {
     private boolean resultadoEncerramento;
 
     /**
-     * @param prazoChamadaNs      prazo de cada chamada ao atuador (&gt; 0)
-     * @param prazoEncerramentoNs espera maxima de {@link #encerrar()} e do gancho (&gt; 0)
-     * @param tempo               relogio dos {@code end_ns} (instantes da trilha)
-     * @param trilha              destino de cada {@link RegistroAcao} (thread do laco em shadow; thread
-     *                            executora em active)
+     * @param prazoChamadaNs prazo {@code T_cham} de cada chamada INTEIRA ao atuador (&gt; 0); tambem e a
+     *                       unidade do prazo do encerramento, {@code (A + 1) x T_cham}
+     * @param tempo          relogio dos {@code end_ns} (instantes da trilha)
+     * @param trilha         destino de cada {@link RegistroAcao} (thread do laco em shadow; thread
+     *                       executora em active)
      */
-    public ExecutorDeAcoes(ModoAtuacao modo, AtuadorCluster atuador, long prazoChamadaNs, long prazoEncerramentoNs,
+    public ExecutorDeAcoes(ModoAtuacao modo, AtuadorCluster atuador, long prazoChamadaNs,
                            FonteDeTempo tempo, Consumer<RegistroAcao> trilha, Gancho gancho) {
         this.modo = Objects.requireNonNull(modo, "modo");
         this.atuador = Objects.requireNonNull(atuador, "atuador");
         this.tempo = Objects.requireNonNull(tempo, "tempo");
         this.trilha = Objects.requireNonNull(trilha, "trilha");
         this.gancho = Objects.requireNonNull(gancho, "gancho");
-        if (prazoChamadaNs <= 0 || prazoEncerramentoNs <= 0) {
-            throw new IllegalArgumentException("prazos precisam ser > 0: chamada=" + prazoChamadaNs
-                    + " encerramento=" + prazoEncerramentoNs);
+        if (prazoChamadaNs <= 0) {
+            throw new IllegalArgumentException("prazo da chamada precisa ser > 0: " + prazoChamadaNs);
         }
         this.prazoChamadaNs = prazoChamadaNs;
-        this.prazoEncerramentoNs = prazoEncerramentoNs;
+    }
+
+    /** {@code T_cham}. */
+    public long prazoChamadaNs() {
+        return prazoChamadaNs;
+    }
+
+    /** {@code T_enc} usado no encerramento (normal ou pelo gancho), ou {@code null} antes dele. */
+    public Long prazoEncerramentoUsadoNs() {
+        return prazoEncerramentoUsadoNs;
     }
 
     public ModoAtuacao modo() {
@@ -178,7 +200,8 @@ public final class ExecutorDeAcoes implements AutoCloseable {
 
     public Contadores contadores() {
         synchronized (trava) {
-            return new Contadores(pedidas, ignoradas, executadas, falhas, reversoes, reversoesFalhas, descartadas);
+            return new Contadores(pedidas, ignoradas, executadas, falhas, reversoes, reversoesFalhas, descartadas,
+                    jaAtivas);
         }
     }
 
@@ -263,7 +286,7 @@ public final class ExecutorDeAcoes implements AutoCloseable {
      * Encerramento normal: deixa de aceitar pedidos, descarta aplicacoes ainda na fila, desfaz a pilha
      * (origem {@code ENCERRAMENTO}), para a thread e remove o gancho. Idempotente.
      *
-     * @return {@code true} se tudo terminou dentro de {@code prazoEncerramentoNs}
+     * @return {@code true} se tudo terminou dentro de {@code T_enc = (A + 1) x T_cham}
      */
     public boolean encerrar() {
         return encerrarCom(RegistroAcao.Origem.ENCERRAMENTO, true);
@@ -289,6 +312,7 @@ public final class ExecutorDeAcoes implements AutoCloseable {
                 t = executora;
             }
             if (modo == ModoAtuacao.SHADOW || t == null) {
+                prazoEncerramentoUsadoNs = (lifo.size() + 1L) * prazoChamadaNs;
                 Collections.reverse(lifo);
                 long agora = tempo.agoraNs();
                 for (AcaoCluster a : lifo) {
@@ -298,12 +322,16 @@ public final class ExecutorDeAcoes implements AutoCloseable {
                 return true;
             }
             encerrando = true;
+            // R2 (V-W3): A = pilha + aplicacao em curso, lidos agora; aplicacoes ainda na fila sao descartadas
+            long a = tamanhoPilha.get() + (aplicando ? 1L : 0L);
+            long prazoNs = (a + 1L) * prazoChamadaNs;
+            prazoEncerramentoUsadoNs = prazoNs;
             long agora = tempo.agoraNs();
             enfileirar(new Tarefa(TipoTarefa.REVERTER_TUDO, null, origem, null, null, agora));
             enfileirar(new Tarefa(TipoTarefa.FIM, null, origem, null, null, agora));
             boolean ok;
             try {
-                t.join(Math.max(1L, TimeUnit.NANOSECONDS.toMillis(prazoEncerramentoNs)));
+                t.join(Math.max(1L, TimeUnit.NANOSECONDS.toMillis(prazoNs)));
                 ok = !t.isAlive();
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
@@ -395,9 +423,26 @@ public final class ExecutorDeAcoes implements AutoCloseable {
             return;
         }
         if (naPilha(a)) {
+            // R4 (V-W3): reversao anterior falhou e a acao continua aplicada; o pedido nao some da trilha
+            synchronized (trava) {
+                jaAtivas++;
+            }
+            trilha.accept(new RegistroAcao(RegistroAcao.Operacao.APLICAR, a, modo, atuador.nome(), false, JA_ATIVA,
+                    t.origem(), t.regra(), t.fimJanelaNs(), t.pedidoNs(), null, null, null, null,
+                    "reversao anterior falhou; acao ainda aplicada"));
             return;
         }
-        Chamada c = chamar(true, a);
+        aplicando = true;
+        Chamada c;
+        try {
+            c = chamar(true, a);
+            if (c.resultado().estado() != ResultadoAtuacao.Estado.FALHOU) {
+                pilha.push(a); // antes de zerar 'aplicando': A nunca deixa de contar esta acao
+                tamanhoPilha.set(pilha.size());
+            }
+        } finally {
+            aplicando = false;
+        }
         registrar(RegistroAcao.Operacao.APLICAR, a, t.origem(), t.regra(), t.fimJanelaNs(), t.pedidoNs(), c);
         ResultadoAtuacao r = c.resultado();
         if (r.estado() == ResultadoAtuacao.Estado.FALHOU) {
@@ -416,7 +461,6 @@ public final class ExecutorDeAcoes implements AutoCloseable {
                 executadas++;
             }
         }
-        pilha.push(a);
     }
 
     private void desfazer(AcaoCluster a, RegistroAcao.Origem origem, Decisao.Regra regra, Long fimJanelaNs,
@@ -428,6 +472,7 @@ public final class ExecutorDeAcoes implements AutoCloseable {
             for (Iterator<AcaoCluster> it = pilha.iterator(); it.hasNext(); ) {
                 if (it.next().chave().equals(a.chave())) {
                     it.remove();
+                    tamanhoPilha.set(pilha.size());
                     break;
                 }
             }

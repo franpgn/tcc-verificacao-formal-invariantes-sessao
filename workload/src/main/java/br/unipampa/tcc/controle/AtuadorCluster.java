@@ -2,7 +2,13 @@ package br.unipampa.tcc.controle;
 
 /**
  * W-3 (B-28.2): o que o controlador precisa de um atuador sobre o <i>cluster</i>. Uma chamada por
- * acao, sincrona, com prazo. Quem chama e sempre a thread unica do {@link ExecutorDeAcoes}, que cuida
+ * acao, sincrona, com prazo.
+ *
+ * <p><b>Prazo (V-W3, R2).</b> {@code prazoNs} ({@code T_cham}) limita a chamada INTEIRA: todos os pedidos
+ * HTTP da acao (todos os caches, todos os nos) e a leitura de volta. Um adaptador que gaste
+ * {@code T_cham} por pedido quebra a derivacao do prazo do encerramento,
+ * {@code T_enc = (A + 1) x T_cham} ({@link ExecutorDeAcoes}). Ao estourar o prazo, devolver
+ * {@link ResultadoAtuacao.Estado#FALHOU} (ou lancar) dentro dele.</p> Quem chama e sempre a thread unica do {@link ExecutorDeAcoes}, que cuida
  * da fila, da pilha de reversao, da idempotencia, do encerramento e do gancho de desligamento; o
  * atuador nao guarda estado de acoes.
  *

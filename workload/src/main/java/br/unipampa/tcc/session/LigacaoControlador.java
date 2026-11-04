@@ -59,8 +59,6 @@ final class LigacaoControlador implements AutoCloseable {
     static final long PRAZO_SONDA_NS = 1_500_000_000L;
     /** Prazo de cada chamada ao atuador: 2 s, o mesmo {@code curl -m} da sonda de saude (secao 4.4.2). */
     static final long PRAZO_CHAMADA_NS = 2_000_000_000L;
-    /** Espera maxima do encerramento do executor (e do gancho da JVM). Convencao, ver relatorio W-3. */
-    static final long PRAZO_ENCERRAMENTO_NS = 10_000_000_000L;
     /** Tick = W/5 (V-B26.1 secao 5.9: 1 s com W = 5 s). */
     static final int DIVISOR_TICK = 5;
 
@@ -80,7 +78,7 @@ final class LigacaoControlador implements AutoCloseable {
      * @param saude {@code null} = sem sonda de topologia (topologia indisponivel, sinal neutro)
      */
     record Pecas(FonteDeSaude saude, AtuadorCluster atuador, PoliticaDeAcao politica, ExecutorDeAcoes.Gancho gancho,
-                 long tickNs, long periodoSondaNs, long prazoSondaNs, long prazoEncerramentoNs) {
+                 long tickNs, long periodoSondaNs, long prazoSondaNs) {
         Pecas {
             Objects.requireNonNull(atuador, "atuador");
             Objects.requireNonNull(politica, "politica");
@@ -198,7 +196,7 @@ final class LigacaoControlador implements AutoCloseable {
     static Pecas pecasPadrao(Configuracao c, Cli cli) {
         return new Pecas(new ConsultaSaudeRest(c.urlsAdmin(), cli.usuario, cli.senha), new AtuadorNulo(),
                 PoliticaDeAcao.NENHUMA, ExecutorDeAcoes.Gancho.jvm(), c.parametros().wNs() / DIVISOR_TICK,
-                PERIODO_SONDA_NS, PRAZO_SONDA_NS, PRAZO_ENCERRAMENTO_NS);
+                PERIODO_SONDA_NS, PRAZO_SONDA_NS);
     }
 
     // ------------------------------------------------------------------ abertura
@@ -227,7 +225,7 @@ final class LigacaoControlador implements AutoCloseable {
             topologia = sonda::resumirAte;
         }
         ExecutorDeAcoes executor = new ExecutorDeAcoes(c.modo(), pecas.atuador(), PRAZO_CHAMADA_NS,
-                pecas.prazoEncerramentoNs(), tempo, r -> dec.escrever(FormatoJsonl.acao(r)), pecas.gancho());
+                tempo, r -> dec.escrever(FormatoJsonl.acao(r)), pecas.gancho());
         Referencia ref = c.referencia() == null ? Referencia.vazia() : c.referencia().referencia();
         MetaExecucao meta = new MetaExecucao(VERSAO_PROGRAMA, rep, c.modo(), cli.scenarioS3 ? "S3" : cli.scenario.name(),
                 cli.replicacao.rotulo(), c.nosEsperados(), c.parametros(),
@@ -328,6 +326,7 @@ final class LigacaoControlador implements AutoCloseable {
                 + r.transicoes() + " acoes_pedidas=" + r.acoes().pedidas() + " acoes_executadas="
                 + r.acoes().executadas() + " reversoes=" + r.acoes().reversoes() + " reversoes_falhas="
                 + r.acoes().reversoesFalhas() + " executor_no_prazo=" + r.executorNoPrazo()
-                + " eventos_antes_da_origem=" + r.eventosAntesDaOrigem();
+                + " eventos_antes_da_origem=" + r.eventosAntesDaOrigem()
+                + " linhas_jsonl_perdidas=" + laco.linhasPerdidas();
     }
 }

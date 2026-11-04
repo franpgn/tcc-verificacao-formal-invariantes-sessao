@@ -49,7 +49,7 @@ import java.util.concurrent.atomic.AtomicLong;
  *   <li>{@link #close()}: no fim da carga, antes da convergencia; desfaz toda acao.</li>
  * </ul>
  */
-final class LigacaoControlador implements AutoCloseable {
+final class LigacaoControlador implements AutoCloseable, WorkloadMain.ControleDaCarga {
 
     /** Versao do programa gravada nos metadados (a mesma do {@code @Command} de {@link Cli}). */
     static final String VERSAO_PROGRAMA = "session-workload 0.1.0-SNAPSHOT";
@@ -317,7 +317,8 @@ final class LigacaoControlador implements AutoCloseable {
     }
 
     /** Linha de stdout depois do {@link #close()}. */
-    synchronized String linhaResumo() {
+    @Override
+    public synchronized String linhaResumo() {
         LacoDeControle.Resumo r = resumo;
         if (r == null) {
             return "Controlador: modo=" + cfg.modo().rotulo() + " (aberto)";

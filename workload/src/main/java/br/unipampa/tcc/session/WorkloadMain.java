@@ -410,12 +410,16 @@ public final class WorkloadMain {
             // (S1/S2: o SessionOps unico; S3: todas as que compartilham o mapa, preenchidas abaixo).
             List<SessionOps> instanciasAuditor = new ArrayList<>(List.of(ops));
 
-            try {
+            // W-3: a carga roda dentro de executarCargaComControle: no fim (ou numa excecao), o instante do
+            // fim da carga e lido ANTES de o controlador encerrar (V-W3, R1) e o controlador desfaz toda acao
+            // e fecha os JSONL antes da convergencia.
+            final Supplier<Map<String, SessionState.Motivo>> invalidacoesS1S2 = invalidacoes;
+            CargaEncerrada<Supplier<Map<String, SessionState.Motivo>>> cargaEncerrada = executarCargaComControle(() -> {
             if (cli.scenarioS3) {
                 // B-33 (E2): cenario S3, tratado ANTES do enum Scenario (S1/S2 seguem o ramo abaixo).
-                invalidacoes = executarS3(cli, rep, latency, auditor, eventos, relogio, rastro,
+                return executarS3(cli, rep, latency, auditor, eventos, relogio, rastro,
                         parar, fim, totalOps, instanciasAuditor, politica, controle);
-            } else {
+            }
             ExecutorService pool = Executors.newFixedThreadPool(cli.threads);
             long opsAlvoPorThread = cli.ops > 0 ? cli.ops / cli.threads : Long.MAX_VALUE;
 
@@ -427,27 +431,21 @@ public final class WorkloadMain {
             }
             pool.shutdown();
             pool.awaitTermination(cli.duracaoSeg + 30, TimeUnit.SECONDS);
-            }
-            } finally {
-                // W-3: fim da carga, antes da convergencia: o controlador desfaz toda acao (camada 1 da
-                // reversao) e fecha os JSONL; tambem numa excecao da carga.
-                if (controle != null) {
-                    auditor.definirOuvinte(null);
-                    controle.close();
-                    System.out.println(controle.linhaResumo());
-                }
-            }
+            return invalidacoesS1S2;
+            }, () -> relogio.paraEpochNanos(System.nanoTime()), controle, () -> auditor.definirOuvinte(null));
+            invalidacoes = cargaEncerrada.resultado();
 
             // B-24: checagem de I5/I6 (convergencia sob quiescencia) feita UMA VEZ,
             // logo apos as threads geradoras de carga pararem de emitir operacoes --
             // aproximacao mais direta de "quiescencia" disponivel sem W_quiesc
             // (janela deslizante), que fica para o controlador (B-26). Ver
             // docs/plano-consolidacao-b21-b23-b24-2026-10-02.md SS3.3.
-            long fimCargaNs = relogio.paraEpochNanos(System.nanoTime());
+            long fimCargaNs = cargaEncerrada.fimCargaNs();
+            Long fimControleNs = cargaEncerrada.fimControleNs();
             if (cli.convergencia) {
                 // B-33: laco de convergencia substitui a rodada unica.
                 marcadores = executarConvergencia(cli, rcm, leitores, auditor, relogio,
-                        lerMarcadores(cli), fimCargaNs, rep);
+                        lerMarcadores(cli), fimCargaNs, fimControleNs, rep);
             } else {
                 auditor.rodadaUnica(leitores.leitoresSessao(), leitores.leitoresIdentidade());
                 marcadores = lerMarcadores(cli);
@@ -563,6 +561,58 @@ public final class WorkloadMain {
         }
     }
 
+    /** W-3: a carga de uma repeticao (S1/S2 ou S3), devolvendo o fornecedor das invalidacoes confirmadas. */
+    @FunctionalInterface
+    interface Carga<T> {
+        T executar() throws Exception;
+    }
+
+    /** W-3: o que o fim da carga precisa do controlador ({@link LigacaoControlador} em producao). */
+    interface ControleDaCarga {
+        /** Encerra o controlador: desfaz toda acao e fecha os JSONL. */
+        void close();
+
+        /** Linha {@code Controlador:} do stdout, depois do {@link #close()}. */
+        String linhaResumo();
+    }
+
+    /**
+     * Resultado da carga e os dois instantes do fim.
+     *
+     * @param fimCargaNs    instante em que a carga parou, lido antes do encerramento do controlador
+     * @param fimControleNs instante em que o controlador terminou de encerrar; {@code null} sem controlador
+     */
+    record CargaEncerrada<T>(T resultado, long fimCargaNs, Long fimControleNs) {
+    }
+
+    /**
+     * W-3 (V-W3, R1 e N1): roda a carga e, no {@code finally} (fim normal ou excecao), le o instante do fim
+     * da carga ANTES de encerrar o controlador; depois desliga os ouvintes, encerra o controlador (em active
+     * isso desfaz a pilha e pode levar ate {@code T_enc}) e le o instante do fim do controlador. Uma excecao
+     * da carga e relancada sem mudar, depois do encerramento.
+     *
+     * @param controle         {@code null} com {@code --controller off}
+     * @param desligarOuvintes chamado antes do {@code close} (so com controlador)
+     */
+    static <T> CargaEncerrada<T> executarCargaComControle(Carga<T> carga, java.util.function.LongSupplier agoraNs,
+            ControleDaCarga controle, Runnable desligarOuvintes) throws Exception {
+        T resultado;
+        long fimCargaNs;
+        Long fimControleNs = null;
+        try {
+            resultado = carga.executar();
+        } finally {
+            fimCargaNs = agoraNs.getAsLong();
+            if (controle != null) {
+                desligarOuvintes.run();
+                controle.close();
+                fimControleNs = agoraNs.getAsLong();
+                System.out.println(controle.linhaResumo());
+            }
+        }
+        return new CargaEncerrada<>(resultado, fimCargaNs, fimControleNs);
+    }
+
     /** W-3: abre o controlador a partir da configuracao ja conferida (injetavel nos testes). */
     @FunctionalInterface
     interface AberturaControlador {
@@ -597,7 +647,7 @@ public final class WorkloadMain {
      */
     private static Marcadores executarConvergencia(Cli cli, RemoteCacheManager rcm,
             LeitoresMultiReplica leitores, InvariantAuditor auditor, EpochClock relogio,
-            Marcadores marcadores, long fimCargaNs, int rep) throws java.io.IOException {
+            Marcadores marcadores, long fimCargaNs, Long fimControleNs, int rep) throws java.io.IOException {
         RemoteCache<String, SessionState> sessoesTopologia = rcm.getCache(cli.replicacao.cacheSessoes());
         int esperados = leitores.leitoresSessao().size();
         ConvergenciaLoop.SondaCluster sonda = () -> {
@@ -621,7 +671,7 @@ public final class WorkloadMain {
                     Path.of(cli.csvDir, String.format("convergencia-rep-%03d.csv", rep)), res);
             ConvergenciaLoop.escreverResumo(
                     Path.of(cli.csvDir, String.format("convergencia-resumo-rep-%03d.json", rep)),
-                    res, tFimNs, fimCargaNs);
+                    res, tFimNs, fimCargaNs, fimControleNs);
         }
         if (marcadores == null) {
             return null;

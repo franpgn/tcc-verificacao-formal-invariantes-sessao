@@ -194,6 +194,16 @@ public final class ConvergenciaLoop {
      * anteriores nao mudam.
      */
     public static void escreverResumo(Path destino, Resultado r, long tFimNs, Long tFimCargaNs) throws IOException {
+        escreverResumo(destino, r, tFimNs, tFimCargaNs, null);
+    }
+
+    /**
+     * V-W3 (R1): como a anterior, com {@code t_fim_controle_ns} (instante em que o controlador terminou de
+     * encerrar, depois de desfazer as acoes; {@code null} sem controlador) acrescentado ao fim.
+     * {@code t_fim_carga_ns} continua sendo o instante em que a carga parou, lido antes desse encerramento.
+     */
+    public static void escreverResumo(Path destino, Resultado r, long tFimNs, Long tFimCargaNs,
+                                      Long tFimControleNs) throws IOException {
         Path pai = destino.getParent();
         if (pai != null) {
             Files.createDirectories(pai);
@@ -208,6 +218,7 @@ public final class ConvergenciaLoop {
         m.put("rodadas", r.rodadas().size());
         m.put("rodadas_validas", validas);
         m.put("t_fim_carga_ns", tFimCargaNs);
+        m.put("t_fim_controle_ns", tFimControleNs);
         new ObjectMapper().enable(SerializationFeature.INDENT_OUTPUT).writeValue(destino.toFile(), m);
     }
 }

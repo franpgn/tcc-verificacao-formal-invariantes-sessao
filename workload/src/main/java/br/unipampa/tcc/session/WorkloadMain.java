@@ -7,7 +7,6 @@ import org.infinispan.client.hotrod.configuration.ConfigurationBuilder;
 import org.infinispan.commons.util.IntSet;
 import org.infinispan.commons.util.IntSets;
 
-import br.unipampa.tcc.controle.PortaoDeEmissao;
 import picocli.CommandLine;
 
 import java.net.InetSocketAddress;
@@ -25,7 +24,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
-import java.util.concurrent.locks.LockSupport;
 
 /**
  * Ponto de entrada do workload.
@@ -775,14 +773,13 @@ public final class WorkloadMain {
      * dominios separados, o {@code Random} da mistura ({@link #randomDaMistura(long)}), o
      * {@link KeyGenerator} e o sorteio do token antigo da v3. Mesma {@code seed}, mesma sequencia de
      * intencoes da thread (tipos de operacao, chaves, tokens antigos e identidades de Login).
-     * B-27: cada operacao passa pelo {@code portao} (K1 admissao; K2 pausa em CONSERVADOR). Com
-     * {@link PortaoDeEmissao#livre()} o laco e o de antes.
+     * B-27.3: sem portao de emissao (K1..K4 retirados; o controlador do TCC age no <i>cluster</i>):
+     * o laco e o de antes do B-27.
      */
     private static void rodarCliente(SessionOps ops, int tid, long deadline,
                                      Scenario cenario, long seed,
                                      long opsAlvo, AtomicLong totalOps,
-                                     BooleanSupplier parar, VersaoMistura mix, MisturaV3 misturaV3,
-                                     PortaoDeEmissao portao) {
+                                     BooleanSupplier parar, VersaoMistura mix, MisturaV3 misturaV3) {
         Random r = randomDaMistura(seed);
         KeyGenerator chaves = new KeyGenerator(seed);
         IdentidadesMistura ids = new IdentidadesMistura(tid, mix);
@@ -792,37 +789,10 @@ public final class WorkloadMain {
         long executadas = 0;
         while (System.currentTimeMillis() < deadline && executadas < opsAlvo
                 && !parar.getAsBoolean()) {
-            // B-27 (K1): permissao do portao; interrompido na espera, restaura a flag e sai do laco.
-            try {
-                portao.entrar();
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-                break;
-            }
-            try {
-                executarOperacao(ops, cenario, r, chaves, ids, v3);
-            } finally {
-                portao.sair();
-            }
+            executarOperacao(ops, cenario, r, chaves, ids, v3);
             executadas++;
             totalOps.incrementAndGet();
-            // B-27 (K2): pausa so em CONSERVADOR (0 em NORMAL e no portao livre).
-            long pausa = portao.pausaAposOperacaoNs();
-            if (pausa > 0) {
-                LockSupport.parkNanos(pausa);
-            }
         }
-    }
-
-    /**
-     * B-27: o cliente de S1/S2 sem portao ({@link PortaoDeEmissao#livre()}). Assinatura de 10
-     * parametros mantida para os testes por reflexao (W6..W8) e para {@code executarRepeticao}.
-     */
-    private static void rodarCliente(SessionOps ops, int tid, long deadline,
-                                     Scenario cenario, long seed,
-                                     long opsAlvo, AtomicLong totalOps,
-                                     BooleanSupplier parar, VersaoMistura mix, MisturaV3 misturaV3) {
-        rodarCliente(ops, tid, deadline, cenario, seed, opsAlvo, totalOps, parar, mix, misturaV3, PortaoDeEmissao.livre());
     }
 
     /**

@@ -39,7 +39,7 @@ import java.util.TreeMap;
  *
  * <p><b>Tick de relogio (V-B26.1 secao 5.9; Gestor, 2026-10-22).</b> {@link #avancarRelogio(long)}
  * tem a semantica de um evento sem conteudo: {@code marca = max(marca, agora)} e a mesma regra de
- * fechamento com {@code L}. Garante que janelas fechem mesmo sem eventos (partição, portao K1).
+ * fechamento com {@code L}. Garante que janelas fechem mesmo sem eventos (partição; o antigo portao K1 saiu no B-27.3).
  * O agora vem de uma {@link FonteDeTempo} no mesmo relogio dos {@code end_ns}.
  * {@link #seqRegistro()} conta as chamadas a {@code registrar} e {@code registrarViolacao} (o tick
  * nao conta), para que o replay reinjete cada tick depois do mesmo registro.

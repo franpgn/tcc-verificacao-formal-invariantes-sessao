@@ -1,7 +1,5 @@
 package br.unipampa.tcc.session;
 
-import br.unipampa.tcc.controle.PortaoDeEmissao;
-
 import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -19,27 +17,15 @@ public final class ContextoS3 {
     public final AplicacaoS3 app;
     public final S3Registro registro;
     public final long semente;
-    /** B-27: portao de emissao compartilhado pelos atores ({@link PortaoDeEmissao#livre()} por padrao). */
-    public final PortaoDeEmissao portao;
     /** Identidades de U com sessao ativa ou abandonada ainda dentro do prazo (visao do admin). */
     public final Set<String> online = ConcurrentHashMap.newKeySet();
 
     public ContextoS3(RelogioS3 relogio, S3Parametros p, S3Registro registro, long semente) {
-        this(relogio, p, registro, semente, PortaoDeEmissao.livre());
-    }
-
-    /** B-27: com o portao de emissao (a aplicacao e os usuarios virtuais o usam). */
-    public ContextoS3(RelogioS3 relogio, S3Parametros p, S3Registro registro, long semente,
-                      PortaoDeEmissao portao) {
-        if (portao == null) {
-            throw new IllegalArgumentException("portao nulo (use PortaoDeEmissao.livre())");
-        }
         this.relogio = relogio;
         this.p = p;
         this.registro = registro;
         this.semente = semente;
-        this.portao = portao;
-        this.app = new AplicacaoS3(relogio, p, registro, portao);
+        this.app = new AplicacaoS3(relogio, p, registro);
     }
 
     /** Gerador independente por ator (tipo + indice), derivado da semente. */

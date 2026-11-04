@@ -16,9 +16,10 @@ package br.unipampa.tcc.session;
  * @param tentativas     numero de tentativas feitas (1 + retentativas)
  * @param falhaPercebida {@code true} se todas as tentativas deram erro (o usuario viu a falha)
  * @param nota           observacao livre ({@code tentativa-incerta} para Block/Unblock com erro)
- * @param tFimNs         B-27: fim da acao (depois da ultima tentativa, inclui backoff e esperas do
- *                       portao), na mesma base de {@code tNs}
- * @param esperaPortaoNs B-27: ns que a acao passou presa no portao de emissao (K1 + K3)
+ * @param tFimNs         B-27: fim da acao (depois da ultima tentativa, inclui o backoff), na mesma
+ *                       base de {@code tNs}
+ * @param esperaPortaoNs reservada; 0 desde o B-27.3 (que retirou o portao de emissao do cliente).
+ *                       Mantida para o contrato S3 v2 de 10 colunas ({@code docs/contrato-s3-acoes-v2.md})
  */
 public record AcaoS3(long tNs, String ator, String operacao, String alvo, String resultado,
                      int tentativas, boolean falhaPercebida, String nota, long tFimNs, long esperaPortaoNs) {

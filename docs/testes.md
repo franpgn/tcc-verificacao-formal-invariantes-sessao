@@ -304,3 +304,26 @@ Testes existentes editados (listados no relatório): `controle/TiposBasicosTest.
 `Motivo.DEFASAGEM` no enum) e `session/ArquiteturaSemAcaoNoClienteTest` (R-C1 por pares, ressalva 4 da validação
 do W-1, e `LigacaoControlador` autorizado). Mutantes conferidos à mão: pilha FIFO, shadow chamando o atuador, R2
 sem defasagem, R4 sem reversão, violação do *warm-up* aceita; os cinco morrem.
+
+### W-3, correções da V-W3 (R1, R2, R4, N1, N3, contrato v1.1)
+
+Parecer `docs/validacao-w3-2026-11-04.md` (`df70c71`). Três pares `test:` → `fix:`; os três `test:` (`a877a56`,
+`e15fcbc`, `9fa7250`) conferidos vermelhos com `mvn -q -o -T1 test-compile` numa worktree temporária (exit 1;
+22, 20 e 10 linhas de erro de compilação), e os `fix:` intermediários (`f1a44d8`, `9126635`) compilam.
+
+| Momento | Surefire (testes/falhas/erros/pulados, arquivos) | `unittest` analysis |
+|---|---|---|
+| W-3 (`f820e73`) | 894/0/0/1, 123 | 187 OK, 1 *skip* |
+| V-W3 corrigida (`3988e32`) | 905/0/0/1, 124 | 187 OK, 1 *skip* |
+
+905 = 894 + 11 novos: `session/WorkloadMainCargaControleTest` (5: R1 com controlador lento, off, N1 com exceção,
+N1 ponta a ponta em active, fonte de `WorkloadMain`); `controle/ExecutorDeAcoesTest` +3 (`prazoDinamicoComTresAcoes`,
+`prazoDinamicoSemAcoes`, `repedidaComReversaoFalhaGravaLinha`); `controle/LacoDeControleTest` +2 (`linhasPerdidas`,
+`tDecisaoNs`); `session/LigacaoControladorTest` +1 (`regraDoTick`). Testes do W-3 editados só para acompanhar
+assinatura ou campo novo: `ExecutorDeAcoesTest` (construtor sem prazo de encerramento; `encerrarComAtuadorTravado`
+com `T_cham` = 150 ms e `T_enc` = 300 ms conferido; `parametros`), `LacoDeControleTest` (construtor da `Montagem`,
+ordem dos campos de `decisao`), `ControleArquivosTest.formatoDecisao` (`t_decisao_ns`), `LigacaoControladorTest`
+(`Pecas`), `ConvergenciaResumoFimCargaTest` (`t_fim_controle_ns`). Nenhum teste anterior ao W-3 mudou.
+
+Testes de tempo real na rodada: `prazoDinamicoComTresAcoes` 0,921 s (3 × 300 ms dentro de 1,2 s),
+`pontaAPonta` 1,515 s, `excecaoDaCargaReverteAcaoReal` 0,214 s, `linhasPerdidas` 0,219 s; nenhum oscilou.

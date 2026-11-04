@@ -131,3 +131,26 @@ política da tabela 4.5 (que recebe `Decisao`, `EstadoTopologia`, `EstadoDefasag
 `T_cong` do AC-1 fica na política (pede a reversão quando estoura). `lerConfiguracao()`, que o prompt do W-2 lista
 na interface, não entrou: o executor não precisa dela e o formato depende do B-44.1. Sugiro que fique no
 adaptador (usado pelo orquestrador do W-6), não em `AtuadorCluster`.
+
+## 5. Adendo: correções da V-W3 (2026-11-04)
+
+Parecer do Senior: `docs/validacao-w3-2026-11-04.md` (`df70c71`), aprovado com ressalvas. Decisões do coordenador
+aplicadas; alias fora (fica para depois do B-44.1b); *smoke* não rodado (R5 continua pendente).
+
+| Item | Correção | Commits |
+|---|---|---|
+| R1 | `WorkloadMain.executarCargaComControle` lê `t_fim_carga_ns` antes de encerrar o controlador; `t_fim_controle_ns` aditivo no resumo da convergência | `e15fcbc` / `9126635` |
+| R2 | prazo do encerramento `T_enc = (A + 1) × T_cham`, `T_cham` = 2 s (B-26.2), `A` = pilha mais aplicação em curso; `prazoNs` limita a chamada inteira do atuador; requisito de SIGTERM/SIGKILL para o W-6 no contrato | `a877a56` / `f1a44d8` |
+| R4 | repedida de ação ainda na pilha grava `APLICAR` `JA_ATIVA`; `acoes_pedidas` = linhas `APLICAR` | idem |
+| N1 | exceção da carga: `finally` → `close` → reversão `ENCERRAMENTO` e linhas `fim`, testado com fake e ponta a ponta | `e15fcbc` / `9126635` |
+| N2 | comentário no `join(5 s)` do laço | `f1a44d8` |
+| N3 | `linhas_perdidas` no `fim` dos dois arquivos; as linhas que chegam depois do `fim` ficam em `linhas_jsonl_perdidas=` no stdout | `a877a56` / `f1a44d8` |
+| v1.1 | `t_decisao_ns` na linha `decisao`; esquemas `/1.1`; tick `Δ = min(W/5, P_sonda/2)` com origem no contrato | `9fa7250` / `3988e32` |
+| docs | contrato v1.1, TD-010 | `e2a1221` |
+
+Contagens (`mvn -q -T1 clean test`; `python -m unittest discover -s analysis`): **905/0/0/1 em 124 arquivos**
+(antes 894/0/0/1, 123); `analysis` 187 OK, 1 *skip*. Os três `test:` foram conferidos vermelhos (falha de compilação
+dos testes) e os `fix:` intermediários compilam. Detalhe por teste em `docs/testes.md`.
+
+Limite do N3: uma linha que chega depois do `fim` não pode ser contada no próprio `fim`; `executor_no_prazo = false`
+marca o caso e o stdout dá a contagem.

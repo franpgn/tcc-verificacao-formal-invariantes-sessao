@@ -53,11 +53,12 @@ class ExecutorDeAcoesTest {
     final GanchoFalso gancho = new GanchoFalso();
 
     ExecutorDeAcoes executor(ModoAtuacao modo, AtuadorCluster a) {
-        return executor(modo, a, 5 * S);
+        return executor(modo, a, 2 * S);
     }
 
-    ExecutorDeAcoes executor(ModoAtuacao modo, AtuadorCluster a, long prazoEncerramentoNs) {
-        return new ExecutorDeAcoes(modo, a, 2 * S, prazoEncerramentoNs, relogio::get, trilha::add, gancho);
+    /** R2 (V-W3): o prazo do encerramento nao e mais parametro; deriva de {@code prazoChamadaNs}. */
+    ExecutorDeAcoes executor(ModoAtuacao modo, AtuadorCluster a, long prazoChamadaNs) {
+        return new ExecutorDeAcoes(modo, a, prazoChamadaNs, relogio::get, trilha::add, gancho);
     }
 
     List<RegistroAcao> trilha() {
@@ -256,7 +257,7 @@ class ExecutorDeAcoesTest {
     @DisplayName("active: encerrar descarta aplicacoes ainda na fila e respeita o prazo com atuador travado")
     void encerrarComAtuadorTravado() throws Exception {
         AtuadorFalso a = new AtuadorFalso().bloquear();
-        ExecutorDeAcoes e = executor(ModoAtuacao.ACTIVE, a, 300 * MS);
+        ExecutorDeAcoes e = executor(ModoAtuacao.ACTIVE, a, 150 * MS);
         e.iniciar();
         e.aplicar(AC1, Decisao.Regra.R2, 5 * S);
         assertTrue(a.esperarPrimeira());
@@ -264,6 +265,8 @@ class ExecutorDeAcoesTest {
         long t0 = System.nanoTime();
         assertFalse(e.encerrar(), "nao terminou no prazo");
         long dur = System.nanoTime() - t0;
+        // pilha vazia + 1 aplicacao em curso: A = 1, T_enc = (1 + 1) x 150 ms
+        assertEquals(300 * MS, e.prazoEncerramentoUsadoNs());
         assertTrue(dur < 3 * S, "encerrar respeitou o prazo: " + dur);
         a.liberar();
         assertTrue(e.aguardarFilaVazia(5 * S));
@@ -326,11 +329,82 @@ class ExecutorDeAcoesTest {
     @DisplayName("parametros invalidos sao rejeitados")
     void parametros() {
         assertThrows(IllegalArgumentException.class, () -> new ExecutorDeAcoes(ModoAtuacao.ACTIVE,
-                new AtuadorFalso(), 0, S, relogio::get, trilha::add, gancho));
-        assertThrows(IllegalArgumentException.class, () -> new ExecutorDeAcoes(ModoAtuacao.ACTIVE,
-                new AtuadorFalso(), S, 0, relogio::get, trilha::add, gancho));
+                new AtuadorFalso(), 0, relogio::get, trilha::add, gancho));
         assertThrows(NullPointerException.class, () -> new ExecutorDeAcoes(null,
-                new AtuadorFalso(), S, S, relogio::get, trilha::add, gancho));
+                new AtuadorFalso(), S, relogio::get, trilha::add, gancho));
+    }
+
+    // ----------------------------------------------------------------- R2 (V-W3): T_enc = (A + 1) x T_cham
+
+    @Test
+    @DisplayName("R2: 3 acoes na pilha e atuador que gasta o prazo inteiro em cada reversao: T_enc = 4 x T_cham basta")
+    void prazoDinamicoComTresAcoes() throws Exception {
+        long tCham = 300 * MS;
+        AtuadorFalso a = new AtuadorFalso().responder((op, x) -> {
+            if (op.equals("reverter")) {
+                try {
+                    Thread.sleep(tCham / MS); // gasta o prazo inteiro da chamada
+                } catch (InterruptedException ie) {
+                    Thread.currentThread().interrupt();
+                }
+            }
+            return ResultadoAtuacao.aplicada(204, "ok");
+        });
+        ExecutorDeAcoes e = executor(ModoAtuacao.ACTIVE, a, tCham);
+        e.iniciar();
+        e.aplicar(AC1, Decisao.Regra.R2, 5 * S);
+        e.aplicar(AC2, Decisao.Regra.R2, 5 * S);
+        e.aplicar(AC3, Decisao.Regra.R2, 5 * S);
+        assertTrue(e.aguardarFilaVazia(5 * S));
+        long t0 = System.nanoTime();
+        assertTrue(e.encerrar(), "3 reversoes de T_cham cabem em (3 + 1) x T_cham");
+        long dur = System.nanoTime() - t0;
+        assertEquals(4 * tCham, e.prazoEncerramentoUsadoNs());
+        assertTrue(dur >= 3 * tCham, "as tres reversoes gastaram o prazo: " + dur);
+        assertEquals("+AC-1:APLICADA +AC-2:APLICADA +AC-3:APLICADA -AC-3:APLICADA -AC-2:APLICADA -AC-1:APLICADA",
+                resumo(trilha()));
+    }
+
+    @Test
+    @DisplayName("R2: em shadow e sem acoes o prazo derivado e (0 + 1) x T_cham; prazo nulo antes de encerrar")
+    void prazoDinamicoSemAcoes() {
+        ExecutorDeAcoes e = executor(ModoAtuacao.SHADOW, AtuadorFalso.proibido(), 2 * S);
+        assertEquals(null, e.prazoEncerramentoUsadoNs());
+        assertTrue(e.encerrar());
+        assertEquals(2 * S, e.prazoEncerramentoUsadoNs());
+    }
+
+    // ----------------------------------------------------------------- R4 (V-W3): pedido nunca some da trilha
+
+    @Test
+    @DisplayName("R4: acao repedida enquanto a reversao anterior falhou gera linha APLICAR JA_ATIVA; pedidas = linhas APLICAR")
+    void repedidaComReversaoFalhaGravaLinha() throws Exception {
+        int[] reversoes = {0};
+        AtuadorFalso a = new AtuadorFalso().responder((op, x) -> {
+            if (op.equals("reverter") && reversoes[0]++ == 0) {
+                return ResultadoAtuacao.falhou(503, null, "servidor indisponivel");
+            }
+            return ResultadoAtuacao.aplicada(204, "ok");
+        });
+        ExecutorDeAcoes e = executor(ModoAtuacao.ACTIVE, a);
+        e.iniciar();
+        e.aplicar(AC1, Decisao.Regra.R2, 5 * S);
+        e.reverter(AC1, RegistroAcao.Origem.POLITICA, Decisao.Regra.R3, 10 * S);
+        assertTrue(e.aguardarFilaVazia(5 * S));
+        e.aplicar(AC1, Decisao.Regra.R2, 15 * S); // a reversao falhou: AC-1 continua aplicada no cluster
+        assertTrue(e.aguardarFilaVazia(5 * S));
+        assertEquals(List.of(AC1), e.ativas());
+        assertTrue(e.encerrar());
+        List<RegistroAcao> t = trilha();
+        assertEquals("+AC-1:APLICADA -AC-1:FALHOU +AC-1:JA_ATIVA -AC-1:APLICADA", resumo(t));
+        assertFalse(t.get(2).executada());
+        assertEquals(15 * S, t.get(2).fimJanelaNs());
+        long linhasAplicar = t.stream().filter(r -> r.operacao() == RegistroAcao.Operacao.APLICAR).count();
+        assertEquals(e.contadores().pedidas(), linhasAplicar);
+        assertEquals(1, e.contadores().jaAtivas());
+        assertEquals(List.of("aplicar", "reverter", "reverter"),
+                a.chamadas().stream().map(AtuadorFalso.Chamada::operacao).toList(),
+                "a repedida nao chama o atuador");
     }
 
     @Test

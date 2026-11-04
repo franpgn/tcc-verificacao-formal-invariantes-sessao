@@ -72,7 +72,7 @@ class LigacaoControladorTest {
     /** Pecas sem sonda de topologia, com tick de 10 ms e gancho falso. */
     static LigacaoControlador.Pecas pecasDeTeste(AtuadorFalso atuador, long tickNs) {
         return new LigacaoControlador.Pecas(null, atuador, PoliticaDeAcao.NENHUMA, new GanchoNulo(), tickNs,
-                2000 * MS, 1500 * MS, 5000 * MS);
+                2000 * MS, 1500 * MS);
     }
 
     static final class GanchoNulo implements ExecutorDeAcoes.Gancho {

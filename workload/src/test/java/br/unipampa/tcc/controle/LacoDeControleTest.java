@@ -78,11 +78,16 @@ class LacoDeControleTest {
 
         Montagem(ModoAtuacao modo, AtuadorFalso atuador, PoliticaDeAcao politica,
                  LongFunction<EstadoTopologia> topologia, long origemNs) throws IOException {
+            this(modo, atuador, politica, topologia, origemNs, 2 * S);
+        }
+
+        Montagem(ModoAtuacao modo, AtuadorFalso atuador, PoliticaDeAcao politica,
+                 LongFunction<EstadoTopologia> topologia, long origemNs, long prazoChamadaNs) throws IOException {
             this.atuador = atuador;
             ParametrosControlador p = ParametrosControlador.padrao();
             TrilhaJsonl tObs = TrilhaJsonl.abrir(obs);
             TrilhaJsonl tDec = TrilhaJsonl.abrir(dec);
-            this.executor = new ExecutorDeAcoes(modo, atuador, 2 * S, 5 * S, relogio::get,
+            this.executor = new ExecutorDeAcoes(modo, atuador, prazoChamadaNs, relogio::get,
                     r -> tDec.escrever(FormatoJsonl.acao(r)), gancho);
             MetaExecucao meta = new MetaExecucao("teste-0", 1, modo, "S3", "async", 3, p, null, null,
                     AgregadorDeJanela.TOLERANCIA_PADRAO_NS, S, origemNs, atuador.nome(), politica.nome(),
@@ -393,6 +398,32 @@ class LacoDeControleTest {
         for (int i = 0; i < janelas.size(); i++) {
             assertEquals(i * 5 * S, janelas.get(i).get("t_ini_ns").asLong(), "janelas contiguas");
         }
+    }
+
+    // ---------------------------------------------------------- N3 (V-W3)
+
+    @Test
+    @DisplayName("N3: linhas_perdidas na linha fim dos dois arquivos; linhas que chegam depois do fim sao contadas")
+    void linhasPerdidas() throws Exception {
+        AtuadorFalso a = new AtuadorFalso().bloquear();
+        Montagem m = new Montagem(ModoAtuacao.ACTIVE, a, ENTRA_E_CONGELA, fim -> fim == 5 * S ? ANOMALA : OK,
+                0L, 100 * MS);
+        m.ticks(1, 6); // R2 em 5 s: AC-1 (travada no atuador) e AC-2 (na fila)
+        assertTrue(a.esperarPrimeira());
+        LacoDeControle.Resumo r = m.laco.encerrar();
+        assertFalse(r.executorNoPrazo(), "atuador travado: o encerramento estoura T_enc");
+        List<JsonNode> dec = ler(m.dec);
+        JsonNode fimDec = dec.get(dec.size() - 1);
+        assertEquals("fim", fimDec.get("tipo").asText());
+        assertEquals(0, fimDec.get("linhas_perdidas").asLong());
+        assertEquals(200 * MS, fimDec.get("prazo_encerramento_ns").asLong(), "(0 + 1 em curso + 1) x 100 ms");
+        JsonNode fimObs = ler(m.obs).get(ler(m.obs).size() - 1);
+        assertEquals(0, fimObs.get("linhas_perdidas").asLong());
+        a.liberar();
+        assertTrue(m.executor.aguardarFilaVazia(5 * S));
+        // AC-1 APLICADA, AC-2 DESCARTADA e a reversao de AC-1 chegam com a trilha ja fechada
+        assertEquals(3, m.laco.linhasPerdidas());
+        assertEquals(dec.size(), ler(m.dec).size(), "nada foi escrito depois do fim");
     }
 
     // ---------------------------------------------------------- politica

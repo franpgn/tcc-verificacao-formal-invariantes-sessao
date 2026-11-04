@@ -9,9 +9,9 @@
 
 | Item | Valor |
 |---|---|
-| VM | IP `172.23.214.235` (MAC `00-15-5D-03-AC-00`); `ssh -o HostKeyAlias=172.18.251.140 -i ~/.ssh/id_ed25519_tccf3 server1@172.23.214.235` |
-| `boot_id` | `5d7119b8-3b50-435d-bd0d-cbdb6bd410df`, o mesmo do S4 (o `s5.sh` tem esse valor fixo no código) |
-| Cluster | isn1..3 `healthy` (rootful, `sudo podman`); vista de 3 membros desde o `MergeView` do S4 (28/10 07:14:34) |
+| VM | **desde a queda de energia de 04/11 07:36: IP `172.27.127.98`** (MAC `00-15-5D-03-AC-00`); `ssh -o HostKeyAlias=172.18.251.140 -i ~/.ssh/id_ed25519_tccf3 server1@172.27.127.98`. Antes da queda: `172.23.214.235` |
+| `boot_id` | **desde a queda: `b088606d-5d07-4424-b308-0a58fedf0546`**. Antes: `5d7119b8-3b50-435d-bd0d-cbdb6bd410df`, o do S4. O `s5.sh` não tem mais `boot_id` no código: recebe `--boot-esperado` (Q-11, como o S6/S7) |
+| Cluster | **recriado pelo coordenador em 04/11 19:14:06Z** com `runs/gate-b29/recriar.sh` (XML `8792dea3…`, o do gate v4): size=3 `HEALTHY` em 27 s, vista `[isn1-54943|2] (3)`, sem qdisc residual, 0 timers `tcc-heal`; brutos na VM em `~/tcc-gate/runs/recriacao-pos-queda-2026-11-04/vm-20261104T191406Z/`. O S5 **não** roda mais no cluster do S4; o passo 0 do `s5.sh` só registra IDs, `StartedAt`, IPs e vista atuais. Antes da queda: vista de 3 membros desde o `MergeView` do S4 (28/10 07:14:34) |
 | Rede e locks | sem `tc`/`iptables` residual nos 3 netns; `/var/lock/tcc-vm.lock` e `/tmp/inject-partition-isn3.lock` livres; nenhum injetor rodando |
 | P-6 da V-S1 | aplicada: `apt-mark hold` do kernel 6.8.0-147, `unattended-upgrades` desligado |
 | Disco `/` da VM | 3,3 GB livres de 19 GB (81 %) |
@@ -52,7 +52,7 @@ comando e a saída nos brutos.
 | # | Passo | Quem | Tempo | Depende de |
 |---|---|---|---|---|
 | 0 | Abertura: o Gestor lê este roteiro e responde Q-01..Q-10; coordenador confere IP (`Get-NetNeighbor`), `boot_id`, cluster, locks e `git status --porcelain --untracked-files=no` na VM (só leitura) | Gestor + coordenador | 30 a 45 min | nada |
-| 1 | Pré-S5: levar o v4f (Q-02), `git bundle verify`, `fetch`, `checkout 9c18ec8`; resolver o `go.log` (Q-01); `sha256sum runs/vm-s5-2026-10-28/s5.sh` = `8bce87a5…0da08` | coordenador | 15 min | Q-01, Q-02 |
+| 1 | Pré-S5: levar o v4f (Q-02), `git bundle verify`, `fetch`, `checkout 9c18ec8`; resolver o `go.log` (Q-01); `sha256sum runs/vm-s5-2026-10-28/s5.sh` = `28766575…addac` (revisão de 04/11 depois da queda; bundle v4h de `1266c12` até a ponta, que substitui o v4f e o v4g) | coordenador | 15 min | Q-01, Q-02 |
 | 2 | S5 conforme `runs/vm-s5-2026-10-28/ROTEIRO-S5.md`; o prompt do GO aparece em ~3,5 min; GO em até 15 min do prompt (R-5) | Gestor presente | ~11 min + espera do GO | Q-03..Q-10 |
 | 3 | Cópia dos brutos para o host com `sha256sum -c`; V-S5 pelo Senior (leitura humana de P-1, P-2, R-7) | coordenador + Senior | 5 + 30 a 45 min | S5 |
 | 3a | Em paralelo com a V-S5: levar o v4g à VM (`fetch` + `checkout`, não toca no cluster), se a V-s6s7sh já tiver saído | coordenador | 10 min | V-s6s7sh, Q-02 |

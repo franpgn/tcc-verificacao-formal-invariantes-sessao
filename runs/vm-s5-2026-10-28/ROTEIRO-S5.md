@@ -13,16 +13,19 @@ O `runs/gate-netdegrade/l1.sh` é verbatim do roteiro e **não foi editado**. O 
 - **Dead-man do L-1.** O `rodar_inj 60` arma `--on-active=150 s` (`l-lib.sh:32-34`), mas o timer do `systemd-run` usa `AccuracySec` de 1 min (R-3 da V-S2, R-4 da V-S3). **A cura automática pode chegar só uns 210 s depois de armar.** A cura manual continua disponível, em `~/tcc-gate`: `PODMAN='sudo podman' bash scripts/inject-netdegrade.sh --heal`. O `s5.sh` imprime este aviso logo antes do prompt do GO.
 - **O GO é digitado pelo Gestor** no prompt do próprio `l1.sh` (`exigir_go "L-1"`), que só aceita `GO` vindo de um terminal. O `s5.sh` não digita nada. A §5.6 diz que o go do L-1 já foi concedido, mas esse go é anterior à troca de VM e às quedas do host, e a V-S4 (P-6) recomenda um novo.
 - **Host.** Nada de TLC, `mvn` ou carga pesada no host, do início da linha de base até o fim do portão pós (V-S4, item 7). O `s5.sh` registra o `boot_id` no início e no fim. Um intervalo do saude-log maior que 2× o nominal invalida o bloco.
-- O cluster é o do S4 (1 partição e 1 merge, nenhum `netem`) e **não é recriado**. A V-S4 não recomenda recriar. O passo 0 registra IDs, `StartedAt`, IPs e a última vista (esperada: `MergeView::[isn3-54173|4] (3)`).
+- **Cluster recriado (04/11).** A queda de energia de 04/11 07:36 reiniciou host e VM (`boot_id` novo `b088606d…0546`, IP `172.27.127.98`). O coordenador recriou o cluster às 19:14:06Z com `runs/gate-b29/recriar.sh` (XML `8792dea3…`, o mesmo do gate v4): size=3 `HEALTHY`, vista `[isn1-54943|2] (3)`. O S5 não roda mais no cluster do S4. O passo 0 só **registra** IDs, `StartedAt`, IPs e a última vista atuais; nenhuma vista é exigida. O S6 compara os IDs e `StartedAt` com os deste `00-pre.log` (D-4).
+- **`boot_id` por argumento (Q-11).** Nada de `boot_id` no código. O Gestor passa `--boot-esperado <uuid>`, o `boot_id` lido na abertura (`cat /proc/sys/kernel/random/boot_id`). O passo 0 aborta se o atual for diferente; a avaliação confere o do início e o do fim contra ele.
+- **`go.log` versionado (Q-12).** A regra é a do S6/S7: a única modificação versionada aceita é `runs/gate-b29/go.log` com o conteúdo do `HEAD` como prefixo exato e cada linha a mais começando com `go ` (na VM, a linha do GO da REP=4 do S4). Qualquer outro arquivo modificado, linha antiga alterada, linha a mais sem `go ` ou o arquivo no índice é NÃO OK. Não é preciso restaurar o arquivo (a Q-01 deixa de bloquear).
 
 ## Como rodar
 
 ```bash
 cd ~/tcc-gate
-sha256sum runs/vm-s5-2026-10-28/s5.sh   # esperado 8bce87a54add989daaf05358f5689369e43b538453c077e6e1e865bb9e90da08
+sha256sum runs/vm-s5-2026-10-28/s5.sh   # esperado 287665752b648f3c1d2381f92ad5427444a26e07917ff16de027daef186addac
+cat /proc/sys/kernel/random/boot_id    # conferir contra o lido na abertura (desde a queda de 04/11: b088606d-5d07-4424-b308-0a58fedf0546)
 flock /var/lock/tcc-vm.lock tmux new -s s5
 # dentro do tmux:
-bash runs/vm-s5-2026-10-28/s5.sh
+bash runs/vm-s5-2026-10-28/s5.sh --boot-esperado <uuid>
 # ao fim: exit (libera o lock)
 ```
 
@@ -30,7 +33,8 @@ bash runs/vm-s5-2026-10-28/s5.sh
 
 | Passo | Ação | Arquivo em `vm-<UTC>/` | rc em `rc.txt` | Se falhar |
 |---|---|---|---|---|
-| 0 | Pré-condições, só leitura: `TCC_DIR=$HOME/tcc-gate` (exporta se vazio, aborta se diferente), tmux, terminal, lock OCUPADO, `sudo -n`, `uname -r` = 6.8.0-147-generic, `boot_id` = `5d7119b8…10df` (início), HEAD, contém v4c, 0 arquivos versionados modificados, sha256 da tabela, sha256 do `s5.sh`, ambiente sem `LOCK_DIR`/`PODMAN`/`INJ`/`SONDA_*`/..., java, jar = o do S4 (`3594c690…7bee`), `runs/gate-netdegrade/L1.log` e `marcadores.txt` inexistentes, 0 timers e 0 units `tcc-heal`, `go.log` do netdegrade, `podman ps`, IP/ID/`StartedAt`/última vista dos 3 nós, PID de isn3 e guarda de netns (diferente do host), JGroups de isn3 sem IPv6 (`ss -tn`, parada obrigatória da §5.6), NIC da VM sem `prio`/`netem`/`clsact` | `00-pre.log`, `parametros.txt` | `pre` | rc 1, nada tocado |
+| — | Argumentos: `--boot-esperado` obrigatório, UUID minúsculo; qualquer outro argumento é erro | nada (nem o diretório é criado) | — | rc 1 |
+| 0 | Pré-condições, só leitura: `TCC_DIR=$HOME/tcc-gate` (exporta se vazio, aborta se diferente), tmux, terminal, lock OCUPADO, `sudo -n`, `uname -r` = 6.8.0-147-generic, `boot_id` atual = `--boot-esperado` (início, Q-11), HEAD, contém v4c, regra do `go.log` (Q-12: só `runs/gate-b29/go.log` com linhas `go ` acrescentadas), sha256 da tabela, sha256 do `s5.sh`, ambiente sem `LOCK_DIR`/`PODMAN`/`INJ`/`SONDA_*`/..., java, jar = o do S4 (`3594c690…7bee`), `runs/gate-netdegrade/L1.log` e `marcadores.txt` inexistentes, 0 timers e 0 units `tcc-heal`, `go.log` do netdegrade, `podman ps`, IP/ID/`StartedAt`/última vista dos 3 nós (só registro, nenhuma vista exigida), PID de isn3 e guarda de netns (diferente do host), JGroups de isn3 sem IPv6 (`ss -tn`, parada obrigatória da §5.6), NIC da VM sem `prio`/`netem`/`clsact` | `00-pre.log`, `parametros.txt` | `pre` | rc 1, nada tocado |
 | 1 | Linha de base **sem F4**, 60 s: `/health` nas portas 11222/11223/11224 (`http_code`, `time_connect`, `time_total`, estado, nós) e conexão TCP ao `sshd` da VM a cada 2 s; `ping -c 300 -i 0.2` do host a isn3; sonda Hot Rod (`SondaHotrod`, a mesma do g1b) pinada em `isn3=127.0.0.1:11224`, `--duracao-s 60`, que remove a chave no fim | `01-base.log`, `base/saude.csv`, `base/ping.txt`, `base/sonda-isn3.{csv,err}` | `base` | rc 2 (falta amostra, resumo do ping ou `remove-final` OK nos 2 caches) |
 | 2 | Portão 5.1 pré (`portao51.sh 130`) com `.log` e `.csv`, avaliação automática (a mesma do `s4.sh`). Confere também que a sonda da base não deixou chave (`size=0`) | `02-portao51-pre.{log,csv,avaliacao}` | `02-portao51-pre`, `02-portao51-pre-avaliacao` | rc 3: **S5 não roda** |
 | 3 | `TcpRetransSegs` dos 3 netns e NIC da VM. Coletor em segundo plano. Aviso do dead-man. **`l1.sh` neste terminal, com o GO do Gestor** | `03-pre-l1.log`, `04-l1.log`, `04-coletor.log` | `pre-l1`, `l1`, `coletor` | rc 4: ver abaixo |
@@ -52,14 +56,14 @@ Invalidam o bloco (`FALHA`):
 
 | Critério | Origem | Regra |
 |---|---|---|
-| `boot_id` | V-S4, P-2 | igual ao esperado no início **e** no fim |
+| `boot_id` | V-S4, P-2; Q-11 | igual ao `--boot-esperado` no início **e** no fim |
 | rc do `l1.sh` e do injetor | §5.6 | `l1 rc=0` em `rc.txt` e `rc=0 (esperado 0)` no `L1.log` |
 | Marcadores | §5.6 | 1 `start` e 1 `end` de `F4 isn3`, `end` > `start` |
 | Perdas do ping do injetor | §5.6 | para isn1 e isn2, perdas = percentual × 300 / 100 (arredondado) entre **39 e 81** |
 | Contadores do `netem` | §5.6, V-C1 | `dropped` > 0 e `dropped/(Sent+dropped)` a 3 σ binomiais de 0,20 (piso 2/n), a mesma regra do injetor |
 | Amostras de `tc` | §5.6 | ≥ 2 amostras dentro da janela com `netem 30:` e Sent+dropped > 0, e `tc -s filter` com exatamente 2 filtros `flowid 1:3`, `match` = IPs de isn1 e isn2 |
-| REST de isn3 (11224) | §5.6 | HTTP 200 em todas as amostras da janela e da base; mediana do `time_total` na janela ≤ p95 da base + 1 ms |
-| Hot Rod de isn3 | §5.6 | mediana do `time_connect` à porta 11224 (a mesma porta do Hot Rod) na janela ≤ p95 da base + 1 ms |
+| REST de isn3 (11224) | §5.6 | HTTP 200 em todas as amostras da janela e da base; mediana do `time_total` na janela ≤ p95 da base |
+| Hot Rod de isn3 | §5.6 | mediana do `time_connect` à porta 11224 (a mesma porta do Hot Rod) na janela ≤ p95 da base |
 | Controle isn1 (11222) | | mesma regra do `time_total` |
 | ssh | §5.6 | todas as conexões TCP ao `sshd` aceitas; mesma regra de latência; NIC da VM sem `prio`/`netem`/`clsact` no início e depois do L-1 |
 | Ping do host a isn3 | §5.6 | sem perda na base e na janela; mesma regra de latência (rtt) |
@@ -75,7 +79,7 @@ Ficam para leitura humana (`LEITURA HUMANA`):
 - o `05-vistas.log` e o tempo de reforma, se houver mudança de vista;
 - as perdas são calculadas do percentual que o injetor registra no `L1.log`. O injetor apaga a saída bruta do `ping` (`transmitted/received`) e não pode ser editado, então a contagem supõe 300 transmitidos (o `ping -c 300` só transmite menos se for interrompido, e aí o injetor sai com erro).
 
-A regra "mediana durante ≤ p95 da base + 1 ms" é a leitura do Worker para "latência dentro da dispersão da linha de base" (§5.6). Com 20 % de perda por pacote, um filtro que pegasse o tráfego do host atrasaria a maioria das requisições em pelo menos um RTO (≥ 200 ms), o que move a mediana muito além dessa folga.
+**Limiares da regra de latência (decisão do Gestor de 2026-11-04, com base em `docs/rastreabilidade-limiares-s5-s7-2026-11-04.md`, 4.1 e 4.2).** A regra é "mediana da janela ≤ p95 da base", sem folga (`FOLGA_LAT_S=0`): é a leitura literal de "latência dentro da dispersão da linha de base" (§5.6). A folga de 1 ms que havia antes não tinha fonte. O p95 só existe de fato com pelo menos 20 amostras (com n < 20 o p95 por posto mais próximo do `stats()` é o máximo), então a base exige **≥ 20 amostras por fonte** (`BASE_MIN_N=20`), no passo 1 (rc 2) e na avaliação. A base de 60 s com período de 2 s dá ~30 por fonte, e o ping da base, 300. As duas constantes vão para `parametros.txt` e a avaliação lê dali. A prova de que o filtro não pega o host continua nos critérios de `tc -s filter` (só os IPs de isn1 e isn2) e no ping sem perda, que não dependem de número sem fonte.
 
 ## Duração estimada
 
@@ -96,8 +100,8 @@ Os 4 arquivos não mudaram entre `902654b` e a ponta desta branch (T-s5-0). O ja
 
 ## Teste
 
-`bash runs/vm-s5-2026-10-28/s5.test.sh`: 356 PASS, 0 FAIL (Git Bash, cerca de 10 min, a maior parte em criar processos de shim no Windows). Foi visto vermelho antes do `s5.sh` existir. O `s4.test.sh` segue com 216 PASS, 0 FAIL. O teste não prova podman, tc, netem, systemd, Infinispan, a sonda Java nem os scripts reais, que têm testes próprios (`l-gate.test.sh`, `inject-netdegrade.test.sh`).
+`bash runs/vm-s5-2026-10-28/s5.test.sh`, sozinho: **460 PASS, 0 FAIL em 730 s** (2026-11-04, depois do `--boot-esperado`, da regra do `go.log` e dos limiares rastreáveis; Git Bash, a maior parte do tempo em criar processos de shim no Windows). Vermelho visto antes de cada mudança: 284/154 (Q-11/Q-12) e 442/18 (limiares). A versão original, 356 PASS, foi vista vermelha antes do `s5.sh` existir. O `s4.test.sh` segue com 216 PASS, 0 FAIL. O teste não prova podman, tc, netem, systemd, Infinispan, a sonda Java nem os scripts reais, que têm testes próprios (`l-gate.test.sh`, `inject-netdegrade.test.sh`).
 
 ## Como o `s5.sh` chega à VM
 
-Só pelo bundle, depois da aprovação do push da branch (política de 14/06). Antes do S5, na VM, `sha256sum runs/vm-s5-2026-10-28/s5.sh` deve dar `8bce87a54add989daaf05358f5689369e43b538453c077e6e1e865bb9e90da08`.
+Só pelo bundle **v4h** (`C:\Users\Francesco\Development\tcc\gate-v4h.bundle`, incremental de `1266c12`, HEAD da VM, até a ponta desta branch, com `.sha256`), conferido por sha256 e com autorização do Gestor (Q-02). Antes do S5, na VM, `sha256sum runs/vm-s5-2026-10-28/s5.sh` deve dar `287665752b648f3c1d2381f92ad5427444a26e07917ff16de027daef186addac` (o `8bce87a5…0da08` anterior, com `boot_id` fixo, não serve mais).

@@ -33,7 +33,7 @@ No tmux o SIGINT vai a todo o grupo de primeiro plano, inclusive ao `tee` do con
 
 ```bash
 cd ~/tcc-gate
-sha256sum runs/vm-s6-2026-11-04/s6.sh   # esperado c01d8c79888e6afa20a7766aac355f7aec12b3c53bddaf14cb2b5877aa0e2ef8
+sha256sum runs/vm-s6-2026-11-04/s6.sh   # esperado 33b8fcc5799c919ef659730f981761d8ee948240ff13f02ae71133268cad2b27
 flock /var/lock/tcc-vm.lock tmux new -s s6
 # dentro do tmux:
 bash runs/vm-s6-2026-11-04/s6.sh --boot-esperado <uuid> --bloco-anterior runs/vm-s5-2026-10-28/vm-<UTC>
@@ -84,7 +84,7 @@ Invalidam o bloco (`FALHA`):
 | A3 | `t_start < t_split_confirmado < t_kill` (`cronologia.txt`) | §5.7 |
 | A4 | `t_kill − t_start ≥ 70 s` | parâmetro do plano no `g5b.sh` |
 | A5 | `rc_injetor=137`; marcadores com 1 `start` e 0 `end` | §5.7 |
-| A6 | `clsact` antes do KILL (`estado.txt`) e depois (`qdisc-apos-kill.txt`); `t_persistencia_ok − t_kill ≥ 15 s`; amostras de `persistencia.txt` dentro do intervalo; `PASS corte PERSISTIU`; nenhum `MergeView` em `05-vistas.log` com instante (do próprio log do Infinispan, UTC) entre `t_kill` e `t_persistencia_ok`, e nenhum com instante ilegível | §5.7 |
+| A6 | `clsact` antes do KILL (`estado.txt`) e depois (`qdisc-apos-kill.txt`); `t_persistencia_ok − t_kill ≥ 14 s` (FALHA abaixo; [14, 15) s é `RESULTADO`, R-1); amostras de `persistencia.txt` dentro do intervalo; `PASS corte PERSISTIU`; nenhum `MergeView` em `05-vistas.log` com instante (do próprio log do Infinispan, UTC) entre `t_kill` e `t_persistencia_ok`, e nenhum com instante ilegível | §5.7 |
 | A7 | `chamadas-injetor.txt` com 2 linhas: 1 injeção e 1 `--heal`; `PASS --heal rc=0`; `qdisc-pos-heal.txt` sem `clsact` | §5.7 |
 | A8 | `MergeView` de 3 membros em `log-vista-isn{1,2,3}.txt` e, em `05-vistas.log`, para cada nó, com instante ≥ `t_heal`; `saude-depois.txt` com 3 portas `HEALTHY`/3; `size=3 HEALTHY apos` | §5.7 |
 | A9 | `t_saudavel ≤ t_desarmado`; o timer da unit listado em `unit-armada.txt` e em `estado.txt` (armado durante o corte); 0 timers e 0 units em `05-pos-g5b.log` | §5.7 |
@@ -92,10 +92,12 @@ Invalidam o bloco (`FALHA`):
 | A11 | portão 5.1 pós OK | §5.1 |
 | A12 | intervalo máximo do saúde-log da janela ≤ 2 × 2 s (o corpo do critério é o do `s5.sh`, sem a base, que o S6 não tem) | V-S4 P-2 |
 | D-1 | journal do `sudo` (`-o json`): entre `t_kill` e `t_desarmado`, exatamente 1 `nsenter … tc qdisc del dev eth0 clsact` vindo da sessão e 0 vindos da unit do dead-man. Origem = `_SYSTEMD_UNIT`: a unit do dead-man ou qualquer outra (conta como sessão). Se o detector não vir o `--heal` manual, ele não serve de controle para o S7 | **Q-13** (deriva do §5.7) |
-| D-2 | `janela/tc-isn3.csv`: `clsact=1` em todas as amostras de `t_start + 5 s` a `t_heal` e `clsact=0` em todas a partir de `t_heal + 5 s`, com pelo menos 1 amostra em cada intervalo | **Q-13** |
+| D-2 | `janela/tc-isn3.csv`: `clsact=1` em todas as amostras de `t_start` (folga 0 s: o injetor aplica o `clsact` antes de gravar o marcador) a `t_heal` e `clsact=0` em todas a partir de `t_heal + 1 s` (heal medido em 0,223 s no S3), com pelo menos 1 amostra em cada intervalo. Folgas de `docs/rastreabilidade-limiares-s5-s7-2026-11-04.md`, 4.4 | **Q-13** |
 | D-3 | `unit-armada.txt`: `AccuracyUSec=1s`, `prazo_s=210` e `OnActiveSec` do `.timer` = 210 s (aceita o formato do systemd, por exemplo `3min 30s`) | **Q-13** (V-S0/V-S3) |
 
-**Limite conhecido do A6 (pergunta ao Gestor no relatório do Worker).** O `g5b.sh` (não editado) mede a persistência em segundos inteiros: `T_P0=$(date +%s)` e `while [ $(( $(date +%s) - T_P0 )) -lt 15 ]`, com uma amostra a cada ~2 s. O laço pode sair quando o tempo real desde `T_P0` ainda é ~14,3 s (quando a fração de segundo de `T_P0` passa de ~0,65), e o `t_persistencia_ok` só é carimbado depois de três `podman logs`. Por isso `t_persistencia_ok − t_kill` pode sair entre ~14,3 e ~15 s numa execução correta, e o A6 do prompt (≥ 15 s) dá FALHA. O `s6.sh` segue o prompt (≥ 15 s, lado conservador). Se o A6 cair só por isso (todas as outras condições do A6 OK e `t_persistencia_ok − t_kill ≥ 14 s`), o Senior reclassifica na V-S6A ou o Gestor decide outra regra antes do S6. No teste o mesmo efeito aparece com 3 s e o limite do teste é 2 s.
+**Limite do A6 (R-1 da V-s6s7sh, decidido pelo Gestor em 2026-11-04).** O `g5b.sh` (não editado) mede a persistência em segundos inteiros: `T_P0=$(date +%s)` e `while [ $(( $(date +%s) - T_P0 )) -lt 15 ]`, com uma amostra a cada ~2 s. Por construção ele só garante `t_persistencia_ok − t_kill > 14 s`, e numa execução correta o valor pode sair entre ~14,3 e ~15 s. A regra do invólucro é a que o `g5b.sh` garante: **FALHA se `t_persistencia_ok − t_kill < 14 s`**; em [14, 15) s sai `RESULTADO` e `LEITURA HUMANA` com o valor exato (o Senior confere na V-S6A que a diferença vem só da granularidade); ≥ 15 s é OK sem ressalva. No código, `PERSISTE_MIN_S=$(( PERSISTE_S - 1 ))`; no teste `PERSISTE_S=2`, então os casos de fronteira são 0,999 s (FALHA), 1,000 s e 1,999 s (RESULTADO). É desvio explícito do texto "≥ 15 s" do §5.7, aprovado pelo Gestor.
+
+**Limites do próprio `g5b.sh` (pré-registrado antes do bloco, decisão do Gestor de 2026-11-04; `docs/rastreabilidade-limiares-s5-s7-2026-11-04.md`, itens 38 a 40 e 4.3).** O `g5b.sh` não é editado. (1) **150 s** até `MergeView` de 3 membros e `HEALTHY` x3 depois do `--heal` manual: se o bloco falhar **só** por esse limite e o `MergeView` de 3 e o `HEALTHY` x3 aparecerem depois nos brutos (`05-vistas.log`, portão pós), o bloco fica **INVÁLIDO para a ferramenta** e o tempo medido de recomposição vira `RESULTADO` (a REP=2 levou 188 s; nas REPs em cluster novo, 44 a 48 s). Refaz-se o bloco, com portão 5.1 limpo e novo GO. Isso não cria falso VÁLIDO: a cura e a fusão são conferidas à parte (A8 e portão pós). (2) **40 s** até o `event=start` e **100 s** até o split confirmado ficam como estão: o veredito não depende do valor dentro das faixas medidas (start em menos de 2 s no S4; split entre a maior detecção medida, 46,4 s, e o fim da janela, 120 s), conforme a análise de insensibilidade do documento do Senior.
 
 Não invalidam (`RESULTADO`): `t_split_confirmado − t_start`; `t_mergeview − t_heal` e `t_saudavel − t_heal` (rotulados "dado de segurança, NÃO é t_merge"); `ISPN000524`/`ISPN100014`/`ISPN000638` nos `log-completo-isn*.txt` (**Q-14**, com leitura humana); as linhas `DEGRADED_MODE`; o disparo do dead-man depois do `--heal` manual e antes do desarme (**Q-15**): vale desde que o `Started <unit>.service` do `05-journal-unit.txt` seja posterior a `t_heal` e `qdisc-pos-heal.txt` esteja sem `clsact`; o `tc qdisc del` da unit depois de `t_heal` não conta no D-1. Disparo antes do `--heal` manual é FALHA.
 
@@ -105,7 +107,7 @@ Q-11 a Q-15 estão **pendentes do Gestor** (`docs/roteiro-vm-2026-11-04.md`, se�
 
 ## Duração estimada
 
-Medida no teste (Git Bash, shims, `g5b.sh` reencenado com janela de 8 s): o caminho completo leva cerca de 30 s; a suíte inteira deu 594 PASS, 0 FAIL em 816 s (~13,5 min; sem outra suíte minha em paralelo, mas com outro Worker usando o host).
+Medida no teste (Git Bash, shims, `g5b.sh` reencenado com janela de 8 s): o caminho completo leva cerca de 30 s; a suíte inteira, sozinha, deu **615 PASS, 0 FAIL em 849 s** (2026-11-04, com a R-1, as folgas do D-2 e os casos de fronteira; antes, 594 PASS).
 
 Na VM, calculada: pré-condições e dry-run em segundos; portão pré 130 s mais as leituras finais, então **o prompt do GO aparece por volta de 2,5 min**. Depois do GO: armação e injeção em ~2 s; split confirmado em ~40 a 46 s; KILL em +70 s; persistência até ~+86 s; `--heal`; fusão da ordem de ~46 s (`MergeView` por volta de +130 s); `HEALTHY` x3, desarme, preflight e logs, **o `g5b.sh` termina ~2,5 min depois do GO**. O portão pós vai até o fim do `g5b.sh` + 345 s (~6 min). Total: **cerca de 11 a 12 min**, mais o tempo até o GO.
 
@@ -127,4 +129,4 @@ cd ../../.. && bash runs/vm-s6-2026-11-04/s6.sh --avaliar runs/vm-s6-2026-11-04/
 
 ## Como o `s6.sh` chega à VM
 
-Só pelo bundle **v4g** (do `9c18ec8`, ponta do v4f, até a ponta desta branch), conferido por sha256, **depois** da validação do Senior (V-s6s7sh) e da autorização do Gestor (Q-02). Antes do S6, na VM: `sha256sum runs/vm-s6-2026-11-04/s6.sh` deve dar `c01d8c79888e6afa20a7766aac355f7aec12b3c53bddaf14cb2b5877aa0e2ef8`.
+Só pelo bundle **v4h** (`C:\Users\Francesco\Development\tcc\gate-v4h.bundle`, incremental de `1266c12`, HEAD da VM, até a ponta desta branch, com `.sha256`), conferido por sha256, com a autorização do Gestor (Q-02). O v4g ficou superado. Antes do S6, na VM: `sha256sum runs/vm-s6-2026-11-04/s6.sh` deve dar `33b8fcc5799c919ef659730f981761d8ee948240ff13f02ae71133268cad2b27`.

@@ -39,7 +39,11 @@ COLETOR_EXTRA_S=900       # o coletor para no maximo ESPERA_GO_S + COLETOR_EXTRA
 ESPERA_COLETOR_S=60       # o involucro espera o coletor no maximo 60 s depois do g5b.sh
 DUR=120; T_KILL_S=70; MARGEM_S=25; PERSISTE_S=15   # parametros efetivos do g5b.sh B (conferidos no --dry-run)
 TOL_S=10; G5B_FOLGA=30    # g5b.sh B: disparo ate prazo + 10 s; desiste em prazo + 10 + 30 s (e o trap dele cura)
-D2_FOLGA_S=5; D2_PRE_FIRE_S=2   # D-2: amostras de t_start + 5 s a t_fire - 2 s e a partir de t_fire + 5 s
+# D-2 (docs/rastreabilidade-limiares-s5-s7-2026-11-04.md, 4.4 e item 45; decisao do Gestor, 2026-11-04): amostras de t_start + 0 s
+# (o clsact vem antes do marcador) a t_fire - 2 s (sondagem de 1 s + duracao do tc) e a partir de t_fire + 1 s
+D2_INI_S=0; D2_POS_S=1; D2_PRE_FIRE_S=2
+# D-1 (rastreabilidade 4.5): del da unit entre t_kill e t_fire + D1_POS_FIRE_S; 1 s = resolucao da sondagem que mede t_fire (g5b.sh:174)
+D1_POS_FIRE_S=1
 POS_FALHA_EXTRA_S=60; POS_FALHA_AMOSTRA_S=5   # 3.3: espera ate prazo do dead-man + 60 s, amostra a cada 5 s
 # Referencia de hashes: v4c (902654b). g5b.sh = VM no S3 (runs/vm-s3-2026-10-28/02-pos-l0c-leitura.log:9); g56-lib.sh = S0
 # (relatorio do gate v4); g-lib.sh = S3 (V-S3.md, item 3); inject-partition.sh = S3 (04-s4-pre-hashes-e-cluster.log:1);
@@ -58,11 +62,15 @@ if [ "$TESTE" = 1 ]; then
   COLETOR_EXTRA_S="${S7_COLETOR_EXTRA_S:-$COLETOR_EXTRA_S}"; ESPERA_COLETOR_S="${S7_ESPERA_COLETOR_S:-$ESPERA_COLETOR_S}"
   DUR="${S7_DUR:-$DUR}"; T_KILL_S="${S7_T_KILL_S:-$T_KILL_S}"; MARGEM_S="${S7_MARGEM_S:-$MARGEM_S}"
   PERSISTE_S="${S7_PERSISTE_S:-$PERSISTE_S}"; TOL_S="${S7_TOL_S:-$TOL_S}"; G5B_FOLGA="${S7_G5B_FOLGA:-$G5B_FOLGA}"
-  D2_FOLGA_S="${S7_D2_FOLGA_S:-$D2_FOLGA_S}"; D2_PRE_FIRE_S="${S7_D2_PRE_FIRE_S:-$D2_PRE_FIRE_S}"
+  D2_PRE_FIRE_S="${S7_D2_PRE_FIRE_S:-$D2_PRE_FIRE_S}"
   POS_FALHA_EXTRA_S="${S7_POS_FALHA_EXTRA_S:-$POS_FALHA_EXTRA_S}"; POS_FALHA_AMOSTRA_S="${S7_POS_FALHA_AMOSTRA_S:-$POS_FALHA_AMOSTRA_S}"
   [ -z "${S7_HASHES:-}" ] || HASHES_ESPERADOS="$(cat "$S7_HASHES")"
 fi
 PRAZO_S=$(( DUR + MARGEM_S ))
+# R-1 da V-s6s7sh (decisao do Gestor, 2026-11-04): o g5b.sh mede a persistencia em segundos inteiros (T_P0=$(date +%s) e
+# 'date +%s - T_P0 < PERSISTE'), entao so garante t_persistencia_ok - t_kill > PERSISTE_S - 1 s. FALHA abaixo de PERSISTE_MIN_S;
+# em [PERSISTE_MIN_S, PERSISTE_S) s, RESULTADO e LEITURA HUMANA com o valor exato. O g5b.sh nao e editado.
+PERSISTE_MIN_S=$(( PERSISTE_S - 1 ))
 CURA="PODMAN='sudo podman' bash scripts/inject-partition.sh --heal --minority isn3"
 
 # ---- avaliacao do .log do portao51.sh (criterios da §5.1; o lock deve estar OCUPADO por este flock). Igual a do s5.sh.
@@ -126,13 +134,13 @@ avaliar() { # avaliar <dir vm-UTC>
   [ -s "$D/parametros.txt" ] || { echo "FALHA: sem $D/parametros.txt"; echo "S7: INVALIDO (1 falha)"; return 1; }
   pv() { sed -n "s/^$1=//p" "$D/parametros.txt" | head -1; }
   local C="$D/g5b-B-copia" SS="$SAUDE_S" BOOT UNIT bi bf k v prev okord f q n l t u s ts tsp tk tpo tf tmv tsa ta0 ta1
-  local nses nuni pri d0 d1 j0 j1 c1 c0 b1 b0 x sv tm
+  local nses nuni nuni_j pri d0 d1 j0 j1 c1 c0 b1 b0 x sv tm
   cr() { sed -n "s/^$1=\([0-9]*\)\$/\1/p" "$C/cronologia.txt" 2>/dev/null | tail -1; }
   BOOT=$(pv BOOT_ESPERADO)
   UNIT=$(sed -n 's/^unit=\([^ ]*\).*/\1/p' "$C/unit-armada.txt" 2>/dev/null | head -1)
   TMPA=$(mktemp -d)
   echo "== avaliacao do S7 $(date -Is) sobre $D"
-  echo "   limites: dur=${DUR}s kill>=+${T_KILL_S}s persistencia>=${PERSISTE_S}s prazo do dead-man=${PRAZO_S}s tolerancia=${TOL_S}s saude=${SS}s folga D-2=${D2_FOLGA_S}s/-${D2_PRE_FIRE_S}s unit=${UNIT:-?}"
+  echo "   limites: dur=${DUR}s kill>=+${T_KILL_S}s persistencia>=${PERSISTE_MIN_S}s (RESULTADO em [${PERSISTE_MIN_S}, ${PERSISTE_S}) s) prazo do dead-man=${PRAZO_S}s tolerancia=${TOL_S}s saude=${SS}s folga D-2=+${D2_INI_S}s/-${D2_PRE_FIRE_S}s/+${D2_POS_S}s D-1=t_fire+${D1_POS_FIRE_S}s unit=${UNIT:-?}"
   ts=$(cr t_start); tsp=$(cr t_split_confirmado); tk=$(cr t_kill); tpo=$(cr t_persistencia_ok); tf=$(cr t_fire)
   tmv=$(cr t_mergeview); tsa=$(cr t_saudavel); ta0=$(cr t_antes_armar); ta1=$(cr t_depois_armar)
 
@@ -158,7 +166,10 @@ avaliar() { # avaliar <dir vm-UTC>
   awk '/^=== antes do kill/ { s = 1 } /^t_kill_ns=/ { s = 0 } s' "$C/estado.txt" 2>/dev/null | grep -q clsact || { q=1; fa "B1/A6 estado.txt sem clsact antes do KILL [§5.7]"; }
   grep -q clsact "$C/qdisc-apos-kill.txt" 2>/dev/null || { q=1; fa "B1/A6 qdisc-apos-kill.txt sem clsact (o corte nao persistiu depois do KILL) [§5.7]"; }
   if num "$tk" && num "$tpo" && [ $(( tpo - tk )) -ge $(( PERSISTE_S * 1000000000 )) ]; then :
-  else q=1; fa "B1/A6 t_persistencia_ok - t_kill = $(num "$tk" && num "$tpo" && seg "$tk" "$tpo" || echo ?) s < ${PERSISTE_S} s [§5.7]"; fi
+  elif num "$tk" && num "$tpo" && [ $(( tpo - tk )) -ge $(( PERSISTE_MIN_S * 1000000000 )) ]; then
+    res "B1/A6 t_persistencia_ok - t_kill = $(seg "$tk" "$tpo") s, em [${PERSISTE_MIN_S}, ${PERSISTE_S}) s: abaixo do texto do §5.7 (>= ${PERSISTE_S} s), dentro do limite que o g5b.sh garante (mede em segundos inteiros) [R-1 da V-s6s7sh]"
+    lei "B1/A6 persistencia de $(seg "$tk" "$tpo") s (t_kill=$tk t_persistencia_ok=$tpo): conferir na V-S6B que a diferenca para ${PERSISTE_S} s vem so da granularidade de 1 s do g5b.sh [R-1]"
+  else q=1; fa "B1/A6 t_persistencia_ok - t_kill = $(num "$tk" && num "$tpo" && seg "$tk" "$tpo" || echo ?) s < ${PERSISTE_MIN_S} s (limite garantido pelo g5b.sh, que mede em segundos inteiros; o §5.7 pede ${PERSISTE_S} s) [§5.7, R-1]"; fi
   n=$(grep -c . "$C/persistencia.txt" 2>/dev/null); x=0
   while read -r t _; do num "$t" && num "$tk" && num "$tpo" && [ "$t" -ge "$tk" ] && [ "$t" -le "$tpo" ] || x=$((x + 1)); done < <(cat "$C/persistencia.txt" 2>/dev/null)
   [ "${n:-0}" -ge 1 ] && [ "$x" = 0 ] || { q=1; fa "B1/A6 persistencia.txt: ${n:-0} amostra(s), $x fora de [t_kill, t_persistencia_ok] (minimo 1, todas dentro) [§5.7]"; }
@@ -170,7 +181,7 @@ avaliar() { # avaliar <dir vm-UTC>
     elif num "$tk" && num "$tpo" && [ "$t" -ge "$tk" ] && [ "$t" -le "$tpo" ]; then x=$((x + 1)); echo "  MergeView dentro de [t_kill, t_persistencia_ok]: ${l:0:120}"; fi
   done < <(grep -E 'ISPN000093|MergeView' "$D/05-vistas.log" 2>/dev/null)
   [ -s "$D/05-vistas.log" ] && [ "$x" = 0 ] || { q=1; fa "B1/A6 05-vistas.log ausente ou com MergeView entre t_kill e t_persistencia_ok (ou instante ilegivel): $x linha(s) [§5.7]"; }
-  [ "$q" = 0 ] && ok_ "B1/A6 clsact antes e depois do KILL; corte persistiu $(seg "$tk" "$tpo") s (>= ${PERSISTE_S} s) sem MergeView no intervalo [§5.7]"
+  [ "$q" = 0 ] && ok_ "B1/A6 clsact antes e depois do KILL; corte persistiu $(seg "$tk" "$tpo") s (>= ${PERSISTE_MIN_S} s, R-1) sem MergeView no intervalo [§5.7]"
   head -1 "$D/06-portao51-pos.avaliacao" 2>/dev/null | grep -q '^PORTAO 5.1: OK' \
     && ok_ "B1/A11 portao 5.1 pos: size=3 HEALTHY, caches vazios, 3 netns limpos, sem filtros, 0 timers, sem mudanca de vista em 5 min [§5.1]" \
     || fa "B1/A11 portao 5.1 pos nao passou (ver 06-portao51-pos.avaliacao) [§5.1]"
@@ -248,31 +259,33 @@ avaliar() { # avaliar <dir vm-UTC>
   [ "$okord" = 1 ] && ok_ "B7 cronologia completa e em ordem: t_start t_split_confirmado t_kill t_persistencia_ok t_fire t_mergeview t_saudavel [§5.7]" \
     || fa "B7 cronologia incompleta ou fora de ordem (ver g5b-B-copia/cronologia.txt) [§5.7]"
 
-  # D-1. detector do sudo: 0 tc qdisc del ... clsact da SESSAO entre t_kill e o fim do passo 4; os da unit sao leitura humana (3.4)
-  # Q-13 (pendente do Gestor)
+  # D-1. detector do sudo: 0 tc qdisc del ... clsact da SESSAO entre t_kill e o fim do passo 4 (cura manual), e >= 1 da unit do
+  # dead-man entre t_kill e t_fire + D1_POS_FIRE_S (Q-13 e duvida 5 da V-s6s7sh, decisao do Gestor de 2026-11-04: o S3 provou que o sudo
+  # de root dentro da unit e registrado com _SYSTEMD_UNIT = a unit; runs/vm-s3-2026-10-28/vm/l0c/journal-unit.txt)
   dels_sudo "$D/05-sudo-journal.txt" "${UNIT:-?}" > "$TMPA/dels"
-  nses=0; nuni=0; pri=
+  nses=0; nuni=0; nuni_j=0; pri=
   while read -r t s u; do
     echo "  sudo tc qdisc del dev eth0 clsact: t_us=$t origem=$s ($u)"
     num "$t" && num "$tk" && [ $(( t * 1000 )) -ge "$tk" ] || continue
-    if [ "$s" = sessao ]; then nses=$((nses + 1)); else nuni=$((nuni + 1)); [ -n "$pri" ] || pri=$(( t * 1000 )); fi
+    if [ "$s" = sessao ]; then nses=$((nses + 1)); else nuni=$((nuni + 1))
+      if num "$tf" && [ $(( t * 1000 )) -le $(( tf + D1_POS_FIRE_S * 1000000000 )) ]; then nuni_j=$((nuni_j + 1)); [ -n "$pri" ] || pri=$(( t * 1000 )); fi; fi
   done < "$TMPA/dels"
   if [ -s "$D/05-sudo-journal.txt" ] && [ "$nses" = 0 ]; then ok_ "D-1 detector do sudo: 0 tc qdisc del ... clsact da sessao desde t_kill (nenhuma cura manual) [Q-13]"
   else fa "D-1 detector do sudo: $nses tc qdisc del ... clsact da sessao desde t_kill (cura manual: o bloco nao vale) ou journal do sudo ausente [Q-13]"; fi
-  if [ "$nuni" -ge 1 ] && num "$tf" && [ "$pri" -le $(( tf + 5000000000 )) ]; then
-    lei "D-1 $nuni tc qdisc del ... clsact da unit do dead-man desde t_kill; o primeiro $(seg "$tf" "$pri") s depois de t_fire (esperado entre t_kill e t_fire + 5 s) [Q-13, 3.4]"
-  else lei "D-1 $nuni tc qdisc del ... clsact da unit do dead-man desde t_kill (esperado >= 1, o primeiro ate t_fire + 5 s): nada provou ainda que o sudo de root dentro da unit e registrado [Q-13, 3.4]"; fi
+  if [ "$nuni_j" -ge 1 ]; then
+    ok_ "D-1 $nuni_j tc qdisc del ... clsact da unit do dead-man entre t_kill e t_fire + ${D1_POS_FIRE_S} s; o primeiro $(seg "$tf" "$pri") s depois de t_fire [Q-13, duvida 5]"
+  else fa "D-1 0 tc qdisc del ... clsact da unit do dead-man entre t_kill e t_fire + ${D1_POS_FIRE_S} s ($nuni desde t_kill): o journal do sudo nao mostra a cura pelo dead-man [Q-13, duvida 5]"; fi
 
-  # D-2. serie do coletor: clsact=1 de t_start + D2_FOLGA_S ate t_fire - D2_PRE_FIRE_S; clsact=0 de t_fire + D2_FOLGA_S em diante (Q-13)
+  # D-2. serie do coletor: clsact=1 de t_start + D2_INI_S ate t_fire - D2_PRE_FIRE_S; clsact=0 de t_fire + D2_POS_S em diante (Q-13)
   if num "$ts" && num "$tf"; then
-    read -r b1 c1 b0 c0 <<<"$(awk -F, -v a="$ts" -v h="$tf" -v g="$D2_FOLGA_S" -v p="$D2_PRE_FIRE_S" 'NR > 1 {
-        if ($1 + 0 >= a + g * 1e9 && $1 + 0 <= h - p * 1e9) { n1++; if ($2 != "1") r1++ }
+    read -r b1 c1 b0 c0 <<<"$(awk -F, -v a="$ts" -v h="$tf" -v i="$D2_INI_S" -v g="$D2_POS_S" -v p="$D2_PRE_FIRE_S" 'NR > 1 {
+        if ($1 + 0 >= a + i * 1e9 && $1 + 0 <= h - p * 1e9) { n1++; if ($2 != "1") r1++ }
         if ($1 + 0 >= h + g * 1e9) { n0++; if ($2 != "0") r0++ } }
       END { printf "%d %d %d %d\n", n1, r1, n0, r0 }' "$D/janela/tc-isn3.csv" 2>/dev/null)"
   fi
   if [ "${b1:-0}" -ge 1 ] && [ "${c1:-1}" = 0 ] && [ "${b0:-0}" -ge 1 ] && [ "${c0:-1}" = 0 ]; then
-    ok_ "D-2 serie tc de isn3: clsact=1 nas $b1 amostras de t_start+${D2_FOLGA_S}s a t_fire-${D2_PRE_FIRE_S}s e clsact=0 nas $b0 a partir de t_fire+${D2_FOLGA_S}s [Q-13]"
-  else fa "D-2 serie tc de isn3 incoerente: ${b1:-0} amostras de t_start+${D2_FOLGA_S}s a t_fire-${D2_PRE_FIRE_S}s (${c1:-?} sem clsact), ${b0:-0} a partir de t_fire+${D2_FOLGA_S}s (${c0:-?} com clsact); minimo 1 em cada [Q-13]"; fi
+    ok_ "D-2 serie tc de isn3: clsact=1 nas $b1 amostras de t_start+${D2_INI_S}s a t_fire-${D2_PRE_FIRE_S}s e clsact=0 nas $b0 a partir de t_fire+${D2_POS_S}s [Q-13]"
+  else fa "D-2 serie tc de isn3 incoerente: ${b1:-0} amostras de t_start+${D2_INI_S}s a t_fire-${D2_PRE_FIRE_S}s (${c1:-?} sem clsact), ${b0:-0} a partir de t_fire+${D2_POS_S}s (${c0:-?} com clsact); minimo 1 em cada [Q-13]"; fi
 
   # D-3. timer armado com AccuracyUSec=1s e prazo PRAZO_S (Q-13; V-S0/V-S3: precisao do timer)
   k=$(sed -n '1s/.* prazo_s=\([0-9]*\).*/\1/p' "$C/unit-armada.txt" 2>/dev/null)
@@ -511,7 +524,7 @@ echo "TCC_DIR=$TCC_DIR ($TCC_ORIGEM)"
   {
     echo "BLOCO=$BLOCO"; echo "MODO=$MODO"; echo "BOOT_ESPERADO=$BOOT_ARG"; echo "BLOCO_ANTERIOR=$ANT"; echo "KERNEL=$K"
     echo "TCC_DIR=$TCC_DIR"; echo "SAUDE_S=$SAUDE_S"; echo "TC_S=$TC_S"; echo "DUR=$DUR"; echo "T_KILL_S=$T_KILL_S"
-    echo "MARGEM_S=$MARGEM_S"; echo "PRAZO_S=$PRAZO_S"; echo "PERSISTE_S=$PERSISTE_S"; echo "GO_N0=$(nlinhas_go "$GL")"
+    echo "MARGEM_S=$MARGEM_S"; echo "PRAZO_S=$PRAZO_S"; echo "PERSISTE_S=$PERSISTE_S"; echo "PERSISTE_MIN_S=$PERSISTE_MIN_S"; echo "GO_N0=$(nlinhas_go "$GL")"
   } > "$PAR"
   VMIP=$(hostname -I 2>/dev/null | awk '{print $1}'); echo "VMIP=$VMIP" >> "$PAR"; [ -n "$VMIP" ] || nok "IP da VM vazio (hostname -I)"
   NIC=$(ip route show default 2>/dev/null | awk '{ for (i = 1; i < NF; i++) if ($i == "dev") { print $(i + 1); exit } }'); echo "NIC=$NIC" >> "$PAR"

@@ -23,7 +23,7 @@ public record Decisao(long fimNs, Perfil perfil, boolean transicao, Regra regra,
     public enum Regra {
         /** Violacao de seguranca: entra em (ou mantem) CONSERVADOR, mesmo em cooldown. */
         R1,
-        /** Entrada por topologia anomala ou latencia/erro persistente, com cooldown expirado. */
+        /** Entrada por topologia anomala ou latencia/erro/defasagem persistente, com cooldown expirado. */
         R2,
         /** Em CONSERVADOR, sinal alto: zera o contador de janelas calmas. */
         R3,
@@ -52,13 +52,21 @@ public record Decisao(long fimNs, Perfil perfil, boolean transicao, Regra regra,
      * @param persistenciaErro     janelas seguidas com erro alto, incluindo esta
      * @param janelasCalmas        janelas calmas seguidas em CONSERVADOR, incluindo esta
      * @param cooldownExpirado     o cooldown desde a ultima transicao tinha expirado nesta janela
+     * @param defasagem            S_lag da janela (W-3; {@link EstadoDefasagem#indeterminada()} sem sonda)
+     * @param defasagemAlta        S_lag alto nesta janela
+     * @param persistenciaDefasagem janelas seguidas com defasagem alta, incluindo esta
      */
     public record Sinais(Double taxaLatencia, Double taxaErro, Double fracaoIndisponivel,
                          boolean latenciaAlta, boolean erroAlto, boolean topologiaAnomala,
                          boolean topologiaDisponivel, int topologiaAmostras, int topologiaAnomalas,
                          int nosMinimo, long violacoesSeguranca, long violacoesI2Esperadas,
                          int persistenciaLatencia, int persistenciaErro, int janelasCalmas,
-                         boolean cooldownExpirado) {
+                         boolean cooldownExpirado, EstadoDefasagem defasagem, boolean defasagemAlta,
+                         int persistenciaDefasagem) {
+
+        public Sinais {
+            Objects.requireNonNull(defasagem, "defasagem");
+        }
     }
 
     public Decisao {

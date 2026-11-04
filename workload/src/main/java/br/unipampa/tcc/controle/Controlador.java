@@ -14,16 +14,19 @@ import java.util.Objects;
  *
  * <ul>
  *   <li>R1: violacao ({@code violacoesSeguranca > 0}) leva a CONSERVADOR mesmo em cooldown e
- *       registra {@code ultimaViolacao}.</li>
+ *       registra {@code ultimaViolacao}. A violacao e gatilho de primeira classe (decisao G-1 de
+ *       2026-11-04): e a unica regra que ignora o cooldown.</li>
  *   <li>R2: em NORMAL com cooldown expirado, topologia anomala na janela, ou latencia alta em k
- *       janelas seguidas, ou erro alto em k janelas seguidas, leva a CONSERVADOR.</li>
+ *       janelas seguidas, ou erro alto em k janelas seguidas, ou defasagem alta em k janelas seguidas
+ *       (W-3), leva a CONSERVADOR.</li>
  *   <li>R3: em CONSERVADOR, sinal alto zera o contador de janelas calmas.</li>
  *   <li>R4: volta a NORMAL com cooldown expirado, m janelas calmas seguidas, nenhuma topologia
  *       anomala ha T_estavel e T_hold_viol desde a ultima violacao.</li>
  * </ul>
  *
  * <p>Sinal alto: taxa &gt;= theta_in. Janela calma: sem violacao, sem topologia anomala, e
- * latencia e erro &lt;= theta_out ou indeterminados. Entre theta_out e theta_in a janela nao e
+ * latencia e erro &lt;= theta_out ou indeterminados, e defasagem calma ou indeterminada (a
+ * histerese da defasagem e da sonda, ver {@link EstadoDefasagem}). Entre theta_out e theta_in a janela nao e
  * alta nem calma (histerese). Amostra abaixo do minimo deixa o sinal indeterminado.
  */
 public final class Controlador {
@@ -41,6 +44,7 @@ public final class Controlador {
     private long ultimaTopologiaAnomalaNs;
     private int persistenciaLat;
     private int persistenciaErr;
+    private int persistenciaLag;
     private int calmas;
 
     public Controlador(ParametrosControlador parametros) {
@@ -57,13 +61,23 @@ public final class Controlador {
     }
 
     /**
+     * Avalia uma janela fechada sem sonda de defasagem: delega a
+     * {@link #avaliar(Janela, EstadoTopologia, EstadoDefasagem)} com
+     * {@link EstadoDefasagem#indeterminada()}.
+     */
+    public Decisao avaliar(Janela janela, EstadoTopologia topologia) {
+        return avaliar(janela, topologia, EstadoDefasagem.indeterminada());
+    }
+
+    /**
      * Avalia uma janela fechada e devolve a decisao. {@code janela.fimNs()} deve crescer
      * estritamente entre chamadas; caso contrario lanca {@link IllegalArgumentException} sem
      * alterar o estado.
      */
-    public Decisao avaliar(Janela janela, EstadoTopologia topologia) {
+    public Decisao avaliar(Janela janela, EstadoTopologia topologia, EstadoDefasagem defasagem) {
         Objects.requireNonNull(janela, "janela");
         Objects.requireNonNull(topologia, "topologia");
+        Objects.requireNonNull(defasagem, "defasagem");
         final long agora = janela.fimNs();
         if (houveJanela && agora <= ultimoFimNs) {
             throw new IllegalArgumentException("fimNs nao crescente: " + agora + " <= " + ultimoFimNs);
@@ -80,11 +94,13 @@ public final class Controlador {
         boolean errCalmo = taxaErr == null || taxaErr <= p.thetaErrOut();
         boolean violacao = janela.violacoesSeguranca() > 0;
         boolean topAnomala = topologia.anomala();
-        boolean algumAlto = violacao || topAnomala || latAlta || errAlto;
-        boolean calma = !violacao && !topAnomala && latCalma && errCalmo;
+        boolean lagAlta = defasagem.alta();
+        boolean algumAlto = violacao || topAnomala || latAlta || errAlto || lagAlta;
+        boolean calma = !violacao && !topAnomala && latCalma && errCalmo && defasagem.calmaOuIndeterminada();
 
         persistenciaLat = latAlta ? persistenciaLat + 1 : 0;
         persistenciaErr = errAlto ? persistenciaErr + 1 : 0;
+        persistenciaLag = lagAlta ? persistenciaLag + 1 : 0;
         if (violacao) {
             houveViolacao = true;
             ultimaViolacaoNs = agora;
@@ -103,7 +119,8 @@ public final class Controlador {
                 novo = Perfil.CONSERVADOR;
                 regra = Decisao.Regra.R1;
             } else if (cooldownExpirado
-                    && (topAnomala || persistenciaLat >= p.k() || persistenciaErr >= p.k())) {
+                    && (topAnomala || persistenciaLat >= p.k() || persistenciaErr >= p.k()
+                        || persistenciaLag >= p.k())) {
                 novo = Perfil.CONSERVADOR;
                 regra = Decisao.Regra.R2;
             }
@@ -128,7 +145,8 @@ public final class Controlador {
                 latAlta, errAlto, topAnomala,
                 topologia.disponivel(), topologia.amostras(), topologia.anomalas(), topologia.nosMinimo(),
                 janela.violacoesSeguranca(), janela.violacoesI2Esperadas(),
-                persistenciaLat, persistenciaErr, calmas, cooldownExpirado);
+                persistenciaLat, persistenciaErr, calmas, cooldownExpirado,
+                defasagem, lagAlta, persistenciaLag);
 
         boolean transicao = novo != perfil;
         if (transicao) {
@@ -138,12 +156,15 @@ public final class Controlador {
             calmas = 0;
         }
 
-        List<Motivo> motivos = new ArrayList<>(4);
+        List<Motivo> motivos = new ArrayList<>(5);
         if (violacao) {
             motivos.add(Motivo.VIOLACAO);
         }
         if (topAnomala) {
             motivos.add(Motivo.TOPOLOGIA);
+        }
+        if (lagAlta) {
+            motivos.add(Motivo.DEFASAGEM);
         }
         if (errAlto) {
             motivos.add(Motivo.ERRO);

@@ -5,10 +5,13 @@ import java.util.Collection;
 /**
  * Motivo de uma decisao, declarado em ordem decrescente de severidade
  * (plano de 2026-10-22, secao 3.3). {@code ESTAVEL} indica nenhum sinal alto na janela.
+ * {@code DEFASAGEM} (W-3/B-28.2, plano de execucao de 2026-11-04, secao 4.5) fica logo abaixo de
+ * {@code TOPOLOGIA}: e o sinal que antecipa a particao ainda nao detectada.
  */
 public enum Motivo {
     VIOLACAO,
     TOPOLOGIA,
+    DEFASAGEM,
     ERRO,
     LATENCIA,
     ESTAVEL;

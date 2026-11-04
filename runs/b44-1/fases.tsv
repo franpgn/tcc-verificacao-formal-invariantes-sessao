@@ -1,0 +1,78 @@
+2026-11-04T21:04:46.165Z	E1 inicio: atributos mutaveis em SYNC sob carga S3 sync 60 s
+2026-11-04T21:04:58.288Z	E1 set remote-timeout=10000 sessions via REST isn1
+2026-11-04T21:04:59.187Z	E1 set acquire-timeout=5000 sessions via CLI isn3
+2026-11-04T21:05:01.081Z	E1 set lifespan/max-idle/interval sessions via REST isn2
+2026-11-04T21:05:03.578Z	E1 set remote-timeout=10000 e acquire-timeout=5000 counters via REST isn3
+2026-11-04T21:05:10.101Z	E1 reversao
+2026-11-04T21:05:14.400Z	E1 aguardando fim da carga
+2026-11-04T21:05:54.699Z	E1 fim
+2026-11-04T21:07:15.914Z	E2 inicio: atributos mutaveis em ASYNC sob carga S3 async 60 s
+2026-11-04T21:07:28.063Z	E2 escorva sessions-async: set remote-timeout=15000 (valor atual) via REST isn1
+2026-11-04T21:07:28.287Z	E2 set remote-timeout=10000 sessions-async via REST isn2
+2026-11-04T21:07:29.141Z	E2 set acquire-timeout=5000 sessions-async via CLI isn3
+2026-11-04T21:07:32.165Z	E2 counters-async sem escorva: set acquire-timeout=5000 via CLI isn1
+2026-11-04T21:07:35.793Z	E2 counters-async segunda tentativa via CLI isn1
+2026-11-04T21:07:45.138Z	E2 reversao
+2026-11-04T21:08:01.059Z	E2 aguardando fim da carga
+2026-11-04T21:08:46.804Z	E2 fim
+2026-11-04T21:09:01.248Z	E3 inicio: atributos imutaveis (sem carga)
+2026-11-04T21:11:00.720Z	E4 inicio: demais atributos listados, em counters, sob carga S3 sync 60 s
+2026-11-04T21:11:10.804Z	E4 memory.max-count -> 1000000
+2026-11-04T21:11:12.383Z	E4 jmx-statistics.statistics -> false
+2026-11-04T21:11:14.274Z	E4 tracing.enabled -> false
+2026-11-04T21:11:15.875Z	E4 tracing.categories -> container,cluster
+2026-11-04T21:11:17.480Z	E4 transaction.stop-timeout -> 20000
+2026-11-04T21:11:19.168Z	E4 transaction.single-phase-auto-commit -> true
+2026-11-04T21:11:51.328Z	E4 persistence.connection-attempts -> 5
+2026-11-04T21:11:53.606Z	E4 aliases -> ctr-alias
+2026-11-04T21:11:56.855Z	E4 security.authorization.roles -> admin
+2026-11-04T21:11:59.326Z	E4 indexing.indexed-entities -> x.Y
+2026-11-04T21:12:01.574Z	E4 memory.max-size -> 512MB
+2026-11-04T21:12:10.613Z	E4 fim
+2026-11-04T21:12:30.423Z	E4 reparo: indexed-entities vazio enviado pelo no isn3 (o unico sem x.Y)
+2026-11-04T21:13:02.125Z	INC1 fim: cluster recriado (counters com indexed-entities divergente)
+2026-11-04T21:13:51.173Z	INC2 inicio
+2026-11-04T21:14:41.907Z	P1 escorva dos 4 caches (remote-timeout = valor atual)
+2026-11-04T21:15:15.881Z	P2a SYNC sessions remote-timeout=3000; pausa de isn3 por 12 s; 8 PUTs em isn1
+2026-11-04T21:15:24.834Z	P2a pausa isn3
+2026-11-04T21:15:38.289Z	P2a retoma isn3
+2026-11-04T21:15:44.599Z	P2b pausa isn3 (SYNC remote-timeout=17500)
+2026-11-04T21:15:58.379Z	P2b retoma isn3
+2026-11-04T21:16:11.368Z	P2c pausa isn3 (ASYNC sessions-async remote-timeout=3000)
+2026-11-04T21:16:24.602Z	P2c retoma isn3
+2026-11-04T21:17:22.541Z	P3 pausa isn3 (SYNC acquire-timeout=2000, remote-timeout=17500); 6 chaves x 2 PUTs concorrentes
+2026-11-04T21:17:36.090Z	P3 retoma isn3
+2026-11-04T21:17:51.129Z	P4 podman restart b441-isn3
+2026-11-04T21:20:04.378Z	P4 isn3 de volta: X
+2026-11-04T21:20:35.318Z	P4 isn3 nao reinicia: ISPN000438 (cache definido duas vezes: XML + data/caches.xml)
+2026-11-04T21:20:48.355Z	P4 reparo: caches.xml vazio copiado para isn3 parado; podman start
+2026-11-04T21:23:04.823Z	P4 isn3 apos reparo: X
+2026-11-04T21:23:16.755Z	P4 reparo 2: remote-timeout de sessions volta a 17500 (valor do XML) no cluster de 2 nos; isn3 sobe de novo
+2026-11-04T21:23:23.917Z	P4 isn3 apos reparo 2: HEALTHY 3
+2026-11-04T21:23:58.341Z	P5 inicio: rebalanceamento por cache (sessions) sob carga S3 sync 150 s
+2026-11-04T21:24:18.413Z	P5 podman stop b441-isn3 (saida graciosa)
+2026-11-04T21:24:29.438Z	P5 caches.xml vazio em isn3 e podman start (rebalanceamento de sessions desligado)
+2026-11-04T21:24:37.776Z	P5 isn3 apos start com rebalance desligado: http=200
+2026-11-04T21:24:53.352Z	P5 enable-rebalancing sessions via CLI isn3
+2026-11-04T21:25:04.276Z	P5 global: disable via REST /rest/v2/container (isn2)
+2026-11-04T21:25:10.400Z	P5 global: enable via CLI isn1
+2026-11-04T21:25:18.207Z	P5 aguardando fim da carga
+2026-11-04T21:25:18.294Z	P5 fim
+2026-11-04T21:26:55.523Z	P6a inicio: DEGRADED_MODE forcado em sessions sob carga S3 sync 90 s
+2026-11-04T21:27:20.720Z	P6a set-availability DEGRADED_MODE sessions via REST isn3 (nao coordenador)
+2026-11-04T21:27:37.333Z	P6a AVAILABLE via CLI isn2
+2026-11-04T21:29:20.847Z	P6b-sync inicio: DEGRADED_MODE forcado em sessions e counters sob carga S3 sync 90 s (warmup 5 s)
+2026-11-04T21:29:45.995Z	P6b-sync DEGRADED_MODE sessions e counters via REST isn3
+2026-11-04T21:30:12.923Z	P6b-sync AVAILABLE sessions e counters via CLI isn1
+2026-11-04T21:30:55.830Z	P6c-async inicio: DEGRADED_MODE forcado em sessions-async e counters-async sob carga S3 async 90 s (warmup 5 s)
+2026-11-04T21:31:20.932Z	P6c-async DEGRADED_MODE sessions-async e counters-async via REST isn3
+2026-11-04T21:31:47.064Z	P6c-async AVAILABLE sessions-async e counters-async via CLI isn1
+2026-11-04T21:32:44.278Z	P6d bulk em DEGRADED forcado (sem carga): clear em sessions-async
+2026-11-04T21:33:20.553Z	P7 inicio: particao de isn3 (nft) sob carga S3 sync 150 s (warmup 5 s)
+2026-11-04T21:33:40.712Z	P7 CORTE isn3 x {isn1,isn2}
+2026-11-04T21:33:45.818Z	P7 set-availability DEGRADED_MODE sessions pedido ao no isolado isn3 (antes da deteccao)
+2026-11-04T21:34:55.993Z	P7 CURA
+2026-11-04T21:36:01.209Z	P7 fim
+2026-11-04T21:36:56.809Z	P8 confirmacao: podman restart b441-isn3 com caches.xml repovoado pelo rejoin (valores = XML)
+2026-11-04T21:37:12.423Z	P8 resultado: exited
+2026-11-04T21:38:23.187Z	FIM: podman-compose down

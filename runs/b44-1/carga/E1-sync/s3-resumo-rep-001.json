@@ -1,0 +1,29 @@
+{
+  "parametros" : {
+    "modo_cliente" : "pinned",
+    "admin_node" : "isn1",
+    "usuarios" : 20,
+    "contas_limite" : 10,
+    "semente" : 1044104,
+    "hotrod_timeout_ms" : 2000,
+    "hotrod_retentativas" : 1,
+    "app_retentativas" : 2,
+    "idle_timeout_sec" : 30.0,
+    "nota" : "o resumo inclui o warm-up; acoes anteriores a medicao nao entram no CSV de eventos"
+  },
+  "total_acoes" : 1001,
+  "contadores" : {
+    "acao|Block|OK_NOOP" : 2,
+    "acao|IncrementFailure|OK_STATUS" : 76,
+    "acao|Login|BLOCKED" : 14,
+    "acao|Login|OK_LOGIN" : 34,
+    "acao|Logout|OK_NOOP" : 16,
+    "acao|ResetFailures|OK_NOOP" : 9,
+    "acao|Unblock|OK_NOOP" : 1,
+    "acao|Validate|OK_VALIDATE:INVALID" : 68,
+    "acao|Validate|OK_VALIDATE:VALID" : 781,
+    "evento|AbandonoSilencioso" : 4,
+    "evento|SessaoEncerradaNoServidor" : 2,
+    "evento|SessaoOrfa" : 4
+  }
+}

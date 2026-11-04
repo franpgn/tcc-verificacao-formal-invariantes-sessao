@@ -136,6 +136,15 @@ for port in 11222 11223 11224; do
 done
 ```
 
+## Reconfiguração em tempo de execução (B-44.1)
+
+O que o servidor 15.0.21 deixa mudar sem recriar o cache, com prova no *cluster* local, está em
+`docs/b44-1-reconfiguracao-infinispan.md`. Em resumo: `remote-timeout`, `acquire-timeout`, expiração,
+rebalanceamento (por cache e global) e disponibilidade são mutáveis; `mode`, `owners`, `segments`,
+`when-split` e `merge-policy` não são. Antes de usar: toda mudança de atributo num cache deste XML exige
+escorva e impede o nó de reiniciar enquanto `data/caches.xml` não for limpo (P-29, P-30 em
+`docs/registro-de-problemas.md`).
+
 ## Decisões a registrar em `docs/decisoes-tecnicas.md`
 
 - T4: aceitar `numSegments=64` do esqueleto ou ajustar para 256.

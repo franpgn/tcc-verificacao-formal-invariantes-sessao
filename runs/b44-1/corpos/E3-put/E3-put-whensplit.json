@@ -1,0 +1,1 @@
+{"sessions":{"distributed-cache":{"owners":"2","segments":"64","mode":"SYNC","remote-timeout":"17500","statistics":true,"locking":{"concurrency-level":"1000","acquire-timeout":"15000","striping":false},"state-transfer":{"enabled":true,"timeout":"60000"},"partition-handling":{"when-split":"ALLOW_READ_WRITES","merge-policy":"PREFERRED_NON_NULL"}}}}

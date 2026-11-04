@@ -70,6 +70,8 @@ Invalidam o bloco (`FALHA`):
 | D-2 | `janela/tc-isn3.csv`: `clsact=1` de `t_start + 5 s` até `t_fire − 2 s` e `clsact=0` a partir de `t_fire + 5 s`, com pelo menos 1 amostra em cada intervalo | **Q-13** |
 | D-3 | `AccuracyUSec=1s`, `prazo_s=145` e `OnActiveSec` = 145 s em `unit-armada.txt` | **Q-13** |
 
+**Limite conhecido do B1/A6 (pergunta ao Gestor no relatório do Worker).** O `g5b.sh` (não editado) mede a persistência em segundos inteiros: `T_P0=$(date +%s)` e `while [ $(( $(date +%s) - T_P0 )) -lt 15 ]`, com uma amostra a cada ~2 s. O laço pode sair quando o tempo real desde `T_P0` ainda é ~14,3 s (quando a fração de segundo de `T_P0` passa de ~0,65), e o `t_persistencia_ok` só é carimbado depois de três `podman logs`. Por isso `t_persistencia_ok − t_kill` pode sair entre ~14,3 e ~15 s numa execução correta, e o B1/A6 (≥ 15 s) dá FALHA. O `s7.sh` segue o prompt no B1/A6 (≥ 15 s, lado conservador). Se o B1/A6 cair só por isso (todas as outras condições do A6 OK e `t_persistencia_ok − t_kill ≥ 14 s`), o Senior reclassifica na V-S6B ou o Gestor decide outra regra antes do S7. No teste o mesmo efeito aparece com 3 s e o limite do teste é 2 s.
+
 Não invalidam (`RESULTADO`): `t_split_confirmado − t_start`; `t_mergeview − t_fire` e `t_saudavel − t_fire` (dado de segurança, não é t_merge); o tempo total de corte (`t_start` a `t_fire`); `ISPN000524`/`ISPN100014`/`ISPN000638` (**Q-14**); as linhas `DEGRADED_MODE`.
 
 Leitura humana: os `tc qdisc del` da unit no journal do `sudo` (o S6 só serve de controle positivo para a sessão; o S3 mostrou o `sudo` de root dentro da unit do netdegrade no journal, mas nada provou isso para esta unit); a diferença entre o início da unit no journal (`Started <unit>.service`, `-o short-iso-precise`) e o `t_fire` medido por polling (espera-se ≤ 2 s); o limite do `AccuracySec` acima; a latência do REST de isn3 na janela; a origem dos outros `tc` de escrita no journal do `sudo`; os instantes de `ISPN000094`/`DEGRADED_MODE`/`ISPN000093` nos logs completos.
@@ -78,7 +80,7 @@ Q-11 a Q-14 e Q-16 estão **pendentes do Gestor**; o código implementa a recome
 
 ## Duração estimada
 
-Teste (Git Bash, shims, janela de 8 s e prazo de 14 s): o caminho completo leva cerca de 35 a 40 s; a suíte inteira deu 642 PASS e 3 FAIL na primeira rodada (734 s, sozinha), os 3 por erro do próprio teste (caminho do bloco anterior e o rótulo B1/A1), corrigidos e conferidos nas seções T-3 e T-8 (210 PASS, 0 FAIL); a contagem final está no relatório do Worker.
+Teste (Git Bash, shims, janela de 8 s e prazo de 14 s): o caminho completo leva cerca de 35 a 40 s; a suíte inteira deu 652 PASS, 0 FAIL em 1054 s (~17,5 min; sem outra suíte minha em paralelo, mas com outro Worker usando o host).
 
 Na VM, calculada: o prompt do GO aparece por volta de **2,5 min** (pré-condições, dry-run e portão pré de 130 s). Depois do GO: split confirmado em ~40 a 46 s, KILL em +70 s, persistência até ~+86 s, disparo em 145 a 155 s depois de armar, fusão da ordem de ~46 s, `HEALTHY` x3, preflight e logs: **o `g5b.sh` termina ~3,5 a 4 min depois do GO**. Portão pós até o fim do `g5b.sh` + 345 s (~6 min). Total: **cerca de 12 a 13 min**, mais o tempo até o GO.
 

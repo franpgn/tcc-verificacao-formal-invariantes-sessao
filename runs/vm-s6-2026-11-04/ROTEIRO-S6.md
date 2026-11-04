@@ -85,6 +85,8 @@ Invalidam o bloco (`FALHA`):
 | D-2 | `janela/tc-isn3.csv`: `clsact=1` em todas as amostras de `t_start + 5 s` a `t_heal` e `clsact=0` em todas a partir de `t_heal + 5 s`, com pelo menos 1 amostra em cada intervalo | **Q-13** |
 | D-3 | `unit-armada.txt`: `AccuracyUSec=1s`, `prazo_s=210` e `OnActiveSec` do `.timer` = 210 s (aceita o formato do systemd, por exemplo `3min 30s`) | **Q-13** (V-S0/V-S3) |
 
+**Limite conhecido do A6 (pergunta ao Gestor no relatório do Worker).** O `g5b.sh` (não editado) mede a persistência em segundos inteiros: `T_P0=$(date +%s)` e `while [ $(( $(date +%s) - T_P0 )) -lt 15 ]`, com uma amostra a cada ~2 s. O laço pode sair quando o tempo real desde `T_P0` ainda é ~14,3 s (quando a fração de segundo de `T_P0` passa de ~0,65), e o `t_persistencia_ok` só é carimbado depois de três `podman logs`. Por isso `t_persistencia_ok − t_kill` pode sair entre ~14,3 e ~15 s numa execução correta, e o A6 do prompt (≥ 15 s) dá FALHA. O `s6.sh` segue o prompt (≥ 15 s, lado conservador). Se o A6 cair só por isso (todas as outras condições do A6 OK e `t_persistencia_ok − t_kill ≥ 14 s`), o Senior reclassifica na V-S6A ou o Gestor decide outra regra antes do S6. No teste o mesmo efeito aparece com 3 s e o limite do teste é 2 s.
+
 Não invalidam (`RESULTADO`): `t_split_confirmado − t_start`; `t_mergeview − t_heal` e `t_saudavel − t_heal` (rotulados "dado de segurança, NÃO é t_merge"); `ISPN000524`/`ISPN100014`/`ISPN000638` nos `log-completo-isn*.txt` (**Q-14**, com leitura humana); as linhas `DEGRADED_MODE`; o disparo do dead-man depois do `--heal` manual e antes do desarme (**Q-15**): vale desde que o `Started <unit>.service` do `05-journal-unit.txt` seja posterior a `t_heal` e `qdisc-pos-heal.txt` esteja sem `clsact`; o `tc qdisc del` da unit depois de `t_heal` não conta no D-1. Disparo antes do `--heal` manual é FALHA.
 
 Ficam para leitura humana (`LEITURA HUMANA`): os instantes de `ISPN000094`/`DEGRADED_MODE`/`ISPN000093` nos `log-completo-isn*.txt`; a origem dos outros comandos `tc` de escrita no journal do `sudo` (injeção, pré-limpeza e sonda do injetor, todos antes de `t_start`); a latência do REST de isn3 na janela.
@@ -93,7 +95,7 @@ Q-11 a Q-15 estão **pendentes do Gestor** (`docs/roteiro-vm-2026-11-04.md`, se�
 
 ## Duração estimada
 
-Medida no teste (Git Bash, shims, `g5b.sh` reencenado com janela de 8 s): o caminho completo leva cerca de 30 s; a suíte inteira deu 580 PASS, 0 FAIL em 546 s (~9 min), sozinha.
+Medida no teste (Git Bash, shims, `g5b.sh` reencenado com janela de 8 s): o caminho completo leva cerca de 30 s; a suíte inteira deu 588 PASS, 0 FAIL em 753 s (~12,5 min; sem outra suíte minha em paralelo, mas com outro Worker usando o host).
 
 Na VM, calculada: pré-condições e dry-run em segundos; portão pré 130 s mais as leituras finais, então **o prompt do GO aparece por volta de 2,5 min**. Depois do GO: armação e injeção em ~2 s; split confirmado em ~40 a 46 s; KILL em +70 s; persistência até ~+86 s; `--heal`; fusão da ordem de ~46 s (`MergeView` por volta de +130 s); `HEALTHY` x3, desarme, preflight e logs, **o `g5b.sh` termina ~2,5 min depois do GO**. O portão pós vai até o fim do `g5b.sh` + 345 s (~6 min). Total: **cerca de 11 a 12 min**, mais o tempo até o GO.
 

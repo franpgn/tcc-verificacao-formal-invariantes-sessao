@@ -60,7 +60,7 @@ comando e a saída nos brutos.
 | 5 | Cópia + V-S6A | coordenador + Senior | 5 + 30 a 45 min | S6 |
 | 6 | S7 conforme `ROTEIRO-S7.md`, `--bloco-anterior` = o `vm-<UTC>/` do S6 | Gestor presente | ~14 min + GO (seção 5) | V-S6A aprovada |
 | 7 | Cópia + V-S6B | coordenador + Senior | 5 + 30 a 45 min | S7 |
-| 8 | Ensaio do F1 silencioso (§4.2 do `prompt-f1-kill-2026-10-27.md`): 2 F1 sem carga e 2 com carga (S1 sync e S1 async, 300 s), no cluster atual, **antes** da recriação | Gestor presente no GO | 1,5 a 2 h + leitura do Senior ~45 min | V-S6B, Q-17 |
+| 8 | Ensaio do F1 silencioso (§4.2 do `prompt-f1-kill-2026-10-27.md`) pelo `ensaio-f1.sh` (prompt `docs/prompt-worker-ensaio-f1-2026-11-04.md`): 2 F1 sem carga e 2 com carga (S1 sync e S1 async, 300 s). O cluster atual **não tem os caches ASYNC** (XML `8792dea3…`, do gate v4); ver Q-17 | Gestor presente no GO | 1,5 a 2 h + leitura do Senior ~45 min | V-S6B, Q-17 |
 | 9 | Disco (seção 7 e Q-19/Q-20); itens "de dia" da checklist 10.6 (`wt-ctrl-integ/docs/relatorio-rebaseline-runner-2026-10-23.md`); *bundle* do *rebaseline* (`git archive 20805b0` + jar congelado `5eced136…`, lista `003814e9…`); anotar o instante UTC e recriar o cluster; pré-voo sem injeção | coordenador + Gestor | 45 min a 1 h | ensaio lido, Q-19 |
 | 10 | Piloto: rodada 0, 12 execuções (i = 1000..1011), GO `go piloto <data>`, Gestor acompanha a primeira F3 (i = 1005, ~35 min depois do GO) | Gestor no início | ~1,5 h | Q-18 |
 | 11 | Validação do piloto pelo Senior (K1..K10, n por operação, tempos, **tamanho real por execução**) e liberação pelo Gestor; depois, noite 1 (rodadas 1..5) | Senior, Gestor | 1 a 2 h + 6,5 a 8 h | Q-19, Q-21 |
@@ -71,10 +71,12 @@ O piloto e a sua validação, mais 2 h 30 min a 3 h 30 min. Começando às 09:00
 
 ## 4. O que já se sabe que vai dar problema no S5
 
-1. **`runs/gate-b29/go.log` modificado na VM (provável, a conferir).** O `exigir_go` do `g1.sh` acrescentou a linha do GO
-   da REP=4 em `runs/gate-b29/go.log`, que é **versionado** (5 linhas no git; a cópia do S4,
-   `runs/vm-s4-2026-10-28/vm-20261028T070600Z/go.log`, tem 6, sha256 `3de1fa71…20d8`). O passo 0 do `s5.sh` exige "0 arquivos
-   versionados modificados" e vai abortar com rc 1, sem tocar em nada. Não é risco para a VM, mas gasta o GO. Ver Q-01.
+1. **`runs/gate-b29/go.log` modificado na VM (confirmado pelo coordenador em 04/11, só leitura).** O `exigir_go` do
+   `g1.sh` acrescentou a linha do GO da REP=4 em `runs/gate-b29/go.log`, que é **versionado** (5 linhas no git). Na VM,
+   `git status` mostra ` M runs/gate-b29/go.log`, com 6 linhas e sha256 `3de1fa71…20d8`, igual à cópia do S4
+   (`runs/vm-s4-2026-10-28/vm-20261028T070600Z/go.log`); HEAD `1266c12`; não versionados só `g1-rep4/` e as duas pastas do
+   S4. O passo 0 do `s5.sh` exige "0 arquivos versionados modificados" e vai abortar com rc 1, sem tocar em nada. Não é
+   risco para a VM, mas gasta o GO. Ver Q-01.
 2. **`boot_id` fixo no `s5.sh`.** Vale enquanto a VM não reiniciar. Se reiniciar antes do S5 (queda de energia), o `s5.sh`
    aborta no passo 0 e precisa de correção (hash novo, nova revisão) ou da decisão de recriar o cluster. O `s6.sh`/`s7.sh`
    não têm esse problema (Q-11).
@@ -154,32 +156,71 @@ por noite e 7,9 GB no total.
 | O-1 | Na VM, apagar os CSVs de junho (`~/tcc-desenvolvimento/runs/`, ~2,1 GB) **depois** de reconferir o sha256 da cópia do host (`tcc/dados-vm/baseline-2026-06-23/sha256-vm.txt`); `journalctl --vacuum-size` e `podman image prune` só se a leitura mostrar volume | ~2,1 GB ou mais, já para o piloto | escrita na VM; os dados de junho passam a existir só no host (com sha256) |
 | O-2 | Compressão por execução dentro do *runner* (`gzip -1` do CSV depois do verificador e antes do K1 da execução seguinte; a análise lê `.gz`) | ~4×; a noite central cabe em ~2 GB | muda `run-rebaseline.sh` e `analysis/rebaseline.py`, que estão congelados no pré-registro (DT nova, revalidação, *hashes* novos); CPU da VM entre execuções (estimo poucos segundos por execução, fora da janela de medição) |
 | O-3 | Compressão e cópia para o host **de dia**, entre as noites (`gzip -1` na VM, `scp`, `sha256sum -c` do CSV original e do `.gz`, só então apagar na VM) | libera a VM para a noite seguinte; cópia comprimida cabe no host (~2 a 3,4 GB por noite) | não resolve a noite em si: o volume de uma noite ainda precisa caber sem compressão |
-| O-4 | Aumentar o LV da VM. O VHDX tem 40 GB e o `/` tem 19 GB, o que sugere ~19 GB livres no VG (padrão do instalador do Ubuntu); conferir com `sudo vgs`. `lvextend -r` com o `/` montado | até ~19 GB na VM, sem desligar | escrita na VM (LVM/ext4 online); **limitado pelo host**: cada GB a mais que a VM usar pode virar GB a mais de VHDX no `C:` |
-| O-5 | Liberar espaço no `C:` do host (por exemplo a ISO do Ubuntu, 3,4 GB em `C:\Hyper-V\iso`, *bundles* e *zips* antigos em `tcc/`) | margem para o VHDX crescer e para as cópias | decisão do Gestor sobre arquivos dele |
+| O-4 | Aumentar o LV da VM, on-line (7.5). **Conferido pelo coordenador em 04/11:** `ubuntu-vg` com 36,95 GB, 18,47 GB livres; LV de 18,47 GB | até +18,47 GB na VM, sem desligar nem parar o cluster | escrita na VM (LVM/ext4 on-line); reverter exige desligar a VM (7.5); **limitado pelo host**: cada GB a mais que a VM usar pode virar GB a mais de VHDX no `C:` |
+| O-5 | Liberar espaço no `C:` do host (arquivos do Gestor fora de `tcc/`; em `tcc/` os *bundles* e *zips* somam poucos MB. **Não** a ISO de `C:\Hyper-V\iso`, que é a reversão da O-4, 7.5) | margem para o VHDX crescer e para as cópias | decisão do Gestor sobre arquivos dele |
 | O-6 | Noites menores (por exemplo 2 ou 3 rodadas por noite em vez de 5) | volume por noite cai para 40 a 60 % | mais noites; muda só a partição em noites, não a ordem nem as sementes (as rodadas já são blocos completos), mas o PR §8 fixa duas noites, então é DT nova antes da noite 1 |
 
-**Recomendação do Senior.** Para hoje: O-1 (e O-5, pelo menos a ISO) antes do piloto, o que deixa ~5,4 GB livres na VM e
-cobre o piloto até no cenário alto. Ler, só leitura, `df -h /`, `sudo vgs`, `sudo lvs`, `lsblk`,
-`journalctl --disk-usage`, `du -sh ~/tcc-desenvolvimento/runs ~/tcc-gate`, `sudo podman system df`. O piloto mede o tamanho
-real por célula, e é com ele que se decide a noite 1: se 5 rodadas medidas couberem em até 60 % do livre na VM **e** do
-livre no host, manter o PR; senão, O-4 (só se O-5 der ao host folga maior que a extensão) mais O-3, e, se ainda não couber,
-O-6. A O-2 é a mais eficaz, mas é a única que mexe no que foi congelado e validado; eu só a recomendaria se o piloto der o
-cenário alto. Em qualquer caso, conferir `df -h /` no bloco de abertura de cada noite, com a regra de não dar o GO se o
-livre for menor que 1,5 × o volume estimado da noite.
+### 7.5 O-4 em detalhe (revisto em 04/11 com os números do VG)
+
+O VG tem 18,47 GB livres, então o limite real não é a VM, é o host. O VHDX é dinâmico: um bloco que a VM nunca escreveu
+vira espaço novo no `C:` quando for escrito. Com 15 GB livres no host, estender o LV em tudo (+18,47 GB) permitiria à VM
+encher o host. O tamanho proposto é **+10 GB**: a VM fica com ~13,3 GB livres (~15,4 GB com a O-1), o que cobre uma noite
+central (8,1 GB) pela regra de 1,5 × (12,2 GB), e no pior caso o host perde 10 GB e fica com ~5 GB, que ainda é pouco para
+as cópias comprimidas (2 a 3,4 GB por noite). Por isso a O-4 vem junto com a O-5 (Q-20).
+
+Comandos, na VM, no tmux, com o cluster parado ou não (a operação não toca nos contêineres), **fora** de qualquer janela de
+injeção, saída inteira gravada em `runs/disco-2026-11-04/` com `tee`:
+
+```bash
+# 1. leitura (antes)
+df -hT / ; findmnt -no SOURCE,FSTYPE / ; sudo vgs ; sudo lvs ; lsblk -f
+sudo tune2fs -l /dev/mapper/ubuntu--vg-ubuntu--lv | grep -E 'Block count|Block size|Filesystem features'
+ls -l /etc/lvm/archive/ | tail -3          # o LVM guarda o metadado anterior sozinho a cada mudanca
+# 2. extensao on-line (lvextend -r chama o resize2fs; ext4 cresce montado)
+sudo lvextend -r -L +10G /dev/ubuntu-vg/ubuntu-lv
+# 3. leitura (depois): esperado LV ~28,47 GB, VG ~8,47 GB livres, / com ~10 GB a mais
+df -hT / ; sudo vgs ; sudo lvs ; sudo dmesg | tail -5
+```
+
+Pré-condições: `findmnt` diz `ext4`; nenhum injetor rodando; lock da VM livre; host com ≥ 12,5 GB livres (10 GB mais
+25 %). Depois da O-1, rodar `sudo fstrim -v /`: com o *trim*, o Hyper-V marca os blocos liberados do VHDX como
+reutilizáveis, e a noite seguinte reaproveita o espaço em vez de crescer o arquivo.
+
+Reversão:
+- **Se o `lvextend` falhar antes de o `resize2fs` terminar** (o ext4 continua do tamanho antigo):
+  `sudo lvreduce -L -10G /dev/ubuntu-vg/ubuntu-lv` é seguro, porque o sistema de arquivos não usa a parte nova; ou
+  `sudo vgcfgrestore -f /etc/lvm/archive/<arquivo de antes> ubuntu-vg`. Conferir com `sudo tune2fs -l` que o *block count*
+  é o de antes antes de reduzir.
+- **Se tudo der certo e mesmo assim for preciso voltar** (por exemplo, para devolver espaço ao host): o ext4 não encolhe
+  montado. É preciso desligar a VM, dar boot pela ISO do Ubuntu (`C:\Hyper-V\iso\ubuntu-24.04.4-live-server-amd64.iso`),
+  `e2fsck -f`, `resize2fs` para o tamanho antigo, `lvreduce`, e ainda `Optimize-VHD` no host para o arquivo encolher.
+  É demorado e é o único passo arriscado. Por isso a **ISO não deve ser apagada** antes do fim da campanha, e a O-5 passa a
+  ser "outros arquivos do host, não a ISO".
+- Na prática a extensão não precisa ser desfeita: o que pesa no host é o que se **escreve**, não o tamanho do LV. O controle
+  é o `df` no início de cada noite e a cópia/limpeza de dia (O-3) com `fstrim`.
+
+**Recomendação do Senior (revista).** Hoje, antes do piloto: O-1 com `fstrim` (VM com ~5,4 GB livres, o que cobre o
+piloto até no cenário alto) e a leitura do item 1 acima. Ainda hoje, em qualquer intervalo sem injeção, a O-4 com +10 GB,
+condicionada a o host ter ≥ 12,5 GB livres na hora: o custo é de minutos, não para o cluster, e tira o disco da VM do
+caminho da noite 1. Entre as noites, O-3 (comprimir, copiar com `sha256sum -c`, apagar na VM, `fstrim`). O piloto mede o
+tamanho real por célula: se der o cenário alto (noite de 14,3 GB, acima de 15,4 GB / 1,5), O-6 com 3 rodadas por noite,
+que não mexe no que foi congelado; a O-2 continua como última opção. Em qualquer caso, `df -h /` na abertura de cada
+noite, e não dar o GO se o livre na VM for menor que 1,5 × o volume da noite ou se o livre no host for menor que o volume
+da noite mais 3 GB.
 
 ## 8. Itens para o Worker e para o Senior, de manhã
 
 - Worker (já despachável): `s6.sh`/`s7.sh` + testes + roteiros + *bundle* v4g, pelo prompt
   `docs/prompt-worker-s6-s7-g5b-2026-11-04.md`. Os testes dele rodam no host; não durante as janelas do S5/S6/S7 ±5 min.
 - Senior: V-s6s7sh (revisão independente, como a V-s5sh) antes do S6; V-S5, V-S6A e V-S6B sobre os brutos.
-- Se a Q-17 for "sim hoje": prompt do Worker para o *script* do ensaio do F1 na VM (não existe ainda), com a mesma
-  invocação do *runner* e semente fora da faixa da matriz.
+- Worker (segundo, depois do S6/S7 ou em paralelo se houver outro Worker): `ensaio-f1.sh`, pelo prompt
+  `docs/prompt-worker-ensaio-f1-2026-11-04.md` (escrito em 04/11), com as perguntas E-1..E-7 dele pendentes do Gestor.
 
 ## 9. Perguntas ao Gestor
 
 | # | Pergunta | Recomendação do Senior |
 |---|---|---|
-| **Q-01** [bloqueia o S5] | A VM deve ter `runs/gate-b29/go.log` modificado desde o S4, e o passo 0 do `s5.sh` aborta com isso. Autoriza, depois de confirmar por leitura (`git status --porcelain --untracked-files=no` mostra só ` M runs/gate-b29/go.log` e `sha256sum` dá `3de1fa71…20d8`, igual à cópia do S4 já no host), restaurar o arquivo com `git checkout -- runs/gate-b29/go.log` antes do S5, gravando comando e saída nos brutos? A alternativa é o Worker corrigir o `s5.sh` com a regra do prefixo (seção 3 do prompt), o que muda o hash e pede nova revisão (~1 h). | **Restaurar.** A linha está preservada na cópia do S4 com sha256 conferido (35/35). O `s5.sh` aprovado fica intacto |
+| **Q-01** [bloqueia o S5] | **Confirmado** (coordenador, 04/11, só leitura): a VM tem ` M runs/gate-b29/go.log`, 6 linhas, sha256 `3de1fa71…20d8`, igual à cópia do S4 já no host; é o único versionado modificado. Autoriza restaurar o arquivo com `git checkout -- runs/gate-b29/go.log` antes do S5, gravando comando, `git status` e `sha256sum` de antes e depois nos brutos? A alternativa é o Worker corrigir o `s5.sh` com a regra do prefixo (seção 3 do prompt do S6/S7), o que muda o hash e pede nova revisão (~1 h). O `s6.sh`/`s7.sh` já nascem com a regra do prefixo, então o GO do S6 não volta a bloquear o S7. | **Restaurar.** A linha está preservada na cópia do S4 com sha256 conferido (35/35). O `s5.sh` aprovado fica intacto |
 | **Q-02** | Autoriza levar à VM o *bundle* v4f agora (para o S5) e o v4g depois da V-s6s7sh (para o S6/S7), cada um conferido por sha256? E, no passo 9, o *bundle* do *rebaseline* (`git archive 20805b0` + jar)? Nenhum deles é push para o GitHub | **Sim aos três**, um de cada vez, com o hash no roteiro do bloco |
 | **Q-03** | P-1 da V-s5sh: Hot Rod com critério automático só pela conexão TCP a 11224; latência de put/get para leitura humana | **Aceitar** |
 | **Q-04** | P-2 da V-s5sh: regra "mediana durante ≤ p95 da base + 1 ms", sem mudar o código | **Aceitar**; o critério de cauda fica para os próximos invólucros |
@@ -195,8 +236,8 @@ livre for menor que 1,5 × o volume estimado da noite.
 | **Q-14** | `ISPN000524`/`ISPN100014`/`ISPN000638` (timeouts de resolução de conflito) nos logs do G-5b: invalidam o bloco ou são resultado? O §5.7 manda o Senior verificar a ausência, mas não diz | **Resultado, com leitura humana.** O G-5b testa o mecanismo de cura, não o tempo de fusão; um timeout de conflito é dado do sistema e vai para o relatório |
 | **Q-15** | No S6, se a fusão demorar e o dead-man (210 s) disparar depois do `--heal` manual, antes do desarme: o bloco vale? | **Vale, como resultado**, desde que o registro mostre o `clsact` ausente logo depois do `--heal` manual, antes do disparo. O disparo cai sobre um nó já limpo e o `--heal` é idempotente |
 | **Q-16** | GO do S6 e do S7, com o senhor presente. No S7, aceita não curar à mão antes de 185 s, deixando que o próprio `g5b.sh` cure se o dead-man não disparar? | GO é seu. **Sim** ao segundo ponto: a cura manual só se o `g5b.sh` travar, e aí o bloco fica como falha do dead-man |
-| **Q-17** | Ensaio do F1 na VM (aprovado em 28/10, Q4): o *script* ainda não existe. Preparar hoje (prompt do Senior de manhã, Worker escreve e testa, ~2 a 3 h com validação) e rodar depois da V-S6B; ou adiar e deixar o piloto fazer o papel dele (risco: uma parada (e) no piloto custa o piloto inteiro) | **Preparar hoje e rodar hoje ou amanhã de manhã**, antes da recriação do cluster |
+| **Q-17** | Ensaio do F1 na VM (aprovado em 28/10, Q4). O prompt do *script* está pronto (`docs/prompt-worker-ensaio-f1-2026-11-04.md`, ~3 h de Worker mais a revisão). Achado: o cluster atual usa o XML do gate v4 (`8792dea3…`), **sem** `sessions-async`/`counters-async`, então as 2 execuções "S1 async" do §4.2 não rodam nele. Opções: (a) recriar o cluster com o XML do *rebaseline* (`6d52413b…`, de `20805b0`) só para o ensaio e recriar de novo antes do piloto, com o instante do passo 3 da checklist anotado **depois** dessa segunda recriação; (b) ensaio no cluster atual só com as 2 sem carga e as 2 com carga em SYNC; (c) adiar e deixar o piloto fazer o papel dele | **(a)**: é o que o §4.2 pede (as duas replicações) sem consumir o cluster do piloto; custa uma recriação a mais (~5 min). As perguntas E-1..E-7 do prompt vão junto |
 | **Q-18** | Piloto de dia ou de noite? O pré-registro aprovado (R10 e §8) diz "piloto numa noite (noite 0), validado de dia", e a checklist 10.6 segue isso. Rodar de dia hoje é desvio do pré-registro (pede nota em `decisoes-tecnicas.md` antes do piloto e host em silêncio por ~1,5 h); os dados do piloto nunca entram em resultado, então o risco é só de condição diferente da noite | **Piloto hoje à noite, como noite 0**, com o ensaio do F1 de dia. Ganha-se tempo para o disco e para a validação; a noite 1 fica para 05/11 e a noite 2 para 06/11 |
-| **Q-19** [bloqueia a noite 1] | Disco da VM: qual combinação das opções O-1..O-6 (seção 7.4)? | **O-1 hoje**, antes do piloto; noite 1 decidida com o tamanho medido no piloto: O-4 + O-3 e, se preciso, O-6; O-2 só se o piloto der o cenário alto |
-| **Q-20** [bloqueia a noite 1] | Disco do host: o `C:` está com 97 % (15 GB livres) e o VHDX da VM é dinâmico. Libera espaço (ao menos a ISO de 3,4 GB) e aceita a regra "não extender o LV da VM além do que o host tiver livre menos 20 %"? | **Sim aos dois**, antes do piloto |
+| **Q-19** [bloqueia a noite 1] | Disco da VM: qual combinação das opções O-1..O-6 (seção 7.4)? E autoriza a O-4 nos termos da 7.5 (+10 GB, `lvextend -r` on-line, com os comandos e a reversão de lá)? O VG tem 18,47 GB livres (conferido em 04/11) | **O-1 + `fstrim` antes do piloto; O-4 +10 GB ainda hoje**, sem injeção em curso e com o host ≥ 12,5 GB livres; O-3 entre as noites; O-6 se o piloto der o cenário alto; O-2 por último |
+| **Q-20** [bloqueia a noite 1] | Disco do host: o `C:` está com 97 % (15 GB livres) e o VHDX da VM é dinâmico. Libera espaço no host (sem apagar a ISO, que é o caminho de reversão da O-4) e aceita a regra "não estender o LV da VM além do que o host tiver livre menos 20 %"? | **Sim aos dois**, antes da O-4 |
 | **Q-21** | Noite 1 hoje (04/11)? Só seria possível com o piloto de dia (Q-18), o ensaio feito, o piloto validado e o disco resolvido até ~21:00 | **Não**; noite 1 em 05/11, com o piloto de hoje à noite validado de manhã |

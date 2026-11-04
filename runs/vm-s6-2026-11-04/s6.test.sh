@@ -256,13 +256,13 @@ roda() {
     S6T_G5B_REAL="$REPO/runs/gate-b29/g5b.sh" S6T_BOOT_FILE="$T/boot_id" \
     S6_TESTE=1 S6_HASHES="$T/hashes" S6_BOOT_ID_FILE="$T/boot_id" S6_COMMIT_REF="$REF" S6_INJ_LOCK="$T/inject-partition-isn3.lock" \
     S6_PORTAO_MIN_S=1 S6_PORTAO_FOLGA_S=0 S6_SAUDE_S=2 S6_TC_S=1 S6_ESPERA_GO_S=30 S6_ESPERA_COLETOR_S=30 \
-    S6_DUR=8 S6_T_KILL_S=4 S6_MARGEM_S=90 S6_PERSISTE_S=3 S6_D2_FOLGA_S=1 S6_POS_FALHA_EXTRA_S=2 S6_POS_FALHA_AMOSTRA_S=1 \
+    S6_DUR=8 S6_T_KILL_S=4 S6_MARGEM_S=90 S6_PERSISTE_S=2 S6_D2_FOLGA_S=1 S6_POS_FALHA_EXTRA_S=2 S6_POS_FALHA_AMOSTRA_S=1 \
     "$@" bash "$G/runs/vm-s6-2026-11-04/s6.sh" --boot-esperado "${ARG_BOOT:-$BOOT}" --bloco-anterior "${ARG_ANT:-$ANT}" 2>&1)"; RC=$?
   OUT="$(ls -d "$G/runs/vm-s6-2026-11-04"/vm-* 2>/dev/null | head -1)"
   sleep 0.3
 }
 # variaveis de ambiente do --avaliar (os mesmos limites curtos do roda)
-AVENV=(S6_TESTE=1 S6_SAUDE_S=2 S6_TC_S=1 S6_DUR=8 S6_T_KILL_S=4 S6_MARGEM_S=90 S6_PERSISTE_S=3 S6_D2_FOLGA_S=1)
+AVENV=(S6_TESTE=1 S6_SAUDE_S=2 S6_TC_S=1 S6_DUR=8 S6_T_KILL_S=4 S6_MARGEM_S=90 S6_PERSISTE_S=2 S6_D2_FOLGA_S=1)
 avalia() { env "${AVENV[@]}" bash "$S6" --avaliar "$1"; }
 nada_destrutivo() { # nada_destrutivo <rotulo>: nem dry-run, nem portao, nem g5b.sh
   ok "$1: g5b.sh nao chamado (nem --dry-run)" 0 "$(grep -c '^G5BSTUB' "$T/shim.log")"
@@ -547,7 +547,7 @@ av "A5 marcador end presente" "FALHA: A5" "echo 'fault=F2 node=isn3 event=end t_
 av "A5 dois start" "FALHA: A5" "head -1 g5b-A-copia/marcadores.txt >> g5b-A-copia/marcadores.txt"
 av "A6 sem clsact antes do KILL" "FALHA: A6 estado.txt sem clsact antes do KILL" "sed -i '/clsact/d' g5b-A-copia/estado.txt"
 av "A6 sem clsact depois do KILL" "FALHA: A6 qdisc-apos-kill.txt sem clsact" "sed -i '/clsact/d' g5b-A-copia/qdisc-apos-kill.txt"
-av "A6 persistencia de 3 s menos 1 ms" "FALHA: A6 t_persistencia_ok - t_kill" "$CR; poe t_persistencia_ok \$(( \$(cr t_kill) + 2999000000 ))"
+av "A6 persistencia de 2 s menos 1 ms" "FALHA: A6 t_persistencia_ok - t_kill" "$CR; poe t_persistencia_ok \$(( \$(cr t_kill) + 1999000000 ))"
 av "A6 amostra de persistencia fora do intervalo" "FALHA: A6 persistencia.txt" "echo '1 clsact presente, sem end' >> g5b-A-copia/persistencia.txt"
 av "A6 MergeView entre o KILL e a persistencia" "FALHA: A6 05-vistas.log" \
    "$CR; t=\$(( (\$(cr t_kill) + 1000000000) / 1000000000 )); echo \"\$(date -u -d @\$t +'%Y-%m-%d %H:%M:%S'),000 INFO  [o.i.CLUSTER] ISPN000093: MergeView::[isn2|6] (3) [a, b, c]\" >> 05-vistas.log"
@@ -607,7 +607,7 @@ set -m
 ( printf 'GO\n' | env -u TCC_DIR HOME="$T/home" PATH="$BIN:$PATH" TMUX=x SHIM_LOG="$T/shim.log" SHIM_STATE="$T/state" S6T_PORTAO_FIX="$FIXTURE" \
     S6T_FIX="$T/fixA" S6T_PIDS="$T/pids" S6T_G5B_REAL="$REPO/runs/gate-b29/g5b.sh" S6T_BOOT_FILE="$T/boot_id" S6_TESTE=1 S6_HASHES="$T/hashes" \
     S6_BOOT_ID_FILE="$T/boot_id" S6_COMMIT_REF="$REF" S6_INJ_LOCK="$T/inject-partition-isn3.lock" S6_PORTAO_MIN_S=1 S6_PORTAO_FOLGA_S=0 S6_SAUDE_S=2 S6_TC_S=1 \
-    S6_ESPERA_GO_S=30 S6_ESPERA_COLETOR_S=30 S6_DUR=8 S6_T_KILL_S=4 S6_MARGEM_S=90 S6_PERSISTE_S=3 \
+    S6_ESPERA_GO_S=30 S6_ESPERA_COLETOR_S=30 S6_DUR=8 S6_T_KILL_S=4 S6_MARGEM_S=90 S6_PERSISTE_S=2 \
     bash "$G/runs/vm-s6-2026-11-04/s6.sh" --boot-esperado "$BOOT" --bloco-anterior "$ANT" > "$T/ctrlc.out" 2>&1 ) &
 PG=$!; set +m; echo "$PG" >> "$T/pids"
 for _ in $(seq 1 600); do OUT="$(ls -d "$G/runs/vm-s6-2026-11-04"/vm-* 2>/dev/null | head -1)"
@@ -628,6 +628,36 @@ ok "T-9 saude-log e serie tc pararam de crescer (nenhum filho do coletor vivo)" 
 ok "T-9 sem portao pos" 1 "$(grep -c '^PORTAO' "$T/shim.log")"
 ok "T-9 sem MANIFEST (bloco interrompido)" 0 "$([ -e "$OUT/MANIFEST.sha256" ] && echo 1 || echo 0)"
 kill -TERM -- "-$PG" 2>/dev/null
+# T-9b (M9 sobrevivia ao T-9: com SIGINT ao grupo o proprio coletor tem trap de INT e para sozinho). Aqui o SIGINT vai SO ao
+# processo do s6.sh, como um 'kill -INT <pid>': quem tem de parar o coletor e o trap de INT do s6.sh
+echo "== T-9b: SIGINT so ao processo do s6.sh (nao ao grupo): o trap do s6.sh encerra o coletor =="
+nova_arvore; printf 'GO\n' > "$T/go.txt"
+set -m
+env -u TCC_DIR HOME="$T/home" PATH="$BIN:$PATH" TMUX=x SHIM_LOG="$T/shim.log" SHIM_STATE="$T/state" S6T_PORTAO_FIX="$FIXTURE" \
+    S6T_FIX="$T/fixA" S6T_PIDS="$T/pids" S6T_G5B_REAL="$REPO/runs/gate-b29/g5b.sh" S6T_BOOT_FILE="$T/boot_id" S6_TESTE=1 S6_HASHES="$T/hashes" \
+    S6_BOOT_ID_FILE="$T/boot_id" S6_COMMIT_REF="$REF" S6_INJ_LOCK="$T/inject-partition-isn3.lock" S6_PORTAO_MIN_S=1 S6_PORTAO_FOLGA_S=0 S6_SAUDE_S=2 S6_TC_S=1 \
+    S6_ESPERA_GO_S=30 S6_ESPERA_COLETOR_S=30 S6_DUR=8 S6_T_KILL_S=4 S6_MARGEM_S=90 S6_PERSISTE_S=2 \
+    bash "$G/runs/vm-s6-2026-11-04/s6.sh" --boot-esperado "$BOOT" --bloco-anterior "$ANT" < "$T/go.txt" > "$T/ctrlc2.out" 2>&1 &
+PS6=$!; set +m; echo "$PS6" >> "$T/pids"
+for _ in $(seq 1 600); do OUT="$(ls -d "$G/runs/vm-s6-2026-11-04"/vm-* 2>/dev/null | head -1)"
+  [ -n "$OUT" ] && [ "$(grep -c ',1,' "$OUT/janela/tc-isn3.csv" 2>/dev/null || true)" -ge 2 ] 2>/dev/null && break; sleep 0.2; done
+ok "T-9b janela aberta antes do SIGINT" 1 "$([ "$(grep -c ',1,' "$OUT/janela/tc-isn3.csv" 2>/dev/null || true)" -ge 2 ] 2>/dev/null && echo 1 || echo 0)"
+kill -INT "$PS6" 2>/dev/null
+# espera limitada: sem o kill do coletor no trap, o s6.sh fica preso no EXIT (o coletor segura o pipe do console) ate o limite do coletor
+for _ in $(seq 1 450); do kill -0 "$PS6" 2>/dev/null || break; sleep 0.2; done
+ok "T-9b s6.sh terminou em ate 90 s depois do SIGINT" 1 "$(kill -0 "$PS6" 2>/dev/null && echo 0 || echo 1)"
+kill -0 "$PS6" 2>/dev/null && kill -TERM -- "-$PS6" 2>/dev/null
+wait "$PS6"; RC=$?
+ok "T-9b rc 130 (o trap roda quando o g5b.sh termina)" 130 "$RC"
+contem "T-9b rc.txt registra a interrupcao" "interrompido" "$(cat "$OUT/rc.txt")"
+sleep 4
+contem "T-9b coletor encerrado pelo trap do s6.sh" "coletor interrompido" "$(cat "$OUT/03-coletor.log")"
+CP=$(sed -n 's/^coletor em segundo plano pid=\([0-9]*\).*/\1/p' "$OUT/rc.txt")
+ok "T-9b coletor (pid ${CP:-?}) nao esta mais vivo" 1 "$([ -n "$CP" ] && ! kill -0 "$CP" 2>/dev/null && echo 1 || echo 0)"
+a1=$(grep -c . "$OUT/janela/saude.csv"); b1=$(grep -c . "$OUT/janela/tc-isn3.csv"); sleep 4
+a2=$(grep -c . "$OUT/janela/saude.csv"); b2=$(grep -c . "$OUT/janela/tc-isn3.csv")
+ok "T-9b saude-log e serie tc pararam de crescer" "$a1 $b1" "$a2 $b2"
+kill -TERM -- "-$PS6" 2>/dev/null
 fi
 
 if secao T-10; then

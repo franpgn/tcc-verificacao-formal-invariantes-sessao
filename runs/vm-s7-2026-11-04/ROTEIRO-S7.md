@@ -20,11 +20,21 @@ Não prova (§5.7 e §5.8): a **precisão do timer de produção**. A unit do S7
 - **Host** sem TLC, `mvn` ou carga pesada do início ao fim do portão pós.
 - **Ctrl-C** chega também ao `g5b.sh`, cujo trap faz o `--heal` (o que, no modo B, invalida o bloco). O `s7.sh` encerra o coletor, grava `interrompido` e sai com 130.
 
+## Depois de um Ctrl-C: o que conferir (R-3 da V-s6s7sh)
+
+No tmux o SIGINT vai a todo o grupo de primeiro plano, inclusive ao `tee` do console. O trap do `g5b.sh` tenta o `--heal`, mas uma escrita dele em stderr depois que os `tee` morreram pode matá-lo por SIGPIPE antes da cura, e o trap do invólucro pode morrer do mesmo jeito antes de gravar `interrompido`. A rede de segurança é o dead-man. Por isso, depois de qualquer Ctrl-C, ainda dentro do tmux e em `~/tcc-gate`:
+
+1. `systemctl list-timers --all --no-legend | grep tcc-heal`: se houver timer, o dead-man ainda está armado e vai curar no prazo (S6: 210 s, S7: 145 s desde a armação); esperar ou fazer a cura manual.
+2. `sudo nsenter -t $(sudo podman inspect -f '{{.State.Pid}}' isn3) -n tc qdisc show dev eth0`: só `noqueue`, sem `clsact`. Com `clsact` e sem timer: cura manual imediata (`PODMAN='sudo podman' bash scripts/inject-partition.sh --heal --minority isn3`).
+3. `tail rc.txt` do `vm-<UTC>/`: deve terminar em `interrompido`. Sem essa linha, o trap do invólucro não chegou ao fim; anotar e seguir os itens 1, 2 e 4.
+4. Processos órfãos: `ps -ef | grep -E 'g5b.sh|inject-partition|saude|curl' | grep -v grep` não deve mostrar nada depois de alguns segundos (o coletor é encerrado antes de qualquer escrita do trap). Se sobrar, `kill` no PID e anotar.
+5. O bloco interrompido não tem `MANIFEST.sha256`; copiar os brutos assim mesmo e relatar ao Senior antes de qualquer nova tentativa, que pede portão 5.1 limpo e novo GO.
+
 ## Como rodar
 
 ```bash
 cd ~/tcc-gate
-sha256sum runs/vm-s7-2026-11-04/s7.sh   # esperado 29de1bf0bd57241ea6a9b2e586aff38283f4a8052e23b81e494c252941a4489e
+sha256sum runs/vm-s7-2026-11-04/s7.sh   # esperado ac67a6fa0a2ee1d08c3b82c8b79a1bb3f0e40847c8c44c7181bb50f95fd15863
 flock /var/lock/tcc-vm.lock tmux new -s s7
 # dentro do tmux:
 bash runs/vm-s7-2026-11-04/s7.sh --boot-esperado <uuid> --bloco-anterior runs/vm-s6-2026-11-04/vm-<UTC>
@@ -80,7 +90,7 @@ Q-11 a Q-14 e Q-16 estão **pendentes do Gestor**; o código implementa a recome
 
 ## Duração estimada
 
-Teste (Git Bash, shims, janela de 8 s e prazo de 14 s): o caminho completo leva cerca de 35 a 40 s; a suíte inteira deu 652 PASS, 0 FAIL em 1054 s (~17,5 min; sem outra suíte minha em paralelo, mas com outro Worker usando o host).
+Teste (Git Bash, shims, janela de 8 s e prazo de 14 s): o caminho completo leva cerca de 35 a 40 s; a suíte inteira deu 663 PASS, 0 FAIL em 1009 s (~17 min; sem outra suíte minha em paralelo, mas com outro Worker usando o host).
 
 Na VM, calculada: o prompt do GO aparece por volta de **2,5 min** (pré-condições, dry-run e portão pré de 130 s). Depois do GO: split confirmado em ~40 a 46 s, KILL em +70 s, persistência até ~+86 s, disparo em 145 a 155 s depois de armar, fusão da ordem de ~46 s, `HEALTHY` x3, preflight e logs: **o `g5b.sh` termina ~3,5 a 4 min depois do GO**. Portão pós até o fim do `g5b.sh` + 345 s (~6 min). Total: **cerca de 12 a 13 min**, mais o tempo até o GO.
 
@@ -98,4 +108,4 @@ cd ../../.. && bash runs/vm-s7-2026-11-04/s7.sh --avaliar runs/vm-s7-2026-11-04/
 
 ## Como o `s7.sh` chega à VM
 
-Só pelo bundle **v4g**, conferido por sha256, depois da validação do Senior (V-s6s7sh) e da autorização do Gestor (Q-02). Antes do S7, na VM: `sha256sum runs/vm-s7-2026-11-04/s7.sh` deve dar `29de1bf0bd57241ea6a9b2e586aff38283f4a8052e23b81e494c252941a4489e`.
+Só pelo bundle **v4g**, conferido por sha256, depois da validação do Senior (V-s6s7sh) e da autorização do Gestor (Q-02). Antes do S7, na VM: `sha256sum runs/vm-s7-2026-11-04/s7.sh` deve dar `ac67a6fa0a2ee1d08c3b82c8b79a1bb3f0e40847c8c44c7181bb50f95fd15863`.

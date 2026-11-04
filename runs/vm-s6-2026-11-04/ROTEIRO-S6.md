@@ -19,6 +19,16 @@ Não prova (§5.7 e §5.8): o tempo de fusão (o `t_heal -> MergeView` é **dado
 - **Host.** Nada de TLC, `mvn` ou carga pesada no host do início ao fim do portão pós (§5.1). O `s6.sh` registra o `boot_id` no início e no fim, e um intervalo do saúde-log maior que 2 × 2 s invalida o bloco.
 - **Ctrl-C.** Durante o `g5b.sh`, um Ctrl-C chega também ao `g5b.sh`: o trap dele faz o `--heal` e o dead-man segue armado. O `tee` do `04-g5b.log` ignora SIGINT de propósito, para o `g5b.sh` ter onde escrever enquanto cura (sem isso ele morreria por SIGPIPE antes do `--heal`). O `s6.sh` encerra o coletor, grava `interrompido` em `rc.txt`, imprime o estado do dead-man e a cura manual, e sai com 130.
 
+## Depois de um Ctrl-C: o que conferir (R-3 da V-s6s7sh)
+
+No tmux o SIGINT vai a todo o grupo de primeiro plano, inclusive ao `tee` do console. O trap do `g5b.sh` tenta o `--heal`, mas uma escrita dele em stderr depois que os `tee` morreram pode matá-lo por SIGPIPE antes da cura, e o trap do invólucro pode morrer do mesmo jeito antes de gravar `interrompido`. A rede de segurança é o dead-man. Por isso, depois de qualquer Ctrl-C, ainda dentro do tmux e em `~/tcc-gate`:
+
+1. `systemctl list-timers --all --no-legend | grep tcc-heal`: se houver timer, o dead-man ainda está armado e vai curar no prazo (S6: 210 s, S7: 145 s desde a armação); esperar ou fazer a cura manual.
+2. `sudo nsenter -t $(sudo podman inspect -f '{{.State.Pid}}' isn3) -n tc qdisc show dev eth0`: só `noqueue`, sem `clsact`. Com `clsact` e sem timer: cura manual imediata (`PODMAN='sudo podman' bash scripts/inject-partition.sh --heal --minority isn3`).
+3. `tail rc.txt` do `vm-<UTC>/`: deve terminar em `interrompido`. Sem essa linha, o trap do invólucro não chegou ao fim; anotar e seguir os itens 1, 2 e 4.
+4. Processos órfãos: `ps -ef | grep -E 'g5b.sh|inject-partition|saude|curl' | grep -v grep` não deve mostrar nada depois de alguns segundos (o coletor é encerrado antes de qualquer escrita do trap). Se sobrar, `kill` no PID e anotar.
+5. O bloco interrompido não tem `MANIFEST.sha256`; copiar os brutos assim mesmo e relatar ao Senior antes de qualquer nova tentativa, que pede portão 5.1 limpo e novo GO.
+
 ## Como rodar
 
 ```bash
@@ -95,7 +105,7 @@ Q-11 a Q-15 estão **pendentes do Gestor** (`docs/roteiro-vm-2026-11-04.md`, se�
 
 ## Duração estimada
 
-Medida no teste (Git Bash, shims, `g5b.sh` reencenado com janela de 8 s): o caminho completo leva cerca de 30 s; a suíte inteira deu 588 PASS, 0 FAIL em 753 s (~12,5 min; sem outra suíte minha em paralelo, mas com outro Worker usando o host).
+Medida no teste (Git Bash, shims, `g5b.sh` reencenado com janela de 8 s): o caminho completo leva cerca de 30 s; a suíte inteira deu 594 PASS, 0 FAIL em 816 s (~13,5 min; sem outra suíte minha em paralelo, mas com outro Worker usando o host).
 
 Na VM, calculada: pré-condições e dry-run em segundos; portão pré 130 s mais as leituras finais, então **o prompt do GO aparece por volta de 2,5 min**. Depois do GO: armação e injeção em ~2 s; split confirmado em ~40 a 46 s; KILL em +70 s; persistência até ~+86 s; `--heal`; fusão da ordem de ~46 s (`MergeView` por volta de +130 s); `HEALTHY` x3, desarme, preflight e logs, **o `g5b.sh` termina ~2,5 min depois do GO**. O portão pós vai até o fim do `g5b.sh` + 345 s (~6 min). Total: **cerca de 11 a 12 min**, mais o tempo até o GO.
 

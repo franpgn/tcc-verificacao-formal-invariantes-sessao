@@ -23,9 +23,10 @@ class TiposBasicosTest {
     }
 
     @Test
-    @DisplayName("Motivo em ordem decrescente de severidade: VIOLACAO > TOPOLOGIA > ERRO > LATENCIA > ESTAVEL")
+    @DisplayName("Motivo em ordem decrescente de severidade: VIOLACAO > TOPOLOGIA > DEFASAGEM > ERRO > LATENCIA > ESTAVEL")
     void ordemDeSeveridade() {
-        assertEquals(List.of(Motivo.VIOLACAO, Motivo.TOPOLOGIA, Motivo.ERRO, Motivo.LATENCIA, Motivo.ESTAVEL),
+        assertEquals(List.of(Motivo.VIOLACAO, Motivo.TOPOLOGIA, Motivo.DEFASAGEM, Motivo.ERRO, Motivo.LATENCIA,
+                        Motivo.ESTAVEL),
                 List.of(Motivo.values()));
         assertTrue(Motivo.VIOLACAO.maisSeveroQue(Motivo.TOPOLOGIA));
         assertTrue(Motivo.ERRO.maisSeveroQue(Motivo.LATENCIA));

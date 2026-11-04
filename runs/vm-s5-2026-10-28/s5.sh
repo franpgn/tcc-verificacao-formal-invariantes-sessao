@@ -50,7 +50,9 @@ ESPERA_START_S=900        # o coletor espera o GO ate 15 min
 POS_FIM_S=30              # o coletor segue 30 s depois do event=end
 L1_ESPERA_COLETOR_S=120
 PING_N=300; PERDA_MIN=39; PERDA_MAX=81; LOSS=0.20   # §5.6: 39 a 81 perdas em 300 (3 sigma de 20 %)
-FOLGA_LAT_S=0.001         # mediana durante <= p95 da base + 1 ms
+# Limiares da regra de latencia (docs/rastreabilidade-limiares-s5-s7-2026-11-04.md, 4.1 e 4.2; decisao do Gestor, 2026-11-04):
+FOLGA_LAT_S=0             # mediana durante <= p95 da base (§5.6: "latencia dentro da dispersao da linha de base")
+BASE_MIN_N=20             # amostras minimas por fonte na base: com n < 20 o p95 por posto mais proximo (stats) e o maximo
 # Referencia de hashes: v4c (902654b), como no S4. l-lib.sh e inject-netdegrade.sh = VM no S2
 # (runs/vm-s2-2026-10-27/16-hashes-boot-pos-l0.log); l1.sh = VM no S1 (runs/vm-s1-2026-10-27/04-hashes-scripts.log).
 HASHES_ESPERADOS='4ebdd8a34a7d5c1e6981138272a4f0b90a67c44dd8626e9521884e185297abb1  scripts/inject-netdegrade.sh
@@ -68,6 +70,7 @@ if [ "$TESTE" = 1 ]; then
   TC_AMOSTRAS="${S5_TC_AMOSTRAS:-$TC_AMOSTRAS}"; ESPERA_START_S="${S5_ESPERA_START_S:-$ESPERA_START_S}"
   POS_FIM_S="${S5_POS_FIM_S:-$POS_FIM_S}"; L1_ESPERA_COLETOR_S="${S5_L1_ESPERA_COLETOR_S:-$L1_ESPERA_COLETOR_S}"
   [ -z "${S5_HASHES:-}" ] || HASHES_ESPERADOS="$(cat "$S5_HASHES")"
+  BASE_MIN_N="${S5_BASE_MIN_N:-$BASE_MIN_N}"   # so o teste (base de 7 s); o --avaliar le o valor de parametros.txt
 fi
 
 # ---- avaliacao do .log do portao51.sh (criterios da §5.1; o lock deve estar OCUPADO por este flock). Igual a do s4.sh.
@@ -111,12 +114,13 @@ avaliar() { # avaliar <dir vm-UTC>
   lei() { echo "LEITURA HUMANA: $*"; }
   [ -s "$D/parametros.txt" ] || { echo "FALHA: sem $D/parametros.txt"; echo "S5: INVALIDO (1 falha)"; return 1; }
   pv() { sed -n "s/^$1=//p" "$D/parametros.txt" | head -1; }
-  local SS PN PMIN PMAX LO FOLGA BOOT IP1 IP2 S_NS E_NS ns ne bi bf lp par pct q sd sent drop nv f t qq m fl esp
-  SS=$(pv SAUDE_S); PN=$(pv PING_N); PMIN=$(pv PERDA_MIN); PMAX=$(pv PERDA_MAX); LO=$(pv LOSS); FOLGA=$(pv FOLGA_LAT_S)
+  local SS PN PMIN PMAX LO FOLGA MINB BOOT IP1 IP2 S_NS E_NS ns ne bi bf lp par pct q sd sent drop nv f t qq m fl esp
+  SS=$(pv SAUDE_S); PN=$(pv PING_N); PMIN=$(pv PERDA_MIN); PMAX=$(pv PERDA_MAX); LO=$(pv LOSS); FOLGA=$(pv FOLGA_LAT_S); MINB=$(pv BASE_MIN_N)
   BOOT=$(pv BOOT_ESPERADO); IP1=$(pv IP_isn1); IP2=$(pv IP_isn2)
   TMPA=$(mktemp -d)
   echo "== avaliacao do S5 $(date -Is) sobre $D"
 
+  [ -n "$MINB" ] || { fa "parametros.txt sem BASE_MIN_N (minimo de amostras da base)"; MINB=999999999; }
   # 1. boot_id no inicio e no fim
   bi=$(sed -n 's/^boot_id: //p' "$D/00-pre.log" 2>/dev/null | head -1); bf=$(sed -n 's/^boot_id fim: \([^ ]*\).*/\1/p' "$D/07-boot-fim.txt" 2>/dev/null | head -1)
   if [ -n "$bi" ] && [ "$bi" = "$BOOT" ] && [ "$bf" = "$BOOT" ]; then ok_ "boot_id igual no inicio e no fim ($bi)"
@@ -172,9 +176,9 @@ avaliar() { # avaliar <dir vm-UTC>
   lat() { # lat <rotulo> <arq-base> <arq-durante>
     local nb mb pb xb nd md pd xd
     read -r nb mb pb xb <<<"$(stats "$2")"; read -r nd md pd xd <<<"$(stats "$3")"
-    if [ "$nb" -ge 3 ] && [ "$nd" -ge 1 ] && awk -v d="$md" -v p="$pb" -v f="$FOLGA" 'BEGIN { exit !(d <= p + f) }'; then
+    if [ "$nb" -ge "$MINB" ] && [ "$nd" -ge 1 ] && awk -v d="$md" -v p="$pb" -v f="$FOLGA" 'BEGIN { exit !(d <= p + f) }'; then
       ok_ "$1: mediana durante $md s <= p95 da base $pb s + $FOLGA s (n base=$nb, durante=$nd; max durante $xd s)"
-    else fa "$1: mediana durante ${md} s > p95 da base ${pb} s + $FOLGA s, ou amostras insuficientes (n base=$nb >= 3, durante=$nd >= 1)"; fi; }
+    else fa "$1: mediana durante ${md} s > p95 da base ${pb} s + $FOLGA s, ou amostras insuficientes (n base=$nb >= $MINB, durante=$nd >= 1)"; fi; }
   serie() { # serie <fonte> <campo> <saida>: base inteira e janela [start, end]
     col "$D/base/saude.csv" "$1" "$2" 0 9e30 | grep -E '^[0-9.]+$' > "$TMPA/$3.b"
     col "$D/janela/saude.csv" "$1" "$2" "$S_NS" "$E_NS" | grep -E '^[0-9.]+$' > "$TMPA/$3.d"; }
@@ -400,7 +404,7 @@ echo "TCC_DIR=$TCC_DIR ($TCC_ORIGEM)"
   echo "-- runs/gate-netdegrade/go.log (blocos anteriores)"; cat runs/gate-netdegrade/go.log 2>/dev/null || echo "(sem go.log)"
   {
     echo "SAUDE_S=$SAUDE_S"; echo "PING_N=$PING_N"; echo "PERDA_MIN=$PERDA_MIN"; echo "PERDA_MAX=$PERDA_MAX"; echo "LOSS=$LOSS"
-    echo "FOLGA_LAT_S=$FOLGA_LAT_S"; echo "BOOT_ESPERADO=$BOOT_ESPERADO"; echo "PORTA_ISN3=$PORTA_ISN3"; echo "PORTA_CONTROLE=$PORTA_CONTROLE"
+    echo "FOLGA_LAT_S=$FOLGA_LAT_S"; echo "BASE_MIN_N=$BASE_MIN_N"; echo "BOOT_ESPERADO=$BOOT_ESPERADO"; echo "PORTA_ISN3=$PORTA_ISN3"; echo "PORTA_CONTROLE=$PORTA_CONTROLE"
     echo "JAR=$J"
   } > "$PAR"
   VMIP=$(hostname -I 2>/dev/null | awk '{print $1}'); echo "VMIP=$VMIP" >> "$PAR"; [ -n "$VMIP" ] || nok "IP da VM vazio (hostname -I)"
@@ -446,7 +450,7 @@ mkdir -p "$OUT/base"
   wait "$PP"; echo "ping rc=$? $(pingtr "$OUT/base/ping.txt" | awk '{print $2 "/" $1 " recebidos"}')"
   wait "$PS"; echo "sonda rc=$?"
   for p in 11222 11223 11224 ssh22; do echo "saude $p: $(awk -F, -v p="$p" 'NR > 1 && $2 == p' "$OUT/base/saude.csv" | wc -l | tr -d ' ') amostras"
-    [ "$(awk -F, -v p="$p" 'NR > 1 && $2 == p' "$OUT/base/saude.csv" | wc -l)" -ge 3 ] || { echo "NAO OK: menos de 3 amostras de $p"; E=1; }; done
+    [ "$(awk -F, -v p="$p" 'NR > 1 && $2 == p' "$OUT/base/saude.csv" | wc -l)" -ge "$BASE_MIN_N" ] || { echo "NAO OK: menos de $BASE_MIN_N amostras de $p"; E=1; }; done
   [ -n "$(pingtr "$OUT/base/ping.txt")" ] || { echo "NAO OK: ping sem resumo"; E=1; }
   n=$(grep -cE ',(sessions|counters),remove-final,[0-9]+,OK' "$OUT/base/sonda-isn3.csv")
   echo "sonda: $(grep -c ',OK,' "$OUT/base/sonda-isn3.csv") OK, $(grep -c ',ERRO,' "$OUT/base/sonda-isn3.csv") ERRO, remove-final OK em $n de 2 caches"

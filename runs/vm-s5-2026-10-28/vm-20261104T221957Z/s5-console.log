@@ -1,0 +1,212 @@
+S5 (L-1 e L-2) inicio 2026-11-04T22:19:57+00:00 saida=/home/server1/tcc-gate/runs/vm-s5-2026-10-28/vm-20261104T221957Z
+TCC_DIR=/home/server1/tcc-gate (exportado pelo s5.sh)
+== pre-condicoes 2026-11-04T22:19:57+00:00
+hostname=server1 ip=172.27.114.62 usuario=server1
+argumentos: --boot-esperado f9e98b74-bf1f-4192-9770-b40285877292
+tmux: /tmp/tmux-1000/default,13630,0
+terminal: ok (o GO do l1.sh e interativo)
+lock /var/lock/tcc-vm.lock: OCUPADO (este flock)
+sudo -n: ok
+uname -r: 6.8.0-147-generic
+boot_id: f9e98b74-bf1f-4192-9770-b40285877292
+boot_id esperado (--boot-esperado): f9e98b74-bf1f-4192-9770-b40285877292
+HEAD: f6483c5f844da16b8b103e47a52e994f67019b39 (docs: GO dos blocos de VM digitado pelo coordenador, autorizado pelo Gestor em 2026-11-04 (ROTEIRO-S5/S6/S7 e roteiro da VM))
+contem 902654b (v4c): sim
+arquivos versionados modificados: 1
+ M runs/gate-b29/go.log
+runs/gate-b29/go.log: HEAD e prefixo exato; 1 linha(s) 'go ' acrescentada(s) (aceito, Q-12)
+-- runs/gate-b29/go.log (versionado)
+go 2026-10-16T05:11:03+00:00 vm=192.168.137.150 sha=4978e1c6ee634d59ba48927773f496d7bf51b3ee
+go 2026-10-16T06:48:16+00:00 vm=192.168.137.150 sha=544879150d70e146d4b3f5a4847c13d8f824f5b9
+go G-1 (REP=3, janela de 90 s em isn3) 2026-10-16T08:56:39+00:00 vm=192.168.137.150 sha=507c21ee6812d4ea69788277907b92b56ff13311
+go G-5 (kill -TERM e kill -KILL do injetor em isn3, 40 s) 2026-10-16T09:02:02+00:00 vm=192.168.137.150 sha=507c21ee6812d4ea69788277907b92b56ff13311
+go G-6 (F3 jitter em isn2 + F2 particao em isn3, 90/130 s) 2026-10-16T09:03:46+00:00 vm=192.168.137.150 sha=507c21ee6812d4ea69788277907b92b56ff13311
+go G-1 (REP=4, janela de 90 s em isn3) 2026-10-28T07:12:13+00:00 vm=172.31.251.37 sha=1266c129904e73469926d95708e7c83290498c41
+-- sha256 (referencia v4c; l1.sh e o verbatim, nao editado)
+scripts/inject-netdegrade.sh: OK
+runs/gate-netdegrade/l-lib.sh: OK
+runs/gate-netdegrade/l1.sh: OK
+runs/vm-s2-2026-10-27/portao51.sh: OK
+hashes: iguais a referencia
+s5.sh: 287665752b648f3c1d2381f92ad5427444a26e07917ff16de027daef186addac
+ambiente: sem LOCK_DIR/PODMAN/INJ/SONDA_*/... herdados
+java: openjdk version "17.0.20.1" 2026-08-18
+jar: workload/target/session-workload-0.1.0-SNAPSHOT.jar 3594c690cfacd2be1f88e58d2a65a4cd944a06688abcb9ae5b4d3df2f7dc7bee
+jar: igual ao do S4
+runs/gate-netdegrade/L1.log: inexistente
+runs/gate-netdegrade/marcadores.txt: inexistente
+timers tcc-heal: 0 units tcc-heal: 0
+-- runs/gate-netdegrade/go.log (blocos anteriores)
+go 2026-10-28T03:16:00+00:00 vm=172.18.251.140 bloco=L-0
+go 2026-10-28T04:59:09+00:00 vm=172.18.251.140 bloco=L-0c
+nic eth0 proibidos(prio|netem|clsact)=0: qdisc mq 0: root qdisc fq_codel 0: parent :4 limit 10240p flows 1024 quantum 1514 target 5ms interval 100ms memory_limit 32Mb ecn drop_batch 64 qdisc fq_codel 0: parent :3 limit 10240p flows 1024 quantum 1514 target 5ms interval 100ms memory_limit 32Mb ecn drop_batch 64 qdisc fq_codel 0: parent :2 limit 10240p flows 1024 quantum 1514 target 5ms interval 100ms memory_limit 32Mb ecn drop_batch 64 qdisc fq_codel 0: parent :1 limit 10240p flows 1024 quantum 1514 target 5ms interval 100ms memory_limit 32Mb ecn drop_batch 64
+-- conteineres e cluster atual (so registro: IDs, StartedAt, IPs e ultima vista; nenhuma vista e exigida, o cluster do S4 foi recriado)
+isn1 d46a19727fdd Up 29 minutes (healthy) criado=2026-11-04 21:49:42.707304928 +0000 UTC
+isn2 87816ddc1db0 Up 29 minutes (healthy) criado=2026-11-04 21:50:01.886296781 +0000 UTC
+isn3 ef69b337005e Up 29 minutes (healthy) criado=2026-11-04 21:50:34.872861781 +0000 UTC
+isn1 ip=10.89.1.2 id=d46a19727fdd StartedAt=2026-11-04 21:49:59.430849278 +0000 UTC
+isn1 ultima vista: 2026-11-04 21:51:00,393 INFO  [o.i.CLUSTER] ISPN000094: Received new cluster view for channel cluster-tcc: [isn1-15077|2] (3) [isn1-15077, isn2-28862, isn3-9749]
+isn2 ip=10.89.1.3 id=87816ddc1db0 StartedAt=2026-11-04 21:50:14.93872205 +0000 UTC
+isn2 ultima vista: 2026-11-04 21:51:00,425 INFO  [o.i.CLUSTER] ISPN000094: Received new cluster view for channel cluster-tcc: [isn1-15077|2] (3) [isn1-15077, isn2-28862, isn3-9749]
+isn3 ip=10.89.1.4 id=ef69b337005e StartedAt=2026-11-04 21:50:51.472209425 +0000 UTC
+isn3 ultima vista: 2026-11-04 21:51:00,496 INFO  [o.i.CLUSTER] ISPN000094: Received new cluster view for channel cluster-tcc: [isn1-15077|2] (3) [isn1-15077, isn2-28862, isn3-9749]
+isn3 netns: diferente do host (net:[4026532154] != net:[4026531840])
+isn3 JGroups 7800: ipv4=2 ipv6=0
+pre rc=0 fim=2026-11-04T22:19:58+00:00
+== linha de base sem F4 2026-11-04T22:19:58+00:00: 60 s; /health 11222/11223/11224 e ssh 172.27.114.62:22 a cada 2 s; ping a isn3 10.89.1.4; sonda Hot Rod isn3:11224
+ping rc=0 300/300 recebidos
+sonda rc=0
+saude 11222: 30 amostras
+saude 11223: 30 amostras
+saude 11224: 30 amostras
+saude ssh22: 30 amostras
+sonda: 242 OK, 0 ERRO, remove-final OK em 2 de 2 caches
+base rc=0 fim=2026-11-04T22:21:00+00:00
+portao 02-portao51-pre: 130 s a partir de 2026-11-04T22:21:00+00:00
+amostras=27 amostras_ruins=0 janela_s=131 maior_sequencia_boa_s=131 ultima_sequencia_boa_desde=2026-11-04T22:21:00+00:00
+size sessions porta 11222: 0
+size sessions porta 11223: 0
+size sessions porta 11224: 0
+size counters porta 11222: 0
+size counters porta 11223: 0
+size counters porta 11224: 0
+timers tcc-heal: 0 units tcc-heal: 0
+isn1 pid=1407 tc qdisc show (todas as interfaces): qdisc noqueue 0: dev lo root refcnt 2 qdisc noqueue 0: dev eth0 root refcnt 2
+isn1 proibidos(clsact|prio|netem|ingress)=0 eth0_noqueue=1
+isn1 tc filter eth0: []
+isn2 pid=1543 tc qdisc show (todas as interfaces): qdisc noqueue 0: dev lo root refcnt 2 qdisc noqueue 0: dev eth0 root refcnt 2
+isn2 proibidos(clsact|prio|netem|ingress)=0 eth0_noqueue=1
+isn2 tc filter eth0: []
+isn3 pid=1711 tc qdisc show (todas as interfaces): qdisc noqueue 0: dev lo root refcnt 2 qdisc noqueue 0: dev eth0 root refcnt 2
+isn3 proibidos(clsact|prio|netem|ingress)=0 eth0_noqueue=1
+isn3 tc filter eth0: []
+lock: OCUPADO
+isn1 mudancas de vista nos ultimos 5 min (ISPN000094|ISPN000093|ISPN100000|ISPN100001|MergeView): 0
+isn1 ultima mudanca de vista: 2026-11-04 21:51:00,393 INFO  [o.i.CLUSTER] ISPN000094: Received new cluster view for channel cluster-tcc: [isn1-15077|2] (3) [isn1-15077, isn2-28862, isn3-9749]
+isn2 mudancas de vista nos ultimos 5 min (ISPN000094|ISPN000093|ISPN100000|ISPN100001|MergeView): 0
+isn2 ultima mudanca de vista: 2026-11-04 21:51:00,425 INFO  [o.i.CLUSTER] ISPN000094: Received new cluster view for channel cluster-tcc: [isn1-15077|2] (3) [isn1-15077, isn2-28862, isn3-9749]
+isn3 mudancas de vista nos ultimos 5 min (ISPN000094|ISPN000093|ISPN100000|ISPN100001|MergeView): 0
+isn3 ultima mudanca de vista: 2026-11-04 21:51:00,496 INFO  [o.i.CLUSTER] ISPN000094: Received new cluster view for channel cluster-tcc: [isn1-15077|2] (3) [isn1-15077, isn2-28862, isn3-9749]
+fim 2026-11-04T22:23:11+00:00
+02-portao51-pre rc=0 fim=2026-11-04T22:23:11+00:00
+PORTAO 5.1: OK (amostras_ruins=0, maior_sequencia_boa_s=131)
+02-portao51-pre-avaliacao rc=0 fim=2026-11-04T22:23:11+00:00
+== antes do L-1 2026-11-04T22:23:11+00:00
+isn1 TcpRetransSegs=0 pid=1407
+isn2 TcpRetransSegs=0 pid=1543
+isn3 TcpRetransSegs=0 pid=1711
+nic eth0 proibidos(prio|netem|clsact)=0: qdisc mq 0: root qdisc fq_codel 0: parent :4 limit 10240p flows 1024 quantum 1514 target 5ms interval 100ms memory_limit 32Mb ecn drop_batch 64 qdisc fq_codel 0: parent :3 limit 10240p flows 1024 quantum 1514 target 5ms interval 100ms memory_limit 32Mb ecn drop_batch 64 qdisc fq_codel 0: parent :2 limit 10240p flows 1024 quantum 1514 target 5ms interval 100ms memory_limit 32Mb ecn drop_batch 64 qdisc fq_codel 0: parent :1 limit 10240p flows 1024 quantum 1514 target 5ms interval 100ms memory_limit 32Mb ecn drop_batch 64
+pre-l1 rc=0 fim=2026-11-04T22:23:11+00:00
+coletor em segundo plano pid=19569 2026-11-04T22:23:11+00:00
+>>> AVISO: o dead-man do L-1 (armar 60 => --on-active=150 s) tem AccuracySec=1min: a cura automatica pode vir so ~210 s depois de armar. Cura manual (em ~/tcc-gate): PODMAN='sudo podman' bash scripts/inject-netdegrade.sh --heal
+>>> L-1: 20 % de perda em isn3 por 60 s (cluster ocioso). Digite GO no prompt do l1.sh (qualquer outra coisa aborta).
+L-1 -- go do Gestor registrado no relatorio anterior? [digite GO] go 2026-11-04T22:23:29+00:00 vm=172.27.114.62 bloco=L-1
+[2026-11-04T22:23:29Z] inject-netdegrade.sh: no isn3: pid 1711 ip 10.89.1.4
+[2026-11-04T22:23:29Z] inject-netdegrade.sh: no isn1: pid 1407 ip 10.89.1.2
+[2026-11-04T22:23:29Z] inject-netdegrade.sh: no isn2: pid 1543 ip 10.89.1.3
+[2026-11-04T22:23:29Z] inject-netdegrade.sh: pre-limpeza idempotente (qdisc prio 1: remanescente de execucao anterior)
+[2026-11-04T22:23:29Z] inject-netdegrade.sh: sondando prio/netem/u32 em isn3 (pid 1711, eth0) via nsenter
+[2026-11-04T22:23:29Z] inject-netdegrade.sh: sudo nsenter -t 1711 -n tc qdisc add dev eth0 root handle 1: prio bands 3 priomap 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0   # isn3
+[2026-11-04T22:23:29Z] inject-netdegrade.sh: isn3 (saida): netem loss 20%
+[2026-11-04T22:23:29Z] inject-netdegrade.sh: isn3 -> isn1 (10.89.1.2): filtro u32 dst -> banda 3 (netem)
+[2026-11-04T22:23:29Z] inject-netdegrade.sh: isn3 -> isn2 (10.89.1.3): filtro u32 dst -> banda 3 (netem)
+[2026-11-04T22:23:29Z] inject-netdegrade.sh: degradacao aplicada: alvo isn3, pares isn1 isn2, direcao out
+[2026-11-04T22:23:29Z] inject-netdegrade.sh: verificando a taxa de perda no fio: 300 pings por par (esperada 0.200000 em fracao)
+[2026-11-04T22:23:29Z] inject-netdegrade.sh: perda observada isn3 -> isn1: 17% (esperada 20.00%, n=300)
+[2026-11-04T22:23:29Z] inject-netdegrade.sh: perda observada isn3 -> isn2: 20.3333% (esperada 20.00%, n=300)
+[2026-11-04T22:23:29Z] inject-netdegrade.sh: contadores de isn3 (saida):
+    qdisc prio 1: root refcnt 5 bands 3 priomap 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+     Sent 305033 bytes 1890 pkt (dropped 228, overlimits 0 requeues 0) 
+     backlog 0b 0p requeues 0
+    qdisc netem 30: parent 1:3 limit 1000 loss 20%
+     Sent 182612 bytes 984 pkt (dropped 228, overlimits 0 requeues 0) 
+     backlog 0b 0p requeues 0
+[2026-11-04T22:23:29Z] inject-netdegrade.sh: sudo nsenter -t 1711 -n tc qdisc del dev eth0 root   # isn3
+[2026-11-04T22:23:29Z] inject-netdegrade.sh: OK: F4 (degradacao parcial) injetada por 60s em isn3 (direcao out) e removida; sem qdisc residual
+rc=0 (esperado 0)
+ok sem prio em isn3
+l1 rc=0 fim=2026-11-04T22:24:32+00:00
+coletor rc=0 fim=2026-11-04T22:25:04+00:00
+== depois do L-1 2026-11-04T22:25:04+00:00
+isn1 TcpRetransSegs=5 pid=1407
+isn2 TcpRetransSegs=0 pid=1543
+isn3 TcpRetransSegs=94 pid=1711
+nic eth0 proibidos(prio|netem|clsact)=0: qdisc mq 0: root qdisc fq_codel 0: parent :4 limit 10240p flows 1024 quantum 1514 target 5ms interval 100ms memory_limit 32Mb ecn drop_batch 64 qdisc fq_codel 0: parent :3 limit 10240p flows 1024 quantum 1514 target 5ms interval 100ms memory_limit 32Mb ecn drop_batch 64 qdisc fq_codel 0: parent :2 limit 10240p flows 1024 quantum 1514 target 5ms interval 100ms memory_limit 32Mb ecn drop_batch 64 qdisc fq_codel 0: parent :1 limit 10240p flows 1024 quantum 1514 target 5ms interval 100ms memory_limit 32Mb ecn drop_batch 64
+timers tcc-heal: 0 units tcc-heal: 0
+fault=F4 node=isn3 event=start t_epoch_ns=1793831009784997099
+fault=F4 node=isn3 event=end t_epoch_ns=1793831072206011393
+go 2026-11-04T22:23:29+00:00 vm=172.27.114.62 bloco=L-1
+linhas de vista/DEGRADED desde o inicio do L-1: 0
+pos-l1 rc=0 fim=2026-11-04T22:25:04+00:00
+portao 06-portao51-pos: 313 s a partir de 2026-11-04T22:25:04+00:00
+amostras=64 amostras_ruins=0 janela_s=317 maior_sequencia_boa_s=317 ultima_sequencia_boa_desde=2026-11-04T22:25:04+00:00
+size sessions porta 11222: 0
+size sessions porta 11223: 0
+size sessions porta 11224: 0
+size counters porta 11222: 0
+size counters porta 11223: 0
+size counters porta 11224: 0
+timers tcc-heal: 0 units tcc-heal: 0
+isn1 pid=1407 tc qdisc show (todas as interfaces): qdisc noqueue 0: dev lo root refcnt 2 qdisc noqueue 0: dev eth0 root refcnt 2
+isn1 proibidos(clsact|prio|netem|ingress)=0 eth0_noqueue=1
+isn1 tc filter eth0: []
+isn2 pid=1543 tc qdisc show (todas as interfaces): qdisc noqueue 0: dev lo root refcnt 2 qdisc noqueue 0: dev eth0 root refcnt 2
+isn2 proibidos(clsact|prio|netem|ingress)=0 eth0_noqueue=1
+isn2 tc filter eth0: []
+isn3 pid=1711 tc qdisc show (todas as interfaces): qdisc noqueue 0: dev lo root refcnt 2 qdisc noqueue 0: dev eth0 root refcnt 2
+isn3 proibidos(clsact|prio|netem|ingress)=0 eth0_noqueue=1
+isn3 tc filter eth0: []
+lock: OCUPADO
+isn1 mudancas de vista nos ultimos 5 min (ISPN000094|ISPN000093|ISPN100000|ISPN100001|MergeView): 0
+isn1 ultima mudanca de vista: 2026-11-04 21:51:00,393 INFO  [o.i.CLUSTER] ISPN000094: Received new cluster view for channel cluster-tcc: [isn1-15077|2] (3) [isn1-15077, isn2-28862, isn3-9749]
+isn2 mudancas de vista nos ultimos 5 min (ISPN000094|ISPN000093|ISPN100000|ISPN100001|MergeView): 0
+isn2 ultima mudanca de vista: 2026-11-04 21:51:00,425 INFO  [o.i.CLUSTER] ISPN000094: Received new cluster view for channel cluster-tcc: [isn1-15077|2] (3) [isn1-15077, isn2-28862, isn3-9749]
+isn3 mudancas de vista nos ultimos 5 min (ISPN000094|ISPN000093|ISPN100000|ISPN100001|MergeView): 0
+isn3 ultima mudanca de vista: 2026-11-04 21:51:00,496 INFO  [o.i.CLUSTER] ISPN000094: Received new cluster view for channel cluster-tcc: [isn1-15077|2] (3) [isn1-15077, isn2-28862, isn3-9749]
+fim 2026-11-04T22:30:22+00:00
+06-portao51-pos rc=0 fim=2026-11-04T22:30:22+00:00
+PORTAO 5.1: OK (amostras_ruins=0, maior_sequencia_boa_s=317)
+06-portao51-pos-avaliacao rc=0 fim=2026-11-04T22:30:22+00:00
+boot_id fim: f9e98b74-bf1f-4192-9770-b40285877292 2026-11-04T22:30:22+00:00
+boot-fim rc=0 fim=2026-11-04T22:30:22+00:00
+== avaliacao do S5 2026-11-04T22:30:22+00:00 sobre /home/server1/tcc-gate/runs/vm-s5-2026-10-28/vm-20261104T221957Z
+OK: boot_id igual no inicio e no fim (f9e98b74-bf1f-4192-9770-b40285877292)
+OK: l1.sh rc=0 (rc.txt)
+OK: injetor rc=0 (L1.log)
+OK: marcadores: 1 start e 1 end; janela de 62.421 s
+OK: perda observada isn3 -> isn1: 17% = 51 perdas em 300 (aceito 39 a 81)
+OK: perda observada isn3 -> isn2: 20.3333% = 61 perdas em 300 (aceito 39 a 81)
+OK: contadores de isn3: dropped/(Sent+dropped) = 228/1212 = 0.1881 (perto de 0.20, 3 sigma)
+  amostra tc-10.txt: netem 30 Sent+dropped=193, filtros u32 0a590102 0a590103 -> 1:3=2 
+  amostra tc-30.txt: netem 30 Sent+dropped=601, filtros u32 0a590102 0a590103 -> 1:3=2 
+  amostra tc-50.txt: netem 30 Sent+dropped=957, filtros u32 0a590102 0a590103 -> 1:3=2 
+OK: 3 amostras de tc -s qdisc/filter validas durante a janela
+OK: REST de isn3 (11224) time_total: mediana durante 0.002594 s <= p95 da base 0.003972 s + 0 s (n base=30, durante=32; max durante 0.005066 s)
+OK: conexao TCP a porta Hot Rod de isn3 (11224) time_connect: mediana durante 0.000090 s <= p95 da base 0.000168 s + 0 s (n base=30, durante=32; max durante 0.000190 s)
+OK: REST de controle isn1 (11222) time_total: mediana durante 0.002808 s <= p95 da base 0.367897 s + 0 s (n base=30, durante=32; max durante 0.004418 s)
+OK: ssh (VM:22) tempo de conexao TCP: mediana durante 0.000079 s <= p95 da base 0.000103 s + 0 s (n base=30, durante=32; max durante 0.000097 s)
+OK: REST de isn3 (11224): HTTP 200 em todas as amostras da janela
+OK: ssh (VM:22): todas as conexoes TCP da janela aceitas
+OK: ping do host a isn3 na linha de base: 300/300 recebidos
+OK: ping do host a isn3 durante a janela: 250/250 recebidos
+OK: ping do host a isn3 (rtt): mediana durante 0.000034 s <= p95 da base 0.000080 s + 0 s (n base=300, durante=250; max durante 0.000084 s)
+OK: intervalo maximo do saude-log em base/saude.csv: 2.725 s <= 2 x 2 s
+OK: intervalo maximo do saude-log em janela/saude.csv: 2.279 s <= 2 x 2 s
+OK: L-2: sem_prio isn3 ok (04-l1.log)
+OK: NIC da VM sem prio/netem/clsact depois do L-1
+OK: 0 timers e 0 units tcc-heal depois do L-1 (dead-man desarmado)
+OK: portao 5.1 pos: size=3 HEALTHY, caches vazios, 3 netns sem prio/netem/clsact e sem filtros, 0 timers
+RESULTADO: nenhuma mudanca de vista nos 3 nos desde o inicio do L-1 (05-vistas.log)
+RESULTADO: todas as amostras do saude-log na janela em HEALTHY/3
+RESULTADO: TcpRetransSegs isn1: 0 -> 5 (+5)
+RESULTADO: TcpRetransSegs isn2: 0 -> 0 (+0)
+RESULTADO: TcpRetransSegs isn3: 0 -> 94 (+94); H-L espera aumento em isn3
+LEITURA HUMANA: sonda Hot Rod isn3 (base): put n/mediana/p95/max = 60 0.002321 0.006741 0.014139; get = 60 0.001351 0.002919 0.012709; ERRO = 0; remove-final OK = 2
+LEITURA HUMANA: sonda Hot Rod isn3 (janela): put n/mediana/p95/max = 64 0.002492 0.306340 0.698870; get = 64 0.001734 0.282009 0.383003; ERRO = 0; remove-final OK = 2
+LEITURA HUMANA: a latencia de operacao da sonda inclui a replicacao para o outro dono, que passa pelo enlace degradado de proposito; o criterio automatico de Hot Rod e a conexao TCP a porta 11224. Comparar put/get base x janela acima
+LEITURA HUMANA: ssh do terminal do Gestor (Windows -> VM): o s5.sh so mede a conexao TCP ao sshd de dentro da VM e a NIC sem prio/netem; atraso percebido no terminal durante a janela deve ser anotado pelo Gestor
+LEITURA HUMANA: tc -s filter: confira em janela/tc-*.txt que os 2 filtros u32 (dst isn1, isn2 -> 1:3) acumulam 'success' entre as amostras
+LEITURA HUMANA: 05-vistas.log e logs de isn3 se houver mudanca de vista; perdas calculadas do percentual do L1.log (o injetor nao guarda as linhas 'transmitted/received')
+S5: VALIDO (23 criterios OK)
+avaliacao rc=0 fim=2026-11-04T22:30:22+00:00
+S5 fim 2026-11-04T22:30:22+00:00 rc=0. Saia do tmux com exit (libera o lock).

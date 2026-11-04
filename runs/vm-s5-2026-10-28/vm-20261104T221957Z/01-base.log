@@ -1,0 +1,8 @@
+== linha de base sem F4 2026-11-04T22:19:58+00:00: 60 s; /health 11222/11223/11224 e ssh 172.27.114.62:22 a cada 2 s; ping a isn3 10.89.1.4; sonda Hot Rod isn3:11224
+ping rc=0 300/300 recebidos
+sonda rc=0
+saude 11222: 30 amostras
+saude 11223: 30 amostras
+saude 11224: 30 amostras
+saude ssh22: 30 amostras
+sonda: 242 OK, 0 ERRO, remove-final OK em 2 de 2 caches

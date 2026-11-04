@@ -1,0 +1,10 @@
+== depois do L-1 2026-11-04T22:25:04+00:00
+isn1 TcpRetransSegs=5 pid=1407
+isn2 TcpRetransSegs=0 pid=1543
+isn3 TcpRetransSegs=94 pid=1711
+nic eth0 proibidos(prio|netem|clsact)=0: qdisc mq 0: root qdisc fq_codel 0: parent :4 limit 10240p flows 1024 quantum 1514 target 5ms interval 100ms memory_limit 32Mb ecn drop_batch 64 qdisc fq_codel 0: parent :3 limit 10240p flows 1024 quantum 1514 target 5ms interval 100ms memory_limit 32Mb ecn drop_batch 64 qdisc fq_codel 0: parent :2 limit 10240p flows 1024 quantum 1514 target 5ms interval 100ms memory_limit 32Mb ecn drop_batch 64 qdisc fq_codel 0: parent :1 limit 10240p flows 1024 quantum 1514 target 5ms interval 100ms memory_limit 32Mb ecn drop_batch 64
+timers tcc-heal: 0 units tcc-heal: 0
+fault=F4 node=isn3 event=start t_epoch_ns=1793831009784997099
+fault=F4 node=isn3 event=end t_epoch_ns=1793831072206011393
+go 2026-11-04T22:23:29+00:00 vm=172.27.114.62 bloco=L-1
+linhas de vista/DEGRADED desde o inicio do L-1: 0

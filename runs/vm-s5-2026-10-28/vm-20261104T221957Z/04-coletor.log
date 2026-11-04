@@ -1,0 +1,7 @@
+2026-11-04T22:23:11+00:00 coletor: esperando event=start em /home/server1/tcc-gate/runs/gate-netdegrade/marcadores.txt (ate 900 s)
+2026-11-04T22:23:29+00:00 coletor: start_ns=1793831009784997099; ping a 10.89.1.4, sonda Hot Rod e saude a cada 2 s; tc em +10,+30,+50 s
+2026-11-04T22:23:39+00:00 coletor: amostra tc +10s
+2026-11-04T22:23:59+00:00 coletor: amostra tc +30s
+2026-11-04T22:24:19+00:00 coletor: amostra tc +50s
+2026-11-04T22:24:32+00:00 coletor: event=end visto; mais 30 s
+2026-11-04T22:25:04+00:00 coletor fim (ping 250/250, sonda 379 linhas, saude 189 linhas)

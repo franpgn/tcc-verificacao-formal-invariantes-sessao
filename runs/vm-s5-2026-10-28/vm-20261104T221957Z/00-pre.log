@@ -1,0 +1,52 @@
+== pre-condicoes 2026-11-04T22:19:57+00:00
+hostname=server1 ip=172.27.114.62 usuario=server1
+argumentos: --boot-esperado f9e98b74-bf1f-4192-9770-b40285877292
+tmux: /tmp/tmux-1000/default,13630,0
+terminal: ok (o GO do l1.sh e interativo)
+lock /var/lock/tcc-vm.lock: OCUPADO (este flock)
+sudo -n: ok
+uname -r: 6.8.0-147-generic
+boot_id: f9e98b74-bf1f-4192-9770-b40285877292
+boot_id esperado (--boot-esperado): f9e98b74-bf1f-4192-9770-b40285877292
+HEAD: f6483c5f844da16b8b103e47a52e994f67019b39 (docs: GO dos blocos de VM digitado pelo coordenador, autorizado pelo Gestor em 2026-11-04 (ROTEIRO-S5/S6/S7 e roteiro da VM))
+contem 902654b (v4c): sim
+arquivos versionados modificados: 1
+ M runs/gate-b29/go.log
+runs/gate-b29/go.log: HEAD e prefixo exato; 1 linha(s) 'go ' acrescentada(s) (aceito, Q-12)
+-- runs/gate-b29/go.log (versionado)
+go 2026-10-16T05:11:03+00:00 vm=192.168.137.150 sha=4978e1c6ee634d59ba48927773f496d7bf51b3ee
+go 2026-10-16T06:48:16+00:00 vm=192.168.137.150 sha=544879150d70e146d4b3f5a4847c13d8f824f5b9
+go G-1 (REP=3, janela de 90 s em isn3) 2026-10-16T08:56:39+00:00 vm=192.168.137.150 sha=507c21ee6812d4ea69788277907b92b56ff13311
+go G-5 (kill -TERM e kill -KILL do injetor em isn3, 40 s) 2026-10-16T09:02:02+00:00 vm=192.168.137.150 sha=507c21ee6812d4ea69788277907b92b56ff13311
+go G-6 (F3 jitter em isn2 + F2 particao em isn3, 90/130 s) 2026-10-16T09:03:46+00:00 vm=192.168.137.150 sha=507c21ee6812d4ea69788277907b92b56ff13311
+go G-1 (REP=4, janela de 90 s em isn3) 2026-10-28T07:12:13+00:00 vm=172.31.251.37 sha=1266c129904e73469926d95708e7c83290498c41
+-- sha256 (referencia v4c; l1.sh e o verbatim, nao editado)
+scripts/inject-netdegrade.sh: OK
+runs/gate-netdegrade/l-lib.sh: OK
+runs/gate-netdegrade/l1.sh: OK
+runs/vm-s2-2026-10-27/portao51.sh: OK
+hashes: iguais a referencia
+s5.sh: 287665752b648f3c1d2381f92ad5427444a26e07917ff16de027daef186addac
+ambiente: sem LOCK_DIR/PODMAN/INJ/SONDA_*/... herdados
+java: openjdk version "17.0.20.1" 2026-08-18
+jar: workload/target/session-workload-0.1.0-SNAPSHOT.jar 3594c690cfacd2be1f88e58d2a65a4cd944a06688abcb9ae5b4d3df2f7dc7bee
+jar: igual ao do S4
+runs/gate-netdegrade/L1.log: inexistente
+runs/gate-netdegrade/marcadores.txt: inexistente
+timers tcc-heal: 0 units tcc-heal: 0
+-- runs/gate-netdegrade/go.log (blocos anteriores)
+go 2026-10-28T03:16:00+00:00 vm=172.18.251.140 bloco=L-0
+go 2026-10-28T04:59:09+00:00 vm=172.18.251.140 bloco=L-0c
+nic eth0 proibidos(prio|netem|clsact)=0: qdisc mq 0: root qdisc fq_codel 0: parent :4 limit 10240p flows 1024 quantum 1514 target 5ms interval 100ms memory_limit 32Mb ecn drop_batch 64 qdisc fq_codel 0: parent :3 limit 10240p flows 1024 quantum 1514 target 5ms interval 100ms memory_limit 32Mb ecn drop_batch 64 qdisc fq_codel 0: parent :2 limit 10240p flows 1024 quantum 1514 target 5ms interval 100ms memory_limit 32Mb ecn drop_batch 64 qdisc fq_codel 0: parent :1 limit 10240p flows 1024 quantum 1514 target 5ms interval 100ms memory_limit 32Mb ecn drop_batch 64
+-- conteineres e cluster atual (so registro: IDs, StartedAt, IPs e ultima vista; nenhuma vista e exigida, o cluster do S4 foi recriado)
+isn1 d46a19727fdd Up 29 minutes (healthy) criado=2026-11-04 21:49:42.707304928 +0000 UTC
+isn2 87816ddc1db0 Up 29 minutes (healthy) criado=2026-11-04 21:50:01.886296781 +0000 UTC
+isn3 ef69b337005e Up 29 minutes (healthy) criado=2026-11-04 21:50:34.872861781 +0000 UTC
+isn1 ip=10.89.1.2 id=d46a19727fdd StartedAt=2026-11-04 21:49:59.430849278 +0000 UTC
+isn1 ultima vista: 2026-11-04 21:51:00,393 INFO  [o.i.CLUSTER] ISPN000094: Received new cluster view for channel cluster-tcc: [isn1-15077|2] (3) [isn1-15077, isn2-28862, isn3-9749]
+isn2 ip=10.89.1.3 id=87816ddc1db0 StartedAt=2026-11-04 21:50:14.93872205 +0000 UTC
+isn2 ultima vista: 2026-11-04 21:51:00,425 INFO  [o.i.CLUSTER] ISPN000094: Received new cluster view for channel cluster-tcc: [isn1-15077|2] (3) [isn1-15077, isn2-28862, isn3-9749]
+isn3 ip=10.89.1.4 id=ef69b337005e StartedAt=2026-11-04 21:50:51.472209425 +0000 UTC
+isn3 ultima vista: 2026-11-04 21:51:00,496 INFO  [o.i.CLUSTER] ISPN000094: Received new cluster view for channel cluster-tcc: [isn1-15077|2] (3) [isn1-15077, isn2-28862, isn3-9749]
+isn3 netns: diferente do host (net:[4026532154] != net:[4026531840])
+isn3 JGroups 7800: ipv4=2 ipv6=0

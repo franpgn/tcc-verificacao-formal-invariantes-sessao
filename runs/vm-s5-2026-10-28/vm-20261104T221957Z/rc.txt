@@ -1,0 +1,14 @@
+pre rc=0 fim=2026-11-04T22:19:58+00:00
+base rc=0 fim=2026-11-04T22:21:00+00:00
+02-portao51-pre rc=0 fim=2026-11-04T22:23:11+00:00
+02-portao51-pre-avaliacao rc=0 fim=2026-11-04T22:23:11+00:00
+pre-l1 rc=0 fim=2026-11-04T22:23:11+00:00
+coletor em segundo plano pid=19569 2026-11-04T22:23:11+00:00
+l1 rc=0 fim=2026-11-04T22:24:32+00:00
+coletor rc=0 fim=2026-11-04T22:25:04+00:00
+pos-l1 rc=0 fim=2026-11-04T22:25:04+00:00
+06-portao51-pos rc=0 fim=2026-11-04T22:30:22+00:00
+06-portao51-pos-avaliacao rc=0 fim=2026-11-04T22:30:22+00:00
+boot-fim rc=0 fim=2026-11-04T22:30:22+00:00
+avaliacao rc=0 fim=2026-11-04T22:30:22+00:00
+S5 fim 2026-11-04T22:30:22+00:00 rc=0. Saia do tmux com exit (libera o lock).

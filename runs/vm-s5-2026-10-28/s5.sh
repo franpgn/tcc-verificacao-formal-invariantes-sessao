@@ -1,12 +1,17 @@
 #!/usr/bin/env bash
 # runs/vm-s5-2026-10-28/s5.sh -- involucro do S5 (L-1 e L-2) na VM. NAO injeta nada por conta propria e NAO digita o GO.
 #
-# Uso (dentro do tmux aberto sob flock, em ~/tcc-gate):   bash runs/vm-s5-2026-10-28/s5.sh
+# Uso (dentro do tmux aberto sob flock, em ~/tcc-gate):   bash runs/vm-s5-2026-10-28/s5.sh --boot-esperado <uuid>
+# Nenhum boot_id fica no codigo (Q-11, 2026-11-04, como no s6.sh/s7.sh): o esperado vem por argumento (o boot_id lido pelo
+# coordenador na abertura) e tem de ser igual ao atual no inicio e no fim. A queda de energia de 2026-11-04 reiniciou a VM e o
+# cluster foi recriado (runs/gate-b29/recriar.sh, 19:14:06Z): o S5 nao roda mais no cluster do S4.
 # Envolve runs/gate-netdegrade/l1.sh, que e VERBATIM do roteiro e nao e editado. As coletas que no l1.sh sao so comentario
 # (l1.sh:8-13) sao feitas aqui, como pede decisoes-senior-2026-10-16 §5.6 e a V-S4 ("O que o S5 precisa"):
-#   0. pre-condicoes (TCC_DIR, tmux, terminal, lock OCUPADO, sudo -n, uname -r, boot_id, HEAD, arvore limpa, hashes,
+#   0. pre-condicoes (TCC_DIR, tmux, terminal, lock OCUPADO, sudo -n, uname -r, boot_id = --boot-esperado, HEAD, arvore
+#      limpa (so runs/gate-b29/go.log com linhas 'go ' acrescentadas, Q-12), hashes,
 #      ambiente sem LOCK_DIR/PODMAN/INJ/..., java e jar do S4, L1.log e marcadores.txt inexistentes, 0 timers e 0 units
-#      tcc-heal, IPs e PID de isn3, guarda de netns, JGroups sem IPv6, NIC da VM sem prio/netem/clsact) e estado do cluster;
+#      tcc-heal, IPs e PID de isn3, guarda de netns, JGroups sem IPv6, NIC da VM sem prio/netem/clsact) e estado do cluster
+#      atual (IDs, StartedAt, IPs e ultima vista so registrados; nenhuma vista e exigida);
 #   1. linha de base SEM F4 (BASE_S s): REST /health nas 3 portas e conexao TCP ao ssh da VM a cada SAUDE_S s, ping do host
 #      a isn3 e a sonda Hot Rod pinada em isn3 (127.0.0.1:11224), que remove a chave ao fim (remove-final);
 #   2. portao 5.1 pre (portao51.sh, .log/.csv/avaliacao automatica); se falhar, PARA;
@@ -19,17 +24,17 @@
 # Dead-man do L-1: armar 60 => --on-active=150 s, mas o timer usa AccuracySec=1min: a cura automatica pode vir ~210 s
 # depois de armar. Cura manual (em ~/tcc-gate): PODMAN='sudo podman' bash scripts/inject-netdegrade.sh --heal
 # Saidas: runs/vm-s5-2026-10-28/vm-<UTC>/ (console em s5-console.log; rc e fim de cada passo em rc.txt).
-# Saida: 0 valido; 1 pre-condicao; 2 linha de base; 3 portao pre; 4 l1.sh (ver o aviso do dead-man); 5 portao pos;
+# Saida: 0 valido; 1 argumento ou pre-condicao; 2 linha de base; 3 portao pre; 4 l1.sh (ver o aviso do dead-man); 5 portao pos;
 # 6 avaliacao INVALIDO (ver 08-avaliacao.txt).
 # Outros modos: --hashes (tabela), --avaliar-portao <log>, --avaliar <dir vm-UTC> (refaz a avaliacao, tambem no host).
-# S5_TESTE=1 so nos testes com shims (s5.test.sh): permite trocar limites, tempos, boot_id, jar e a tabela de hashes.
+# S5_TESTE=1 so nos testes com shims (s5.test.sh): permite trocar limites, tempos, o arquivo do boot_id, jar e a tabela de
+# hashes (o boot_id esperado vem sempre do argumento).
 set -uo pipefail
 AQUI="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 SELF="$AQUI/s5.sh"
 TESTE="${S5_TESTE:-0}"
 
 KERNEL_ESPERADO=6.8.0-147-generic
-BOOT_ESPERADO=5d7119b8-3b50-435d-bd0d-cbdb6bd410df     # boot de 2026-10-28 06:39:35 UTC (o do S4)
 BOOT_ID_FILE=/proc/sys/kernel/random/boot_id
 LOCK=/var/lock/tcc-vm.lock
 JAR_ESPERADO=3594c690cfacd2be1f88e58d2a65a4cd944a06688abcb9ae5b4d3df2f7dc7bee   # o jar da REP=3 e do S4 (V-S4)
@@ -54,7 +59,7 @@ HASHES_ESPERADOS='4ebdd8a34a7d5c1e6981138272a4f0b90a67c44dd8626e9521884e185297ab
 2598b37d4969b1bd717ddbe514110fb6a0077e1332e38c1b76c5caea61802338  runs/vm-s2-2026-10-27/portao51.sh'
 if [ "${1:-}" = --hashes ]; then printf '%s\n' "$HASHES_ESPERADOS"; exit 0; fi
 if [ "$TESTE" = 1 ]; then
-  BOOT_ESPERADO="${S5_BOOT_ESPERADO:-$BOOT_ESPERADO}"; BOOT_ID_FILE="${S5_BOOT_ID_FILE:-$BOOT_ID_FILE}"
+  BOOT_ID_FILE="${S5_BOOT_ID_FILE:-$BOOT_ID_FILE}"
   JAR_ESPERADO="${S5_JAR_ESPERADO:-$JAR_ESPERADO}"
   PORTAO_MIN_S="${S5_PORTAO_MIN_S:-$PORTAO_MIN_S}"; PORTAO_FOLGA_S="${S5_PORTAO_FOLGA_S:-$PORTAO_FOLGA_S}"
   PORTAO_BOA_S="${S5_PORTAO_BOA_S:-$PORTAO_BOA_S}"
@@ -310,6 +315,19 @@ coletor() { # em segundo plano: espera o event=start do injetor e coleta ate end
   clog "coletor fim (ping $(pingtr "$J/ping.txt" | tr ' ' '/'), sonda $(grep -c . "$J/sonda-isn3.csv") linhas, saude $(grep -c . "$J/saude.csv") linhas)"
 }
 
+# ---- argumentos (Q-11): nada e lido alem deles antes de valida-los; erro de argumento = rc 1, sem vm-<UTC>/
+uso() { echo "S5 ABORTADO (rc=1): $*" >&2
+  echo "uso: bash runs/vm-s5-2026-10-28/s5.sh --boot-esperado <uuid> | --hashes | --avaliar-portao <log> | --avaliar <dir>" >&2; exit 1; }
+BOOT_ARG=
+while [ $# -gt 0 ]; do
+  case "$1" in
+    --boot-esperado) [ $# -ge 2 ] || uso "falta o valor de --boot-esperado"; BOOT_ARG="$2"; shift 2;;
+    *) uso "argumento desconhecido: $1";;
+  esac
+done
+[[ "$BOOT_ARG" =~ ^[0-9a-f]{8}-([0-9a-f]{4}-){3}[0-9a-f]{12}$ ]] || uso "--boot-esperado ausente ou fora do formato UUID ('$BOOT_ARG')"
+BOOT_ESPERADO="$BOOT_ARG"
+
 # ---- 0. TCC_DIR, diretorio de saida e console
 if [ -z "${TCC_DIR:-}" ]; then export TCC_DIR="$HOME/tcc-gate"; TCC_ORIGEM="exportado pelo s5.sh"
 elif [ "$TCC_DIR" = "$HOME/tcc-gate" ]; then export TCC_DIR; TCC_ORIGEM="ja exportado"
@@ -336,15 +354,34 @@ echo "TCC_DIR=$TCC_DIR ($TCC_ORIGEM)"
   PAR="$OUT/parametros.txt"
   echo "== pre-condicoes $(date -Is)"
   echo "hostname=$(hostname) ip=$(hostname -I 2>/dev/null | awk '{print $1}') usuario=$(id -un)"
+  echo "argumentos: --boot-esperado $BOOT_ESPERADO"
   [ -n "${TMUX:-}" ] && echo "tmux: $TMUX" || nok "fora do tmux (TMUX vazio)"
   [ -t 0 ] || [ "$TESTE" = 1 ] && echo "terminal: ok (o GO do l1.sh e interativo)" || nok "sem terminal (o GO do l1.sh e interativo)"
   if flock -n "$LOCK" true; then nok "lock $LOCK LIVRE: rode dentro de 'flock $LOCK tmux new -s s5'"; else echo "lock $LOCK: OCUPADO (este flock)"; fi
   SUDO=0; sudo -n true && { echo "sudo -n: ok"; SUDO=1; } || nok "sudo -n true falhou"
   K=$(uname -r); echo "uname -r: $K"; [ "$K" = "$KERNEL_ESPERADO" ] || nok "kernel $K (esperado $KERNEL_ESPERADO)"
-  B=$(cat "$BOOT_ID_FILE" 2>/dev/null); echo "boot_id: $B"; [ "$B" = "$BOOT_ESPERADO" ] || nok "boot_id $B (esperado $BOOT_ESPERADO: houve reboot?)"
+  B=$(cat "$BOOT_ID_FILE" 2>/dev/null); echo "boot_id: $B"; echo "boot_id esperado (--boot-esperado): $BOOT_ESPERADO"
+  # Q-11: qualquer diferenca e NAO OK, nunca aviso
+  [ "$B" = "$BOOT_ESPERADO" ] || nok "boot_id atual $B diferente de --boot-esperado $BOOT_ESPERADO: reboot da VM depois da leitura do coordenador ou referencia errada: parar e chamar o Senior"
   echo "HEAD: $(git rev-parse HEAD 2>/dev/null) ($(git log -1 --format=%s 2>/dev/null))"
   git merge-base --is-ancestor 902654b HEAD 2>/dev/null && echo "contem 902654b (v4c): sim" || echo "contem 902654b (v4c): nao"
-  N=$(git status --porcelain --untracked-files=no 2>/dev/null | wc -l); echo "arquivos versionados modificados: $N"; [ "$N" = 0 ] || nok "$N arquivos versionados modificados"
+  # Q-12 (aprovada em 2026-11-04; a mesma regra do s6.sh/s7.sh): o unico versionado que pode estar modificado e
+  # runs/gate-b29/go.log, com HEAD como prefixo exato e cada linha a mais comecando com "go " (o exigir_go acrescenta uma)
+  GL=runs/gate-b29/go.log
+  M=$(git status --porcelain --untracked-files=no 2>/dev/null); N=$(printf '%s' "$M" | grep -c .)
+  echo "arquivos versionados modificados: $N"; [ -z "$M" ] || printf '%s\n' "$M"
+  OUTROS=$(printf '%s\n' "$M" | grep -v "^ M $GL\$" | grep -c .)
+  [ "$OUTROS" = 0 ] || nok "$OUTROS arquivo(s) versionado(s) modificado(s) alem de $GL (ou $GL em estado diferente de ' M')"
+  if printf '%s\n' "$M" | grep -qx " M $GL"; then
+    git show "HEAD:$GL" > "$OUT/go.log.HEAD" 2>/dev/null
+    TAM=$(wc -c < "$OUT/go.log.HEAD" | tr -d ' ')
+    if [ "$TAM" != 0 ] && [ "$(tail -c 1 "$OUT/go.log.HEAD" | od -An -c | tr -d ' ')" != '\n' ]; then nok "$GL no HEAD nao termina em fim de linha"
+    elif ! head -c "$TAM" "$GL" | cmp -s - "$OUT/go.log.HEAD"; then nok "$GL: o conteudo do HEAD nao e prefixo exato do arquivo (linha antiga alterada)"
+    elif tail -c +"$((TAM + 1))" "$GL" | grep -vq '^go '; then nok "$GL: linha acrescentada que nao comeca com 'go '"
+    else echo "$GL: HEAD e prefixo exato; $(tail -c +"$((TAM + 1))" "$GL" | grep -c .) linha(s) 'go ' acrescentada(s) (aceito, Q-12)"; fi
+    rm -f "$OUT/go.log.HEAD"
+  fi
+  echo "-- $GL (versionado)"; cat "$GL" 2>/dev/null || echo "(sem $GL)"
   echo "-- sha256 (referencia v4c; l1.sh e o verbatim, nao editado)"
   if printf '%s\n' "$HASHES_ESPERADOS" | sha256sum -c -; then echo "hashes: iguais a referencia"; else nok "hash diferente da referencia"; fi
   echo "s5.sh: $(sha256sum "$SELF" | cut -d' ' -f1)"
@@ -371,7 +408,7 @@ echo "TCC_DIR=$TCC_DIR ($TCC_ORIGEM)"
   if [ -z "$NIC" ]; then nok "sem rota padrao (NIC da VM desconhecida)"
   else NL=$(nic_linha); echo "$NL"; case "$NL" in "nic $NIC proibidos(prio|netem|clsact)=0:"*) ;; *) nok "NIC da VM ($NIC) com prio/netem/clsact";; esac; fi
   if [ "$SUDO" = 1 ]; then
-    echo "-- conteineres e cluster atual"
+    echo "-- conteineres e cluster atual (so registro: IDs, StartedAt, IPs e ultima vista; nenhuma vista e exigida, o cluster do S4 foi recriado)"
     sudo podman ps -a --format '{{.Names}} {{.ID}} {{.Status}} criado={{.CreatedAt}}' 2>&1
     for n in isn1 isn2 isn3; do
       ip=$(sudo podman inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}} {{end}}' "$n" 2>/dev/null | awk '{print $1}')

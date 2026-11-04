@@ -132,6 +132,20 @@
 (*     entre escritas locais concorrentes no regime nominal) NÃO é          *)
 (*     resolvido aqui -- `canal`/`Broadcast`/`EntregaMensagem` permanecem    *)
 (*     exatamente como estavam.                                            *)
+(*                                                                         *)
+(*   - B-45 (2026-11-04, branch fix/b45-desempate-ts; P-16; plano          *)
+(*     docs/plano-alinhamento-objetivos-2026-11-04.md §9, Prompt 3;        *)
+(*     decisão D-8 do autor em 04/11: variante T2). O empate de `ts` de    *)
+(*     P-16 passa a ser desempatado PELO CONTEÚDO DO REGISTRO: todos os    *)
+(*     gates "aplica se o candidato é maior que o local" (as 6 ações       *)
+(*     locais e EntregaMensagem) usam a mesma ordem total estrita          *)
+(*     `VenceSessao`/`VenceIdent`, definida abaixo de SessaoVazia/         *)
+(*     IdentVazia. Primeiro critério continua sendo `ts`; só quando `ts`   *)
+(*     empata o conteúdo decide. Não usa identidade de réplica, então a    *)
+(*     simetria sobre REPLICAS fica preservada. A ordem sobre `identidade` *)
+(*     precisa ordenar os valores de modelo de IDS, o que quebra a         *)
+(*     simetria sobre IDS: `Simetria` em MCSession.tla deixa de incluir    *)
+(*     Permutations(IDS) (ver lá). Versão anterior: git 20805b0.           *)
 (***************************************************************************)
 EXTENDS Naturals, Sequences, FiniteSets
 
@@ -183,6 +197,55 @@ IdentRec  == [contador: 0..LIMITE, status: StatusT, ts: Nat]
 
 SessaoVazia == [estado |-> "NONE", motivo |-> "NONE", identidade |-> "NONE", ts |-> 0]
 IdentVazia  == [contador |-> 0, status |-> "OPEN", ts |-> 0]
+
+(***************************************************************************)
+(* B-45 (P-16, decisão D-8 = T2): ordem total fixa sobre o registro.       *)
+(*                                                                         *)
+(* Cada registro vira uma tupla de números comparada em ordem              *)
+(* lexicográfica estrita (`LexMaior`). O primeiro componente é `ts`, então *)
+(* toda comparação que o gate antigo (`ts` estritamente maior) decidia     *)
+(* continua decidida igual; só o caso `ts` igual muda, e passa a ser       *)
+(* decidido pelos demais campos, nesta ordem:                              *)
+(*                                                                         *)
+(*   SessaoRec: << ts, estado, motivo, identidade >>                       *)
+(*     estado:     NONE 0 < VALID 1 < INVALID 2                            *)
+(*     motivo:     NONE 0 < LOGOUT 1 < EXPIRADA 2 < ADMIN_BLOCK 3          *)
+(*     identidade: "NONE" 0 < posição fixa do id em IDS (1..|IDS|)         *)
+(*   IdentRec:  << ts, status, contador >>                                 *)
+(*     status:     OPEN 0 < BLOCKED 1;  contador: o próprio número         *)
+(*                                                                         *)
+(* Escolha dos sentidos (conservadora): com `ts` igual, invalidação vence  *)
+(* validação, ADMIN_BLOCK vence LOGOUT e bloqueio vence desbloqueio. A     *)
+(* tupla contém todos os campos do registro, logo registros distintos têm  *)
+(* tuplas distintas e a ordem é total: com `ts` igual, exatamente um dos   *)
+(* dois registros vence, em qualquer réplica, qualquer que seja a réplica  *)
+(* de origem ou a ordem de entrega. Registro igual ao local não vence      *)
+(* (no-op, como antes).                                                    *)
+(*                                                                         *)
+(* `PosId` é uma bijeção fixa IDS -> 1..|IDS| escolhida por CHOOSE (a      *)
+(* mesma em todo o comportamento). É ela que torna o modelo não simétrico  *)
+(* em IDS: dois `Login` concorrentes na mesma sid com identidades          *)
+(* diferentes e o mesmo `ts` só se desempatam por ela.                     *)
+(***************************************************************************)
+PosId == CHOOSE f \in [IDS -> 1..Cardinality(IDS)] :
+           \A a, b \in IDS : f[a] = f[b] => a = b
+
+RankEstado(e)  == CASE e = "NONE" -> 0 [] e = "VALID" -> 1 [] e = "INVALID" -> 2
+RankMotivo(m)  == CASE m = "NONE" -> 0 [] m = "LOGOUT" -> 1
+                    [] m = "EXPIRADA" -> 2 [] m = "ADMIN_BLOCK" -> 3
+RankIdent(i)   == IF i = "NONE" THEN 0 ELSE PosId[i]
+RankStatus(st) == IF st = "BLOCKED" THEN 1 ELSE 0
+
+ChaveSessao(x) == << x.ts, RankEstado(x.estado), RankMotivo(x.motivo), RankIdent(x.identidade) >>
+ChaveIdent(x)  == << x.ts, RankStatus(x.status), x.contador >>
+
+\* a > b na ordem lexicográfica estrita (tuplas de mesmo comprimento)
+LexMaior(a, b) == \E i \in 1..Len(a) : /\ a[i] > b[i]
+                                       /\ \A j \in 1..(i - 1) : a[j] = b[j]
+
+\* "o registro candidato `novo` substitui o registro local `atual`"
+VenceSessao(novo, atual) == LexMaior(ChaveSessao(novo), ChaveSessao(atual))
+VenceIdent(novo, atual)  == LexMaior(ChaveIdent(novo), ChaveIdent(atual))
 
 (***************************************************************************)
 (* Tipos de mensagens propagadas entre réplicas pelo canal assíncrono.     *)
@@ -292,7 +355,7 @@ Login(r, id, s) ==
   /\ identidades[r][id].status = "OPEN"
   /\ sessoes[r][s].estado = "NONE"
   /\ relogio' = [relogio EXCEPT ![r] = novoTS]
-  /\ IF novoTS > sessoes[r][s].ts
+  /\ IF VenceSessao(candidato, sessoes[r][s])   \* B-45: era novoTS > sessoes[r][s].ts
        THEN sessoes' = [sessoes EXCEPT ![r][s] = candidato]
        ELSE sessoes' = sessoes
   /\ canal' = Broadcast(r, msg)
@@ -313,7 +376,7 @@ Logout(r, s) ==
   /\ PodeAgir(r)   \* F1+F2 (B-22)
   /\ sessoes[r][s].estado = "VALID"
   /\ relogio' = [relogio EXCEPT ![r] = novoTS]
-  /\ IF novoTS > sessoes[r][s].ts
+  /\ IF VenceSessao(candidato, sessoes[r][s])   \* B-45: era novoTS > sessoes[r][s].ts
        THEN sessoes' = [sessoes EXCEPT ![r][s] = candidato]
        ELSE sessoes' = sessoes
   /\ canal' = Broadcast(r, msg)
@@ -341,7 +404,7 @@ IncrementFailure(r, id) ==
   /\ PodeAgir(r)   \* F1+F2 (B-22)
   /\ identidades[r][id].contador < LIMITE
   /\ relogio' = [relogio EXCEPT ![r] = novoTS]
-  /\ IF novoTS > identidades[r][id].ts
+  /\ IF VenceIdent(candidato, identidades[r][id])   \* B-45: era novoTS > identidades[r][id].ts
        THEN /\ identidades' = [identidades EXCEPT ![r][id] = candidato]
             /\ canal' = Broadcast(r, msg)
        ELSE /\ identidades' = identidades
@@ -361,7 +424,7 @@ ResetFailures(r, id) ==
   /\ PodeAgir(r)   \* F1+F2 (B-22)
   /\ identidades[r][id].contador # 0
   /\ relogio' = [relogio EXCEPT ![r] = novoTS]
-  /\ IF novoTS > identidades[r][id].ts
+  /\ IF VenceIdent(candidato, identidades[r][id])   \* B-45: era novoTS > identidades[r][id].ts
        THEN identidades' = [identidades EXCEPT ![r][id] = candidato]
        ELSE identidades' = identidades
   /\ canal' = Broadcast(r, msg)
@@ -389,11 +452,11 @@ Block(r, id) ==
   /\ PodeAgir(r)   \* F1+F2 (B-22)
   /\ identidades[r][id].status = "OPEN"
   /\ relogio' = [relogio EXCEPT ![r] = novoTS]
-  /\ IF novoTS > identidades[r][id].ts
+  /\ IF VenceIdent(candidatoId, identidades[r][id])   \* B-45: era novoTS > identidades[r][id].ts
        THEN identidades' = [identidades EXCEPT ![r][id] = candidatoId]
        ELSE identidades' = identidades
   /\ sessoes' = [sessoes EXCEPT ![r] =
-                  [s \in SIDS |-> IF s \in afetadas /\ novoTS > @[s].ts
+                  [s \in SIDS |-> IF s \in afetadas /\ VenceSessao(candidatoSessao, @[s])
                                   THEN candidatoSessao ELSE @[s]]]
   /\ canal' = Broadcast(r, msg)
   /\ UNCHANGED <<vivo, quedas, particaoAtiva, ladoDe, particoes>>
@@ -414,7 +477,7 @@ Unblock(r, id) ==
   /\ PodeAgir(r)   \* F1+F2 (B-22)
   /\ identidades[r][id].status = "BLOCKED"
   /\ relogio' = [relogio EXCEPT ![r] = novoTS]
-  /\ IF novoTS > identidades[r][id].ts
+  /\ IF VenceIdent(candidato, identidades[r][id])   \* B-45: era novoTS > identidades[r][id].ts
        THEN identidades' = [identidades EXCEPT ![r][id] = candidato]
        ELSE identidades' = identidades
   /\ canal' = Broadcast(r, msg)
@@ -531,6 +594,9 @@ Mesclar ==
 (* registro local afetado, a escrita é aplicada por inteiro; caso          *)
 (* contrário, a mensagem é descartada e nada muda. `relogio` nunca muda    *)
 (* em EntregaMensagem (sem merge-on-receive, mesma decisão D-4 anterior).  *)
+(* B-45: "MAIOR" agora é `VenceSessao`/`VenceIdent` (ts, depois conteúdo); *)
+(* antes era só `ts` estritamente maior, e o empate descartava a mensagem  *)
+(* nos dois sentidos (P-16).                                               *)
 (***************************************************************************)
 EntregaMensagem(r) ==
   /\ PodeAgir(r)   \* F1+F2 (B-22): réplica caída ou do lado minoritário não processa nem a propria fila
@@ -540,22 +606,22 @@ EntregaMensagem(r) ==
        /\ canal' = [canal EXCEPT ![r] = SubSeq(@, 1, i-1) \o SubSeq(@, i+1, Len(@))]
        /\ UNCHANGED <<relogio, vivo, quedas, particaoAtiva, ladoDe, particoes>>
        /\ CASE m.tipo = "SESSAO_VALIDA" ->
-                /\ IF m.sessao.ts > sessoes[r][m.chave].ts
+                /\ IF VenceSessao(m.sessao, sessoes[r][m.chave])   \* B-45: era m.sessao.ts > sessoes[r][m.chave].ts
                      THEN sessoes' = [sessoes EXCEPT ![r][m.chave] = m.sessao]
                      ELSE sessoes' = sessoes
                 /\ UNCHANGED identidades
             [] m.tipo = "SESSAO_INVALIDA" ->
-                /\ IF m.sessao.ts > sessoes[r][m.chave].ts
+                /\ IF VenceSessao(m.sessao, sessoes[r][m.chave])   \* B-45: era m.sessao.ts > sessoes[r][m.chave].ts
                      THEN sessoes' = [sessoes EXCEPT ![r][m.chave] = m.sessao]
                      ELSE sessoes' = sessoes
                 /\ UNCHANGED identidades
             [] m.tipo = "CONTADOR_INC" ->
-                /\ IF m.ident.ts > identidades[r][m.chave].ts
+                /\ IF VenceIdent(m.ident, identidades[r][m.chave])   \* B-45: era m.ident.ts > identidades[r][m.chave].ts
                      THEN identidades' = [identidades EXCEPT ![r][m.chave] = m.ident]
                      ELSE identidades' = identidades
                 /\ UNCHANGED sessoes
             [] m.tipo = "CONTADOR_RESET" ->
-                /\ IF m.ident.ts > identidades[r][m.chave].ts
+                /\ IF VenceIdent(m.ident, identidades[r][m.chave])   \* B-45: era m.ident.ts > identidades[r][m.chave].ts
                      THEN identidades' = [identidades EXCEPT ![r][m.chave] = m.ident]
                      ELSE identidades' = identidades
                 /\ UNCHANGED sessoes
@@ -564,14 +630,14 @@ EntregaMensagem(r) ==
                 (* aplicado a cada sessão em sessoesAfetadas) são gateados             *)
                 (* INDEPENDENTEMENTE um do outro -- cada um compara m.*.ts contra o    *)
                 (* ts do SEU PRÓPRIO registro local, não um gate aninhado no outro.    *)
-                /\ IF m.ident.ts > identidades[r][m.chave].ts
+                /\ IF VenceIdent(m.ident, identidades[r][m.chave])   \* B-45: era m.ident.ts > identidades[r][m.chave].ts
                      THEN identidades' = [identidades EXCEPT ![r][m.chave] = m.ident]
                      ELSE identidades' = identidades
                 /\ sessoes' = [sessoes EXCEPT ![r] =
-                                [s \in SIDS |-> IF s \in m.sessoesAfetadas /\ m.sessao.ts > @[s].ts
+                                [s \in SIDS |-> IF s \in m.sessoesAfetadas /\ VenceSessao(m.sessao, @[s])
                                                 THEN m.sessao ELSE @[s]]]
             [] m.tipo = "ID_DESBLOQUEIA" ->
-                /\ IF m.ident.ts > identidades[r][m.chave].ts
+                /\ IF VenceIdent(m.ident, identidades[r][m.chave])   \* B-45: era m.ident.ts > identidades[r][m.chave].ts
                      THEN identidades' = [identidades EXCEPT ![r][m.chave] = m.ident]
                      ELSE identidades' = identidades
                 /\ UNCHANGED sessoes

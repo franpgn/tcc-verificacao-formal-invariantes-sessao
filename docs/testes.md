@@ -266,3 +266,14 @@ Contagens medidas (Git Bash | WSL): g5 50/0 | 50/0; g6 70/0 | 70/0; g1 48/0 | 48
 ### Integracao local, segunda rodada (gate v3 + g1fix + C-2 + REP=2)
 
 Medido em `feature/etapa-formal-integracao` apos `ff-only` de `test/b29-gate-v3-g1fix`, cherry-pick de C-2 (3 commits) e de `8394843` (Git Bash | WSL): `mvn test` 275/0/0 (0 skipped); g1 61/0; g1b falhas=0; g5 50/0; g6 70/0; inject-partition 125/0/2 | 127/0/1; inject-netdegrade 298/0/1 | 306/0/0; inject-jitter 35/0 | 35/0; `unittest` analysis 9/9. Estas contagens substituem as de g1 (48) e `mvn` (184 e 205) citadas acima. Detalhes em `docs/integracao-etapa-formal-2026-10-16.md`.
+
+## B-27.3 (W-1): retirada do portão de emissão K1..K4 (2026-11-04)
+
+Branch `refactor/w1-remover-acoes-cliente` sobre `20805b0`. Contagens medidas com `mvn -q clean test` em `workload/` (contadas dos `TEST-*.xml` do Surefire) e `python -m unittest discover -s analysis` na raiz.
+
+| Momento | Surefire (testes/falhas/erros/pulados, arquivos) | `unittest` analysis |
+|---|---|---|
+| base `20805b0` | 863/0/0/1, 122 | 187 OK, 1 *skip* (`analysis/` não muda nesta branch) |
+| depois do W-1 | 825/0/0/1, 116 | 187 OK, 1 *skip* |
+
+825 = 863 − 42 apagados + 4 novos. Apagados com a funcionalidade (D-6): `PortaoDeEmissaoK1Test` (6), `PortaoDeEmissaoK2K4Test` (5), `PortaoDeEmissaoK3Test` (5), `ParametrosKnobsTest` (6), `ArquiteturaPortaoTest` (1), `PerfilAtualTest` (2), `PortaoS1S2Test` (5), `PortaoS3AplicacaoTest` (8), `PortaoS3SimulacaoTest` (4). Novos: `ArquiteturaSemAcaoNoClienteTest` (R-C1, 1), `S3SemPortaoTest` (R-C2, 2), `GoldenRodarClienteTest` (R-C3, 1; referência `golden-20805b0/rodar-cliente-s1-s2.txt` gerada na base). `S3SimulacaoTest`, `GoldenS1S2Test` e `golden-8e2e815/` inalterados.

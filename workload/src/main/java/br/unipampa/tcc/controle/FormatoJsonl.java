@@ -13,8 +13,10 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
  */
 public final class FormatoJsonl {
 
-    public static final String ESQUEMA_OBSERVAVEIS = "observaveis-controlador/1";
-    public static final String ESQUEMA_DECISOES = "decisoes-controlador/1";
+    /** v1.1 (V-W3): {@code linhas_perdidas} na linha {@code fim}. */
+    public static final String ESQUEMA_OBSERVAVEIS = "observaveis-controlador/1.1";
+    /** v1.1 (V-W3): {@code t_decisao_ns} na linha {@code decisao}; linha {@code fim} com prazos e perdas. */
+    public static final String ESQUEMA_DECISOES = "decisoes-controlador/1.1";
 
     private static final ObjectMapper JSON = new ObjectMapper();
 
@@ -124,10 +126,16 @@ public final class FormatoJsonl {
         return o;
     }
 
-    /** Uma decisao do nucleo (uma por janela). */
-    public static ObjectNode decisao(Decisao d, ModoAtuacao modo) {
+    /**
+     * Uma decisao do nucleo (uma por janela).
+     *
+     * @param tDecisaoNs instante em que o laco processou a janela (v1.1, V-W3 4.2): {@code t_decisao_ns -
+     *                   t_fim_ns} mede o atraso do fechamento, esperado em {@code [L, L + tick]}
+     */
+    public static ObjectNode decisao(Decisao d, ModoAtuacao modo, long tDecisaoNs) {
         ObjectNode o = linha("decisao");
         o.put("t_fim_ns", d.fimNs());
+        o.put("t_decisao_ns", tDecisaoNs);
         o.put("modo", modo.rotulo());
         o.put("perfil", d.perfil().name());
         o.put("transicao", d.transicao());

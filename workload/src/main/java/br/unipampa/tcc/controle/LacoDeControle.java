@@ -308,7 +308,7 @@ public final class LacoDeControle implements AutoCloseable {
         }
         ultima = d;
         c.observaveis().escrever(FormatoJsonl.janela(o, top, lag));
-        c.decisoes().escrever(FormatoJsonl.decisao(d, modo));
+        c.decisoes().escrever(FormatoJsonl.decisao(d, modo, c.tempo().agoraNs()));
         if (d.transicao() && d.regra() == Decisao.Regra.R4) {
             c.executor().reverterTudo(RegistroAcao.Origem.R4, d.regra(), d.fimNs());
             return;

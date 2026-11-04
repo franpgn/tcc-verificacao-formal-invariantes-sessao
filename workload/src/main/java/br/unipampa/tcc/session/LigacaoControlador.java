@@ -59,8 +59,17 @@ final class LigacaoControlador implements AutoCloseable, WorkloadMain.ControleDa
     static final long PRAZO_SONDA_NS = 1_500_000_000L;
     /** Prazo de cada chamada ao atuador: 2 s, o mesmo {@code curl -m} da sonda de saude (secao 4.4.2). */
     static final long PRAZO_CHAMADA_NS = 2_000_000_000L;
-    /** Tick = W/5 (V-B26.1 secao 5.9: 1 s com W = 5 s). */
+    /** Divisor de W no tick (V-B26.1 secao 5.9: 1 s com W = 5 s). */
     static final int DIVISOR_TICK = 5;
+
+    /**
+     * Regra do tick (contrato v1.1): {@code Δ = min(W/5, P_sonda/2)}. {@code W/5} e a decisao registrada
+     * na V-B26.1 secao 5.9 (aprovada em 2026-10-22); {@code P_sonda/2} e a derivacao da V-W3 secao 4.2: o
+     * tick nunca e o termo dominante do atraso de leitura de S_top. Com W = 5 s e P_sonda = 2 s, 1 s.
+     */
+    static long periodoTick(long wNs, long periodoSondaNs) {
+        return Math.min(wNs / DIVISOR_TICK, periodoSondaNs / 2);
+    }
 
     /**
      * Arquivos e opcoes do controlador, ja conferidos.
@@ -189,13 +198,15 @@ final class LigacaoControlador implements AutoCloseable, WorkloadMain.ControleDa
                         : c.arquivoReferencia() + " sha256=" + c.referencia().sha256()
                         + " operacoes=" + c.referencia().referencia().p99PorOperacao().keySet()) + n
                 + "dry-run, atuador=" + new AtuadorNulo().nome() + " politica=" + PoliticaDeAcao.NENHUMA.nome()
-                + " tick_ns=" + p.wNs() / DIVISOR_TICK + " sonda_periodo_ns=" + PERIODO_SONDA_NS;
+                + " tick_ns=" + periodoTick(p.wNs(), PERIODO_SONDA_NS) + " sonda_periodo_ns=" + PERIODO_SONDA_NS
+                + " prazo_chamada_ns=" + PRAZO_CHAMADA_NS + " prazo_encerramento=(A+1)x" + PRAZO_CHAMADA_NS;
     }
 
     /** Pecas de producao ate o W-2: sonda REST, atuador nulo, politica nenhuma, gancho da JVM. */
     static Pecas pecasPadrao(Configuracao c, Cli cli) {
         return new Pecas(new ConsultaSaudeRest(c.urlsAdmin(), cli.usuario, cli.senha), new AtuadorNulo(),
-                PoliticaDeAcao.NENHUMA, ExecutorDeAcoes.Gancho.jvm(), c.parametros().wNs() / DIVISOR_TICK,
+                PoliticaDeAcao.NENHUMA, ExecutorDeAcoes.Gancho.jvm(),
+                periodoTick(c.parametros().wNs(), PERIODO_SONDA_NS),
                 PERIODO_SONDA_NS, PRAZO_SONDA_NS);
     }
 

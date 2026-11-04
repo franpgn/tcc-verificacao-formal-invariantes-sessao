@@ -1,0 +1,15 @@
+=== antes do kill -KILL 2026-11-04T22:57:03+00:00
+qdisc noqueue 0: root refcnt 2 
+qdisc clsact ffff: parent ffff:fff1 
+-- contadores por filtro
+egress(dst) 34pkt
+egress(dst) 44pkt
+ingress(src) 11pkt
+ingress(src) 11pkt
+-- ps do injetor
+    PID    PPID STAT CMD
+  62795   62193 S+   sleep 120
+-- list-timers (dead-man armado)
+Wed 2026-11-04 22:58:16 UTC     1min 13s -                                     - tcc-heal-61463-16632.timer                                             tcc-heal-61463-16632.service
+t_kill_ns=1793833023398298286 sinal=KILL
+rc_injetor=137

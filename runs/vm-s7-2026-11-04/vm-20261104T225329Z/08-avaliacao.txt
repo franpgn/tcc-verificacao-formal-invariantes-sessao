@@ -1,0 +1,36 @@
+== avaliacao do S7 2026-11-04T23:06:12+00:00 sobre /home/server1/tcc-gate/runs/vm-s7-2026-11-04/vm-20261104T225329Z
+   limites: dur=120s kill>=+70s persistencia>=14s (RESULTADO em [14, 15) s) prazo do dead-man=145s tolerancia=10s saude=2s folga D-2=+0s/-2s/+1s D-1=t_fire+1s unit=tcc-heal-61463-16632
+OK: B1/A1 boot_id igual ao esperado no inicio e no fim (f9e98b74-bf1f-4192-9770-b40285877292) [V-S4 P-2]
+OK: B1/A2 g5b.sh rc=0 (rc.txt) [§5.7]
+OK: B1/A2 resultado.txt do g5b.sh sem FAIL e sem ABORTADO [§5.7]
+OK: B1/A3 split confirmado antes do KILL: t_start < t_split_confirmado (+46.189 s) < t_kill (+70.381 s) [§5.7]
+OK: B1/A4 KILL em +70.381 s do start (>= 70 s) [g5b.sh]
+OK: B1/A5 rc_injetor=137 (128+SIGKILL), marcadores com 1 start e 0 end [§5.7]
+OK: B1/A6 clsact antes e depois do KILL; corte persistiu 16.135 s (>= 14 s, R-1) sem MergeView no intervalo [§5.7]
+FALHA: B1/A11 portao 5.1 pos nao passou (ver 06-portao51-pos.avaliacao) [§5.1]
+OK: intervalo maximo do saude-log em janela/saude.csv: 2.345 s <= 2 x 2 s
+OK: B2 nenhum --heal manual: chamadas-injetor.txt so com a injecao; resultado.txt com 'PASS nenhum --heal manual' [§5.7]
+OK: B3 disparo em 146298 ms desde antes de armar (>= 145 s) e 146292 ms desde depois de armar (<= 145+10 s); tempos.txt = cronologia [§5.7]
+OK: B4 journal da unit (copia e 05-journal-unit.txt): heal executado, unit encerrou com sucesso, nao failed [§5.7]
+OK: B5 corpo da unit = armar de producao (bash scripts/inject-partition.sh --heal --minority isn3, PODMAN=sudo podman, WorkingDirectory=/home/server1/tcc-gate); .timer so com OnActiveSec=2min 25s e AccuracySec=1s [§5.7]
+OK: B6 isn3 sem clsact no disparo; MergeView de 3 membros nos 3 nos depois do disparo; HEALTHY x3; 0 timers ao fim sem systemctl stop [§5.7]
+OK: B7 cronologia completa e em ordem: t_start t_split_confirmado t_kill t_persistencia_ok t_fire t_mergeview t_saudavel [§5.7]
+  sudo tc qdisc del dev eth0 clsact: t_us=1793832952233120 origem=sessao (session-31.scope)
+  sudo tc qdisc del dev eth0 clsact: t_us=1793832952250006 origem=sessao (session-31.scope)
+  sudo tc qdisc del dev eth0 clsact: t_us=1793833097403913 origem=unit (tcc-heal-61463-16632.service)
+OK: D-1 detector do sudo: 0 tc qdisc del ... clsact da sessao desde t_kill (nenhuma cura manual) [Q-13]
+OK: D-1 1 tc qdisc del ... clsact da unit do dead-man entre t_kill e t_fire + 1 s; o primeiro -0.870 s depois de t_fire [Q-13, duvida 5]
+OK: D-2 serie tc de isn3: clsact=1 nas 72 amostras de t_start+0s a t_fire-2s e clsact=0 nas 22 a partir de t_fire+1s [Q-13]
+OK: D-3 timer com AccuracyUSec=1s e prazo 145 s (prazo_s=145, OnActiveSec=2min 25s) [Q-13]
+RESULTADO: t_split_confirmado - t_start = 46.189 s
+RESULTADO: t_mergeview - t_fire = 45.024 s (dado de seguranca, NAO e t_merge; §5.7)
+RESULTADO: t_saudavel - t_fire = 45.044 s (dado de seguranca, NAO e t_merge; §5.7)
+RESULTADO: tempo total de corte (t_start a t_fire) = 145.257 s
+RESULTADO: sem ISPN000524/ISPN100014/ISPN000638 nos log-completo-isn*.txt [Q-14]
+RESULTADO: 2 linha(s) DEGRADED_MODE nos 3 nos desde o inicio do passo 3 (05-vistas.log)
+LEITURA HUMANA: inicio da unit no journal (2026-11-04T22:58:17.287104+00:00) ate o t_fire medido por polling: 0.987 s (espera-se <= 2 s)
+LEITURA HUMANA: a unit do S7 tem AccuracySec=1s e a de producao nao: o S7 prova o CORPO do dead-man de producao, nao a precisao do timer de producao (pode atrasar ate 60 s, R-3 da V-S2)
+LEITURA HUMANA: REST de isn3 (11224) time_total na janela: n/mediana/p95/max = 96 0.001921 0.002276 0.002669 (isn3 fica cortado de isn1/isn2, nao do host)
+LEITURA HUMANA: refazer os instantes de ISPN000094/DEGRADED_MODE/ISPN000093 nos log-completo-isn*.txt da copia [§5.7]
+LEITURA HUMANA: 8 outro(s) comando(s) tc de escrita no journal do sudo desde o passo 3 (injecao, pre-limpeza e sonda do injetor): conferir a origem em 05-sudo-journal.txt
+S7: INVALIDO (1 falha(s), 18 OK)

@@ -1,0 +1,10 @@
+"health_status":"HEALTHY","number_of_nodes":3
+"health_status":"HEALTHY","number_of_nodes":3
+"health_status":"HEALTHY","number_of_nodes":3
+ok sem clsact em isn1: qdisc noqueue 0: root refcnt 2
+ok sem netem em isn1: qdisc noqueue 0: root refcnt 2
+ok sem clsact em isn2: qdisc noqueue 0: root refcnt 2
+ok sem netem em isn2: qdisc noqueue 0: root refcnt 2
+ok sem clsact em isn3: qdisc noqueue 0: root refcnt 2
+ok sem netem em isn3: qdisc noqueue 0: root refcnt 2
+ok 0 timers tcc-heal

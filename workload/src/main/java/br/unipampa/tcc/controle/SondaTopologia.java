@@ -232,7 +232,7 @@ public final class SondaTopologia implements AutoCloseable {
                 c.cancelar();
                 motivo = "timeout";
             } catch (ExecutionException e) {
-                motivo = "falha:" + nomeDe(e.getCause() == null ? e : e.getCause());
+                motivo = motivoDaFalha(e.getCause() == null ? e : e.getCause());
             } catch (CancellationException e) {
                 motivo = "timeout";
             } catch (InterruptedException e) {
@@ -259,6 +259,18 @@ public final class SondaTopologia implements AutoCloseable {
                 porNo);
         entregar(a);
         return a;
+    }
+
+    /**
+     * H4 (Gestor, 2026-10-28; aplicado no W-3/B-28.2): a fonte que estoura o proprio prazo lanca
+     * {@link TimeoutException} ({@code ConsultaSaudeRest}); isso e o mesmo {@code timeout} da rodada,
+     * nao uma {@code falha:TimeoutException}. As demais falhas mantem {@code falha:<Excecao>}.
+     */
+    static String motivoDaFalha(Throwable causa) {
+        if (causa instanceof TimeoutException) {
+            return "timeout";
+        }
+        return "falha:" + nomeDe(causa);
     }
 
     private static String nomeDe(Throwable t) {

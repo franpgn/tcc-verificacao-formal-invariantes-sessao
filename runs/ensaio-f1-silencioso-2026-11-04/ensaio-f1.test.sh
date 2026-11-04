@@ -68,6 +68,7 @@ case "$1" in
     p=$(( $(g $n pid) + 100 )); echo "$p" > "$S/$n/pid"; echo running > "$S/$n/status"; date +%s > "$S/$n/started"
     date +%s%N > "$S/start_ns"; echo "${SHIM_ETH0_NOVO:-UP}" > "$S/eth0.$p"; echo "$n" > "$S/pid.$p"
     [ -z "${SHIM_IP_NOVO:-}" ] || echo "$SHIM_IP_NOVO" > "$S/$n/ip"
+    [ -z "${SHIM_REINICIA_ISN3:-}" ] || echo $(( $(date +%s) + 7 )) > "$S/isn3/started"   # isn3 "reiniciado" junto (MS5)
     echo "{\"ID\":\"x\",\"Name\":\"$n\",\"Status\":\"start\",\"Type\":\"container\"}" >> "$S/events.$n"; echo "$n";;
   events) echo "$$" >> "$S/pids.events"; touch "$S/events.isn2"; exec tail -n 0 -f "$S/events.isn2";;
   logs) iso=$(cat "$S/iso_ns" 2>/dev/null); kl=$(cat "$S/kill_ns" 2>/dev/null); stt=$(cat "$S/start_ns" 2>/dev/null)
@@ -406,6 +407,12 @@ for g in "" $'GO\n' $'GO F1 n=2 i=2001 carga=sem\n' $'go F1 n=1 i=2000 carga=sem
 nova_arvore; roda $'GO F1 n=1 i=2000 carga=sem\nGO F1 n=1 i=2000 carga=sem\n'
 ok "T-4 GO certo na 1 e errado na 2: rc 3" 3 "$RC"; ok "T-4 so 1 kill (a 1)" 1 "$(grep -c '^podman\[injetor\] kill' "$T/shim.log")"
 ok "T-4 a 2 nao injetou" 0 "$([ -e "$OUT/exec-2-i2001/injetor.log" ] && echo 1 || echo 0)"
+nova_arvore; roda "$GOS" SHIM_REINICIA_ISN3=1
+ok "T-4 isn3 reiniciado entre a 1 e a 2 (conferir_started): rc 3" 3 "$RC"
+contem "T-4 isn3 reiniciado: motivo" "conteiner reiniciado fora do injetor do ensaio" "$SAIDA"
+ok "T-4 isn3 reiniciado: so a injecao da 1" 1 "$(grep -c '^podman\[injetor\] kill' "$T/shim.log")"
+ok "T-4 isn3 reiniciado: a 2 nao injetou" 0 "$([ -e "$OUT/exec-2-i2001/injetor.log" ] && echo 1 || echo 0)"
+contem "T-4 isn3 reiniciado: started.txt da 2 registra" "isn3 StartedAt=" "$(cat "$OUT/exec-2-i2001/started.txt" 2>/dev/null)"
 
 echo "== T-5: paradas automaticas (exit 4), sem conserto =="
 XARGS=(--so 1)
@@ -450,6 +457,10 @@ nova_arvore; roda "$GOS" SHIM_693=1; ok "T-7 ISPN000693 na vida nova: rc 6" 6 "$
 nova_arvore; roda "$GOS" SHIM_ETH0_NOVO=DOWN; ok "T-7 eth0 DOWN no netns novo: rc 6" 6 "$RC"; contem "T-7 F-8" "FALHA: [n=1] F-8" "$(cat "$OUT/08-avaliacao.txt")"
 nova_arvore; roda "$GOS" SHIM_SEM_VISTA=1; ok "T-7 sem vista sem isn2: rc 6 (F-4, nao parada)" 6 "$RC"; contem "T-7 F-4 sem leitura" "FALHA: [n=1] F-4 Δdet isn1=? s" "$(cat "$OUT/08-avaliacao.txt")"
 nova_arvore; roda "$GOS" SHIM_IP_NOVO=10.89.0.99; ok "T-7 IP novo de isn2 so registrado: rc 0" 0 "$RC"; contem "T-7 IP diferente e RESULTADO" "depois=10.89.0.99 (diferente)" "$(cat "$OUT/08-avaliacao.txt")"
+rm -rf "$T/m1"; cp -r "$OUT" "$T/m1"; sed -i 's/^size counters porta 11223: 0$/size counters porta 11223: 7/' "$T/m1/07-estado-final.log"
+X=$(bash "$EN" --avaliar "$T/m1"); ok "T-7 --so 1 com cache nao vazio no fim (F-10, D-1): rc 6" 6 $?
+contem "T-7 F-10 acusa o cache" "FALHA: F-10 cache counters (porta 11223) nao vazio no fim" "$X"
+contem "T-7 F-10 invalida a execucao" "ENSAIO: 0 de 1 VALIDAS" "$X"
 XARGS=(--so 3)
 nova_arvore; roda $'GO F1 n=3 i=2002 carga=S1-sync\n' SHIM_VEREDITO=FALHA SHIM_VEXIT=4
 ok "T-7 verificador FALHA e RESULTADO (E-5), nao invalida: rc 0" 0 "$RC"; contem "T-7 K3 recusaria" "K3 do PR RECUSARIA" "$(cat "$OUT/08-avaliacao.txt")"

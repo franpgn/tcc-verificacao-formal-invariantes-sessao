@@ -1,9 +1,14 @@
-# Contrato dos JSONL do controlador, versão 1 (W-3, B-28.2, 2026-11-04)
+# Contrato dos JSONL do controlador, versão 1.1 (W-3, B-28.2, 2026-11-04)
 
 Com `--controller shadow|active`, cada repetição grava dois arquivos em `--csv-dir`:
 
-- `observaveis-rep-NNN.jsonl` (esquema `observaveis-controlador/1`): o que o laço viu.
-- `decisoes-rep-NNN.jsonl` (esquema `decisoes-controlador/1`): o que o núcleo decidiu e o que o executor fez.
+- `observaveis-rep-NNN.jsonl` (esquema `observaveis-controlador/1.1`): o que o laço viu.
+- `decisoes-rep-NNN.jsonl` (esquema `decisoes-controlador/1.1`): o que o núcleo decidiu e o que o executor fez.
+
+**Histórico.** v1 (`b883397`): primeira versão. v1.1 (V-W3, `docs/validacao-w3-2026-11-04.md`, antes de qualquer
+dado): `t_decisao_ns` na linha `decisao`; `linhas_perdidas` nas duas linhas `fim`; `acoes_ja_ativas`,
+`prazo_chamada_ns` e `prazo_encerramento_ns` no `fim` de `decisoes`; resultado `JA_ATIVA`; prazo de encerramento
+derivado; regra do *tick*. Todas as mudanças são aditivas.
 
 Com `--controller off` nenhum dos dois existe. Código: `workload/src/main/java/br/unipampa/tcc/controle/FormatoJsonl.java`
 (formato), `TrilhaJsonl.java` (gravação), `LacoDeControle.java` (ordem das linhas). Teste de contrato:
@@ -54,11 +59,39 @@ ordem em que acontecem; a ordem entre `tick`, `janela` e `decisao` é a do laço
 | `parametros` | objeto | `w_ns`, `n_lat`, `n_err`, `theta_lat_in`, `theta_lat_out`, `theta_err_in`, `theta_err_out`, `k`, `m`, `cooldown_ns`, `estavel_ns`, `hold_viol_ns` |
 | `referencia_arquivo`, `referencia_sha256` | texto ou `null` | `--controller-reference` (`null` em shadow sem referência: latência indeterminada) |
 | `tolerancia_ns` | inteiro | L do agregador (100 ms) |
-| `tick_ns` | inteiro | período do *tick* (W/5) |
+| `tick_ns` | inteiro | período Δ do *tick* (regra abaixo) |
 | `origem_ns` | inteiro | início da primeira janela = início da medição |
 | `atuador` | texto | `nulo` até o W-2 |
 | `politica` | texto | `nenhuma` até o W-2 |
 | `sonda_topologia`, `sonda_defasagem` | booleano | sondas ligadas (`sonda_defasagem` = `false` até o W-4) |
+
+## Regra do *tick* e prazos (v1.1)
+
+**Tick.** `Δ = min(W/5, P_sonda/2)`, com `P_sonda` = 2 s (período da sonda de topologia, B-26.2).
+
+- `W/5` é a decisão registrada em `docs/validacao-b26-1-2026-10-22.md` §5.9 (aprovada pelo Gestor em 22/10), que
+  limita o atraso de fechamento a `W + L + Δ`.
+- `P_sonda/2` vem da derivação da V-W3 (§4.2): o *tick* nunca é o termo dominante do atraso de leitura de S_top.
+- Com W = 5 s, os dois dão 1 s. A regra só muda o valor se a calibração (N3) escolher W > 10 s.
+- Medida na calibração: `D = t_decisao_ns − t_fim_ns` por janela, esperado em `[L, L + Δ]`.
+
+**Prazo de cada chamada ao atuador.** `T_cham` = 2 s (o `curl -m` da sonda de saúde, B-26.2; plano 4.4.2). Ele limita
+a chamada **inteira** do atuador: todos os pedidos HTTP da ação (todos os *caches*, todos os nós) e a leitura de volta.
+O adaptador do W-2 não pode gastar `T_cham` por pedido.
+
+**Prazo do encerramento.** `T_enc = (A + 1) × T_cham`, calculado pelo executor no próprio encerramento:
+
+- `A` é o tamanho da pilha de reversão naquele instante, contando a aplicação em curso;
+- o `+ 1` cobre a chamada em curso quando o encerramento chega;
+- aplicações ainda na fila são descartadas (`DESCARTADA`) e não entram na conta;
+- o valor usado vai a `prazo_encerramento_ns` no `fim` de `decisoes`.
+
+O mesmo prazo vale para o gancho de desligamento da JVM.
+
+**Requisito para o orquestrador (W-6).** Para o gancho conseguir desfazer as ações, o processo precisa receber, entre o
+SIGTERM e o SIGKILL, um intervalo maior que `T_enc` no pior caso. Por exemplo, `timeout -k <K>` com
+`K > (A_max + 1) × 2 s` mais uma folga, onde `A_max` é o número de chaves distintas que a política do W-2 pode manter
+ativas ao mesmo tempo, declarado pelo W-2. Com AC-1, AC-2 e AC-3 numa chave cada, `A_max` = 3 e `T_enc` ≤ 8 s.
 
 ## `observaveis`
 
@@ -90,7 +123,12 @@ o *tick* fecha ao menos uma janela; serve ao *replay* do B-38.
 `eventos_apos_encerramento`, `atrasados_total`, `violacoes_atrasadas_total`, `promovidas_total`,
 `descartados_no_encerramento`, `violacoes_descartadas_no_encerramento`, `eventos_fora_do_contrato`,
 `sonda_rodadas`, `sonda_rodadas_puladas`, `sonda_amostras_atrasadas`, `sonda_erros_ouvinte`, `curl_lancados`
-(os de sonda são `null` sem sonda).
+(os de sonda são `null` sem sonda), `linhas_perdidas` (v1.1).
+
+`linhas_perdidas` conta as linhas que não chegaram ao arquivo até a linha `fim`: erros de escrita mais linhas
+recebidas com a trilha já fechada. As linhas que chegam **depois** do `fim` (executor fora do prazo,
+`executor_no_prazo = false`) não podem estar nele. Elas aparecem em `linhas_jsonl_perdidas=` na linha `Controlador:`
+do stdout.
 
 Conservação: `soma(total) + atrasados_total + descartados_no_encerramento` = eventos registrados depois da origem
 (`LacoDeControleTest.concorrenciaComTick`).
@@ -98,7 +136,8 @@ Conservação: `soma(total) + atrasados_total + descartados_no_encerramento` = e
 ## `decisoes`
 
 **`decisao`**, uma por janela, com o mesmo `t_fim_ns` da `janela` correspondente. Campos, nesta ordem:
-`tipo`, `t_fim_ns`, `modo`, `perfil` (`NORMAL`/`CONSERVADOR`), `transicao`, `regra` (`R1`..`R4`, `NENHUMA`),
+`tipo`, `t_fim_ns`, `t_decisao_ns` (v1.1: instante em que o laço processou a janela), `modo`, `perfil`
+(`NORMAL`/`CONSERVADOR`), `transicao`, `regra` (`R1`..`R4`, `NENHUMA`),
 `motivos` (lista em ordem de severidade: `VIOLACAO`, `TOPOLOGIA`, `DEFASAGEM`, `ERRO`, `LATENCIA`; `[ESTAVEL]`
 se nenhum), `severidade`, `sinais`, `param_sha256`.
 
@@ -120,12 +159,23 @@ se nenhum), `severidade`, `sinais`, `param_sha256`.
 | `regra`, `t_fim_janela_ns` | regra e fim da janela da decisão que pediu; `null` no encerramento |
 | `t_pedido_ns` | instante do pedido |
 | `t_inicio_ns`, `duracao_ns` | início e duração da chamada; `null` sem chamada |
-| `resultado` | `APLICADA`, `FALHOU`, `NAO_EXECUTADA` (atuador nulo), `PREVISTA` (shadow), `DESCARTADA` (na fila no encerramento) |
+| `resultado` | `APLICADA`, `FALHOU`, `NAO_EXECUTADA` (atuador nulo), `PREVISTA` (shadow), `DESCARTADA` (na fila no encerramento), `JA_ATIVA` (v1.1: pedido de ação que continua aplicada porque a reversão anterior falhou; sem chamada) |
 | `codigo_http`, `lido`, `erro` | código HTTP, leitura de volta (S_disp) e motivo da falha; `null` quando não se aplica |
 
 Em shadow, a sequência de linhas `acao` é a que active produziria com um atuador que sempre aplica (mesma pilha
 virtual, mesmas reversões em R4 e no encerramento).
 
 **`fim`**: `decisoes`, `transicoes`, `perfil_final`, `erros_politica`, `acoes_pedidas`, `acoes_ignoradas`
-(pedido repetido de ação já ativa), `acoes_executadas`, `acoes_falhas`, `reversoes`, `reversoes_falhas`,
-`acoes_descartadas`, `executor_no_prazo` (o encerramento terminou dentro do prazo de 10 s).
+(pedido repetido de ação já ativa, sem linha), `acoes_executadas`, `acoes_falhas`, `reversoes`, `reversoes_falhas`,
+`acoes_descartadas`, `acoes_ja_ativas` (v1.1), `executor_no_prazo` (o encerramento terminou dentro de `T_enc`),
+`prazo_chamada_ns`, `prazo_encerramento_ns` (v1.1: `T_cham` e o `T_enc` usado) e `linhas_perdidas` (v1.1).
+
+Conservação (v1.1): `acoes_pedidas` = número de linhas `acao` com `operacao = APLICAR`. Isso vale também para a
+repedida de ação cuja reversão falhou, que sai como `JA_ATIVA` (`ExecutorDeAcoesTest.repedidaComReversaoFalhaGravaLinha`).
+
+## Arquivo vizinho: `convergencia-resumo-rep-NNN.json`
+
+`t_fim_carga_ns` (W-3) é o instante em que a carga parou. Desde a V-W3 (R1), ele é lido **antes** de o controlador
+encerrar, porque em `active` o encerramento desfaz a pilha e pode levar até `T_enc`. `t_fim_controle_ns` (aditivo, ao fim)
+é o instante em que o controlador terminou de encerrar (`null` com `--controller off`). Quando falta o marcador `end`, o
+`t_fim` de reserva da convergência é `t_fim_carga_ns` nos dois braços.

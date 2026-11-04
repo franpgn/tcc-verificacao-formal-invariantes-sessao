@@ -110,8 +110,13 @@ Plano de execução de 2026-11-04, seções 4.1, 4.4.3, 4.5 e 9 (W-3). Com `--co
   `AtuadorNulo` (resultado `NAO_EXECUTADA`) e `PoliticaDeAcao.NENHUMA`. O W-2 pluga `session.AtuadorRestInfinispan`
   e a política da tabela 4.5 em `LigacaoControlador.pecasPadrao`.
 - **Reversão:** camada 1, pilha LIFO idempotente no executor (R4 desfaz tudo; aplicação que falha é revertida
-  na hora; reversão que falha fica na pilha); camada 2, gancho de desligamento da JVM, registrado só em `active`;
-  encerramento normal no fim da carga, antes da convergência, com prazo de 10 s. Camada 3 é do W-6.
+  na hora; reversão que falha fica na pilha, e a repedida sai `JA_ATIVA`); camada 2, gancho de desligamento da
+  JVM, registrado só em `active`; encerramento normal no fim da carga, antes da convergência, com prazo
+  `T_enc = (A + 1) × T_cham` (V-W3 R2; `T_cham` = 2 s limita a chamada inteira do atuador). Camada 3 é do W-6,
+  que precisa dar ao processo, entre SIGTERM e SIGKILL, mais que `T_enc`.
+- **Fim da carga (V-W3 R1):** `WorkloadMain.executarCargaComControle` lê `t_fim_carga_ns` antes de encerrar o
+  controlador e grava `t_fim_controle_ns` à parte, para que os dois braços meçam a convergência do mesmo instante.
+- **Tick (contrato v1.1):** `Δ = min(W/5, P_sonda/2)`; a linha `decisao` traz `t_decisao_ns`.
 - **Shadow:** o executor não cria *thread* nem gancho e nunca chama o atuador; as linhas `acao` saem
   `executada: false`, `resultado: PREVISTA`, com a mesma pilha virtual.
 - **Origem das janelas:** início da medição. Eventos e violações do *warm-up* são descartados e contados

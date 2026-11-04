@@ -19,3 +19,7 @@ Dockerfile    text eol=lf
 # Vem depois de '*.sh text eol=lf': a ultima linha que casa vence, entao os .sh daqui tambem ficam -text
 # (no git ja sao LF; o checkout os grava como estao).
 runs/vm-s*/** -text
+
+# Brutos do ensaio do F1 silencioso (runs/ensaio-f1-*/vm-UTC/, com MANIFEST.sha256 sobre os bytes da VM): mesmo motivo da
+# P-4 da V-S4. Os .sh daqui tambem ficam -text (no git ja sao LF).
+runs/ensaio-f1-*/** -text

@@ -77,8 +77,22 @@ public final class WorkloadMain {
             System.err.println("Configuracao invalida: " + e.getMessage());
             System.exit(2);
         }
+        // W-3: com --controller shadow|active, os arquivos do controlador sao lidos e conferidos aqui
+        // (conteudo invalido = exit 2), inclusive no --dry-run, que mostra parametros e SHA-256.
+        String dryRunControlador = null;
+        if (cli.controlador != ModoControlador.OFF) {
+            try {
+                dryRunControlador = LigacaoControlador.textoDryRun(LigacaoControlador.carregar(cli));
+            } catch (IllegalArgumentException | java.io.IOException e) {
+                System.err.println("Configuracao invalida do controlador: " + e.getMessage());
+                System.exit(2);
+            }
+        }
         if (cli.dryRun) {
             System.out.println(cli.textoDryRunComMistura());
+            if (dryRunControlador != null) {
+                System.out.println(dryRunControlador);
+            }
             return;
         }
         try {
@@ -372,6 +386,16 @@ public final class WorkloadMain {
             BooleanSupplier parar = cli.paraNoFimDaFalha
                     ? new ParadaPorMarcador(Path.of(cli.marcadores))
                     : () -> false;
+            // W-3 (B-28.2): laco de controle do cluster; com --controller off, null e nada mais muda.
+            // Origem das janelas = inicio da medicao (o warm-up fica fora do controlador).
+            long origemControleNs = relogio.paraEpochNanos(System.nanoTime())
+                    + (politica.medicaoInicioMs() - System.currentTimeMillis()) * 1_000_000L;
+            LigacaoControlador controle = ligarControlador(cli,
+                    cfg -> LigacaoControlador.abrir(cfg, cli, rep, relogio, origemControleNs, rastro));
+            if (controle != null) {
+                ops.definirOuvinteDeEvento(controle.ouvinteDeEvento());
+                auditor.definirOuvinte(controle.ouvinteDeViolacao());
+            }
 
             System.out.printf(
                 "Warm-up ate +%ds; medicao a partir de +%ds; total %ds%n",
@@ -386,10 +410,11 @@ public final class WorkloadMain {
             // (S1/S2: o SessionOps unico; S3: todas as que compartilham o mapa, preenchidas abaixo).
             List<SessionOps> instanciasAuditor = new ArrayList<>(List.of(ops));
 
+            try {
             if (cli.scenarioS3) {
                 // B-33 (E2): cenario S3, tratado ANTES do enum Scenario (S1/S2 seguem o ramo abaixo).
                 invalidacoes = executarS3(cli, rep, latency, auditor, eventos, relogio, rastro,
-                        parar, fim, totalOps, instanciasAuditor, politica);
+                        parar, fim, totalOps, instanciasAuditor, politica, controle);
             } else {
             ExecutorService pool = Executors.newFixedThreadPool(cli.threads);
             long opsAlvoPorThread = cli.ops > 0 ? cli.ops / cli.threads : Long.MAX_VALUE;
@@ -402,6 +427,15 @@ public final class WorkloadMain {
             }
             pool.shutdown();
             pool.awaitTermination(cli.duracaoSeg + 30, TimeUnit.SECONDS);
+            }
+            } finally {
+                // W-3: fim da carga, antes da convergencia: o controlador desfaz toda acao (camada 1 da
+                // reversao) e fecha os JSONL; tambem numa excecao da carga.
+                if (controle != null) {
+                    auditor.definirOuvinte(null);
+                    controle.close();
+                    System.out.println(controle.linhaResumo());
+                }
             }
 
             // B-24: checagem de I5/I6 (convergencia sob quiescencia) feita UMA VEZ,
@@ -484,7 +518,8 @@ public final class WorkloadMain {
     private static Supplier<Map<String, SessionState.Motivo>> executarS3(Cli cli, int rep,
             LatencyRegistry latency, InvariantAuditor auditor, EventCsvWriter eventos,
             EpochClock relogio, RastroCliente rastro, BooleanSupplier parar, long fimMs,
-            AtomicLong totalOps, List<SessionOps> instanciasAuditor, WarmupPolicy politica) throws Exception {
+            AtomicLong totalOps, List<SessionOps> instanciasAuditor, WarmupPolicy politica,
+            LigacaoControlador controle) throws Exception {
         S3Registro registro = new S3Registro();
         RelogioS3 reloginho = RelogioS3.sistema();
         ContextoS3 ctx = new ContextoS3(reloginho, cli.s3, registro,
@@ -498,6 +533,10 @@ public final class WorkloadMain {
             // B-43.9: contadores do auditor na janela de medicao, em todas as instancias do S3.
             for (SessionOps o : clientes.instancias()) {
                 o.definirPoliticaAuditor(politica);
+                // W-3: eventos dos servidores de aplicacao e do admin vao ao laco de controle.
+                if (controle != null) {
+                    o.definirOuvinteDeEvento(controle.ouvinteDeEvento());
+                }
             }
             S3Simulacao sim = new S3Simulacao(ctx, clientes.servidoresApp(), clientes.admin(), inicioNs);
             System.out.printf("S3: %d usuarios (U), %d contas de limite (L), 1 admin; modo %s; admin-node %s%n",
@@ -522,6 +561,24 @@ public final class WorkloadMain {
             registro.contadores().forEach((k, v) -> System.out.printf("S3 %s = %d%n", k, v));
             return clientes::invalidacoesSnapshot;
         }
+    }
+
+    /** W-3: abre o controlador a partir da configuracao ja conferida (injetavel nos testes). */
+    @FunctionalInterface
+    interface AberturaControlador {
+        LigacaoControlador abrir(LigacaoControlador.Configuracao cfg) throws java.io.IOException;
+    }
+
+    /**
+     * W-3 (B-28.2, item 7): com {@code --controller off} devolve {@code null} sem ler arquivo nem chamar
+     * {@code abertura} (nenhum objeto do pacote {@code controle} e criado); senao carrega a configuracao e
+     * abre o controlador.
+     */
+    static LigacaoControlador ligarControlador(Cli cli, AberturaControlador abertura) throws java.io.IOException {
+        if (cli.controlador == ModoControlador.OFF) {
+            return null;
+        }
+        return abertura.abrir(LigacaoControlador.carregar(cli));
     }
 
     /** B-33: le o arquivo de marcadores (ou {@code null} sem {@code --marker}) e fixa W_recovery. */
@@ -564,7 +621,7 @@ public final class WorkloadMain {
                     Path.of(cli.csvDir, String.format("convergencia-rep-%03d.csv", rep)), res);
             ConvergenciaLoop.escreverResumo(
                     Path.of(cli.csvDir, String.format("convergencia-resumo-rep-%03d.json", rep)),
-                    res, tFimNs);
+                    res, tFimNs, fimCargaNs);
         }
         if (marcadores == null) {
             return null;

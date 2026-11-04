@@ -128,6 +128,23 @@ public class SessionOps {
     private final LongAdder i2ConcorrentesTotal = new LongAdder();
     private volatile WarmupPolicy politicaAuditor = WarmupPolicy.always();
 
+    /**
+     * W-3 (B-28.2): ouvinte de cada evento emitido (o laco de controle). Recebe os instantes ja em
+     * epoch-ns ({@link EpochClock}), os mesmos do CSV de eventos, inclusive no <i>warm-up</i> e sem
+     * trilha de CSV. Deve ser rapido e nunca lancar; uma excecao dele e engolida.
+     */
+    public interface OuvinteDeEvento {
+        void evento(String operacao, long inicioNs, long fimNs, String codigoRetorno);
+    }
+
+    /** W-3: {@code null} (padrao) = desligado, fluxo identico ao de antes. */
+    private volatile OuvinteDeEvento ouvinteDeEvento;
+
+    /** W-3: liga (ou, com {@code null}, desliga) o ouvinte de eventos. */
+    void definirOuvinteDeEvento(OuvinteDeEvento ouvinte) {
+        this.ouvinteDeEvento = ouvinte;
+    }
+
     /** B-43.9: janela de medicao dos contadores do auditor (a mesma do CSV); sem politica, sempre. */
     void definirPoliticaAuditor(WarmupPolicy politica) {
         this.politicaAuditor = politica != null ? politica : WarmupPolicy.always();
@@ -482,6 +499,17 @@ public class SessionOps {
                     relogio != null ? relogio.paraEpochNanos(startMono) : startMono,
                     relogio != null ? relogio.paraEpochNanos(endMono) : endMono,
                     result, key);
+        }
+        OuvinteDeEvento ouvinte = ouvinteDeEvento;
+        if (ouvinte != null) {
+            try {
+                ouvinte.evento(operation,
+                        relogio != null ? relogio.paraEpochNanos(startMono) : startMono,
+                        relogio != null ? relogio.paraEpochNanos(endMono) : endMono,
+                        result.returnCode());
+            } catch (RuntimeException e) {
+                // o controlador nunca derruba a operacao da carga
+            }
         }
         if (eventos == null || relogio == null) {
             return;

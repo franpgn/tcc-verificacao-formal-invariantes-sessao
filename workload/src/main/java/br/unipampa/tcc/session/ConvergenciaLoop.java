@@ -185,6 +185,15 @@ public final class ConvergenciaLoop {
 
     /** Resumo JSON: t_fim, convergiu, t_convergencia (absoluto e relativo a t_fim), contagens. */
     public static void escreverResumo(Path destino, Resultado r, long tFimNs) throws IOException {
+        escreverResumo(destino, r, tFimNs, null);
+    }
+
+    /**
+     * W-3 (B-28.2): como a anterior, com {@code t_fim_carga_ns} (instante em que as threads de carga
+     * pararam, no relogio dos {@code end_ns}; {@code null} se desconhecido) acrescentado ao fim. Os campos
+     * anteriores nao mudam.
+     */
+    public static void escreverResumo(Path destino, Resultado r, long tFimNs, Long tFimCargaNs) throws IOException {
         Path pai = destino.getParent();
         if (pai != null) {
             Files.createDirectories(pai);
@@ -198,6 +207,7 @@ public final class ConvergenciaLoop {
         m.put("t_convergencia_abs_ns", r.tConvergenciaAbsNs());
         m.put("rodadas", r.rodadas().size());
         m.put("rodadas_validas", validas);
+        m.put("t_fim_carga_ns", tFimCargaNs);
         new ObjectMapper().enable(SerializationFeature.INDENT_OUTPUT).writeValue(destino.toFile(), m);
     }
 }

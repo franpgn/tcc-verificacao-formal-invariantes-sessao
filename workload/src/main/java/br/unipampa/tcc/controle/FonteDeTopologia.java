@@ -8,4 +8,7 @@ package br.unipampa.tcc.controle;
 public interface FonteDeTopologia {
 
     EstadoTopologia resumirAte(long fimNs);
+
+    /** Sem sonda: topologia indisponivel (sinal neutro). */
+    FonteDeTopologia INDISPONIVEL = fim -> EstadoTopologia.indisponivel();
 }

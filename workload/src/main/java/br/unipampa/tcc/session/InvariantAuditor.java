@@ -53,8 +53,33 @@ public class InvariantAuditor implements AutoCloseable {
             new java.util.concurrent.atomic.AtomicInteger();
     private ScheduledExecutorService scheduler;
 
+    /**
+     * W-3 (B-28.2): ouvinte de cada violacao registrada (o laco de controle). Recebe o mesmo rotulo de
+     * invariante gravado no CSV de violacoes; a classificacao (seguranca ou fora do gatilho) e do laco.
+     * Deve ser rapido e nunca lancar; uma excecao dele e engolida.
+     */
+    public interface OuvinteDeViolacao {
+        void violacao(String invariante, String chave);
+    }
+
+    /** W-3: {@code null} (padrao) = desligado. */
+    private volatile OuvinteDeViolacao ouvinte;
+
+    /** W-3: liga (ou, com {@code null}, desliga) o ouvinte de violacoes. */
+    void definirOuvinte(OuvinteDeViolacao o) {
+        this.ouvinte = o;
+    }
+
     public void registrarViolacao(String invariante, String chave, String mensagem) {
         registros.add(new Violacao(Instant.now(), invariante, chave, mensagem));
+        OuvinteDeViolacao o = ouvinte;
+        if (o != null) {
+            try {
+                o.violacao(invariante, chave);
+            } catch (RuntimeException e) {
+                // o controlador nunca derruba o auditor
+            }
+        }
     }
 
     public int total() { return registros.size(); }

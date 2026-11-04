@@ -323,6 +323,62 @@ public final class Cli {
         }
     }
 
+    // ---- W-3 (B-28.2): controlador do cluster; desligado por padrao ----
+
+    /**
+     * W-3: modo do controlador. {@code off} (padrao): nenhum objeto do pacote {@code controle} e criado.
+     * {@code shadow}: o laco decide e grava os JSONL, sem chamar o atuador. {@code active}: tambem entrega
+     * as acoes ao atuador. Fica fora de {@link #toString()}, como {@code --replication}.
+     */
+    public ModoControlador controlador = ModoControlador.OFF;
+
+    @Option(
+        names = {"--controller"},
+        paramLabel = "off|shadow|active",
+        description = "Controlador do cluster: off (nenhuma thread nem arquivo), shadow (decide e grava "
+            + "observaveis-rep-NNN.jsonl e decisoes-rep-NNN.jsonl, sem agir) ou active (tambem age sobre o "
+            + "cluster pela API administrativa). Padrao ${DEFAULT-VALUE}.",
+        defaultValue = "off",
+        arity = "1",
+        converter = ControladorConverter.class
+    )
+    public void definirControlador(ModoControlador valor) {
+        this.controlador = valor;
+    }
+
+    /** Converte exatamente {@code off}/{@code shadow}/{@code active}. */
+    public static final class ControladorConverter implements CommandLine.ITypeConverter<ModoControlador> {
+        @Override
+        public ModoControlador convert(String valor) {
+            try {
+                return ModoControlador.porRotulo(valor);
+            } catch (IllegalArgumentException e) {
+                throw new CommandLine.TypeConversionException(e.getMessage());
+            }
+        }
+    }
+
+    @Option(
+        names = {"--controller-config"},
+        description = "Arquivo JSON com os parametros do nucleo do controlador (controlador-<nome>.json). "
+            + "Obrigatorio com --controller shadow|active."
+    )
+    public String controladorConfig;
+
+    @Option(
+        names = {"--controller-reference"},
+        description = "Arquivo referencia-<cenario>-<sync|async>.json (p99 por operacao, B-39.1). "
+            + "Obrigatorio com --controller active; opcional em shadow."
+    )
+    public String controladorReferencia;
+
+    @Option(
+        names = {"--controller-admin"},
+        description = "URLs REST dos nos (http://h:p ou h:p, separadas por virgula, na ordem de --servers) para "
+            + "a sonda de topologia e o atuador. Obrigatorio com --controller shadow|active."
+    )
+    public String controladorAdmin;
+
     /**
      * B-43.2: {@link #textoDryRun()} (tres linhas, inalteradas) seguido da 4a linha
      * {@code dry-run, mix=v1|v2}. Com {@code v2} e {@code --reset-state off} em S1/S2, a linha avisa
@@ -396,6 +452,7 @@ public final class Cli {
         if (scenarioS3) {
             s3.validar();
         }
+        validarControlador();
         // B-43.2 (P-b): a carga inicial de v2 verifica size()==universo, que so vale sobre caches
         // vazios. Dispensado no --dry-run (nao executa; a 4a linha avisa) e em S3 (mistura sem efeito).
         if (misturaExigeResetAusente() && !dryRun) {
@@ -406,6 +463,46 @@ public final class Cli {
             throw new IllegalArgumentException("--mix v2 exige --reset-state on (a carga inicial precisa "
                     + "dos caches vazios); para --reset-state off use --mix v1");
         }
+    }
+
+    /**
+     * W-3: regras das opcoes do controlador (exit 2 em {@code main}). Os arquivos so sao lidos depois, por
+     * {@code LigacaoControlador.carregar}.
+     */
+    private void validarControlador() {
+        if (controlador == ModoControlador.OFF) {
+            return;
+        }
+        String modo = "--controller " + controlador.rotulo();
+        if (vazio(controladorConfig)) {
+            throw new IllegalArgumentException(modo + " exige --controller-config (parametros do nucleo; "
+                    + "nenhum limiar e fixo no codigo)");
+        }
+        if (vazio(controladorAdmin)) {
+            throw new IllegalArgumentException(modo + " exige --controller-admin (URLs REST dos nos)");
+        }
+        if (vazio(csvDir)) {
+            throw new IllegalArgumentException(modo + " exige --csv-dir (onde ficam observaveis-rep-NNN.jsonl "
+                    + "e decisoes-rep-NNN.jsonl)");
+        }
+        if (controlador == ModoControlador.ACTIVE && vazio(controladorReferencia)) {
+            throw new IllegalArgumentException(modo + " exige --controller-reference (p99 de referencia por "
+                    + "operacao, sinal de latencia)");
+        }
+        if (scenarioS3 && vazio(marcadores)) {
+            throw new IllegalArgumentException(modo + " com --scenario S3 exige --marker: sem marcador nao ha "
+                    + "rastro de cliente, a I2 nao e classificada como REAL e a violacao I2 nao dispara R1");
+        }
+        int admin = controladorAdmin.split(",", -1).length;
+        int servidoresN = servidores.split(",", -1).length;
+        if (admin != servidoresN) {
+            throw new IllegalArgumentException("--controller-admin tem " + admin + " URLs e --servers tem "
+                    + servidoresN + " servidores (H6: nos esperados = itens de --servers, um no REST por servidor)");
+        }
+    }
+
+    private static boolean vazio(String s) {
+        return s == null || s.isBlank();
     }
 
     @Override

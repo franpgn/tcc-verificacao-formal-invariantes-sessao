@@ -1,0 +1,14 @@
+pre rc=0 fim=2026-11-04T22:38:05+00:00
+g5b-dry-run rc=0 fim=2026-11-04T22:38:05+00:00
+parametros efetivos do g5b.sh A conferidos: duracao=120s, KILL em +70s, margem do dead-man=90s
+02-portao51-pre rc=0 fim=2026-11-04T22:40:17+00:00
+02-portao51-pre-avaliacao rc=0 fim=2026-11-04T22:40:17+00:00
+coletor em segundo plano pid=39348 2026-11-04T22:40:17+00:00
+g5b rc=0 fim=2026-11-04T22:42:47+00:00
+coletor rc=0 fim=2026-11-04T22:42:49+00:00
+pos-g5b rc=0 fim=2026-11-04T22:42:49+00:00
+06-portao51-pos rc=0 fim=2026-11-04T22:48:32+00:00
+06-portao51-pos-avaliacao rc=0 fim=2026-11-04T22:48:32+00:00
+boot-fim rc=0 fim=2026-11-04T22:48:32+00:00
+avaliacao rc=0 fim=2026-11-04T22:48:32+00:00
+S6 fim 2026-11-04T22:48:32+00:00 rc=0. Saia do tmux com exit (libera o lock). MANIFEST.sha256 e gravado ao sair.

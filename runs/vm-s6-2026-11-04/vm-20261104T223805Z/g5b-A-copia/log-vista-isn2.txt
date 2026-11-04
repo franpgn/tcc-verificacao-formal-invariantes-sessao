@@ -1,0 +1,3 @@
+[0m2026-11-04 22:41:09,276 INFO  [o.i.CLUSTER] ISPN000094: Received new cluster view for channel cluster-tcc: [isn1-15077|3] (2) [isn1-15077, isn2-28862][m
+[33m2026-11-04 22:42:45,279 WARN  [o.j.p.p.NAKACK2] JGRP000011: isn2-28862: dropped message from non-member isn3-9749 (view=[isn1-15077|3] (2) [isn1-15077, isn2-28862])[m
+[0m2026-11-04 22:42:46,319 INFO  [o.i.CLUSTER] ISPN000093: Received new, MERGED cluster view for channel cluster-tcc: MergeView::[isn1-15077|4] (3) [isn1-15077, isn3-9749, isn2-28862], 2 subgroups: [isn3-9749|3] (1) [isn3-9749], [isn1-15077|3] (2) [isn1-15077, isn2-28862][m

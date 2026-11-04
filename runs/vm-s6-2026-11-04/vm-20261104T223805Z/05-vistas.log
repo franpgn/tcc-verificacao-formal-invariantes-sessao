@@ -1,0 +1,27 @@
+## isn1 podman logs desde 2026-11-04T22:40:17+00:00
+2026-11-04 22:41:09,269 INFO  [o.i.CLUSTER] ISPN000094: Received new cluster view for channel cluster-tcc: [isn1-15077|3] (2) [isn1-15077, isn2-28862]
+2026-11-04 22:41:09,270 INFO  [o.i.CLUSTER] [Scope=isn1-15077]ISPN100001: Node isn3-9749 left the cluster
+2026-11-04 22:41:09,273 INFO  [o.i.CLUSTER] [Scope=isn1-15077]ISPN100001: Node isn3-9749 left the cluster
+2026-11-04 22:42:46,278 INFO  [o.i.CLUSTER] ISPN000093: Received new, MERGED cluster view for channel cluster-tcc: MergeView::[isn1-15077|4] (3) [isn1-15077, isn3-9749, isn2-28862], 2 subgroups: [isn3-9749|3] (1) [isn3-9749], [isn1-15077|3] (2) [isn1-15077, is
+2026-11-04 22:42:46,278 INFO  [o.i.CLUSTER] [Scope=isn1-15077]ISPN100000: Node isn3-9749 joined the cluster
+2026-11-04 22:42:46,278 INFO  [o.i.CLUSTER] [Scope=isn1-15077]ISPN100000: Node isn3-9749 joined the cluster
+## isn2 podman logs desde 2026-11-04T22:40:17+00:00
+2026-11-04 22:41:09,276 INFO  [o.i.CLUSTER] ISPN000094: Received new cluster view for channel cluster-tcc: [isn1-15077|3] (2) [isn1-15077, isn2-28862]
+2026-11-04 22:41:09,277 INFO  [o.i.CLUSTER] [Scope=isn2-28862]ISPN100001: Node isn3-9749 left the cluster
+2026-11-04 22:41:09,280 INFO  [o.i.CLUSTER] [Scope=isn2-28862]ISPN100001: Node isn3-9749 left the cluster
+2026-11-04 22:42:46,319 INFO  [o.i.CLUSTER] ISPN000093: Received new, MERGED cluster view for channel cluster-tcc: MergeView::[isn1-15077|4] (3) [isn1-15077, isn3-9749, isn2-28862], 2 subgroups: [isn3-9749|3] (1) [isn3-9749], [isn1-15077|3] (2) [isn1-15077, is
+2026-11-04 22:42:46,319 INFO  [o.i.CLUSTER] [Scope=isn2-28862]ISPN100000: Node isn3-9749 joined the cluster
+2026-11-04 22:42:46,319 INFO  [o.i.CLUSTER] [Scope=isn2-28862]ISPN100000: Node isn3-9749 joined the cluster
+## isn3 podman logs desde 2026-11-04T22:40:17+00:00
+2026-11-04 22:41:08,630 INFO  [o.i.CLUSTER] ISPN000094: Received new cluster view for channel cluster-tcc: [isn3-9749|3] (1) [isn3-9749]
+2026-11-04 22:41:08,632 INFO  [o.i.CLUSTER] [Scope=isn3-9749]ISPN100001: Node isn1-15077 left the cluster
+2026-11-04 22:41:08,632 INFO  [o.i.CLUSTER] [Scope=isn3-9749]ISPN100001: Node isn2-28862 left the cluster
+2026-11-04 22:41:08,632 INFO  [o.i.CLUSTER] [Scope=isn3-9749]ISPN100001: Node isn1-15077 left the cluster
+2026-11-04 22:41:08,632 INFO  [o.i.CLUSTER] [Scope=isn3-9749]ISPN100001: Node isn2-28862 left the cluster
+2026-11-04 22:41:08,638 INFO  [o.i.CLUSTER] [Context=sessions]ISPN100011: Entering availability mode DEGRADED_MODE, topology id 11
+2026-11-04 22:41:08,640 INFO  [o.i.CLUSTER] [Context=counters]ISPN100011: Entering availability mode DEGRADED_MODE, topology id 11
+2026-11-04 22:42:45,276 INFO  [o.i.CLUSTER] ISPN000093: Received new, MERGED cluster view for channel cluster-tcc: MergeView::[isn1-15077|4] (3) [isn1-15077, isn3-9749, isn2-28862], 2 subgroups: [isn3-9749|3] (1) [isn3-9749], [isn1-15077|3] (2) [isn1-15077, is
+2026-11-04 22:42:45,277 INFO  [o.i.CLUSTER] [Scope=isn3-9749]ISPN100000: Node isn1-15077 joined the cluster
+2026-11-04 22:42:45,277 INFO  [o.i.CLUSTER] [Scope=isn3-9749]ISPN100000: Node isn2-28862 joined the cluster
+2026-11-04 22:42:45,277 INFO  [o.i.CLUSTER] [Scope=isn3-9749]ISPN100000: Node isn1-15077 joined the cluster
+2026-11-04 22:42:45,277 INFO  [o.i.CLUSTER] [Scope=isn3-9749]ISPN100000: Node isn2-28862 joined the cluster

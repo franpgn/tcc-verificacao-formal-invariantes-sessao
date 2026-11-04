@@ -1,0 +1,218 @@
+S6 (G-5b-A) inicio 2026-11-04T22:38:05+00:00 saida=/home/server1/tcc-gate/runs/vm-s6-2026-11-04/vm-20261104T223805Z
+TCC_DIR=/home/server1/tcc-gate (exportado pelo s6.sh)
+== pre-condicoes 2026-11-04T22:38:05+00:00
+hostname=server1 ip=172.27.114.62 usuario=server1
+argumentos: --boot-esperado f9e98b74-bf1f-4192-9770-b40285877292 --bloco-anterior /home/server1/tcc-gate/runs/vm-s5-2026-10-28/vm-20261104T221957Z
+tmux: /tmp/tmux-1000/default,35752,0
+terminal: ok (o GO do g5b.sh e interativo)
+lock /var/lock/tcc-vm.lock: OCUPADO (este flock)
+lock do injetor /tmp/inject-partition-isn3.lock: livre
+sudo -n: ok
+uname -r: 6.8.0-147-generic
+uname -r do bloco anterior: 6.8.0-147-generic
+boot_id: f9e98b74-bf1f-4192-9770-b40285877292
+boot_id esperado (--boot-esperado): f9e98b74-bf1f-4192-9770-b40285877292
+boot_id fim do bloco anterior: f9e98b74-bf1f-4192-9770-b40285877292
+bloco anterior: S5: VALIDO (23 criterios OK)
+HEAD: f6483c5f844da16b8b103e47a52e994f67019b39 (docs: GO dos blocos de VM digitado pelo coordenador, autorizado pelo Gestor em 2026-11-04 (ROTEIRO-S5/S6/S7 e roteiro da VM))
+contem 902654b (v4c): sim
+arquivos versionados modificados: 1
+ M runs/gate-b29/go.log
+runs/gate-b29/go.log: HEAD e prefixo exato; 1 linha(s) 'go ' acrescentada(s) (aceito, Q-12)
+-- sha256 (referencia v4c)
+runs/gate-b29/g5b.sh: OK
+runs/gate-b29/g56-lib.sh: OK
+runs/gate-b29/g-lib.sh: OK
+scripts/inject-partition.sh: OK
+runs/vm-s2-2026-10-27/portao51.sh: OK
+hashes: iguais a referencia
+s6.sh: 33b8fcc5799c919ef659730f981761d8ee948240ff13f02ae71133268cad2b27
+ambiente: sem LOCK_DIR/PODMAN/INJ/LOG/DMS/UNIT/G_TESTE/G5B_*/... herdados
+runs/gate-b29/g5b-A: inexistente
+timers tcc-heal: 0 units tcc-heal: 0
+-- runs/gate-b29/go.log (blocos anteriores)
+go 2026-10-16T05:11:03+00:00 vm=192.168.137.150 sha=4978e1c6ee634d59ba48927773f496d7bf51b3ee
+go 2026-10-16T06:48:16+00:00 vm=192.168.137.150 sha=544879150d70e146d4b3f5a4847c13d8f824f5b9
+go G-1 (REP=3, janela de 90 s em isn3) 2026-10-16T08:56:39+00:00 vm=192.168.137.150 sha=507c21ee6812d4ea69788277907b92b56ff13311
+go G-5 (kill -TERM e kill -KILL do injetor em isn3, 40 s) 2026-10-16T09:02:02+00:00 vm=192.168.137.150 sha=507c21ee6812d4ea69788277907b92b56ff13311
+go G-6 (F3 jitter em isn2 + F2 particao em isn3, 90/130 s) 2026-10-16T09:03:46+00:00 vm=192.168.137.150 sha=507c21ee6812d4ea69788277907b92b56ff13311
+go G-1 (REP=4, janela de 90 s em isn3) 2026-10-28T07:12:13+00:00 vm=172.31.251.37 sha=1266c129904e73469926d95708e7c83290498c41
+nic eth0 proibidos(prio|netem|clsact)=0: qdisc mq 0: root qdisc fq_codel 0: parent :4 limit 10240p flows 1024 quantum 1514 target 5ms interval 100ms memory_limit 32Mb ecn drop_batch 64 qdisc fq_codel 0: parent :3 limit 10240p flows 1024 quantum 1514 target 5ms interval 100ms memory_limit 32Mb ecn drop_batch 64 qdisc fq_codel 0: parent :2 limit 10240p flows 1024 quantum 1514 target 5ms interval 100ms memory_limit 32Mb ecn drop_batch 64 qdisc fq_codel 0: parent :1 limit 10240p flows 1024 quantum 1514 target 5ms interval 100ms memory_limit 32Mb ecn drop_batch 64
+-- conteineres e cluster atual
+isn1 d46a19727fdd Up 48 minutes (healthy) criado=2026-11-04 21:49:42.707304928 +0000 UTC
+isn2 87816ddc1db0 Up 47 minutes (healthy) criado=2026-11-04 21:50:01.886296781 +0000 UTC
+isn3 ef69b337005e Up 47 minutes (healthy) criado=2026-11-04 21:50:34.872861781 +0000 UTC
+isn1 ip=10.89.1.2 id=d46a19727fdd StartedAt=2026-11-04 21:49:59.430849278 +0000 UTC
+isn1 ultima vista: 2026-11-04 21:51:00,393 INFO  [o.i.CLUSTER] ISPN000094: Received new cluster view for channel cluster-tcc: [isn1-15077|2] (3) [isn1-15077, isn2-28862, isn3-9749]
+isn2 ip=10.89.1.3 id=87816ddc1db0 StartedAt=2026-11-04 21:50:14.93872205 +0000 UTC
+isn2 ultima vista: 2026-11-04 21:51:00,425 INFO  [o.i.CLUSTER] ISPN000094: Received new cluster view for channel cluster-tcc: [isn1-15077|2] (3) [isn1-15077, isn2-28862, isn3-9749]
+isn3 ip=10.89.1.4 id=ef69b337005e StartedAt=2026-11-04 21:50:51.472209425 +0000 UTC
+isn3 ultima vista: 2026-11-04 21:51:00,496 INFO  [o.i.CLUSTER] ISPN000094: Received new cluster view for channel cluster-tcc: [isn1-15077|2] (3) [isn1-15077, isn2-28862, isn3-9749]
+isn3 netns: diferente do host (net:[4026532154] != net:[4026531840])
+isn3 JGroups 7800: ipv4=2 ipv6=0 (so registro: com IPv6 o split nao acontece e o g5b.sh falha sozinho)
+pre rc=0 fim=2026-11-04T22:38:05+00:00
+G-5b-A (dry-run; nada executado): duracao=120s, KILL em +70s do start (e so com split confirmado), margem do dead-man=90s
+  0. exigir_go; preflight: size=3 HEALTHY x3, sem clsact/netem em isn1/isn2/isn3, 0 timers tcc-heal
+  1. armar dead-man (120+90 = 210 s, AccuracySec=1s); registrar systemctl cat da unit
+  2. inject-partition.sh --minority isn3 --duration 120 --marker g5b-A/marcadores.txt &; espera event=start
+  3. esperar o split CONFIRMADO nos logs (ate 100 s do start): isn1 e isn2 ISPN000094 com 2 membros; isn3 com 1 membro e
+     DEGRADED_MODE. Sem split confirmado: FAIL (repeticao do G-5, nao vale) e o abort aciona --heal
+  4. kill -KILL do injetor (a partir de +70s): esperado rc=137, sem event=end, clsact FICA; persiste por >= 15 s
+     (clsact presente, sem marcador end, sem MergeView nos logs desde o KILL)
+  5A. inject-partition.sh --heal --minority isn3 (rc 0); sem clsact; MergeView de 3 membros nos 3 logs; HEALTHY x3 (limite 150 s)
+  6A. SO ENTAO desarmar o dead-man (0 timers); cronologia split < KILL < heal < MergeView
+  7. falha inesperada em qualquer ponto: trap EXIT aciona --heal e deixa o dead-man armado (no modo B isso invalida o bloco)
+g5b-dry-run rc=0 fim=2026-11-04T22:38:05+00:00
+parametros efetivos do g5b.sh A conferidos: duracao=120s, KILL em +70s, margem do dead-man=90s
+portao 02-portao51-pre: 130 s a partir de 2026-11-04T22:38:05+00:00
+amostras=27 amostras_ruins=0 janela_s=131 maior_sequencia_boa_s=131 ultima_sequencia_boa_desde=2026-11-04T22:38:05+00:00
+size sessions porta 11222: 0
+size sessions porta 11223: 0
+size sessions porta 11224: 0
+size counters porta 11222: 0
+size counters porta 11223: 0
+size counters porta 11224: 0
+timers tcc-heal: 0 units tcc-heal: 0
+isn1 pid=1407 tc qdisc show (todas as interfaces): qdisc noqueue 0: dev lo root refcnt 2 qdisc noqueue 0: dev eth0 root refcnt 2
+isn1 proibidos(clsact|prio|netem|ingress)=0 eth0_noqueue=1
+isn1 tc filter eth0: []
+isn2 pid=1543 tc qdisc show (todas as interfaces): qdisc noqueue 0: dev lo root refcnt 2 qdisc noqueue 0: dev eth0 root refcnt 2
+isn2 proibidos(clsact|prio|netem|ingress)=0 eth0_noqueue=1
+isn2 tc filter eth0: []
+isn3 pid=1711 tc qdisc show (todas as interfaces): qdisc noqueue 0: dev lo root refcnt 2 qdisc noqueue 0: dev eth0 root refcnt 2
+isn3 proibidos(clsact|prio|netem|ingress)=0 eth0_noqueue=1
+isn3 tc filter eth0: []
+lock: OCUPADO
+isn1 mudancas de vista nos ultimos 5 min (ISPN000094|ISPN000093|ISPN100000|ISPN100001|MergeView): 0
+isn1 ultima mudanca de vista: 2026-11-04 21:51:00,393 INFO  [o.i.CLUSTER] ISPN000094: Received new cluster view for channel cluster-tcc: [isn1-15077|2] (3) [isn1-15077, isn2-28862, isn3-9749]
+isn2 mudancas de vista nos ultimos 5 min (ISPN000094|ISPN000093|ISPN100000|ISPN100001|MergeView): 0
+isn2 ultima mudanca de vista: 2026-11-04 21:51:00,425 INFO  [o.i.CLUSTER] ISPN000094: Received new cluster view for channel cluster-tcc: [isn1-15077|2] (3) [isn1-15077, isn2-28862, isn3-9749]
+isn3 mudancas de vista nos ultimos 5 min (ISPN000094|ISPN000093|ISPN100000|ISPN100001|MergeView): 0
+isn3 ultima mudanca de vista: 2026-11-04 21:51:00,496 INFO  [o.i.CLUSTER] ISPN000094: Received new cluster view for channel cluster-tcc: [isn1-15077|2] (3) [isn1-15077, isn2-28862, isn3-9749]
+fim 2026-11-04T22:40:17+00:00
+02-portao51-pre rc=0 fim=2026-11-04T22:40:17+00:00
+PORTAO 5.1: OK (amostras_ruins=0, maior_sequencia_boa_s=131)
+02-portao51-pre-avaliacao rc=0 fim=2026-11-04T22:40:17+00:00
+coletor em segundo plano pid=39348 2026-11-04T22:40:17+00:00
+>>> AVISO: o dead-man sera armado pelo g5b.sh com 120 + 90 = 210 s e AccuracySec=1s; o g5b.sh faz o --heal manual sozinho; se ele abortar, o proprio trap faz o --heal e o dead-man continua armado como rede de seguranca. Cura manual, em ~/tcc-gate: PODMAN='sudo podman' bash scripts/inject-partition.sh --heal --minority isn3
+>>> G-5b-A: digite GO no prompt do g5b.sh em ate 15 min; depois disso responda qualquer outra coisa (aborta sem armar) e recomece.
+G-5b-A (split real + kill -KILL do injetor em isn3, 120 s, dead-man 90 s): go do Gestor registrado no relatorio? [digite GO] go G-5b-A (split real + kill -KILL do injetor em isn3, 120 s, dead-man 90 s) 2026-11-04T22:40:26+00:00 vm=172.27.114.62 sha=f6483c5f844da16b8b103e47a52e994f67019b39
+"health_status":"HEALTHY","number_of_nodes":3
+"health_status":"HEALTHY","number_of_nodes":3
+"health_status":"HEALTHY","number_of_nodes":3
+ok sem clsact em isn1: qdisc noqueue 0: root refcnt 2
+ok sem netem em isn1: qdisc noqueue 0: root refcnt 2
+ok sem clsact em isn2: qdisc noqueue 0: root refcnt 2
+ok sem netem em isn2: qdisc noqueue 0: root refcnt 2
+ok sem clsact em isn3: qdisc noqueue 0: root refcnt 2
+ok sem netem em isn3: qdisc noqueue 0: root refcnt 2
+ok 0 timers tcc-heal
+dead-man armado: tcc-heal-39356-21867 em 210s
+PASS unit armada executa inject-partition.sh --heal --minority isn3
+PASS split real confirmado nos logs ANTES do KILL (isn1/isn2: vista de 2; isn3: vista de 1 e DEGRADED_MODE)
+runs/gate-b29/g5b.sh: line 136: 40009 Killed                  $INJ --minority isn3 --duration "$DUR" --marker "$M" > "$OUT/inj.log" 2>&1
+rc_injetor=137
+PASS injetor saiu com rc=137 (128+SIGKILL)
+PASS corte PERSISTIU por >= 15 s apos o KILL (clsact presente, sem marcador end, sem MergeView)
+PASS sem marcador end (esperado)
+PASS --heal rc=0
+PASS sem clsact apos --heal
+PASS MergeView de 3 membros nos 3 logs apos o heal
+size=3 HEALTHY apos 53 s desde t_heal
+dead-man desarmado: tcc-heal-39356-21867
+ok 0 timers tcc-heal
+PASS dead-man desarmado SO depois de o cluster estar saudavel
+PASS cronologia coerente: t_start t_split_confirmado t_kill t_persistencia_ok t_heal t_mergeview t_saudavel t_desarmado
+"health_status":"HEALTHY","number_of_nodes":3
+"health_status":"HEALTHY","number_of_nodes":3
+"health_status":"HEALTHY","number_of_nodes":3
+ok sem clsact em isn1: qdisc noqueue 0: root refcnt 2
+ok sem netem em isn1: qdisc noqueue 0: root refcnt 2
+ok sem clsact em isn2: qdisc noqueue 0: root refcnt 2
+ok sem netem em isn2: qdisc noqueue 0: root refcnt 2
+ok sem clsact em isn3: qdisc noqueue 0: root refcnt 2
+ok sem netem em isn3: qdisc noqueue 0: root refcnt 2
+ok 0 timers tcc-heal
+PASS sem ISPN000524/ISPN100014/ISPN000638 nos logs
+G-5b-A concluido: ver runs/gate-b29/g5b-A/resultado.txt
+g5b rc=0 fim=2026-11-04T22:42:47+00:00
+coletor rc=0 fim=2026-11-04T22:42:49+00:00
+== depois do g5b.sh 2026-11-04T22:42:49+00:00
+timers tcc-heal: 0 units tcc-heal: 0
+timers: nenhum timer tcc-heal armado
+isn1 pid=1407 tc qdisc show dev eth0: qdisc noqueue 0: root refcnt 2 ;
+isn2 pid=1543 tc qdisc show dev eth0: qdisc noqueue 0: root refcnt 2 ;
+isn3 pid=1711 tc qdisc show dev eth0: qdisc noqueue 0: root refcnt 2 ;
+nic eth0 proibidos(prio|netem|clsact)=0: qdisc mq 0: root qdisc fq_codel 0: parent :4 limit 10240p flows 1024 quantum 1514 target 5ms interval 100ms memory_limit 32Mb ecn drop_batch 64 qdisc fq_codel 0: parent :3 limit 10240p flows 1024 quantum 1514 target 5ms interval 100ms memory_limit 32Mb ecn drop_batch 64 qdisc fq_codel 0: parent :2 limit 10240p flows 1024 quantum 1514 target 5ms interval 100ms memory_limit 32Mb ecn drop_batch 64 qdisc fq_codel 0: parent :1 limit 10240p flows 1024 quantum 1514 target 5ms interval 100ms memory_limit 32Mb ecn drop_batch 64
+go G-5b-A (split real + kill -KILL do injetor em isn3, 120 s, dead-man 90 s) 2026-11-04T22:40:26+00:00 vm=172.27.114.62 sha=f6483c5f844da16b8b103e47a52e994f67019b39
+unit do dead-man: tcc-heal-39356-21867
+journal da unit: 3 linha(s) (05-journal-unit.txt)
+linhas de vista/DEGRADED desde o inicio do passo 3: 24
+journal do sudo desde @1793832017: 870 entrada(s); tc qdisc del ... clsact:
+1793832026567137 sessao session-25.scope
+1793832026789257 sessao session-25.scope
+1793832114083000 sessao session-25.scope
+pos-g5b rc=0 fim=2026-11-04T22:42:49+00:00
+portao 06-portao51-pos: 343 s a partir de 2026-11-04T22:42:49+00:00
+amostras=69 amostras_ruins=0 janela_s=343 maior_sequencia_boa_s=343 ultima_sequencia_boa_desde=2026-11-04T22:42:49+00:00
+size sessions porta 11222: 0
+size sessions porta 11223: 0
+size sessions porta 11224: 0
+size counters porta 11222: 0
+size counters porta 11223: 0
+size counters porta 11224: 0
+timers tcc-heal: 0 units tcc-heal: 0
+isn1 pid=1407 tc qdisc show (todas as interfaces): qdisc noqueue 0: dev lo root refcnt 2 qdisc noqueue 0: dev eth0 root refcnt 2
+isn1 proibidos(clsact|prio|netem|ingress)=0 eth0_noqueue=1
+isn1 tc filter eth0: []
+isn2 pid=1543 tc qdisc show (todas as interfaces): qdisc noqueue 0: dev lo root refcnt 2 qdisc noqueue 0: dev eth0 root refcnt 2
+isn2 proibidos(clsact|prio|netem|ingress)=0 eth0_noqueue=1
+isn2 tc filter eth0: []
+isn3 pid=1711 tc qdisc show (todas as interfaces): qdisc noqueue 0: dev lo root refcnt 2 qdisc noqueue 0: dev eth0 root refcnt 2
+isn3 proibidos(clsact|prio|netem|ingress)=0 eth0_noqueue=1
+isn3 tc filter eth0: []
+lock: OCUPADO
+isn1 mudancas de vista nos ultimos 5 min (ISPN000094|ISPN000093|ISPN100000|ISPN100001|MergeView): 0
+isn1 ultima mudanca de vista: 2026-11-04 22:42:46,278 INFO  [o.i.CLUSTER] ISPN000093: Received new, MERGED cluster view for channel cluster-tcc: MergeView::[isn1-15077|4] (3) [isn1-15077, isn3-9749, isn2-28862], 2 subgroups: [isn3
+isn2 mudancas de vista nos ultimos 5 min (ISPN000094|ISPN000093|ISPN100000|ISPN100001|MergeView): 0
+isn2 ultima mudanca de vista: 2026-11-04 22:42:46,319 INFO  [o.i.CLUSTER] ISPN000093: Received new, MERGED cluster view for channel cluster-tcc: MergeView::[isn1-15077|4] (3) [isn1-15077, isn3-9749, isn2-28862], 2 subgroups: [isn3
+isn3 mudancas de vista nos ultimos 5 min (ISPN000094|ISPN000093|ISPN100000|ISPN100001|MergeView): 0
+isn3 ultima mudanca de vista: 2026-11-04 22:42:45,276 INFO  [o.i.CLUSTER] ISPN000093: Received new, MERGED cluster view for channel cluster-tcc: MergeView::[isn1-15077|4] (3) [isn1-15077, isn3-9749, isn2-28862], 2 subgroups: [isn3
+fim 2026-11-04T22:48:32+00:00
+06-portao51-pos rc=0 fim=2026-11-04T22:48:32+00:00
+PORTAO 5.1: OK (amostras_ruins=0, maior_sequencia_boa_s=343)
+06-portao51-pos-avaliacao rc=0 fim=2026-11-04T22:48:32+00:00
+boot_id fim: f9e98b74-bf1f-4192-9770-b40285877292 2026-11-04T22:48:32+00:00
+boot-fim rc=0 fim=2026-11-04T22:48:32+00:00
+== avaliacao do S6 2026-11-04T22:48:32+00:00 sobre /home/server1/tcc-gate/runs/vm-s6-2026-11-04/vm-20261104T223805Z
+   limites: dur=120s kill>=+70s persistencia>=14s (RESULTADO em [14, 15) s) prazo do dead-man=210s saude=2s folga D-2=+0s/+1s unit=tcc-heal-39356-21867
+OK: A1 boot_id igual ao esperado no inicio e no fim (f9e98b74-bf1f-4192-9770-b40285877292) [V-S4 P-2]
+OK: A2 g5b.sh rc=0 (rc.txt) [§5.7]
+OK: A2 resultado.txt do g5b.sh sem FAIL e sem ABORTADO [§5.7]
+OK: A3 split confirmado antes do KILL: t_start < t_split_confirmado (+43.826 s) < t_kill (+70.527 s) [§5.7]
+OK: A4 KILL em +70.527 s do start (>= 70 s) [g5b.sh]
+OK: A5 rc_injetor=137 (128+SIGKILL), marcadores com 1 start e 0 end [§5.7]
+OK: A6 clsact antes e depois do KILL; corte persistiu 16.138 s (>= 14 s, R-1) sem MergeView no intervalo [§5.7]
+OK: A7 1 injecao e 1 --heal manual (rc 0); qdisc-pos-heal.txt sem clsact [§5.7]
+OK: A8 MergeView de 3 membros nos 3 nos depois do heal; size=3 HEALTHY nas 3 portas [§5.7]
+OK: A9 dead-man armado durante o corte, desarmado 0.007 s depois de saudavel; 0 timers e 0 units ao fim [§5.7]
+OK: A10 cronologia completa e em ordem: t_start t_split_confirmado t_kill t_persistencia_ok t_heal t_mergeview t_saudavel t_desarmado [§5.7]
+OK: A11 portao 5.1 pos: size=3 HEALTHY, caches vazios, 3 netns limpos, sem filtros, 0 timers, sem mudanca de vista em 5 min [§5.1]
+OK: intervalo maximo do saude-log em janela/saude.csv: 2.316 s <= 2 x 2 s
+  sudo tc qdisc del dev eth0 clsact: t_us=1793832026567137 origem=sessao (session-25.scope)
+  sudo tc qdisc del dev eth0 clsact: t_us=1793832026789257 origem=sessao (session-25.scope)
+  sudo tc qdisc del dev eth0 clsact: t_us=1793832114083000 origem=sessao (session-25.scope)
+OK: D-1 detector do sudo viu o --heal manual: 1 tc qdisc del ... clsact da sessao e 0 da unit entre t_kill e t_desarmado [Q-13]
+OK: D-2 serie tc de isn3: clsact=1 nas 43 amostras de t_start+0s a t_heal e clsact=0 nas 26 a partir de t_heal+1s [Q-13]
+OK: D-3 timer com AccuracyUSec=1s e prazo 210 s (prazo_s=210, OnActiveSec=3min 30s) [Q-13]
+RESULTADO: t_split_confirmado - t_start = 43.826 s
+RESULTADO: t_mergeview - t_heal = 52.982 s (dado de seguranca, NAO e t_merge; §5.7)
+RESULTADO: t_saudavel - t_heal = 53.000 s (dado de seguranca, NAO e t_merge; §5.7)
+RESULTADO: sem ISPN000524/ISPN100014/ISPN000638 nos log-completo-isn*.txt [Q-14]
+RESULTADO: 2 linha(s) DEGRADED_MODE nos 3 nos desde o inicio do passo 3 (05-vistas.log)
+LEITURA HUMANA: REST de isn3 (11224) time_total na janela: n/mediana/p95/max = 71 0.002258 0.003163 0.004054 (isn3 fica cortado de isn1/isn2, nao do host)
+LEITURA HUMANA: refazer os instantes de ISPN000094/DEGRADED_MODE/ISPN000093 nos log-completo-isn*.txt da copia [§5.7]
+LEITURA HUMANA: 8 outro(s) comando(s) tc de escrita no journal do sudo desde o passo 3 (injecao, pre-limpeza e sonda do injetor): conferir a origem em 05-sudo-journal.txt
+S6: VALIDO (16 criterios OK)
+avaliacao rc=0 fim=2026-11-04T22:48:32+00:00
+S6 fim 2026-11-04T22:48:32+00:00 rc=0. Saia do tmux com exit (libera o lock). MANIFEST.sha256 e gravado ao sair.

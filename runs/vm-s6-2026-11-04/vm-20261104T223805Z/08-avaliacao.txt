@@ -1,0 +1,30 @@
+== avaliacao do S6 2026-11-04T22:48:32+00:00 sobre /home/server1/tcc-gate/runs/vm-s6-2026-11-04/vm-20261104T223805Z
+   limites: dur=120s kill>=+70s persistencia>=14s (RESULTADO em [14, 15) s) prazo do dead-man=210s saude=2s folga D-2=+0s/+1s unit=tcc-heal-39356-21867
+OK: A1 boot_id igual ao esperado no inicio e no fim (f9e98b74-bf1f-4192-9770-b40285877292) [V-S4 P-2]
+OK: A2 g5b.sh rc=0 (rc.txt) [§5.7]
+OK: A2 resultado.txt do g5b.sh sem FAIL e sem ABORTADO [§5.7]
+OK: A3 split confirmado antes do KILL: t_start < t_split_confirmado (+43.826 s) < t_kill (+70.527 s) [§5.7]
+OK: A4 KILL em +70.527 s do start (>= 70 s) [g5b.sh]
+OK: A5 rc_injetor=137 (128+SIGKILL), marcadores com 1 start e 0 end [§5.7]
+OK: A6 clsact antes e depois do KILL; corte persistiu 16.138 s (>= 14 s, R-1) sem MergeView no intervalo [§5.7]
+OK: A7 1 injecao e 1 --heal manual (rc 0); qdisc-pos-heal.txt sem clsact [§5.7]
+OK: A8 MergeView de 3 membros nos 3 nos depois do heal; size=3 HEALTHY nas 3 portas [§5.7]
+OK: A9 dead-man armado durante o corte, desarmado 0.007 s depois de saudavel; 0 timers e 0 units ao fim [§5.7]
+OK: A10 cronologia completa e em ordem: t_start t_split_confirmado t_kill t_persistencia_ok t_heal t_mergeview t_saudavel t_desarmado [§5.7]
+OK: A11 portao 5.1 pos: size=3 HEALTHY, caches vazios, 3 netns limpos, sem filtros, 0 timers, sem mudanca de vista em 5 min [§5.1]
+OK: intervalo maximo do saude-log em janela/saude.csv: 2.316 s <= 2 x 2 s
+  sudo tc qdisc del dev eth0 clsact: t_us=1793832026567137 origem=sessao (session-25.scope)
+  sudo tc qdisc del dev eth0 clsact: t_us=1793832026789257 origem=sessao (session-25.scope)
+  sudo tc qdisc del dev eth0 clsact: t_us=1793832114083000 origem=sessao (session-25.scope)
+OK: D-1 detector do sudo viu o --heal manual: 1 tc qdisc del ... clsact da sessao e 0 da unit entre t_kill e t_desarmado [Q-13]
+OK: D-2 serie tc de isn3: clsact=1 nas 43 amostras de t_start+0s a t_heal e clsact=0 nas 26 a partir de t_heal+1s [Q-13]
+OK: D-3 timer com AccuracyUSec=1s e prazo 210 s (prazo_s=210, OnActiveSec=3min 30s) [Q-13]
+RESULTADO: t_split_confirmado - t_start = 43.826 s
+RESULTADO: t_mergeview - t_heal = 52.982 s (dado de seguranca, NAO e t_merge; §5.7)
+RESULTADO: t_saudavel - t_heal = 53.000 s (dado de seguranca, NAO e t_merge; §5.7)
+RESULTADO: sem ISPN000524/ISPN100014/ISPN000638 nos log-completo-isn*.txt [Q-14]
+RESULTADO: 2 linha(s) DEGRADED_MODE nos 3 nos desde o inicio do passo 3 (05-vistas.log)
+LEITURA HUMANA: REST de isn3 (11224) time_total na janela: n/mediana/p95/max = 71 0.002258 0.003163 0.004054 (isn3 fica cortado de isn1/isn2, nao do host)
+LEITURA HUMANA: refazer os instantes de ISPN000094/DEGRADED_MODE/ISPN000093 nos log-completo-isn*.txt da copia [§5.7]
+LEITURA HUMANA: 8 outro(s) comando(s) tc de escrita no journal do sudo desde o passo 3 (injecao, pre-limpeza e sonda do injetor): conferir a origem em 05-sudo-journal.txt
+S6: VALIDO (16 criterios OK)

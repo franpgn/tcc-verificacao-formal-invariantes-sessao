@@ -1,0 +1,26 @@
+unit=tcc-heal-39356-21867 modo=A dur=120 margem=90 prazo_s=210
+--- systemctl cat tcc-heal-39356-21867.service
+# /run/systemd/transient/tcc-heal-39356-21867.service
+# This is a transient unit file, created programmatically via the systemd API. Do not edit.
+[Unit]
+Description=/usr/bin/bash scripts/inject-partition.sh --heal --minority isn3
+
+[Service]
+WorkingDirectory=/home/server1/tcc-gate
+Environment="PODMAN=sudo podman"
+ExecStart=
+ExecStart="/usr/bin/bash" "scripts/inject-partition.sh" "--heal" "--minority" "isn3"
+--- systemctl cat tcc-heal-39356-21867.timer
+# /run/systemd/transient/tcc-heal-39356-21867.timer
+# This is a transient unit file, created programmatically via the systemd API. Do not edit.
+[Unit]
+Description=/usr/bin/bash scripts/inject-partition.sh --heal --minority isn3
+
+[Timer]
+OnActiveSec=3min 30s
+AccuracySec=1s
+RemainAfterElapse=no
+--- AccuracyUSec (systemd 255: AccuracySec so na escrita)
+AccuracyUSec=1s
+--- list-timers
+Wed 2026-11-04 22:43:56 UTC     3min 29s -                                   - tcc-heal-39356-21867.timer                                             tcc-heal-39356-21867.service

@@ -1,0 +1,3 @@
+2026-11-04T22:40:26.313398+00:00 server1 systemd[1]: Started tcc-heal-39356-21867.timer - /usr/bin/bash scripts/inject-partition.sh --heal --minority isn3.
+2026-11-04T22:42:47.020739+00:00 server1 systemd[1]: tcc-heal-39356-21867.timer: Deactivated successfully.
+2026-11-04T22:42:47.020773+00:00 server1 systemd[1]: Stopped tcc-heal-39356-21867.timer - /usr/bin/bash scripts/inject-partition.sh --heal --minority isn3.

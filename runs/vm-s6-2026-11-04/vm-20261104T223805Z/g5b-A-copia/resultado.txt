@@ -1,0 +1,13 @@
+PASS unit armada executa inject-partition.sh --heal --minority isn3
+PASS split real confirmado nos logs ANTES do KILL (isn1/isn2: vista de 2; isn3: vista de 1 e DEGRADED_MODE)
+PASS injetor saiu com rc=137 (128+SIGKILL)
+PASS corte PERSISTIU por >= 15 s apos o KILL (clsact presente, sem marcador end, sem MergeView)
+PASS sem marcador end (esperado)
+PASS --heal rc=0
+PASS sem clsact apos --heal
+PASS MergeView de 3 membros nos 3 logs apos o heal
+size=3 HEALTHY apos 53 s desde t_heal
+ok 0 timers tcc-heal
+PASS dead-man desarmado SO depois de o cluster estar saudavel
+PASS cronologia coerente: t_start t_split_confirmado t_kill t_persistencia_ok t_heal t_mergeview t_saudavel t_desarmado
+PASS sem ISPN000524/ISPN100014/ISPN000638 nos logs

@@ -1,0 +1,2 @@
+2026-11-04T22:40:26+00:00 --minority isn3 --duration 120 --marker runs/gate-b29/g5b-A/marcadores.txt
+2026-11-04T22:41:54+00:00 --heal --minority isn3

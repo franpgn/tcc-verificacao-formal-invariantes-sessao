@@ -1,0 +1,39 @@
+G-5b-A (split real + kill -KILL do injetor em isn3, 120 s, dead-man 90 s): go do Gestor registrado no relatorio? [digite GO] go G-5b-A (split real + kill -KILL do injetor em isn3, 120 s, dead-man 90 s) 2026-11-04T22:40:26+00:00 vm=172.27.114.62 sha=f6483c5f844da16b8b103e47a52e994f67019b39
+"health_status":"HEALTHY","number_of_nodes":3
+"health_status":"HEALTHY","number_of_nodes":3
+"health_status":"HEALTHY","number_of_nodes":3
+ok sem clsact em isn1: qdisc noqueue 0: root refcnt 2
+ok sem netem em isn1: qdisc noqueue 0: root refcnt 2
+ok sem clsact em isn2: qdisc noqueue 0: root refcnt 2
+ok sem netem em isn2: qdisc noqueue 0: root refcnt 2
+ok sem clsact em isn3: qdisc noqueue 0: root refcnt 2
+ok sem netem em isn3: qdisc noqueue 0: root refcnt 2
+ok 0 timers tcc-heal
+dead-man armado: tcc-heal-39356-21867 em 210s
+PASS unit armada executa inject-partition.sh --heal --minority isn3
+PASS split real confirmado nos logs ANTES do KILL (isn1/isn2: vista de 2; isn3: vista de 1 e DEGRADED_MODE)
+runs/gate-b29/g5b.sh: line 136: 40009 Killed                  $INJ --minority isn3 --duration "$DUR" --marker "$M" > "$OUT/inj.log" 2>&1
+rc_injetor=137
+PASS injetor saiu com rc=137 (128+SIGKILL)
+PASS corte PERSISTIU por >= 15 s apos o KILL (clsact presente, sem marcador end, sem MergeView)
+PASS sem marcador end (esperado)
+PASS --heal rc=0
+PASS sem clsact apos --heal
+PASS MergeView de 3 membros nos 3 logs apos o heal
+size=3 HEALTHY apos 53 s desde t_heal
+dead-man desarmado: tcc-heal-39356-21867
+ok 0 timers tcc-heal
+PASS dead-man desarmado SO depois de o cluster estar saudavel
+PASS cronologia coerente: t_start t_split_confirmado t_kill t_persistencia_ok t_heal t_mergeview t_saudavel t_desarmado
+"health_status":"HEALTHY","number_of_nodes":3
+"health_status":"HEALTHY","number_of_nodes":3
+"health_status":"HEALTHY","number_of_nodes":3
+ok sem clsact em isn1: qdisc noqueue 0: root refcnt 2
+ok sem netem em isn1: qdisc noqueue 0: root refcnt 2
+ok sem clsact em isn2: qdisc noqueue 0: root refcnt 2
+ok sem netem em isn2: qdisc noqueue 0: root refcnt 2
+ok sem clsact em isn3: qdisc noqueue 0: root refcnt 2
+ok sem netem em isn3: qdisc noqueue 0: root refcnt 2
+ok 0 timers tcc-heal
+PASS sem ISPN000524/ISPN100014/ISPN000638 nos logs
+G-5b-A concluido: ver runs/gate-b29/g5b-A/resultado.txt

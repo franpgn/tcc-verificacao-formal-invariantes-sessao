@@ -1,0 +1,2 @@
+[2026-11-04T22:41:54Z] inject-partition.sh: Heal: removendo clsact em isn3 (iface eth0)
+[2026-11-04T22:41:54Z] inject-partition.sh:   isn3 (pid 1711): clsact removido (ou ja ausente)

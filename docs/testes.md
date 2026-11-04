@@ -281,3 +281,32 @@ Mutacao (`mutacao-gate-v4.sh`): bateria completa no Git Bash, 36 mutantes (19 de
 - `g5b.test.sh`: vigias em segundo plano sem limite penduravam a suite; agora `espera_cond` de 90 s, `G_CASO_TIMEOUT=240 s` por caso e `MUT_TIMEOUT=1200 s` por mutante (cherry-pick de `111e673`).
 - `T-b-6d` e `T-b-8f` falhavam no WSL por corrida do teste (o vigia so escrevia `nodes2` depois de `heal.log`/`journal-unit.txt`); o gatilho passou a ser `rc_injetor=` em `estado.txt` (cherry-pick de `ff18fe3`).
 - `verbatim.sh`: sob `pipefail` no Linux, o `awk` saia no fence de fechamento e o `tr` morria por SIGPIPE (141), falhando a extracao; o `awk` agora consome toda a entrada.
+
+## Ensaio do F1 silencioso: teste sem VM do `ensaio-f1.sh` (2026-11-04)
+
+`runs/ensaio-f1-silencioso-2026-11-04/ensaio-f1.test.sh` (prompt `docs/prompt-worker-ensaio-f1-2026-11-04.md`, roteiro
+`runs/ensaio-f1-silencioso-2026-11-04/ROTEIRO-ENSAIO-F1.md`). Roda **sozinho**, sem VM, com *shims* de `sudo`, `podman`
+(`inspect`, `logs -t`, `events`, `kill`, `start`), `nsenter`, `ip`, `tc`, `readlink`, `flock`, `systemctl`, `curl`, `java`
+(*stub* do workload e do `VerificadorSanidade`), `python3`, `uname`, `hostname` e `pgrep`, numa árvore falsa
+`$HOME/tcc-gate` e com um `--rb-dir` falso montado dos *blobs* de `20805b0`: o `inject-crash.sh` é o **real**; o
+`run-rebaseline.sh` é o real com as constantes de tempo encurtadas (DURACAO=8, INJ_OFFSET=2, F1_DUR=2, K1 1/1/6 s,
+volta 6 s), lidas pelo ensaio como na VM. O *shim* do `podman` e o do `ip` registram a origem de cada chamada pelo
+`/proc/$PPID/cmdline` (injetor, ensaio ou outro).
+
+Cobre: tabela de *hashes* = *blobs* de `20805b0` + jar congelado e lista `003814e9…`; `stats`/`tcp_s`/`saude_loop`
+verbatim do `s5.sh`; rc lido na mesma linha em todo `| tee`; nenhuma constante do PR nem `montar_cmd` redigitados;
+argumentos (exit 2) e `--dry-run`; caminho feliz das 4 execuções (F-1..F-10, RESULTADO e LEITURA HUMANA, `--avaliar`
+igual, manifesto); 23 pré-condições (mais `TCC_DIR`) que falham antes de qualquer injeção; GO ausente ou com rótulo errado; as paradas
+(Δdet 29 s em isn1 e em isn3, 30 s no limite passa, volta acima do prazo, injetor exit 1, 2 e 5, workload sem âncora);
+`--so 2` e `--so 3`; `THREADS=8` no `--rb-dir` chega ao workload; F-n violados na execução e por mutação dos brutos;
+Ctrl-C real ao grupo (`set -m`, `kill -INT -<pgid>`) durante o F1 com carga; a senha em nenhum arquivo do `vm-<UTC>/`.
+
+Não prova: Podman, Infinispan, o formato real de `podman events --format json` (o campo `ContainerExitCode` foi escrito
+contra a estrutura documentada) e de `podman logs -t`, o workload Java nem a VM.
+
+Resultado (Git Bash, Windows, bash 5.3, sozinho): **444 PASS / 0 FAIL em 1526 s** (caminho feliz das 4: 115 s; `--so 3`:
+49 s). Mutantes (cada um uma troca no script, rodado contra as seções do teste indicadas), **6 de 6 mortos**: M1 Δdet sem
+a parada de 30 s (T-5: 7 FAIL); M2 F-2 aceitando 143 (T-7: 2 FAIL); M3 F-3 com tolerância de ±5 s (T-2+T-8: 6 FAIL); M4
+senha gravada no `parametros.txt` (T-2: 1 FAIL); M5 constantes redigitadas depois da leitura (T-0+T-1: 3 FAIL); M6 só a
+primeira execução com portão K1 (T-2: 5 FAIL). Defeito real achado pelo teste antes do `feat`: o laço das execuções lia a
+tabela por `done <<<`, e o `read` do GO dentro dele consumia a tabela em vez do terminal (corrigido com o fd 3).

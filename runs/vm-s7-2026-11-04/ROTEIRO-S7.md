@@ -10,13 +10,14 @@ O `s7.sh` não injeta, não cura, não desarma e não digita o GO.
 
 Não prova (§5.7 e §5.8): a **precisão do timer de produção**. A unit do S7 tem `AccuracySec=1s` e a de produção não; o S7 prova o **corpo** do dead-man de produção (o que ele executa), não quando o timer de produção dispara, que pode atrasar até 60 s (R-3 da V-S2). Também não prova o tempo de fusão (dado de segurança, não é t_merge), a queda da VM nem a perda da sessão `tmux`. Estas partições não entram no conjunto do G-4.
 
-## Antes do GO, o Gestor precisa saber
+## Antes do GO, quem roda o bloco precisa saber
 
 - **O nó isn3 fica cortado até ~145 s depois de armar.** **Não curar à mão**: qualquer `--heal` manual invalida o bloco (§5.7), e o detector do journal do `sudo` (D-1) vai registrá-lo.
 - **Se o dead-man não disparar** até 145 + 10 + 30 = **185 s** depois de armar, o `g5b.sh` falha e o trap dele cura (o bloco fica como falha do dead-man). Só se o próprio `g5b.sh` travar use a cura manual, em `~/tcc-gate`: `PODMAN='sudo podman' bash scripts/inject-partition.sh --heal --minority isn3`, sabendo que o bloco fica registrado como falha do dead-man (**Q-16**, pendente). O `s7.sh` imprime este aviso logo antes do prompt.
-- **O GO é digitado pelo Gestor** no prompt do `g5b.sh`, em **até 15 min**; depois disso responda qualquer outra coisa (aborta sem armar) e recomece.
+- **Quem dá o GO (autorizado pelo Gestor em 2026-11-04).** Em 04/11 o Gestor autorizou o coordenador a rodar sozinho os blocos de VM (S5, S6, S7 e as campanhas noturnas), sem a presença dele. O GO continua sendo dado bloco a bloco, **digitado pelo coordenador** num terminal `tmux` da VM, sob essa autorização. O mecanismo `exigir_go` e os scripts não mudam: o GO continua vindo de um terminal. O coordenador acompanha o bloco até a cura. As regras de parada e de cura manual são as mesmas.
+- **O GO é digitado pelo coordenador** (autorizado pelo Gestor em 2026-11-04) no prompt do `g5b.sh`, em **até 15 min**; depois disso responda qualquer outra coisa (aborta sem armar) e recomece.
 - **O S6 tem de ter rodado antes** (§5.7, "A antes de B"): o `s7.sh` exige `runs/gate-b29/g5b-A/resultado.txt` e um portão 5.1 limpo entre os dois (o portão pré do S7).
-- **Presença** do GO até o fim do `g5b.sh` (cerca de 3,5 min).
+- **O coordenador acompanha o bloco até a cura**, do GO até o fim do `g5b.sh` (cerca de 3,5 min).
 - **Host** sem TLC, `mvn` ou carga pesada do início ao fim do portão pós.
 - **Ctrl-C** chega também ao `g5b.sh`, cujo trap faz o `--heal` (o que, no modo B, invalida o bloco). O `s7.sh` encerra o coletor, grava `interrompido` e sai com 130.
 

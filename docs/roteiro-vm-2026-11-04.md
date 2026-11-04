@@ -26,11 +26,11 @@
 flowchart TB
     P0["0. Abertura: Gestor responde Q-01..Q-10; leitura da VM"]
     P1["1. Pre-S5: bundle v4f, go.log (Q-01), hashes"]
-    S5["2. S5 (L-1/L-2), GO do Gestor"]
+    S5["2. S5 (L-1/L-2), GO do coordenador"]
     V5["3. Copia + V-S5 (Senior)"]
-    S6["4. S6 (G-5b-A), GO do Gestor"]
+    S6["4. S6 (G-5b-A), GO do coordenador"]
     V6["5. Copia + V-S6A (Senior)"]
-    S7["6. S7 (G-5b-B), GO do Gestor"]
+    S7["6. S7 (G-5b-B), GO do coordenador"]
     V7["7. Copia + V-S6B (Senior)"]
     F1["8. Ensaio do F1 silencioso na VM (Q-17)"]
     PR["9. Disco + checklist 10.6 de dia + recriacao do cluster"]
@@ -42,7 +42,7 @@ flowchart TB
 ```
 
 Regras que valem o dia todo: um bloco por vez, com parada e validação do Senior sobre os **brutos** antes do seguinte
-(§5.1); GO só do Gestor, presente, digitado no prompt do próprio script; nada de TLC, `mvn test` ou suíte pesada no host
+(§5.1); GO bloco a bloco, digitado pelo coordenador num terminal `tmux` da VM, no prompt do próprio script (autorizado pelo Gestor em 2026-11-04: o coordenador roda sozinho o S5, o S6, o S7 e as campanhas noturnas, sem a presença do Gestor; `exigir_go` e scripts sem mudança; o coordenador acompanha o bloco até a cura; regras de parada e de cura manual sem mudança); nada de TLC, `mvn test` ou suíte pesada no host
 durante uma janela de injeção e nos 5 min antes e depois (§1.7 das decisões de 16/10), o que inclui os testes do Worker;
 toda escrita na VM fora dos scripts aprovados (por exemplo o `git checkout` da Q-01) só com autorização do Gestor, e com o
 comando e a saída nos brutos.
@@ -53,12 +53,12 @@ comando e a saída nos brutos.
 |---|---|---|---|---|
 | 0 | Abertura: o Gestor lê este roteiro e responde Q-01..Q-10; coordenador confere IP (`Get-NetNeighbor`), `boot_id`, cluster, locks e `git status --porcelain --untracked-files=no` na VM (só leitura) | Gestor + coordenador | 30 a 45 min | nada |
 | 1 | Pré-S5: levar o v4f (Q-02), `git bundle verify`, `fetch`, `checkout 9c18ec8`; resolver o `go.log` (Q-01); `sha256sum runs/vm-s5-2026-10-28/s5.sh` = `28766575…addac` (revisão de 04/11 depois da queda; bundle v4h de `1266c12` até a ponta, que substitui o v4f e o v4g) | coordenador | 15 min | Q-01, Q-02 |
-| 2 | S5 conforme `runs/vm-s5-2026-10-28/ROTEIRO-S5.md`; o prompt do GO aparece em ~3,5 min; GO em até 15 min do prompt (R-5) | Gestor presente | ~11 min + espera do GO | Q-03..Q-10 |
+| 2 | S5 conforme `runs/vm-s5-2026-10-28/ROTEIRO-S5.md`; o prompt do GO aparece em ~3,5 min; GO em até 15 min do prompt (R-5) | coordenador (GO autorizado pelo Gestor em 2026-11-04), acompanha o bloco até a cura | ~11 min + espera do GO | Q-03..Q-10 |
 | 3 | Cópia dos brutos para o host com `sha256sum -c`; V-S5 pelo Senior (leitura humana de P-1, P-2, R-7) | coordenador + Senior | 5 + 30 a 45 min | S5 |
 | 3a | Em paralelo com a V-S5: levar o v4g à VM (`fetch` + `checkout`, não toca no cluster), se a V-s6s7sh já tiver saído | coordenador | 10 min | V-s6s7sh, Q-02 |
-| 4 | S6 conforme `runs/vm-s6-2026-11-04/ROTEIRO-S6.md` (a ser entregue pelo Worker), `--bloco-anterior` = o `vm-<UTC>/` do S5 | Gestor presente | ~13 min + GO (seção 5) | V-S5 aprovada, Q-11..Q-16 |
+| 4 | S6 conforme `runs/vm-s6-2026-11-04/ROTEIRO-S6.md` (a ser entregue pelo Worker), `--bloco-anterior` = o `vm-<UTC>/` do S5 | coordenador (GO autorizado pelo Gestor em 2026-11-04), acompanha o bloco até a cura | ~13 min + GO (seção 5) | V-S5 aprovada, Q-11..Q-16 |
 | 5 | Cópia + V-S6A | coordenador + Senior | 5 + 30 a 45 min | S6 |
-| 6 | S7 conforme `ROTEIRO-S7.md`, `--bloco-anterior` = o `vm-<UTC>/` do S6 | Gestor presente | ~14 min + GO (seção 5) | V-S6A aprovada |
+| 6 | S7 conforme `ROTEIRO-S7.md`, `--bloco-anterior` = o `vm-<UTC>/` do S6 | coordenador (GO autorizado pelo Gestor em 2026-11-04), acompanha o bloco até a cura | ~14 min + GO (seção 5) | V-S6A aprovada |
 | 7 | Cópia + V-S6B | coordenador + Senior | 5 + 30 a 45 min | S7 |
 | 8 | Ensaio do F1 silencioso (§4.2 do `prompt-f1-kill-2026-10-27.md`) pelo `ensaio-f1.sh` (prompt `docs/prompt-worker-ensaio-f1-2026-11-04.md`): 2 F1 sem carga e 2 com carga (S1 sync e S1 async, 300 s). O cluster atual **não tem os caches ASYNC** (XML `8792dea3…`, do gate v4); ver Q-17 | Gestor presente no GO | 1,5 a 2 h + leitura do Senior ~45 min | V-S6B, Q-17 |
 | 9 | Disco (seção 7 e Q-19/Q-20); itens "de dia" da checklist 10.6 (`wt-ctrl-integ/docs/relatorio-rebaseline-runner-2026-10-23.md`); *bundle* do *rebaseline* (`git archive 20805b0` + jar congelado `5eced136…`, lista `003814e9…`); anotar o instante UTC e recriar o cluster; pré-voo sem injeção | coordenador + Gestor | 45 min a 1 h | ensaio lido, Q-19 |
@@ -82,14 +82,14 @@ O piloto e a sua validação, mais 2 h 30 min a 3 h 30 min. Começando às 09:00
    não têm esse problema (Q-11).
 3. **Bundle.** O `ROTEIRO-S5.md` diz que o `s5.sh` chega à VM "só pelo bundle, depois da aprovação" (Q-02).
 
-## 5. S6 e S7: o que o Gestor precisa saber antes de cada GO
+## 5. S6 e S7: o que quem roda o bloco precisa saber antes de cada GO (GO do coordenador, autorizado pelo Gestor em 2026-11-04)
 
 Detalhe completo no prompt do Worker (`docs/prompt-worker-s6-s7-g5b-2026-11-04.md`) e, quando entregues, nos
 `ROTEIRO-S6.md`/`ROTEIRO-S7.md`.
 
 - **S6 (G-5b-A).** O `g5b.sh A` arma o dead-man para 120 + 90 = 210 s (com `AccuracySec=1s`), corta isn3 por até 120 s,
   espera o split aparecer nos logs, mata o injetor com `kill -KILL` em +70 s, confere que o corte continua por 15 s e faz
-  a cura manual (`--heal`). Depois espera `MergeView` de 3 e `HEALTHY` x3 e só então desarma. O Gestor não precisa fazer
+  a cura manual (`--heal`). Depois espera `MergeView` de 3 e `HEALTHY` x3 e só então desarma. O coordenador não precisa fazer
   nada além do GO. Duração: pré-condições e portão pré ~3 min até o prompt; depois do GO, ~2,5 a 4,5 min de bloco e ~6 min
   de portão pós.
 - **S7 (G-5b-B).** Mesma injeção e mesmo KILL, mas **ninguém cura**: o dead-man (prazo 145 s) é o único agente. isn3 fica
@@ -217,6 +217,8 @@ da noite mais 3 GB.
   `docs/prompt-worker-ensaio-f1-2026-11-04.md` (escrito em 04/11), com as perguntas E-1..E-7 dele pendentes do Gestor.
 
 ## 9. Perguntas ao Gestor
+
+> Atualização de 2026-11-04: Q-10 e Q-16 respondidas pela autorização do Gestor. O GO de cada bloco (S5, S6, S7 e campanhas noturnas) é digitado pelo coordenador num terminal `tmux` da VM, autorizado pelo Gestor em 2026-11-04; o coordenador acompanha o bloco até a cura; as regras de parada e de cura manual não mudam.
 
 | # | Pergunta | Recomendação do Senior |
 |---|---|---|

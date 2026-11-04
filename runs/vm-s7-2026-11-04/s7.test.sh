@@ -257,13 +257,13 @@ roda() {
     S7T_G5B_REAL="$REPO/runs/gate-b29/g5b.sh" S7T_BOOT_FILE="$T/boot_id" \
     S7_TESTE=1 S7_HASHES="$T/hashes" S7_BOOT_ID_FILE="$T/boot_id" S7_COMMIT_REF="$REF" S7_INJ_LOCK="$T/inject-partition-isn3.lock" \
     S7_PORTAO_MIN_S=1 S7_PORTAO_FOLGA_S=0 S7_SAUDE_S=2 S7_TC_S=1 S7_ESPERA_GO_S=30 S7_ESPERA_COLETOR_S=30 \
-    S7_DUR=8 S7_T_KILL_S=4 S7_MARGEM_S=6 S7_TOL_S=5 S7_G5B_FOLGA=3 S7_D2_PRE_FIRE_S=2 S7_PERSISTE_S=2 S7_D2_FOLGA_S=1 S7_POS_FALHA_EXTRA_S=2 S7_POS_FALHA_AMOSTRA_S=1 \
+    S7_DUR=8 S7_T_KILL_S=4 S7_MARGEM_S=6 S7_TOL_S=5 S7_G5B_FOLGA=3 S7_D2_PRE_FIRE_S=2 S7_PERSISTE_S=2 S7_POS_FALHA_EXTRA_S=2 S7_POS_FALHA_AMOSTRA_S=1 \
     "$@" bash "$G/runs/vm-s7-2026-11-04/s7.sh" --boot-esperado "${ARG_BOOT:-$BOOT}" --bloco-anterior "${ARG_ANT:-$ANT}" 2>&1)"; RC=$?
   OUT="$(ls -d "$G/runs/vm-s7-2026-11-04"/vm-* 2>/dev/null | head -1)"
   sleep 0.3
 }
 # variaveis de ambiente do --avaliar (os mesmos limites curtos do roda)
-AVENV=(S7_TESTE=1 S7_SAUDE_S=2 S7_TC_S=1 S7_DUR=8 S7_T_KILL_S=4 S7_MARGEM_S=6 S7_TOL_S=5 S7_G5B_FOLGA=3 S7_D2_PRE_FIRE_S=2 S7_PERSISTE_S=2 S7_D2_FOLGA_S=1)
+AVENV=(S7_TESTE=1 S7_SAUDE_S=2 S7_TC_S=1 S7_DUR=8 S7_T_KILL_S=4 S7_MARGEM_S=6 S7_TOL_S=5 S7_G5B_FOLGA=3 S7_D2_PRE_FIRE_S=2 S7_PERSISTE_S=2)
 avalia() { env "${AVENV[@]}" bash "$S7" --avaliar "$1"; }
 nada_destrutivo() { # nada_destrutivo <rotulo>: nem dry-run, nem portao, nem g5b.sh
   ok "$1: g5b.sh nao chamado (nem --dry-run)" 0 "$(grep -c '^G5BSTUB' "$T/shim.log")"
@@ -412,7 +412,7 @@ contem "T-2 avaliacao: VALIDO" "S7: VALIDO" "$AV"; nao "T-2 avaliacao sem FALHA"
 for c in B1/A1 B1/A2 B1/A3 B1/A4 B1/A5 B1/A6 B1/A11 B2 B3 B4 B5 B6 B7 D-1 D-2 D-3; do contem "T-2 avaliacao: $c OK" "OK: $c " "$AV"; done
 contem "T-2 avaliacao: A12 intervalo do saude-log OK" "OK: intervalo maximo do saude-log em janela/saude.csv" "$AV"
 contem "T-2 avaliacao: D-1 sem cura da sessao" "OK: D-1 detector do sudo: 0 tc qdisc del ... clsact da sessao desde t_kill" "$AV"
-contem "T-2 avaliacao: D-1 dels da unit como leitura humana" "LEITURA HUMANA: D-1 1 tc qdisc del ... clsact da unit do dead-man desde t_kill" "$AV"
+contem "T-2 avaliacao: D-1 del da unit entre t_kill e t_fire + 1 s (Q-13, duvida 5)" "OK: D-1 1 tc qdisc del ... clsact da unit do dead-man entre t_kill e t_fire + 1 s" "$AV"
 contem "T-2 avaliacao: inicio da unit no journal x t_fire" "LEITURA HUMANA: inicio da unit no journal" "$AV"
 contem "T-2 avaliacao: limite do AccuracySec declarado" "o S7 prova o CORPO do dead-man de producao" "$AV"
 ok "T-2 nenhum systemctl stop (o dead-man nunca e desarmado)" 0 "$(grep -c "systemctl stop" "$T/shim.log")"
@@ -547,6 +547,13 @@ av() { # av <rotulo> <trecho-esperado> <comando-de-mutacao (roda em $M)>
 avok() { rm -rf "$T/m"; cp -r "$B" "$T/m"; M="$T/m"; ( cd "$M" && eval "$3" ); X=$(avalia "$M"); local r=$?
   ok "T-7 $1: rc 0" 0 "$r"; contem "T-7 $1: $2" "$2" "$X"; contem "T-7 $1: VALIDO" "S7: VALIDO" "$X"; }
 X=$(avalia "$B"); ok "T-7 copia boa: VALIDO" 0 $?
+amostra_tc() { # amostra_tc <t_ns> <clsact>: acrescenta a janela/tc-isn3.csv (copia) uma amostra no instante dado
+  awk -F, -v t="$1" -v c="$2" 'BEGIN{OFS=","} NR==2 {$1=t; $2=c; print; exit}' janela/tc-isn3.csv > y; cat y >> janela/tc-isn3.csv; rm -f y; }
+encurta_pers() { # encurta_pers <ns desde t_kill>: t_persistencia_ok = t_kill + ns; so as amostras de persistencia ate ali (>= 1)
+  local C=g5b-B-copia/cronologia.txt tk tpo; tk=$(sed -n 's/^t_kill=//p' $C); tpo=$(( tk + $1 ))
+  sed -i "s/^t_persistencia_ok=.*/t_persistencia_ok=$tpo/" $C
+  awk -v b="$tpo" '$1 + 0 <= b + 0' g5b-B-copia/persistencia.txt > x; [ -s x ] || echo "$(( tk + 1 )) clsact presente, sem end" > x
+  mv x g5b-B-copia/persistencia.txt; }
 # utilitarios das mutacoes (rodam dentro de $M)
 CR='C=g5b-B-copia/cronologia.txt; cr() { sed -n "s/^$1=//p" $C; }; poe() { sed -i "s/^$1=.*/$1=$2/" $C; }'
 # utilitarios das mutacoes do S7 (rodam dentro de $M, num subshell do av/avok)
@@ -554,6 +561,11 @@ arma() { # arma <ns de t_depois_armar ate t_fire>: muda so a armacao e o tempos.
   local C=g5b-B-copia/cronologia.txt tf a1 a0; tf=$(sed -n 's/^t_fire=//p' $C); a1=$(( tf - $1 )); a0=$(( a1 - 116000000 ))
   sed -i "s/^t_antes_armar=.*/t_antes_armar=$a0/; s/^t_depois_armar=.*/t_depois_armar=$a1/" $C
   echo "delta_desde_antes_de_armar_ms=$(( (tf - a0) / 1000000 )) delta_desde_depois_de_armar_ms=$(( (tf - a1) / 1000000 )) prazo_s=14 tolerancia_s=5" > g5b-B-copia/tempos.txt; }
+sem_del_unit() { # tira do journal do sudo (copia) os dels vindos da unit do dead-man
+  local u; u=$(sed -n 's/^unit=\([^ ]*\).*/\1/p' g5b-B-copia/unit-armada.txt); grep -v "$u.service" 05-sudo-journal.txt > x; mv x 05-sudo-journal.txt; }
+del_unit_em() { # del_unit_em <t_us>: um tc qdisc del ... clsact vindo da unit do dead-man no instante dado
+  local u; u=$(sed -n 's/^unit=\([^ ]*\).*/\1/p' g5b-B-copia/unit-armada.txt)
+  jsudo "$1" 'COMMAND=/usr/bin/nsenter -t 4003 -n tc qdisc del dev eth0 clsact' "$u.service"; }
 jsudo() { # jsudo <t_us> <MESSAGE (depois de 'USER=root ; ')> <_SYSTEMD_UNIT>: acrescenta uma entrada ao journal do sudo (-o json)
   printf '{"__REALTIME_TIMESTAMP":"%s","MESSAGE":"  server1 : TTY=pts/2 ; PWD=/x ; USER=root ; %s","_SYSTEMD_UNIT":"%s","_COMM":"sudo"}\n' "$1" "$2" "$3" >> 05-sudo-journal.txt; }
 formato_real() { # formato_real [descricao-do-timer]: reescreve a unit no formato real do systemd 255 (como em runs/vm-s3-2026-10-28/vm/l0c/unit-armada.txt)
@@ -580,7 +592,17 @@ av "B1/A5 rc_injetor=143 (M2)" "FALHA: B1/A5 rc_injetor=143" "sed -i 's/^rc_inje
 av "B1/A5 marcador end presente" "FALHA: B1/A5" "echo 'fault=F2 node=isn3 event=end t_epoch_ns=1' >> g5b-B-copia/marcadores.txt"
 av "B1/A6 sem clsact antes do KILL" "FALHA: B1/A6 estado.txt sem clsact antes do KILL" "sed -i '/clsact/d' g5b-B-copia/estado.txt"
 av "B1/A6 sem clsact depois do KILL" "FALHA: B1/A6 qdisc-apos-kill.txt sem clsact" "sed -i '/clsact/d' g5b-B-copia/qdisc-apos-kill.txt"
-av "B1/A6 persistencia de 2 s menos 1 ms" "FALHA: B1/A6 t_persistencia_ok - t_kill" "$CR; poe t_persistencia_ok \$(( \$(cr t_kill) + 1999000000 ))"
+# R-1 da V-s6s7sh (decisao do Gestor, 2026-11-04): FALHA so abaixo do limite que o g5b.sh garante (PERSISTE_S - 1 s; no
+# teste PERSISTE_S=2, entao 1 s); em [PERSISTE_S - 1, PERSISTE_S) s sai como RESULTADO/LEITURA HUMANA com o valor exato
+av "B1/A6 persistencia de 1 s menos 1 ms: abaixo do limite garantido pelo g5b.sh (R-1)" "FALHA: B1/A6 t_persistencia_ok - t_kill = 0.999 s < 1 s (limite garantido pelo g5b.sh" "encurta_pers 999000000"
+avok "B1/A6 persistencia de 2 s menos 1 ms, em [1, 2) s: RESULTADO com o valor exato (R-1)" "RESULTADO: B1/A6 t_persistencia_ok - t_kill = 1.999 s, em [1, 2) s" "encurta_pers 1999000000"
+contem "T-7 B1/A6 em [1, 2) s: LEITURA HUMANA com o valor exato (R-1)" "LEITURA HUMANA: B1/A6 persistencia de 1.999 s" "$X"
+contem "T-7 B1/A6 em [1, 2) s: o B1/A6 continua OK (com o limite de 1 s)" "OK: B1/A6 " "$X"
+avok "B1/A6 persistencia de exatamente 1 s: RESULTADO, nao FALHA (R-1)" "RESULTADO: B1/A6 t_persistencia_ok - t_kill = 1.000 s, em [1, 2) s" "encurta_pers 1000000000"
+X=$(avalia "$B"); nao "T-7 copia boa (persistencia >= 2 s): sem RESULTADO de faixa do B1/A6" "RESULTADO: B1/A6 t_persistencia_ok" "$X"
+X=$(bash "$S7" --avaliar "$B")   # limites de producao (sem o modo de teste): PERSISTE_S=15
+contem "T-7 limites de producao: FALHA abaixo de 14 s, RESULTADO em [14, 15) s (R-1)" "persistencia>=14s (RESULTADO em [14, 15) s)" "$X"
+contem "T-7 limites de producao: a copia boa (persistencia de ~3 s) da FALHA < 14 s" "s < 14 s (limite garantido pelo g5b.sh" "$X"
 av "B1/A6 persistencia.txt vazio (MS-4)" "FALHA: B1/A6 persistencia.txt: 0 amostra(s)" ": > g5b-B-copia/persistencia.txt"
 av "B1/A6 MergeView entre o KILL e a persistencia" "FALHA: B1/A6 05-vistas.log" \
    "$CR; t=\$(( (\$(cr t_kill) + 1000000000) / 1000000000 )); echo \"\$(date -u -d @\$t +'%Y-%m-%d %H:%M:%S'),000 INFO  [o.i.CLUSTER] ISPN000093: MergeView::[isn2|6] (3) [a, b, c]\" >> 05-vistas.log"
@@ -624,13 +646,29 @@ av "D-1 cura manual (del da sessao) depois do KILL" "FALHA: D-1 detector do sudo
 av "D-1 o del da unit vira sessao (M4: sem filtro de origem)" "FALHA: D-1 detector do sudo: 1 tc qdisc del ... clsact da sessao" \
    "u=\$(sed -n 's/^unit=\([^ ]*\).*/\1/p' g5b-B-copia/unit-armada.txt); sed -i \"s/\$u.service/session-3.scope/\" 05-sudo-journal.txt"
 avok "D-1 dels da sessao antes do KILL (pre-limpeza e sonda do injetor) nao contam" "OK: D-1 detector do sudo: 0" "[ \$(grep -c 'tc qdisc del dev eth0 clsact' 05-sudo-journal.txt) -ge 3 ]"
-avok "D-1 sem del da unit: so leitura humana" "nada provou ainda que o sudo de root dentro da unit e registrado" \
-   "u=\$(sed -n 's/^unit=\([^ ]*\).*/\1/p' g5b-B-copia/unit-armada.txt); grep -v \"\$u.service\" 05-sudo-journal.txt > x; mv x 05-sudo-journal.txt"
+# Q-13/duvida 5 da V-s6s7sh (decisao do Gestor, 2026-11-04): 0 dels da unit entre t_kill e t_fire + 1 s e FALHA; o 1 s e a
+# resolucao da sondagem que mede t_fire (g5b.sh:174; rastreabilidade 4.5)
+av "D-1 sem del da unit do dead-man (Q-13, duvida 5)" "FALHA: D-1 0 tc qdisc del ... clsact da unit do dead-man entre t_kill e t_fire + 1 s (0 desde t_kill)" \
+   "sem_del_unit"
+av "D-1 del da unit 1 ms depois de t_fire + 1 s (Q-13, rastreabilidade 4.5)" "FALHA: D-1 0 tc qdisc del ... clsact da unit do dead-man entre t_kill e t_fire + 1 s (1 desde t_kill)" \
+   "sem_del_unit; del_unit_em \$(( \$(sed -n 's/^t_fire=//p' g5b-B-copia/cronologia.txt) / 1000 + 1001000 ))"
+avok "D-1 del da unit em t_fire + 1 s exato (limite, Q-13, rastreabilidade 4.5)" "OK: D-1 1 tc qdisc del ... clsact da unit do dead-man entre t_kill e t_fire + 1 s" \
+   "sem_del_unit; del_unit_em \$(( \$(sed -n 's/^t_fire=//p' g5b-B-copia/cronologia.txt) / 1000 + 1000000 ))"
+av "D-1 del da unit so antes de t_kill (Q-13, duvida 5)" "FALHA: D-1 0 tc qdisc del ... clsact da unit do dead-man entre t_kill e t_fire + 1 s (0 desde t_kill)" \
+   "sem_del_unit; del_unit_em \$(( \$(sed -n 's/^t_kill=//p' g5b-B-copia/cronologia.txt) / 1000 - 1000 ))"
 av "D-1 journal do sudo ausente" "FALHA: D-1" "rm 05-sudo-journal.txt"
 av "D-2 amostra sem clsact durante o corte" "FALHA: D-2 serie tc de isn3 incoerente" \
    "$CR; a=\$(( \$(cr t_start) + 1000000000 )); h=\$(( \$(cr t_fire) - 2000000000 )); awk -F, -v a=\"\$a\" -v h=\"\$h\" 'BEGIN{OFS=\",\"} NR>1 && \$1+0>=a+0 && \$1+0<=h+0 && !d {\$2=\"0\"; d=1} {print}' janela/tc-isn3.csv > x && mv x janela/tc-isn3.csv"
 av "D-2 clsact depois do disparo" "FALHA: D-2 serie tc de isn3 incoerente" \
    "$CR; h=\$(( \$(cr t_fire) + 1000000000 )); awk -F, -v h=\"\$h\" 'BEGIN{OFS=\",\"} NR>1 && \$1+0>=h+0 && !d {\$2=\"1\"; d=1} {print}' janela/tc-isn3.csv > x && mv x janela/tc-isn3.csv"
+# Rastreabilidade 4.4 (decisao do Gestor, 2026-11-04): folga do D-2 de 0 s depois de t_start e de 1 s depois de t_fire
+av "D-2 amostra sem clsact em t_start exato (folga 0 s)" "FALHA: D-2 serie tc de isn3 incoerente" \
+   "$CR; amostra_tc \$(cr t_start) 0"
+av "D-2 amostra com clsact em t_fire + 1 s exato (folga 1 s)" "FALHA: D-2 serie tc de isn3 incoerente" \
+   "$CR; amostra_tc \$(( \$(cr t_fire) + 1000000000 )) 1"
+avok "D-2 amostra com clsact em t_fire + 1 s - 1 ms fica fora do teste" "OK: D-2 serie tc de isn3" \
+   "$CR; amostra_tc \$(( \$(cr t_fire) + 999000000 )) 1"
+contem "T-7 D-2 cita as folgas (0 s depois do start, 1 s depois de t_fire)" "t_start+0s" "$X"
 av "D-2 serie vazia" "FALHA: D-2" "head -1 janela/tc-isn3.csv > x && mv x janela/tc-isn3.csv"
 av "D-2 serie truncada logo depois do disparo (MS-5)" "FALHA: D-2 serie tc de isn3 incoerente" \
    "$CR; h=\$(( \$(cr t_fire) + 1000000000 )); awk -F, -v h=\"\$h\" 'NR==1 || \$1+0 < h+0' janela/tc-isn3.csv > x && mv x janela/tc-isn3.csv"

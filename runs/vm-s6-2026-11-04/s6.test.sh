@@ -256,13 +256,13 @@ roda() {
     S6T_G5B_REAL="$REPO/runs/gate-b29/g5b.sh" S6T_BOOT_FILE="$T/boot_id" \
     S6_TESTE=1 S6_HASHES="$T/hashes" S6_BOOT_ID_FILE="$T/boot_id" S6_COMMIT_REF="$REF" S6_INJ_LOCK="$T/inject-partition-isn3.lock" \
     S6_PORTAO_MIN_S=1 S6_PORTAO_FOLGA_S=0 S6_SAUDE_S=2 S6_TC_S=1 S6_ESPERA_GO_S=30 S6_ESPERA_COLETOR_S=30 \
-    S6_DUR=8 S6_T_KILL_S=4 S6_MARGEM_S=90 S6_PERSISTE_S=2 S6_D2_FOLGA_S=1 S6_POS_FALHA_EXTRA_S=2 S6_POS_FALHA_AMOSTRA_S=1 \
+    S6_DUR=8 S6_T_KILL_S=4 S6_MARGEM_S=90 S6_PERSISTE_S=2 S6_POS_FALHA_EXTRA_S=2 S6_POS_FALHA_AMOSTRA_S=1 \
     "$@" bash "$G/runs/vm-s6-2026-11-04/s6.sh" --boot-esperado "${ARG_BOOT:-$BOOT}" --bloco-anterior "${ARG_ANT:-$ANT}" 2>&1)"; RC=$?
   OUT="$(ls -d "$G/runs/vm-s6-2026-11-04"/vm-* 2>/dev/null | head -1)"
   sleep 0.3
 }
 # variaveis de ambiente do --avaliar (os mesmos limites curtos do roda)
-AVENV=(S6_TESTE=1 S6_SAUDE_S=2 S6_TC_S=1 S6_DUR=8 S6_T_KILL_S=4 S6_MARGEM_S=90 S6_PERSISTE_S=2 S6_D2_FOLGA_S=1)
+AVENV=(S6_TESTE=1 S6_SAUDE_S=2 S6_TC_S=1 S6_DUR=8 S6_T_KILL_S=4 S6_MARGEM_S=90 S6_PERSISTE_S=2)
 avalia() { env "${AVENV[@]}" bash "$S6" --avaliar "$1"; }
 nada_destrutivo() { # nada_destrutivo <rotulo>: nem dry-run, nem portao, nem g5b.sh
   ok "$1: g5b.sh nao chamado (nem --dry-run)" 0 "$(grep -c '^G5BSTUB' "$T/shim.log")"
@@ -531,6 +531,13 @@ av() { # av <rotulo> <trecho-esperado> <comando-de-mutacao (roda em $M)>
 avok() { rm -rf "$T/m"; cp -r "$B" "$T/m"; M="$T/m"; ( cd "$M" && eval "$3" ); X=$(avalia "$M"); local r=$?
   ok "T-7 $1: rc 0" 0 "$r"; contem "T-7 $1: $2" "$2" "$X"; contem "T-7 $1: VALIDO" "S6: VALIDO" "$X"; }
 X=$(avalia "$B"); ok "T-7 copia boa: VALIDO" 0 $?
+amostra_tc() { # amostra_tc <t_ns> <clsact>: acrescenta a janela/tc-isn3.csv (copia) uma amostra no instante dado
+  awk -F, -v t="$1" -v c="$2" 'BEGIN{OFS=","} NR==2 {$1=t; $2=c; print; exit}' janela/tc-isn3.csv > y; cat y >> janela/tc-isn3.csv; rm -f y; }
+encurta_pers() { # encurta_pers <ns desde t_kill>: t_persistencia_ok = t_kill + ns; so as amostras de persistencia ate ali (>= 1)
+  local C=g5b-A-copia/cronologia.txt tk tpo; tk=$(sed -n 's/^t_kill=//p' $C); tpo=$(( tk + $1 ))
+  sed -i "s/^t_persistencia_ok=.*/t_persistencia_ok=$tpo/" $C
+  awk -v b="$tpo" '$1 + 0 <= b + 0' g5b-A-copia/persistencia.txt > x; [ -s x ] || echo "$(( tk + 1 )) clsact presente, sem end" > x
+  mv x g5b-A-copia/persistencia.txt; }
 # utilitarios das mutacoes (rodam dentro de $M)
 CR='C=g5b-A-copia/cronologia.txt; cr() { sed -n "s/^$1=//p" $C; }; poe() { sed -i "s/^$1=.*/$1=$2/" $C; }'
 av "A1 boot_id do fim diferente" "FALHA: A1 boot_id" "sed -i 's/^boot_id fim: [^ ]*/boot_id fim: 11111111-2222-3333-4444-555555555555/' 07-boot-fim.txt"
@@ -547,7 +554,17 @@ av "A5 marcador end presente" "FALHA: A5" "echo 'fault=F2 node=isn3 event=end t_
 av "A5 dois start" "FALHA: A5" "head -1 g5b-A-copia/marcadores.txt >> g5b-A-copia/marcadores.txt"
 av "A6 sem clsact antes do KILL" "FALHA: A6 estado.txt sem clsact antes do KILL" "sed -i '/clsact/d' g5b-A-copia/estado.txt"
 av "A6 sem clsact depois do KILL" "FALHA: A6 qdisc-apos-kill.txt sem clsact" "sed -i '/clsact/d' g5b-A-copia/qdisc-apos-kill.txt"
-av "A6 persistencia de 2 s menos 1 ms" "FALHA: A6 t_persistencia_ok - t_kill" "$CR; poe t_persistencia_ok \$(( \$(cr t_kill) + 1999000000 ))"
+# R-1 da V-s6s7sh (decisao do Gestor, 2026-11-04): FALHA so abaixo do limite que o g5b.sh garante (PERSISTE_S - 1 s; no
+# teste PERSISTE_S=2, entao 1 s); em [PERSISTE_S - 1, PERSISTE_S) s sai como RESULTADO/LEITURA HUMANA com o valor exato
+av "A6 persistencia de 1 s menos 1 ms: abaixo do limite garantido pelo g5b.sh (R-1)" "FALHA: A6 t_persistencia_ok - t_kill = 0.999 s < 1 s (limite garantido pelo g5b.sh" "encurta_pers 999000000"
+avok "A6 persistencia de 2 s menos 1 ms, em [1, 2) s: RESULTADO com o valor exato (R-1)" "RESULTADO: A6 t_persistencia_ok - t_kill = 1.999 s, em [1, 2) s" "encurta_pers 1999000000"
+contem "T-7 A6 em [1, 2) s: LEITURA HUMANA com o valor exato (R-1)" "LEITURA HUMANA: A6 persistencia de 1.999 s" "$X"
+contem "T-7 A6 em [1, 2) s: o A6 continua OK (com o limite de 1 s)" "OK: A6 " "$X"
+avok "A6 persistencia de exatamente 1 s: RESULTADO, nao FALHA (R-1)" "RESULTADO: A6 t_persistencia_ok - t_kill = 1.000 s, em [1, 2) s" "encurta_pers 1000000000"
+X=$(avalia "$B"); nao "T-7 copia boa (persistencia >= 2 s): sem RESULTADO de faixa do A6" "RESULTADO: A6 t_persistencia_ok" "$X"
+X=$(bash "$S6" --avaliar "$B")   # limites de producao (sem o modo de teste): PERSISTE_S=15
+contem "T-7 limites de producao: FALHA abaixo de 14 s, RESULTADO em [14, 15) s (R-1)" "persistencia>=14s (RESULTADO em [14, 15) s)" "$X"
+contem "T-7 limites de producao: a copia boa (persistencia de ~3 s) da FALHA < 14 s" "s < 14 s (limite garantido pelo g5b.sh" "$X"
 av "A6 amostra de persistencia fora do intervalo" "FALHA: A6 persistencia.txt" "echo '1 clsact presente, sem end' >> g5b-A-copia/persistencia.txt"
 av "A6 persistencia.txt vazio (MS-4)" "FALHA: A6 persistencia.txt: 0 amostra(s)" ": > g5b-A-copia/persistencia.txt"
 av "A6 MergeView entre o KILL e a persistencia" "FALHA: A6 05-vistas.log" \
@@ -579,6 +596,14 @@ av "D-2 amostra sem clsact durante o corte" "FALHA: D-2 serie tc de isn3 incoere
    "$CR; a=\$(( \$(cr t_start) + 1000000000 )); h=\$(cr t_heal); awk -F, -v a=\"\$a\" -v h=\"\$h\" 'BEGIN{OFS=\",\"} NR>1 && \$1+0>=a+0 && \$1+0<=h+0 && !d {\$2=\"0\"; d=1} {print}' janela/tc-isn3.csv > x && mv x janela/tc-isn3.csv"
 av "D-2 clsact depois do heal" "FALHA: D-2 serie tc de isn3 incoerente" \
    "$CR; h=\$(( \$(cr t_heal) + 1000000000 )); awk -F, -v h=\"\$h\" 'BEGIN{OFS=\",\"} NR>1 && \$1+0>=h+0 && !d {\$2=\"1\"; d=1} {print}' janela/tc-isn3.csv > x && mv x janela/tc-isn3.csv"
+# Rastreabilidade 4.4 (decisao do Gestor, 2026-11-04): folga do D-2 de 0 s depois de t_start e de 1 s depois de t_heal
+av "D-2 amostra sem clsact em t_start exato (folga 0 s)" "FALHA: D-2 serie tc de isn3 incoerente" \
+   "$CR; amostra_tc \$(cr t_start) 0"
+av "D-2 amostra com clsact em t_heal + 1 s exato (folga 1 s)" "FALHA: D-2 serie tc de isn3 incoerente" \
+   "$CR; amostra_tc \$(( \$(cr t_heal) + 1000000000 )) 1"
+avok "D-2 amostra com clsact em t_heal + 1 s - 1 ms fica fora do teste" "OK: D-2 serie tc de isn3" \
+   "$CR; amostra_tc \$(( \$(cr t_heal) + 999000000 )) 1"
+contem "T-7 D-2 cita as folgas (0 s depois do start, 1 s depois de t_heal)" "t_start+0s" "$X"
 av "D-2 serie vazia" "FALHA: D-2" "head -1 janela/tc-isn3.csv > x && mv x janela/tc-isn3.csv"
 av "D-2 serie truncada logo depois do heal (MS-5)" "FALHA: D-2 serie tc de isn3 incoerente" \
    "$CR; h=\$(( \$(cr t_heal) + 1000000000 )); awk -F, -v h=\"\$h\" 'NR==1 || \$1+0 < h+0' janela/tc-isn3.csv > x && mv x janela/tc-isn3.csv"

@@ -8,6 +8,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
@@ -22,20 +23,28 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
  * B-27.3 (W-1, R-C1): o controlador do TCC age no <i>cluster</i>, nao no cliente (decisao do autor de
  * 2026-11-04). Nenhuma classe de {@code session} usa um tipo de {@code controle} para agir sobre a
  * emissao de operacoes: o pacote {@code session} so pode usar, de {@code controle}, os tipos dos
- * sensores do B-26 (saude REST e sonda de topologia). A lista de classes de {@code session} que usam
- * {@code controle} para o laco de controle e vazia nesta branch; o W-3 a amplia, se precisar.
+ * sensores do B-26 (saude REST e sonda de topologia) e, na ligacao do laco de controle (W-3), os tipos
+ * do laco. Desde o W-3 a lista e por pares (classe de {@code session}, tipo de {@code controle}), ressalva
+ * 4 da validacao do W-1: uma classe nova de {@code session} que use qualquer tipo de {@code controle} e
+ * reprovada, e uma classe listada so pode usar os seus tipos.
  *
  * <p>Os tipos do antigo portao de emissao (K1..K4) nao existem mais em {@code controle/}.</p>
  */
 class ArquiteturaSemAcaoNoClienteTest {
 
-    /** Tipos de {@code controle} que {@code session} pode usar: so sensores (B-26.1/B-26.2). */
-    static final Set<String> SENSORES_PERMITIDOS = Set.of(
-            "FonteDeSaude", "LeituraSaude",                                     // ConsultaSaudeRest
-            "AmostraTopologia", "FonteDeTempo", "ResultadoNo", "SondaTopologia"); // SondaTopologiaCli
-
-    /** Classes de {@code session} autorizadas a usar {@code controle} para o laco (W-3). Vazia aqui. */
-    static final Set<String> LACO_AUTORIZADO = Set.of();
+    /**
+     * Pares permitidos: classe de {@code session} e os tipos de {@code controle} que ela pode usar. Os
+     * sensores do B-26 ({@code ConsultaSaudeRest}, {@code SondaTopologiaCli}) e a ligacao do laco
+     * ({@code LigacaoControlador}, W-3). Nenhum tipo de acao sobre o cliente existe em {@code controle}.
+     */
+    static final Map<String, Set<String>> PERMITIDOS = Map.of(
+            "ConsultaSaudeRest", Set.of("FonteDeSaude", "LeituraSaude"),
+            "SondaTopologiaCli", Set.of("AmostraTopologia", "FonteDeTempo", "ResultadoNo", "SondaTopologia"),
+            "LigacaoControlador", Set.of("AgregadorDeJanela", "ArquivoReferencia", "AtuadorCluster", "AtuadorNulo",
+                    "ClasseViolacao", "Controlador", "EventoOperacao", "ExecutorDeAcoes", "FonteDeDefasagem",
+                    "FonteDeSaude", "FonteDeTempo", "FonteDeTopologia", "FonteDeViolacoes", "FormatoJsonl",
+                    "LacoDeControle", "MetaExecucao", "ModoAtuacao", "ParametrosControlador", "PoliticaDeAcao",
+                    "Referencia", "SondaTopologia", "TrilhaJsonl", "ViolacaoObservada"));
 
     /** Tipos do portao de emissao retirados no B-27.3. */
     static final List<String> TIPOS_RETIRADOS = List.of(
@@ -48,21 +57,19 @@ class ArquiteturaSemAcaoNoClienteTest {
     }
 
     @Test
-    @DisplayName("R-C1: session so usa de controle os tipos dos sensores (B-26); nenhum tipo do portao K1..K4 existe")
+    @DisplayName("R-C1: session so usa de controle os pares (classe, tipo) permitidos; nenhum tipo do portao K1..K4 existe")
     void sessionNaoAgeNoCliente() throws IOException {
         TreeMap<String, Set<String>> indevidos = new TreeMap<>();
         try (Stream<Path> fontes = Files.list(dir("session"))) {
             for (Path f : (Iterable<Path>) fontes.filter(p -> p.toString().endsWith(".java"))::iterator) {
                 String classe = f.getFileName().toString().replace(".java", "");
-                if (LACO_AUTORIZADO.contains(classe)) {
-                    continue;
-                }
+                Set<String> permitidos = PERMITIDOS.getOrDefault(classe, Set.of());
                 String limpo = DetectorFonte.semComentarios(
                         Files.readString(f, StandardCharsets.UTF_8).replace("\r\n", "\n"));
                 Matcher m = USO_CONTROLE.matcher(limpo);
                 Set<String> fora = new TreeSet<>();
                 while (m.find()) {
-                    if (!SENSORES_PERMITIDOS.contains(m.group(1))) {
+                    if (!permitidos.contains(m.group(1))) {
                         fora.add(m.group(1));
                     }
                 }

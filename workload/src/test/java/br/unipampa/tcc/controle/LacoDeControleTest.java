@@ -262,8 +262,8 @@ class LacoDeControleTest {
         long soma = janelas.stream().mapToLong(n -> n.get("total").asLong()).sum();
         assertEquals(40, soma);
         JsonNode d0 = decisoes.get(0);
-        assertEquals(List.of("tipo", "t_fim_ns", "modo", "perfil", "transicao", "regra", "motivos", "severidade",
-                "sinais", "param_sha256"), campos(d0));
+        assertEquals(List.of("tipo", "t_fim_ns", "t_decisao_ns", "modo", "perfil", "transicao", "regra", "motivos",
+                "severidade", "sinais", "param_sha256"), campos(d0));
         assertEquals("INDETERMINADA", d0.get("sinais").get("defasagem").asText());
         assertTrue(janelas.get(0).has("top") && janelas.get(0).has("lag") && janelas.get(0).has("viol"));
         List<JsonNode> ticks = doTipo(obs, "tick");
@@ -398,6 +398,30 @@ class LacoDeControleTest {
         for (int i = 0; i < janelas.size(); i++) {
             assertEquals(i * 5 * S, janelas.get(i).get("t_ini_ns").asLong(), "janelas contiguas");
         }
+    }
+
+    // ---------------------------------------------------------- contrato v1.1 (V-W3, 4.2)
+
+    @Test
+    @DisplayName("v1.1: t_decisao_ns = agora do processamento; D = t_decisao - t_fim fica em [L, L + tick]")
+    void tDecisaoNs() throws IOException {
+        Montagem m = new Montagem(ModoAtuacao.SHADOW, AtuadorFalso.proibido(), PoliticaDeAcao.NENHUMA, fim -> OK);
+        m.ticks(1, 6);
+        // evento com end_ns no passado do relogio (como ao vivo): a janela que ele fecha e a do tick seguinte
+        m.laco.registrarEvento(new EventoOperacao("Validate", 5 * S + 500 * MS, 5 * S + 600 * MS, "VALID"));
+        m.ticks(7, 16);
+        m.laco.encerrar();
+        List<JsonNode> ds = doTipo(ler(m.dec), "decisao");
+        assertEquals(3, ds.size());
+        long l = AgregadorDeJanela.TOLERANCIA_PADRAO_NS;
+        long tick = S; // tick_ns da Montagem
+        for (JsonNode d : ds) {
+            long dNs = d.get("t_decisao_ns").asLong() - d.get("t_fim_ns").asLong();
+            assertTrue(dNs >= l && dNs <= l + tick, "D = " + dNs + " fora de [L, L + tick]");
+        }
+        assertEquals(6 * S, ds.get(0).get("t_decisao_ns").asLong(), "janela [0,5) fecha no tick de 6 s");
+        assertEquals("decisoes-controlador/1.1", ler(m.dec).get(0).get("esquema").asText());
+        assertEquals("observaveis-controlador/1.1", ler(m.obs).get(0).get("esquema").asText());
     }
 
     // ---------------------------------------------------------- N3 (V-W3)

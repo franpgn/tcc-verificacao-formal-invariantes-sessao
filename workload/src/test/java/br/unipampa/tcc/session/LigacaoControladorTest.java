@@ -207,6 +207,24 @@ class LigacaoControladorTest {
         assertEquals(List.of("Validate:NOT_FOUND", "Validate:ERROR_TRANSPORT"), recebidos);
     }
 
+    // ------------------------------------------------------------ regra do tick (contrato v1.1)
+
+    @Test
+    @DisplayName("tick = min(W/5, P_sonda/2) (V-B26.1 secao 5.9 e V-W3 secao 4.2); pecasPadrao usa a regra")
+    void regraDoTick() throws IOException {
+        long s = 1_000_000_000L;
+        long p = LigacaoControlador.PERIODO_SONDA_NS;
+        assertEquals(2 * s, p);
+        assertEquals(s, LigacaoControlador.periodoTick(5 * s, p), "W = 5 s: W/5 = 1 s = P/2");
+        assertEquals(400 * MS, LigacaoControlador.periodoTick(2 * s, p), "W = 2 s: W/5");
+        assertEquals(s, LigacaoControlador.periodoTick(20 * s, p), "W = 20 s: W/5 = 4 s > P/2 = 1 s");
+        assertEquals(20 * MS, LigacaoControlador.periodoTick(100 * MS, p));
+        Cli c = cli("shadow");
+        LigacaoControlador.Configuracao cfg = LigacaoControlador.carregar(c);
+        assertEquals(20 * MS, LigacaoControlador.pecasPadrao(cfg, c).tickNs(), "W = 100 ms no arquivo de teste");
+        assertTrue(LigacaoControlador.textoDryRun(cfg).contains("tick_ns=20000000"));
+    }
+
     // ------------------------------------------------------------ ponta a ponta
 
     @Test

@@ -103,7 +103,8 @@ class ControleArquivosTest {
         Controlador c = new Controlador(ParametrosControlador.padrao());
         Decisao d = c.avaliar(new Janela(0, 5 * S, 1000, 50, 20, 1000, 100, 1, 2),
                 new EstadoTopologia(true, 2, 1, 2), ControladorDefasagemTest.ALTA);
-        JsonNode n = FormatoJsonl.decisao(d, ModoAtuacao.ACTIVE);
+        JsonNode n = FormatoJsonl.decisao(d, ModoAtuacao.ACTIVE, 6 * S);
+        assertEquals(6 * S, n.get("t_decisao_ns").asLong());
         JsonNode s = n.get("sinais");
         List<String> campos = new java.util.ArrayList<>();
         s.fieldNames().forEachRemaining(campos::add);

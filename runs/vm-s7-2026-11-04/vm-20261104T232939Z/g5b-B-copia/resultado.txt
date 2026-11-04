@@ -1,0 +1,17 @@
+PASS unit armada executa inject-partition.sh --heal --minority isn3
+PASS split real confirmado nos logs ANTES do KILL (isn1/isn2: vista de 2; isn3: vista de 1 e DEGRADED_MODE)
+PASS injetor saiu com rc=137 (128+SIGKILL)
+PASS corte PERSISTIU por >= 15 s apos o KILL (clsact presente, sem marcador end, sem MergeView)
+PASS sem marcador end (esperado)
+PASS disparo nao antes de 145 s (delta=146457 ms desde antes de armar)
+PASS disparo ate 145+10 s (delta=146450 ms desde depois de armar)
+PASS nenhum --heal manual registrado: o dead-man foi o UNICO agente de cura
+PASS journal: a unit executou o --heal do injetor de particao
+PASS journal: unit encerrou com sucesso (rc 0)
+PASS journal sem 'Failed with result'
+PASS unit nao esta failed
+PASS 0 timers tcc-heal ao fim (sem desarmar)
+PASS MergeView de 3 membros nos 3 logs apos o disparo
+size=3 HEALTHY apos 46 s desde t_fire
+PASS cronologia coerente: t_start t_split_confirmado t_kill t_persistencia_ok t_fire t_mergeview t_saudavel
+PASS sem ISPN000524/ISPN100014/ISPN000638 nos logs

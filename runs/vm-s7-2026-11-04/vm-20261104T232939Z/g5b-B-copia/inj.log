@@ -1,0 +1,11 @@
+[2026-11-04T23:32:34Z] inject-partition.sh: PID do container isn3: 1711
+[2026-11-04T23:32:34Z] inject-partition.sh: IP do par isn1: 10.89.1.2
+[2026-11-04T23:32:34Z] inject-partition.sh: IP do par isn2: 10.89.1.3
+[2026-11-04T23:32:34Z] inject-partition.sh: pre-limpeza idempotente (clsact remanescente de execucao anterior)
+[2026-11-04T23:32:34Z] inject-partition.sh: sondando clsact/u32/drop em isn3 (pid 1711, eth0) via nsenter
+[2026-11-04T23:32:34Z] inject-partition.sh: sudo nsenter -t 1711 -n tc qdisc add dev eth0 clsact
+[2026-11-04T23:32:34Z] inject-partition.sh: isn3 x isn1 (10.89.1.2): filtro ingress src + egress dst, acao drop
+[2026-11-04T23:32:34Z] inject-partition.sh: isn3 x isn2 (10.89.1.3): filtro ingress src + egress dst, acao drop
+[2026-11-04T23:32:34Z] inject-partition.sh: particao aplicada em isn3 contra isn1 isn2
+[2026-11-04T23:32:40Z] inject-partition.sh: OK: isn3 nao conecta a nenhum par em :7800
+[2026-11-04T23:32:40Z] inject-partition.sh: aguardando 120s com F2 ativa

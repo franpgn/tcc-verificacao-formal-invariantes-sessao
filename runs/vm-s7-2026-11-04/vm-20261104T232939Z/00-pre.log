@@ -1,0 +1,53 @@
+== pre-condicoes 2026-11-04T23:29:39+00:00
+hostname=server1 ip=172.27.114.62 usuario=server1
+argumentos: --boot-esperado f9e98b74-bf1f-4192-9770-b40285877292 --bloco-anterior /home/server1/tcc-gate/runs/vm-s6-2026-11-04/vm-20261104T223805Z
+tmux: /tmp/tmux-1000/default,104682,1
+terminal: ok (o GO do g5b.sh e interativo)
+lock /var/lock/tcc-vm.lock: OCUPADO (este flock)
+lock do injetor /tmp/inject-partition-isn3.lock: livre
+sudo -n: ok
+uname -r: 6.8.0-147-generic
+uname -r do bloco anterior: 6.8.0-147-generic
+boot_id: f9e98b74-bf1f-4192-9770-b40285877292
+boot_id esperado (--boot-esperado): f9e98b74-bf1f-4192-9770-b40285877292
+boot_id fim do bloco anterior: f9e98b74-bf1f-4192-9770-b40285877292
+bloco anterior: S6: VALIDO (16 criterios OK)
+HEAD: f6483c5f844da16b8b103e47a52e994f67019b39 (docs: GO dos blocos de VM digitado pelo coordenador, autorizado pelo Gestor em 2026-11-04 (ROTEIRO-S5/S6/S7 e roteiro da VM))
+contem 902654b (v4c): sim
+arquivos versionados modificados: 1
+ M runs/gate-b29/go.log
+runs/gate-b29/go.log: HEAD e prefixo exato; 3 linha(s) 'go ' acrescentada(s) (aceito, Q-12)
+-- sha256 (referencia v4c)
+runs/gate-b29/g5b.sh: OK
+runs/gate-b29/g56-lib.sh: OK
+runs/gate-b29/g-lib.sh: OK
+scripts/inject-partition.sh: OK
+runs/vm-s2-2026-10-27/portao51.sh: OK
+hashes: iguais a referencia
+s7.sh: 2385609e850c7813124ca4f98bae7c4e91aeef8cfec9c1ae763234c9f4cf415e
+ambiente: sem LOCK_DIR/PODMAN/INJ/LOG/DMS/UNIT/G_TESTE/G5B_*/... herdados
+runs/gate-b29/g5b-B: inexistente
+runs/gate-b29/g5b-A/resultado.txt: existe (o S6 rodou antes): PASS sem ISPN000524/ISPN100014/ISPN000638 nos logs
+timers tcc-heal: 0 units tcc-heal: 0
+-- runs/gate-b29/go.log (blocos anteriores)
+go 2026-10-16T05:11:03+00:00 vm=192.168.137.150 sha=4978e1c6ee634d59ba48927773f496d7bf51b3ee
+go 2026-10-16T06:48:16+00:00 vm=192.168.137.150 sha=544879150d70e146d4b3f5a4847c13d8f824f5b9
+go G-1 (REP=3, janela de 90 s em isn3) 2026-10-16T08:56:39+00:00 vm=192.168.137.150 sha=507c21ee6812d4ea69788277907b92b56ff13311
+go G-5 (kill -TERM e kill -KILL do injetor em isn3, 40 s) 2026-10-16T09:02:02+00:00 vm=192.168.137.150 sha=507c21ee6812d4ea69788277907b92b56ff13311
+go G-6 (F3 jitter em isn2 + F2 particao em isn3, 90/130 s) 2026-10-16T09:03:46+00:00 vm=192.168.137.150 sha=507c21ee6812d4ea69788277907b92b56ff13311
+go G-1 (REP=4, janela de 90 s em isn3) 2026-10-28T07:12:13+00:00 vm=172.31.251.37 sha=1266c129904e73469926d95708e7c83290498c41
+go G-5b-A (split real + kill -KILL do injetor em isn3, 120 s, dead-man 90 s) 2026-11-04T22:40:26+00:00 vm=172.27.114.62 sha=f6483c5f844da16b8b103e47a52e994f67019b39
+go G-5b-B (split real + kill -KILL do injetor em isn3, 120 s, dead-man 25 s) 2026-11-04T22:55:51+00:00 vm=172.27.114.62 sha=f6483c5f844da16b8b103e47a52e994f67019b39
+nic eth0 proibidos(prio|netem|clsact)=0: qdisc mq 0: root qdisc fq_codel 0: parent :4 limit 10240p flows 1024 quantum 1514 target 5ms interval 100ms memory_limit 32Mb ecn drop_batch 64 qdisc fq_codel 0: parent :3 limit 10240p flows 1024 quantum 1514 target 5ms interval 100ms memory_limit 32Mb ecn drop_batch 64 qdisc fq_codel 0: parent :2 limit 10240p flows 1024 quantum 1514 target 5ms interval 100ms memory_limit 32Mb ecn drop_batch 64 qdisc fq_codel 0: parent :1 limit 10240p flows 1024 quantum 1514 target 5ms interval 100ms memory_limit 32Mb ecn drop_batch 64
+-- conteineres e cluster atual
+isn1 d46a19727fdd Up 2 hours (healthy) criado=2026-11-04 21:49:42.707304928 +0000 UTC
+isn2 87816ddc1db0 Up 2 hours (healthy) criado=2026-11-04 21:50:01.886296781 +0000 UTC
+isn3 ef69b337005e Up 2 hours (healthy) criado=2026-11-04 21:50:34.872861781 +0000 UTC
+isn1 ip=10.89.1.2 id=d46a19727fdd StartedAt=2026-11-04 21:49:59.430849278 +0000 UTC
+isn1 ultima vista: 2026-11-04 22:59:01,290 INFO  [o.i.CLUSTER] ISPN000093: Received new, MERGED cluster view for channel cluster-tcc: MergeView::[isn1-15077|6] (3) [isn1-15077, isn3-9749, isn2-28862], 2 subgroups: [isn3-9749|5] (1) [isn3-9
+isn2 ip=10.89.1.3 id=87816ddc1db0 StartedAt=2026-11-04 21:50:14.93872205 +0000 UTC
+isn2 ultima vista: 2026-11-04 22:59:01,292 INFO  [o.i.CLUSTER] ISPN000093: Received new, MERGED cluster view for channel cluster-tcc: MergeView::[isn1-15077|6] (3) [isn1-15077, isn3-9749, isn2-28862], 2 subgroups: [isn3-9749|5] (1) [isn3-9
+isn3 ip=10.89.1.4 id=ef69b337005e StartedAt=2026-11-04 21:50:51.472209425 +0000 UTC
+isn3 ultima vista: 2026-11-04 22:59:01,290 INFO  [o.i.CLUSTER] ISPN000093: Received new, MERGED cluster view for channel cluster-tcc: MergeView::[isn1-15077|6] (3) [isn1-15077, isn3-9749, isn2-28862], 2 subgroups: [isn3-9749|5] (1) [isn3-9
+isn3 netns: diferente do host (net:[4026532154] != net:[4026531840])
+isn3 JGroups 7800: ipv4=2 ipv6=0 (so registro: com IPv6 o split nao acontece e o g5b.sh falha sozinho)

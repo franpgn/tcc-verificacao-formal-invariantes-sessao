@@ -1,0 +1,3 @@
+2026-11-04T23:31:51+00:00 coletor: esperando a linha nova 'go G-5b-B' em /home/server1/tcc-gate/runs/gate-b29/go.log (ja ha 1; ate 900 s)
+2026-11-04T23:32:06+00:00 coletor: GO visto; saude a cada 2 s e tc qdisc show de isn3 (pid 1711) a cada 2 s, ate a parada ou 1785 s
+2026-11-04T23:35:48+00:00 coletor fim (saude 317 linhas, tc 110 linhas)

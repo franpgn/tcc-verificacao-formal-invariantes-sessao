@@ -28,8 +28,8 @@ set -uo pipefail
 
 AQUI="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 RAIZ="$(cd "$AQUI/.." && pwd)"
-PLANO="$AQUI/b45-plano.tsv"
-RUNS="$RAIZ/runs/tlc"
+PLANO="${B45_PLANO:-$AQUI/b45-plano.tsv}"
+RUNS="${B45_RUNS:-$RAIZ/runs/tlc}"
 ESTADO="$RUNS/b45-estado.tsv"
 REVS="$RUNS/b45-revs.tsv"
 PAUSAR="$RUNS/b45-PAUSAR"
@@ -158,9 +158,12 @@ CFGEOF
     printf '%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%ss\n' "$ID" "$REVTOK" "$REV" "$MODULO" "$SPEC" "$CARD" "$RESTR" "$PROP" "$SIM" "$WORKERS" "$RES" "$PREV" >> "$OUTDIR/resumo.tsv"
     continue
   fi
-  RECOVER=()
-  if [[ -n "$ST" ]] && compgen -G "$META/*.chkpt" >/dev/null; then
-    RECOVER=(-recover "$(winpath "$META")"); echo "== $ID: retomando de checkpoint (saldo ${RESTANTE}s)" | tee -a "$LOG"
+  # TLC grava em <metadir>/<carimbo>/; o checkpoint e' o .chkpt mais recente la dentro
+  CHK="$(ls -1t "$META"/*/*.chkpt 2>/dev/null | head -1)"
+  MODOMETA=(-metadir "$(winpath "$META")")
+  if [[ -n "$ST" && -n "$CHK" ]]; then
+    MODOMETA=(-recover "$(winpath "$(dirname "$CHK")")")
+    echo "== $ID: retomando de $(dirname "$CHK") (saldo ${RESTANTE}s)" | tee -a "$LOG"
   else
     if [[ -f "$LOG" ]]; then n=1; while [[ -f "$LOG.parcial-$n" ]]; do n=$((n+1)); done; mv "$LOG" "$LOG.parcial-$n"; fi
     rm -rf "$META"; PREV=0; RESTANTE=$TIMEOUT
@@ -176,12 +179,13 @@ CFGEOF
   T0=$SECONDS
   ( cd "$SNAP" && exec timeout "${RESTANTE}s" "$JAVA" -Xmx"$XMX" -XX:+UseParallelGC \
       -Djava.io.tmpdir="$(winpath "$JTMP")" -cp "$(winpath "$TLA_TOOLS")" tlc2.TLC \
-      -config "$(winpath "$CFG")" -workers "$WORKERS" -checkpoint 10 -metadir "$(winpath "$META")" \
-      "${RECOVER[@]}" "$MODULO.tla" ) >> "$LOG" 2>&1 &
+      -config "$(winpath "$CFG")" -workers "$WORKERS" -checkpoint "${CHECKPOINT_MIN:-10}" "${MODOMETA[@]}" \
+      "$MODULO.tla" ) >> "$LOG" 2>&1 &
   PID=$!; PAUSOU=0
+  TICK=0
   while kill -0 "$PID" 2>/dev/null; do
-    sleep 5
-    estado_set "$ID" EM_CURSO "$(( PREV + SECONDS - T0 ))" -
+    sleep 1; TICK=$((TICK + 1))
+    (( TICK % 10 == 0 )) && estado_set "$ID" EM_CURSO "$(( PREV + SECONDS - T0 ))" -
     if [[ -f "$PAUSAR" && $PAUSOU -eq 0 ]]; then PAUSOU=1; kill -TERM "$PID" 2>/dev/null; fi
   done
   wait "$PID"; RC=$?

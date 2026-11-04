@@ -10,6 +10,9 @@
 # tc -s qdisc/filter, ping, saude, ssh22, sonda, TcpRetransSegs, vistas, copias do L1.log/marcadores/go.log); a avaliacao
 # automatica aceita a execucao boa e recusa cada criterio violado (perdas 39..81, dropped ~20 %, latencia, ping, intervalo
 # do saude-log > 2x o nominal, boot_id, marcadores, L-2, portao pos); mudanca de vista e RESULTADO, nao falha.
+# Desde 2026-11-04 (queda de energia; cluster recriado): o boot_id esperado vem de --boot-esperado (Q-11, nenhum boot_id no
+# codigo); a unica modificacao versionada aceita e runs/gate-b29/go.log com linhas 'go ' acrescentadas ao fim (Q-12); o passo
+# 0 registra IDs/StartedAt/IPs/vista do cluster atual sem exigir a vista do S4.
 # NAO prova: podman, tc, netem, systemd, Infinispan, a sonda Java nem os scripts reais (estes tem testes proprios).
 # NAO toca na VM nem em rede.
 # Rodar:  bash runs/vm-s5-2026-10-28/s5.test.sh      Exit 0 se tudo passar.
@@ -32,7 +35,7 @@ T="$(mktemp -d)"; trap 'rm -rf "$T"' EXIT
 BIN="$T/bin"; mkdir -p "$BIN"
 FIXTURE="$T/portao-ok.txt"
 sed -n '/^amostras=/,/^fim /p' "$REPO/runs/vm-s3-2026-10-28/00-portao51-pre-console.txt" > "$FIXTURE"
-BOOT=5d7119b8-3b50-435d-bd0d-cbdb6bd410df
+BOOT=b088606d-5d07-4424-b308-0a58fedf0546   # boot da VM depois da queda de 2026-11-04 (so valor de teste: o s5.sh nao o contem)
 
 # ---------------- shims
 cat > "$BIN/sudo" <<'EOF'
@@ -83,7 +86,7 @@ case "$1" in
   ps) for m in isn1 isn2 isn3; do echo "$m abc Up 8 hours (healthy) criado=2026-10-28 07:06:1x"; done;;
   logs) if [ "$2" = --since ]; then
           [ -z "${SHIM_VISTA:-}" ] || echo "2026-10-28 09:00:40,000 INFO  [o.i.CLUSTER] ISPN000094: Received new cluster view for channel cluster-tcc: [isn1-23890|5] (2) [isn1-23890, isn2-1]"
-        else echo "2026-10-28 07:14:34,088 INFO  [o.i.CLUSTER] ISPN000093: Received new, MERGED cluster view for channel cluster-tcc: MergeView::[isn3-54173|4] (3) [isn3-54173, isn1-23890, isn2-1]"; fi;;
+        else echo "2026-11-04 19:14:20,511 INFO  [o.i.CLUSTER] ISPN000094: Received new cluster view for channel cluster-tcc: [isn1-54943|2] (3) [isn1-54943, isn2-7781, isn3-30412]"; fi;;
   inspect) case "$*" in
       *IPAddress*) case "$n" in isn1) echo "10.89.0.11 ";; isn2) echo "10.89.0.12 ";; isn3) echo "${SHIM_IP3-10.89.0.13} ";; esac;;
       *State.Pid*) echo "${SHIM_PID:-4003}";; *StartedAt*) echo "2026-10-28 07:06:19.82 +0000 UTC";;
@@ -168,7 +171,8 @@ chmod +x "$BIN"/*
 # ---------------- arvore falsa (stubs nos caminhos reais) e tabela de hashes dos stubs
 nova_arvore() {
   rm -rf "$T/home" "$T/state"; mkdir -p "$T/state"; : > "$T/shim.log"; echo "$BOOT" > "$T/boot_id"
-  G="$T/home/tcc-gate"; mkdir -p "$G/scripts" "$G/runs/gate-netdegrade" "$G/runs/vm-s2-2026-10-27" "$G/runs/vm-s5-2026-10-28" "$G/workload/target"
+  G="$T/home/tcc-gate"; mkdir -p "$G/scripts" "$G/runs/gate-netdegrade" "$G/runs/gate-b29" "$G/runs/vm-s2-2026-10-27" "$G/runs/vm-s5-2026-10-28" "$G/workload/target"
+  git -C "$REPO" show HEAD:runs/gate-b29/go.log > "$G/runs/gate-b29/go.log"   # o go.log versionado (5 linhas)
   cp "$S5" "$G/runs/vm-s5-2026-10-28/s5.sh"
   echo jar > "$G/workload/target/session-workload-0.1.0-SNAPSHOT.jar"
   JARH=$(sha256sum "$G/workload/target/session-workload-0.1.0-SNAPSHOT.jar" | cut -d' ' -f1)
@@ -208,6 +212,8 @@ EOF
   ( cd "$G" && for f in scripts/inject-netdegrade.sh runs/gate-netdegrade/l-lib.sh runs/gate-netdegrade/l1.sh runs/vm-s2-2026-10-27/portao51.sh; do
       sha256sum "$f" | sed 's/ \*/  /'; done ) > "$T/hashes"
   ( cd "$G" && git init -q && git config core.autocrlf false && git add -A && git -c user.name=t -c user.email=t@t commit -qm stub )
+  # como na VM em 2026-11-04 (Q-01/Q-12): o go.log versionado com a linha 'go ' do GO da REP=4 (S4) acrescentada
+  echo "go G-1 (REP=4, janela de 90 s em isn3) 2026-10-28T07:12:13+00:00 vm=172.31.251.37 sha=1266c129904e73469926d95708e7c83290498c41" >> "$G/runs/gate-b29/go.log"
 }
 # roda o s5.sh na arvore falsa; $1 = stdin (o que o "Gestor" digita); demais = VAR=valor extras
 roda() {
@@ -216,7 +222,7 @@ roda() {
     SHIM_LOG="$T/shim.log" SHIM_STATE="$T/state" S5T_FIXTURE="$FIXTURE" S5T_BOOT_FILE="$T/boot_id" \
     S5_TESTE=1 S5_HASHES="$T/hashes" S5_JAR_ESPERADO="$JARH" S5_BOOT_ID_FILE="$T/boot_id" S5_PORTAO_MIN_S=1 S5_PORTAO_FOLGA_S=0 \
     S5_BASE_S=7 S5_SAUDE_S=2 S5_PING_BASE_N=6 S5_PING_JANELA_N=4 S5_TC_AMOSTRAS="1 2" S5_ESPERA_START_S=30 S5_POS_FIM_S=1 \
-    S5_L1_ESPERA_COLETOR_S=30 "$@" bash "$T/home/tcc-gate/runs/vm-s5-2026-10-28/s5.sh" 2>&1)"; RC=$?
+    S5_L1_ESPERA_COLETOR_S=30 "$@" bash "$T/home/tcc-gate/runs/vm-s5-2026-10-28/s5.sh" --boot-esperado "${ARG_BOOT:-$BOOT}" 2>&1)"; RC=$?
   OUT="$(ls -d "$T/home/tcc-gate/runs/vm-s5-2026-10-28"/vm-* 2>/dev/null | head -1)"
   sleep 0.3
 }
@@ -239,7 +245,12 @@ ok "T-s5-0 os 4 arquivos da tabela iguais aos do v4c (902654b)" 0 "$(cd "$REPO" 
   runs/gate-netdegrade/l-lib.sh runs/gate-netdegrade/l1.sh runs/vm-s2-2026-10-27/portao51.sh | wc -l | tr -d ' ')"
 contem "T-s5-0 l1.sh intacto: o comentario da linha 10 ainda diz 11222 (divergencia registrada, nao editada)" "127.0.0.1:11222" "$(sed -n 10p "$REPO/runs/gate-netdegrade/l1.sh")"
 contem "T-s5-0 porta de isn3 = 11224" "PORTA_ISN3=11224" "$(cat "$S5")"
-contem "T-s5-0 boot_id esperado = boot de 2026-10-28 06:39 UTC" "BOOT_ESPERADO=$BOOT" "$(cat "$S5")"
+ok "T-s5-0 nenhum boot_id (UUID) no codigo: o esperado vem de --boot-esperado (Q-11)" 0 \
+  "$(grep -cE '[0-9a-f]{8}-([0-9a-f]{4}-){3}[0-9a-f]{12}' "$S5")"
+contem "T-s5-0 BOOT_ESPERADO = o argumento --boot-esperado" 'BOOT_ESPERADO="$BOOT_ARG"' "$(cat "$S5")"
+nao "T-s5-0 sem override de boot_id esperado no modo de teste" "S5_BOOT_ESPERADO" "$(cat "$S5")"
+ok "T-s5-0 FOLGA_LAT_S definido uma unica vez (a decisao do Gestor muda so esta linha)" 1 "$(grep -c '^FOLGA_LAT_S=' "$S5")"
+contem "T-s5-0 FOLGA_LAT_S gravado em parametros.txt (a avaliacao le dali)" 'echo "FOLGA_LAT_S=$FOLGA_LAT_S"' "$(cat "$S5")"
 contem "T-s5-0 jar esperado = o do S4 (3594c690...7bee)" "JAR_ESPERADO=3594c690cfacd2be1f88e58d2a65a4cd944a06688abcb9ae5b4d3df2f7dc7bee" "$(cat "$S5")"
 contem "T-s5-0 l1.sh chamado sem tocar no arquivo" 'bash runs/gate-netdegrade/l1.sh 2>&1 | tee "$OUT/04-l1.log"; RC=${PIPESTATUS[0]}' "$(cat "$S5")"
 ok "T-s5-0 todo passo com '| tee \"\$OUT/NN-...' le o PIPESTATUS na mesma linha" 0 \
@@ -263,7 +274,24 @@ mut "lock LIVRE" 's/^lock: OCUPADO/lock: LIVRE/'
 mut "mudanca de vista em isn3" 's/^\(isn3 mudancas de vista nos ultimos 5 min .*\): 0$/\1): 1/'
 mut "sem a linha fim" '/^fim /d'
 
-echo "== T-s5-2: caminho completo (TCC_DIR nao definido; Gestor digita GO) =="
+echo "== T-s5-1b: argumentos (Q-11): --boot-esperado obrigatorio e em formato UUID; nada alem de leitura =="
+nova_arvore
+arg() { # arg <rotulo> <trecho> <args...>: rc 1, nenhum vm-* criado, nenhuma chamada a sudo/podman/flock/systemctl/java
+  local rot="$1" tr="$2"; shift 2; : > "$T/shim.log"
+  X=$(env -u TCC_DIR HOME="$T/home" PATH="$BIN:$PATH" TMUX=x SHIM_LOG="$T/shim.log" SHIM_STATE="$T/state" S5_TESTE=1 \
+      bash "$G/runs/vm-s5-2026-10-28/s5.sh" "$@" 2>&1); local r=$?
+  ok "T-s5-1b $rot: rc 1" 1 "$r"; contem "T-s5-1b $rot: mensagem" "$tr" "$X"
+  contem "T-s5-1b $rot: uso" "uso: bash runs/vm-s5-2026-10-28/s5.sh --boot-esperado <uuid>" "$X"
+  ok "T-s5-1b $rot: nenhum vm-* criado" 0 "$(ls -d "$G/runs/vm-s5-2026-10-28"/vm-* 2>/dev/null | wc -l | tr -d ' ')"
+  ok "T-s5-1b $rot: nenhum sudo/podman/flock/systemctl/java" 0 "$(grep -cE '^(sudo|podman|flock|systemctl|java|L1STUB|PORTAO)' "$T/shim.log")"; }
+arg "sem argumentos" "--boot-esperado ausente"
+arg "--boot-esperado sem valor" "falta o valor de --boot-esperado" --boot-esperado
+arg "UUID curto" "fora do formato UUID" --boot-esperado b088606d-5d07-4424-b308
+arg "UUID com maiusculas" "fora do formato UUID" --boot-esperado B088606D-5D07-4424-B308-0A58FEDF0546
+arg "UUID com lixo no fim" "fora do formato UUID" --boot-esperado "${BOOT}x"
+arg "argumento desconhecido" "argumento desconhecido: --bloco-anterior" --boot-esperado "$BOOT" --bloco-anterior x
+
+echo "== T-s5-2: caminho completo (TCC_DIR nao definido; go.log com a linha do S4; Gestor digita GO) =="
 nova_arvore; roda $'GO\n'
 ok "T-s5-2 rc 0" 0 "$RC"
 contem "T-s5-2 TCC_DIR exportado pelo s5.sh" "TCC_DIR=$T/home/tcc-gate (exportado pelo s5.sh)" "$SAIDA"
@@ -275,6 +303,11 @@ for f in 00-pre.log parametros.txt 01-base.log base/saude.csv base/ping.txt base
 PRE="$(cat "$OUT/00-pre.log")"
 contem "T-s5-2 hashes conferidos" "hashes: iguais a referencia" "$PRE"
 contem "T-s5-2 boot_id registrado no inicio" "boot_id: $BOOT" "$PRE"
+contem "T-s5-2 argumento registrado" "argumentos: --boot-esperado $BOOT" "$PRE"
+contem "T-s5-2 boot_id esperado registrado (Q-11)" "boot_id esperado (--boot-esperado): $BOOT" "$PRE"
+contem "T-s5-2 BOOT_ESPERADO em parametros.txt = o argumento" "BOOT_ESPERADO=$BOOT" "$(cat "$OUT/parametros.txt")"
+contem "T-s5-2 go.log versionado com a linha 'go ' do S4 aceito (Q-12)" "runs/gate-b29/go.log: HEAD e prefixo exato; 1 linha(s) 'go ' acrescentada(s) (aceito, Q-12)" "$PRE"
+contem "T-s5-2 go.log versionado registrado" "go G-1 (REP=4, janela de 90 s em isn3)" "$PRE"
 contem "T-s5-2 boot_id registrado no fim" "boot_id fim: $BOOT" "$(cat "$OUT/07-boot-fim.txt")"
 contem "T-s5-2 uname -r registrado" "uname -r: 6.8.0-147-generic" "$PRE"
 contem "T-s5-2 lock ocupado registrado" "OCUPADO (este flock)" "$PRE"
@@ -284,7 +317,9 @@ contem "T-s5-2 guarda de netns de isn3" "isn3 netns: diferente do host" "$PRE"
 contem "T-s5-2 JGroups sem IPv6" "isn3 JGroups 7800: ipv4=2 ipv6=0" "$PRE"
 contem "T-s5-2 NIC da VM sem prio/netem/clsact" "nic eth0 proibidos(prio|netem|clsact)=0" "$PRE"
 contem "T-s5-2 go.log do netdegrade registrado" "bloco=L-0c" "$PRE"
-contem "T-s5-2 ultima vista registrada" "isn3 ultima vista: 2026-10-28 07:14:34,088" "$PRE"
+contem "T-s5-2 ultima vista do cluster atual registrada (sem exigir a do S4)" "isn3 ultima vista: 2026-11-04 19:14:20,511" "$PRE"
+contem "T-s5-2 vista atual com 3 membros registrada" "[isn1-54943|2] (3)" "$PRE"
+contem "T-s5-2 ID e StartedAt de isn2 registrados (o S6 os compara, D-4)" "isn2 ip=10.89.0.12 id=5bf9476b5b97 StartedAt=2026-10-28 07:06:19.82 +0000 UTC" "$PRE"
 contem "T-s5-2 sem 0 timers e 0 units" "timers tcc-heal: 0 units tcc-heal: 0" "$PRE"
 ok "T-s5-2 rc.txt na ordem (pre, base, portao pre, pre-l1, l1, coletor, pos-l1, portao pos, boot-fim, avaliacao)" \
   "pre base 02-portao51-pre 02-portao51-pre-avaliacao pre-l1 l1 coletor pos-l1 06-portao51-pos 06-portao51-pos-avaliacao boot-fim avaliacao" \
@@ -349,7 +384,11 @@ precond "fora do tmux" "fora do tmux" TMUX=
 precond "lock livre" "LIVRE" SHIM_LOCK=livre
 precond "sudo -n falha" "sudo -n true falhou" SHIM_SUDO_FALHA=1
 precond "kernel diferente" "kernel 6.8.0-150-generic" SHIM_KERNEL=6.8.0-150-generic
-precond "boot_id diferente" "houve reboot?" S5_BOOT_ESPERADO=00000000-0000-0000-0000-000000000000
+echo 11111111-2222-3333-4444-555555555555 > "$T/boot_outro"
+precond "boot_id atual diferente do esperado (Q-11)" "boot_id atual 11111111-2222-3333-4444-555555555555 diferente de --boot-esperado $BOOT" S5_BOOT_ID_FILE="$T/boot_outro"
+ARG_BOOT=00000000-0000-0000-0000-000000000000
+precond "--boot-esperado diferente do atual (Q-11)" "boot_id atual $BOOT diferente de --boot-esperado 00000000-0000-0000-0000-000000000000"
+unset ARG_BOOT
 precond "timer tcc-heal armado" "1 timers tcc-heal armados" SHIM_TIMERS=1
 precond "unit tcc-heal carregada" "1 units tcc-heal carregadas" SHIM_UNITS=1
 precond "LOCK_DIR herdado" "variaveis herdadas que mudariam o l1/injetor: LOCK_DIR" LOCK_DIR=/tmp/x
@@ -363,7 +402,22 @@ precond "IP de isn3 invalido" "IP de isn3 invalido" SHIM_IP3=
 prep_extra() { echo "# alterado" >> "$G/runs/gate-netdegrade/l1.sh"; ( cd "$G" && git -c user.name=t -c user.email=t@t commit -qam alt ); }
 precond "hash do l1.sh diferente" "hash diferente da referencia"
 prep_extra() { echo "# sujo" >> "$G/runs/gate-netdegrade/l-lib.sh"; }
-precond "arquivo versionado modificado" "1 arquivos versionados modificados"
+precond "outro arquivo versionado modificado (Q-12)" "1 arquivo(s) versionado(s) modificado(s) alem de runs/gate-b29/go.log"
+# regra do go.log (Q-12), a mesma do s6.sh/s7.sh
+prep_extra() { sed -i 's/^go 2026-10-16T05:11:03+00:00/go 2026-10-16T05:11:04+00:00/' "$G/runs/gate-b29/go.log"; }
+precond "go.log com linha antiga editada (Q-12)" "o conteudo do HEAD nao e prefixo exato do arquivo (linha antiga alterada)"
+prep_extra() { echo "GO L-1 sem o prefixo" >> "$G/runs/gate-b29/go.log"; }
+precond "go.log com linha a mais sem 'go ' (Q-12)" "linha acrescentada que nao comeca com 'go '"
+prep_extra() { head -3 "$G/runs/gate-b29/go.log" > "$T/gl"; cp "$T/gl" "$G/runs/gate-b29/go.log"; }
+precond "go.log truncado (Q-12)" "o conteudo do HEAD nao e prefixo exato do arquivo (linha antiga alterada)"
+prep_extra() { ( cd "$G" && git add runs/gate-b29/go.log ); }
+precond "go.log no indice (M , nao ' M')" "alem de runs/gate-b29/go.log (ou runs/gate-b29/go.log em estado diferente de ' M')"
+pre_ok() { # pre_ok <rotulo>: o passo 0 passou (o portao pre ruim parou o bloco em seguida, rc 3)
+  ok "$1: rc 3 (pre-condicoes OK, parou no portao pre de proposito)" 3 "$RC"; contem "$1: pre rc=0" "pre rc=0 " "$(cat "$OUT/rc.txt" 2>/dev/null)"; }
+nova_arvore; git -C "$G" checkout -q -- runs/gate-b29/go.log; roda $'GO\n' S5T_PORTAO_RUIM=1
+pre_ok "T-s5-4 arvore limpa (Q-12)"; contem "T-s5-4 arvore limpa: 0 modificados" "arquivos versionados modificados: 0" "$(cat "$OUT/00-pre.log")"
+nova_arvore; echo "go L-1 (x) 2026-11-04T20:00:00+00:00 vm=x sha=y" >> "$G/runs/gate-b29/go.log"; roda $'GO\n' S5T_PORTAO_RUIM=1
+pre_ok "T-s5-4 go.log com 2 linhas 'go ' a mais (Q-12)"; contem "T-s5-4 2 linhas aceitas" "2 linha(s) 'go ' acrescentada(s) (aceito, Q-12)" "$(cat "$OUT/00-pre.log")"
 prep_extra() { echo "rc=0 (esperado 0)" > "$G/runs/gate-netdegrade/L1.log"; }
 precond "L1.log de uma execucao anterior" "runs/gate-netdegrade/L1.log ja existe"
 prep_extra() { echo "fault=F4 node=isn3 event=start t_epoch_ns=1" > "$G/runs/gate-netdegrade/marcadores.txt"; }
@@ -454,6 +508,9 @@ av   "NIC da VM com netem depois do L-1" "FALHA: NIC da VM" "sed -i 's/^nic eth0
 av   "timer tcc-heal depois do L-1" "FALHA: timers/units tcc-heal depois do L-1" "sed -i 's/^timers tcc-heal: 0 units tcc-heal: 0$/timers tcc-heal: 1 units tcc-heal: 1/' 05-pos-l1.log"
 av   "portao pos FALHA" "FALHA: portao 5.1 pos" "echo 'FALHA portao: amostras_ruins=1' > 06-portao51-pos.avaliacao"
 av   "sem parametros.txt" "FALHA: sem" "rm parametros.txt"
+# a regra de latencia usa o FOLGA_LAT_S gravado em parametros.txt (pronta para a decisao do Gestor sobre o "+1 ms")
+av   "FOLGA_LAT_S negativa em parametros.txt recusa a latencia" "FALHA: REST de isn3 (11224) time_total: mediana durante" "sed -i 's/^FOLGA_LAT_S=.*/FOLGA_LAT_S=-1/' parametros.txt"
+avok "a regra da latencia cita o FOLGA_LAT_S de parametros.txt" "+ 0.0025 s" "sed -i 's/^FOLGA_LAT_S=.*/FOLGA_LAT_S=0.0025/' parametros.txt"
 avok "DEGRADED no saude-log e RESULTADO" "RESULTADO: 1 amostra(s) do saude-log na janela fora de HEALTHY/3" \
      "S=\$(sed -n 's/.*event=start t_epoch_ns=//p' l1/marcadores.txt); awk -F, -v s=\"\$S\" 'BEGIN{OFS=\",\"} NR>1 && \$2==\"11224\" && \$1>=s && !d {\$6=\"DEGRADED\"; d=1} {print}' janela/saude.csv > x && mv x janela/saude.csv"
 

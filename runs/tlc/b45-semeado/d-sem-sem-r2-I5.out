@@ -1,0 +1,28 @@
+TLC2 Version 2.19 of 08 August 2024 (rev: 5a47802)
+Running breadth-first search Model-Checking with fp 50 and seed 7383877449028586939 with 4 workers on 20 cores with 2731MB heap and 64MB offheap memory [pid: 29408] (Windows 11 10.0 amd64, Oracle Corporation 17.0.2 x86_64, MSBDiskFPSet, DiskStateQueue).
+Parsing file C:\Users\Francesco\Development\tcc\wt-b45\spec\states\b45\snap-a2ce4c9\MCSession.tla
+Parsing file C:\Users\Francesco\Development\tcc\wt-b45\spec\states\b45\snap-a2ce4c9\SessionStore.tla
+Parsing file C:\Users\Francesco\Development\tcc\wt-b45\spec\states\b45\jtmp\d-sem-sem-r2-I5\TLC.tla
+Parsing file C:\Users\Francesco\Development\tcc\wt-b45\spec\states\b45\jtmp\d-sem-sem-r2-I5\Naturals.tla
+Parsing file C:\Users\Francesco\Development\tcc\wt-b45\spec\states\b45\jtmp\d-sem-sem-r2-I5\Sequences.tla
+Parsing file C:\Users\Francesco\Development\tcc\wt-b45\spec\states\b45\jtmp\d-sem-sem-r2-I5\FiniteSets.tla
+Semantic processing of module Naturals
+Semantic processing of module Sequences
+Semantic processing of module FiniteSets
+Semantic processing of module SessionStore
+Semantic processing of module TLC
+Semantic processing of module MCSession
+Starting... (2026-11-04 19:06:10)
+Computing initial states...
+Finished computing initial states: 1 distinct state generated at 2026-11-04 19:06:10.
+Progress(11) at 2026-11-04 19:06:13: 879,940 states generated (879,940 s/min), 124,225 distinct states found (124,225 ds/min), 85,225 states left on queue.
+Progress(15) at 2026-11-04 19:07:13: 39,605,779 states generated (38,725,839 s/min), 2,580,606 distinct states found (2,456,381 ds/min), 799,732 states left on queue.
+Model checking completed. No error has been found.
+  Estimates of the probability that TLC did not check all reachable states
+  because two distinct states had the same fingerprint:
+  calculated (optimistic):  val = 1.3E-5
+  based on the actual fingerprints:  val = 6.5E-6
+74027425 states generated, 3379036 distinct states found, 0 states left on queue.
+The depth of the complete state graph search is 17.
+The average outdegree of the complete state graph is 1 (minimum is 0, the maximum 12 and the 95th percentile is 4).
+Finished in 02min 01s at (2026-11-04 19:08:11)

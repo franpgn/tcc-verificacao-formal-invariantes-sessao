@@ -1,0 +1,11 @@
+id	f-inv-small-I6
+rev	8f25803 (FIFO)
+modulo	MCFifo
+spec	Spec
+workers	4
+timeout	600
+java	/c/Program Files/Java/jdk-17.0.2/bin/java.exe
+inicio	2026-11-04T19:01:42
+a1b6d433ed8c5071a15e90d122d1c70cb80f1018d8b46eb572ad4a8d49c5a9d4 *./MCFifo.tla
+892e44be1789496269559fcdb6a0508f5c7d745c1e59e0fa49c4854519ecb0f7 *./MCSession.tla
+7dde4bb146aca82d42d48f8090493e395dc1ab7b0961a1800f53735917ab9ec0 *./SessionStore.tla

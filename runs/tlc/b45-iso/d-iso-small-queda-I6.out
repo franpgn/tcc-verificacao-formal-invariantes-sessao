@@ -1,0 +1,27 @@
+TLC2 Version 2.19 of 08 August 2024 (rev: 5a47802)
+Running breadth-first search Model-Checking with fp 78 and seed -6912490485217699856 with 4 workers on 20 cores with 2731MB heap and 64MB offheap memory [pid: 28032] (Windows 11 10.0 amd64, Oracle Corporation 17.0.2 x86_64, MSBDiskFPSet, DiskStateQueue).
+Parsing file C:\Users\Francesco\Development\tcc\wt-b45\spec\states\b45\snap-a2ce4c9\MCSession.tla
+Parsing file C:\Users\Francesco\Development\tcc\wt-b45\spec\states\b45\snap-a2ce4c9\SessionStore.tla
+Parsing file C:\Users\Francesco\Development\tcc\wt-b45\spec\states\b45\jtmp\d-iso-small-queda-I6\TLC.tla
+Parsing file C:\Users\Francesco\Development\tcc\wt-b45\spec\states\b45\jtmp\d-iso-small-queda-I6\Naturals.tla
+Parsing file C:\Users\Francesco\Development\tcc\wt-b45\spec\states\b45\jtmp\d-iso-small-queda-I6\Sequences.tla
+Parsing file C:\Users\Francesco\Development\tcc\wt-b45\spec\states\b45\jtmp\d-iso-small-queda-I6\FiniteSets.tla
+Semantic processing of module Naturals
+Semantic processing of module Sequences
+Semantic processing of module FiniteSets
+Semantic processing of module SessionStore
+Semantic processing of module TLC
+Semantic processing of module MCSession
+Starting... (2026-11-04 19:04:43)
+Computing initial states...
+Finished computing initial states: 1 distinct state generated at 2026-11-04 19:04:43.
+Progress(11) at 2026-11-04 19:04:46: 1,296,649 states generated (1,296,649 s/min), 102,949 distinct states found (102,949 ds/min), 61,303 states left on queue.
+Model checking completed. No error has been found.
+  Estimates of the probability that TLC did not check all reachable states
+  because two distinct states had the same fingerprint:
+  calculated (optimistic):  val = 1.1E-6
+  based on the actual fingerprints:  val = 2.6E-7
+24373991 states generated, 887850 distinct states found, 0 states left on queue.
+The depth of the complete state graph search is 15.
+The average outdegree of the complete state graph is 1 (minimum is 0, the maximum 14 and the 95th percentile is 4).
+Finished in 38s at (2026-11-04 19:05:21)

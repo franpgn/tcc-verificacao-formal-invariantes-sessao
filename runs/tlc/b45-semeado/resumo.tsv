@@ -1,0 +1,8 @@
+a-sem-sem-r2-I5	ANTES	20805b0	MCSession	SpecSemeada	r2	SemFalha	I5	S	4	VIOLADA	traco_de_5_estados	3324	750	594	2s
+a-sem-sem-r2-I6	ANTES	20805b0	MCSession	SpecSemeada	r2	SemFalha	I6	S	4	VIOLADA	traco_de_5_estados	9862	2006	1558	2s
+a-sem-queda-r2-I5	ANTES	20805b0	MCSession	SpecSemeada	r2	SoQueda	I5	S	4	VIOLADA	traco_de_5_estados	3622	1029	830	2s
+a-sem-queda-r2-I6	ANTES	20805b0	MCSession	SpecSemeada	r2	SoQueda	I6	S	4	VIOLADA	traco_de_5_estados	11826	3042	2415	3s
+a-sem-particao-r2-I5	ANTES	20805b0	MCSession	SpecSemeada	r2	SoParticao	I5	S	4	VIOLADA	traco_de_5_estados	3602	1048	851	1s
+a-sem-particao-r2-I6	ANTES	20805b0	MCSession	SpecSemeada	r2	SoParticao	I6	S	4	VIOLADA	traco_de_5_estados	7060	2022	1648	2s
+d-sem-sem-r2-I5	DEPOIS	a2ce4c9	MCSession	SpecSemeada	r2	SemFalha	I5	S	4	FECHOU	exaustivo	74027425	3379036	0	123s
+d-sem-sem-r2-I6	DEPOIS	a2ce4c9	MCSession	SpecSemeada	r2	SemFalha	I6	S	4	FECHOU	exaustivo	74027425	3379036	0	119s

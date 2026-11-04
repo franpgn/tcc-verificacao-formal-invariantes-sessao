@@ -277,3 +277,30 @@ Branch `refactor/w1-remover-acoes-cliente` sobre `20805b0`. Contagens medidas co
 | depois do W-1 | 825/0/0/1, 116 | 187 OK, 1 *skip* |
 
 825 = 863 − 42 apagados + 4 novos. Apagados com a funcionalidade (D-6): `PortaoDeEmissaoK1Test` (6), `PortaoDeEmissaoK2K4Test` (5), `PortaoDeEmissaoK3Test` (5), `ParametrosKnobsTest` (6), `ArquiteturaPortaoTest` (1), `PerfilAtualTest` (2), `PortaoS1S2Test` (5), `PortaoS3AplicacaoTest` (8), `PortaoS3SimulacaoTest` (4). Novos: `ArquiteturaSemAcaoNoClienteTest` (R-C1, 1), `S3SemPortaoTest` (R-C2, 2), `GoldenRodarClienteTest` (R-C3, 1; referência `golden-20805b0/rodar-cliente-s1-s2.txt` gerada na base). `S3SimulacaoTest`, `GoldenS1S2Test` e `golden-8e2e815/` inalterados.
+
+## W-3 (B-28.2): laço de controle, atuador sobre interface e JSONL (2026-11-04)
+
+Branch `feature/w3-laco-controlador` sobre `098900f` (W-1 integrado). Contagens com `mvn -q -T1 clean test` em
+`workload/` (somadas dos `TEST-*.xml`) e `python -m unittest discover -s analysis` na raiz.
+
+| Momento | Surefire (testes/falhas/erros/pulados, arquivos) | `unittest` analysis |
+|---|---|---|
+| base `098900f` (= `0f8b351` + docs) | 825/0/0/1, 116 | 187 OK, 1 *skip* |
+| depois do W-3 | 894/0/0/1, 123 | 187 OK, 1 *skip* (`analysis/` não muda) |
+
+894 = 825 + 69 novos, em 7 arquivos:
+
+| Arquivo | Testes | O que cobre |
+|---|---|---|
+| `controle/ControladorDefasagemTest` | 16 | R2/R3/R4 com defasagem (alta, calma, intermediária, indeterminada), cooldown, ordem dos motivos, assinatura antiga = nova com defasagem indeterminada (1000 sequências) |
+| `controle/ExecutorDeAcoesTest` | 15 | shadow nunca chama o atuador; *thread* única; LIFO; idempotência; falha na aplicação revertida; reversão que falha fica na pilha; encerramento com prazo e atuador travado; gancho da JVM; atuador nulo |
+| `controle/LacoDeControleTest` | 12 | CA-T4 (tick fecha janela sem eventos, R2 em até W + L + 1 s; sem tick nada decide); G-1 (R1 em cooldown, active e shadow); JSONL linha a linha; R4 desfaz tudo; origem; fora do gatilho; *thread*; CA-T3 ao vivo; política que lança |
+| `controle/ControleArquivosTest` | 6 | `ArquivoReferencia` (`referencia-p99/1`); `TrilhaJsonl`; formato de `decisao` e `acao`; H4 |
+| `session/ControladorCliTest` | 10 | `--controller*`, exigências (config, admin, csv-dir, reference em active, marker em S3), H6 no admin, carga e recusa dos arquivos, `--dry-run` |
+| `session/LigacaoControladorTest` | 7 | item 7 (off não abre nada); DT-001/DT-002; sem rastro; H7 (corrida não chega ao controlador); ouvinte de evento; ponta a ponta com `FakeCaches` (R2 por erro, R4 depois de m janelas, JSONL, H6); encerramento idempotente |
+| `session/ConvergenciaResumoFimCargaTest` | 3 | `t_fim_carga_ns` aditivo no resumo da convergência |
+
+Testes existentes editados (listados no relatório): `controle/TiposBasicosTest.ordemDeSeveridade` (novo valor
+`Motivo.DEFASAGEM` no enum) e `session/ArquiteturaSemAcaoNoClienteTest` (R-C1 por pares, ressalva 4 da validação
+do W-1, e `LigacaoControlador` autorizado). Mutantes conferidos à mão: pilha FIFO, shadow chamando o atuador, R2
+sem defasagem, R4 sem reversão, violação do *warm-up* aceita; os cinco morrem.

@@ -95,6 +95,55 @@ o ProtoStream padrão falha ao serializar e toda escrita vira
 
 ## Decisões técnicas a registrar
 
+### TD-010 — W-3 (B-28.2): laço de controle do *cluster* no processo da carga (2026-11-04)
+
+Plano de execução de 2026-11-04, seções 4.1, 4.4.3, 4.5 e 9 (W-3). Com `--controller shadow|active`, uma *thread*
+`controlador-laco` no processo da carga fecha as janelas do `AgregadorDeJanela` num *tick* de W/5 (decisão de
+22/10), lê S_top (`SondaTopologia`, REST em `--controller-admin`) e S_lag (indeterminada até o W-4), chama
+`Controlador.avaliar(janela, topologia, defasagem)` e grava `observaveis-rep-NNN.jsonl` e `decisoes-rep-NNN.jsonl`
+(`docs/contrato-jsonl-controlador-v1.md`). As ações vão ao `ExecutorDeAcoes` sobre a interface `AtuadorCluster`.
+
+- **Núcleo:** sinal novo de defasagem (`EstadoDefasagem`, `Motivo.DEFASAGEM` entre `TOPOLOGIA` e `ERRO`), que
+  entra como a latência entra (R2 com k janelas altas, R3 zera as calmas, R4 exige defasagem calma ou
+  indeterminada). A assinatura antiga delega com defasagem indeterminada.
+- **Atuador:** `AtuadorCluster` só tem `nome()`, `aplicar(acao, prazoNs)` e `reverter(acao, prazoNs)`. Até o W-2,
+  `AtuadorNulo` (resultado `NAO_EXECUTADA`) e `PoliticaDeAcao.NENHUMA`. O W-2 pluga `session.AtuadorRestInfinispan`
+  e a política da tabela 4.5 em `LigacaoControlador.pecasPadrao`.
+- **Reversão:** camada 1, pilha LIFO idempotente no executor (R4 desfaz tudo; aplicação que falha é revertida
+  na hora; reversão que falha fica na pilha); camada 2, gancho de desligamento da JVM, registrado só em `active`;
+  encerramento normal no fim da carga, antes da convergência, com prazo de 10 s. Camada 3 é do W-6.
+- **Shadow:** o executor não cria *thread* nem gancho e nunca chama o atuador; as linhas `acao` saem
+  `executada: false`, `resultado: PREVISTA`, com a mesma pilha virtual.
+- **Origem das janelas:** início da medição. Eventos e violações do *warm-up* são descartados e contados
+  (`eventos_antes_da_origem`, `violacoes_antes_da_origem`), para que uma violação do *warm-up* não vire R1 na janela 0.
+- **Violações:** o `InvariantAuditor` avisa o laço com o rótulo do CSV; a classificação (`ClasseViolacao.de`, com o
+  `RastroCliente` para I2) é feita na *thread* do laço, no *tick* seguinte, com o instante em que a violação foi vista.
+- **`--controller off`:** `WorkloadMain.ligarControlador` devolve `null` sem ler arquivo; `SessionOps` e
+  `InvariantAuditor` ficam sem ouvinte (fluxo idêntico; *golden* S1/S2 e `S3SimulacaoTest` inalterados).
+- **`session`:** só `LigacaoControlador` usa os tipos do laço; R-C1 agora é por pares (classe, tipo).
+
+```mermaid
+%%{init: {'theme':'base','themeVariables':{'background':'#ffffff','primaryColor':'#ffffff','primaryTextColor':'#000000','primaryBorderColor':'#000000','lineColor':'#000000','secondaryColor':'#ffffff','tertiaryColor':'#ffffff','clusterBkg':'#ffffff','clusterBorder':'#000000','edgeLabelBackground':'#ffffff','fontFamily':'Arial'}}}%%
+flowchart LR
+    subgraph session
+        SO["SessionOps (ouvinte de evento)"] --> LG["LigacaoControlador"]
+        IA["InvariantAuditor (ouvinte de violacao)"] --> LG
+        CR["ConsultaSaudeRest"]
+    end
+    subgraph controle
+        LG --> LC["LacoDeControle (tick W/5)"]
+        CR --> ST["SondaTopologia"] --> LC
+        LC --> AG["AgregadorDeJanela"]
+        LC --> NU["Controlador R1..R4 + S_lag"]
+        LC --> PO["PoliticaDeAcao (NENHUMA ate o W-2)"]
+        PO --> EX["ExecutorDeAcoes (fila, pilha LIFO, gancho JVM)"]
+        EX --> AT["AtuadorCluster (AtuadorNulo ate o W-2)"]
+        LC --> JS["observaveis / decisoes JSONL"]
+        EX --> JS
+    end
+    AT -. "active: API REST (W-2)" .-> G[("cluster Infinispan")]
+```
+
 ### TD-009 — B-27.3: sem portão de emissão no cliente (2026-11-04)
 
 Decisão do autor de 04/11: o controlador do TCC age **no *cluster***, não no cliente. O portão de emissão do B-27 (K1 admissão, K2 ritmo, K3 adiamento de administrativas, K4 espera entre retentativas) e seus tipos (`controle/PortaoDeEmissao`, `ParametrosKnobs`, `EventoK3`, `Dormidor`, `PerfilAtual`) foram apagados. `AplicacaoS3`, `ContextoS3`, `UsuarioVirtual` e `WorkloadMain.rodarCliente` voltaram ao comportamento de antes do B-27, que era também o do caminho com `PortaoDeEmissao.livre()` (sequência de chamadas por semente fixada em `src/test/resources/golden-20805b0/`). A coluna `espera_portao_ns` do contrato S3 v2 ficou reservada e vale sempre 0 (`docs/contrato-s3-acoes-v2.md`). O pacote `session` só usa, de `controle`, os tipos dos sensores do B-26 (`ArquiteturaSemAcaoNoClienteTest`). O núcleo `Controlador` (R1..R4, histerese) não mudou. Relatório: `docs/relatorio-w1-2026-11-04.md`.

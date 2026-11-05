@@ -936,3 +936,9 @@ Transmitidas ao Senior pelo coordenador, sobre o parecer de conferência do text
   execução roda com aviso. **A fase não para por *swap*.** Opção `--swap-limite-kb 1048576` (W-6c).
 - Em aberto para o Gestor: o caso em que a segunda leitura repete a primeira (P-56 do W-6c). Até a decisão, vale o
   aviso; uma mudança depois de haver dados vira entrada nova.
+
+> **Nota (2026-11-05, P-56 decidido pelo coordenador, antes de qualquer dado):** se o *swap* continuar ≥ 1 GiB depois
+> da recriação, **a fase para**, com código de saída próprio (fixado pelo W-6c), e não roda com aviso; a execução volta
+> com o mesmo i e a mesma semente na retomada. Origem: as quatro recriações da noite 1 baixaram o *swap* para 39 a 51 MB
+> (`prep-seg2-20261105T114805Z.log` e `supervisor-n1s2b.log`). O item "a fase não para por *swap*" acima fica superado
+> só nesse caso; a primeira leitura alta continua levando à recriação.

@@ -1004,13 +1004,15 @@ rodar_carga() {  # lanca o programa, le os eventos e conduz a falha; volta quand
     log "exec i=${E_I}: lancando a carga (${CMD_MASC[*]})"
     "${CMD[@]}" > "${d}/.java.fifo" 2>&1 &
     WPID=$!
-    INJ_ESTADO=pendente; VOLTA_ESTADO=""; local fim_stdout=0 buf=""
+    INJ_ESTADO=pendente; VOLTA_ESTADO=""; local fim_stdout=0
     while [[ "${fim_stdout}" -eq 0 ]]; do
-        ev=""
-        # read -t que vence no meio de uma linha deixa a parte lida em ev: guarda e junta na leitura seguinte
-        # (sem isso um evento se perde; visto na suite do host, P-45)
-        if IFS= read -r -t "${POLL_S}" -u "${EV_FD}" ev; then
-            ev="${buf}${ev}"; buf=""
+        # Eventos ja disponiveis: read -t 0 so testa (nao le); a leitura da linha disponivel bloqueia ate o '\n', que o
+        # leitor escreve junto. A espera entre as voltas e o dormir (sleep & wait), o padrao do runner do rebaseline:
+        # o SIGTERM chega no wait e o trap roda. Com read -t 0,2 esperando no FIFO, o bash do Git Bash caiu com SIGSEGV
+        # ao receber o SIGTERM (P-50), e a leitura vencida no meio da linha perdia o evento (P-49).
+        while [[ "${fim_stdout}" -eq 0 ]] && IFS= read -r -t 0 -u "${EV_FD}" 2>/dev/null; do
+            ev=""
+            IFS= read -r -u "${EV_FD}" ev || break
             tipo="${ev%% *}"
             case "${tipo}" in
                 ANCORA)
@@ -1027,9 +1029,7 @@ rodar_carga() {  # lanca o programa, le os eventos e conduz a falha; volta quand
                 SINAL) tratar_sinal_fim "${ev#SINAL }" ;;
                 EOF) fim_stdout=1 ;;
             esac
-        else
-            buf+="${ev}"
-        fi
+        done
         agora="$(agora_ms)"
         if [[ -z "${E_ANC_MS}" && -z "${E_SEM_ANCORA}" && $(( agora - E_LANC_MS )) -ge $(( ANCORA_TIMEOUT_S * 1000 )) ]]; then
             E_SEM_ANCORA=1; E_RECUSAS+=("sem ancora em ${ANCORA_TIMEOUT_S} s"); log "exec i=${E_I}: sem ancora; parando a carga"
@@ -1044,6 +1044,7 @@ rodar_carga() {  # lanca o programa, le os eventos e conduz a falha; volta quand
         fi
         if [[ "${INJ_ESTADO}" == rodando ]] && ! kill -0 "${INJ_PID}" 2>/dev/null; then concluir_injecao; fi
         if [[ "${VOLTA_ESTADO}" == esperando && "${agora}" -ge "${VOLTA_PROX}" ]]; then amostra_volta_f1; fi
+        [[ "${fim_stdout}" -eq 1 ]] || dormir "${POLL_S}"
     done
     local rc=0
     wait "${WPID}" || rc=$?

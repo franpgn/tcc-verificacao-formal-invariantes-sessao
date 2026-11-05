@@ -522,7 +522,7 @@ class T7Recalibracao(unittest.TestCase):
 
     def test_copias_conferem_com_o_leiame(self):
         lista = {}
-        for l in (DADOS / "LEIAME.txt").read_text(encoding="ascii").splitlines():
+        for l in (DADOS / "LEIAME.txt").read_text(encoding="utf-8").splitlines():
             m = re.match(r"^([0-9a-f]{64})  (\S+)  ", l)
             if m:
                 lista[m.group(2)] = m.group(1)

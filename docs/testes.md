@@ -766,3 +766,80 @@ Não editados, verdes: os testes da `SondaTopologia` (contrato da `FonteDeSaude`
 (os testes travam um `Writer` falso); a sonda REST nova contra o Infinispan 15.0.21 (o Digest do `ClienteAdminRest`
 já passou na tarefa zero e no I-1..I-5 do W-2a, mas não pelo endpoint `/rest/v2/cache-managers/default/health`); o
 volume real de stderr de uma execução com corte (só a reaplicação da regra aos brutos do I-3b).
+
+### W-2b, decisões do coordenador em nome do Gestor (05/11, depois do primeiro relatório)
+
+**Decisão 1, registrada como veio:** edições de teste aprovadas, inclusive a retirada das asserções próprias do `curl`
+no `ConsultaSaudeRestTest`: o comportamento que elas testavam (argumentos e processo do curl) deixou de existir, e o
+R-ARQ-4 cobre a garantia que importa.
+
+| Passo | Commit | Surefire (testes/falhas/erros/pulados, arquivos) |
+|---|---|---|
+| ponta do primeiro relatório | `7d682dc` | **1087/0/0/1**, 151 |
+| fechamento da trilha com prazo (decisão 5) | `1cdc7e5` test → `ff09766` fix | **1090/0/0/1**, 151 |
+| contenção do `ISPN004005` (decisão 2, P-46) | `efdb0d5` test → `b30814a` fix | **1094/0/0/1**, 151 |
+| `saidaJsonl` com prazo de 400 ms | `44658a7` test | (junto com a linha abaixo) |
+| laço de convergência sem `curl` (decisão 3, P-45) | `ee9b563` test → `65165ea` fix | **1101/0/0/1**, 152 |
+
+Vermelhos: `1cdc7e5`, `efdb0d5` e `ee9b563` não compilam (`test-compile` exit 1, só nos testes do item). Conta:
+1101 = 1087 + 3 (`fecharComPrazoAbandona`, `fecharNoPrazo`, `encerramentoNaoEsperaODiscoTravado`) + 4
+(`chaveDo4005`, `filtro4005`, `linhasResumo`, `caminhoReal4005`) + 6 (`HealthRestHttpTest`) + 2 (`rArq6`,
+`convergenciaSemCurl`) − 1 (`HealthRestTest.configCurl`, retirado).
+
+`unittest discover -s analysis`: **370 OK, 1 *skip***.
+
+**Testes existentes editados nesta rodada** (números de linha na ponta `65165ea`):
+
+| Arquivo | Linhas | Mudança | Item |
+|---|---|---|---|
+| `session/HealthRestTest` | 59-64 → 59-60 | sai o teste `configCurl` (configuração do `curl` no stdin, que deixa de existir com o P-45); fica um comentário apontando para `HealthRestHttpTest.consultaDigest`, que confere que a senha não vai a nenhum cabeçalho. Mesma razão da decisão 1 | P-45 |
+| `session/ConsultaSaudeRestCliTest` | 125, 134-136 | `saidaJsonl`: `--periodo-ms 500 --prazo-ms 400 --duracao-s 2` (eram 200/100/1, calibrados para o lançador falso que respondia na hora); com HTTP real no *loopback* a suíte inteira estourou os 100 ms uma vez (`nos_min = 0`, linha 161). Asserções iguais | N-7 |
+
+Testes desta branch ajustados (não existiam na base): `ContencaoLogHotRodTest` (as chamadas do `ISPN004007` passam a
+dar o código, `total(Q7)`, `linhaResumo(Q7)`; a ligação confere `linhasResumo()`) e `ArquiteturaSondaSaudeTest`
+(`HealthRest` no R-ARQ-4; `rArq6`; `convergenciaSemCurl`).
+
+### W-2b, *smoke* local (decisão 7 do coordenador, janela H2, 05/11, 11:40Z a 11:49Z)
+
+*Cluster* `w2b` (portas 12701-12703), jar da ponta `65165ea` (sha256 `f47870e7…dd3d59`), S3 ASYNC, `--duration 120`,
+`--warmup-min-sec 30`, `--convergence` com teto de 120 s, arquivo da calibração, referência inerte e corte do `isn3` por
+nftables como no I-3b; corte de origem + 30 s até o fim da carga (sem religar). Brutos em `runs/w2b-smoke/` com
+`MANIFEST.sha256`; roteiro em `runs/w2b-smoke/comandos.txt`; harness, analisador (cópia do `analisar_i3b.py`) e
+comparador em `runs/w2b-smoke/scripts/`. O I-3b (`wt-w4/runs/i3b/`, `17f2bd4`, `--duration 300`, corte de origem + 60 s
+a + 150 s) foi só lido. As execuções do I-3b duram mais e cortam por mais tempo: as contagens não se comparam uma a
+uma; o que se compara é o volume por ocorrência e o formato.
+
+| | `ativo-sem-religar` W-2b | `ativo-sem-religar` I-3b | `controle-shadow` W-2b | `controle-shadow` I-3b |
+|---|---|---|---|---|
+| P1 (s depois do corte) | 13,28 | 13,26 | 13,36 | 13,23 |
+| AC-5 | APLICADA, pedido 13,28 s, fim 16,43 s (3,15 s); lido `12703=parou`, os outros `HEALTHY` | APLICADA, 3,23 s | PREVISTA | PREVISTA |
+| stderr (bytes) | **24 107** | 9 887 694 | **10 585** | 1 498 576 |
+| stderr (linhas; de pilha) | 266; 150 | 124 534; 98 656 | 114; 24 | 8 392; 396 |
+| `ISPN004007` contados (inteiras + avisos no stderr) | 1 243 (6 + 5) | 6 450 (todas inteiras) | 21 (2 + 2) | 33 (todas inteiras) |
+| `ISPN004005` contados (inteiras + avisos no stderr) | 10 (1 + 1) | 0 | 556 (2 + 2) | 3 897 (todas inteiras) |
+| observaveis: linhas, `fim`, `linhas_perdidas` | 95, sim, 0 | 256, sim, 0 | 98, sim, 0 | 255, sim, 0 |
+| decisoes: linhas, `fim`, `linhas_perdidas` | 27, sim, 0 | 91, sim, 0 | 29, sim, 0 | 87, sim, 0 |
+| `curl_lancados` | 0 | 450 | 0 | 450 |
+| `linhas_jsonl_perdidas` (stdout) | 0 | 0 | 0 | 0 |
+| fim da carga → fim do controlador | 11,8 ms | 14,9 ms | 13,1 ms | 16,3 ms |
+| convergência | 24 rodadas, todas inválidas ("topologia com 2 de 3 servidores"), `persistente=true` | igual | convergiu, 11 rodadas (8 inválidas), 40,1 s | convergiu, 3 rodadas, 20 ms |
+| `exit` | 0 | 0 | 0 | 0 |
+
+Leitura:
+
+- **stderr.** O `ISPN004007` com pilha (cerca de 1,5 KB por ocorrência no I-3b) vira uma linha inteira por (nó, motivo)
+  e um aviso; o resto sai só na linha `Hot Rod ISPN004007:`. No ativo, 6 chaves (5 do `isn3`, uma do `isn2`), 1 243
+  ocorrências, 24 107 B de stderr inteiro; a `TransportException:SocketException`, que na reaplicação aos brutos do
+  I-3b saía sem nó, aqui sai com o `isn3` pelo `getServerAddress`. No `shadow`, o `ISPN004005` (P-46) cai de 3 897
+  linhas no I-3b para 2 inteiras e 2 avisos (556 contados, `ISPN000306` e `ISPN000476`, nó `desconhecido`); o stderr
+  inteiro tem 10 585 B. Os dois braços ficaram na mesma ordem de grandeza (10 a 24 KB), contra 1,5 MB e 9,9 MB no I-3b.
+- **Trilha.** Os dois JSONL dos dois braços têm `fim`, `linhas_perdidas = 0` e `linhas_jsonl_perdidas=0`; nenhum
+  campo novo; `curl_lancados = 0`. A ordem das linhas é a do contrato (meta, linhas intercaladas, fim).
+- **Sonda de saúde HTTP (N-7) contra o 15.0.21:** `falha:IOException` para o `isn3` depois da parada (18 amostras no
+  ativo), como com o `curl` no I-3b; nenhum `timeout`.
+- **Convergência sem `curl` (P-45):** o laço consultou a saúde pelo HTTP em memória contra o 15.0.21 e gravou os
+  mesmos motivos ("topologia com 2 de 3 servidores"); o resumo de convergência tem os mesmos campos. A diferença no
+  `shadow` (40,1 s em vez de 20 ms) vem do protocolo: no *smoke* a cura é no fim da carga e a fusão cai dentro do laço;
+  no I-3b a cura foi 150 s antes do fim.
+- **Encerramento:** fim da carga → fim do controlador em 11,8 e 13,1 ms, com o fechamento das trilhas limitado pelo
+  `T_enc` (decisão 5); o disco não travou e nada foi abandonado.

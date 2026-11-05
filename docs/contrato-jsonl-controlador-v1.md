@@ -22,7 +22,9 @@ caso do `T_enc` de 9 s para 21 s (P-42); leitura por réplica da carga S3 com pr
 `observaveis-controlador/1.2` e `decisoes-controlador/1.2`): a gravação passa para uma *thread* gravadora por arquivo,
 com fila em memória (regra 1); `linhas_perdidas` passa a contar também as linhas recusadas com a fila cheia e é
 preenchido na hora em que a linha `fim` é gravada; a sonda de topologia deixa de criar processo e `curl_lancados`
-vale 0 com ela.
+vale 0 com ela (decisão 4 do coordenador: o campo fica no esquema); o fechamento espera a gravadora só pelo que
+sobra do `T_enc` (decisão 5) e as linhas abandonadas vão a `linhas_jsonl_perdidas=` do stdout; as linhas
+`Hot Rod ISPN004007:` e `Hot Rod ISPN004005:` no stdout (seção própria, decisão 6).
 
 Com `--controller off` nenhum dos dois existe. Código: `workload/src/main/java/br/unipampa/tcc/controle/FormatoJsonl.java`
 (formato), `TrilhaJsonl.java` (gravação), `LacoDeControle.java` (ordem das linhas). Teste de contrato:
@@ -36,8 +38,13 @@ Com `--controller off` nenhum dos dois existe. Código: `workload/src/main/java/
    atuador. A fila tem capacidade fixa, calculada na abertura: 4 × as linhas esperadas na execução de `--duration`
    (`observaveis`: 2 + 2·⌈D/W⌉ + ⌈D/P_sonda⌉ com a sonda de topologia + ⌈D/W⌉ com a S_lag; `decisoes`:
    2 + 3·⌈D/W⌉); com ela cheia, a linha é recusada e contada em `linhas_perdidas`. A linha `fim` entra fora da
-   capacidade (nunca se perde por fila cheia) e nenhuma linha passa dela. Uma queda do processo perde as linhas
-   ainda na fila e a linha em curso.
+   capacidade (nunca se perde por fila cheia) e nenhuma linha passa dela. **Fechamento** (decisão 5 do
+   coordenador, 05/11): no fim da carga, as gravadoras têm só o que sobra do `T_enc` usado pelo executor, contado
+   do início do encerramento dele (como o gancho da JVM; com o executor fora do prazo, sobra o mínimo do `join`,
+   1 ms). Se não terminarem (disco travado), o que não foi gravado (a linha em curso, as da fila e o `fim`) é
+   abandonado e contado em `linhas_jsonl_perdidas=` da linha `Controlador:` do stdout, porque o `fim` pode não ter
+   saído; a linha em curso conta mesmo se o disco a completar depois (teto, no máximo uma linha a mais por
+   arquivo). Uma queda do processo perde as linhas ainda na fila e a linha em curso.
 2. Todo objeto tem `tipo`. A primeira linha dos dois arquivos é `meta`; a última, num encerramento normal, é `fim`.
    Um arquivo sem `fim` vem de execução interrompida.
 3. Campos em `snake_case`. Ausência de valor é `null`; nenhum campo do esquema é omitido.
@@ -214,7 +221,8 @@ uso só na abertura, falha nunca silenciosa e prova REST obrigatória no *smoke*
 recebidas com a trilha já fechada e, desde o W-2b, linhas recusadas com a fila cheia. A *thread* gravadora preenche o
 campo na hora de gravar o `fim`, quando já conhece o resultado de todas as linhas anteriores. As linhas que chegam **depois** do `fim` (executor fora do prazo,
 `executor_no_prazo = false`) não podem estar nele. Elas aparecem em `linhas_jsonl_perdidas=` na linha `Controlador:`
-do stdout.
+do stdout, junto com as abandonadas no fechamento (regra 1); um arquivo sem `fim` com `linhas_jsonl_perdidas > 0` é
+um fechamento que estourou o `T_enc`.
 
 Conservação: `soma(total) + atrasados_total + descartados_no_encerramento` = eventos registrados depois da origem
 (`LacoDeControleTest.concorrenciaComTick`).
@@ -341,24 +349,30 @@ cujas rodadas foram todas inválidas pela topologia). Código: `session/LeituraR
 `WorkloadMain.leitorDaReplica`; teste `LeituraReplicaComPrazoTest`. Efeito no tempo de fim: até
 `2 × --hotrod-timeout-ms` a mais na rodada final (sessões e contadores do nó parado).
 
-## Contenção do `ISPN004007` do cliente Hot Rod (W-2b)
+## Contenção do `ISPN004007` e do `ISPN004005` do cliente Hot Rod (W-2b)
 
-Vale com qualquer `--controller` (inclusive `off`): é da carga, não do controlador. O cliente Hot Rod grava um
-`ISPN004007` (ERROR, com a pilha) por operação que esgotou as novas tentativas. Por repetição e por (nó, motivo), a
-primeira ocorrência sai inteira no stderr, a segunda sai como um aviso de uma linha sem pilha
-(`ISPN004007 [W-2b] as proximas ocorrencias de no=... motivo=... so sao contadas ...`) e as demais só são contadas.
-Nenhuma outra mensagem do cliente muda. Saída (stdout), uma linha por repetição, no fim dela (depois de fechados os
-clientes; também quando a repetição falha):
+Vale com qualquer `--controller` (inclusive `off`): é da carga, não do controlador. Documentada para o W-6 e a
+`analysis` lerem, se quiserem (decisão 6 do coordenador). O cliente Hot Rod grava um `ISPN004007` (ERROR, com a
+pilha) por operação que esgotou as novas tentativas e um `ISPN004005` (WARN, uma linha) por erro devolvido pelo
+servidor. Por repetição, por código e por (nó, motivo), a primeira ocorrência sai inteira no stderr, a segunda sai
+como um aviso de uma linha sem pilha (`<código> [W-2b] as proximas ocorrencias de no=... motivo=... so sao
+contadas ...`) e as demais só são contadas. Nenhuma outra mensagem do cliente muda. Saída (stdout), duas linhas por
+repetição, nesta ordem, no fim dela (depois de fechados os clientes; também quando a repetição falha):
 
 `Hot Rod ISPN004007: total=<n> inteiras=<n> contidas=<n> chaves=<k> | no=<host:porta> motivo=<motivo> n=<n> t_primeira_ns=<ns> t_ultima_ns=<ns> | ...`
 
-Uma parte por (nó, motivo), em ordem decrescente de `n` (empate: nó, motivo); `contidas = total - inteiras`.
-`no`: endereço do servidor da `TransportException`, senão o `connection=/h:p` da mensagem, senão o primeiro
-`host/ip:porta` da cadeia de causas, senão `desconhecido`. `motivo`: classe da exceção mais o primeiro código `ISPN` da
-cadeia (por exemplo `TransportException:ISPN004071`) ou, sem código, mais a classe da causa raiz
-(`AnnotatedConnectException:ConnectException`); `sem-excecao` sem exceção. Instantes em epoch-ns do relógio de parede do
-registro de log. Código: `session/ContencaoLogHotRod.java` e `WorkloadMain.executarRepeticao`; teste
-`ContencaoLogHotRodTest`.
+`Hot Rod ISPN004005: total=<n> inteiras=<n> contidas=<n> chaves=<k> | no=<host:porta> motivo=<codigo> n=<n> t_primeira_ns=<ns> t_ultima_ns=<ns> | ...`
+
+Uma parte por (nó, motivo), em ordem decrescente de `n` (empate: nó, motivo); `contidas = total - inteiras`; sem
+ocorrência, só o cabeçalho com zeros. **`ISPN004007`:** `no` = endereço do servidor da `TransportException`, senão o
+`connection=/h:p` da mensagem, senão o primeiro `host/ip:porta` da cadeia de causas, senão `desconhecido`; `motivo` =
+classe da exceção mais o primeiro código `ISPN` da cadeia (por exemplo `TransportException:ISPN004071`) ou, sem
+código, mais a classe da causa raiz (`AnnotatedConnectException:ConnectException`); `sem-excecao` sem exceção.
+**`ISPN004005`:** `no` = o primeiro `host/ip:porta` do texto do servidor, senão `desconhecido` (o registro do cliente
+não traz o endereço do servidor: no `Codec20` o endereço só vai à exceção; no I-3b sai sempre `desconhecido`);
+`motivo` = o código do servidor (primeiro `ISPN` do texto, por exemplo `ISPN000306`, `ISPN000476`), senão a classe da
+exceção do servidor, senão `sem-codigo`. Instantes em epoch-ns do relógio de parede do registro de log. Código:
+`session/ContencaoLogHotRod.java` e `WorkloadMain.executarRepeticao`; teste `ContencaoLogHotRodTest`.
 
 ## Arquivo vizinho: `convergencia-resumo-rep-NNN.json`
 

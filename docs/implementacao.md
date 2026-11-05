@@ -109,8 +109,8 @@ pelo I-3b. TDD: cada `test:` vermelho (`test-compile` exit 1, erros só nos test
   política e, em média, uma ação por janela), D = `--duration`. Fila cheia: a linha é recusada e contada
   (`transbordadas`, dentro de `linhas_perdidas`). O `fim` vai por `escreverFim`: fora da capacidade, fecha a trilha
   para linhas novas, e a gravadora preenche `linhas_perdidas` na hora de gravar. A gravadora nunca morre por uma linha
-  (`IOException` ou `RuntimeException` da saída contam como erro de escrita). `close` espera a gravadora (no fim da
-  carga, fora do laço e do executor). O gancho de desligamento da JVM do executor vai envolto
+  (`IOException` ou `RuntimeException` da saída contam como erro de escrita). No fim da carga, `fechar(prazo)` espera
+  a gravadora pelo que sobra do `T_enc` (decisão 5, abaixo). O gancho de desligamento da JVM do executor vai envolto
   (`LigacaoControlador.ganchoComDreno`): depois de desfazer a pilha, espera a gravadora do `decisoes` pelo que sobra
   do `T_enc` usado; sem sobra, não espera, e o gancho nunca passa do `T_enc`.
 - **Sonda de saúde sem `curl` (N-7).** `ConsultaSaudeRest.consultar` faz `GET /rest/v2/cache-managers/default/health`
@@ -154,12 +154,28 @@ flowchart LR
 | `ConsultaSaudeRest` sobre `ClienteAdminRest`; `SondaTopologiaCli.FabricaCliente` | `session/` |
 | `ContencaoLogHotRod`; `WorkloadMain.executarRepeticao` (instala, zera, imprime) | `session/` |
 
-**Limites, declarados:** (1) `close` da trilha espera a gravadora sem prazo, como antes esperava a escrita síncrona:
-um disco travado no fim da carga atrasa o encerramento e o `fimControleNs`; (2) a contenção supõe o JBoss Logging sobre
-o `java.util.logging` (provado por `ContencaoLogHotRodTest.caminhoReal` com o classpath do projeto); com outro *backend*
-as linhas voltam a sair inteiras e a contagem fica em 0, sem esconder nada; (3) o `ISPN004005` (WARN, sem pilha, erros
-do servidor) não é contido: no I-3b ele é o grosso do stderr do `shadow` (P-46); (4) o laço de convergência ainda chama
-`HealthRest.consultar`, que cria um `curl` por rodada (P-45).
+**Decisões do coordenador em nome do Gestor (05/11, depois do primeiro relatório):**
+
+- **Fechamento com prazo (decisão 5).** `TrilhaJsonl.fechar(prazo)`; o `LacoDeControle.encerrar` dá às duas gravadoras
+  o que sobra do `T_enc` usado pelo executor, contado do início do encerramento dele (como o gancho). Estourado, a fila
+  é abandonada (`abandonadas`), as linhas não gravadas vão a `linhasPerdidas()` (linha `Controlador:` do stdout) e a
+  gravadora fecha o arquivo quando o disco voltar. Com o executor fora do prazo, sobra o mínimo do `Thread.join`
+  (1 ms): o `LacoDeControleTest.linhasPerdidas` (N3: o `fim` sai com o executor fora do prazo e o disco bom) passou em
+  8 de 8 repetições. Sem limite novo.
+- **`ISPN004005` (decisão 2, P-46).** A mesma contenção, com chave (nó, código do servidor) e uma segunda linha
+  `Hot Rod ISPN004005:` no stdout. O registro do cliente não traz o endereço do servidor (no `Codec20` ele só vai à
+  exceção), então o nó sai `desconhecido`, salvo se o texto do servidor trouxer um `host/ip:porta`.
+- **Laço de convergência sem `curl` (decisão 3, P-45).** `HealthRest.consultar(ClienteAdminRest, baseUrl, prazo)`,
+  prazo `PRAZO_CONSULTA_NS` = 5 s (o `--max-time 5` do curl antigo); falhas continuam `IOException` (rodada inválida com
+  "sonda de cluster falhou: ...") e o resumo de convergência não muda. Saem o `ProcessBuilder` e o `configCurl`:
+  nenhuma fonte de `main` cria processo (R-ARQ-6).
+- **`curl_lancados` (decisão 4).** Fica no esquema, valendo 0.
+
+**Limites, declarados:** (1) a linha em curso no estouro do fechamento conta como perdida mesmo se o disco a completar
+depois (teto, no máximo uma linha a mais por arquivo); (2) a contenção supõe o JBoss Logging sobre o
+`java.util.logging` (provado por `ContencaoLogHotRodTest.caminhoReal` e `caminhoReal4005` com o classpath do
+projeto); com outro *backend* as linhas voltam a sair inteiras e a contagem fica em 0, sem esconder nada; (3) o nó do
+`ISPN004005` é `desconhecido` quando o texto do servidor não traz endereço (o caso do I-3b).
 
 ### TD-013 — Correções do W-2a depois da integração: P-41, P-42 e D-B (2026-11-05)
 

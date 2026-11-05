@@ -1064,7 +1064,9 @@ o W-2b não resolve.
   `V-S7r.md:61`): um travamento nessa fase atrasa a rodada e infla o `t_convergencia`.
 - **Proposta:** trocar por `ConsultaSaudeRest` (mesmo endpoint, HTTP em memória, Digest), com um prazo próprio com
   origem declarada. Muda o laço de convergência, fora do escopo do W-2b.
-- **Status:** `ABERTO`, decisão do Senior/Gestor.
+- **Status:** `RESOLVIDO` (05/11, `ee9b563` test → `65165ea` fix). Decisão 3 do coordenador em nome do Gestor:
+  `HealthRest.consultar(ClienteAdminRest, baseUrl, PRAZO_CONSULTA_NS)`, prazo de 5 s (o `--max-time 5` do curl), falhas
+  como `IOException` (rodada inválida, como antes); nenhuma fonte de `main` cria processo (R-ARQ-6).
 
 ### P-46 (W-2b) — depois da contenção do `ISPN004007`, o stderr do `shadow` passa a ser o maior
 
@@ -1078,7 +1080,9 @@ o W-2b não resolve.
   continuam com escrita em disco no caminho do cliente sob corte, em volumes diferentes.
 - **Proposta:** a mesma regra para o `ISPN004005`, com chave (código do servidor, por exemplo `ISPN000306`,
   `ISPN000476`), sem nó (a mensagem não traz o endereço). É uma linha na lista de mensagens contidas mais os testes.
-- **Status:** `ABERTO`, decisão do Gestor (o item 3 do W-2b pediu o `ISPN004007`).
+- **Status:** `RESOLVIDO` (05/11, `efdb0d5` test → `b30814a` fix). Decisão 2 do coordenador em nome do Gestor:
+  mesma regra, chave (nó, código do servidor), linha `Hot Rod ISPN004005:` no stdout. O nó sai `desconhecido`: o
+  registro do cliente não traz o endereço do servidor. Medida no *smoke* do W-2b (`docs/testes.md`).
 
 ## Observação de modelagem (não é defeito)
 

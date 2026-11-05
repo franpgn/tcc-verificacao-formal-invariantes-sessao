@@ -329,8 +329,9 @@ public final class WorkloadMain {
     }
 
     static void executarRepeticao(Cli cli, int rep) throws Exception {
-        // W-2b (P-5, item 3): o ISPN004007 do cliente Hot Rod sai inteiro uma vez por (no, motivo) e e contado; a
-        // contagem desta repeticao vai a linha "Hot Rod ISPN004007:" no finally do try do rcm, tambem na falha
+        // W-2b (P-5, item 3; P-46): o ISPN004007 e o ISPN004005 do cliente Hot Rod saem inteiros uma vez por
+        // (no, motivo) e sao contados; a contagem desta repeticao vai as linhas "Hot Rod ISPN004007:" e
+        // "Hot Rod ISPN004005:" no finally do try do rcm, tambem na falha
         ContencaoLogHotRod contencao = ContencaoLogHotRod.instalar();
         contencao.reiniciar();
         ConfigurationBuilder cb = new ConfigurationBuilder();
@@ -512,7 +513,7 @@ public final class WorkloadMain {
             }
         } finally {
             // W-2b: depois de fechados o rcm e os leitores (os clientes do S3 e da sonda fecham dentro do try)
-            System.out.println(contencao.linhaResumo());
+            System.out.println(contencao.linhasResumo());
         }
     }
 

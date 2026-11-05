@@ -908,6 +908,72 @@ correspondente adicionado em `Mesclar` (`spec/SessionStore.tla`, commit `b7d8e0a
   e os nós que responderam vêm de `SondaTopologia.respondidosNaUltimaAmostra`. Ponta a ponta com servidor falso em
   `LigacaoControladorAtuadorTest`. A integração I-1..I-5 no *cluster* local espera uma janela H2.
 
+### P-39 — AC-2 sob falha silenciosa: o pedido global trava até a exclusão, o rebalanceamento oscila e o *cluster* termina com o rebalanceamento desligado depois da fusão
+
+- **Sintoma (I-2, 3/3 repetições, `runs/b44-2/integracao/I2-pausa-async-active-r{1,2,3}/`):** com um nó pausado
+  (`podman pause`, 52 s), o `POST /rest/v2/container?action=disable-rebalancing` mandado a um nó que responde não volta
+  dentro do prazo (o atuador desiste em 1 s e tenta o seguinte, que também não volta). O AC-2 dá `FALHOU`, o executor
+  manda o `enable`, que também dá `FALHOU`, e a política pede de novo na janela seguinte: 8 aplicações e 8 reversões
+  falhas por repetição, de +5 s a +44 s. Mesmo sem resposta, os nós vivos aplicam cada pedido: o log mostra 22 a 27
+  `ISPN000309` (suspenso) e 21 a 26 `ISPN000308` (ligado) por execução, ou seja, o rebalanceamento oscila a cada 5 s.
+  O AC-2 só é aplicado depois da exclusão do nó pausado (vista de 2 em +44,7 a +47,0 s; `APLICADA` em +47,1 a +48,1 s).
+  Na volta, a reversão vem 1,8 a 2,9 s depois de a REST do nó responder (motivo `vistas-divergentes`), bem antes da
+  fusão (39 a 42 s depois). Mas, depois da fusão (`ISPN000093`, `MergeView`), o `rebalancing_enabled` lido nos três nós
+  é **`false`** até o fim da execução, nas 3 repetições (no controle sem ação, `true`). O nó que voltou não recebe
+  segmentos (`ISPN100008` só com os dois outros membros; nenhum `ISPN100002` depois da fusão) e a fusão não resolve
+  conflitos (N-5). Na r2 apareceram 11 violações I2 nos 10 s seguintes à fusão (descritivo, n = 1).
+- **Causa (leitura do log, não do código):** o pedido global é um comando para o *cluster* inteiro; os vivos aplicam e
+  esperam a confirmação do nó pausado até a exclusão. Os comandos ficam enfileirados no nó pausado, que os processa ao
+  voltar (rajada de `ISPN000309`/`ISPN000308` no instante da retomada) e fica com o último que recebeu antes da
+  exclusão, um "suspenso". Na fusão, a recuperação da topologia adota o rebalanceamento desligado
+  (`ClusterTopologyManagerImpl` agrega o sinalizador global, B-44.1b R3).
+- **Impacto:** o P2 não alcança o que promete na falha silenciosa (o AC-2 entra depois da exclusão e, na r1, depois do
+  rebalanceamento de saída) e deixa o *cluster* pior que sem ação: sem rebalanceamento e sem resolução de conflitos
+  depois da fusão, sem que o controlador saiba (ele já reverteu e leu `true`). É a guarda da seção 3.2 (nenhuma fusão
+  com o AC-2 ativo) violada por outro caminho: o AC-2 já foi revertido, mas o estado dele sobrevive no nó que estava
+  pausado. Também confirma o O3 da V-W2a: sem limite de novas tentativas, a falha persistente vira oscilação.
+- **Status:** `ABERTO`, para o Gestor (D-B): o I-2 recomenda tirar o AC-2 do braço B.
+
+### P-40 — AC-2 depois de uma queda (F1, `podman kill`): o rebalanceamento de saída já aconteceu
+
+- **Sintoma (I-1, `runs/b44-2/integracao/I1-*`):** com `podman kill`, a vista de 2 nós sai em 1,6 a 2,3 s (o FD_SOCK2
+  vê a conexão cair), nas quatro execuções. O rebalanceamento de saída dos quatro *caches* de dados vem em 2,0 a 2,3 s
+  quando o nó morto não é o coordenador e em 7,3 a 7,5 s quando é (o novo coordenador recupera a topologia antes). O AC-2 chega em +9,1 s (P2 na janela seguinte à da entrada em CONSERVADOR). Na
+  volta (+56 s), o braço com ação adia o rebalanceamento de entrada até a reversão (+64,0 a +64,1 s, 4,9 a 5,2 s depois
+  de a REST responder); o controle rebalanceia na hora (+58,6 a +58,8 s). Nos dois braços há dois rebalanceamentos por
+  *cache* (saída e volta), sem violação e sem falha de ação, e o `rebalancing_enabled` volta a `true`.
+- **Impacto:** na queda detectada pelo FD_SOCK2, o AC-2 não economiza nenhuma rodada; só atrasa em ~5 s a devolução de
+  segmentos ao nó que voltou. A troca "uma rodada em vez de duas" da seção 3.2 não ocorre localmente. Com o coordenador
+  derrubado, o AC-2 é pedido ao novo coordenador, depois da troca, e o sinalizador global vale nos vivos (o P-34 não
+  reaparece, mas também não é exercitado: a política nunca tem o AC-2 ativo antes da queda).
+- **Status:** `ABERTO`, para o Gestor, junto com o P-39.
+
+### P-41 — com um nó parado até o fim, a leitura final por réplica da carga S3 trava sem prazo
+
+- **Sintoma (I-3, `runs/b44-2/integracao/I3-corte-async-com-perdida/jstack-preso.txt`):** depois do AC-5, a carga
+  imprime o resumo S3 e fica parada em `WorkloadMain.materializar` (iteração de `entrySet` por um cliente BASIC fixado na
+  porta do nó parado, `abrirLeitoresMultiReplica`, chamado pela `rodadaUnica` do auditor), sem prazo. Os CSV de eventos
+  e de violações só são gravados depois, e a execução não termina.
+- **Impacto:** toda execução do braço B com AC-5 (o nó fica parado até o orquestrador recriar o *cluster*) travaria no
+  fim. No I-3/I-4 o *harness* religa o nó depois da janela medida, só para a carga terminar (declarado nas fases).
+- **Contorno a decidir:** prazo na leitura final por réplica e réplica sem resposta registrada como ausente, ou o
+  orquestrador religar o nó antes do fim da carga. Tem de entrar antes da calibração.
+- **Status:** `ABERTO`.
+
+### P-42 — AC-5 sob corte: o nó para 13 s depois do pedido, além do prazo de 5 s, e o pedido a um nó pausado vale na retomada
+
+- **Sintoma (I-3, I-5):** sob corte, o 204 vem na hora, o `ISPN080002` (servidor parando) sai 3 s depois, mas a saúde
+  do nó isolado continua respondendo até 13,1 a 13,3 s depois do pedido (SYNC e ASYNC) e o processo só sai em 42 a 44 s, quando o
+  próprio nó isolado instala a vista de 1 (`ISPN000080` só então). O atuador grava `FALHOU`
+  (`alvo-continua-respondendo`), embora a parada aconteça. Sem corte, 3,2 s (I-4) e 3,06 s (tarefa zero). No I-5, um
+  pedido de parada mandado a um nó pausado com o desafio Digest guardado (cliente "aquecido") volta por prazo, e o nó
+  **para 5 s depois de retomado**; com o cliente frio (o primeiro POST vai sem credencial), o nó volta e não para.
+- **Impacto:** `t_parada` sob corte ≈ 13,1 s entra na condição de viabilidade (`k·W + t_parada < 39,8 s`); o prazo do
+  AC-5 (`T_cham` + 3 s) é curto para o caso de uso previsto; a linha `acao` do AC-5 sai `FALHOU` com o nó parado (o O8
+  da V-W2a acontece). O risco 3 da seção 3.1 existe: a guarda "respondeu na última janela" reduz, mas não elimina, a
+  chance de mandar a ordem a um nó que pausa entre a última amostra e o pedido.
+- **Status:** `ABERTO`, para o Gestor.
+
 ## Observação de modelagem (não é defeito)
 
 Com 8 *threads* = 8 identidades fixas (`user-<tid>`), `incrementFailure`

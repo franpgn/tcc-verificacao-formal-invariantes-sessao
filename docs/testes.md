@@ -475,3 +475,15 @@ Esperado na H2: 971 + 3 testes novos (`kLagIndependenteDoK`, `noDaEscolha`, `tet
 `ParametrosPoliticaArquivoTest`, `PoliticaPorAssinaturaTest.parametros`, `LigacaoControladorAtuadorTest`,
 `AcaoClusterTiposTest.linhaPolitica` e `planoDeAcao`. Textos sem efeito em teste: mensagem de
 `WorkloadMainCargaControleTest:143` e comentários de `LacoDeControleTest` (46, 437, 450).
+
+### W-2a, janela H2: Surefire, vermelhos, mutantes, tar e integração I-1..I-5 (2026-11-05)
+
+- Surefire na ponta `9695511`: **974/0/0/1, 133 arquivos** (o esperado). Vermelhos da terceira rodada conferidos numa
+  worktree temporária (`runs/b44-2/vermelhos-rodada3.txt`): `31ca8c5` e `9bf55f5` falham em execução, `e5b992f` (4 erros)
+  e `9cb25b2` (26 erros) não compilam.
+- Sete mutantes do item 7 sobre a ponta nova (R5): os sete morrem (`runs/b44-2/mutantes-r5.txt`).
+- R4: `runs/b44-2/brutos-tarefa-zero-2026-11-05.tar` (SHA-256 `86de025b…`) e `runs/b44-2/brutos-integracao-2026-11-05.tar.gz`
+  (SHA-256 `f8e9795d…`), os dois determinísticos e reproduzidos.
+- Integração I-1..I-5 no *cluster* local `w2a`: `docs/relatorio-b44-2-2026-11-05.md`. Problemas novos: P-39 (AC-2 sob
+  falha silenciosa), P-40 (AC-2 depois da queda), P-41 (leitura final da carga trava com nó parado), P-42 (AC-5 sob corte
+  e nó pausado).

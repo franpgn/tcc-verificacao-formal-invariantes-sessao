@@ -24,7 +24,7 @@ limpar() {
     for f in "${TMP}"/*/estado/unit-*.pid; do [[ -f "${f}" ]] && kill -KILL "$(cat "${f}")" 2> /dev/null; done
     sleep 0.3
     for p in "${PIDS[@]}"; do kill -KILL "${p}" 2> /dev/null; done
-    rm -rf "${TMP}"
+    [[ -n "${H4_TESTE_MANTER:-}" ]] || rm -rf "${TMP}"
 }
 trap limpar EXIT
 SELECAO=" ${*:-A1 A2 A3 A4 A5 A6 A7} "
@@ -150,7 +150,9 @@ laco_fundo() {  # laco_fundo [env extra...]: _laco em segundo plano; define LPID
     env "$@" "${BASH_ABS}" "${AMOSTRADOR}" _laco --id "${ID}" --disco sda > "${CASO}/laco.out" 2>&1 &
     LPID=$!; PIDS+=("${LPID}")
 }
-parar_pid() { kill -TERM "$1" 2> /dev/null; local rc=0; wait "$1" || rc=$?; echo "${rc}"; }
+parar_pid() {  # parar_pid <pid>: SIGTERM e wait NO SHELL DO TESTE (wait num $( ) daria 127); define RC_FIM
+    kill -TERM "$1" 2> /dev/null; RC_FIM=0; wait "$1" || RC_FIM=$?
+}
 
 # ============================================================================= A1
 if quer A1; then
@@ -158,7 +160,7 @@ echo "== A1: _laco com PATH vazio por 5 s grava >= 4 amostras (nenhum processo e
 novo_caso a1
 laco_fundo PATH=""
 sleep 5
-RC_FIM="$(parar_pid "${LPID}")"
+parar_pid "${LPID}"
 A="${RUN}/${ID}/amostras.txt"
 N="$(n_dados "${A}")"
 verdade "A1 >= 4 amostras com PATH vazio (obtido ${N})" test "${N}" -ge 4
@@ -182,7 +184,7 @@ esperar_linhas "${RUN}/${ID}/amostras.txt" 3 10
 printf 'some avg10=0.00 avg60=0.00 avg300=0.00 total=777\n' > "${PROC}/pressure/cpu"
 printf '   8       1 sda1 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17\n' > "${PROC}/diskstats"
 sleep 2.5
-parar_pid "${LPID}" > /dev/null
+parar_pid "${LPID}"
 A="${RUN}/${ID}/amostras.txt"
 SHA="$(sha256sum "${AMOSTRADOR}" | cut -d' ' -f1)"; SHA="${SHA#\\}"
 CAB_RE="^# tcc-amostrador-infra v1 id=${ID} inicio=[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}[+-][0-9]{2}:[0-9]{2} boot_id=0f1e2d3c-4b5a-6978-8796-a5b4c3d2e1f0 host=[^ ]+ disco=sda periodo_s=1 pid=[0-9]+ versao_script_sha256=${SHA}$"
@@ -209,12 +211,17 @@ rm -f "${PROC}/uptime"; mkfifo "${PROC}/uptime"
       k=$((k + 1))
       [[ "${k}" -eq 4 ]] && sleep 2.5
       printf '%d.00 1.00\n' "$((1000 + k))" > "${PROC}/uptime" || true
-      sleep 0.3
+      if [[ "${k}" -eq 4 ]]; then
+          # depois da volta bloqueada o uptime vira arquivo comum: so UMA leitura bloqueia
+          printf '2000.00 1.00\n' > "${PROC}/uptime.tmp" && rm -f "${PROC}/uptime" && mv -f "${PROC}/uptime.tmp" "${PROC}/uptime"
+          break
+      fi
+      sleep 0.05
   done ) &
 FEED=$!; PIDS+=("${FEED}")
 laco_fundo PATH="${PATH}"
 sleep 9
-parar_pid "${LPID}" > /dev/null
+parar_pid "${LPID}"
 kill -KILL "${FEED}" 2> /dev/null
 A="${RUN}/${ID}/amostras.txt"
 IV="$(intervalos "${A}")"
@@ -224,7 +231,9 @@ verdade "A3 o intervalo longo fica entre 2,4 e 3,6 s" bash -c "printf '%s\n' \"$
 ok "A3 sem rajada: no maximo um intervalo < 0,9 s (o do realinhamento ao prazo)" "1" \
     "$(( $(printf '%s\n' "${IV}" | awk '$1 < 0.9' | grep -c .) <= 1 ))"
 ok "A3 depois do realinhamento, intervalos de 1 s (+-0,1)" "0" \
-    "$(printf '%s\n' "${IV}" | awk 'f && ($1 < 0.9 || $1 > 1.1) {b++} $1 >= 1.5 {f = 1; s = 1; next} s {s = 0; next} END {print b + 0}')"
+    "$(printf '%s\n' "${IV}" | awk '$1 >= 1.5 {f = 1; s = 1; next} s {s = 0; next} f && ($1 < 0.9 || $1 > 1.1) {b++} END {print b + 0}')"
+verdade "A3 ha >= 3 intervalos depois do longo (nao passa no vazio)" test "$(printf '%s
+' "${IV}" | awk '$1 >= 1.5 {f = 1; next} f {n++} END {print n + 0}')" -ge 3
 contem "A3 '# fim' conta o atraso" "atrasos_ge_1_5s=1" "$(tail -1 "${A}")"
 fi
 
@@ -234,7 +243,7 @@ echo "== A4: SIGTERM grava '# fim' e sai com 0 =="
 novo_caso a4
 laco_fundo PATH="${PATH}"
 esperar_linhas "${RUN}/${ID}/amostras.txt" 3 10
-RC_FIM="$(parar_pid "${LPID}")"
+parar_pid "${LPID}"
 A="${RUN}/${ID}/amostras.txt"
 ok "A4 exit 0 no SIGTERM" "0" "${RC_FIM}"
 ok "A4 '# fim' com a contagem de amostras" "1" "$(tail -1 "${A}" | grep -c "^# fim t_real=.* amostras=$(n_dados "${A}") atrasos_ge_1_5s=0$")"
@@ -255,7 +264,7 @@ ok "A5 primeira copia" "$(cat "${A}")" "$(cat "${E}/amostras.txt" 2> /dev/null)"
 ok "A5 offset = tamanho copiado" "$(stat -c %s "${A}")" "$(cat "${RUN}/${ID}/espelho.offset" 2> /dev/null)"
 printf 'linha 3\n' >> "${A}"
 sleep 0.2
-RC_E="$(parar_pid "${EP}")"
+parar_pid "${EP}"; RC_E="${RC_FIM}"
 ok "A5 _espelho sai com 0 no SIGTERM" "0" "${RC_E}"
 ok "A5 a copia final do SIGTERM traz so o delta (sem duplicar)" "$(cat "${A}")" "$(cat "${E}/amostras.txt")"
 H4_ESPELHO_PERIODO_S=1 "${BASH_ABS}" "${AMOSTRADOR}" _espelho --id "${ID}" --espelho-dir "${E}" > /dev/null 2>&1 &
@@ -263,7 +272,7 @@ EP2=$!; PIDS+=("${EP2}")
 sleep 2.5
 printf 'linha 4\n' >> "${A}"
 sleep 1.8
-parar_pid "${EP2}" > /dev/null
+parar_pid "${EP2}"
 ok "A5 idempotente entre execucoes do espelho; delta periodico (1 s de teste)" "$(cat "${A}")" "$(cat "${E}/amostras.txt")"
 ok "A5 nenhuma linha duplicada" "0" "$(sort "${E}/amostras.txt" | uniq -d | grep -c .)"
 # destino bloqueado: FIFO sem leitor
@@ -280,7 +289,7 @@ sleep 3
 N2="$(n_dados "${RUN}/${ID}/amostras.txt")"
 verdade "A5 _laco continua gravando com o espelho bloqueado (${N1} -> ${N2})" test "$((N2 - N1))" -ge 2
 verdade "A5 espelho continua vivo (bloqueado na escrita)" kill -0 "${EP3}"
-parar_pid "${LPID}" > /dev/null
+parar_pid "${LPID}"
 kill -KILL "${EP3}" 2> /dev/null
 ( exec 3<> "${E}/amostras.txt"; sleep 0.2 ) 2> /dev/null   # destrava o dd orfao, se houver
 fi

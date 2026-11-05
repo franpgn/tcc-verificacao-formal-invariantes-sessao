@@ -1,14 +1,23 @@
 """Derivacao da calibracao S3 (W-9): regras 7.1 a 7.18 do pre-registro da calibracao, so braco A.
 
 Fonte das regras: docs/pre-registro-calibracao-s3-2026-11-05.md (branch docs/pre-registro-calibracao-s3, DT-020),
-secao 7, com as decisoes do Gestor de 05/11 transmitidas pelo coordenador:
+secao 7, com o complemento 1 (docs/pre-registro-calibracao-s3-complemento-1-2026-11-05.md, DT-022, ponta 744e6e8),
+que prevalece onde divergem, e as decisoes do Gestor de 05/11 transmitidas pelo coordenador:
   - criterio de falso acionamento C-8: zero ocorrencias nas janelas das execucoes sem falha; ao lado de cada limiar,
     N e o limite superior de 95 % 3/N (com o exato 1 - 0,05^(1/N) ao lado, o mesmo de comparar_bracos.regra_de_tres);
   - regra 7.13 (kLag): conta so as janelas em que vale o predicado da politica P1,
     top.vistaCompleta() && suspeito != null && persistencia >= kLag && top.respondeuEmTodas(suspeito)
     (workload/.../controle/PoliticaPorAssinatura.java:158); a assinatura sem resposta REST (F1, no morto) e contada a
-    parte e nao entra no criterio; kLag*W + 13,3 < 39,8, senao o AC-5 e declarado inviavel (7.4);
+    parte e nao entra no criterio;
+  - regra de reserva de W (complemento 1 §4.3): se kLag_min(W) W + 13,3 >= 39,8, W passa ao maior inteiro viavel
+    entre W_min e W - 1, com a perda de cobertura do sinal de latencia declarada; sem W viavel, o AC-5 e inviavel
+    (7.4);
   - nenhuma regra olha diferenca entre bracos nem efeito do controlador: execucao de braco B ou em active recusa.
+
+Ordem de calculo (complemento 1 §1): referencias de p99 (7.1, que so definem as operacoes elegiveis do lambda5) ->
+lambda5 e W (7.2, 7.3) -> kLag e reserva de W (7.13, 7.4) -> excedencia (7.5) -> theta_in e lag_in (7.7, 7.11) -> m
+(7.8, sem theta_out) -> theta_out e lag_out (7.8, 7.12) -> T_cooldown, T_estavel, T_hold_viol, teto, volume,
+exec_teto, T_exec e q-chapeu. Todas as regras usam a grade do W final.
 
 Entradas (formato real do orquestrador S3, scripts/run-campanha-s3.sh do W-6): o diretorio --saida da campanha, com
 um exec-NNNN-<celula>-A por execucao (execucao.json, checagem.json, rep-001.csv + meta-csv-rep-001.json,
@@ -26,9 +35,9 @@ Uso (da raiz do repositorio; so biblioteca padrao):
       --saida <derivacao.json> [--referencias-dir <dir>]
 
 Saida: JSON deterministico (chaves ordenadas, sem relogio) com cada parametro, o valor, a regra aplicada, os dados
-usados (celulas, execucoes, N) e a incerteza; as leituras adotadas onde a regra e ambigua vao em "ambiguidades".
-Nunca sobrescreve. Com --referencias-dir grava referencia-S3-async.json e referencia-S3-sync.json (esquema
-referencia-p99/1, os mesmos bytes do referencia_p99.gravar_json) com o SHA-256 que esta no JSON.
+usados (celulas, execucoes, N) e a incerteza; as leituras A-1..A-17, com a situacao de cada uma no complemento 1, vao
+em "leituras". Nunca sobrescreve. Com --referencias-dir grava referencia-S3-async.json e referencia-S3-sync.json
+(esquema referencia-p99/1, os mesmos bytes do referencia_p99.gravar_json) com o SHA-256 que esta no JSON.
 Exit: 0 ok, 2 uso/contrato/saida existente (nada e escrito).
 """
 import argparse
@@ -52,7 +61,9 @@ import referencia_p99  # noqa: E402
 from referencia_p99 import percentil  # noqa: E402  (posto mais proximo; copia de rebaseline.py:75-83)
 
 ESQUEMA = "calibracao-s3/1"
-PRE_REGISTRO = "docs/pre-registro-calibracao-s3-2026-11-05.md, secao 7 (DT-020)"
+PRE_REGISTRO = ("docs/pre-registro-calibracao-s3-2026-11-05.md, secao 7 (DT-020), com o complemento 1 "
+                "(docs/pre-registro-calibracao-s3-complemento-1-2026-11-05.md, DT-022, 744e6e8)")
+C1 = "complemento 1 (DT-022)"
 S = 1_000_000_000
 MS = 1_000_000
 
@@ -63,6 +74,7 @@ N_MIN_REF = 1000               # 7.1: --n-min 1000 (decisao D2 de 27/10)
 JANELA_LAMBDA_S = 5            # 7.2: janelas de 5 s da fase de medicao
 QUANTIL_LAMBDA = 0.05          # 7.2: quantil de 5 %
 QUANTIL_LAG_IN = 0.99          # 7.11: quantil de 99 % (plano de 04/11 §4.6)
+COBERTURA_MAX = 0.05           # complemento 1 §4.3: fracao de janelas sem falha com latencia indeterminada (95 % de 7.2)
 D_S = 256                      # notacao da secao 7: D = +44 a +300 s da ancora
 ALFA = Fraction(5, 100)        # notacao da secao 7: alvo a = 0,05 W / D (plano de alinhamento §3.6)
 T_PARADA = Fraction(133, 10)   # 7.4/7.13: t_parada = 13,3 s (P-42; I-3 do B-44.2)
@@ -76,13 +88,15 @@ N_BLOCOS = 12                  # 7.16: n = 12, fixo (decisao do Gestor, 05/11; B
 CONFIANCA_Q = 0.95             # secao 6: q-chapeu com intervalo de Clopper-Pearson de 95 % (Decisao 022, REF-098)
 FASES_Q = ("durante", "recuperacao")   # secao 6: violacoes das fases durante + recuperacao
 M_CELULAS_TESTE = 2            # 7.18: m das celulas de teste do B-40 (ASYNC F2 e F4)
+SEMENTE_PODER = 20261105       # complemento 1 §5 (A-13): a mesma regra da --ordem-seed
+N_SIM_PODER = 10000            # complemento 1 §5 (A-13): as 10 000 reamostragens da analise do rebaseline (DT-009)
 
 # secao 3: celulas e tamanhos planejados (26 execucoes)
 CELULAS_PLANEJADAS = {"ASYNC-none": 5, "ASYNC-F1": 5, "ASYNC-F2": 5, "SYNC-F2": 3, "SYNC-none": 3, "ASYNC-F4": 5}
 CEL_SEM_FALHA_ASYNC = ("ASYNC-none",)
 CEL_SEM_FALHA_SYNC = ("SYNC-none",)
-CEL_M = ("ASYNC-F1", "ASYNC-F2", "ASYNC-F4")                  # 7.8 (m): ASYNC (ultimo paragrafo da secao 7; A-6)
-CEL_FALHA = ("ASYNC-F1", "ASYNC-F2", "SYNC-F2", "ASYNC-F4")    # 7.10 e 7.14: "F1, F2, F4" (A-6)
+CEL_M = ("ASYNC-F1", "ASYNC-F2", "ASYNC-F4")                  # 7.8 (m): so ASYNC (A-6, complemento 1 §3)
+CEL_FALHA = ("ASYNC-F1", "ASYNC-F2", "SYNC-F2", "ASYNC-F4")    # 7.10 e 7.14: todas as aceitas com falha (A-6)
 CEL_KLAG = ("ASYNC-none", "ASYNC-F1")                          # 7.13: ASYNC sem falha e ASYNC F1
 CEL_TESTE = ("ASYNC-F2", "ASYNC-F4")                           # 7.18: ASYNC F2 e F4 (m = 2)
 
@@ -90,93 +104,63 @@ ERROS = ("ERROR_TRANSPORT", "ERROR_UNAVAILABLE")    # EventoOperacao.erro() (os 
 ESQ_OBS = "observaveis-controlador/1.2"
 ESQ_DEC = "decisoes-controlador/"
 
-AMBIGUIDADES = [
-    {"id": "A-1", "regras": ["7.3", "7.12", "7.13"],
-     "texto": "Na calibracao a sonda S_lag roda com o W provisorio (5 s, uma rodada por janela); as regras agrupam as "
-              "rodadas pela janela W da 7.3. Se W != 5 s, ha janelas com 2 rodadas (W > 5) ou sem rodada (W < 5).",
-     "leitura": "agrupamento pela W da 7.3, como a 7.13 manda; lag da janela = maior lag de cada no entre as rodadas "
-                "(SondaDefasagem.resumir); janela sem rodada = S_lag indeterminado e persistencia zerada. Contagem de "
-                "janelas sem rodada no dados da 7.13."},
-    {"id": "A-2", "regras": ["7.7"],
-     "texto": "'menor valor tal que k janelas seguidas >= theta_in tem zero ocorrencias' nao tem minimo nos reais (o "
-              "conjunto e aberto: theta > maior minimo de k janelas seguidas).",
-     "leitura": "theta_in = menor double acima do maior minimo (math.nextafter), que e exatamente o limiar da "
-                "comparacao 'taxa >= theta' que o Controlador faz em double."},
-    {"id": "A-3", "regras": ["7.8", "7.12"],
-     "texto": "'theta_out = maior valor tal que nenhuma janela fica entre theta_out e theta_in por mais de m janelas "
-              "seguidas' e degenerado: o maior theta_out < theta_in deixa a banda vazia e satisfaz sempre (sem "
-              "histerese). O mesmo vale para lag_out.",
-     "leitura": "valor = leitura literal (maior double abaixo do limiar de entrada). Ao lado, em "
-                "dados.alternativa_menor_valor, o menor valor que satisfaz a condicao (provavel intencao). Decisao "
-                "do Senior/Gestor."},
-    {"id": "A-4", "regras": ["7.8"],
-     "texto": "m depende das janelas calmas (que dependem de theta_out) e theta_out depende de m.",
-     "leitura": "com a leitura literal de theta_out (A-3) nao ha circularidade: m e calculado com ela; a "
-                "alternativa_menor_valor de theta_out e lag_out usa esse m."},
-    {"id": "A-5", "regras": ["7.8"],
-     "texto": "'janelas calmas seguidas que foi seguido de nova janela alta depois do marcador end': nao diz se "
-              "'seguido' e imediato nem se 'alta' e um sinal alto numa janela ou o disparo de R1/R2 (R2 exige k "
-              "janelas para latencia, erro e defasagem).",
-     "leitura": "trecho calmo imediatamente seguido de janela alta (uma intermediaria no meio nao conta); alta = "
-                "algumAlto do Controlador (violacao, topologia anomala, latencia, erro ou defasagem altos); janelas "
-                "com inicio em ou depois do end; sem nenhuma recaida, m = 1 + 0."},
-    {"id": "A-6", "regras": ["7.3", "7.8", "7.10", "7.14", "7.15"],
-     "texto": "A coluna Dados diz 'F1, F2, F4' (7.8, 7.10, 7.14) e 'todas' (7.3, 7.15), mas o ultimo paragrafo da "
-              "secao 7 diz que W, theta, k, m, lag_in e kLag saem das execucoes ASYNC.",
-     "leitura": "m (7.8) so de ASYNC F1/F2/F4 (o paragrafo nomeia m); 7.10 e 7.14 com a SYNC F2 (tabela); atraso "
-                "maximo da 7.3 e 7.15 de todas as aceitas (tabela; R4 da V-W4 fala do maior atraso medido na "
-                "calibracao); lambda5 so de ASYNC sem falha (7.2)."},
-    {"id": "A-7", "regras": ["7.7", "7.8", "7.12", "7.13"],
-     "texto": "'N = numero de janelas usadas' nao diz se conta as janelas em que o criterio nao pode ocorrer.",
-     "leitura": "N = janelas avaliadas pelo criterio: 7.7, posicoes com k janelas seguidas determinadas; 7.13, "
-                "janelas com vista completa (onde o P1 poderia agir); 7.8/7.12, todas as janelas. O total de "
-                "janelas vai ao lado (n_janelas_total)."},
-    {"id": "A-8", "regras": ["7.2", "7.3", "7.5", "7.7", "7.11", "7.13"],
-     "texto": "Fim da medicao e janelas parciais nao estao fixados (D = 256 s e nominal).",
-     "leitura": "janelas [origem_ns + jW, origem_ns + (j+1)W) completas ate t_fim_carga_ns do resumo de "
-                "convergencia (fim da medicao do protocolo); eventos pela janela do end_ns (AgregadorDeJanela); D = "
-                "256 s so no alvo a. A 7.11 (quantil) e o atraso da 7.3 usam todas as linhas defasagem, que so "
-                "existem depois da origem."},
-    {"id": "A-9", "regras": ["7.14"],
-     "texto": "'duracao de um trecho com 3 nos HEALTHY' nao diz de onde a onde.",
-     "leitura": "amostras de topologia com t_ns > end; trecho = amostras seguidas com anomala = false; duracao = "
-                "t da ultima - t da primeira do trecho; conta se a amostra seguinte e anomala."},
-    {"id": "A-10", "regras": ["7.15"],
-     "texto": "'violacoes' nao diz a classe nem a fase.",
-     "leitura": "I1 + I4 + I2 REAL (a classe de seguranca do gatilho R1, a mesma do hold_viol), todas as do "
-                "violacoes-rep-001.csv da execucao, pelo instante."},
-    {"id": "A-11", "regras": ["7.17"],
-     "texto": "convergencia_periodo_s da formula, t_pre, t_pos e unidade do volume nao estao definidos para o "
-              "orquestrador S3.",
-     "leitura": "convergencia_periodo_s = W da 7.3 (secao 4.1 em 2c8b7b8: 'na avaliacao, acompanha o W da regra "
-                "7.3'); t_pre = ancora_ms - lancamento_ms; t_pos = fim_utc - t_convergencia_abs_ns (fim_utc inclui "
-                "as esperas do orquestrador depois da carga: superestima); T_enc = 21 s; volume = soma dos arquivos "
-                "do diretorio da execucao em MiB (o df -Pm do orquestrador), arredondado para cima; teto "
-                "arredondado para cima (como 1009,85 -> 1010 em 4.1)."},
-    {"id": "A-12", "regras": ["7.16"],
-     "texto": "T_exec nao esta definido.",
-     "leitura": "fim_utc - recriacao_ms do execucao.json (recriacao, K1, carga e esperas; sem a pos-checagem e o "
-                "h4)."},
-    {"id": "A-13", "regras": ["7.18"],
-     "texto": "A curva de poder sai do poder.py, que importa numpy e nao roda em python3 -I.",
-     "leitura": "o script calcula q-chapeu, o Clopper-Pearson e as taxas por execucao e grava o comando do "
-                "poder.py por celula de teste; a semente e o n-sim nao estao no pre-registro (ficam <S> e <N>)."},
-    {"id": "A-14", "regras": ["7.2", "7.11"],
-     "texto": "O metodo do quantil nao esta escrito.",
-     "leitura": "posto mais proximo (referencia_p99.percentil), a mesma logica do p99 de referencia (B-39.1), que "
-                "o contrato JSONL cita para o lagInMs."},
-    {"id": "A-15", "regras": ["7.8", "7.13", "7.14"],
-     "texto": "A atribuicao das amostras de topologia e das rodadas de defasagem as janelas nao esta escrita.",
-     "leitura": "a do codigo (SondaTopologia.resumirComNosAte e SondaDefasagem.resumirAte): a janela j leva o que "
-                "tem instante < fim_j e ainda nao foi consumido (a primeira leva tambem o aquecimento da "
-                "topologia); offline, sem atraso de entrega."},
-    {"id": "A-16", "regras": ["7.10"],
-     "texto": "'execucoes que convergiram' e o Delta_conv nao estao definidos aqui.",
-     "leitura": "Delta_conv do comparar_bracos (t_convergencia_abs_ns - t_religamento_ns ou t_fim_carga_ns; sem "
-                "divergencia persistente); convergencia_estado diferente de 'convergiu' fica fora (secao 5)."},
-    {"id": "A-17", "regras": ["7.3"],
-     "texto": "A 7.3 pede W >= teto + atraso; o codigo exige prazo < W estrito (ParametrosDefasagem.validarContra).",
-     "leitura": "W pela formula da 7.3; dados.aceito_pelo_codigo diz se o carregamento aceitaria."},
+
+def _l(i, regras, situacao, leitura):
+    return {"id": i, "regras": regras, "situacao": situacao, "leitura": leitura}
+
+
+LEITURAS = [
+    _l("A-1", ["7.3", "7.8", "7.12", "7.13"], "emendada pelo %s, secao 4.1" % C1,
+       "todas as regras usam a grade do W final, alinhada em origem_ns; defasagem da janela = SondaDefasagem.resumir "
+       "das rodadas que comecam nela; janela sem rodada e pulada (nao quebra nem soma persistencia e trechos) no m, "
+       "no lag_out e no kLag; contagem em dados.janelas_sem_rodada"),
+    _l("A-2", ["7.7"], "confirmada pelo %s, secao 5" % C1,
+       "theta_in = menor double acima do maior minimo de k janelas seguidas (math.nextafter); com zero erro sem "
+       "falha, theta_err_in = 5e-324 e qualquer erro em k janelas seguidas e alto"),
+    _l("A-3", ["7.8", "7.12"], "emendada pelo %s, secao 2" % C1,
+       "theta_out (latencia e erro) e lag_out = menor c em {0} U {valores observados abaixo do limiar de entrada} tal "
+       "que, nas ASYNC sem falha, nenhum trecho de janelas seguidas com c < sinal < limiar passa de m; indeterminada "
+       "conta como calma e quebra o trecho; igualdade com c e calma"),
+    _l("A-4", ["7.8"], "resolvida pelo %s, secoes 1 e 3" % C1,
+       "m nao usa theta_out; theta_out e lag_out sao calculados depois de m"),
+    _l("A-5", ["7.8"], "emendada pelo %s, secao 3" % C1,
+       "m = 1 + L, L = maior trecho maximo de janelas sem sinal alto (algumAlto do Controlador) que comeca em ou depois "
+       "do end e termina imediatamente numa janela alta, nas ASYNC F1, F2 e F4; trechos que chegam ao fim das janelas "
+       "nao contam; sem nenhum, m = 1; sem janela depois do end, nao derivado. Trecho maximo e tomado sobre todas as "
+       "janelas da execucao: o que comeca antes do end nao conta"),
+    _l("A-6", ["7.3", "7.8", "7.10", "7.14", "7.15"], "confirmada pelo %s, secao 5" % C1,
+       "W, theta, k, m, lag_in, lag_out e kLag so de execucoes ASYNC; atraso maximo (7.3), 7.10, 7.14 e 7.15 de "
+       "todas as aceitas, inclusive SYNC"),
+    _l("A-7", ["7.7", "7.8", "7.12", "7.13"], "confirmada pelo %s, secao 5" % C1,
+       "N = janelas (ou posicoes de k janelas seguidas) em que o criterio pode ocorrer; o total vai ao lado"),
+    _l("A-8", ["7.2", "7.3", "7.5", "7.7", "7.11", "7.13"], "confirmada pelo %s, secao 5" % C1,
+       "janelas completas de origem_ns ate t_fim_carga_ns; eventos pela janela do end_ns (AgregadorDeJanela); D = 256 s "
+       "so no alvo a; a 7.11 e o atraso da 7.3 usam todas as linhas defasagem (so existem depois da origem)"),
+    _l("A-9", ["7.14"], "confirmada pelo %s, secao 5" % C1,
+       "duracao do trecho saudavel = da primeira a ultima amostra saudavel depois do end, quando a seguinte e anomala; "
+       "mais P_sonda"),
+    _l("A-10", ["7.15"], "confirmada pelo %s, secao 5" % C1,
+       "I1 + I4 + I2 REAL, todas as do violacoes-rep-001.csv da execucao"),
+    _l("A-11", ["7.17"], "confirmada pelo %s, secao 5" % C1,
+       "periodo = W final; t_pre = ancora_ms - lancamento_ms; t_pos = fim_utc - t_convergencia_abs_ns, so nas que "
+       "convergiram (superestima); T_enc = 21 s; volume em MiB arredondado para cima; teto arredondado para cima"),
+    _l("A-12", ["7.16"], "confirmada com acrescimo pelo %s, secao 5" % C1,
+       "T_exec = fim_utc - recriacao_ms; ao lado, o ciclo completo = intervalo entre recriacao_ms de execucoes "
+       "seguidas da mesma fase (inclui pos-checagem e h4; uma retomada aparece como intervalo longo)"),
+    _l("A-13", ["7.18"], "confirmada com acrescimo pelo %s, secao 5" % C1,
+       "q-chapeu, Clopper-Pearson e taxas aqui; a curva do poder.py roda depois com python -E -P, --semente 20261105, "
+       "--n-sim 10000, --m-celulas 2 e --blocos 12; so informativa"),
+    _l("A-14", ["7.2", "7.11"], "confirmada pelo %s, secao 5" % C1,
+       "quantil por posto mais proximo (referencia_p99.percentil)"),
+    _l("A-15", ["7.8", "7.13", "7.14"], "confirmada pelo %s, secao 5" % C1,
+       "amostras de topologia e rodadas de defasagem pela regra de consumo do codigo (a janela j leva o que tem "
+       "instante < fim_j e ainda nao foi consumido; a primeira leva o aquecimento da topologia)"),
+    _l("A-16", ["7.10"], "confirmada com acrescimo pelo %s, secao 5" % C1,
+       "Delta_conv do comparar_bracos (desde t_fim_carga_ns no braco A); quem nao tem convergencia_estado = convergiu "
+       "fica fora do maximo e e contado em dados.n_fora"),
+    _l("A-17", ["7.3"], "corrigida pelo %s, secao 4.2" % C1,
+       "W = max(ceil(n_lat/lambda5), W_min), W_min = floor(tetoLag + atraso_max) + 1 (estrito: prazo < W e "
+       "atraso <= W - teto)"),
 ]
 
 
@@ -280,18 +264,23 @@ def clopper_pearson(x, n, confianca=CONFIANCA_Q):
 # ============================================================================= regras puras
 
 def calcular_w(lambda5, atraso_max_ns, teto_ms, n_lat=N_LAT):
-    """7.3: W = max(ceil(n_lat / lambda5), ceil(tetoLag + atraso_max)) em segundos inteiros."""
+    """7.3 com o complemento 1 §4.2: W = max(ceil(n_lat / lambda5), W_min), W_min = floor(tetoLag + atraso_max) + 1.
+
+    W_min e o menor inteiro estritamente acima de tetoLag + atraso_max: cumpre prazo < W (ParametrosDefasagem) e
+    atraso <= W - teto (SondaDefasagem.cabeNaJanela).
+    """
     if lambda5 is None or Fraction(lambda5) <= 0:
-        return {"valor": None, "termo_vazao_s": None, "termo_leitura_s": None, "aceito_pelo_codigo": None,
+        return {"valor": None, "termo_vazao_s": None, "w_min_s": None, "aceito_pelo_codigo": None,
                 "motivo": "lambda5 ausente ou zero (7.2)"}
     if atraso_max_ns is None:
-        return {"valor": None, "termo_vazao_s": None, "termo_leitura_s": None, "aceito_pelo_codigo": None,
+        return {"valor": None, "termo_vazao_s": None, "w_min_s": None, "aceito_pelo_codigo": None,
                 "motivo": "sem linha defasagem: atraso maximo de inicio desconhecido"}
     tv = _ceil_fr(Fraction(n_lat) / Fraction(lambda5))
-    tl = _ceil_fr(Fraction(int(teto_ms) * MS + int(atraso_max_ns), S))
-    w = max(tv, tl)
-    return {"valor": w, "termo_vazao_s": tv, "termo_leitura_s": tl,
-            "aceito_pelo_codigo": int(teto_ms) * MS < w * S, "motivo": None}
+    w_min = (int(teto_ms) * MS + int(atraso_max_ns)) // S + 1
+    w = max(tv, w_min)
+    return {"valor": w, "termo_vazao_s": tv, "w_min_s": w_min,
+            "aceito_pelo_codigo": int(teto_ms) * MS < w * S and int(atraso_max_ns) <= w * S - int(teto_ms) * MS,
+            "motivo": None}
 
 
 def _cabe(k, w_s):
@@ -300,7 +289,7 @@ def _cabe(k, w_s):
 
 
 def viabilidade(w_s, klag_valor):
-    """7.4 (W >= 26,5 s) e o limite da 7.13 (kLag*W + 13,3 >= 39,8): AC-5 inviavel antes da avaliacao."""
+    """Conferencia de um par (W, kLag): 7.4 (W >= 26,5 s) e o limite da 7.13 (kLag*W + 13,3 >= 39,8)."""
     if w_s is None:
         return {"viavel": None, "motivos": ["W indeterminado (7.3): viabilidade nao avaliavel"]}
     motivos = []
@@ -310,6 +299,36 @@ def viabilidade(w_s, klag_valor):
         motivos.append("7.13: kLag*W + 13,3 = %s s >= 39,8 s (kLag = %d, W = %s s)"
                        % (float(klag_valor * Fraction(w_s) + T_PARADA), klag_valor, w_s))
     return {"viavel": not motivos, "motivos": motivos}
+
+
+def reserva_w(w_s, w_min_s, klag_min):
+    """Regra de reserva de W (complemento 1 §4.3).
+
+    klag_min(W') = menor k >= 1 com zero ocorrencias da 7.13 na grade W' (None se nao derivavel). Viavel em W' =
+    klag_min(W') W' + 13,3 < 39,8. Tenta W, W - 1, ..., W_min e para no primeiro viavel (o maior); sem nenhum, o AC-5
+    e inviavel e W e kLag ficam os da 7.3. Devolve W_s, kLag, viavel (None se kLag nao derivavel em W),
+    reserva_aplicada, candidatos e motivos.
+    """
+    cands = []
+    k0 = klag_min(w_s)
+    if k0 is None:
+        return {"W_s": w_s, "kLag": None, "viavel": None, "reserva_aplicada": False,
+                "candidatos": [{"W_s": w_s, "kLag_min": None, "viavel": None}],
+                "motivos": ["kLag nao derivado em W = %s s (7.13): viabilidade nao avaliavel" % w_s]}
+    for w in range(w_s, w_min_s - 1, -1):
+        k = k0 if w == w_s else klag_min(w)
+        ok = k is not None and _cabe(k, w)
+        cands.append({"W_s": w, "kLag_min": k, "viavel": ok})
+        if ok:
+            motivos = [] if w == w_s else [
+                "reserva de W (complemento 1 §4.3): kLag_min(%d) = %d nao cabe (%s s >= 39,8 s); W = %d, kLag = %d"
+                % (w_s, k0, float(k0 * Fraction(w_s) + T_PARADA), w, k)]
+            return {"W_s": w, "kLag": k, "viavel": True, "reserva_aplicada": w != w_s, "candidatos": cands,
+                    "motivos": motivos}
+    return {"W_s": w_s, "kLag": k0, "viavel": False, "reserva_aplicada": False, "candidatos": cands,
+            "motivos": ["7.4 (complemento 1 §4.3): nenhum W' em [%d, %d] com kLag_min(W') W' + 13,3 < 39,8: AC-5 "
+                        "inviavel antes da avaliacao (%s)"
+                        % (w_min_s, w_s, "; ".join("W'=%d kLag=%s" % (c["W_s"], c["kLag_min"]) for c in cands))]}
 
 
 def limiar_entrada(series, k):
@@ -351,51 +370,54 @@ def _maior_trecho_na_banda(series, baixo, alto):
 
 
 def limiar_saida(series, limiar_in, m):
-    """7.8/7.12: theta_out literal (maior valor: A-3) e a alternativa do menor valor que satisfaz a condicao.
+    """7.8/7.12 com o complemento 1 §2: menor c em {0} U {valores observados abaixo do limiar de entrada} tal que
+    nenhum trecho de janelas seguidas com c < sinal < limiar_in passa de m janelas.
 
-    Banda = (theta_out, limiar_in) aberta: calma <= theta_out, alta >= limiar_in, indeterminada conta como calma.
+    Indeterminada (None) conta como calma e quebra o trecho; igualdade com c conta como calma (<= theta_out). Para a
+    defasagem, quem chama ja tirou as janelas sem rodada (puladas, complemento 1 §4.1).
     """
     n_tot = sum(len(s) for s in series)
     if limiar_in is None or m is None:
-        return {"valor": None, "alternativa_menor_valor": None, "N": n_tot, "maior_trecho_na_banda": None,
-                "maior_trecho_na_banda_alternativa": None,
+        return {"valor": None, "N": n_tot, "maior_trecho_na_banda": None, "candidatos": None,
                 "motivo": "depende do limiar de entrada e de m (nao derivados)"}
-    literal = math.nextafter(limiar_in, -math.inf)
     cands = sorted({0.0} | {v for s in series for v in s if v is not None and v < limiar_in})
-    alt = None
     for c in cands:
-        if _maior_trecho_na_banda(series, c, limiar_in) <= m:
-            alt = c
-            break
-    return {"valor": literal, "alternativa_menor_valor": alt, "N": n_tot,
-            "maior_trecho_na_banda": _maior_trecho_na_banda(series, literal, limiar_in),
-            "maior_trecho_na_banda_alternativa": None if alt is None else _maior_trecho_na_banda(series, alt, limiar_in),
-            "motivo": None}
+        t = _maior_trecho_na_banda(series, c, limiar_in)
+        if t <= m:
+            return {"valor": c, "N": n_tot, "maior_trecho_na_banda": t, "candidatos": len(cands), "motivo": None}
+    return {"valor": None, "N": n_tot, "maior_trecho_na_banda": None, "candidatos": len(cands),
+            "motivo": "nenhum candidato cumpre a condicao"}    # inalcancavel: o maior candidato deixa a banda vazia
 
 
-def m_reentrada(sequencias):
-    """7.8: m = 1 + maior trecho de janelas calmas imediatamente seguido de janela alta (A-5).
+def m_reentrada(execucoes):
+    """7.8 com o complemento 1 §3: m = 1 + L.
 
-    sequencias: por execucao, a classe de cada janela depois do end: "C" calma, "I" intermediaria, "H" alta.
+    execucoes: [(classes, inicio)], classes = "H" (algum sinal alto) ou outra letra (sem alto) para cada janela da
+    execucao, sem as janelas puladas; inicio = indice da primeira janela com inicio em ou depois do end. L = maior
+    trecho maximo sem alto que comeca em ou depois de inicio e termina numa janela alta (o que chega ao fim nao
+    conta). Sem nenhuma janela depois do end: nao derivado.
     """
     maior, trechos, n = None, 0, 0
-    for seq in sequencias:
-        run = 0
-        for c in seq:
-            n += 1
-            if c == "C":
-                run += 1
+    for classes, inicio in execucoes:
+        classes = list(classes)
+        n += max(0, len(classes) - inicio)
+        i = 0
+        while i < len(classes):
+            if classes[i] == "H":
+                i += 1
                 continue
-            if c == "H" and run > 0:
+            a = i
+            while i < len(classes) and classes[i] != "H":
+                i += 1
+            if a >= inicio and i < len(classes):          # trecho maximo [a, i) seguido da alta em i
                 trechos += 1
-                maior = run if maior is None else max(maior, run)
-            run = 0
+                maior = i - a if maior is None else max(maior, i - a)
     if n == 0:
         return {"valor": None, "maior_trecho": None, "trechos_seguidos_de_alta": 0, "N": 0,
                 "motivo": "nenhuma execucao com janela depois do end nas celulas da regra: nao derivavel"}
     motivo = None
     if maior is None:
-        motivo = "nenhum trecho calmo seguido de janela alta depois do end (sem recaida): m = 1 + 0"
+        motivo = "nenhum trecho sem alto depois do end terminou em janela alta (sem recaida): m = 1 + 0"
     return {"valor": 1 + (maior or 0), "maior_trecho": maior or 0, "trechos_seguidos_de_alta": trechos, "N": n,
             "motivo": motivo}
 
@@ -433,17 +455,21 @@ def klag(execucoes, teto_ms, w_s):
     """7.13: menor k >= 1 com zero ocorrencias do predicado do P1, e a assinatura sem resposta a parte.
 
     execucoes: [(nome, [janela...])], janela = {"lag_max", "suspeito", "vista_completa", "respondeu_em_todas" (set),
-    e opcional "todos_responderam"}. Persistencia como PoliticaPorAssinatura.atualizarPersistencia (:198-214), com a
-    sequencia zerada abaixo do teto ou sem suspeito; janelas contiguas (offline nao ha janela do R4).
+    e opcionais "todos_responderam" e "lag_rodadas"}. Persistencia como PoliticaPorAssinatura.atualizarPersistencia
+    (:198-214), zerada abaixo do teto ou sem suspeito; janela sem rodada (lag_rodadas = 0) e pulada: nao quebra nem
+    soma persistencia e nao entra em N (complemento 1 §4.1).
     """
     contadas, sem = Counter(), Counter()
-    maior_c, maior_s, n_vc, n_tot, n_sem = 0, 0, 0, 0, 0
+    maior_c, maior_s, n_vc, n_tot, n_sem, puladas = 0, 0, 0, 0, 0, 0
     por_exec_sem, por_exec = [], []
     for nome, janelas in execucoes:
         sus, pers = None, 0
         mot, sem_e, cont_e, maior_e = Counter(), 0, 0, 0
         for jn in janelas:
             n_tot += 1
+            if jn.get("lag_rodadas", 1) == 0:
+                puladas += 1
+                continue
             lag, s = jn.get("lag_max"), jn.get("suspeito")
             if lag is None or s is None or lag < teto_ms:
                 sus, pers = None, 0
@@ -485,14 +511,38 @@ def klag(execucoes, teto_ms, w_s):
                             "nao age nelas e elas nao entram no criterio"}
     base = {"maior_persistencia_contada": maior_c,
             "ocorrencias_contadas_por_k": {str(k): v for k, v in sorted(contadas.items())},
-            "sem_resposta": sem_resposta, "N": n_vc, "n_janelas_total": n_tot, "por_execucao": por_exec,
-            "k_max_no_limite": None if w_s is None else k_max_no_limite(w_s)}
+            "sem_resposta": sem_resposta, "N": n_vc, "n_janelas_total": n_tot, "janelas_puladas": puladas,
+            "por_execucao": por_exec, "k_max_no_limite": None if w_s is None else k_max_no_limite(w_s)}
     if n_vc == 0:
         return dict(base, valor=None, dentro_do_limite=None,
                     motivo="nenhuma janela valida (nenhuma janela com vista completa nas execucoes da regra)")
     valor = maior_c + 1
     dentro = None if w_s is None else _cabe(valor, w_s)
     return dict(base, valor=valor, dentro_do_limite=dentro, motivo=None)
+
+
+def ciclo_completo(registros):
+    """A-12 com o acrescimo do complemento 1: intervalo entre recriacao_ms de execucoes seguidas da mesma fase.
+
+    registros: [(nome, fase, recriacao_ms ou None)]. Inclui pos-checagem e h4; uma retomada da fase aparece como um
+    intervalo longo (a mediana vai ao lado por isso).
+    """
+    por = {}
+    for nome, fase, rec in registros:
+        por.setdefault(fase, [])
+        if rec is not None:
+            por[fase].append((rec, nome))
+    out, todos = {}, []
+    for fase in sorted(por):
+        xs = sorted(por[fase])
+        out[fase] = [{"de": a[1], "para": b[1], "s": (b[0] - a[0]) / 1000} for a, b in zip(xs, xs[1:])]
+        todos += [x["s"] for x in out[fase]]
+    todos.sort()
+    med = None
+    if todos:
+        h = len(todos) // 2
+        med = todos[h] if len(todos) % 2 else (todos[h - 1] + todos[h]) / 2
+    return {"por_fase": out, "maximo_s": max(todos) if todos else None, "mediana_s": med}
 
 
 def t_estavel(execucoes, p_sonda_s=P_SONDA_S):
@@ -724,15 +774,22 @@ class Execucao:
 
 
 def ler_execucoes(campanha):
-    """(usadas, excluidas): ACEITA do braco A; as demais e as abortadas (DT-014) so listadas."""
+    """(usadas, excluidas, tempos): ACEITA do braco A; as demais e as abortadas (DT-014) so listadas; tempos =
+    (nome, fase, recriacao_ms) de toda execucao nao abortada com execucao.json legivel (ciclo completo, A-12)."""
     campanha = Path(campanha)
     if not campanha.is_dir():
         raise ErroUso("campanha ausente: %s" % campanha)
-    usadas, excluidas = [], []
+    usadas, excluidas, tempos = [], [], []
     for d in sorted(x for x in campanha.glob("exec-*") if x.is_dir()):
         if ".abortada-" in d.name:
             excluidas.append({"dir": d.name, "veredito": "ABORTADA (DT-014)"})
             continue
+        try:
+            exj = json.loads((d / "execucao.json").read_text(encoding="utf-8"))
+            if isinstance(exj, dict):
+                tempos.append((d.name, str(exj.get("fase")), _int_ou_none(exj.get("recriacao_ms"))))
+        except (OSError, ValueError):
+            pass
         chp = d / "checagem.json"
         if not chp.is_file():
             excluidas.append({"dir": d.name, "veredito": "SEM CHECAGEM"})
@@ -759,7 +816,7 @@ def ler_execucoes(campanha):
             raise ErroUso("%s: modo/falha do execucao.json (%r/%r) nao batem com a celula %s"
                           % (d.name, ex.get("modo"), ex.get("falha"), cel))
         usadas.append(Execucao(d, ex, ch))
-    return usadas, excluidas
+    return usadas, excluidas, tempos
 
 
 def ler_parametros(p):
@@ -802,13 +859,16 @@ def indice_consumo(t, origem, w_ns, n_jan):
     return j if j < n_jan else None
 
 
-def janelas_execucao(e, w_ns, p99):
-    """Uma lista de janelas [origem + jW, origem + (j+1)W) completas ate t_fim_carga_ns, com os sinais brutos."""
+def janelas_execucao(e, w_ns, p99, com_eventos=True):
+    """Janelas [origem + jW, origem + (j+1)W) completas ate t_fim_carga_ns, com os sinais brutos (complemento 1 §4.1).
+
+    com_eventos=False pula o CSV de eventos (a contagem do kLag da reserva de W so usa topologia e defasagem).
+    """
     origem = e.origem
     n_jan = max(0, (e.t_fim_carga - origem) // w_ns)
     jan = [{"t_ini_ns": origem + j * w_ns, "t_fim_ns": origem + (j + 1) * w_ns, "elegiveis": 0, "excedencias": 0,
             "total": 0, "erros": 0, "violacoes": 0, "_top": [], "_lag": []} for j in range(n_jan)]
-    for st, en, op, rc in e.eventos:                       # AgregadorDeJanela: janela do end_ns
+    for st, en, op, rc in (e.eventos if com_eventos else ()):      # AgregadorDeJanela: janela do end_ns
         if en < origem:
             continue
         j = (en - origem) // w_ns
@@ -865,17 +925,12 @@ def estado_topologia(amostras, nos):
             "respondeu_em_todas": todas, "todos_responderam": len(todas) == n_nos}
 
 
-def classe_janela(x, lim):
-    """C/I/H como o Controlador (:89-99): alta = algumAlto; calma = sem violacao/topologia e sinais <= out ou
-    indeterminados (defasagem indeterminada conta como calma); senao intermediaria."""
+def alta_janela(x, lim):
+    """algumAlto do Controlador (:98): violacao, topologia anomala, latencia >= theta_lat_in, erro >= theta_err_in ou
+    defasagem ALTA (lag >= lag_in). Complemento 1 §3: m so usa isto (nao usa theta_out)."""
     tl, te, lag = x["taxa_lat"], x["taxa_err"], x["lag_max"]
-    alta = (x["violacoes"] > 0 or x["top_anomala"] or (tl is not None and tl >= lim["theta_lat_in"])
-            or (te is not None and te >= lim["theta_err_in"]) or (lag is not None and lag >= lim["lag_in"]))
-    if alta:
-        return "H"
-    calma = (x["violacoes"] == 0 and not x["top_anomala"] and (tl is None or tl <= lim["theta_lat_out"])
-             and (te is None or te <= lim["theta_err_out"]) and (lag is None or lag <= lim["lag_out"]))
-    return "C" if calma else "I"
+    return bool(x["violacoes"] > 0 or x["top_anomala"] or (tl is not None and tl >= lim["theta_lat_in"])
+                or (te is not None and te >= lim["theta_err_in"]) or (lag is not None and lag >= lim["lag_in"]))
 
 
 # ============================================================================= Delta_conv e taxa (paridade)
@@ -934,11 +989,11 @@ def violacoes_por_mil(e, w_recovery_ns):
 # ============================================================================= derivacao
 
 def _entrada(regra, valor, texto, *, execs=(), celulas=(), unidade=None, dados=None, incerteza=None, motivo=None,
-             ambiguidades=()):
+             leituras=()):
     d = {"celulas": list(celulas), "execucoes": [e.nome for e in execs], "n_execucoes": len(execs)}
     d.update(dados or {})
     return {"regra": regra, "valor": valor, "unidade": unidade, "texto": texto, "dados": d, "incerteza": incerteza,
-            "motivo": motivo, "ambiguidades": list(ambiguidades)}
+            "motivo": motivo, "leituras": list(leituras)}
 
 
 def _de(execs, celulas):
@@ -965,17 +1020,23 @@ def _parse_iso_ms(txt):
     return calendar.timegm(time.strptime(m.group(1), "%Y-%m-%dT%H:%M:%S")) * 1000 + int((m.group(2) or "0").ljust(3, "0"))
 
 
+_KLAG_VAZIO = {"valor": None, "N": 0, "dentro_do_limite": None, "k_max_no_limite": None,
+               "maior_persistencia_contada": None, "ocorrencias_contadas_por_k": None, "sem_resposta": None,
+               "n_janelas_total": 0, "janelas_puladas": 0, "por_execucao": []}
+
+
 def derivar(campanha, parametros):
-    """Dicionario do esquema calibracao-s3/1 (ErroUso em contrato violado)."""
+    """Dicionario do esquema calibracao-s3/1 (ErroUso em contrato violado). Ordem do complemento 1 §1."""
     campanha = Path(campanha)
     par = ler_parametros(parametros)
     teto_ms = par["hotrod_timeout_ms"]
-    usadas, excluidas = ler_execucoes(campanha)
+    usadas, excluidas, tempos = ler_execucoes(campanha)
     for e in usadas:
         conferir_execucao(e, teto_ms)
     P = {}
+    sem_w = "depende de W (7.3), nao derivado"
 
-    # ---- 7.1 referencias de p99 por perfil
+    # ---- 7.1 referencias de p99 por perfil (definem as operacoes elegiveis do lambda5; nao dependem de W)
     refs = {}
     for perf, cels in (("async", CEL_SEM_FALHA_ASYNC), ("sync", CEL_SEM_FALHA_SYNC)):
         ex = _de(usadas, cels)
@@ -1010,9 +1071,9 @@ def derivar(campanha, parametros):
                "maior": _f(max(lambdas)) if lambdas else None},
         incerteza={"N": len(lambdas), "posto": None if not lambdas else _ceil_fr(Fraction(5, 100) * len(lambdas))},
         motivo=None if lam5 is not None else "sem referencia ASYNC (7.1) ou sem janela de 5 s",
-        ambiguidades=["A-8", "A-14"])
+        leituras=["A-8", "A-14"])
 
-    # ---- 7.3 W
+    # ---- 7.3 W pela formula (complemento 1 §4.2)
     atrasos = []
     for e in usadas:
         per = e.obs["meta"]["parametros_defasagem"]["periodo_ns"]
@@ -1021,24 +1082,92 @@ def derivar(campanha, parametros):
             atrasos.append((t - (e.origem + ((t - e.origem) // per) * per), e.nome))
     atraso_max = max(atrasos)[0] if atrasos else None
     cw = calcular_w(lam5, atraso_max, teto_ms)
-    w_s = cw["valor"]
-    w_ns = None if w_s is None else w_s * S
-    P["W_s"] = _entrada(
-        "7.3", w_s, "W = max(ceil(n_lat/lambda5), ceil(tetoLag + atraso_max)), n_lat = 100, atraso = t_inicio_ns - "
-        "inicio da janela nas linhas defasagem", execs=usadas, celulas=sorted({e.celula for e in usadas}),
-        unidade="s", dados={"termo_vazao_s": cw["termo_vazao_s"], "termo_leitura_s": cw["termo_leitura_s"],
-                            "atraso_max_ns": atraso_max, "atraso_max_execucao": max(atrasos)[1] if atrasos else None,
-                            "rodadas": len(atrasos), "teto_lag_ms": teto_ms, "n_lat": N_LAT,
-                            "aceito_pelo_codigo": cw["aceito_pelo_codigo"]},
-        incerteza={"lambda5_N": len(lambdas), "rodadas_defasagem": len(atrasos)}, motivo=cw["motivo"],
-        ambiguidades=["A-6", "A-17"])
+    w_formula = cw["valor"]
 
-    # ---- janelas W de cada execucao (7.5 em diante)
+    # ---- 7.13 kLag e a regra de reserva de W (complemento 1 §4.3)
+    fk = _de(usadas, CEL_KLAG)
+    cache_k = {}
+
+    def klag_em(w):
+        if w not in cache_k:
+            jw = [(e.nome, janelas_execucao(e, w * S, None, com_eventos=False)) for e in fk]
+            cache_k[w] = klag(jw, teto_ms, w)
+        return cache_k[w]["valor"]
+
+    if w_formula is None:
+        rw = None
+        w_s, rk = None, dict(_KLAG_VAZIO, motivo=sem_w)
+    else:
+        rw = reserva_w(w_formula, cw["w_min_s"], klag_em)
+        w_s = rw["W_s"]
+        rk = cache_k[w_s]
+    w_ns = None if w_s is None else w_s * S
+    reserva = bool(rw and rw["reserva_aplicada"])
+
+    # ---- janelas do W final de cada execucao (todas as regras usam esta grade, complemento 1 §4.1)
     jan = {}
     if w_ns is not None:
         for e in usadas:
             jan[e.nome] = janelas_execucao(e, w_ns, p99_async if e.modo == "async" else p99_sync)
-    sem_w = "depende de W (7.3), nao derivado"
+    n_sf = sum(len(jan.get(e.nome, ())) for e in sf)
+    n_ind = sum(1 for e in sf for x in jan.get(e.nome, ()) if x["taxa_lat"] is None)
+    frac = None if not n_sf else n_ind / n_sf
+    cobertura = {"janelas_sem_falha": n_sf, "latencia_indeterminada": n_ind, "fracao_indeterminada": frac,
+                 "passa_de_5_por_cento": None if frac is None else frac > COBERTURA_MAX,
+                 "declaracao": None if not reserva else (
+                     "o sinal de latencia perdeu cobertura para o AC-5 caber no tempo de deteccao: em W = %d s (W da "
+                     "7.3 = %d s), %.1f %% das janelas ASYNC sem falha tem menos de n_lat = %d eventos elegiveis "
+                     "(latencia indeterminada)" % (w_s, w_formula, 100 * frac if frac is not None else float("nan"),
+                                                   N_LAT))}
+
+    P["W_s"] = _entrada(
+        "7.3", w_s, "W = max(ceil(n_lat/lambda5), W_min), W_min = floor(tetoLag + atraso_max) + 1 (complemento 1 "
+        "§4.2), com a reserva de W do §4.3", execs=usadas, celulas=sorted({e.celula for e in usadas}), unidade="s",
+        dados={"w_formula_s": w_formula, "termo_vazao_s": cw["termo_vazao_s"], "w_min_s": cw["w_min_s"],
+               "reserva_aplicada": reserva, "atraso_max_ns": atraso_max,
+               "atraso_max_execucao": max(atrasos)[1] if atrasos else None, "rodadas": len(atrasos),
+               "teto_lag_ms": teto_ms, "n_lat": N_LAT,
+               "aceito_pelo_codigo": None if w_s is None else
+               (teto_ms * MS < w_ns and (atraso_max or 0) <= w_ns - teto_ms * MS)},
+        incerteza={"lambda5_N": len(lambdas), "rodadas_defasagem": len(atrasos)}, motivo=cw["motivo"],
+        leituras=["A-1", "A-6", "A-17"])
+
+    previstas = []
+    for e in fk:
+        n = sum(1 for o in e.trilha if o["tipo"] == "acao" and o.get("operacao") == "APLICAR"
+                and (o.get("acao") or {}).get("tipo") == "AC-5" and o.get("resultado") == "PREVISTA")
+        if n:
+            previstas.append({"dir": e.nome, "linhas": n})
+    P["kLag"] = _entrada(
+        "7.13", rk["valor"], "menor k >= 1 com zero ocorrencias (C-8) do predicado do P1 (vistaCompleta && suspeito "
+        "!= null && persistencia >= k && respondeuEmTodas(suspeito), PoliticaPorAssinatura.java:158), nas execucoes "
+        "sem particao, na grade do W final; kLag W + 13,3 < 39,8 com a reserva de W", execs=fk, celulas=CEL_KLAG,
+        dados={"maior_persistencia_contada": rk["maior_persistencia_contada"],
+               "ocorrencias_contadas_por_k": rk["ocorrencias_contadas_por_k"], "sem_resposta": rk["sem_resposta"],
+               "dentro_do_limite": rk["dentro_do_limite"], "k_max_no_limite": rk["k_max_no_limite"],
+               "n_janelas_total": rk["n_janelas_total"], "janelas_sem_rodada": rk["janelas_puladas"],
+               "W_s": w_s, "teto_lag_ms": teto_ms, "por_execucao": rk["por_execucao"],
+               "perfil_conservador": "nao exigido na contagem (depende de theta e lag_in derivados juntos; ignora-lo "
+                                     "so torna a contagem mais conservadora)",
+               "conferencia_acao_prevista": {"linhas_ac5_prevista": sum(x["linhas"] for x in previstas),
+                                             "execucoes": previstas,
+                                             "nota": "linhas acao PREVISTA do braco A gravadas com o kLag provisorio "
+                                                     "(2) e o W provisorio: so conferencia"}},
+        incerteza=incerteza_zero(rk["N"], w_s), motivo=rk.get("motivo"), leituras=["A-1", "A-7", "A-8", "A-15"])
+
+    # ---- 7.4 viabilidade do AC-5 (com a reserva de W)
+    if rw is None:
+        vb = {"viavel": None, "motivos": ["W indeterminado (7.3): viabilidade nao avaliavel"], "reserva_aplicada": False,
+              "candidatos": []}
+    else:
+        vb = {"viavel": rw["viavel"], "motivos": rw["motivos"], "reserva_aplicada": rw["reserva_aplicada"],
+              "candidatos": rw["candidatos"]}
+    P["viabilidade_ac5"] = _entrada(
+        "7.4", vb, "AC-5 viavel em W' se kLag_min(W') W' + 13,3 < 39,8; se nao for viavel no W da 7.3, W passa ao "
+        "maior W' viavel entre W_min e W - 1; sem nenhum, o AC-5 e declarado inviavel antes da avaliacao "
+        "(complemento 1 §4.3)", execs=fk, celulas=CEL_KLAG,
+        dados={"W_s": w_s, "w_formula_s": w_formula, "w_min_s": cw["w_min_s"], "kLag": rk["valor"],
+               "cobertura_latencia": cobertura, "t_parada_s": float(T_PARADA), "t_det_min_s": float(T_DET_MIN)})
 
     # ---- 7.5 excedencia por janela
     P["excedencia_por_janela"] = _entrada(
@@ -1048,7 +1177,7 @@ def derivar(campanha, parametros):
                                             "taxa_err")} for x in jan[e.nome]]} for e in usadas]},
         "recalculada do CSV de eventos com a referencia 7.1 (do perfil da execucao) e a janela 7.3",
         execs=usadas, celulas=sorted({e.celula for e in usadas}), motivo=None if w_ns else sem_w,
-        ambiguidades=["A-8"])
+        leituras=["A-8"])
 
     # ---- 7.6 k e 7.9 n_err
     P["k"] = _entrada("7.6", K_NUCLEO, "k = 2 (derivacao binomial do plano de 22/10 §3.2); theta derivado para esse k")
@@ -1069,7 +1198,7 @@ def derivar(campanha, parametros):
             "das execucoes ASYNC sem falha (C-8)", execs=sf, celulas=CEL_SEM_FALHA_ASYNC,
             dados={"maximo_dos_minimos": r["maximo_dos_minimos"], "ocorrencias": r["ocorrencias"], "k": K_NUCLEO,
                    "n_janelas_total": sum(len(s) for s in serie(sf, campo))},
-            incerteza=incerteza_zero(r["N"], w_s), motivo=r["motivo"], ambiguidades=["A-2", "A-7", "A-8"])
+            incerteza=incerteza_zero(r["N"], w_s), motivo=r["motivo"], leituras=["A-2", "A-7", "A-8"])
 
     # ---- 7.11 lag_in
     amostras_lag = [float(r["lag_max_ms"]) for e in sf for r in e.obs["defasagem"]]
@@ -1082,51 +1211,61 @@ def derivar(campanha, parametros):
         incerteza={"N": len(amostras_lag),
                    "amostras_acima_ou_no_limiar": None if lag_in is None else sum(1 for v in amostras_lag if v >= lag_in)},
         motivo=None if lag_in is not None else "nenhuma rodada de defasagem nas execucoes ASYNC sem falha",
-        ambiguidades=["A-8", "A-14"])
+        leituras=["A-8", "A-14"])
 
-    # ---- 7.8 m, theta_out (literal), T_cooldown; 7.12 lag_out
-    for nome_in, nome_out in (("theta_lat_in", "theta_lat_out"), ("theta_err_in", "theta_err_out")):
-        lim[nome_out] = None if lim[nome_in] is None else math.nextafter(lim[nome_in], -math.inf)
-    lim["lag_out"] = None if lag_in is None else math.nextafter(lag_in, -math.inf)
+    # ---- 7.8 m (so theta_in e lag_in; complemento 1 §3), T_cooldown
     fm = _de(usadas, CEL_M)
-    seqs, motivo_m = [], None
+    seqs, nomes_seq = [], []
     if w_ns is None or any(v is None for v in lim.values()):
-        motivo_m = "depende de W, theta_in, theta_out, lag_in e lag_out (algum nao derivado)"
-        rm = {"valor": None, "maior_trecho": None, "trechos_seguidos_de_alta": None, "N": 0}
+        rm = {"valor": None, "maior_trecho": None, "trechos_seguidos_de_alta": None, "N": 0,
+              "motivo": "depende de W, theta_lat_in, theta_err_in e lag_in (algum nao derivado)"}
     else:
         for e in fm:
             t_end = e.t_end
-            seqs.append([classe_janela(x, lim) for x in jan[e.nome] if x["t_ini_ns"] >= t_end])
+            js = [x for x in jan[e.nome] if x["lag_rodadas"] > 0]          # janela sem rodada: pulada (§4.1)
+            classes = "".join("H" if alta_janela(x, lim) else "N" for x in js)
+            inicio = next((i for i, x in enumerate(js) if x["t_ini_ns"] >= t_end), len(js))
+            seqs.append((classes, inicio))
+            nomes_seq.append((e.nome, len(jan[e.nome]) - len(js)))
         rm = m_reentrada(seqs)
-        motivo_m = rm["motivo"]
     m = rm["valor"]
     P["m"] = _entrada(
-        "7.8", m, "m = 1 + o maior numero de janelas calmas seguidas que foi seguido de nova janela alta depois do "
-        "marcador end, nas execucoes com falha", execs=fm, celulas=CEL_M,
+        "7.8", m, "m = 1 + L, L = maior trecho maximo de janelas sem sinal alto que comeca em ou depois do end e "
+        "termina numa janela alta, nas ASYNC F1, F2 e F4 (complemento 1 §3)", execs=fm, celulas=CEL_M,
         dados={"maior_trecho": rm["maior_trecho"], "trechos_seguidos_de_alta": rm["trechos_seguidos_de_alta"],
                "limiares_usados": {k: lim[k] for k in sorted(lim)},
-               "sequencias": [{"dir": e.nome, "classes": "".join(s)} for e, s in zip(fm, seqs)]},
-        incerteza={"N": rm["N"]}, motivo=motivo_m, ambiguidades=["A-4", "A-5", "A-6", "A-15"])
+               "sequencias": [{"dir": n, "classes": c, "inicio_depois_do_end": i, "janelas_puladas": p}
+                              for (n, p), (c, i) in zip(nomes_seq, seqs)]},
+        incerteza={"N": rm["N"]}, motivo=rm["motivo"], leituras=["A-1", "A-4", "A-5", "A-6", "A-15"])
     P["T_cooldown_s"] = _entrada("7.8", None if m is None or w_s is None else m * w_s, "T_cooldown = m W",
                                  unidade="s", motivo=None if m is not None and w_s is not None else "depende de m e W")
+
+    # ---- 7.8 theta_out e 7.12 lag_out pelo menor valor (complemento 1 §2), depois de m
     for nome_out, nome_in, campo, regra, texto in (
-            ("theta_lat_out", "theta_lat_in", "taxa_lat", "7.8", "theta_out = maior valor tal que nenhuma janela das "
-             "execucoes sem falha fica entre theta_out e theta_in por mais de m janelas seguidas"),
+            ("theta_lat_out", "theta_lat_in", "taxa_lat", "7.8", "theta_out = menor c em {0} U {observados abaixo "
+             "de theta_in} tal que nenhum trecho de janelas ASYNC sem falha com c < taxa < theta_in passa de m "
+             "(complemento 1 §2)"),
             ("theta_err_out", "theta_err_in", "taxa_err", "7.8", "idem, sobre a taxa de erro"),
-            ("lag_out_ms", "lag_in", None, "7.12", "lag_out: como theta_out (7.8), sobre as amostras de defasagem")):
+            ("lag_out_ms", "lag_in", None, "7.12", "lag_out: a mesma regra sobre o lagMaxMs da janela, com lag_in "
+             "(complemento 1 §2); janela sem rodada pulada (§4.1)")):
+        puladas = 0
         if campo is None:
-            ser = [[x["lag_max"] for x in jan[e.nome]] for e in sf] if w_ns is not None else []
+            ser = []
+            for e in (sf if w_ns is not None else ()):
+                ser.append([x["lag_max"] for x in jan[e.nome] if x["lag_rodadas"] > 0])
+                puladas += sum(1 for x in jan[e.nome] if x["lag_rodadas"] == 0)
             lin = lag_in
         else:
             ser, lin = serie(sf, campo), lim[nome_in]
         r = limiar_saida(ser, lin, m)
+        dados = {"m": m, "limiar_de_entrada": lin, "maior_trecho_na_banda": r["maior_trecho_na_banda"],
+                 "candidatos": r["candidatos"]}
+        if campo is None:
+            dados["janelas_sem_rodada_puladas"] = puladas
         P[nome_out] = _entrada(
             regra, r["valor"], texto, execs=sf, celulas=CEL_SEM_FALHA_ASYNC, unidade="ms" if campo is None else None,
-            dados={"alternativa_menor_valor": r["alternativa_menor_valor"], "m": m, "limiar_de_entrada": lin,
-                   "maior_trecho_na_banda": r["maior_trecho_na_banda"],
-                   "maior_trecho_na_banda_alternativa": r["maior_trecho_na_banda_alternativa"]},
-            incerteza=incerteza_zero(r["N"], w_s), motivo=r["motivo"],
-            ambiguidades=["A-3", "A-4", "A-7"] + (["A-1"] if campo is None else []))
+            dados=dados, incerteza=incerteza_zero(r["N"], w_s), motivo=r["motivo"],
+            leituras=["A-3", "A-4", "A-7"] + (["A-1"] if campo is None else []))
 
     # ---- 7.10 teto da convergencia
     fc = _de(usadas, CEL_FALHA)
@@ -1143,47 +1282,8 @@ def derivar(campanha, parametros):
         "7.10", rt["valor"], "600 s se o maior Delta_conv das execucoes que convergiram for < 400 s; senao 1,5 x esse "
         "maior", execs=fc, celulas=CEL_FALHA, unidade="s",
         dados={"maior_delta_conv_s": rt["maior_delta_conv_s"], "n_convergiram": rt["n"], "execucoes": det,
-               "fora": fora}, incerteza={"n_convergiram": rt["n"]}, motivo=rt["motivo"],
-        ambiguidades=["A-6", "A-16"])
-
-    # ---- 7.13 kLag
-    fk = _de(usadas, CEL_KLAG)
-    if w_ns is None:
-        rk = {"valor": None, "N": 0, "motivo": sem_w, "dentro_do_limite": None, "k_max_no_limite": None,
-              "maior_persistencia_contada": None, "ocorrencias_contadas_por_k": None, "sem_resposta": None,
-              "n_janelas_total": 0, "por_execucao": []}
-    else:
-        rk = klag([(e.nome, jan[e.nome]) for e in fk], teto_ms, w_s)
-    previstas = []
-    for e in fk:
-        n = sum(1 for o in e.trilha if o["tipo"] == "acao" and o.get("operacao") == "APLICAR"
-                and (o.get("acao") or {}).get("tipo") == "AC-5" and o.get("resultado") == "PREVISTA")
-        if n:
-            previstas.append({"dir": e.nome, "linhas": n})
-    sem_rodada = 0 if w_ns is None else sum(1 for e in fk for x in jan[e.nome] if x["lag_rodadas"] == 0)
-    P["kLag"] = _entrada(
-        "7.13", rk["valor"], "menor k >= 1 com zero ocorrencias (C-8) do predicado do P1 (vistaCompleta && suspeito "
-        "!= null && persistencia >= k && respondeuEmTodas(suspeito), PoliticaPorAssinatura.java:158), nas execucoes "
-        "sem particao; limitado por kLag W + 13,3 < 39,8", execs=fk, celulas=CEL_KLAG,
-        dados={"maior_persistencia_contada": rk["maior_persistencia_contada"],
-               "ocorrencias_contadas_por_k": rk["ocorrencias_contadas_por_k"], "sem_resposta": rk["sem_resposta"],
-               "dentro_do_limite": rk["dentro_do_limite"], "k_max_no_limite": rk["k_max_no_limite"],
-               "n_janelas_total": rk["n_janelas_total"], "janelas_sem_rodada": sem_rodada, "teto_lag_ms": teto_ms,
-               "por_execucao": rk["por_execucao"],
-               "perfil_conservador": "nao exigido na contagem (depende de theta e lag_in derivados juntos; ignora-lo "
-                                     "so torna a contagem mais conservadora)",
-               "conferencia_acao_prevista": {"linhas_ac5_prevista": sum(x["linhas"] for x in previstas),
-                                             "execucoes": previstas,
-                                             "nota": "linhas acao PREVISTA do braco A gravadas com o kLag provisorio "
-                                                     "(2) e o W provisorio: so conferencia"}},
-        incerteza=incerteza_zero(rk["N"], w_s), motivo=rk["motivo"], ambiguidades=["A-1", "A-7", "A-8", "A-15"])
-
-    # ---- 7.4 viabilidade (com o kLag da 7.13)
-    vb = viabilidade(w_s, rk["valor"])
-    P["viabilidade_ac5"] = _entrada(
-        "7.4", vb, "se W >= 26,5 s, ou se o menor kLag da 7.13 passar de kLag W + 13,3 < 39,8, o AC-5 e declarado "
-        "inviavel antes da avaliacao", dados={"W_s": w_s, "kLag": rk["valor"], "t_parada_s": float(T_PARADA),
-                                               "t_det_min_s": float(T_DET_MIN)})
+               "fora": fora, "n_fora": len(fora)}, incerteza={"n_convergiram": rt["n"]}, motivo=rt["motivo"],
+        leituras=["A-6", "A-16"])
 
     # ---- 7.14 T_estavel
     te = t_estavel([(e.nome, e.t_end, [(a["t_ns"], bool(a.get("anomala"))) for a in e.obs["topologia"]])
@@ -1193,7 +1293,7 @@ def derivar(campanha, parametros):
         "depois do marcador end, mais P_sonda (2 s); sem recaida, P_sonda", execs=fc, celulas=CEL_FALHA, unidade="s",
         dados={"maior_trecho_s": te["maior_trecho_s"], "recaidas": te["recaidas"], "p_sonda_s": P_SONDA_S,
                "por_execucao": te["por_execucao"]}, incerteza={"recaidas": te["recaidas"]}, motivo=te["motivo"],
-        ambiguidades=["A-6", "A-9", "A-15"])
+        leituras=["A-6", "A-9", "A-15"])
 
     # ---- 7.15 T_hold_viol
     th = t_hold_viol([(e.nome, e.viol) for e in usadas], w_s)
@@ -1201,7 +1301,7 @@ def derivar(campanha, parametros):
         "7.15", th["valor"], "maior intervalo entre duas violacoes seguidas na mesma execucao; sem execucao com duas "
         "violacoes, W", execs=usadas, celulas=sorted({e.celula for e in usadas}), unidade="s",
         dados={"maior_intervalo_s": th["maior_intervalo_s"], "por_execucao": th["por_execucao"]},
-        motivo=th["motivo"], ambiguidades=["A-6", "A-10"])
+        motivo=th["motivo"], leituras=["A-6", "A-10"])
 
     # ---- 7.16 blocos e T_exec; 7.17 volume e exec_teto
     texec, tpre, tpos, vols = [], [], [], []
@@ -1219,29 +1319,30 @@ def derivar(campanha, parametros):
     P["n_blocos"] = _entrada(
         "7.16", N_BLOCOS, "n = 12, fixo (decisao do Gestor, 05/11, B-40 §7); a calibracao so mede T_exec",
         execs=usadas, dados={"t_exec_s": texec, "t_exec_max_s": max(vals) if vals else None,
-                             "t_exec_medio_s": sum(vals) / len(vals) if vals else None},
-        ambiguidades=["A-12"])
+                             "t_exec_medio_s": sum(vals) / len(vals) if vals else None,
+                             "ciclo_completo": ciclo_completo(tempos)},
+        leituras=["A-12"])
     vmax = max(vols) if vols else None
     P["volume_exec_mb"] = _entrada(
         "7.17", None if vmax is None else _ceil_fr(Fraction(vmax[0], 2 ** 20)), "maior volume medido", execs=usadas,
         unidade="MiB", dados={"maior_bytes": None if vmax is None else vmax[0],
                               "maior_execucao": None if vmax is None else vmax[1],
                               "maior_mib": None if vmax is None else vmax[0] / 2 ** 20},
-        motivo=None if vmax else "nenhuma execucao aceita", ambiguidades=["A-11"])
+        motivo=None if vmax else "nenhuma execucao aceita", leituras=["A-11"])
     pre_max = max(tpre) if tpre else None
     pos_max = max(tpos) if tpos else None
     et = exec_teto(par["duracao_s"], par["religamento_prazo_s"], rt["valor"], w_s,
                    None if pre_max is None else pre_max[0], None if pos_max is None else pos_max[0])
     P["exec_teto_s"] = _entrada(
-        "7.17", et["valor"], "formula de 4.1 com o convergencia_periodo_s, o teto da 7.10 e o maior t_pre e t_pos "
-        "medidos; nunca abaixo de 1010 s", execs=usadas, unidade="s",
+        "7.17", et["valor"], "formula de 4.1 com o convergencia_periodo_s (= W final), o teto da 7.10 e o maior t_pre e "
+        "t_pos medidos; nunca abaixo de 1010 s", execs=usadas, unidade="s",
         dados={"formula_s": et["formula_s"], "duracao_s": par["duracao_s"], "t_enc_s": T_ENC_S,
                "religamento_prazo_s": par["religamento_prazo_s"], "teto_convergencia_s": rt["valor"],
                "convergencia_periodo_s": w_s, "t_pre_max_s": None if pre_max is None else float(pre_max[0]),
                "t_pre_execucao": None if pre_max is None else pre_max[1],
                "t_pos_max_s": None if pos_max is None else float(pos_max[0]),
                "t_pos_execucao": None if pos_max is None else pos_max[1], "fator": float(FATOR),
-               "minimo_s": EXEC_TETO_MIN_S}, motivo=et["motivo"], ambiguidades=["A-11"])
+               "minimo_s": EXEC_TETO_MIN_S}, motivo=et["motivo"], leituras=["A-11"])
 
     # ---- 7.18 q-chapeu e curva de poder (so informativo)
     wr = par["w_recovery_s"] * S
@@ -1265,22 +1366,23 @@ def derivar(campanha, parametros):
         "durante + recuperacao), com Clopper-Pearson de 95 % (secao 6)", execs=ft, celulas=CEL_TESTE,
         dados={"fases": list(FASES_Q), "w_recovery_s": par["w_recovery_s"]}, incerteza={"metodo": "Clopper-Pearson "
                                                                                                  "bilateral 95 %"},
-        ambiguidades=["A-13"])
+        leituras=["A-13"])
     P["curva_de_poder"] = _entrada(
         "7.18", {"executado": False,
-                 "comando": "python -E -P analysis/poder.py --taxas-a taxas-<celula>.txt --semente <S> --n-sim <N> "
-                            "--m-celulas %d --blocos %d --saida poder-<celula>.json" % (M_CELULAS_TESTE, N_BLOCOS),
+                 "comando": "python -E -P analysis/poder.py --taxas-a taxas-<celula>.txt --semente %d --n-sim %d "
+                            "--m-celulas %d --blocos %d --saida poder-<celula>.json"
+                            % (SEMENTE_PODER, N_SIM_PODER, M_CELULAS_TESTE, N_BLOCOS),
                  "taxas_a": taxas_cmd},
         "poder.py (W-5) com as taxas do braco A por celula de teste, 12 blocos (fixo), reducoes de 0 a 100 %, m das "
         "celulas de teste do B-40. So informativo", execs=ft, celulas=CEL_TESTE,
-        motivo="poder.py importa numpy: fora do python3 -I; rodar o comando com as taxas_a de cada celula",
-        ambiguidades=["A-13"])
+        motivo="poder.py importa numpy: fora do python3 -I; rodar o comando (python -E -P, decisao G2) com as taxas_a "
+               "de cada celula", leituras=["A-13"])
 
-    # ---- contagens por celula e valores para o B-40 parte 2 (leitura literal)
+    # ---- contagens por celula e valores para o B-40 parte 2
     por_cel = {c: {"aceitas": sum(1 for e in usadas if e.celula == c), "planejadas": n}
                for c, n in CELULAS_PLANEJADAS.items()}
     v = {k: P[k]["valor"] for k in P}
-    b40 = {"leitura": "literal (theta_out e lag_out pela A-3; ver ambiguidades)",
+    b40 = {"leitura": "regras da secao 7 com o %s" % C1,
            "wNs": None if w_s is None else w_s * S, "nLat": N_LAT, "nErr": v["n_err"], "k": v["k"], "m": v["m"],
            "thetaLatIn": v["theta_lat_in"], "thetaLatOut": v["theta_lat_out"], "thetaErrIn": v["theta_err_in"],
            "thetaErrOut": v["theta_err_out"],
@@ -1288,7 +1390,8 @@ def derivar(campanha, parametros):
            "estavelNs": None if v["T_estavel_s"] is None else int(round(_fr(v["T_estavel_s"]) * S)),
            "holdViolNs": None if v["T_hold_viol_s"] is None else int(round(_fr(v["T_hold_viol_s"]) * S)),
            "politica.kLag": v["kLag"], "defasagem.lagInMs": v["lag_in_ms"], "defasagem.lagOutMs": v["lag_out_ms"],
-           "ac5_viavel": vb["viavel"], "convergencia_teto_s": v["teto_convergencia_s"],
+           "ac5_viavel": vb["viavel"], "reserva_de_w_aplicada": vb["reserva_aplicada"],
+           "convergencia_teto_s": v["teto_convergencia_s"],
            "convergencia_periodo_s": w_s, "exec_teto_s": v["exec_teto_s"], "volume_exec_mb": v["volume_exec_mb"],
            "referencia_async_sha256": (v["referencia_p99_async"] or {}).get("sha256"),
            "referencia_sync_sha256": (v["referencia_p99_sync"] or {}).get("sha256")}
@@ -1303,12 +1406,13 @@ def derivar(campanha, parametros):
             "execucoes": {"usadas": [e.publico() for e in usadas], "excluidas": excluidas, "por_celula": por_cel},
             "constantes": {"n_lat": N_LAT, "k": K_NUCLEO, "n_min_referencia": N_MIN_REF,
                            "janela_lambda_s": JANELA_LAMBDA_S, "quantil_lambda": QUANTIL_LAMBDA,
-                           "quantil_lag_in": QUANTIL_LAG_IN, "D_s": D_S, "alfa": float(ALFA),
-                           "t_parada_s": float(T_PARADA), "t_det_min_s": float(T_DET_MIN), "p_sonda_s": P_SONDA_S,
-                           "teto_conv_base_s": TETO_CONV_BASE_S, "fator": float(FATOR), "t_enc_s": T_ENC_S,
-                           "exec_teto_min_s": EXEC_TETO_MIN_S, "n_blocos": N_BLOCOS},
+                           "quantil_lag_in": QUANTIL_LAG_IN, "cobertura_max": COBERTURA_MAX, "D_s": D_S,
+                           "alfa": float(ALFA), "t_parada_s": float(T_PARADA), "t_det_min_s": float(T_DET_MIN),
+                           "p_sonda_s": P_SONDA_S, "teto_conv_base_s": TETO_CONV_BASE_S, "fator": float(FATOR),
+                           "t_enc_s": T_ENC_S, "exec_teto_min_s": EXEC_TETO_MIN_S, "n_blocos": N_BLOCOS,
+                           "semente_poder": SEMENTE_PODER, "n_sim_poder": N_SIM_PODER},
             "parametros": P, "regras": {k: sorted(x) for k, x in sorted(regras.items())},
-            "valores_b40_parte2": b40, "ambiguidades": AMBIGUIDADES,
+            "valores_b40_parte2": b40, "leituras": LEITURAS,
             "_referencias_bytes": {k: b for k, (_v, b) in refs.items()},
             "gerado_por": {"script": "analysis/calibracao_s3.py", "sha256": _sha256(script)}}
 

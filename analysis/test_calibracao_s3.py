@@ -547,7 +547,30 @@ class Bordas(unittest.TestCase):
         self.assertEqual(1.0, cob["fracao_indeterminada"])     # 80 elegiveis por janela de 4 s < n_lat
         self.assertTrue(cob["passa_de_5_por_cento"])
         self.assertIn("perdeu cobertura", cob["declaracao"])
+        # cobertura perdida por inteiro: theta_lat_in nao deriva, e m (que usa theta_lat_in) tambem nao
         self.assertIsNone(P["theta_lat_in"]["valor"])
+        self.assertIsNone(P["m"]["valor"])
+        self.assertIn("theta_lat_in", P["m"]["motivo"])
+        self.assertIsNone(P["T_cooldown_s"]["valor"])
+
+    def test_reserva_de_w_com_cobertura_parcial(self):
+        # 3 operacoes (30/s) e 3 janelas de 5 s com 100 elegiveis: lambda5 = 20/s, W da 7.3 = 5. Em W' = 4, so as 3
+        # janelas de 4 s com a lacuna ficam abaixo de n_lat: 3 de 75 (4 %); theta_lat_in, m e T_cooldown derivam
+        tres = ("Login", "Validate", "IncrementFailure")
+        mud = {n: dict(ops=tres) for n in ("n0", "n1", "n2", "s0", "s1", "f1a", "f1b", "f2a", "f2b", "sf2", "f4",
+                                         "rec", "dsc")}
+        mud["n0"].update(lag_teto={j: ISN3 for j in range(4, 9)}, lacunas={2: 50, 5: 50})
+        mud["n1"].update(lacunas={9: 50})
+        P = self.derivar(mud)
+        self.assertEqual(20.0, P["lambda5_por_s"]["valor"])
+        self.assertEqual(5, P["W_s"]["dados"]["w_formula_s"])
+        self.assertEqual(4, P["W_s"]["valor"])
+        cob = P["viabilidade_ac5"]["dados"]["cobertura_latencia"]
+        self.assertEqual((75, 3), (cob["janelas_sem_falha"], cob["latencia_indeterminada"]))
+        self.assertAlmostEqual(0.04, cob["fracao_indeterminada"])
+        self.assertFalse(cob["passa_de_5_por_cento"])
+        self.assertIsNotNone(cob["declaracao"])
+        self.assertIsNotNone(P["theta_lat_in"]["valor"])
         self.assertEqual(4 * P["m"]["valor"], P["T_cooldown_s"]["valor"])
 
     def test_ac5_inviavel_sem_w_viavel(self):
@@ -733,7 +756,7 @@ class Funcoes(unittest.TestCase):
 
     def test_sem_execucao_nao_deriva(self):
         self.assertIsNone(cal.m_reentrada([])["valor"])
-        self.assertIsNone(cal.m_reentrada([[], []])["valor"])
+        self.assertIsNone(cal.m_reentrada([("", 0), ("HH", 2)])["valor"])    # nenhuma janela depois do end
         self.assertIsNone(cal.t_estavel([], 2)["valor"])
         self.assertIsNone(cal.t_estavel([("e", T0, [(T0 - S, False)])], 2)["valor"])   # nenhuma amostra depois do end
         self.assertIsNone(cal.t_hold_viol([], 5)["valor"])

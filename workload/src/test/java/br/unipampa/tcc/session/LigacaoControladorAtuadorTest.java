@@ -37,8 +37,8 @@ class LigacaoControladorAtuadorTest {
     static final long MS = 1_000_000L;
 
     /** Bloco de teste (k e tetoLagMs com origem "teste"; os reais vem da calibracao, D-12). */
-    static final String BLOCO = "\"politica\":{\"k\":2,\"tetoLagMs\":2000,\"tRebNs\":60000000000,\"cotaAc5\":1,"
-            + "\"origem\":{\"k\":\"teste\",\"tetoLagMs\":\"teste\","
+    static final String BLOCO = "\"politica\":{\"kLag\":2,\"tetoLagMs\":2000,\"tRebNs\":60000000000,\"cotaAc5\":1,"
+            + "\"origem\":{\"kLag\":\"teste\",\"tetoLagMs\":\"teste\","
             + "\"tRebNs\":\"state-transfer.timeout do XML (60000 ms), acima da deteccao medida de 46,8 s\","
             + "\"cotaAc5\":\"desenho: uma vez por execucao\"}}";
 
@@ -143,7 +143,7 @@ class LigacaoControladorAtuadorTest {
         assertEquals("por-assinatura", p.politica().nome());
         String t = LigacaoControlador.textoDryRun(cfg);
         assertTrue(t.contains("atuador=por-tipo(AC-2=rest-infinispan,AC-5=rest-infinispan) politica=por-assinatura"), t);
-        assertTrue(t.contains("politica k=2 tetoLagMs=2000 tRebNs=60000000000 cotaAc5=1"), t);
+        assertTrue(t.contains("politica kLag=2 tetoLagMs=2000 tRebNs=60000000000 cotaAc5=1"), t);
         // V-W2a R1: AC-2 na pilha (2 s) + AC-5 em curso (5 s) + T_cham (2 s)
         assertTrue(t.contains("prazo_encerramento=em_curso+pilha+T_cham pior_caso_ns=9000000000"), t);
         for (String linha : t.split("\\R")) {
@@ -197,7 +197,7 @@ class LigacaoControladorAtuadorTest {
         assertEquals("decisoes-controlador/1.2", meta.get("esquema").asText());
         assertEquals("por-tipo(AC-2=rest-infinispan,AC-5=rest-infinispan)", meta.get("atuador").asText());
         assertEquals("por-assinatura", meta.get("politica").asText());
-        assertEquals(2, meta.get("parametros_politica").get("k").asInt());
+        assertEquals(2, meta.get("parametros_politica").get("k_lag").asInt());
         assertEquals("teste", meta.get("parametros_politica").get("origem").get("tetoLagMs").asText());
         List<String> politicas = dec.stream().filter(n -> "politica".equals(n.get("tipo").asText()))
                 .map(n -> n.get("politica").asText() + ":" + n.get("motivo").asText()).toList();

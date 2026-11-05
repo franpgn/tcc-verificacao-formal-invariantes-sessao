@@ -35,8 +35,8 @@ class ParametrosPoliticaArquivoTest {
     static final ObjectMapper JSON = new ObjectMapper();
 
     /** Bloco de teste: k e tetoLagMs com origem "teste" (os reais vem da calibracao, D-12). */
-    public static final String BLOCO_TESTE = "\"politica\":{\"k\":2,\"tetoLagMs\":2000,\"tRebNs\":60000000000,"
-            + "\"cotaAc5\":1,\"origem\":{\"k\":\"teste\",\"tetoLagMs\":\"teste\","
+    public static final String BLOCO_TESTE = "\"politica\":{\"kLag\":2,\"tetoLagMs\":2000,\"tRebNs\":60000000000,"
+            + "\"cotaAc5\":1,\"origem\":{\"kLag\":\"teste\",\"tetoLagMs\":\"teste\","
             + "\"tRebNs\":\"state-transfer.timeout do XML (60000 ms), acima da deteccao medida de 46,8 s\","
             + "\"cotaAc5\":\"desenho: uma vez por execucao\"}}";
 
@@ -58,13 +58,13 @@ class ParametrosPoliticaArquivoTest {
     void blocoPresenteEAusente() throws IOException {
         ParametrosControlador com = ParametrosControlador.deJson(arquivo(BASE + "," + BLOCO_TESTE + "}"));
         ParametrosPolitica p = com.politica();
-        assertEquals(2, p.k());
+        assertEquals(2, p.kLag());
         assertEquals(2000, p.tetoLagMs());
         assertEquals(60 * S, p.tRebNs());
         assertEquals(1, p.cotaAc5());
-        assertEquals("teste", p.origem().get("k"));
+        assertEquals("teste", p.origem().get("kLag"));
         assertEquals("teste", p.origem().get("tetoLagMs"));
-        assertEquals(List.of("k", "tetoLagMs", "tRebNs", "cotaAc5"), List.copyOf(p.origem().keySet()));
+        assertEquals(List.of("kLag", "tetoLagMs", "tRebNs", "cotaAc5"), List.copyOf(p.origem().keySet()));
         ParametrosControlador sem = ParametrosControlador.deJson(arquivo(BASE + "}"));
         assertNull(sem.politica());
         assertNotEquals(com.sha256(), sem.sha256(), "o SHA-256 do arquivo cobre o bloco");
@@ -76,16 +76,28 @@ class ParametrosPoliticaArquivoTest {
     }
 
     @Test
+    @DisplayName("V-4: kLag do bloco e o k do nucleo sao numeros independentes; o nome antigo k no bloco e recusado")
+    void kLagIndependenteDoK() throws IOException {
+        ParametrosControlador p = ParametrosControlador.deJson(arquivo(BASE + ","
+                + BLOCO_TESTE.replace("{\"kLag\":2,", "{\"kLag\":5,") + "}"));
+        assertEquals(2, p.k(), "k do nucleo: janelas altas seguidas para R2");
+        assertEquals(5, p.politica().kLag(), "kLag: janelas seguidas com S_lag no teto e o mesmo suspeito para o P1");
+        Path antigo = arquivo(BASE + "," + BLOCO_TESTE.replace("{\"kLag\":2,", "{\"k\":2,")
+                .replace("{\"kLag\":\"teste\"", "{\"k\":\"teste\"") + "}");
+        assertThrows(IllegalArgumentException.class, () -> ParametrosControlador.deJson(antigo));
+    }
+
+    @Test
     @DisplayName("bloco politica invalido e recusado: sem valor padrao, origem obrigatoria, campos estritos")
     void blocoInvalido() throws IOException {
         String[] ruins = {
-                "\"politica\":{\"k\":2,\"tetoLagMs\":2000,\"tRebNs\":60000000000,\"cotaAc5\":1}",
+                "\"politica\":{\"kLag\":2,\"tetoLagMs\":2000,\"tRebNs\":60000000000,\"cotaAc5\":1}",
                 "\"politica\":{\"tetoLagMs\":2000,\"tRebNs\":60000000000,\"cotaAc5\":1,\"origem\":{\"tetoLagMs\":\"t\",\"tRebNs\":\"t\",\"cotaAc5\":\"t\"}}",
-                "\"politica\":{\"k\":2,\"tetoLagMs\":2000,\"tRebNs\":60000000000,\"cotaAc5\":1,\"origem\":{\"k\":\"t\",\"tetoLagMs\":\"t\",\"tRebNs\":\"t\"}}",
-                "\"politica\":{\"k\":2,\"tetoLagMs\":2000,\"tRebNs\":60000000000,\"cotaAc5\":1,\"origem\":{\"k\":\" \",\"tetoLagMs\":\"t\",\"tRebNs\":\"t\",\"cotaAc5\":\"t\"}}",
-                "\"politica\":{\"k\":2,\"tetoLagMs\":2000,\"tRebNs\":60000000000,\"cotaAc5\":1,\"origem\":{\"k\":3,\"tetoLagMs\":\"t\",\"tRebNs\":\"t\",\"cotaAc5\":\"t\"}}",
-                "\"politica\":{\"k\":2,\"tetoLagMs\":2000,\"tRebNs\":60000000000,\"cotaAc5\":2,\"origem\":{\"k\":\"t\",\"tetoLagMs\":\"t\",\"tRebNs\":\"t\",\"cotaAc5\":\"t\"}}",
-                "\"politica\":{\"k\":2,\"tetoLagMs\":2000,\"tRebNs\":60000000000,\"cotaAc5\":1,\"extra\":1,\"origem\":{\"k\":\"t\",\"tetoLagMs\":\"t\",\"tRebNs\":\"t\",\"cotaAc5\":\"t\"}}",
+                "\"politica\":{\"kLag\":2,\"tetoLagMs\":2000,\"tRebNs\":60000000000,\"cotaAc5\":1,\"origem\":{\"kLag\":\"t\",\"tetoLagMs\":\"t\",\"tRebNs\":\"t\"}}",
+                "\"politica\":{\"kLag\":2,\"tetoLagMs\":2000,\"tRebNs\":60000000000,\"cotaAc5\":1,\"origem\":{\"kLag\":\" \",\"tetoLagMs\":\"t\",\"tRebNs\":\"t\",\"cotaAc5\":\"t\"}}",
+                "\"politica\":{\"kLag\":2,\"tetoLagMs\":2000,\"tRebNs\":60000000000,\"cotaAc5\":1,\"origem\":{\"kLag\":3,\"tetoLagMs\":\"t\",\"tRebNs\":\"t\",\"cotaAc5\":\"t\"}}",
+                "\"politica\":{\"kLag\":2,\"tetoLagMs\":2000,\"tRebNs\":60000000000,\"cotaAc5\":2,\"origem\":{\"kLag\":\"t\",\"tetoLagMs\":\"t\",\"tRebNs\":\"t\",\"cotaAc5\":\"t\"}}",
+                "\"politica\":{\"kLag\":2,\"tetoLagMs\":2000,\"tRebNs\":60000000000,\"cotaAc5\":1,\"extra\":1,\"origem\":{\"kLag\":\"t\",\"tetoLagMs\":\"t\",\"tRebNs\":\"t\",\"cotaAc5\":\"t\"}}",
                 "\"politica\":[]",
                 "\"politica\":null"};
         for (String r : ruins) {
@@ -105,11 +117,12 @@ class ParametrosPoliticaArquivoTest {
                 "por-tipo(AC-2=rest-infinispan,AC-5=rest-infinispan)", "por-assinatura", true, false);
         JsonNode d = FormatoJsonl.meta(FormatoJsonl.ESQUEMA_DECISOES, m);
         JsonNode pp = d.get("parametros_politica");
-        assertEquals(2, pp.get("k").asInt());
+        assertEquals(2, pp.get("k_lag").asInt());
+        assertTrue(!pp.has("k"), "V-4: k_lag, nao k");
         assertEquals(2000, pp.get("teto_lag_ms").asLong());
         assertEquals(60 * S, pp.get("t_reb_ns").asLong());
         assertEquals(1, pp.get("cota_ac5").asInt());
-        assertEquals("teste", pp.get("origem").get("k").asText());
+        assertEquals("teste", pp.get("origem").get("kLag").asText());
         JsonNode o = FormatoJsonl.meta(FormatoJsonl.ESQUEMA_OBSERVAVEIS, m);
         assertFalse(o.has("parametros_politica"), "observaveis 1.1 sem campo novo");
         MetaExecucao semPol = new MetaExecucao("v", 1, ModoAtuacao.SHADOW, "S3", "async", 3,
@@ -157,7 +170,7 @@ class ParametrosPoliticaArquivoTest {
     void origemNoBloco() throws Exception {
         ObjectNode n = (ObjectNode) JSON.readTree("{" + BLOCO_TESTE + "}").get("politica");
         ParametrosPolitica p = ParametrosPolitica.deJson(n);
-        assertEquals(Map.of("k", "teste", "tetoLagMs", "teste",
+        assertEquals(Map.of("kLag", "teste", "tetoLagMs", "teste",
                 "tRebNs", "state-transfer.timeout do XML (60000 ms), acima da deteccao medida de 46,8 s",
                 "cotaAc5", "desenho: uma vez por execucao"), p.origem());
         assertEquals(Map.of(), new ParametrosPolitica(2, 2000, 60 * S, 1).origem());

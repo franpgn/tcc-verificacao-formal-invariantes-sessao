@@ -567,3 +567,59 @@ primeira e segunda rodadas) + 5 (R1) = 1041; 133 + 12 + 1 = 146 classes. Tudo ve
 | `ExigirPrimarioTest` | 5 |
 
 Falta o *smoke* da seção 9 do parecer (cluster local), que espera o W-2a terminar o I-1..I-5.
+
+## W-5 (B-39.4): `comparar-bracos/2`, guarda G4 e poder (2026-11-05)
+
+Branch `feature/w5-desfechos-coprincipais` sobre `e869a31`. **Escrito sem executar**: o host estava em H0 estrito
+(noite 1 do *rebaseline*); só `python -I -m py_compile` em cada arquivo. As contagens abaixo são as esperadas e
+precisam ser medidas na janela liberada pelo coordenador (`python -E -P -m unittest discover -s analysis`).
+
+| Suíte (nova) | Testes | O que cobre |
+|---|---|---|
+| `analysis/test_guarda_energia.py` | 12 | G4 de 28/10: B39-R1 (W, marcadores e fases da energia; convergência não passada ao `energia_proxy`; JSON incompleto) e B39-R2 (`sem-amostra-valida`) |
+| `analysis/test_desfechos_coprincipais.py` | 78 | taxa de violações (diferença, não razão), Δ_rec principal (censura e fronteira, instante de observação, sem `end`, sem `t_fim_carga_ns`), Δ_rec da Metodologia, Δ_conv a partir de `t_fim_carga_ns`, divergência, p mínimo 2/2^k por enumeração (k = 5..8), p_L ⇔ limite do IC t, regra IU (quatro casos, direção, não avaliável), Holm entre células, tipos de célula, sensibilidades (a)(b)(c) e Wilson, trilha do controlador e rastreabilidade, energia (P_max 181 W, razão central 0,3, sensibilidade 0,5), CLI |
+| `analysis/test_poder.py` | 13 | lote = `permutacao_exata`; poder ≈ 0 com redução 0; 1 com redução total e q = 1; P(k ≥ 6) binomial (0,96 e 0,14 do plano 3.3); α de Holm; CLI |
+| `analysis/test_referencia_erro.py` | 9 | Clopper-Pearson unilateral; zero erros = regra de três; guarda de execução com falha; leitura; CLI |
+
+Commits: `0ffb7a4` (test G4) → `87ff066` (fix G4) → `34f119a` (test W-5, com esqueletos de `poder.py` e
+`referencia_erro.py` para o vermelho cair por asserção e não por `ImportError`) → `347670b` (feat W-5).
+
+| Momento | `unittest` analysis (sem `-I`) |
+|---|---|
+| base `e869a31` | 235 OK, 1 *skip* (registro do W-h4) |
+| esperado depois do W-5, com o patch autorizado | 347 = 235 + 112 novos, 1 *skip* |
+
+**Testes existentes que dependem do `/1` (não editados; aguardam autorização do coordenador, Prompt 2 item 6).**
+Sem o patch, em `analysis/test_comparar_bracos.py`: `C6Determinismo` (5, erro no `setUpClass`: `--primario` saiu e
+`--delta-latencia`/`--w-analise-s` são obrigatórios) e `ExclusoesERegistro.test_n_menor_que_1000_e_steal`
+(assinatura de `comparar` e `energia_min` sem `parametros`/`janela`, que a guarda B39-R1 recusa) falham;
+`C5Pareamento.test_bloco_sem_b`, `C5Pareamento.test_blocos_trocados_de_celula` e os 3 de `Guardas` passam pelo
+motivo errado (exit 2 do `argparse`). O patch troca só a chamada (argumentos do `/2`), o *fixture* `energia_min`
+(campos `janela` e `parametros` coerentes) e, em `test_esquema_e_familias` e `test_boot_de_blocos_so_depende_de_d_b`,
+o nome do esquema, a família `primario` → `co-principal-L`, o conjunto de desfechos e a escala da diferença. As
+asserções sobre chaves que não mudaram ficam iguais.
+
+### W-5, correções da V-W5 (R-1..R-11) (2026-11-05)
+
+Parecer `docs/validacao-w5-2026-11-05.md` (`a2e14a8`), decisões P-1..P-7 e A-2..A-4 do coordenador em nome do
+Gestor. Par `0380d26` (test) → `c7dfac4` (fix), **escrito sem executar** (H0 estrito). `test_desfechos_coprincipais.py`
+passa de 78 para 96 testes e `test_poder.py` de 13 para 18; os testes do próprio W-5 que mudaram de assinatura
+(`w_recovery_s`, fim da medição no descritivo do controlador, `--m-celulas`, esquema `poder-troca-de-sinal/2`) foram
+ajustados no mesmo `test:`.
+
+| Momento | `unittest` analysis (sem `-I`) |
+|---|---|
+| base `e869a31` | 235 OK, 1 *skip* |
+| esperado com o patch R-1 aplicado | 370 = 235 + 135 novos (12 + 96 + 18 + 9), 1 *skip* |
+| **medido** na base `e869a31` (worktree temporária completa, 05/11 08:42Z, janela H2) | **235 OK, 1 *skip*** (46,6 s) |
+| **medido** na ponta `6ec46c8` (patch R-1 aplicado, 05/11 08:32Z, janela H2) | **370 OK, 1 *skip*** (255,9 s) |
+
+Comando: `python -E -P -m unittest discover -s analysis`. Mutantes do Prompt 2 e da V-W5 (diferença trocada por
+razão, censura esquecida, `t_fim_ns` no Δ_conv, fim em vez de início da operação): os quatro morrem. Detalhes em
+`docs/relatorio-b39-4-2026-11-05.md`.
+
+R-1 (patch autorizado de `test_comparar_bracos.py`, a aplicar na janela H2): além das duas correções do Senior
+(escala esperada por nome numa lista explícita; secundários sem p exatamente `{delta_rec_s, delta_conv_s,
+divergencia_persistente}`), o patch leva `--w-recovery-s 60` em `ARGS_V2` e `w_recovery_s=60` em `ExclusoesERegistro`
+(P-5), os dois desfechos `:razao` no conjunto esperado (P-4) e um `escrever_trilha` mínimo nas execuções das células
+de teste de `C6Determinismo` e `ExclusoesERegistro` (A-3). Nenhuma linha de asserção sai.

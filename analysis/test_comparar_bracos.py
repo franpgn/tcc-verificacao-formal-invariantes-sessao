@@ -79,7 +79,34 @@ def energia_min(cpu_s, uteis, excluida=False):
     return {"esquema": "energia-proxy/1", "fases": [{"rotulo": "durante", "t_ini_ns": T0, "t_fim_ns": T0 + S,
                                                      "duracao_s": 1.0}],
             "agregados": {"vm": {"durante": {"cpu_s": cpu_s, "marca": "ok"}, "total": {"cpu_s": cpu_s, "marca": "ok"}}},
-            "uteis": {"durante": uteis, "total": uteis}, "steal": {"frac": 0.0, "limiar": 0.05, "excluida": excluida}}
+            "uteis": {"durante": uteis, "total": uteis}, "steal": {"frac": 0.0, "limiar": 0.05, "excluida": excluida},
+            # B39-R1 (G4 de 28/10): janela e parametros coerentes com os marcadores padrao de escrever_exec
+            "janela": {"t0_ns": T0, "t1_ns": T0 + S, "origem": "acoes-s3"},
+            "parametros": {"marcadores": "marcadores.txt", "w_recovery_s": 60.0, "convergencia": None}}
+
+
+# argumentos obrigatorios do comparar-bracos/2 (W-5 e V-W5 P-5): os testes de CLI abaixo continuam
+# conferindo a mesma recusa (manifesto, S3 de 8 colunas, n > 16, saida existente), agora com a chamada
+# valida; o 60 do W_recovery e valor de teste, nao padrao
+ARGS_V2 = ("--delta-latencia", 0.10, "--w-analise-s", 5, "--w-recovery-s", 60, "--celulas-teste", "C1")
+
+# desfechos que o /2 analisa em diferenca, listados aqui (e nao importados do modulo testado)
+DIFERENCA_ESPERADA = {"taxa_violacoes_por_1000", "delta_rec_s", "delta_rec_metodologia_s", "delta_conv_s",
+                      "divergencia_persistente", "taxa_erro", "falhas_percebidas_por_1000"}
+
+
+def escrever_trilha(d, braco):
+    """decisoes-rep-001.jsonl minimo e integro (A-3 da V-W5: trilha obrigatoria nos dois bracos do teste)."""
+    meta = {"tipo": "meta", "esquema": "decisoes-controlador/1.2", "rep": 1,
+            "modo": "shadow" if braco == "A" else "active", "parametros": {"w_ns": 5 * S},
+            "param_sha256": "a" * 64, "atuador": "por-tipo(AC-2=rest-infinispan,AC-5=rest-infinispan)",
+            "politica": "por-assinatura"}
+    dec = {"tipo": "decisao", "t_fim_ns": T0 + 5 * S, "t_decisao_ns": T0 + 5 * S + 1, "modo": meta["modo"],
+           "perfil": "NORMAL", "transicao": False, "regra": "NENHUMA", "motivos": ["ESTAVEL"],
+           "severidade": "NENHUMA", "sinais": {"taxa_erro": 0.0}, "param_sha256": "a" * 64}
+    fim = {"tipo": "fim", "decisoes": 1, "acoes_pedidas": 0, "linhas_perdidas": 0}
+    (Path(d) / "decisoes-rep-001.jsonl").write_text("".join(json.dumps(o) + "\n" for o in (meta, dec, fim)),
+                                                    encoding="utf-8")
 
 
 def acoes_sinteticas(rng, n, mu, sigma=0.5, espera_frac=0.0, p_falha=0.02, passo=10_000_000):
@@ -117,6 +144,7 @@ def gerar_celula(raiz, celula, n_blocos, efeito, seed, n_acoes=1200, com_eventos
                 viol = [(T0 + 5 * S, "I1", "")] if br == "B" and b == 1 else []
                 viol += [(T0 + 6 * S, "I4", "")] * (1 + b % 2)
             escrever_exec(d, acoes=acoes, eventos=ev, energia=en, violacoes=viol)
+            escrever_trilha(d, br)
             linhas.append("%d\t%s\t%s\t%s" % (b, celula, br, Path(celula) / d.name))
     return linhas
 
@@ -239,7 +267,7 @@ class C5Pareamento(Base):
 
     def cli(self, man):
         saida = self.d / "c.json"
-        rc, out, err = rodar_cli("--manifesto", man, "--semente-boot", 1, "--primario", "vazao_util",
+        rc, out, err = rodar_cli("--manifesto", man, "--semente-boot", 1, *ARGS_V2,
                                  "--saida", saida, "--n-boot", 200, "--n-hier", 200)
         return rc, saida, err
 
@@ -290,9 +318,8 @@ class C6Determinismo(Base):
         cls.man = escrever_manifesto(cls.r, linhas)
 
         def cli(semente, nome):
-            rc, out, err = rodar_cli("--manifesto", cls.man, "--semente-boot", semente, "--primario",
-                                     "acao_s3_p99_com_espera", "--saida", cls.r / nome, "--n-boot", 2000,
-                                     "--n-hier", 400, cwd=cls.r)
+            rc, out, err = rodar_cli("--manifesto", cls.man, "--semente-boot", semente, *ARGS_V2,
+                                     "--saida", cls.r / nome, "--n-boot", 2000, "--n-hier", 400, cwd=cls.r)
             assert rc == 0, err
             return json.loads((cls.r / nome).read_text(encoding="utf-8"))
 
@@ -321,22 +348,36 @@ class C6Determinismo(Base):
                 continue
             with self.subTest(nome=nome):
                 d = [e["d_b"][b] for b in self.j1["celulas"]["C1"]["blocos"] if b in e["d_b"]]
-                self.assertEqual(cb.ic_boot_blocos(d, 123, e["indice_semente"], 2000), e["ic_boot_blocos"])
-                self.assertAlmostEqual(math.exp(sum(d) / len(d)), e["estimativa"], places=12)
+                # /2 (W-5, V-W5 P-4): escala esperada pelo nome, lista explicita deste teste
+                esperada = "diferenca" if nome in DIFERENCA_ESPERADA else "log-razao"
+                self.assertEqual(esperada, e["escala"])
+                exp = esperada == "log-razao"
+                self.assertEqual(cb.ic_boot_blocos(d, 123, e["indice_semente"], 2000, exp=exp), e["ic_boot_blocos"])
+                m = sum(d) / len(d)
+                self.assertAlmostEqual(math.exp(m) if exp else m, e["estimativa"], places=12)
 
     def test_esquema_e_familias(self):
         j = self.j1
-        self.assertEqual("comparar-bracos/1", j["esquema"])
+        self.assertEqual("comparar-bracos/2", j["esquema"])
         c = j["celulas"]["C1"]
         des = c["desfechos"]
         self.assertEqual({"acao_s3_p99_com_espera", "acao_s3_p99_sem_espera", "evento_p99:Login", "taxa_erro",
-                          "falhas_percebidas_por_1000", "vazao_util", "cpu_por_1000_uteis"}, set(des))
-        self.assertEqual("primario", des["acao_s3_p99_com_espera"]["familia"])
+                          "falhas_percebidas_por_1000", "vazao_util", "cpu_por_1000_uteis",
+                          "taxa_violacoes_por_1000", "delta_rec_s", "delta_conv_s", "divergencia_persistente",
+                          "taxa_erro:razao", "falhas_percebidas_por_1000:razao"},
+                         set(des))
+        self.assertEqual("sensibilidade", des["taxa_erro:razao"]["familia"])
+        self.assertEqual("sensibilidade", des["falhas_percebidas_por_1000:razao"]["familia"])
+        self.assertEqual("co-principal-L", des["acao_s3_p99_com_espera"]["familia"])
         self.assertIsNone(des["acao_s3_p99_com_espera"]["p_holm"])
         self.assertEqual("nao-inferioridade", des["vazao_util"]["familia"])
         self.assertIsNone(des["vazao_util"]["p_holm"])
         self.assertIn(des["vazao_util"]["nao_inferioridade"]["resultado"], ("nao-inferior", "inconclusivo"))
-        sec = sorted(n for n, e in des.items() if e["familia"] == "secundario")
+        # /2: os unicos secundarios sem p sao os que o fixture nao calcula (marcador end alem da medicao e sem
+        # resumo de convergencia); todo outro secundario tem p e entra no Holm
+        sem_p = {n for n, e in des.items() if e["familia"] == "secundario" and e["p_permutacao"] is None}
+        self.assertEqual({"delta_rec_s", "delta_conv_s", "divergencia_persistente"}, sem_p)
+        sec = sorted(n for n, e in des.items() if e["familia"] == "secundario" and n not in sem_p)
         ajust = cb.holm([des[n]["p_permutacao"] for n in sec])
         for n, pa in zip(sec, ajust):
             self.assertAlmostEqual(pa, des[n]["p_holm"], places=12)
@@ -375,7 +416,7 @@ class Guardas(Base):
                 linhas.append("%d\tC1\t%s\te%d%s" % (b, br, b, br))
         man = escrever_manifesto(self.d, linhas)
         saida = self.d / "c.json"
-        rc, _, err = rodar_cli("--manifesto", man, "--semente-boot", 1, "--primario", "vazao_util",
+        rc, _, err = rodar_cli("--manifesto", man, "--semente-boot", 1, *ARGS_V2,
                                "--saida", saida, "--n-boot", 200, "--n-hier", 200)
         self.assertEqual(2, rc, err)
         self.assertFalse(saida.exists())
@@ -389,7 +430,7 @@ class Guardas(Base):
                 linhas.append("%d\tC1\t%s\te%d%s" % (b, br, b, br))
         man = escrever_manifesto(self.d, linhas)
         saida = self.d / "c.json"
-        rc, _, err = rodar_cli("--manifesto", man, "--semente-boot", 1, "--primario", "vazao_util",
+        rc, _, err = rodar_cli("--manifesto", man, "--semente-boot", 1, *ARGS_V2,
                                "--saida", saida, "--n-boot", 200, "--n-hier", 200)
         self.assertEqual(2, rc, err)
         self.assertFalse(saida.exists())
@@ -402,7 +443,7 @@ class Guardas(Base):
         man = escrever_manifesto(self.d, linhas)
         saida = self.d / "c.json"
         (self.d / "c.md").write_text("x", encoding="utf-8")
-        rc, _, err = rodar_cli("--manifesto", man, "--semente-boot", 1, "--primario", "vazao_util",
+        rc, _, err = rodar_cli("--manifesto", man, "--semente-boot", 1, *ARGS_V2,
                                "--saida", saida, "--n-boot", 200, "--n-hier", 200)
         self.assertEqual(2, rc, err)
         self.assertFalse(saida.exists())
@@ -420,9 +461,11 @@ class ExclusoesERegistro(Base):
                 excl = (b == 3 and br == "B")
                 escrever_exec(self.d / ("e%d%s" % (b, br)), acoes=acoes_sinteticas(rng, n, math.log(2e6)),
                               energia=energia_min(20.0 + b, 1000, excluida=excl))
+                escrever_trilha(self.d / ("e%d%s" % (b, br)), br)
                 linhas.append("%d\tC1\t%s\te%d%s" % (b, br, b, br))
         man = escrever_manifesto(self.d, linhas)
-        r = cb.comparar(man, 9, "acao_s3_p99_com_espera", n_boot=500, n_hier=200)
+        r = cb.comparar(man, 9, delta_latencia=0.10, w_analise_s=5, w_recovery_s=60, tipos_celula={"C1": "teste"},
+                        n_boot=500, n_hier=200)
         c = r["celulas"]["C1"]
         p99 = c["desfechos"]["acao_s3_p99_com_espera"]
         self.assertEqual(3, p99["n_blocos"])

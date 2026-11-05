@@ -333,3 +333,28 @@ cujas rodadas foram todas inválidas pela topologia). Código: `session/LeituraR
 encerrar, porque em `active` o encerramento desfaz a pilha e pode levar até `T_enc`. `t_fim_controle_ns` (aditivo, ao fim)
 é o instante em que o controlador terminou de encerrar (`null` com `--controller off`). Quando falta o marcador `end`, o
 `t_fim` de reserva da convergência é `t_fim_carga_ns` nos dois braços.
+
+**Religamento depois do AC-5 (W-6, B-46; P-6 da V-W5, achado A-1, opção a).** Com `--controller shadow|active`, logo
+depois do encerramento do controlador, o programa imprime no stdout, com *flush*, uma linha que o orquestrador
+(`scripts/run-campanha-s3.sh`) lê por um pipe:
+
+`Fim da carga: rep=<n> t_fim_carga_ns=<n> ac5_alvo=<host:porta|->`
+
+`ac5_alvo` é o rótulo canônico (`host:porta` de `--controller-admin`) do nó do primeiro AC-5 com resultado `APLICADA`
+(`ExecutorDeAcoes.alvoDoAc5Aplicado`, a mesma regra de `ac5_aplicada` no `comparar_bracos.py`), ou `-`. Ao ler um alvo,
+o orquestrador faz o `podman start` do nó. Com `--convergence` e AC-5 aplicado, o programa lê a sonda do laço de
+convergência a cada 2 s (`P_sonda`, B-26.2) até ver os servidores esperados ou até `--rejoin-timeout-sec` (sem padrão;
+obrigatório com `active` e `--convergence`), imprime `Religamento: …` e só então começa o laço. Com o controlador
+ligado, o resumo ganha seis campos ao fim, depois de `t_fim_controle_ns` (com o controlador desligado, nenhum):
+
+| Campo | Conteúdo |
+|---|---|
+| `t_sinal_fim_carga_ns` | instante logo depois da linha `Fim da carga:` |
+| `religamento_ac5_alvo` | o `ac5_alvo` da linha; `null` sem AC-5 aplicado |
+| `religamento_prazo_ns` | o prazo usado; `null` sem espera |
+| `t_religamento_ns` | fim da leitura que viu os servidores esperados (sempre antes da primeira rodada do laço); `null` sem espera ou com o prazo esgotado. É o campo que `analysis/comparar_bracos.py` usa como origem do Δ_conv quando o AC-5 parou um nó |
+| `religamento_esgotado` | houve espera e o prazo acabou sem a topologia completa |
+| `religamento_leituras` | leituras feitas na espera (0 sem espera) |
+
+Testes: `ReligamentoTest`, `ConvergenciaResumoReligamentoTest`, `CliReligamentoTest`, `ExecutorAc5AplicadoTest` e
+`WorkloadMainReligamentoFonteTest`.

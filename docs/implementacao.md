@@ -95,6 +95,92 @@ o ProtoStream padrão falha ao serializar e toda escrita vira
 
 ## Decisões técnicas a registrar
 
+### TD-014 — W-6 (B-46): orquestrador das campanhas S3 e religamento depois do AC-5 (2026-11-05)
+
+Especificação: plano de execução de 04/11, seção 9 (W-6) e seção 5; plano de execução contínua, seções 2 e 3 (X-17 a
+X-25, H0/H1); `docs/acoes-controlador-cluster-2026-11-05.md` seção 6; requisitos acumulados das validações de 05/11
+(P-30 do B-44.1b, R1 e O10 da V-W2a, A-1 e A-3 da V-W5 com a decisão P-6, P-35, C3 e DT-019, B-25.1). Modelo de
+estrutura: `scripts/run-rebaseline.sh` (`d95305fe…`), que **não mudou**.
+
+**Arquivos.** `scripts/run-campanha-s3.sh` (orquestrador), `scripts/campanha_s3_matriz.py` (matriz e reposições),
+`scripts/campanha_s3_conferir.py` (parâmetros, controlador, `meta` do braço B, trilha do AC-5),
+`scripts/campanha_s3_h4.py` (h4 sobre `analysis/h4.py`, sem editá-lo), `cluster/infinispan-sem-caches.xml`,
+`cluster/podman-compose-sem-caches.yml`, `cluster/caches/{sessions,counters,sessions-async,counters-async}.json`;
+no programa de carga, `session/Religamento.java`, a opção `--rejoin-timeout-sec`, a linha `Fim da carga:` e
+`ExecutorDeAcoes.alvoDoAc5Aplicado()`; `scripts/inject-crash.sh --marker` (B-25.1).
+
+```mermaid
+%%{init: {'theme':'base','themeVariables':{'background':'#ffffff','primaryColor':'#ffffff','primaryTextColor':'#000000','primaryBorderColor':'#000000','lineColor':'#000000','secondaryColor':'#ffffff','tertiaryColor':'#ffffff','clusterBkg':'#ffffff','clusterBorder':'#000000','edgeLabelBackground':'#ffffff','fontFamily':'Arial'}}}%%
+flowchart TD
+    PV["pre-voo: flock, SHA-256 (matriz, parametros, controlador, referencia, jar),<br/>boot_id, parametros com origem, bloco politica (braco B), unit do amostrador h4,<br/>bundle x progresso.json, --dry-run do programa nos dois modos"] --> GO["GO por tty: go &lt;fase&gt; &lt;data&gt;"]
+    GO --> LAC{"para cada execucao da fase"}
+    LAC --> CHK["PARAR? boot_id? unit h4 ativa? disco &gt;= 1,5 x volume?"]
+    CHK --> DT["DT-014: ja checada, abortada ou interrompida;<br/>bloco ja perdido: PULADA"]
+    DT --> GR["primeira F2/F4: go rede &lt;i&gt;"]
+    GR --> REC["podman-compose down/up (XML sem caches);<br/>3 HEALTHY; StartedAt &gt;= recriacao; cria-caches.sh (6 caches,<br/>leitura de volta nos 3 nos)"]
+    REC --> C3A["camada 3 antes: rebalancing_enabled, AVAILABLE e config = JSON nos 3 nos"]
+    C3A --> K1["portao K1: 60 s de 3 HEALTHY sem tc/iptables residual"]
+    K1 --> CAR["timeout -k (9 s + folga) teto java ... --controller shadow|active<br/>stdout por FIFO: leitor em memoria, log por outro processo"]
+    CAR -- "Warm-up ate +" --> META["janela h4 da linha; meta da trilha (braco certo; B atua)"]
+    META --> INJ["+inj_offset: F1 inject-crash --marker | F2 dead-man + inject-partition | F4 dead-man + inject-netdegrade"]
+    INJ --> VOL["F1: volta pela REST (P-35); F2/F4: resto de rede, --heal, desarme"]
+    CAR -- "Fim da carga: ac5_alvo=X" --> REL["podman start X (no parado pelo AC-5);<br/>o programa espera a topologia e grava t_religamento_ns"]
+    REL --> POS["pos: StartedAt explicado, 3 HEALTHY, sem resto, camada 3 depois,<br/>trilha x linha de fim (AC-5), h4 (campanha_s3_h4.py)"]
+    VOL --> POS
+    POS --> CHG["execucao.json, checagem.json (ACEITA, RECUSADA, DESCARTADA-INFRA, PULADA), MANIFEST"]
+    CHG --> LAC
+```
+
+**Escolhas, com o porquê.**
+
+1. **Cluster recriado antes de toda execução** (`down`/`up` com o XML sem *caches* e os seis criados pela REST), não
+   só depois de execução com AC-5 (seção 6, item 5 do documento de ações). Motivos: os dois braços de um bloco partem
+   do mesmo estado; resto de AC-2, de AC-5 ou de atributo mudado não passa de uma execução para a outra; o P-30 e o
+   N-9 não se aplicam a *cache* criado pela REST num *cluster* novo; e a pré-checagem (a) vira o portão de uma
+   recriação conhecida. Custo: a recriação (até 180 s, `recriar.sh`) mais o K1 (60 s) por execução, a medir na
+   validação X-17.
+2. **Sinal de fim da carga sem disco no caminho.** O stdout do programa vai a um FIFO; um leitor em segundo plano
+   procura a âncora e a linha `Fim da carga:` e as passa por outro FIFO, aberto em leitura e escrita pelo laço
+   principal (`read -t 0,2`), enquanto um `cat` separado grava o `stdout.log`. Um disco travado só atrasa o `cat`. O
+   alvo do AC-5 vem na própria linha, lido pelo programa do executor em memória (`alvoDoAc5Aplicado`, mesma regra
+   de `ac5_aplicada` do `comparar_bracos.py`); a trilha no disco só é conferida depois (`campanha_s3_conferir.py
+   trilha`).
+3. **Religamento.** Ao ler a linha com alvo, o laço faz `podman start` do nó (rótulo `host:porta` ↦ `isn1..3` pela
+   posição em `--admin`). Um nó parado **sem** AC-5 APLICADA (por exemplo, AC-5 FALHOU que parou o nó, O8 da V-W2a) é
+   religado também, para o laço de convergência não ir aos 600 s, e a execução vira `DESCARTADA-INFRA`. O programa,
+   com AC-5 aplicado, lê a mesma sonda do laço de convergência a cada `P_sonda` (2 s, B-26.2) até ver os servidores
+   esperados ou até `--rejoin-timeout-sec`, e grava `t_religamento_ns` (fim da leitura que viu; sempre antes da
+   primeira rodada do laço). Sem o campo, a execução fica ACEITA com aviso: o Δ_conv sai não avaliável na análise,
+   e o desfecho V não é afetado.
+4. **Encerramento** por `timeout -k K teto java …`, com `K = 9 s (T_enc no pior caso, contrato v1.2) + encerramento_folga_s`
+   e o teto `exec_teto_s` do arquivo de parâmetros. Uma interrupção do orquestrador manda SIGTERM ao `timeout`, que o
+   repassa à JVM e arma o SIGKILL K s depois; o orquestrador espera K + 2 s antes de um SIGKILL próprio.
+5. **Braço B que não atua** (atuador `nulo`, política `nenhuma`, `parametros_politica` nulo, modo errado ou
+   `param_sha256` diferente do SHA-256 do `--controller-config`) é recusado assim que a âncora aparece (a `meta` já
+   está escrita), antes da falha: a carga é parada e a fase sai com 6, porque o erro é de configuração e se repetiria.
+   No pré-voo, o bloco `politica` é exigido no arquivo quando a fase tem braço B. O mesmo arquivo serve aos dois
+   braços, então o `param_sha256` igual em A e B decorre de conferir os dois contra o arquivo.
+6. **Volta do nó depois do F1 pela REST** (P-35): três `health` HEALTHY com 3 nós em até 180 s (PR §6 (e)); o exit do
+   `inject-crash.sh` só decide recusa (1, 4) × infraestrutura (2, 3, 5), como no rebaseline.
+7. **h4.** `analysis/h4.py`, `amostrador-infra.sh` e `vigia-h4.sh` não mudam (lista `e9c44819…` da DT-018). O
+   orquestrador exige `--h4-id`, confere a unit antes da fase e de cada execução (C3 §4.3, regra 3) e, depois de cada
+   execução, chama `campanha_s3_h4.py fase`, que reusa `h4.avaliar_execucao` e `h4.avaliar_parada` trocando só a janela
+   (lida da linha `Warm-up ate +Xs; medicao a partir de +Ys; total Zs`) e o reinício padrão do F1 (`inj_offset + f1_dur`).
+   A execução h4 vira `DESCARTADA-INFRA`; a parada do C3 §4.3 sai com 10. O vigia do rebaseline não é usado no S3.
+8. **GO**: `go <fase> <AAAA-MM-DD>` no início e `go rede <i>` antes da primeira F2/F4 da invocação, antes do diretório
+   e do K1 (C2 do runner). O segundo é o análogo do `go f3` do rebaseline (primeiro `tc` num nó); pode ser retirado se o
+   Gestor achar que o primeiro basta.
+9. **Bloco perdido.** Se um braço de um bloco não ficou ACEITA, o outro não roda (`PULADA`): o bloco é refeito inteiro
+   pelo `campanha_s3_matriz.py repor` (plano 5.2), e rodar o outro braço só gastaria VM.
+10. **Camada 3.** Antes da carga, qualquer divergência sai com 6 (o *cluster* acabou de ser recriado). Depois: atributo de
+    *cache* diferente do JSON torna a execução `DESCARTADA-INFRA` (o braço B não muda atributo, R-ARQ-3);
+    `rebalancing_enabled` falso ou disponibilidade diferente de `AVAILABLE` viram aviso, porque a próxima execução
+    recria o *cluster*.
+11. **Números da campanha** só pelo arquivo `campanha-s3/1` (`campanha_s3_conferir.py parametros`): 19 parâmetros,
+    todos obrigatórios, cada um com `origem` não vazia, nenhum padrão, com duas coerências (a falha acaba antes do fim
+    da carga; o teto cobre carga + religamento + convergência). As constantes do orquestrador têm a origem ao lado
+    (K1, volta, recriação, âncora, prazo REST, margem e precisão do dead-man, `T_enc`, aviso de 8 s, fator 1,5).
+
 ### TD-013 — Correções do W-2a depois da integração: P-41, P-42 e D-B (2026-11-05)
 
 Branch `fix/w2a-p41-p42` sobre a ponta integrada (`9b32695`, tag `int/2026-11-05-w5`: W-2a + W-4 + W-5), decisões do

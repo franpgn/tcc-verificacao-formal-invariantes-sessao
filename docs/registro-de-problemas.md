@@ -1049,6 +1049,61 @@ correspondente adicionado em `Mesclar` (`spec/SessionStore.tla`, commit `b7d8e0a
   `isn1`↔`isn2` vistos e `no_suspeito = isn3` em todas as rodadas antes da mudança de vista; e o dono primário de cada
   chave por `GET /rest/v2/caches/{cache}/{chave}?action=distribution`, como prova independente.
 
+## 2026-11-05 — W-6 (B-46), orquestrador das campanhas S3
+
+### P-41 (W-6; número a conferir na integração) — o amostrador h4 só aceita identificadores do *rebaseline*
+
+- **Sintoma:** `scripts/amostrador-infra.sh` recusa (exit 2) qualquer `--id` fora de
+  `^(piloto|noite1|noite2|reposicoes|ensaio|diag)-<UTC>$`; `vigia-h4.sh` e `analysis/h4.py fase` só aceitam as fases do
+  *rebaseline*, e o `h4.py` usa a janela fixa de +44 a +300 s da âncora. Os critérios h4 do C3 e da DT-019 valem para
+  as campanhas S3 (requisito 6 do W-6), mas os três arquivos estão na lista `e9c44819…` da adenda da DT-018.
+- **Contorno no W-6 (nada dos três foi editado):** `scripts/campanha_s3_h4.py` importa o `h4.py` e troca só a janela
+  (lida da linha do programa) e o reinício padrão do F1; o orquestrador faz o papel do vigia (avalia depois de cada
+  execução e para pela regra do C3 §4.3) e exige `--h4-id`, aceitando qualquer `<prefixo>-<UTC>`.
+- **Pendente (decisão do Senior/Gestor):** com o `amostrador-infra.sh` como está, a coleta do S3 só pode ser iniciada
+  com `--id diag-<UTC>`. Alternativa: uma linha a mais no `ID_RE` (`|calibracao|nucleo|extra|reposicoes-s3|validacao`),
+  compatível com os testes atuais (o A7 só recusa IDs que continuariam recusados), num commit próprio e validado.
+- **Status:** `ABERTO`.
+
+### P-42 (W-6; número a conferir na integração) — risco: a sonda do laço de convergência lê a topologia de um cliente que não opera no S3
+
+- **Observação (código, não medida):** `WorkloadMain.executarConvergencia` usa
+  `min(number_of_nodes da REST, servidores na topologia do rcm principal)`. No S3 a carga roda pelos clientes fixados a
+  nós (`S3Clientes`); o `rcm` principal só faz o *reset* e a carga inicial, então a topologia dele fica a da abertura
+  (três servidores) até alguma operação. Para o religamento (W-6) isso não atrapalha: o número vem da REST. Mas a
+  leitura por segmento dos leitores multi-réplica (`segmentosDoServidor`) também usa essa topologia velha, inclusive
+  depois de um F1.
+- **Conferir no *smoke* local do controlador:** `getCacheTopologyInfo()` do `rcm` antes e depois de um F1 em S3.
+- **Status:** `ABERTO` (só registro; nenhuma mudança no laço de convergência neste item).
+
+### P-43 (W-6) — o `python3` do Windows escreve CRLF e o `\r` entrava nos parâmetros lidos pelo orquestrador
+
+- **Sintoma (suíte do orquestrador no host):** `run-campanha-s3.sh: line 265: 200: arithmetic syntax error`, porque o
+  `campanha_s3_conferir.py parametros` lido pelo *bash* do Git devolvia `200\r`.
+- **Correção:** toda saída Python que o orquestrador interpreta passa pela função `py`, que tira o `\r` e mantém o exit.
+  Na VM (Linux) não há `\r`; a correção só deixa o orquestrador indiferente ao sistema.
+- **Status:** `RESOLVIDO` (05/11, branch `feature/w6-orquestrador-s3`).
+
+### P-44 (W-6, só nos testes) — `grep -q` com `pipefail` dá falso negativo em texto grande
+
+- **Sintoma:** `contem` da suíte nova (`printf … | grep -qF …`) falhou com a linha presente: o `grep -q` sai no
+  primeiro acerto, o `printf` de um log grande morre de SIGPIPE e, com `pipefail`, o *pipeline* falha.
+- **Correção:** `grep -F … > /dev/null` (lê tudo). O `run-rebaseline.test.sh` tem o mesmo padrão com textos pequenos e
+  não foi tocado.
+- **Status:** `RESOLVIDO`.
+
+### P-45 (W-6) — evento do stdout perdido quando o `read -t` vence no meio da linha; carga sem âncora saía ACEITA
+
+- **Sintoma (suíte do orquestrador no host, S4):** a execução F1 não viu a âncora (a linha estava no `stdout.log`),
+  não injetou a falha e saiu ACEITA. Duas causas: (1) o laço de eventos lê o FIFO com `read -t 0,2`; quando o prazo
+  vence no meio de uma linha, o bash deixa a parte lida na variável, e o laço a descartava; (2) a recusa "sem âncora"
+  só existia para o prazo de 120 s, e uma carga que termina antes dele sem âncora passava.
+- **Correção:** a parte lida no `read -t` que vence fica num *buffer* e é juntada à leitura seguinte; depois do laço,
+  carga sem âncora é RECUSADA ("sem ancora (a carga terminou antes)"). Caso S17 da suíte.
+- **Alcance:** no Linux da VM, o leitor escreve cada evento numa única escrita menor que `PIPE_BUF`, então a perda
+  seria rara; no Git Bash (emulação de pipe do MSYS) apareceu. A correção vale nos dois.
+- **Status:** `RESOLVIDO` (05/11).
+
 ## Observação de modelagem (não é defeito)
 
 Com 8 *threads* = 8 identidades fixas (`user-<tid>`), `incrementFailure`

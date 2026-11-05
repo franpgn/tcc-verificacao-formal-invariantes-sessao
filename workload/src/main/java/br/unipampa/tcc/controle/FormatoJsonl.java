@@ -13,8 +13,11 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
  */
 public final class FormatoJsonl {
 
-    /** v1.1 (V-W3): {@code linhas_perdidas} na linha {@code fim}. */
-    public static final String ESQUEMA_OBSERVAVEIS = "observaveis-controlador/1.1";
+    /**
+     * v1.1 (V-W3): {@code linhas_perdidas} na linha {@code fim}. v1.2 (W-4): {@code parametros_defasagem} na
+     * {@code meta}, linha {@code defasagem} por rodada do S_lag e contadores {@code defasagem_*} no {@code fim}.
+     */
+    public static final String ESQUEMA_OBSERVAVEIS = "observaveis-controlador/1.2";
     /**
      * v1.1 (V-W3): {@code t_decisao_ns} na linha {@code decisao}; linha {@code fim} com prazos e perdas. v1.2 (W-2a):
      * {@code reversao} em toda linha {@code acao}, linha {@code politica}, tipos AC-2 e AC-5.
@@ -82,6 +85,63 @@ public final class FormatoJsonl {
                 pp.origem().forEach(org::put);
             }
         }
+        if (ESQUEMA_OBSERVAVEIS.equals(esquema)) {
+            // observaveis 1.2 (W-4): parametros do S_lag, null sem o bloco "defasagem". O prazo de leitura (o "nao
+            // viu") e o --hotrod-timeout-ms e vai em teto_ms de cada linha defasagem
+            ParametrosDefasagem pd = p.defasagem();
+            if (pd == null) {
+                o.putNull("parametros_defasagem");
+            } else {
+                ObjectNode q = o.putObject("parametros_defasagem");
+                q.put("lag_in_ms", pd.lagInMs());
+                q.put("lag_out_ms", pd.lagOutMs());
+                q.put("passo_leitura_ms", pd.passoLeituraMs());
+                q.put("periodo_ns", p.wNs());
+                ObjectNode org = q.putObject("origem");
+                pd.origem().forEach(org::put);
+            }
+        }
+        return o;
+    }
+
+    /**
+     * W-4 (B-26.3): uma rodada da sonda de defasagem (observaveis 1.2), com os pares, as escritas e o custo.
+     * {@code lag_por_no} e o menor lag dos pares de cada no; {@code lag_max_ms} e {@code no_suspeito} saem dele.
+     */
+    public static ObjectNode defasagem(RodadaDefasagem r) {
+        ObjectNode o = linha("defasagem");
+        o.put("rodada", r.rodada());
+        o.put("t_inicio_ns", r.tInicioNs());
+        o.put("t_ns", r.tNs());
+        o.put("teto_ms", r.tetoMs());
+        o.put("lag_max_ms", r.lagMaxMs());
+        o.put("no_suspeito", r.noSuspeito());
+        o.put("lag_max_par_ms", r.lagMaxParMs());
+        ArrayNode porNo = o.putArray("lag_por_no");
+        r.lagPorNo().forEach((no, lag) -> porNo.addObject().put("no", no).put("lag_ms", lag));
+        ArrayNode pares = o.putArray("pares");
+        for (RodadaDefasagem.Par p : r.pares()) {
+            pares.addObject()
+                    .put("escritor", p.escritor())
+                    .put("leitor", p.leitor())
+                    .put("visto", p.visto())
+                    .put("lag_ms", p.lagMs())
+                    .put("leituras", p.leituras())
+                    .put("erros_leitura", p.errosLeitura());
+        }
+        ArrayNode es = o.putArray("escritas");
+        for (RodadaDefasagem.Escrita e : r.escritas()) {
+            es.addObject()
+                    .put("no", e.no())
+                    .put("ok", e.ok())
+                    .put("duracao_ms", e.duracaoMs())
+                    .put("erro", e.erro());
+        }
+        ObjectNode c = o.putObject("custo");
+        c.put("escritas", r.escritas().size());
+        c.put("leituras", r.leituras());
+        c.put("erros_escrita", r.errosEscrita());
+        c.put("erros_leitura", r.errosLeitura());
         return o;
     }
 

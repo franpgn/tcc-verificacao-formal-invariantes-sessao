@@ -27,6 +27,8 @@ public enum PerfilReplicacao {
 
     static final String BASE_SESSOES = "sessions";
     static final String BASE_CONTADORES = "counters";
+    /** W-4 (B-26.3): base do <i>cache</i> da sonda de defasagem ({@code canario}, {@code canario-async}). */
+    static final String BASE_CANARIO = "canario";
 
     private final String sufixo;
 
@@ -42,6 +44,17 @@ public enum PerfilReplicacao {
     /** Nome do <i>cache</i> de identidades/contadores (I4, I6) neste perfil. */
     public String cacheContadores() {
         return BASE_CONTADORES + sufixo;
+    }
+
+    /**
+     * W-4 (B-26.3): <i>cache</i> da sonda de defasagem (S_lag) neste perfil, com o mesmo modo dos <i>caches</i>
+     * da carga ({@code canario} SYNC, {@code canario-async} ASYNC). Criado pela REST a partir de
+     * {@code cluster/caches/<nome>.json} ({@code scripts/cria-caches.sh}), nao pelo XML. Nao entra em
+     * {@link #caches()}: nenhum invariante, auditor, varredura, reset ou sonda de saude o usa; so o adaptador
+     * {@code CanalCanarioHotRod} ({@code CanarioArquiteturaTest}).
+     */
+    public String cacheCanario() {
+        return BASE_CANARIO + sufixo;
     }
 
     /** Os dois nomes deste perfil, sessoes primeiro. */

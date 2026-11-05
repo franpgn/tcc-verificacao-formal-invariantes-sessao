@@ -2,7 +2,7 @@
 dd79343070cf9107571de238851d1117255ebdb1c7887075e23d76638d7bcf14 *./cluster/jgroups-tcp.xml
 4a5c7e355a0240c248b7382efd2dfcb7500e50ff9ec26795bff84bc4b27f710c *./cluster/podman-compose.w2a.yml
 b7e9823f298718f81d6160276f50f3ba125c6dbcce4d2c3b584e76ad2c6a2db2 *./mutantes.txt
-874ebe66948e4d35675eafea44c43b33cc0bc653654935b31ed62a1f5fb8ebe7 *./scripts/SmokeAtuador.java
+0bec387fcbda625d4c9aec013e0c969e1d00158131649fa1a2d61095c7834fe2 *./scripts/SmokeAtuador.java
 ee26673e516d3886035596ce4ce15a49b6c0f8295d770923a96480a238177331 *./scripts/cria-caches.sh
 91383d73b459abb781571fb25ac92fb786940fb5710734bbcbce768461d65f2f *./scripts/parada.py
 c4f71cf61fa08dfffe370e5061d0df14f44aae0464e555891b456063fb7038d0 *./verificacao/a-autenticacao.txt

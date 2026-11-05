@@ -1,0 +1,3 @@
+{"versao":"integracao-w2a-2026-11-05","wNs":5000000000,"nLat":100,"nErr":50,"thetaLatIn":0.05,"thetaLatOut":0.02,"thetaErrIn":0.02,"thetaErrOut":0.005,"k":2,"m":6,"cooldownNs":30000000000,"estavelNs":30000000000,"holdViolNs":120000000000,
+ "politica":{"kLag":2,"tetoLagMs":2000,"tRebNs":60000000000,"cotaAc5":1,
+  "origem":{"kLag":"integracao (P1 nao dispara sem W-4)","tetoLagMs":"integracao: igual a --hotrod-timeout-ms (2000, R7)","tRebNs":"state-transfer.timeout do XML (60000 ms), acima da deteccao medida de 46,8 s","cotaAc5":"desenho: uma vez por execucao"}}}

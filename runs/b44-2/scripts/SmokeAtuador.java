@@ -18,7 +18,8 @@ import java.util.Set;
  * {@code [t_pedido, t_pedido + prazo do tipo]}.</p>
  *
  * <p>Uso: {@code ac2 <cache1> <cache2>} (aplicar, reaplicar, reverter, reverter), {@code ac2-aplicar|ac2-reverter
- * <cache1> <cache2>} ou {@code ac5 <cache1> <cache2> <alvo host:porta>}. Propriedades opcionais:
+ * <cache1> <cache2>}, {@code ac5 <cache1> <cache2> <alvo host:porta>} ou {@code ac5-aquecido <cache1> <cache2> <alvo>
+ * <espera_s>} (I-5: guarda o desafio Digest com um GET ao alvo, espera e manda o AC-5). Propriedades opcionais:
  * {@code -Durls=http://127.0.0.1:12501,...} (padrao: portas 12501-12503), {@code -Dsenha=} (padrao
  * {@code infinispan}), {@code -Dprazo.ms=} (padrao: o do tipo, {@code AcaoCluster.Tipo.prazoNs(2 s)}: 2 s no AC-2 e
  * 5 s no AC-5).</p>
@@ -39,8 +40,8 @@ public class SmokeAtuador {
         for (String u : urls) {
             todos.add(u.replaceFirst("^https?://", "").replaceAll("/$", ""));
         }
-        AtuadorRestInfinispan at = new AtuadorRestInfinispan(urls,
-                new ClienteAdminRest("admin", System.getProperty("senha", "infinispan")), () -> todos, 50_000_000L);
+        ClienteAdminRest cliente = new ClienteAdminRest("admin", System.getProperty("senha", "infinispan"));
+        AtuadorRestInfinispan at = new AtuadorRestInfinispan(urls, cliente, () -> todos, 50_000_000L);
         List<String> caches = List.of(a[1], a[2]);
         System.out.println("relogio=EpochClock agora_epoch_ns=" + agora() + " urls=" + urls
                 + " responderam=" + todos + " (guarda da ultima amostra pulada de proposito)");
@@ -64,6 +65,19 @@ public class SmokeAtuador {
                 AcaoCluster ac5 = new AcaoCluster(AcaoCluster.Tipo.AC_5, caches, a[3], null);
                 long p = prazo(AcaoCluster.Tipo.AC_5);
                 mostrar("AC-5 aplicar em " + a[3], p, () -> at.aplicar(ac5, p));
+            }
+            case "ac5-aquecido" -> {
+                // I-5: um GET autenticado ao alvo guarda o desafio Digest (como faria uma leitura de volta anterior);
+                // depois espera a[4] segundos (o harness pausa o no) e manda o AC-5 com o nonce guardado
+                String base = urls.get(new ArrayList<>(todos).indexOf(a[3]));
+                long tg = agora();
+                ClienteAdminRest.Resposta g = cliente.pedir("GET", java.net.URI.create(base + "/rest/v2/container"),
+                        T_CHAM_NS);
+                System.out.println("aquecimento GET /rest/v2/container http=" + g.codigo() + " t_epoch_ns=" + tg);
+                Thread.sleep(Long.parseLong(a[4]) * 1000L);
+                AcaoCluster ac5 = new AcaoCluster(AcaoCluster.Tipo.AC_5, caches, a[3], null);
+                long p = prazo(AcaoCluster.Tipo.AC_5);
+                mostrar("AC-5 aplicar (aquecido) em " + a[3], p, () -> at.aplicar(ac5, p));
             }
             default -> throw new IllegalArgumentException("modo desconhecido: " + a[0]);
         }

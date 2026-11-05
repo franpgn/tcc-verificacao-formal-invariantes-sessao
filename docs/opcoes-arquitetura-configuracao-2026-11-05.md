@@ -9,6 +9,12 @@ JGroups 5.3.16.Final, a versão que essa *tag* declara (`build/configuration/pom
 manual do JGroups no próprio repositório (`doc/manual/`). Os caminhos do Infinispan são relativos à raiz do repositório dele.
 Os do JGroups são relativos a `src/org/jgroups/`. **Tudo depende da validação do Gestor (seção 7).**
 
+> **Atualização de 05/11, depois do B-44.3** (`wt-b44-3`, `d73b01d`, brutos em `runs/b44-3/`). A AC-6 foi
+> verificada no *cluster* local e passou nos critérios de entrada, mas **não entra no braço B. P1 continua com o
+> AC-5.** O motivo principal é que o falso positivo em ASYNC criou violação na fusão. A decisão, a comparação, a
+> guarda que a AC-6 exigiria, o que vai para o texto e a porta de diagnóstico estão na **seção 9**. As seções
+> 0 a 8 ficam como foram escritas antes da verificação, com notas onde o B-44.3 as corrigiu.
+
 | Termo | Significado |
 |---|---|
 | REST | API HTTP de administração do Infinispan (`/rest/v2/...`) |
@@ -41,7 +47,9 @@ Os do JGroups são relativos a `src/org/jgroups/`. **Tudo depende da validação
    automática em 10 a 30 s, não um nó morto até o fim da execução. **Custo:** é preciso ligar o
    `diag.enabled` (configuração estática, antes da calibração) e publicar a porta de diagnóstico. **Proposta:**
    a AC-6 entra no lugar do AC-5 como ação de P1 se passar na verificação empírica (seção 8). O AC-5 fica
-   de reserva.
+   de reserva. **Revisto em 05/11 (seção 9):** a AC-6 passou na verificação, mas não substitui o AC-5. O falso
+   positivo em ASYNC reverteu um `Logout` confirmado na fusão, a fusão leva de 0 a ~96 s depois da cura (não 10
+   a 30 s), e a ação não está implementada a dois dias da calibração.
 2. **Mudar o detector de falhas em execução não funciona.** Os atributos do FD_ALL3 são graváveis pelo
    JMX e pelo *probe*, mas a mudança não vale para os membros que já existem. O mapa de batimentos de cada
    membro tem o tamanho fixado na criação, e a tarefa de verificação mantém o intervalo com que foi agendada
@@ -142,7 +150,7 @@ de sensibilidade em trabalho futuro.
 O nome lógico de cada nó é `<hostname>-<número>` (por exemplo, `isn3-6672`), lido de `cluster_members` em
 `GET /rest/v2/container` (`wt-b44-1/runs/b44-1/corpos/cm-isn1.txt`). O controlador já lê essa rota.
 
-### 2.4 AC-6: exclusão forçada do nó suspeito pelos dois lados (nova, **entra condicionada**)
+### 2.4 AC-6: exclusão forçada do nó suspeito pelos dois lados (nova; **verificada no B-44.3 e fora do braço B**, seção 9)
 
 ```mermaid
 %%{init: {'theme':'base','themeVariables':{'background':'#ffffff','primaryColor':'#ffffff','primaryTextColor':'#000000','primaryBorderColor':'#000000','lineColor':'#000000','secondaryColor':'#ffffff','tertiaryColor':'#ffffff','fontFamily':'Arial'}}}%%
@@ -193,6 +201,13 @@ sequenceDiagram
   que deixa o nó morto até o fim da execução. Literatura: suspeitar com sinal mais lento e mais exigente (S_lag
   no teto em k janelas) é o degrau alto da escala de `hayashibara_phi_accrual_2004`. O preço de suspeitar cedo
   é a acurácia (`chandra_toueg_failure_detectors_1996`): cada suspeita falsa vira uma divisão.
+  **Medido no B-44.3 (V-5) e corrigido aqui.** A fusão veio em 50,0 s depois do envio, não em 10 a 30 s (o
+  verificador do MERGE3 roda a cada 48 s e recomeça a cada troca de vista; seção 9.5). Em ASYNC, a fusão reverteu
+  um `Logout` confirmado (4 × I1) e deixou réplicas divergentes até o fim (1 × I5); em SYNC, 0; controles, 0; n = 1
+  por modo. A frase "os conflitos possíveis são os de antes dela" estava incompleta. Toda chave escrita na maioria
+  **durante** a divisão tem no nó sozinho uma cópia anterior, e a fusão precisa escolher a da maioria. No V-5
+  ASYNC, a chave `d022af32-...` recebeu o `Logout` no `isn1` 1,6 s antes da fusão e voltou a `VALID` depois dela.
+  A causa exata não foi isolada (n = 1). O líder da fusão foi o próprio `isn3` (`runs/b44-3/analise/fusao.tsv`).
 - **Risco específico.** (1) Ação de um lado só. Se o pedido chegar à maioria e não ao isolado, o nó isolado
   continua aceitando até o próprio FD_ALL3, sem ninguém para replicar. É o M1 de antes, sem piora. Se chegar
   ao isolado e não à maioria, ele recusa e a maioria espera o FD_ALL3. Também sem piora em relação a nada
@@ -218,15 +233,18 @@ sequenceDiagram
 - **Configuração necessária (estática, pré-registrar).** `diag.enabled=true`, `diag.enable_tcp=true`,
   `diag.enable_udp=false`, `diag.port` fixo e `diag.port_range=0` na camada TCP de `cluster/jgroups-tcp.xml`.
   A porta é publicada por nó no `podman-compose.yml` (por exemplo 7500, 7501 e 7502 no host), com `diag.passcode`
-  opcional. O comportamento do *cluster* sem ação não deve mudar, e o V-1 confere isso.
+  opcional. O comportamento do *cluster* sem ação não deve mudar, e o V-1 confere isso. No B-44.3 as portas foram
+  12447..12449 no *host*, para não colidir com outro Worker. Na VM nada muda, porque a AC-6 não entra (seção 9.6).
 - **Viabilidade numérica.** `k·W + t_probe + t_vista < 39,8 s` (menor T_det da VM). Medir `t_probe` e `t_vista` no V-3.
+  **Medido (B-44.3 §1):** `k·W < 39,16 s` com o suspeito fora da coordenação e `k·W < 35,3 s` com o suspeito
+  coordenador (o lado isolado espera `view_ack_collection_timeout` = 2 s e leva 2,25 s).
 - **Medir.** Seção 8, V-1 a V-6.
 
 ### 2.5 Tabela do item 1
 
 | Opção | Viável no servidor sem cliente? | Mecanismo | Custo | Reversão | Medir | Classe |
 |---|---|---|---|---|---|---|
-| AC-6 `GMS.suspect` pelos dois lados, via *probe* | sim, com `diag` ligado na configuração | M1 (as duas metades) | `diag` estático + porta; fusão na cura; vazão no nó excluído | automática pela fusão | V-1..V-6 | **entra, condicionada** |
+| AC-6 `GMS.suspect` pelos dois lados, via *probe* | sim, com `diag` ligado na configuração | M1 (as duas metades) | `diag` estático + porta; fusão na cura; vazão no nó excluído; **falso positivo cria violação em ASYNC (B-44.3)** | automática pela fusão, de 0 a ~96 s depois da cura | V-1..V-6 (feito, `d73b01d`) | **verificada; fora do braço B** (seção 9) |
 | FD_ALL3 `timeout`/`interval` em execução | grava, mas sem efeito nos membros atuais | (M1) | — | — | V-2 (só confirmar o nulo) | **fora** (sem efeito, pelo código) |
 | FD_ALL3 mais curto no XML | configuração, não ação | M1 em todos os braços | muda a linha de base; suspeitas falsas na VM | trocar o XML | — | **fora da campanha** |
 | VERIFY_SUSPECT2 `timeout` | sim | M1, no máximo 1 s | — | regravar | — | **fora** (ganho ≤ 1 s) |
@@ -335,7 +353,8 @@ por operação, o modo do próprio *cache* (3.4).
 
 | Classe | Opções |
 |---|---|
-| **Entra** | AC-5 (já desenhada; passa a reserva se a AC-6 passar); AC-2 global (sem mudança); **AC-6 exclusão forçada pelo JGroups, condicionada a V-1..V-6** |
+| **Entra** | **AC-5 em P1** (confirmado depois do B-44.3, seção 9); AC-2 global (sem mudança) |
+| **Verificada e não adotada** | **AC-6** exclusão forçada pelo JGroups (B-44.3, `d73b01d`): funciona, mas o falso positivo em ASYNC criou violação; entra no texto como resultado (seção 9.5) e só roda como exploratória local se o Gestor escolher D-7 (b) |
 | **Exploratória** | **E-1** extensão com `FORCE_SYNCHRONOUS` (decisão do Gestor); `acquire-timeout` (sem mudança) |
 | **Fora** | FD_ALL3, VERIFY_SUSPECT2, MERGE3 e GMS em execução; FD_ALL3 estático (fora da campanha); `INJECT_VIEW`; JMX remoto; recriação do *cache*; cópia mais restauração; dois *caches* com escolha no servidor; tarefas de servidor e *scripts*; entre *sites*; `when-split` recriado; transação; quórum; gerenciador de conflitos; rebalanceamento por *cache* |
 
@@ -345,7 +364,14 @@ continuam sem ação **a menos que** o Gestor aprove a E-1. A frase de `cc08644`
 selecionável em tempo de execução no Infinispan 15.0.21 sem mudar o cliente", continua verdadeira **para a
 configuração**. Com a E-1, ganha a ressalva "sem implantar código no servidor".
 
+**Depois do B-44.3 (seção 9), a política de reação não muda:** P1 continua com o AC-5, e os mecanismos alcançados
+continuam "M1 do lado isolado". A tabela da seção 5 de `cc08644` vale como está.
+
 ## 6. O que muda em outros documentos, se o Gestor aprovar
+
+> **Depois do B-44.3 (seção 9):** os itens 2, 3 e 4 abaixo **não se aplicam** (P1 fica com o AC-5, o W-2a não
+> ganha `AC_6`, a VM não liga o `diag`). Do item 1 vale só a parte do FD_ALL3; a linha "Nada de diagnóstico do
+> JGroups" de `cc08644` §6 item 10 **continua valendo**. O item 5 fica como está: o AC-5 ganha `parado[r]`.
 
 1. `cc08644` §3.4: a linha "FD_ALL3 adaptativo" passa a dizer "sem efeito em execução (código, seção 2.2 deste
    documento)". A linha "Nada de diagnóstico do JGroups" (§6 item 10) é revogada se a AC-6 entrar.
@@ -362,11 +388,14 @@ configuração**. Com a E-1, ganha a ressalva "sem implantar código no servidor
 
 | # | Pergunta | Recomendação do Senior |
 |---|---|---|
-| D-1 | Aceitar a AC-6 como candidata a ação de P1, condicionada a V-1..V-6, com o AC-5 de reserva | aceitar; cobre as duas metades do M1, desfaz-se sozinha e o falso positivo custa menos |
+| D-1 | Aceitar a AC-6 como candidata a ação de P1, condicionada a V-1..V-6, com o AC-5 de reserva | **respondida pelo B-44.3 (seção 9):** a AC-6 passou nos critérios, mas o falso positivo em ASYNC criou violação; a recomendação passa a ser a D-6 |
 | D-2 | E-1 (extensão `FORCE_SYNCHRONOUS`): (a) só registrar como trabalho futuro; (b) prova de conceito local depois do V-*, sem compromisso de campanha; (c) entrar no braço B | (b) se houver folga de 2 dias de Worker depois da calibração ficar pronta; senão (a). (c) só com linha de base refeita |
-| D-3 | Ligar o `diag` do JGroups na VM (configuração estática nova, porta sem *passcode* ou com *passcode*) | ligar com *passcode*, se o V-6 mostrar que o cliente Java do *probe* com resumo funciona; senão sem, declarado como risco de laboratório |
+| D-3 | Ligar o `diag` do JGroups na VM (configuração estática nova, porta sem *passcode* ou com *passcode*) | **não ligar** (consequência da D-6). O *passcode* não protege contra repetição (B-44.3 V-6); se um dia ligar, só em `127.0.0.1` da VM (seção 9.6) |
 | D-4 | Texto: "a política de replicação não é selecionável em execução pela configuração; só com código implantado no servidor (E-1)" | aceitar; encaminhar ao Escritor pelo coordenador |
 | D-5 | Ordem: V-* antes do W-2a revisado; W-2a não começa a parte de cluster antes do resultado do V-3 | aceitar |
+| D-6 | P1 fica com o AC-5; a AC-6 sai do braço B | **ratificar.** Seção 9.1 a 9.3 |
+| D-7 | AC-6 depois da campanha: (a) só resultado da verificação e trabalho futuro; (b) exploratória no *cluster* local, depois do núcleo da avaliação, com a guarda da seção 9.4 (2 a 3 dias de Worker mais validação); (c) braço B | **(a).** (b) só se a reserva N7/N8 sobrar e o texto estiver adiantado. (c) não: exige VM, pré-registro novo e um orçamento de falso positivo que a calibração não consegue certificar (seção 9.4) |
+| D-8 | Os achados do B-44.3 da seção 9.5 vão para o Cap. 4 como resultado de verificação, com o n declarado | aceitar; encaminhar ao Escritor pelo coordenador |
 
 ## 8. Prompt do Worker: B-44.3, verificação empírica das opções que passaram pela leitura
 
@@ -430,3 +459,204 @@ configuração**. Com a E-1, ganha a ressalva "sem implantar código no servidor
 > **W-E1 (só se o Gestor escolher D-2 (b); prompt separado depois do B-44.3).** Prova de conceito da extensão
 > `FORCE_SYNCHRONOUS` da seção 3.4: módulo Maven isolado, JAR montado em `server/lib`, chave de controle em
 > *cache* local, verificação de equivalência com a chave desligada e de comportamento SYNC com a chave ligada.
+
+## 9. Decisão do P1 depois do B-44.3 (05/11)
+
+Fontes: `wt-b44-3/docs/b44-3-ac6-jgroups.md` (`d73b01d`) e as tabelas de `wt-b44-3/runs/b44-3/analise/`; o W-2a em
+`wt-w2a` (`e983906`: tarefa zero em `runs/b44-2/verificacao/`, no tar `brutos-tarefa-zero-2026-11-05.tar`; `docs/implementacao.md` TD-011, `docs/testes.md`,
+`docs/validacao-w2a-2026-11-05.md`); o W-4 em `wt-w4` (`dafd9cd`); o código do JGroups 5.3.16.Final (`d87c9cf`). O
+lote de integração I-1..I-5 do W-2a está rodando nesta janela H2 e **não tem commit**. Quando citado, vai marcado
+como preliminar e não sustenta a decisão sozinho.
+
+### 9.1 Decisão
+
+**P1 fica com o AC-5. A AC-6 não entra no braço B.** Ela vai para o texto como resultado de verificação (9.5) e,
+no máximo, roda como exploratória no *cluster* local depois do núcleo da avaliação, se o Gestor escolher D-7 (b).
+
+O critério que decide é **o que a ação faz quando erra**. No acerto, a AC-6 é melhor: isola o nó em ~25 ms em vez
+de ~3 s e livra a maioria de esperar por ele, a metade do M1 que o AC-5 não alcança. No erro, as duas trocam de
+lugar. O falso positivo do AC-5 é uma saída graciosa sem fusão e custa vazão. O da AC-6 é uma divisão seguida de
+fusão e, em ASYNC, criou violação (4 × I1 e 1 × I5, n = 1, controle 0). Um controlador que se propõe a reduzir
+violações não pode usar uma ação cujo erro produz violação justamente no modo (ASYNC) em que está o efeito que ele
+procura. Pesam no mesmo sentido a maturidade (AC-5 pronto e testado, AC-6 sem código), a infraestrutura (AC-6 exige
+ligar o `diag` na VM depois do *rebaseline*), o argumento formal (9.2, linha do modelo) e o prazo (calibração em N3).
+
+### 9.2 Comparação AC-5 × AC-6
+
+| Critério | AC-5, parar o nó pela REST (`server?action=stop`) | AC-6, `GMS.suspect` pelo *probe* nos dois lados | Favorece |
+|---|---|---|---|
+| M1 no acerto, lado isolado | recusa a partir de +3,06 s do pedido (tarefa zero do W-2a: 204 em 37 ms, primeira recusa da saúde em +3059 ms, `verificacao/b-parada-sem-barra.txt`; atuador real `APLICADA` em 3188,6 ms, `d-atuador-ac5.txt`) | `DEGRADED` nos dois *caches* em 25 ms (mediana; máx. 80 ms) e 1ª recusa Hot Rod em 27 ms (máx. 90 ms), 7 de 7; com o suspeito coordenador, 2,25 s, e 3 escritas aceitas nesse intervalo (n = 1) | AC-6 |
+| M1 no acerto, maioria | nada muda até T_det (39,8 a 46,4 s na VM) | vista de 2 em 24 ms (mediana; máx. 321 ms); 0 `ERROR_TRANSPORT` na maioria entre a ação e a cura, contra 4 a 40 nos controles (7 de 7, descontado o travamento do *host*, B-44.3 §4.2) | AC-6 |
+| Violações medidas no acerto | sem número ainda (I-3 do W-2a em curso) | 0 a 2, como nos controles, nesta carga curta; a vantagem apareceu nos erros, não nas violações | nenhuma demonstrada |
+| Depois da cura, no acerto | não há fusão: o nó continua parado até o fim da execução, então a cura não expõe ao M5 | a fusão de sempre, 40,4 a 43,8 s depois da cura (faixa possível de 0 a ~96 s, 9.5), resolução de conflitos em < 300 ms, sem violação a mais no V-3 | AC-5 |
+| Erro (falso positivo), segurança | saída graciosa: a maioria instala vista de 2 e segue `HEALTHY`; sem fusão dentro da execução (9.3). Resíduo: replicação ASYNC em voo na saída (risco 1 de `cc08644` §3.1), medido pelo I-4, em curso | divisão e fusão 50,0 s depois; ASYNC: 4 × I1 + 1 × I5 em 1 execução de 1 (controle 0); SYNC: 0 em 1 de 1 | **AC-5 (decisivo)** |
+| Erro, vazão | o servidor de aplicação fixado no nó erra até o fim da execução. Se a carga se divide igualmente entre os três, é ~1/3 da vazão útil pelo resto dela (≈ 17 % da execução inteira, se o erro cair na metade), acima do δ = 10 % | 48 a 50 s de recusas no nó sozinho (122 em ASYNC e 155 em SYNC nesta carga) | AC-6 |
+| Acerto, vazão | o nó fica fora até o fim da execução (no controle, só até a fusão) | o nó fica fora até a fusão, como no controle | AC-6 |
+| Infraestrutura | só a REST de administração, já usada pela sonda; Digest já implementado | `diag` ligado na pilha da VM (configuração nova depois do *rebaseline*), 3 portas, V-1 refeito na VM, pré-registro; *passcode* com resumo fixo e repetível e prefixo sem `0x0A` (V-6); o coordenador muda a cada fusão e o atuador tem de lê-lo | AC-5 |
+| Maturidade | implementado (`AtuadorRestInfinispan`, `PoliticaPorAssinatura`), contagem esperada 974/0/0/1 na H2, mutantes mortos, validação V-W2a aprovada com ressalvas, tarefa zero medida; integração I-1..I-5 em curso | nenhum código; só o `ProbeTcp.java` de verificação; estimativa de 2 a 3 dias de Worker, mais validação e um V-7 (9.4) | AC-5 |
+| Modelo TLA+, nível 1 | `Parar` só remove passos. Um falso positivo dá um comportamento que o sistema sem controlador também teria sob o mesmo ambiente (o nó para de agir), e o refinamento garante que a ação não cria violação, com a lacuna da fila (`cc08644` §7 item 5) | a ação **é** um `Particionar` que o ambiente não fez. O refinamento continua valendo, mas deixa de garantir "não cria violação": em ASYNC, `Particionar` seguido de `Mesclar` já leva aos traços `I1F`, `I2Fa` e `I1M`, e o falso positivo os torna alcançáveis numa execução sem falha. O V-5 mostrou isso no real | AC-5 |
+| Prazo | pronto para a VM em 07/11 (plano de 04/11 §3.1) | adia a calibração (N3) em pelo menos 2 noites e muda o pré-registro (B-40) antes de qualquer dado; o cenário intermediário (fim em 15/11) não absorve | AC-5 |
+
+```mermaid
+%%{init: {'theme':'base','themeVariables':{'background':'#ffffff','primaryColor':'#ffffff','primaryTextColor':'#000000','primaryBorderColor':'#000000','lineColor':'#000000','secondaryColor':'#ffffff','tertiaryColor':'#ffffff','clusterBkg':'#ffffff','clusterBorder':'#000000','edgeLabelBackground':'#ffffff','fontFamily':'Arial'}}}%%
+flowchart LR
+    FP["P1 dispara sem particao real<br/>(falso positivo)"] --> A5["AC-5: parar o no<br/>pela REST"]
+    FP --> A6["AC-6: GMS.suspect<br/>nos dois lados"]
+    A5 --> L5["saida graciosa (LEAVE)<br/>maioria: vista de 2, HEALTHY"]
+    L5 --> F5["no fora ate o fim da execucao<br/>sem fusao; custo = vazao"]
+    A6 --> D6["divisao: maioria AVAILABLE,<br/>no sozinho DEGRADED"]
+    D6 --> M6["fusao pelo MERGE3 em ~50 s<br/>com resolucao de conflitos"]
+    M6 --> V6["ASYNC: Logout revertido<br/>4 x I1 e 1 x I5 (n = 1)<br/>custo = violacao"]
+```
+
+### 9.3 O falso positivo do AC-5, conferido
+
+A pergunta do Gestor: com falso positivo, o AC-5 deixa um nó a menos até o religamento do fim da carga e, quando o
+nó volta, ele entra vazio por transferência de estado, sem fusão com conflito? **Sim**, com estas precisões.
+
+1. **O nó não volta dentro da execução.** O AC-5 não tem reversão (`cc08644` §3.1), o `podman-compose.yml` não tem
+   `restart:` (§6 item 6), e depois de toda execução com AC-5 o orquestrador faz `down`/`up` do *cluster* inteiro
+   mais `cria-caches.sh` (§6 item 5). A execução seguinte começa com três processos novos e *caches* vazios criados
+   pela REST. Nenhum dado do nó parado entra numa fusão.
+2. **Sem corte, a saída é graciosa, e a maioria não funde nada.** O servidor para os conectores e depois o
+   gerenciador de *caches* (N-1), e o canal do JGroups sai por LEAVE, que chega à maioria porque a rede funciona.
+   Medido na tarefa zero do W-2a, sem corte: `ISPN080002` (servidor parando) e, 219 ms depois, `ISPN000080`
+   (desconectando o canal) no `isn3` (`runs/b44-2/verificacao/b-parada-sem-barra-isn3.log:13-15`); os outros dois
+   ficaram com 2 membros e `HEALTHY` (`b-parada-sem-barra.txt`, `d-atuador-ac5.txt`). Os logs da maioria não foram
+   guardados nessa tarefa, então o resto vem do protocolo e do código: uma saída por LEAVE gera vista nova comum,
+   não `MergeView`, e no Infinispan passa por `onGracefulLeave`, que só rebalanceia (ou vai a DEGRADED se algum
+   segmento perder todas as cópias, o que não ocorre com `owners=2`). A resolução de conflitos só existe em
+   `onPartitionMerge` (`core/.../partitionhandling/impl/PreferConsistencyStrategy.java:93-115`, `:251-252`).
+3. **Se alguém religasse o nó na mesma execução, fora do protocolo, ele entraria vazio, por transferência de
+   estado e sem fusão.** O processo novo ganha endereço novo no JGroups (o nome lógico muda a cada encarnação, por
+   exemplo `isn3-54928`, B-44.3 §2), então pede JOIN, e JOIN não passa pela resolução de conflitos. Os *caches* não
+   têm armazenamento persistente (o corpo JSON de `cria-caches.sh` não tem `persistence`), então ele volta sem
+   dados e recebe segmentos pelo rebalanceamento, como o nó que volta no B-44.1b R1 e R3 (`12c1786`). Preliminar:
+   no I-1 do W-2a (`kill` mais `start` sob carga, 4 execuções, sem commit), não houve `ISPN000093` (vista de
+   fusão) depois da volta. **Sob corte** é diferente: religar formaria um *cluster* de um nó, e haveria fusão na
+   cura. Por isso o protocolo não religa durante a execução.
+4. **Falta medir** se as escritas confirmadas pelo nó nos últimos instantes antes da saída chegam à outra cópia em
+   ASYNC. É o I-4 do W-2a, em curso. O código favorece, porque a réplica sai no momento da escrita e os conectores
+   param antes do gerenciador de *caches*, mas isso não é medida. Se o I-4 mostrar perda, o AC-5 também passa a ter
+   custo de segurança no erro, limitado às escritas dos últimos milissegundos antes da saída, contra 48 a 96 s de
+   divisão da AC-6. A decisão se mantém, e o texto declara o número.
+
+### 9.4 Se a AC-6 entrar, mesmo como exploratória
+
+**O que muda na guarda.** Com o AC-5, a acurácia da assinatura é questão de vazão. A regra de calibração (plano de
+alinhamento §3.6) pede probabilidade de entrada indevida ≤ 0,05 por execução sem falha, e um erro custa vazão, que
+a avaliação mede. Com a AC-6, a acurácia vira **requisito de segurança**, porque cada erro é uma divisão seguida de
+fusão, e no V-5 ASYNC uma divisão bastou para criar violação. A guarda muda em quatro pontos.
+
+1. **Orçamento de falso positivo explícito, por execução, pré-registrado.** Com zero disparos de P1 em N execuções
+   de calibração sem partição (braço A, `shadow`), o máximo que se afirma é taxa < 3/N por execução, com 95 %
+   (`hanley_lippmanhand_zero_1983`). Com N = 21, < 14 %. A calibração do plano não certifica 5 %, nem menos. É o
+   motivo de a AC-6 não servir ao braço B: as células ASYNC sem partição poderiam mostrar B pior que A por causa
+   da própria ação. Numa exploratória, o número entra como limite declarado, não como garantia.
+2. **Confirmação independente pelo próprio detector do JGroups antes de agir** (lida no código, **não medida**). O
+   FD_ALL3 de cada nó guarda, por membro, um mapa de 5 bits. O verificador roda em todo nó com vista de mais de um
+   membro e zera um bit por `interval` (8 s) (`protocols/FailureDetection.java:196-213`, `protocols/FD_ALL3.java:86-96`,
+   `:133-138`). **Qualquer** mensagem recebida do membro, não só o batimento, liga o bit corrente
+   (`FailureDetection.java:168-180`, `FD_ALL3.java:68-80`). Um par saudável tem no máximo o bit corrente zerado. A
+   operação `printTimestamps` (`FD_ALL3.java:37-40`) devolve os mapas pelo mesmo *probe*. A guarda acrescenta:
+   **pelo menos 2 bits zerados para o suspeito no `isn1` e no `isn2`, e para o `isn1` e o `isn2` no suspeito.**
+   Isso exige ao menos um `interval` inteiro sem nenhuma mensagem do JGroups nas quatro direções. A ação passa a
+   antecipar uma suspeita que o FD_ALL3 já está formando, em vez de criar uma, e a assinatura passa a combinar dois
+   sinais de camadas diferentes (Hot Rod e JGroups), o degrau mais alto de `hayashibara_phi_accrual_2004`. Custo de
+   tempo: a condição só fica verdadeira entre t0 + 8 s e t0 + 16 s, e a viabilidade vira
+   `max(k·W, 16 s) + t_probe + t_vista < 35,3 s`. Medir antes de usar (V-7: mapas sob corte e sem falha, 3
+   repetições de cada, SYNC e ASYNC).
+3. **Prazo do tipo e coordenador.** O prazo de `AC_6` tem de ser `T_cham` + `view_ack_collection_timeout` = 2 s +
+   2 s = 4 s (`pbcast/GMS.java:93-95`). Com o suspeito coordenador, a resposta do lado isolado levou 2,247 s e
+   estouraria `T_cham`. O atuador lê o coordenador (`coordinator_address` de `GET /rest/v2/container`) antes de
+   agir e não supõe nenhum, porque a fusão troca o coordenador (B-44.3 §2).
+4. **O resto da guarda fica igual:** vista completa nos três nós em todas as amostras da janela; suspeito
+   respondendo à REST em todas; S_lag no teto com o mesmo `noSuspeito` em `kLag` janelas seguidas (W-4: o
+   `noSuspeito` só conta com `lagMax ≥ tetoLagMs`); cota 1 por execução.
+
+**Resíduo comum às duas ações, a declarar.** Uma partição real mais curta que T_det que a assinatura pegue. Sem
+ação, ela se cura sem troca de vista e o JGroups reenvia o que ficou retido. Com a AC-6, vira divisão e fusão 0 a
+~96 s depois, uma exposição ao M5 criada pela ação. Com o AC-5, as escritas que o nó parado aceitou durante o
+corte e ainda não replicou se perdem. Nas campanhas, a partição injetada dura mais que T_det, então o caso não é
+exercido. Fica como limitação.
+
+**O que o Worker teria de implementar** (prompt só se o Gestor escolher D-7 (b)):
+
+1. `session/ClienteProbeJGroups`, só com `java.net.Socket` (P-5). Uma conexão por pedido e só com o nó endereçado,
+   nunca o comportamento do `probe.sh -tcp`, que repete o pedido em todos os membros (B-44.3 V-1b). Linha
+   `op=...` ou `jmx=...` terminada em `\n`; leitura do cabeçalho (número de membros depois da operação); *passcode*
+   compatível com o JGroups 5.3.16 (resumo = SHA-1 do *passcode*; sortear `(t1, q1)` até o prefixo sair sem `0x0A`,
+   V-6); prazo por pedido; *passcode* lido de variável de ambiente, fora do Git.
+2. `AcaoCluster.Tipo.AC_6`: alvo = um nó; não reversível pelo controlador, com `reversao: "fusao"` na linha `acao`
+   (esquema `decisoes-controlador/1.3`, aditivo); prazo de 4 s; cota 1; fora da pilha LIFO.
+3. Atuador: nomes lógicos (`cluster_members`) e coordenador lidos pela REST; guarda do item 2 com três leituras
+   `printTimestamps` em paralelo, e `NAO_EXECUTADA` com motivo `fd-sem-silencio` se falhar; os quatro
+   `GMS.suspect` em paralelo; leitura de volta pela REST (`number_of_nodes` = 2 nos dois da maioria e 1 no
+   suspeito; os dois *caches* do modo ativo em `DEGRADED_MODE` no suspeito). `APLICADA` só com os dois lados; um
+   lado só é `FALHOU`, com o registro de quais pedidos responderam (não há reversão).
+4. Política: parâmetro `politica.acaoP1 ∈ {AC_5, AC_6}` no `controlador-*.json`, fixo por campanha e com origem,
+   sem troca em execução. Sai o recuo automático da seção 6 item 2 (`motivo: diag-indisponivel`), porque misturaria
+   duas ações na mesma célula.
+5. Testes TDD, com servidor TCP falso (aceito, recusado, prazo estourado, um lado só, resumo com `0x0A`). Mutantes a
+   matar: pedido a um lado só; repetição em todos os membros; pedido sem resumo; prazo de 2 s com o suspeito
+   coordenador; agir sem a confirmação do FD_ALL3; agir com vista incompleta; agir duas vezes. R-ARQ-1 estendido ao
+   `ClienteProbeJGroups`.
+6. Infraestrutura da seção 9.6, com V-1 e V-7 repetidos onde a exploratória rodar.
+7. TLA+: nenhuma ação nova (é `Particionar`), mas o texto do refinamento passa a dizer que, com a AC-6, o argumento
+   não exclui violação criada por falso positivo.
+
+Estimativa: 2 a 3 dias de Worker, mais uma rodada de validação e o V-7.
+
+### 9.5 O que vai para o texto como resultado do trabalho
+
+Encaminhar ao Escritor pelo coordenador (D-8); o Senior não edita a monografia. Tudo como **verificação no
+*cluster* local**, não como avaliação, com o n declarado. Lugar: Cap. 4, na parte das ações do controlador, como
+candidata examinada e não adotada, com o motivo; e as limitações.
+
+1. **A exclusão forçada funciona e cobre as duas metades do M1, mas o erro dela cria violação em ASYNC.** Isolou o
+   nó em ~25 ms (7 de 7) e eliminou a espera da maioria pelo nó cortado (0 `ERROR_TRANSPORT` contra 4 a 40 nos
+   controles). Sem partição real, a mesma ação vira divisão e fusão, e em ASYNC a fusão devolveu a `VALID` uma
+   sessão já invalidada por `Logout` confirmado (4 × I1) e deixou réplicas divergentes (1 × I5), n = 1, controle 0.
+   É a troca entre completude e acurácia de `chandra_toueg_failure_detectors_1996`, observada no sistema real. Por
+   isso a ação adotada foi a parada do nó, cujo erro custa vazão e não consistência. **Não dizer** que a AC-6
+   reduziu violações (as violações não separaram ação e controle nesta carga) nem dar taxa de falso positivo.
+2. **A janela de fusão do MERGE3.** A fusão depois da cura não leva 10 a 30 s. Com `max_interval` = 30 s, o
+   verificador roda a cada 1,6 × 30 s = 48 s, recomeça a cada troca de vista e só funde se recebeu, desde a rodada
+   anterior, uma INFO do outro subgrupo, e as INFO saem a cada 15 a 45 s (`protocols/MERGE3.java:196`, `:246-257`,
+   `:427-429`, `:437-510`). Em 20 das 21 fusões medidas, o instante caiu a ≤ 12 ms de 48 s ou 96 s depois da última
+   troca de vista do líder. O intervalo possível é de 0 a ~96 s depois da cura. Isso importa para a duração do
+   `DEGRADED` da minoria no braço A, para a exposição ao M5 e para o risco N-5 do AC-2 (fusão com o rebalanceamento
+   desligado). A diferença entre os 18,9 s do local e os 44,9 s e 53 s da VM (`cc08644` §1.1) é compatível com a
+   fase desse tique; não foi conferida nos brutos da VM.
+3. **O tempo com o coordenador suspeito.** Quando o nó excluído é o coordenador, o lado isolado leva 2,25 s: instala
+   primeiro uma vista intermediária com um dos membros cortados e espera a confirmação dele por
+   `view_ack_collection_timeout` (2 s) antes de ficar sozinho. Nesse intervalo, aceitou 3 escritas (n = 1). Entra
+   como detalhe do item 1 e explica o limite `k·W < 35,3 s`, contra 39,16 s quando o suspeito não coordena.
+4. **O *passcode*.** Uma frase nas limitações ou em nota: o canal de diagnóstico do JGroups 5.3.16 aceita qualquer
+   operação de quem alcança a porta; com *passcode*, o resumo enviado é o SHA-1 do próprio *passcode*, porque o
+   instante e o número aleatório não entram no cálculo (`util/Util.java:443-452`, `md.update` de um *buffer* sem
+   `flip`) e o servidor não confere o instante (`stack/DiagnosticsHandler.java:360-373`). Um pedido capturado pode
+   ser repetido, e a proteção real é isolar a porta na rede. Não é contribuição do trabalho; relatar ao projeto
+   JGroups fica fora do escopo.
+5. **(Recomendado, além dos quatro.) O detector em execução.** Gravar o `timeout` do FD_ALL3 com o *cluster*
+   rodando não muda a detecção dos membros que já existem (T_det de 46,1 s e 46,7 s com 10 s gravado, contra 42,8 a
+   48,2 s nos controles; `num_bits` continuou 5). Fecha a pergunta do "detector adaptativo" com fonte no código e
+   medida: ele teria de ser construído no detector, não reconfigurado.
+
+### 9.6 Porta de diagnóstico
+
+- **Local (B-44.3, projeto `b443`).** `diag.port=7500` dentro de cada contêiner, publicada em 12447, 12448 e 12449 no
+  *host*, um desvio declarado para não colidir com os *clusters* de outros Workers (o `w2a` usa 12501..12503).
+  `diag.enable_udp=false`, `diag.port_range=0`, sem `diag.bind_addr`. As pilhas eram cópias em
+  `runs/b44-3/cluster/`, e nada disso ficou na pilha versionada.
+- **VM, com a D-6: nada muda.** `cluster/jgroups-tcp.xml` mantém `diag.enabled="${jgroups.diag.enabled:false}"`
+  (linhas 27-29), e o `podman-compose.yml` não publica porta de diagnóstico. *Rebaseline*, calibração e avaliação
+  rodam com a mesma pilha.
+- **VM, se um dia a AC-6 rodar lá (fora desta campanha).** `-Djgroups.diag.enabled=true` no `command` de cada nó (a
+  pilha já lê essa propriedade); `diag.port`, `diag.port_range=0` e `diag.passcode` como propriedades na camada TCP;
+  publicação **só no laço local da VM**: `127.0.0.1:7500:7500`, `127.0.0.1:7501:7500` e `127.0.0.1:7502:7500` para
+  `isn1`, `isn2` e `isn3`. O programa de carga, e com ele o controlador, roda dentro da VM e já fala com
+  `127.0.0.1` (REST em 11222..11224, `roteiro-piloto-2026-11-05.md:105-106`), então nada precisa ser exposto à rede
+  do Hyper-V. O *passcode* vem de variável de ambiente, como o `RB_PASSWORD`, fora do Git. Como o resumo é
+  repetível, ele só evita pedido acidental; a proteção real é a porta presa a `127.0.0.1`. Antes de qualquer dado:
+  V-1 na VM e a mudança declarada no pré-registro (B-40).

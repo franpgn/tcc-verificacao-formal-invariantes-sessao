@@ -6,6 +6,11 @@ do mesmo plano. Nada aqui foi executado em *cluster*. Os fatos medidos vêm do B
 novos vêm do código-fonte da versão 15.0.21.Final, que li nesta sessão. **Tudo depende da validação do
 Gestor (seção 9).**
 
+> **Atualização de 05/11, depois do B-44.3** (`wt-b44-3`, `d73b01d`). A AC-6 (exclusão forçada do nó suspeito
+> pelo JGroups), proposta em `docs/opcoes-arquitetura-configuracao-2026-11-05.md` (`155aa95`), foi verificada e
+> **não substitui o AC-5. P1 continua com o AC-5**, e a tabela da seção 5 vale como está. Comparação e motivos em
+> `opcoes-arquitetura-configuracao-2026-11-05.md` §9; resumo nas seções 0 (item 7), 3.1, 3.4 e 9 (D-K) abaixo.
+
 Siglas e termos usados:
 
 | Termo | Significado |
@@ -33,7 +38,8 @@ Siglas e termos usados:
 2. **Sobram duas ações para a avaliação:**
    - **AC-5**, parar o nó suspeito com `POST /rest/v2/server/?action=stop` mandado ao próprio nó. É a única
      ação que mira um mecanismo de violação (M1). Pelo código, a parada é local e não passa pelo
-     coordenador, então funciona no nó isolado. Ainda não foi testada.
+     coordenador, então funciona no nó isolado. Ainda não foi testada. *(05/11: testada na tarefa zero do
+     W-2a, 204 e primeira recusa em +3,06 s; integração I-3..I-5 em curso; ver seção 3.1.)*
    - **AC-2**, suspender o rebalanceamento **na forma global** (`POST /rest/v2/container?action=disable-rebalancing`),
      restrita à assinatura de queda, com reversão quando o nó volta e teto de 60 s. A forma por *cache* se
      perde quando o coordenador cai (P-34, B-44.1b R2). Não mira violação; mira o custo de transferência de
@@ -42,7 +48,9 @@ Siglas e termos usados:
 3. **`acquire-timeout`** fica como exploratória, fora do braço B. **AC-1, AC-3, expiração, espelho, apelidos,
    `set-availability` à maioria, parada pelo coordenador, conectores, filtro de IP, *caches* ignorados e
    desligamento do contêiner ficam fora.** O detector de falhas adaptativo (FD_ALL3 com degraus) também fica
-   fora desta campanha: é viável em tese pelo JGroups, mas não pela REST, e não foi verificado.
+   fora desta campanha: é viável em tese pelo JGroups, mas não pela REST, e não foi verificado. *(05/11: não é
+   viável em execução; gravar o `timeout` não muda a detecção dos membros atuais, pelo código e pelo B-44.3
+   V-2; `opcoes-arquitetura-configuracao-2026-11-05.md` §2.2.)*
 4. **O conjunto é fraco para "selecionar entre políticas" no sentido forte.** Uma ação só reduz violações,
    e só em um mecanismo (M1, partição ainda não detectada). M2 e M3 ficam sem ação. A seção 4 propõe a
    formulação honesta para o texto.
@@ -54,6 +62,12 @@ Siglas e termos usados:
 6. **Infraestrutura:** o XML da VM passa a não declarar *caches*. Os seis *caches* (`sessions*`, `counters*`,
    `canario*`) passam a ser criados pela REST pelo orquestrador. O TLA+ troca o `congelado` do AC-1 por
    `parado[r]` do AC-5, e o AC-2 não ganha ação no modelo.
+7. **Depois do B-44.3 (05/11): P1 continua com o AC-5.** A AC-6 isola o nó em ~25 ms nos dois lados e livra a
+   maioria de esperar por ele, mas o falso positivo dela é uma divisão seguida de fusão, e em ASYNC essa fusão
+   reverteu um `Logout` confirmado (4 × I1) e deixou réplicas divergentes (1 × I5), n = 1, controle 0. O falso
+   positivo do AC-5 é uma saída graciosa sem fusão, que custa vazão e não consistência. A AC-6 também não tem
+   código, exige ligar o `diag` do JGroups na VM e adiaria a calibração. Ela vai para o texto como candidata
+   verificada e não adotada (`opcoes-arquitetura-configuracao-2026-11-05.md` §9).
 
 ## 1. Ponto de partida
 
@@ -78,6 +92,8 @@ Siglas e termos usados:
 | A carga S3 ASYNC de A2 (80 s, sem ação sobre `sessions-async`) registrou 10 `I2_CASCATA_INCOMPLETA` sem explicação | B-44.1b §2 |
 | Janela do M1 na VM: vista nova entre 39,8 e 46,4 s depois do corte; no S7, +43,2 s (isn3) e +45,3 s (isn1/isn2) | `wt-gate-v4/runs/vm-s7-2026-11-04/V-S7r.md:45` |
 | Da fusão depois da cura: 18,9 s no local; 44,9 s e 53 s na VM | B-44.1 §4.1; `V-S7r.md:158` |
+| *(05/11)* Tempo de fusão explicado pelo MERGE3: o verificador roda a cada 48 s (1,6 × `max_interval`), recomeça a cada troca de vista e só funde se recebeu uma INFO do outro lado desde a rodada anterior; 20 de 21 fusões caíram a ≤ 12 ms de 48 s ou 96 s depois da última troca de vista do líder. Faixa possível: 0 a ~96 s depois da cura | B-44.3 §4.1 (`d73b01d`), `runs/b44-3/analise/fusao.tsv` |
+| *(05/11)* AC-5 sem corte: 204 em 37 ms; primeira recusa da saúde em +3059 ms; `ISPN000080` (canal desconectado) 219 ms depois de `ISPN080002`; os outros dois com 2 membros e `HEALTHY` | W-2a tarefa zero (`0b153f5`; brutos no tar `runs/b44-2/brutos-tarefa-zero-2026-11-05.tar` de `e983906`): `verificacao/b-parada-sem-barra.txt`, `b-parada-sem-barra-isn3.log:13-15`, `d-atuador-ac5.txt` |
 | P-5: sensor e atuador sem `podman`, `sudo` ou disco no caminho crítico. Na VM, o disco trava por segundos e a criação de processos trava junto; REST e Hot Rod em memória seguem respondendo | `V-S7r.md:15`, `:61`, `:162`, `:234` |
 
 ### 1.2 Achados novos desta sessão (código 15.0.21.Final, *commit* `5bdc4de`, sem execução)
@@ -163,6 +179,16 @@ partição).
   ser executado quando o nó voltar. Por isso a política só manda AC-5 a nó que respondeu à REST na janela.
   (4) Parar um segundo nó com `owners=2` perde segmentos. Por isso a cota é 1 por execução e a vista tem de
   estar completa.
+- **Falso positivo, conferido em 05/11** (`opcoes-arquitetura-configuracao-2026-11-05.md` §9.3). Sem corte, a
+  saída é graciosa: o LEAVE chega à maioria, que segue com 2 membros e `HEALTHY` (tarefa zero do W-2a, seção 1.1).
+  Pelo código, é uma vista nova comum (não `MergeView`) e passa por `onGracefulLeave`, que só rebalanceia; a
+  resolução de conflitos só existe na fusão (`PreferConsistencyStrategy.java:93-115`, `:251-252`). O nó não volta dentro da execução, e o orquestrador recria o *cluster* depois
+  dela. Se fosse religado na mesma execução, entraria por JOIN, com endereço novo no JGroups e sem dados (os
+  *caches* não têm armazenamento persistente), e receberia segmentos pelo rebalanceamento, sem resolução de
+  conflitos. Nenhum dado do nó parado entra numa fusão. O que falta é o risco 1 acima (I-4, em curso).
+- **Comparação com a AC-6 (B-44.3).** A exclusão forçada pelo JGroups é melhor no acerto (isola em ~25 ms e cobre
+  a metade do M1 da maioria, que o AC-5 não alcança), mas o falso positivo dela criou violação em ASYNC na fusão.
+  P1 fica com o AC-5 (`opcoes-arquitetura-configuracao-2026-11-05.md` §9.1 e §9.2).
 - **Atribuição de violações à ação.** A carga ASYNC de A2 do B-44.1b teve 10 `I2_CASCATA_INCOMPLETA` sem ação
   sobre o *cache* usado e sem explicação. Logo, uma `I2_CASCATA_INCOMPLETA` perto de uma ação não prova que a
   ação a causou. Toda medição de risco (W-2 e avaliação) compara com execução de controle sem ação no mesmo
@@ -221,7 +247,9 @@ partição).
   juntar por fusão antes da reversão. A política reverte quando a REST do nó volta a responder, em até
   `P_sonda + tick + T_cham` (2 s + tick + 2 s). As fusões medidas levaram de 18,9 s a 53 s (seção 1.1), mas
   **a configuração não garante esse mínimo**. Uma fusão com AC-2 ativa é detectada depois da execução, no log do
-  servidor, e a execução é marcada como desvio de protocolo.
+  servidor, e a execução é marcada como desvio de protocolo. *(05/11: o B-44.3 confirmou pelo mecanismo do MERGE3
+  que a fusão pode vir de 0 a ~96 s depois da volta da rede, seção 1.1; o risco é real e depende da fase do tique
+  de 48 s. O I-2 do W-2a mede a ordem entre reversão e fusão.)*
 - **Reversão.** `POST /rest/v2/container?action=enable-rebalancing`, com leitura de volta, quando: (i) o nó
   ausente volta a responder à REST; (ii) passa o teto `T_reb`; (iii) R4; (iv) encerramento. Entra na pilha
   LIFO. A proposta do Worker religava "quando a topologia estabilizar"; fica a regra (i), que religa antes,
@@ -277,7 +305,8 @@ partição).
 | Desligamento do contêiner | desliga os *caches* no *cluster* inteiro | N-4 |
 | `DELETE` ou `clear` de *cache* | destrói estado; `clear` sob partição é recusado | B-44.1 P6d |
 | Recusa de backup entre *sites* (`take-offline`) | não há segundo *site* | — |
-| FD_ALL3 adaptativo (baixar o tempo do detector quando S_lag sobe) | é a ação que mira a janela do M1 de forma mais direta, e a literatura apoia: degraus de suspeição (`hayashibara_phi_accrual_2004`) e a troca entre completude e acurácia (`chandra_toueg_failure_detectors_1996`). Mas não existe na REST. Exigiria o canal de diagnóstico do JGroups (`diag.enabled=false` hoje, `cluster/jgroups-tcp.xml`) ou JMX remoto, as duas coisas configuradas estaticamente e não verificadas. Uma suspeita falsa provoca fusão, e a fusão é a fonte de M1 e de P-23. Trabalho futuro, com essas duas fontes | `cluster/jgroups-tcp.xml`; `jgroups_manual_5` (conferir a seção de diagnóstico antes de citar) |
+| FD_ALL3 adaptativo (baixar o tempo do detector quando S_lag sobe) | é a ação que mira a janela do M1 de forma mais direta, e a literatura apoia: degraus de suspeição (`hayashibara_phi_accrual_2004`) e a troca entre completude e acurácia (`chandra_toueg_failure_detectors_1996`). Mas não existe na REST. Exigiria o canal de diagnóstico do JGroups (`diag.enabled=false` hoje, `cluster/jgroups-tcp.xml`) ou JMX remoto, as duas coisas configuradas estaticamente e não verificadas. Uma suspeita falsa provoca fusão, e a fusão é a fonte de M1 e de P-23. Trabalho futuro, com essas duas fontes. *(05/11: sem efeito em execução, pelo código e pelo B-44.3 V-2, em que o `timeout` gravado em 10 s deu T_det de 46,1 s e 46,7 s)* | `cluster/jgroups-tcp.xml`; `jgroups_manual_5` (conferir a seção de diagnóstico antes de citar); `opcoes-arquitetura-configuracao-2026-11-05.md` §2.2 |
+| *(05/11)* AC-6, exclusão forçada do suspeito por `GMS.suspect` pelo *probe* do JGroups | verificada no B-44.3: funciona nos dois lados (7 de 7, ~25 ms), mas o falso positivo vira divisão e fusão, e em ASYNC a fusão reverteu um `Logout` confirmado (4 × I1, 1 × I5, n = 1); exige `diag` na VM, *passcode* fraco, sem código. Candidata verificada e não adotada | B-44.3 (`d73b01d`); `opcoes-arquitetura-configuracao-2026-11-05.md` §9 |
 
 ## 4. Classificação e a formulação honesta
 
@@ -311,6 +340,11 @@ para o Gestor e o Escritor:
 - Na seção de limitações: M2 e M3 sem ação de servidor; o AC-5 troca disponibilidade por consistência
   (`gilbert_lynch_cap_2002`) e custa vazão; o AC-5 não desfaz o que foi aceito antes da parada; o AC-2 não tem
   mecanismo de violação demonstrado.
+- *(05/11)* A AC-6 entra no texto como **candidata verificada e não adotada**, com o motivo (o erro dela cria
+  violação em ASYNC; o do AC-5 custa vazão), e com mais quatro achados do B-44.3: a janela de fusão do MERGE3 (0 a
+  ~96 s depois da cura), os 2,25 s com o coordenador suspeito, o *passcode* repetível e o detector sem efeito em
+  execução. Texto proposto em `opcoes-arquitetura-configuracao-2026-11-05.md` §9.5. Nas limitações, acrescentar
+  que P1 só cobre a metade do M1 do lado isolado.
 - Frase sugerida para o objetivo geral, se o autor quiser maior precisão sem mudar o sentido: "avaliar um
   mecanismo de decisão heurístico que, dentro do que a API administrativa do *data grid* permite alterar em
   tempo de execução, aplique ações operacionais para reduzir violações e controlar latência sob falhas". É
@@ -343,6 +377,9 @@ flowchart TD
 | AC-2 ativa e o nó ausente volta a responder, ou `T_reb` estourou | reverter AC-2 |
 | R4 ou encerramento | reverter a pilha (só AC-2); AC-5 segue, e o orquestrador recria o *cluster* |
 | braço A (`shadow`) | as mesmas linhas com `executada=false`, sem chamada HTTP |
+
+*(05/11)* Tabela confirmada depois do B-44.3: P1 continua com o AC-5 (`opcoes-arquitetura-configuracao-2026-11-05.md`
+§9). A proposta de `155aa95` §6 item 2 (AC-6 em P1, AC-5 como recuo com `motivo: diag-indisponivel`) não se aplica.
 
 ### 5.1 Números e origem
 
@@ -396,7 +433,9 @@ Nenhum número da tabela vem da avaliação.
 9. **Calibração e avaliação com o XML novo.** As duas usam o mesmo XML e os mesmos JSON; registrar a mudança
    de infraestrutura no pré-registro (B-40) antes de qualquer dado. O *rebaseline* já feito usou *caches* no
    XML: a configuração é a mesma, mas declarar.
-10. **Nada de diagnóstico do JGroups.** `diag.enabled` continua `false` (seção 3.4).
+10. **Nada de diagnóstico do JGroups.** `diag.enabled` continua `false` (seção 3.4). *(05/11: confirmado depois
+    do B-44.3; a AC-6 não entra, e a porta de diagnóstico não é publicada na VM,
+    `opcoes-arquitetura-configuracao-2026-11-05.md` §9.6.)*
 
 ## 7. O que muda no TLA+ (nível 1 do plano de 04/11 §4.7)
 
@@ -535,7 +574,8 @@ Nenhum número da tabela vem da avaliação.
 
 | ID | Decisão | Recomendação do Senior |
 |---|---|---|
-| D-A | Aceitar o AC-5 (parar o nó suspeito) no braço B, sem reversão dentro da execução e com custo de vazão nas células de partição | aceitar; é a única ação que mira violação |
+| D-A | Aceitar o AC-5 (parar o nó suspeito) no braço B, sem reversão dentro da execução e com custo de vazão nas células de partição | aceitar; é a única ação que mira violação *(05/11: reforçada pela comparação com a AC-6, D-K)* |
+| D-K | *(05/11)* P1 fica com o AC-5 depois do B-44.3; a AC-6 sai do braço B e vai para o texto como candidata verificada e não adotada | ratificar; decisões D-6, D-7 e D-8 de `opcoes-arquitetura-configuracao-2026-11-05.md` §7 |
 | D-B | AC-2 no braço B só com assinatura de queda, condicionada ao I-2; se o I-2 falhar, vira exploratória | aceitar |
 | D-C | Autorizar as edições de teste listadas no W-2a, itens 6 e 8 (troca de `AC_1`/`AC_3` e um par a mais na lista do teste de arquitetura), sem retirar asserção | autorizar |
 | D-D | Formulação do texto da seção 4 (política de reação operacional; a política de replicação não é selecionável em execução) | aceitar; encaminhar ao Escritor |
@@ -560,6 +600,9 @@ Nenhum número da tabela vem da avaliação.
 - B-44.1b: `wt-b44-1/docs/b44-1b-alias-criacao-p30-rebalanceamento.md` e `docs/registro-de-problemas.md` P-33..P-35 (`12c1786`); brutos em `wt-b44-1/runs/b44-1b/`: `fases.tsv`, `chamadas.tsv`, `corpos/`, `efeito/`,
   `servidores/incB/`, `scripts/cria-caches.sh`, `cluster/infinispan-sem-caches.xml`.
 - V-S7r: `wt-gate-v4/runs/vm-s7-2026-11-04/V-S7r.md`.
+- *(05/11)* B-44.3: `wt-b44-3/docs/b44-3-ac6-jgroups.md` (`d73b01d`), `wt-b44-3/runs/b44-3/analise/`. W-2a:
+  `wt-w2a` (`e983906`), tarefa zero em `runs/b44-2/brutos-tarefa-zero-2026-11-05.tar`. Decisão do P1:
+  `docs/opcoes-arquitetura-configuracao-2026-11-05.md` §9.
 - Programa de carga em `wt-ctrl-integ` (`19d45b9`): `controle/{AcaoCluster,AtuadorCluster,ExecutorDeAcoes,
   PoliticaDeAcao,EstadoTopologia,TrilhaJsonl}.java`, `session/{S3Clientes,S3Parametros,ConsultaSaudeRest,
   LigacaoControlador}.java`.

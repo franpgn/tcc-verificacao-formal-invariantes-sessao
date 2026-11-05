@@ -16,8 +16,16 @@
 > o arquivo de parâmetros e as duas referências deste roteiro passa (exit 0), e as matrizes geradas aqui têm os SHA-256
 > da seção 2.3. Os três *scripts* auxiliares da seção 10 passaram em `bash -n` e `py_compile`; o conferidor do X-17
 > deu o veredito certo em quatro casos sintéticos (B1, sem AC-5, negativo e bloco PULADA); o supervisor, numa
-> simulação com `tmux` falso, deu os dois GO, recusou um `go rede` fora da fila, mandou o `Ctrl-C` no K1, fez o
-> diagnóstico, o `swapoff`/`swapon` e o relançamento, e reconheceu o fim normal.
+> simulação com `tmux` falso, deu os dois GO, recusou um `go rede` fora da fila, no modo `recriar` mandou o `Ctrl-C`
+> no K1, recriou o *cluster* e relançou três vezes seguidas (com o alerta informativo na terceira), no modo
+> `registrar` só registrou a leitura, e reconheceu o fim normal.
+>
+> **Revisão de 05/11 (decisões do coordenador sob a autorização do Gestor, seção 9):** G-1, G-4, G-5 e G-6
+> aceitos; G-2 com o W-9 existente (`wt-w9`, `feature/w9-calibracao-s3`, ponta `4bcca11` ou posterior) a ajustar ao
+> complemento 1 (DT-022, `744e6e8`) e com a V-W9 antes do X-18; G-3 pela **C-10 aprovada** (nota de fechamento do
+> DT-020, `2c8b7b8`): com *swap* ≥ 1 GiB no portão, o *cluster* é recriado antes da execução, que roda com o mesmo i
+> e a mesma semente, sem contar como recusa, e **nunca** `swapoff`/`swapon` (risco de OOM com ~6,4 GB nas três JVMs
+> numa VM de 8 GB). A §5 do pré-registro, que ainda diz "para a fase", vai ser alinhada à C-10 pelo outro Senior.
 
 ## Siglas
 
@@ -43,9 +51,9 @@ flowchart TD
     X --> C{"4.6 cs3-conferir.py x17"}
     C -->|REPROVADO| S["parar, copiar brutos, chamar o Senior"]
     C -->|"APROVADO ou APROVADO-SEM-B1"| M["4.7 C-6 e C-7: parametros finais da calibracao; 4.8 copia ao host"]
-    M --> Q{"P-7 W-9 validado e P-8 smoke do P-48?"}
-    Q -->|nao| W["esperar (secao 9, G-2)"]
-    Q -->|sim| K["5. X-18: 26 execucoes, go calibracao e go rede 1; swap no K1 pelo supervisor"]
+    M --> Q{"P-7 W-9 ajustado ao complemento 1 e V-W9 aprovado; P-8 smoke do P-48?"}
+    Q -->|nao| W["esperar"]
+    Q -->|sim| K["5. X-18: 26 execucoes, go calibracao e go rede 1; swap >= 1 GiB no K1: recriar o cluster (C-10)"]
     K --> RP["5.7 reposicoes (teto h4 = 6), uma vez"]
     RP --> F["6. MANIFEST, copia com sha256sum -c, entrega ao W-9"]
 ```
@@ -72,7 +80,7 @@ blocos: a partir do 2.2 todo bloco VM começa com `source ~/cs3-infra/vars.sh`.
 **Regras que valem em todos os passos** (lições da noite 1 de 05/11):
 
 - *Lock*: o orquestrador pega `/var/lock/tcc-vm.lock` sozinho (`flock -n`, exit 4 se ocupado). Tudo que mexe no
-  *cluster* fora dele (recriação manual, `swapoff`) roda sob `flock -n /var/lock/tcc-vm.lock`.
+  *cluster* fora dele (recriação manual) roda sob `flock -n /var/lock/tcc-vm.lock`. `swapoff`/`swapon` não se usa.
 - *Dead-man* dos injetores: o orquestrador arma `tcc-heal-cs-<i>` (`systemd-run`, janela + 90 s) antes de cada F2/F4.
   Antes de cada invocação, `systemctl list-timers --all --no-legend 'tcc-heal*'` tem de estar vazio; durante a F2/F4
   aparece um; depois, nenhum.
@@ -84,8 +92,9 @@ blocos: a partir do 2.2 todo bloco VM começa com `source ~/cs3-infra/vars.sh`.
   janelas antigas do supervisor ficam dormindo e podem ser fechadas com `tmux kill-window -t cs3:<nome>`, nunca a `orq`.
 - Vigia de progresso, não só de fim: o supervisor (seção 10) grava uma linha de progresso por minuto e um ALERTA se o
   `orquestrador.log` parar mais que `exec_teto_s` + 90 s.
-- Swap: a regra do pré-registro (§5, C-10) é aplicada pelo supervisor no portão K1 de cada execução (5.5), com ou sem o
-  W-6c.
+- Swap: C-10 aprovada (nota de fechamento do DT-020, `2c8b7b8`). Com ≥ 1 GiB no portão K1, o *cluster* é recriado
+  antes da execução, que roda com o mesmo i e a mesma semente, sem contar como recusa (5.5). Com W-6c, quem recria é o
+  orquestrador (`--swap-limite-kb 1048576`); sem ele, o supervisor (Ctrl-C no K1, `recriar-cs3.sh`, relançamento).
 
 ## 1. Pré-condições (conferir antes do 2.1; faltando uma, não começar)
 
@@ -97,7 +106,7 @@ blocos: a partir do 2.2 todo bloco VM começa com `source ~/cs3-infra/vars.sh`.
 | P-4 | Perfil do *host* no X-17 e no X-18: **H0**. Nenhuma DT registra o M-0 aprovado, e o pré-registro §2 diz "H1 se o M-0 aprovar, senão H0". `HOST-PERFIL.txt` em H0 há ≥ 5 min antes do GO, aplicativos do usuário fechados, `wsl --shutdown` e `WSearch` parado pelo Gestor como na G-4 da noite 1 | `HOST-PERFIL.txt`; covariáveis do 4.1 | GO do X-17 e do X-18 |
 | P-5 | VM: *lock* livre, nenhum processo residual, 0 *timers* `tcc-heal*`, 0 *units* `tcc-amostrador-*`, imagem `quay.io/infinispan/server:15.0.21.Final` presente | bloco do 4.2 | 2.4 |
 | P-6 | Disco: VM com livre ≥ 1,5 × 34 execuções × 14 MiB = 714 MiB além do *bundle* (regra 1,5 × do plano de 04/11 §9, W-6 item 4; 34 = 2 do X-17 + 26 + até 6 reposições); depois do X-17 a conta usa o volume medido (4.7). *Host*: regra do AVHDX do plano contínuo §2.5 | `df -Pm` (2.2) | 2.4 |
-| P-7 | Só para o X-18: W-9 (`analysis/calibracao_s3.py`) commitado e validado pelo Senior, com o SHA do commit registrado. O pré-registro §7 e §9 item 4 exigem as regras em código **antes** do X-18 | parecer do Senior sobre o W-9 | GO do X-18 |
+| P-7 | Só para o X-18: W-9 (`analysis/calibracao_s3.py`, `wt-w9`, branch `feature/w9-calibracao-s3`, a partir de `4bcca11`) **ajustado ao complemento 1 (DT-022, `744e6e8`) e com a V-W9 aprovada**, com o SHA do commit validado registrado. O pré-registro §7 e §9 item 4 exigem as regras em código **antes** do X-18 | parecer da V-W9 | GO do X-18 |
 | P-8 | Só para o X-18: *smoke* local do P-48 (topologia do `rcm` principal) feito e, se a topologia estiver velha, a mitigação na ponta T (pré-registro §9 item 5) | relatório do *smoke* | GO do X-18 |
 | P-9 | Só para o X-18: X-17 com veredito APROVADO ou APROVADO-SEM-B1 (4.6), no **mesmo** *bundle*. Trocar de ponta depois do X-17 obriga a repetir o X-17 | `~/cs3-infra/conferencia-x17.txt` | GO do X-18 |
 
@@ -219,7 +228,8 @@ lancar_fase() {  # lancar_fase <saida> <fase> <tsv da fila> <cmd> <limiar s> <ja
   if pgrep -f '^bash /home/[^ ]+/cs3-infra/supervisor-cs3[.]sh' > /dev/null; then echo "supervisor anterior ainda rodando: esperar SUP_FIM"; return 1; fi
   tmux has-session -t cs3 2>/dev/null || tmux new-session -d -s cs3 -n orq -x 220 -y 50
   tmux send-keys -t cs3:orq clear Enter; sleep 1; tmux clear-history -t cs3:orq
-  tmux new-window -d -t cs3 -n "$6" "bash $HOME/cs3-infra/supervisor-cs3.sh $1 $2 $3 $4 $5; echo SUP_FIM; sleep 86400"
+  local m=recriar; [ "$W6C" = sim ] && m=registrar   # swap (C-10): o W-6c recria; sem ele, o supervisor
+  tmux new-window -d -t cs3 -n "$6" "bash $HOME/cs3-infra/supervisor-cs3.sh $1 $2 $3 $4 $5 $m $CS3; echo SUP_FIM; sleep 86400"
   sleep 2; tmux send-keys -t cs3:orq "bash $4" Enter
 }
 EOF2
@@ -588,12 +598,12 @@ Contagem: ASYNC-none 5, ASYNC-F1 5, ASYNC-F2 5, ASYNC-F4 5, SYNC-F2 3, SYNC-none
 
 | Opção | Com W-6c (`W6C=sim`) | Sem W-6c (alternativa) |
 |---|---|---|
-| `--swap-limite-kb 1048576` (**depende do W-6c**) | passada no X-17 e no X-18. O orquestrador lê o *swap* depois do K1, grava `swap_usado_kb_k1` e `swap_portao` no `execucao.json` e, com ≥ 1 GiB, recria o *cluster* uma vez antes da carga | não passada. A regra do pré-registro §5 fica toda no supervisor, que lê `/proc/meminfo` durante o K1 de cada execução e para a fase com ≥ 1 GiB (5.5). O registro por execução fica no log de eventos do supervisor (`K1 i=<i> swap_usado_kB=<n>`), copiado com os brutos |
+| `--swap-limite-kb 1048576` (**depende do W-6c**) | passada no X-17 e no X-18. O orquestrador lê o *swap* depois do K1, grava `swap_usado_kb_k1` e `swap_portao` no `execucao.json` e, com ≥ 1 GiB, recria o *cluster* (mesmo i, mesma semente, sem recusa), uma vez por portão; se continuar ≥ 1 GiB, a execução roda com o aviso (P-56). O supervisor roda no modo `registrar`: só grava a leitura de cada K1 | não passada. O supervisor roda no modo `recriar`: lê `/proc/meminfo` durante o K1 de cada execução e, com ≥ 1 GiB, dá Ctrl-C, recria o *cluster* pelo `recriar-cs3.sh` e relança (5.5). O registro por execução fica no log de eventos do supervisor (`K1 i=<i> swap_usado_kB=<n>`), copiado com os brutos |
 | `--exigir-trilha-completa` (**depende do W-6c**) | só no X-17, para exercitar a regra B-7 da avaliação. **Não** na calibração: a DT-020 §5 não lista esse critério, e incluí-lo seria critério novo depois do pré-registro. O `execucao.json` da calibração marca `trilha_incompleta` como aviso, e o resumo do 6.1 dá `fim` e `linhas_perdidas` das duas trilhas para o W-9 | não passada. O `cs3-conferir.py` confere a trilha no X-17 de qualquer jeito |
 | N1 e R4 | campos informativos no X-17 (4.6) | sem efeito no X-17 (F2) e na calibração (sem braço B) |
 
-O pré-requisito 3 do pré-registro §9 ("W-6c: leitura do *swap* no K1 de cada execução, gravada, com parada ≥ 1 GiB")
-fica atendido pelo supervisor quando o W-6c não está na ponta: leitura no K1, registro e parada. A diferença é só onde
+O pré-requisito 3 do pré-registro §9 (leitura do *swap* no K1 de cada execução, gravada, com a ação da C-10) fica
+atendido pelo supervisor quando o W-6c não está na ponta: leitura no K1, registro e recriação. A diferença é só onde
 o número fica gravado.
 
 As opções entram no *bundle* da fase (linha `opcoes:` do `bundle.sha256` no W-6c). Uma fase retomada com outras opções
@@ -638,28 +648,41 @@ O GO é dado como no 4.3, pelo supervisor da janela `cs3:sup18`, sob a mesma aut
 no início e `go rede 1` depois da i = 0 (~8 min). Numa retomada, o orquestrador pede de novo o GO de fase (com a data
 UTC do momento) e o `go rede` da primeira F2/F4 que falta. O supervisor aceita qualquer i de F2/F4 da fila.
 
-### 5.5 Regra do *swap* no portão K1 (pré-registro §5, C-10)
+### 5.5 Regra do *swap* no portão K1 (C-10)
 
-"No K1 de cada execução, depois da recriação, *swap* ≥ 1 GiB para a fase", com o limiar de 1 048 576 kB do
-supervisor da noite 1. O supervisor lê `SwapTotal − SwapFree` a cada 3 s enquanto a última linha do log é `exec
-i=<i>: portao K1` (o K1 dura ≥ 60 s, então há ~20 leituras antes da carga). Com uma leitura ≥ 1 GiB:
+**C-10 aprovada** (nota de fechamento do DT-020, `2c8b7b8`; decisão do coordenador de 05/11 sob a autorização do
+Gestor): com *swap* usado (`SwapTotal − SwapFree`) ≥ 1 048 576 kB no portão K1, o *cluster* é recriado antes da
+execução, que roda com o mesmo i e a mesma semente, sem contar como recusa. O limiar é o `LIM_swap_kB` do supervisor da
+noite 1. **Nunca** `swapoff`/`swapon`: com ~6,4 GB nas três JVMs numa VM de 8 GB, o risco de OOM é real. A §5 do
+pré-registro ("para a fase") vai ser alinhada à C-10 pelo outro Senior.
 
-1. manda `Ctrl-C` à janela `cs3:orq` e grava `ALERTA-SWAP-calibracao-i<i>`. O orquestrador sai com 130 pelo *trap*. A
-   execução não tem `stdout.log`, então na retomada vira `exec-<i>-….abortada-<UTC>` e roda de novo com o mesmo i e a
-   mesma semente (DT-014 item 1);
-2. grava o diagnóstico em `~/cs3-infra/memoria-swap-calibracao-i<i>-<UTC>.txt` (`free -m`, `swapon --show`, PSI de
-   memória e os 15 processos com mais `VmSwap`);
-3. só na primeira vez da invocação do supervisor, e só se `MemAvailable` > *swap* usado + 1 GiB, roda `swapoff -a &&
-   swapon -a` sob o *lock* e relança o orquestrador com o mesmo comando;
-4. numa segunda ocorrência, sem RAM para o `swapoff`, ou com o *swap* ainda ≥ 1 GiB depois dele, para e grava
-   `ALERTA-SWAP2-*`, `ALERTA-SWAP-RAM-*` ou `ALERTA-SWAP-*`. O coordenador **não** retoma e chama o Senior com o
-   arquivo de diagnóstico.
+O supervisor lê o *swap* a cada 3 s enquanto a última linha do log é `exec i=<i>: portao K1` (o K1 dura ≥ 60 s, então
+há ~20 leituras antes da carga) e grava a primeira de cada K1 (`K1 i=<i> swap_usado_kB=<n>`). O que acontece com ≥ 1 GiB
+depende do W-6c:
 
-Com W-6c, se o *swap* passar de 1 GiB só depois do K1, o orquestrador recria o *cluster* e passa por um K1 novo. O
-supervisor pega a leitura nesse K1 e faz o mesmo. O risco que sobra é o `Ctrl-C` cair nos milissegundos entre o fim do
-K1 e o lançamento. Aí a execução vira RECUSADA na retomada (DT-014 item 2) e entra nas reposições. A chance é de
-~0,1 % por K1 com *swap* alto. Com o *cluster* recriado antes de toda execução, o esperado é *swap* perto de 50 MB em
-todo K1 (noite 1, i = 50 a 59, depois de cada recriação).
+- **Com W-6c (`W6C=sim`, supervisor no modo `registrar`).** Quem recria é o orquestrador: depois do K1, com
+  `--swap-limite-kb 1048576`, ele guarda os brutos da primeira recriação em `antes-recriacao-swap/`, recria pelo mesmo
+  caminho (`down`/`up`, seis *caches*, camada 3, K1) e lança a execução com o mesmo i e a mesma semente. É uma
+  recriação por portão; se o *swap* continuar ≥ 1 GiB, a execução roda com o aviso (`swap continua …`, P-56). O
+  supervisor só registra.
+- **Sem W-6c (`W6C=nao`, modo `recriar`).** O supervisor faz o que o supervisor da noite 1 fazia, quantas vezes for
+  preciso, sempre registrando:
+  1. `Ctrl-C` na janela `cs3:orq` e um arquivo `~/cs3-infra/SWAP-<fase>-i<i>-<hhmmss>`. O orquestrador sai com 130 pelo
+     *trap*. A execução não tem `stdout.log`, então na retomada vira `exec-<i>-….abortada-<UTC>` e roda de novo com o
+     mesmo i e a mesma semente (DT-014 item 1), sem contar como recusa;
+  2. diagnóstico em `~/cs3-infra/memoria-swap-<fase>-i<i>-<UTC>.txt` (`free -m`, `swapon --show`, PSI de memória e os
+     15 processos com mais `VmSwap`), só leitura;
+  3. `flock -n /var/lock/tcc-vm.lock bash ~/cs3-infra/recriar-cs3.sh <bundle> ~/cs3-infra/recriacao-swap-<fase>-i<i>-<UTC>`;
+     sem `RECRIAR-CS3 OK`, o supervisor para com `ALERTA-RECRIACAO-<fase>`;
+  4. relança o orquestrador com o mesmo comando (o orquestrador recria de novo antes da execução, como sempre);
+  5. na terceira parada seguida na mesma execução, grava `ALERTA-SWAP-REPETIDO-<fase>-i<i>`, só informativo: o
+     supervisor continua, e o coordenador avisa o Senior com os arquivos de diagnóstico, porque a recriação não está
+     liberando a memória (o *swap* é de outro processo, P-56).
+
+O risco que sobra no modo `recriar` é o `Ctrl-C` cair nos milissegundos entre o fim do K1 e o lançamento. Aí a
+execução vira RECUSADA na retomada (DT-014 item 2) e entra nas reposições. A chance é de ~0,1 % por K1 com *swap*
+alto. Com o *cluster* recriado antes de toda execução, o esperado é *swap* perto de 50 MB em todo K1 (noite 1, i = 50 a
+59, depois de cada recriação).
 
 ### 5.6 Acompanhamento (só leitura, a cada 30 a 60 min; H0, sem `scp` nem cópia)
 
@@ -761,7 +784,8 @@ Os brutos ficam também na VM (o volume é pequeno). Nada é apagado.
 Gravar `"$H/x18-$TS/ENTREGA-W9.txt"` no *host* com:
 
 1. o diretório `dados-vm/cs3-2026-11/x18-<TS>/campanha-s3-calibracao/` e os SHA-256 de `x18-<TS>.sha256`;
-2. a versão do pré-registro (DT-020, `2c8b7b8`) e as regras que o W-9 aplica (7.1 a 7.18);
+2. a versão do pré-registro (DT-020, `2c8b7b8`), o complemento 1 (DT-022, `744e6e8`) e as regras que o W-9 aplica
+   (7.1 a 7.18, nas leituras do complemento 1);
 3. T, S7, `JAR_SHA`, `PCAL_SHA`, `CTRL_SHA`, `REF_A_SHA`, `REF_S_SHA`, `MCAL_SHA` e o `bundle_sha256` de
    `calibracao/bundle.sha256` (todos no `cs3-infra/vars.sh` copiado);
 4. o `cs3-infra/resumo-x18.tsv` (veredito, motivos, avisos, medidas, *swap* no K1, `fim` e `linhas_perdidas` de
@@ -771,7 +795,7 @@ Gravar `"$H/x18-$TS/ENTREGA-W9.txt"` no *host* com:
 6. a frase: "dados da calibração não entram na avaliação (D-12); as referências usadas são inertes (seção 3 do
    roteiro), e a 7.1 deriva as de verdade".
 
-O W-9 roda o `analysis/calibracao_s3.py` validado (P-7), com a linha de comando do relatório dele, sobre essa cópia do
+O W-9 roda o `analysis/calibracao_s3.py` validado pela V-W9 (P-7), com a linha de comando do relatório dele, sobre essa cópia do
 *host*. A saída (JSON com valor, regra e dados de cada parâmetro) vai ao Senior, que a confere contra os brutos e a leva
 ao B-40 parte 2, antes da N4.
 
@@ -820,8 +844,9 @@ uma segunda falha igual na mesma fase para e chama o Senior.
 | orquestrador | exit 10 por K1 em 600 s, nó do F1 sem volta em 180 s ou *cluster* sem 3 HEALTHY | `recriar-cs3.sh` à mão (2.4) para diagnóstico; se `RECRIAR-CS3 OK`, relançar uma vez |
 | orquestrador | exit 10 por disco ou `boot_id` mudado | parar e chamar o Senior. Com `boot_id` novo (queda da VM ou do *host*, como em 28/10), o amostrador é outro, e o h4 das execuções anteriores precisaria de dois arquivos; não retomar sem o Senior |
 | supervisor | `ALERTA-PROGRESSO-*` | `pgrep -af 'run-campanha-s3|session-workload|inject-'`; se o Java passou de `exec_teto_s` + 23 s (`ps -o etimes= -p <PID>`), o `timeout` falhou: `tmux send-keys -t cs3:orq C-c`, esperar `ORQ_RC=` e relançar uma vez (DT-014) |
-| supervisor | `ALERTA-SWAP-*-i<i>` sozinho | nada: a retomada é automática (5.5); conferir no log `abortada` e o mesmo i |
-| supervisor | `ALERTA-SWAP2-*`, `ALERTA-SWAP-RAM-*`, `ALERTA-SWAP-*` | não retomar; chamar o Senior com `memoria-swap-*` |
+| supervisor | `SWAP-<fase>-i<i>-*` (modo `recriar`) | nada: recriação e relançamento são automáticos (5.5); conferir no log `abortada` e o mesmo i |
+| supervisor | `ALERTA-SWAP-REPETIDO-<fase>-i<i>` | o supervisor segue; avisar o Senior com `memoria-swap-*` (a recriação não libera a memória) |
+| supervisor | `ALERTA-RECRIACAO-<fase>` | a recriação depois do *swap* falhou: ver `recriacao-swap-*/conferencia.txt`, seguir as linhas do 2.4 desta tabela e relançar com `lancar_fase` |
 | supervisor | `ALERTA-FIM-*` com `parada pedida pelo arquivo PARAR` | só se alguém criou o `PARAR`: apagar o arquivo e relançar |
 | fase | execução RECUSADA ou DESCARTADA-INFRA, fase segue | nada na hora; entra nas reposições (5.7) |
 | rede | *timer* `tcc-heal-cs-<i>` sobrando depois de um orquestrador morto | esperar o disparo (≤ 180 s do início da falha) e conferir `tc qdisc`; se ainda houver regra, `bash scripts/inject-partition.sh --heal --minority isn3` (F2) ou `bash scripts/inject-netdegrade.sh --heal` (F4), e só então `sudo systemctl stop tcc-heal-cs-<i>.timer` |
@@ -829,16 +854,19 @@ uma segunda falha igual na mesma fase para e chama o Senior.
 | acesso | IP da VM mudou | `Get-NetNeighbor -LinkLayerAddress 00-15-5D-03-AC-00` e trocar `VMIP` |
 | X-17 | REPROVADO | não recriar o *cluster*; 4.8 (cópia); chamar o Senior. Repetir o X-17 depois da correção com `--b0 1` (semente 290 100, B primeiro), matriz `86bc5cd1…46bc8`, `--saida runs/x17-validacao-r2` e `cmd-x17` novo |
 
-## 9. Pontos para o Gestor (nenhum bloqueia o X-17)
+## 9. Decisões do coordenador (05/11, sob a autorização do Gestor e a regra permanente)
 
-| # | Ponto | O que o roteiro faz | Recomendação do Senior |
+| # | Ponto | Decisão | Onde entra |
 |---|---|---|---|
-| G-1 | Perfil do *host* no X-17 e no X-18 | H0, porque o M-0 não rodou (pré-registro §2). Os *Workers* ficam sem `mvn`, testes e TLC por ~4 a 11 h | manter H0. O M-0 custa ~2 h de VM mais a leitura e só compensaria se o B-40 inteiro fosse rodar em H1 |
-| G-2 | W-9 validado antes do X-18 (pré-registro §7 e §9 item 4) | o X-18 espera (P-7) | manter. Se o W-9 for atrasar o X-18 em mais de ~2 h, a alternativa é uma DT que permita rodar o X-18 com os brutos lacrados (só a conferência mecânica deste roteiro até o commit validado do W-9). Sem essa DT, esperar |
-| G-3 | Divergência entre o pré-registro §5 e o W-6c no *swap* (P-56 do W-6c) | o pré-registro para a fase com ≥ 1 GiB no K1; o W-6c recria e roda com aviso. O supervisor aplica o pré-registro no K1, antes da carga, e retoma uma vez depois de `swapoff`/`swapon` | confirmar a retomada automática única. Ela não lê desfecho, só o estado da VM |
-| G-4 | `--exigir-trilha-completa` | só no X-17; na calibração, `trilha_incompleta` vira aviso e o resumo leva `fim`/`linhas_perdidas` das duas trilhas ao W-9 | confirmar. A DT-020 §5 não tem o critério; incluí-lo agora seria critério novo |
-| G-5 | `APROVADO-SEM-B1` libera o X-18 | sim, porque a calibração não tem braço B | confirmar. O B1 passa a ser conferido no primeiro bloco F2 da avaliação |
-| G-6 | O1 (AC-5 precoce para a fase com 6) | mantido no X-17, como no B-40 §9 ("vale até o X-17"); o Senior reavalia com os brutos do X-17 | — |
+| G-1 | Perfil do *host* no X-17 e no X-18 | **H0** nos dois. A integração e o W-6c terminam os testes pesados antes do X-17 | P-4; 4.1; 5.1 |
+| G-2 | W-9 antes do X-18 | o W-9 existe (`wt-w9`, `feature/w9-calibracao-s3`, a partir de `4bcca11`, 55 testes OK) e está sendo ajustado ao complemento 1 (DT-022, `744e6e8`); uma validação independente (V-W9) roda antes do X-18 | P-7; 6.3 |
+| G-3 | *Swap* no portão | vale a **C-10 aprovada** (nota de fechamento do DT-020, `2c8b7b8`): recriar o *cluster* antes da execução, mesmo i, mesma semente, sem recusa; coincide com o W-6c (`--swap-limite-kb`, P-56). **Sem `swapoff`/`swapon`.** Com W-6c integrado, `--swap-limite-kb 1048576`; sem ele, o supervisor dá Ctrl-C no K1, recria pelo `recriar-cs3.sh` e relança, quantas vezes for preciso, registrando. A §5 do pré-registro será alinhada à C-10 pelo outro Senior | 5.3; 5.5; supervisor (10.2) |
+| G-4 | `--exigir-trilha-completa` | só no X-17 | 5.3 |
+| G-5 | `APROVADO-SEM-B1` libera o X-18 | sim: o X-18 é só braço A, sem AC-5 | 4.6 |
+| G-6 | O1 (AC-5 precoce para a fase com 6) | fica como está até o X-17 | 4.6 |
+
+A integração está em `49baddc` (W-2b mais W-6). O W-6c entra por cima quando terminar, e o coordenador passa o SHA
+final (T) para o 2.1.
 
 ## 10. Arquivos auxiliares
 
@@ -847,7 +875,7 @@ Extraídos no 2.1 do *blob* deste roteiro. A extração tem de dar exatamente es
 | Arquivo | SHA-256 | Vai para |
 |---|---|---|
 | `recriar-cs3.sh` | `fe3bc4f2c931f1c2826d52952df8352f737794b6d0ff26fb1bb1660d1256d9ca` | `~/cs3-infra/` |
-| `supervisor-cs3.sh` | `6da54c976930cfd7afcaa2c4ba1f4aca806c713f4da37dbdca82684f64950888` | `~/cs3-infra/` |
+| `supervisor-cs3.sh` | `438044421b1ce7da19e9c3e707305b78d7e986268e27c94a2311607445ac1714` | `~/cs3-infra/` |
 | `cs3-conferir.py` | `3d11fed75de618e6bc47139fb3ac2578ac742fe22292b41b7a63a9b34e88e5b6` | `~/cs3-infra/` |
 | `campanha-s3-calibracao-v1.json` | `cfd5fa6a0d5de696d52dac1ae1646b1ae87eb9303dc7533cedba8a5e24af9a98` | `runs/entrada/` |
 | `referencia-S3-async-inerte.json` | `05342de490d817208d4c26625a4718f4969f4d02244b4b24758bdc73a2016d15` | `runs/entrada/` |
@@ -934,21 +962,25 @@ echo "RECRIAR-CS3 FALHA ($nf)" | tee -a "$D/conferencia.txt"; exit 1
 <!-- arquivo: supervisor-cs3.sh -->
 ```bash
 #!/bin/bash
-# supervisor-cs3.sh <SAIDA> <FASE> <TSV da fila> <arquivo de comando> <limiar de progresso, s>
+# supervisor-cs3.sh <SAIDA> <FASE> <TSV da fila> <arquivo de comando> <limiar de progresso, s> <registrar|recriar> <bundle>
 # Supervisor do coordenador para UMA invocacao de fase do run-campanha-s3.sh (X-17 e X-18), na janela tmux cs3:sup,
 # sob a autorizacao do Gestor de 05/11 (rodar o X-17 e a calibracao sem novo aval). Roteiro
 # docs/roteiro-x17-calibracao-2026-11-05.md, secao 5.4. Modelo: supervisor-n1s2b.sh e goloop-gen.sh da noite 1.
 #  1. GO: copia para cs3:orq so "go <FASE> AAAA-MM-DD" e "go rede <i>" com i de F2/F4 da fila, uma vez por texto e
 #     por invocacao; outro pedido grava ALERTA-GO e fica sem resposta (o orquestrador sai com 5 em 1 h).
-#  2. Swap (pre-registro da calibracao, secao 5, C-10): le /proc/meminfo enquanto a ultima linha do log e o "portao
-#     K1" de uma execucao (depois da recriacao, antes da carga); >= 1 GiB -> Ctrl-C ali (DT-014 item 1: sem
-#     stdout.log, a execucao volta com o mesmo i e a mesma semente). Uma retomada automatica por invocacao do
-#     supervisor, depois do diagnostico e de swapoff/swapon com RAM livre; a segunda ocorrencia para e grava ALERTA.
+#  2. Swap (C-10 aprovada, nota de fechamento do DT-020, 2c8b7b8; decisao do coordenador de 05/11): com >= 1 GiB no
+#     portao K1, o cluster e recriado antes da execucao, que roda com o mesmo i e a mesma semente, sem contar como
+#     recusa. Le /proc/meminfo enquanto a ultima linha do log e o "portao K1" de uma execucao. Modo "registrar" (W-6c na
+#     ponta, --swap-limite-kb 1048576): quem recria e o orquestrador; aqui so se registra a leitura. Modo "recriar"
+#     (sem W-6c): Ctrl-C no K1 (DT-014 item 1: sem stdout.log, mesmo i e mesma semente), diagnostico, recriar-cs3.sh
+#     sob o lock e relancamento, quantas vezes for preciso, sempre registrando; a terceira seguida na mesma execucao
+#     grava ALERTA-SWAP-REPETIDO, so informativo. Nunca swapoff/swapon (risco de OOM: ~6,4 GB nas tres JVMs em 8 GB).
 #  3. Progresso: orquestrador.log parado por mais de <limiar> s grava ALERTA-PROGRESSO (sem acao automatica).
 #  4. Fim (ORQ_RC= no painel): "FIM exit=0 motivo=fase <FASE> concluida" grava FIM-<FASE>-OK; outro fim, ALERTA-FIM.
 # Nunca usa pkill; nao mata sessao tmux; progresso em /run/tccdiag/coord-cs3 (tmpfs); eventos em ~/cs3-infra.
 set -u
-SAIDA=$1; FASE=$2; TSV=$3; CMD=$4; LIMIAR=$5
+SAIDA=$1; FASE=$2; TSV=$3; CMD=$4; LIMIAR=$5; MODO=$6; BUNDLE=$7
+case "$MODO" in registrar|recriar) ;; *) echo "uso: modo do swap deve ser registrar ou recriar" >&2; exit 2 ;; esac
 J=cs3:orq; I=$HOME/cs3-infra; V=/run/tccdiag/coord-cs3; LIM=1048576
 L=$SAIDA/$FASE/orquestrador.log
 TS=$(date -u +%Y%m%dT%H%M%SZ); EV=$I/supervisor-$FASE-$TS.log; PR=$V/progresso-$FASE-$TS.log
@@ -957,8 +989,8 @@ ev() { echo "$(date -u +%FT%TZ) $*" | tee -a "$EV"; }
 swap_kb() { awk '/^SwapTotal:/{t=$2} /^SwapFree:/{f=$2} END{print t-f}' /proc/meminfo; }
 mem_kb() { awk '/^MemAvailable:/{print $2}' /proc/meminfo; }
 REDE="|$(awk -F'\t' -v f="$FASE" 'NR>1 && ($7=="F2"||$7=="F4") && (f=="reposicoes"||$2==f) {printf "%s|", $1}' "$TSV")"
-ev "inicio saida=$SAIDA fase=$FASE tsv=$TSV cmd=$CMD limiar=${LIMIAR}s swap_lim_kB=$LIM rede=$REDE"
-feito="|"; k1="|"; swap_i=""; retomadas=0; t0=$(date +%s); ult=0; alertado=0
+ev "inicio saida=$SAIDA fase=$FASE tsv=$TSV cmd=$CMD limiar=${LIMIAR}s swap_lim_kB=$LIM modo_swap=$MODO bundle=$BUNDLE rede=$REDE"
+feito="|"; k1="|"; swap_i=""; ult_swap_i=""; seguidas=0; t0=$(date +%s); ult=0; alertado=0
 
 relancar() {
   tmux send-keys -t "$J" clear Enter; sleep 1; tmux clear-history -t "$J"
@@ -967,8 +999,8 @@ relancar() {
   ev "orquestrador relancado: bash $CMD"
 }
 
-tratar_swap() {  # orquestrador ja saiu com 130 pelo Ctrl-C do swap: diagnostico, swapoff/swapon, uma retomada
-  local f s m p q
+tratar_swap() {  # orquestrador ja saiu com 130 pelo Ctrl-C do swap: diagnostico, recriacao (C-10), relancamento
+  local f d p q
   f=$I/memoria-swap-$FASE-i$swap_i-$(date -u +%Y%m%dT%H%M%SZ).txt
   { date -Is; free -m; swapon --show; cat /proc/pressure/memory
     for p in /proc/[0-9]*; do
@@ -976,13 +1008,16 @@ tratar_swap() {  # orquestrador ja saiu com 130 pelo Ctrl-C do swap: diagnostico
       [ -n "$q" ] && [ "$q" -gt 0 ] && echo "$q kB pid=${p#/proc/} $(tr '\0' ' ' < "$p/cmdline" 2>/dev/null | cut -c1-150)"
     done | sort -rn | head -15
   } > "$f" 2>&1
-  retomadas=$((retomadas + 1))
-  if [ "$retomadas" -gt 1 ]; then ev "segunda parada por swap: supervisor para (diagnostico em $f)"; touch "$I/ALERTA-SWAP2-$FASE"; return 1; fi
-  s=$(swap_kb); m=$(mem_kb)
-  if [ "$m" -le $((s + LIM)) ]; then ev "swap=$s kB, MemAvailable=$m kB: sem RAM para o swapoff; supervisor para"; touch "$I/ALERTA-SWAP-RAM-$FASE"; return 1; fi
-  flock -n /var/lock/tcc-vm.lock sudo sh -c 'swapoff -a && swapon -a'
-  ev "swapoff/swapon rc=$? swap antes=$s kB depois=$(swap_kb) kB (diagnostico em $f)"
-  if [ "$(swap_kb)" -ge "$LIM" ]; then ev "swap continua >= 1 GiB: supervisor para"; touch "$I/ALERTA-SWAP-$FASE"; return 1; fi
+  if [ "$swap_i" = "$ult_swap_i" ]; then seguidas=$((seguidas + 1)); else seguidas=1; ult_swap_i=$swap_i; fi
+  if [ "$seguidas" -ge 3 ]; then
+    ev "parada por swap numero $seguidas seguida na i=$swap_i (informativo; o supervisor segue)"; touch "$I/ALERTA-SWAP-REPETIDO-$FASE-i$swap_i"
+  fi
+  d=$I/recriacao-swap-$FASE-i$swap_i-$(date -u +%Y%m%dT%H%M%SZ)
+  flock -n /var/lock/tcc-vm.lock bash "$I/recriar-cs3.sh" "$BUNDLE" "$d" > /dev/null 2>&1
+  if ! tail -n 1 "$d/conferencia.txt" 2>/dev/null | grep -q '^RECRIAR-CS3 OK$'; then
+    ev "recriacao depois do swap da i=$swap_i falhou ($d): supervisor para"; touch "$I/ALERTA-RECRIACAO-$FASE"; return 1
+  fi
+  ev "cluster recriado depois do swap da i=$swap_i (C-10): swap agora $(swap_kb) kB; recriacao em $d; diagnostico em $f"
   relancar
   return 0
 }
@@ -1006,9 +1041,11 @@ for t in $(seq 1 200000); do
   if [ -n "$k" ] && [ -z "$swap_i" ]; then
     s=$(swap_kb)
     printf '%s' "$k1" | grep -qF "|$k|" || { k1="$k1$k|"; ev "K1 i=$k swap_usado_kB=$s"; }
-    if [ "$s" -ge "$LIM" ]; then
+    if [ "$s" -ge "$LIM" ] && [ "$MODO" = recriar ]; then
       tmux send-keys -t "$J" C-c; swap_i=$k
-      ev "SWAP $s kB >= $LIM kB no K1 da i=$k: Ctrl-C (pre-registro secao 5; DT-014 item 1)"; touch "$I/ALERTA-SWAP-$FASE-i$k"
+      ev "SWAP $s kB >= $LIM kB no K1 da i=$k: Ctrl-C para recriar o cluster (C-10; DT-014 item 1)"; touch "$I/SWAP-$FASE-i$k-$(date -u +%H%M%S)"
+    elif [ "$s" -ge "$LIM" ] && ! printf '%s' "$k1" | grep -qF "|$k:alto|"; then
+      k1="$k1$k:alto|"; ev "SWAP $s kB >= $LIM kB no K1 da i=$k: o orquestrador (W-6c, --swap-limite-kb) recria o cluster"
     fi
   fi
   # 3) fim do orquestrador
@@ -1460,7 +1497,7 @@ Nenhuma de código. Este roteiro está em `docs/plano-implementacao-controlador`
 4.6 (X-17) e as conferências de 6.1 e 6.2 (X-18).
 
 ### Pontos que precisam de validação do gestor
-Seção 9, G-1 a G-6.
+Nenhum em aberto: G-1 a G-6 decididos pelo coordenador em 05/11 (seção 9).
 
 ### Próxima tarefa sugerida para o Worker
-Nenhuma neste roteiro. O W-9 continua como pré-condição do X-18 (P-7).
+Nenhuma neste roteiro. O W-9 ajustado ao complemento 1, com a V-W9 aprovada, continua como pré-condição do X-18 (P-7).

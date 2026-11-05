@@ -1238,7 +1238,8 @@ ok "S26n uma carga parada (a de i=0)" "1" "$(ls "${ST}"/java-morto-* 2>/dev/null
 N4="$(grep -cx 4 "${ST}/py-meta-rc" 2>/dev/null)"
 verdade "S26n i=0 releu a meta (mais de uma leitura com 4)" test "${N4:-0}" -ge 2
 ok "S26n i=0 sem injecao (marcadores vazios)" "" "$(grep -F 'fault=F1' "${D0}/marcadores.txt" 2>/dev/null)"
-ok "S26n um so podman kill (o F1 de i=1)" "1" "$(conta 'podman|kill')"
+# ' podman|kill|': so a linha do shim de podman (a do sudo, "sudo|podman|kill|...", contaria a mesma chamada duas vezes)
+ok "S26n um so podman kill (o F1 de i=1)" "1" "$(conta ' podman|kill|')"
 fi
 
 echo

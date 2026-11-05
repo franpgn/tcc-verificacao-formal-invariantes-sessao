@@ -1,0 +1,37 @@
+{
+  "versao": "provisorio-calibracao-2026-11-05 (nucleo = padrao provisorio-2026-10-22)",
+  "wNs": 5000000000,
+  "nLat": 100,
+  "nErr": 50,
+  "thetaLatIn": 0.05,
+  "thetaLatOut": 0.02,
+  "thetaErrIn": 0.02,
+  "thetaErrOut": 0.005,
+  "k": 2,
+  "m": 6,
+  "cooldownNs": 30000000000,
+  "estavelNs": 30000000000,
+  "holdViolNs": 120000000000,
+  "politica": {
+    "kLag": 2,
+    "tetoLagMs": 2000,
+    "tRebNs": 60000000000,
+    "cotaAc5": 1,
+    "origem": {
+      "kLag": "provisorio-calibracao",
+      "tetoLagMs": "--hotrod-timeout-ms da campanha (2000 ms, padrao de S3Parametros), igual pela R7 do W-2a",
+      "tRebNs": "state-transfer.timeout do XML (60000 ms), acima da deteccao medida de 46,8 s (local) e 46,4 s (VM)",
+      "cotaAc5": "desenho: uma vez por execucao (owners=2 tolera um no fora)"
+    }
+  },
+  "defasagem": {
+    "lagInMs": 2000,
+    "lagOutMs": 1000,
+    "passoLeituraMs": 20,
+    "origem": {
+      "lagInMs": "provisorio-calibracao",
+      "lagOutMs": "provisorio-calibracao",
+      "passoLeituraMs": "wada_consistency_cloud_2011 secao 2 (leitores a 50 leituras por segundo)"
+    }
+  }
+}

@@ -542,6 +542,16 @@ final class LigacaoControlador implements AutoCloseable, WorkloadMain.ControleDa
             } else {
                 defasagem.contadores().forEach(o::put);
             }
+            // P-40: a chave de cada no e se ela tinha o proprio no como dono primario na abertura
+            if (canario == null) {
+                o.putNull("defasagem_chaves");
+            } else {
+                var chaves = o.putArray("defasagem_chaves");
+                for (int i = 0; i < canario.nos(); i++) {
+                    chaves.addObject().put("no", canario.rotulo(i)).put("chave", canario.chave(i))
+                            .put("primario", canario.chaveNoPrimario(i));
+                }
+            }
         });
     }
 

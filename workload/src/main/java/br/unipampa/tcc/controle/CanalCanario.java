@@ -11,6 +11,9 @@ package br.unipampa.tcc.controle;
  */
 public interface CanalCanario extends AutoCloseable {
 
+    /** Prefixo de toda chave escrita pela sonda no cache canario. */
+    String PREFIXO_CHAVE = "lag:";
+
     /** Numero de nos ({@code >= 2}); a ordem e a de {@code --servers} e de {@code --controller-admin}. */
     int nos();
 
@@ -19,6 +22,24 @@ public interface CanalCanario extends AutoCloseable {
      * sonda de topologia e do atuador (contrato JSONL, "rotulo dos nos"; {@code RotulosDosNosTest}).
      */
     String rotulo(int indice);
+
+    /**
+     * Chave que a sonda escreve para o no {@code indice}. Padrao: {@code lag:<rotulo>}. O adaptador Hot Rod escolhe,
+     * na abertura, uma chave cujo dono primario e o proprio no (P-40), para que, sob o corte de outro no, os pares
+     * entre os nos da maioria continuem vendo o valor. Comeca sempre por {@link #PREFIXO_CHAVE}.
+     */
+    default String chave(int indice) {
+        return PREFIXO_CHAVE + rotulo(indice);
+    }
+
+    /**
+     * P-40: a chave do no tinha o proprio no como dono primario na abertura ({@code true}), nao tinha
+     * ({@code false}), ou o canal nao sabe ({@code null}, padrao). So registro ({@code defasagem_chaves} no
+     * {@code fim}).
+     */
+    default Boolean chaveNoPrimario(int indice) {
+        return null;
+    }
 
     /**
      * Escreve {@code valor} em {@code chave} pelo cliente fixado no no {@code indice}. Bloqueia ate a resposta

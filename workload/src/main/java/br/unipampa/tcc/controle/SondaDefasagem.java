@@ -30,7 +30,7 @@ import java.util.function.Consumer;
  * W-4 (B-26.3): sonda ativa de defasagem de replicacao ({@code S_lag}; plano de alinhamento de 2026-11-04,
  * secao 4.2; plano de execucao, secoes 4.2 e 9, W-4; documento de 05/11, secao 3.1, assinatura do P1).
  *
- * <p><b>Rodada.</b> Para cada no X, uma tarefa escreve {@code lag:<rotulo de X>} = {@code <nonce>:<rodada>} pelo
+ * <p><b>Rodada.</b> Para cada no X, uma tarefa escreve a chave de X ({@link CanalCanario#chave(int)}) = {@code <nonce>:<rodada>} pelo
  * cliente de X; para cada outro no Y, uma tarefa le essa chave pelo cliente de Y ate ver o valor novo ou ate o
  * prazo de leitura ({@code --hotrod-timeout-ms}, o mesmo dos clientes; igual a {@code politica.tetoLagMs} pela R7
  * do W-2a). O leitor espera a escrita de X terminar, mas no
@@ -65,8 +65,8 @@ import java.util.function.Consumer;
  */
 public final class SondaDefasagem implements FonteDeDefasagem, AutoCloseable {
 
-    /** Prefixo da chave de cada no no cache canario. */
-    public static final String PREFIXO_CHAVE = "lag:";
+    /** Prefixo da chave de cada no no cache canario ({@link CanalCanario#PREFIXO_CHAVE}). */
+    public static final String PREFIXO_CHAVE = CanalCanario.PREFIXO_CHAVE;
 
     static final String NOME_AGENDA = "sonda-defasagem";
     static final String PREFIXO_TAREFA = "sonda-defasagem-tarefa-";
@@ -167,10 +167,17 @@ public final class SondaDefasagem implements FonteDeDefasagem, AutoCloseable {
                 throw new IllegalArgumentException("rotulo vazio no no " + i);
             }
             r.add(rot);
-            c.add(PREFIXO_CHAVE + rot);
+            String chave = canal.chave(i); // P-40: o adaptador Hot Rod escolhe uma chave com primario no proprio no
+            if (chave == null || !chave.startsWith(PREFIXO_CHAVE)) {
+                throw new IllegalArgumentException("chave do no " + i + " sem o prefixo " + PREFIXO_CHAVE + ": " + chave);
+            }
+            c.add(chave);
         }
         if (new HashSet<>(r).size() != nos) {
             throw new IllegalArgumentException("rotulos repetidos: " + r);
+        }
+        if (new HashSet<>(c).size() != nos) {
+            throw new IllegalArgumentException("chaves repetidas: " + c);
         }
         this.rotulos = List.copyOf(r);
         this.chaves = List.copyOf(c);
@@ -631,7 +638,7 @@ public final class SondaDefasagem implements FonteDeDefasagem, AutoCloseable {
         return rotulos;
     }
 
-    /** Chaves escritas, uma por no ({@value #PREFIXO_CHAVE} + rotulo). */
+    /** Chaves escritas, uma por no ({@link CanalCanario#chave(int)}; padrao {@value #PREFIXO_CHAVE} + rotulo). */
     public List<String> chaves() {
         return chaves;
     }

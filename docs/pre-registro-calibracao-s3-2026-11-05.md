@@ -1,13 +1,14 @@
-# Pré-registro da calibração do controlador na campanha S3: RASCUNHO (2026-11-05)
+# Pré-registro da calibração do controlador na campanha S3: APROVADO (2026-11-05)
 
 > Senior, 2026-11-05, escrito com o *host* em silêncio (segmento 2 da noite 1 do *rebaseline* na VM): só leitura e
 > escrita de documentos, nenhum teste, Maven ou Podman. Branch `docs/pre-registro-calibracao-s3` (worktree
-> `wt-prc-s3`, base `afd9cf5`). **Rascunho: não vale como pré-registro até o Gestor aprovar.** Depois da aprovação,
-> vira entrada `DT-0xx (PRÉ-REGISTRO)` em `docs/decisoes-tecnicas.md`; pela regra do cabeçalho daquele arquivo, nada
-> daqui muda depois de ver dados da calibração, e uma mudança vira entrada nova. Sem push.
+> `wt-prc-s3`, base `afd9cf5`). **Aprovado** pelo coordenador em nome do Gestor em 2026-11-05 (decisões finais de
+> ~22:30Z; os demais itens pela regra permanente do Gestor, só os que têm origem rastreável, seção 10) e registrado como
+> **DT-020 (PRÉ-REGISTRO)** em `docs/decisoes-tecnicas.md`. Pela regra do cabeçalho daquele arquivo, nada daqui muda
+> depois de ver dados da calibração, e uma mudança vira entrada nova. Sem push.
 >
 > Autorizado pelo coordenador em nome do Gestor na resposta à V-W6 (`wt-w6/docs/validacao-w6-2026-11-05.md`, item 5).
-> O B-40 (avaliação) é rascunhado à parte, em `docs/b40-pre-registro-avaliacao`, e usa as regras de derivação da
+> O B-40 parte 1 (avaliação) está à parte, em `docs/b40-pre-registro-avaliacao` (DT-021), e usa as regras de derivação da
 > seção 7 daqui.
 
 ## Siglas
@@ -67,8 +68,8 @@ flowchart LR
 | Máquina | VM `tcc-f3`, *cluster rootful* de 3 nós Infinispan 15.0.21 | roteiro da VM de 04/11 |
 | Configuração do *cluster* | `cluster/infinispan-sem-caches.xml` + `cluster/podman-compose-sem-caches.yml`; os seis *caches* (`sessions`, `counters`, `sessions-async`, `counters-async`, `canario`, `canario-async`) criados pela REST a partir de `cluster/caches/*.json` antes de **cada** execução | decisão D-G e §6 de `acoes-controlador-cluster-2026-11-05.md`; TD-015 do W-6 |
 | Mudança de infraestrutura a declarar | o *rebaseline* usou *caches* no XML; aqui são criados pela REST. A configuração é a mesma, com `remote-timeout` = 17 500 explícito nos SYNC, o valor efetivo do XML antigo (B-44.1 §5) | `acoes-controlador-cluster-2026-11-05.md` §6, itens 2 e 9 |
-| Orquestrador | `scripts/run-campanha-s3.sh` da ponta integrada **depois** do W-6b, do *merge* com o W-2b, do I-1 e da correção B2 (seção 9) | V-W6 |
-| Jar, matriz, parâmetros, controlador, referência | SHA-256 de cada um registrado no commit que aprova este documento, antes do X-18 | regra do *bundle* do W-6 (retomada recusa *bundle* mudado) |
+| Orquestrador | `scripts/run-campanha-s3.sh` da ponta integrada **depois** do *merge* do W-2b e do W-6 com o I-1. O W-6b já está feito (`bef758e`, relatório `6f366ac`, V-W6b `081e1c4`) e inclui a correção B2 (referência por perfil) | V-W6; V-W6b |
+| Jar, matriz, parâmetros, controlador e as **duas** referências de p99 | SHA-256 de cada um registrado antes do X-18; as referências vão por `--referencia-async` e `--referencia-sync`, cada uma com o seu SHA-256 | regra do *bundle* do W-6 (retomada recusa *bundle* mudado); B2 do W-6b (V-W6b §6) |
 | Perfil do *host* | H1 se o M-0 aprovar, senão H0 | `plano-execucao-continua-2026-11-04.md` §2 e §3.1 (X-18) |
 | GO | `go calibracao <AAAA-MM-DD>` por *tty*; `go rede <i>` antes da primeira F2/F4, mantido pelo menos até o X-17 e depois conforme decisão do Gestor | decisão 6 de 05/11 |
 
@@ -88,7 +89,7 @@ flowchart LR
 B-40 segue o da `Metodologia.tex:347` (células SYNC de referência: F2 e F4), sem SYNC F1, e célula de referência não
 tem teste, então não precisa de q̂. A SYNC F2 × 3 fica, porque mede o R3.
 
-**F3 fica fora da calibração (recomendação do Senior, a confirmar).** A célula ASYNC F3 do B-40 é descritiva e mede
+**F3 fica fora da calibração (C-1, aprovado).** A célula ASYNC F3 do B-40 é descritiva e mede
 falso alarme: quantas vezes a defasagem passa do limiar e quantas vezes o AC-5 para o `isn2` sem necessidade. Os
 limiares que ela testa (`lag_in`, θ, `kLag`) saem só de execuções sem falha e sem partição (seção 7). Rodar F3 na
 calibração não alimentaria nenhuma regra. Só daria a chance de olhar a distribuição de S_lag sob *jitter* antes de
@@ -117,29 +118,37 @@ recomendada, porque a garantia dependeria de disciplina, não de desenho.
 | `inj_offset_s` | 49 | DT-011 (+49 s da âncora, depois do início da medição em +44 s) | fixo |
 | `f1_no`, `f1_dur_s` | `isn2`, 60 | PR §2 (T17) | fixo |
 | `f2_no`, `f2_dur_s` | `isn3`, 90 | plano §5.2; padrão do `inject-partition.sh` (B-29) | fixo |
-| `f4_no` | `isn3` | alvo do S5 validado (`wt-gate-v4/runs/gate-netdegrade/l1.sh:7`) | **Gestor** (seção 10) |
+| `f4_no` | `isn3` | alvo do S5 validado (`wt-gate-v4/runs/gate-netdegrade/l1.sh:7`) | aprovado (C-3) |
 | `f4_severidade` | N3 (perda de 20 %) | plano §5.2; S5 usou `--loss 20`, que é o N3 (`inject-netdegrade.sh:291`) | fixo |
-| `f4_direcao` | `out` | direção do S5 validado (`04-l1.log`: "direcao out"; `both` só no *dry-run* do L-0) | **Gestor** |
-| `f4_dur_s` | 90 | igual ao `f2_dur_s`, para F2 e F4 terem a mesma exposição; acima do aviso do injetor (45 s) e da verificação por *ping* (200 × 0,2 s = 40 s, `inject-netdegrade.sh:71-72`) | **Gestor** |
+| `f4_direcao` | `out` | direção do S5 validado (`04-l1.log`: "direcao out"; `both` só no *dry-run* do L-0) | aprovado (C-3) |
+| `f4_dur_s` | 90 | igual ao `f2_dur_s`, para F2 e F4 terem a mesma exposição; acima do aviso do injetor (45 s) e da verificação por *ping* (200 × 0,2 s = 40 s, `inject-netdegrade.sh:71-72`) | aprovado (C-3) |
 | `hotrod_timeout_ms` | 2000 | `S3Parametros.java:117`; igual a `tetoLagMs` (R7 da V-W2a) | fixo |
-| `convergencia_teto_s` | 600 | padrão do B-33 (`Cli.java:187`); revisto pela regra 7.10 | fixo na calibração |
-| `convergencia_periodo_s` | 5 | padrão do B-33 (`Cli.java:194`) | fixo |
-| `w_recovery_s` | 191 | derivação: cobre do fim da falha ao fim da carga em toda célula com falha da calibração (300 − 49 − 60, o F1 é a falha mais curta) e passa dos ~96 s da janela de fusão do MERGE3 depois da cura (`opcoes-arquitetura-configuracao-2026-11-05.md` §9.5) | **Gestor** |
+| `convergencia_teto_s` | 600 | padrão do código do B-33 (`Cli.java:187`), **sem justificativa encontrada** fora do código (plano de alinhamento §3.4); na avaliação é substituído pela regra 7.10, que deriva o teto dos dados | fixo na calibração; **sem origem rastreável, ver seção 10** |
+| `convergencia_periodo_s` | 5 | padrão do código do B-33 (`Cli.java:194`; relatório do B-33, linha 36), **sem justificativa** além do código | fixo; **sem origem rastreável, ver seção 10** |
+| `w_recovery_s` | 191 | derivação: cobre do fim da falha ao fim da carga em toda célula com falha da calibração (300 − 49 − 60, o F1 é a falha mais curta) e passa dos ~96 s da janela de fusão do MERGE3 depois da cura (`opcoes-arquitetura-configuracao-2026-11-05.md` §9.5) | aprovado (C-4) |
 | `religamento_prazo_s` | 60 | `T_reb` (`acoes-controlador-cluster-2026-11-05.md` §5.1); no I-3b o nó voltou em 4,5 s | fixo |
-| `exec_teto_s` | 1005 | derivação abaixo | **Gestor** |
-| `encerramento_folga_s` | 2 | `T_cham` = 2 s (B-26.2; ações §5.1): uma chamada REST a mais além do `T_enc` | **Gestor** |
-| `volume_exec_mb` | 14 | maior volume por execução no I-3b com o stderr descomprimido (13,6 MB, `wt-w4/runs/i3b/ativo-religar`); o X-17 mede de novo e vale o maior | **Gestor** |
+| `exec_teto_s` | 1010 | derivação abaixo, corrigida pela R2 da V-W6b | aprovado (C-6) |
+| `encerramento_folga_s` | 2 | `T_cham` = 2 s (B-26.2; ações §5.1): uma chamada REST a mais além do `T_enc` | aprovado (C-5) |
+| `volume_exec_mb` | 14 | maior volume por execução no I-3b com o stderr descomprimido (13,6 MB, `wt-w4/runs/i3b/ativo-religar`); o X-17 mede de novo e vale o maior | aprovado (C-7) |
 
 **`exec_teto_s` (derivação).** O processo vive o tempo até a âncora, a carga, o `T_enc` antes da linha `Fim da
-carga:`, a espera do religamento, o laço de convergência e o fim (leitura final e gravação). Então
-`exec_teto_s = duracao_s + T_enc + religamento_prazo_s + convergencia_teto_s + 1,5 × (t_pre + t_pos)`
-= 300 + 21 + 60 + 600 + 1,5 × (2,4 + 13,5) = 1004,9 → **1005 s**.
+carga:`, a espera do religamento, o laço de convergência (que confere o teto depois de dormir um período, então
+pode passar dele em até `convergencia_periodo_s`) e o fim (leitura final e gravação). Então
+`exec_teto_s = duracao_s + T_enc + religamento_prazo_s + convergencia_teto_s + convergencia_periodo_s + 1,5 × (t_pre + t_pos)`
+= 300 + 21 + 60 + 600 + 5 + 1,5 × (2,4 + 13,5) = 1009,85 → **1010 s** (R2 da V-W6b, `wt-w6/docs/validacao-w6b-2026-11-05.md`
+§5, `081e1c4`; a primeira versão, sem o período, dava 1005 s).
 `T_enc` = 21 s (contrato JSONL v1.2, P-42). `t_pre` ≤ 2,4 s é o maior intervalo possível entre o fim do `cria-caches.sh`
 (10:25:05,1Z) e a âncora vista pelo *harness* (10:25:07,5Z) no I-3b `ativo-religar`. `t_pos` = 13,5 s é o intervalo
 entre `t_convergencia_abs_ns` (10:30:42,47Z) e o fim do processo (10:30:55,94Z) na mesma execução
 (`wt-w4/runs/i3b/ativo-religar/fases.tsv` e `convergencia-resumo-rep-001.json`). O fator 1,5 é o mesmo do limite de
-disco (plano de 04/11 §9, W-6 item 4). Depois do X-17, o valor é recalculado com o maior `t_pre` e o maior `t_pos`
-medidos ali, se forem maiores.
+disco (plano de 04/11 §9, W-6 item 4). O mínimo que o código confere (`campanha_s3_conferir.py parametros
+--t-enc-pior-s`) é 300 + 21 + 60 + 600 + 5 = 986 s. **Fator real sobre o medido (V-W6b §5):** com o período somado, os
+1005 s da primeira versão davam ~1,19 × (`t_pre` + `t_pos`), não os 1,5 declarados; os 1010 s restabelecem o 1,5. O
+`t_pos` de 13,5 s mede o caso convergente, e o pior caso que estoura o teto é outro: braço B com o nó parado que não
+volta, laço inválido até o teto e leitura final com o nó ausente (7,3 s no I-3b `ativo-sem-religar`). A soma medida
+desse caso é ≈ 995,8 s (V-W6b §5), com folga de ~14 s sobre 1010 s, apoiada em medidas de n = 1. Na calibração (só
+braço A, sem espera de religamento), o pior caso é ≈ 936 s. Depois do X-17, o valor é recalculado com o maior `t_pre`
+e o maior `t_pos` medidos ali, se forem maiores (regra 7.17).
 
 > **Correção da V-W6 (M1).** O parecer da V-W6 disse que o tempo até a âncora no I-3b era "cerca de 20 s". Está
 > errado: os 20 s incluíam a recriação do *cluster* pelo *harness*. O tempo do programa até a âncora é ≤ 2,4 s. A
@@ -155,8 +164,11 @@ medidos ali, se forem maiores.
   §2) e `tetoLagMs` (2000 ms).
 - **Referência de p99:** inerte (p99 = 10 s em todas as operações), uma por perfil. A ASYNC é a do I-3b
   (`wt-w4/runs/i3b/config/referencia-S3-async.json`, copiada do W-2a), cujo LEIAME diz que o sinal de latência nunca
-  fica alto. A SYNC é a mesma com `"perfil": "sync"` (a criar no *bundle*). No braço A isso só zera o sinal de latência
-  nas decisões gravadas; a regra 7.5 recalcula a excedência a partir do CSV de eventos com a referência derivada.
+  fica alto. A SYNC é a mesma com `"perfil": "sync"`: arquivo de entrada com o seu SHA-256, passado em
+  `--referencia-sync` e conferido pelo `campanha_s3_conferir.py referencia` (esquema `referencia-p99/1`, cenário S3,
+  perfil `sync`); o orquestrador a põe no *bundle* (W-6b, B2; V-W6b §6). A ASYNC vai em `--referencia-async`, do mesmo
+  jeito. No braço A isso só zera o sinal de latência nas decisões gravadas; a regra 7.5 recalcula a excedência a partir
+  do CSV de eventos com a referência derivada.
 
 ## 5. Critérios por execução
 
@@ -172,10 +184,13 @@ calibração, que não tem blocos).
 | configuração de *cache* lida depois da execução diferente do JSON | DESCARTADA-INFRA | camada 3 (W-6) |
 | interrompida antes do lançamento / depois | abortada e refeita com o mesmo i e a mesma semente / RECUSADA | DT-014 |
 | `convergencia_estado = sem_rodada_valida` | ACEITA com aviso; Δ_conv fora da regra 7.10 | coordenador, 05/11 |
+| nó parado sem AC-5 na linha de fim (O8) | DESCARTADA-INFRA, com o nó religado | P-53 do W-6b (V-W6b §4) |
+| carga sem a linha `Fim da carga:` | religamento dos nós parados e DESCARTADA-INFRA, sem parar a fase | S3 da V-W6, feito no W-6b |
 
 **Paradas da fase (exit 10):** as do orquestrador (K1 que não passa em 600 s, nó do F1 que não volta em 180 s,
 *cluster* sem 3 HEALTHY, disco, `boot_id` mudado) e as do h4 (C3 §4.3: 5 execuções h4 entre as últimas 12, ou 4
-seguidas; uma h4c; a unit do amostrador inativa).
+seguidas; uma h4c; a unit do amostrador inativa). **Pré-voo (exit 4):** *timer* `tcc-heal-cs-*` sobrando de outra
+invocação (S2 da V-W6, feito no W-6b), além das recusas que já existiam.
 
 **Regra de memória (G-3 da leitura da noite 1, a aprovar pelo Gestor junto com a retomada do *rebaseline*).** No
 *rebaseline* a regra é: no K1 da primeira execução de cada rodada, com *swap* ≥ 1 GiB, interromper, recriar o
@@ -214,19 +229,16 @@ controlador.
 cerca de D/W pares de janelas por execução. Alvo de falso acionamento por par de janelas: **a = 0,05·W/D**
 (Bonferroni sobre os pares, α = 0,05 do projeto; plano de alinhamento §3.6). N = número de janelas usadas.
 
-**Critério de falso acionamento: A DECIDIR pelo Gestor (C-8).** Com 5 execuções sem falha e W de alguns segundos, N
-fica entre 250 e 500, e a = 0,05·W/256 fica perto de 10⁻³, abaixo de 1/N. O plano de alinhamento pedia o limite
-superior de 95 % ("regra de três", 3/N) com poucas janelas, mas 3/N só chega a a com N ≥ 3/a. As duas opções:
+**Critério de falso acionamento: zero ocorrências, com 3/N reportado (C-8, decisão do Gestor, 05/11).** Com 5
+execuções sem falha e W de alguns segundos, N fica entre 250 e 500, e a = 0,05·W/256 fica perto de 10⁻³, abaixo de 1/N.
+"Frequência empírica ≤ a" equivale então a **nenhuma ocorrência nas N janelas**. O limite superior de 95 % ("regra de
+três", 3/N) vai ao lado de cada limiar como incerteza, sem decidir nada; com N = 250 a 500, ele fica entre 0,6 % e
+1,2 % por par de janelas, cerca de 6 a 12 vezes o alvo.
 
-- **Opção 1: zero ocorrências, com 3/N reportado.** "Frequência empírica ≤ a" com a < 1/N equivale a nenhuma ocorrência
-  nas N janelas. O limite 3/N vai ao lado de cada limiar como incerteza, sem decidir nada. Custo: nenhum além das 5
-  execuções sem falha. Limite: com N = 250 a 500, o limite de 95 % da taxa por par fica entre 0,6 % e 1,2 %, cerca de
-  6 a 12 vezes o alvo.
-- **Opção 2: limite superior de 95 % ≤ a.** Exige N ≥ 3/a janelas sem nenhuma ocorrência. Com W = 5 s, a = 0,05 × 5/256
-  ≈ 9,8 × 10⁻⁴ e N ≥ 3072; com ~51 janelas por execução (256/5), **cerca de 60 execuções sem falha**, ou seja, ~55 a
-  mais que as 5 deste desenho, ~8 h de VM pela estimativa da seção 8. O número de execuções depende do W calibrado
-  (W maior pede menos janelas por execução, mas o alvo também cresce com W), então ele é fixado depois da regra 7.3,
-  antes de rodar as execuções extras.
+Registro pedido pelo Gestor: **validar o alvo de ~10⁻³ por par de janelas exigiria cerca de 60 execuções sem falha**
+(N ≥ 3/a = 3072 janelas; com W = 5 s, a ≈ 9,8 × 10⁻⁴ e ~51 janelas por execução), **~8 h de VM, um custo grande
+demais para o tempo disponível no trabalho**. A taxa de acionamento indevido é **medida de novo na avaliação**, nas
+células sem falha e F3 do B-40 (e também na F1, descritiva), com o braço B atuando.
 
 | # | Parâmetro | Regra | Dados |
 |---|---|---|---|
@@ -236,18 +248,18 @@ superior de 95 % ("regra de três", 3/N) com poucas janelas, mas 3/N só chega a
 | 7.4 | viabilidade do AC-5 | se `W ≥ 26,5 s` (`kLag` = 1 deixaria de caber em 39,8 − 13,3), o AC-5 é declarado **inviável antes da avaliação** e o B-40 é revisto (ações §3.1, último item) | — |
 | 7.5 | excedência por janela | recalculada do CSV de eventos com a referência 7.1 e a janela 7.3 (o sinal gravado na calibração usou a referência inerte) | todas |
 | 7.6 | k (núcleo) | **2**, pela derivação binomial do plano de 22/10 §3.2 (com n = 100 e p = 0,01, duas janelas seguidas levam o falso acionamento a ~10⁻⁵ por par sob a hipótese nula). θ é derivado para esse k | — |
-| 7.7 | θ_lat_in, θ_err_in | menor valor tal que "k janelas seguidas ≥ θ_in" cumpre o critério C-8 (opção 1: zero ocorrências, com 3/N reportado; opção 2: limite superior de 95 % ≤ a) nas janelas das execuções ASYNC sem falha | ASYNC sem falha |
+| 7.7 | θ_lat_in, θ_err_in | menor valor tal que "k janelas seguidas ≥ θ_in" tem zero ocorrências (critério C-8; 3/N reportado) nas janelas das execuções ASYNC sem falha | ASYNC sem falha |
 | 7.8 | m, θ_lat_out, θ_err_out, `T_cooldown` | m = 1 + o maior número de janelas calmas seguidas que foi seguido de nova janela alta depois do marcador `end`, nas execuções com falha (uma saída nesse intervalo produziria reentrada); θ_out = maior valor tal que nenhuma janela das execuções sem falha fica entre θ_out e θ_in por mais de m janelas seguidas; `T_cooldown` = m·W (plano de alinhamento §3.6) | F1, F2, F4 (θ_out: sem falha) |
 | 7.9 | `n_err` | = `n_lat` (100). Derivação: com W escolhido para ter ≥ n_lat eventos por janela, o sinal de erro fica determinado em toda janela em que o de latência fica; θ_err é derivado empiricamente para esse n | — |
 | 7.10 | teto da convergência | 600 s se o maior Δ_conv das execuções de calibração que convergiram for < 600/1,5 = 400 s; senão 1,5 × esse maior Δ_conv (fator 1,5 do plano §9, W-6 item 4) | F1, F2, F4 aceitas |
 | 7.11 | `lag_in` | quantil de 99 % das amostras de defasagem (ms) das execuções ASYNC sem falha (plano de 04/11 §4.6) | ASYNC sem falha |
 | 7.12 | `lag_out` | como θ_out (7.8), sobre as amostras de defasagem | ASYNC sem falha |
-| 7.13 | `kLag` | menor k ≥ 1 que cumpre o critério C-8, nas execuções sem partição (sem falha e F1), contando as janelas em que vale **a mesma condição da política P1**; limitado por `kLag·W + 13,3 < 39,8`. Se o menor k que cumpre o critério passar do limite, o AC-5 é declarado inviável (7.4). Condição exata e contagem à parte: abaixo da tabela | ASYNC sem falha, ASYNC F1 |
+| 7.13 | `kLag` | menor k ≥ 1 com zero ocorrências (critério C-8; 3/N reportado), nas execuções sem partição (sem falha e F1), contando as janelas em que vale **a mesma condição da política P1**; limitado por `kLag·W + 13,3 < 39,8`. Se o menor k que cumpre o critério passar do limite, o AC-5 é declarado inviável (7.4). Condição exata e contagem à parte: abaixo da tabela | ASYNC sem falha, ASYNC F1 |
 | 7.14 | `T_estavel` | maior duração de um trecho com 3 nós HEALTHY que terminou em nova amostra anômala depois do marcador `end`, mais `P_sonda` (2 s); sem nenhuma recaída, `T_estavel` = `P_sonda` | F1, F2, F4 |
 | 7.15 | `T_hold_viol` | maior intervalo entre duas violações seguidas na mesma execução; sem execução com duas violações, `T_hold_viol` = W | todas |
-| 7.16 | número de blocos | regra do B-40 (seção sobre blocos), a partir da duração medida por execução; **nunca pelo efeito** (ST-5) | todas |
-| 7.17 | `volume_exec_mb`, `exec_teto_s` da avaliação | maior volume medido; `exec_teto_s` pela fórmula de 4.1 com o maior `t_pre` e `t_pos` medidos | todas |
-| 7.18 | q̂ e curva de poder | `poder.py` (W-5) com as taxas do braço A por célula de teste, 8/10/12 blocos, reduções de 0 a 100 %, m das células de teste do B-40. **Só informativo** para o Gestor | ASYNC F2 e F4 (m = 2) |
+| 7.16 | número de blocos | **n = 12, fixo** (decisão do Gestor, 05/11, B-40 §7); a calibração só mede `T_exec` para o calendário | todas |
+| 7.17 | `volume_exec_mb`, `exec_teto_s` da avaliação | maior volume medido; `exec_teto_s` pela fórmula de 4.1, **com o `convergencia_periodo_s`** (R2 da V-W6b), o teto da convergência da regra 7.10 e o maior `t_pre` e `t_pos` medidos; nunca abaixo de 1010 s | todas |
+| 7.18 | q̂ e curva de poder | `poder.py` (W-5) com as taxas do braço A por célula de teste, 12 blocos (fixo), reduções de 0 a 100 %, m das células de teste do B-40. **Só informativo** para o Gestor | ASYNC F2 e F4 (m = 2) |
 
 **Condição da regra 7.13 (correção de 05/11, defeito apontado pelo coordenador).** A primeira versão dizia "com a
 vista completa", sem dizer qual. Lida como "o JGroups ainda vê 3 membros", ela contaria as janelas do F1 em que o `isn2`
@@ -289,35 +301,42 @@ também nas células SYNC, que são de referência, sem teste. Só a referência
 Por execução: recriação (~18 s no I-3b, do início do *harness* ao fim do `cria-caches.sh`), K1 (60 s), processo
 (~2 + 300 + religamento + convergência + ~14 s; no I-3b `ativo-religar`, 349 s do primeiro dado à saída) e pós-checagem
 com h4 (estimativa de 20 s, não medida). Cerca de **8 min por execução**, 26 execuções ≈ **3,5 h**, mais reposições.
-O pior caso do `--dry-run` (recriação de 180 s + K1 + teto) é 1245 s por execução, 9 h para 26. O X-17 mede o tempo
+O pior caso do `--dry-run` (recriação de 180 s + K1 + teto) é 1250 s por execução, 9,0 h para 26. O X-17 mede o tempo
 real; a estimativa não decide nada.
 
 ## 9. Pré-requisitos (todos antes do X-18)
 
 | # | Item | Quem | Por quê |
 |---|---|---|---|
-| 1 | W-6b (B1, S1..S6, M1) e o *merge* W-2b → W-6 com renumeração e I-1 | Worker / coordenador | V-W6 |
-| 2 | **B2: referência por perfil no orquestrador** (`--referencia-sync` e `--referencia-async` com os SHA-256; o pré-voo 4 roda o `--dry-run` do programa nos dois perfis presentes na fase) | Worker, no W-6b ou W-6c | o orquestrador passa um único `--controller-reference` à fase inteira, e o programa recusa referência de outro perfil (`LigacaoControlador.java:204`): **toda execução SYNC da calibração falharia** (achado novo, adenda à V-W6) |
+| 1 | W-6b **feito** (`bef758e`; V-W6b `081e1c4`, aprovado com ressalvas); falta o *merge* W-2b → W-6 com a renumeração (P-51..P-53 do W-6b passam a P-53..P-55) e o I-1 | coordenador | V-W6; V-W6b §9 |
+| 2 | **B2 feito no W-6b**: `--referencia-async` e `--referencia-sync` com os SHA-256, referência escolhida pelo modo da linha da matriz, pré-voo com o `--dry-run` do programa em cada perfil presente na fase | Worker (feito) | adenda à V-W6; V-W6b §6 |
 | 3 | W-6c: leitura do *swap* no K1 de cada execução, gravada em `execucao.json`, com parada ≥ 1 GiB (seção 5), depois da aprovação da G-3 | Worker | regra de memória |
 | 4 | W-9: `analysis/calibracao_s3.py` com as regras 7.1 a 7.17, testado com dados sintéticos, validado pelo Senior | Worker | regras fixadas em código antes dos dados |
 | 5 | *Smoke* local (cria-caches dos seis JSON, P-48 da topologia do `rcm`) e, se a topologia estiver velha, a mitigação | Worker | V-W6 §7 |
 | 6 | X-17 aprovado, com `t_pre`, `t_pos`, volume e tempo medidos | coordenador + Senior | 4.1 |
-| 7 | `--dry-run` com a matriz e o arquivo `campanha-s3/1` deste documento | coordenador | V-W6 |
-| 8 | Referência SYNC inerte criada e no *bundle* | coordenador | 4.2 |
+| 7 | `--dry-run` com a matriz e o arquivo `campanha-s3/1` deste documento; ele confere também o arquivo do controlador (S1) e as duas referências | coordenador | V-W6; V-W6b §6 |
+| 8 | Referência SYNC inerte criada e passada em `--referencia-sync` (o orquestrador a põe no *bundle*) | coordenador | 4.2; V-W6b §6 |
 
-## 10. Decisões do Gestor
+## 10. Decisões do Gestor e origem de cada item
 
-| # | Pergunta | Recomendação | Origem da recomendação |
-|---|---|---|---|
-| C-1 | F3 na calibração | **Fora** (seção 3) | a célula F3 mede falso alarme; os limiares não podem ter visto F3 |
-| C-2 | SYNC sem falha × 3 no lugar de SYNC F1 × 3 | **Sim** | sem ela não há referência SYNC; SYNC F1 não está no desenho do B-40 (seção 3) |
-| C-3 | `f4_no`, `f4_direcao`, `f4_dur_s` | `isn3`, `out`, 90 s | S5 validado (`l1.sh:7`, `04-l1.log`); igual ao F2 na duração |
-| C-4 | `w_recovery_s` | **191 s** (do fim da falha ao fim da carga em toda célula com falha). O 60 do código não tem origem (ponto 12 da V-W5) e corta fusões que chegam até ~96 s depois da cura | derivação, 4.1 |
-| C-5 | `encerramento_folga_s` | **2 s** (`T_cham`) | B-26.2 |
-| C-6 | `exec_teto_s` | **1005 s**, recalculado depois do X-17 | derivação, 4.1 |
-| C-7 | `volume_exec_mb` | **14 MB**, substituído pelo maior do X-17 | I-3b medido |
-| C-8 | critério de falso acionamento | **A DECIDIR**: opção 1 (zero ocorrências, 3/N reportado) ou opção 2 (limite superior de 95 % ≤ a, ~60 execuções sem falha, ~8 h a mais de VM) | seção 7, critério |
-| C-9 | k do núcleo = 2 pela derivação binomial de 22/10, e `n_err` = `n_lat` | **Sim** | 7.6 e 7.9 |
-| C-10 | a regra de memória da seção 5 | aprovar junto com a G-3 da retomada | `validacao-noite1-2026-11-05.md:647` |
+Decisões finais do Gestor (05/11, ~22:30Z): C-8 (zero ocorrências) e o número de blocos do B-40 (12). Os demais itens
+ficam aprovados pela regra permanente do Gestor ("aceite as recomendações do Senior, desde que venham de uma
+bibliografia do projeto e não de algum número aleatório"), **só os que têm origem rastreável**. A última coluna diz qual.
 
-O número de blocos da avaliação é decisão do B-40.
+| # | Item | Valor aprovado | Origem | Situação |
+|---|---|---|---|---|
+| C-1 | F3 na calibração | **fora** (seção 3) | derivação do desenho: os limiares saem só de execuções sem falha e sem partição (plano de alinhamento §3.6; D-12), e a F3 mede falso alarme na avaliação | aprovado (regra permanente) |
+| C-2 | SYNC sem falha × 3 no lugar de SYNC F1 × 3 | **sim** | código (`LigacaoControlador.java:204`); D2 de 27/10 (`referencia_p99.py`, n ≥ 1000); 3 execuções, o mesmo número das células SYNC do plano de 04/11 §5.1; SYNC F1 fora do B-40 (`Metodologia.tex:347`) | aprovado (regra permanente) |
+| C-3 | `f4_no`, `f4_direcao`, `f4_dur_s` | `isn3`, `out`, 90 s | S5 validado (`l1.sh:7`, `04-l1.log`); 90 s = `f2_dur_s` (plano de 04/11 §5.2) | aprovado (regra permanente) |
+| C-4 | `w_recovery_s` | **191 s** | derivação (4.1): 300 − 49 − 60, acima da janela de fusão de ~96 s (`opcoes-arquitetura-configuracao-2026-11-05.md` §9.5) | aprovado (regra permanente) |
+| C-5 | `encerramento_folga_s` | **2 s** | `T_cham` (B-26.2; ações §5.1) | aprovado (regra permanente) |
+| C-6 | `exec_teto_s` | **1010 s**, recalculado depois do X-17 pela 7.17 | derivação (4.1) com a R2 da V-W6b; medidas do I-3b; fator 1,5 do plano de 04/11 §9 | aprovado (R2 aceita pelo coordenador) |
+| C-7 | `volume_exec_mb` | **14 MB**, substituído pelo maior do X-17 | medida (I-3b, 13,6 MB) | aprovado (regra permanente) |
+| C-8 | critério de falso acionamento | **zero ocorrências, 3/N reportado** | decisão do Gestor (05/11), com o registro da seção 7 | **decidido** |
+| C-9 | k do núcleo = 2 e `n_err` = `n_lat` | **sim** | derivação binomial do plano de 22/10 §3.2; derivação 7.9 | aprovado (regra permanente) |
+| C-10 | regra de memória da seção 5 (*swap* ≥ 1 GiB) | — | o 1 GiB é o limiar **provisório** da G-3 (`validacao-noite1-2026-11-05.md:647`), sem medida nem fonte que o fixe | **não aprovado pela regra permanente**: segue a aprovação da G-3 pelo Gestor, com a retomada do *rebaseline* |
+
+**Itens sem origem rastreável** (listados em vez de aprovados): `convergencia_teto_s` = 600 s e
+`convergencia_periodo_s` = 5 s (só o padrão do código do B-33; para a avaliação, o teto passa a vir da regra 7.10) e o
+limiar de 1 GiB da regra de memória (C-10). Valores de semente (`--ordem-seed`, `--s0`) não são limiares: a única
+exigência é a disjunção das faixas, e ela está derivada na seção 3. As estimativas de tempo da seção 8 não decidem nada.

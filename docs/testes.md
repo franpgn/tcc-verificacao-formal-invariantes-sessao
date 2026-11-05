@@ -391,6 +391,12 @@ ajustados no mesmo `test:`.
 |---|---|
 | base `e869a31` | 235 OK, 1 *skip* |
 | esperado com o patch R-1 aplicado | 370 = 235 + 135 novos (12 + 96 + 18 + 9), 1 *skip* |
+| **medido** na base `e869a31` (worktree temporária completa, 05/11 08:42Z, janela H2) | **235 OK, 1 *skip*** (46,6 s) |
+| **medido** na ponta `6ec46c8` (patch R-1 aplicado, 05/11 08:32Z, janela H2) | **370 OK, 1 *skip*** (255,9 s) |
+
+Comando: `python -E -P -m unittest discover -s analysis`. Mutantes do Prompt 2 e da V-W5 (diferença trocada por
+razão, censura esquecida, `t_fim_ns` no Δ_conv, fim em vez de início da operação): os quatro morrem. Detalhes em
+`docs/relatorio-b39-4-2026-11-05.md`.
 
 R-1 (patch autorizado de `test_comparar_bracos.py`, a aplicar na janela H2): além das duas correções do Senior
 (escala esperada por nome numa lista explícita; secundários sem p exatamente `{delta_rec_s, delta_conv_s,

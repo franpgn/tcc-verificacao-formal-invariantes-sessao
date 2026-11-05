@@ -133,14 +133,15 @@ def contador_no_intervalo(amostras, a, b, intervalo_ms, campo="cpu"):
     """(delta Fraction|None, marca) do contador acumulado entre os instantes a e b (a <= b).
 
     Interpolacao LINEAR entre as duas amostras validas vizinhas de cada fronteira, em aritmetica exata.
-    Amostra com estado erro (ou sem o campo) e ignorada. Fronteira antes da primeira ou depois da
-    ultima amostra valida: (None, "fora-das-amostras"), nunca extrapola. Trecho entre amostras validas
+    Amostra com estado erro (ou sem o campo) e ignorada. Fonte sem nenhuma amostra valida: (None,
+    "sem-amostra-valida") (B39-R2, G4 de 28/10). Fronteira antes da primeira ou depois da ultima
+    amostra valida: (None, "fora-das-amostras"), nunca extrapola. Trecho entre amostras validas
     consecutivas maior que 2 x intervalo_ms que toque (a, b): (None, "lacuna").
     """
     idx = 1 if campo == "cpu" else 2
     validas = [(s[0], s[idx]) for s in amostras if s[3] and s[idx] is not None]
     if not validas:
-        return None, "fora-das-amostras"
+        return None, "sem-amostra-valida"
     ts = [t for t, _ in validas]
     if a < ts[0] or b > ts[-1]:
         return None, "fora-das-amostras"

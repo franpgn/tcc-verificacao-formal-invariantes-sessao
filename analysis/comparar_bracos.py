@@ -348,6 +348,38 @@ def _taxa(num, den, escala=1.0):
     return {"y": escala * num / den, "n": den, "motivo": None, "eventos": None}
 
 
+def conferir_parametros_energia(en, en_path, w_recovery_ns, tem_marcadores, args_fase):
+    """B39-R1 (G4 de 28/10): ErroUso se a energia foi calculada com outras fronteiras de fase.
+
+    Confere (1) parametros.w_recovery_s igual ao W da comparacao; (2) marcadores presentes nos dois
+    lados ou ausentes nos dois; (3) as fases gravadas no JSON iguais as que a comparacao calcula sobre a
+    janela do proprio JSON (pega marcadores de outro arquivo e convergencia nao passada ao energia_proxy).
+    """
+    par, jan, fs = en.get("parametros"), en.get("janela"), en.get("fases")
+    if not isinstance(par, dict) or not isinstance(jan, dict) or not isinstance(fs, list):
+        raise ErroUso("energia sem parametros, janela ou fases (energia-proxy/1 incompleto): %s" % en_path)
+    w_en = par.get("w_recovery_s")
+    try:
+        w_en_ns = int(round(float(w_en) * 1e9))
+    except (TypeError, ValueError):
+        raise ErroUso("w_recovery_s invalido na energia %s: %r" % (en_path, w_en)) from None
+    if w_en_ns != w_recovery_ns:
+        raise ErroUso("B39-R1: w_recovery_s da energia (%r s) difere do da comparacao (%r s): %s"
+                      % (w_en, w_recovery_ns / 1e9, en_path))
+    if (par.get("marcadores") is not None) != tem_marcadores:
+        raise ErroUso("B39-R1: marcadores divergem (energia: %s; comparacao: %s): %s"
+                      % ("com" if par.get("marcadores") is not None else "sem",
+                         "com" if tem_marcadores else "sem", en_path))
+    try:
+        esperado = [tuple(x) for x in _fases.intervalos_de_fase(int(jan["t0_ns"]), int(jan["t1_ns"]), *args_fase)]
+        obtido = [(f["rotulo"], int(f["t_ini_ns"]), int(f["t_fim_ns"])) for f in fs]
+    except (KeyError, TypeError, ValueError):
+        raise ErroUso("janela ou fases ilegiveis na energia %s" % en_path) from None
+    if esperado != obtido:
+        raise ErroUso("B39-R1: fases da energia divergem das da comparacao (W, marcadores ou convergencia): %s"
+                      % en_path)
+
+
 def desfechos_execucao(execucao, rep, fases_sel, w_recovery_ns, marcadores_nome="marcadores.txt"):
     """({desfecho: {"y","n","motivo","eventos"}}, info) de uma execucao, nas fases pedidas."""
     d = Path(execucao)
@@ -403,6 +435,7 @@ def desfechos_execucao(execucao, rep, fases_sel, w_recovery_ns, marcadores_nome=
             raise ErroUso("energia ilegivel: %s" % en_path) from None
         if en.get("esquema") != energia_proxy.ESQUEMA:
             raise ErroUso("esquema de energia inesperado em %s: %r" % (en_path, en.get("esquema")))
+        conferir_parametros_energia(en, en_path, w_recovery_ns, (d / marcadores_nome).exists(), args)
         excluida = en.get("steal", {}).get("excluida")
         rot = [f["rotulo"] for f in en.get("fases", []) if f["rotulo"] in sel]
         vm = en.get("agregados", {}).get("vm", {})

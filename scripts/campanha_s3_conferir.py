@@ -17,6 +17,10 @@ So biblioteca padrao; roda com python3 -I. Cada subcomando imprime linhas "nome<
       lancamento ate a ancora (t_pre <= 2,4 s no I-3b) e o fechamento depois da convergencia (t_pos = 13,5 s) sao
       medidos, nao constantes: o pre-registro os soma com folga acima deste minimo (adenda da V-W6, secao 11;
       pre-registro da calibracao 4.1: 300 + 21 + 60 + 600 + 1,5 x (2,4 + 13,5) -> 1005 s, minimo daqui 986 s).
+      W-6c: o esquema "campanha-s3/2" e o /1 mais os cinco numeros do F3 (PARAMETROS_F3: f3_no, f3_delay_ms,
+      f3_jitter_ms, f3_distribuicao, f3_dur_s; B-40 secao 4.3, valores do rebaseline: isn2, 20, 13, normal, 251), com
+      a mesma regra (todos obrigatorios, com origem) e a mesma coerencia (inj_offset_s + f3_dur_s <= duracao_s). O /1
+      continua aceito (a calibracao nao roda F3); o orquestrador recusa F3 na fila sem o /2.
       Imprime "nome<TAB>valor" de cada parametro.
 
   controlador --arquivo <controlador-*.json> --hotrod-timeout-ms N [--exigir-politica] [--exigir-p2-desabilitada]
@@ -37,7 +41,9 @@ So biblioteca padrao; roda com python3 -I. Cada subcomando imprime linhas "nome<
       da linha "Fim da carga:" do programa tem de ser o mesmo; "-" = nenhum. Um AC-5 FALHOU executado tambem
       recusa quando o sinal o da como aplicado. Imprime trilha_ac5, ac5_falhou_executada, ac5_falhou_alvos (O8 da
       V-W2a: um FALHOU pode ter parado o no mesmo assim; o orquestrador confere os nos pela REST) e
-      trilha_completa.
+      trilha_completa. W-6c (B-7 do B-40): imprime tambem fim (sim/nao), linhas_perdidas (o valor da linha fim de
+      decisoes, contrato 1.1+, ou "-"), trilha_incompleta (sim se faltar o fim ou se linhas_perdidas nao for 0) e
+      trilha_incompleta_motivo. So marca: o exit nao muda; o veredito e do orquestrador (--exigir-trilha-completa).
 
   referencia --arquivo <referencia.json> --perfil sync|async
       Referencia de p99 do controlador (esquema referencia-p99/1, controle/ArquivoReferencia.java). B2 da V-W6: o
@@ -53,6 +59,7 @@ import sys
 from pathlib import Path
 
 ESQUEMA_PARAMETROS = "campanha-s3/1"
+ESQUEMA_PARAMETROS_F3 = "campanha-s3/2"   # W-6c: o /1 mais os numeros do F3
 NO_RE = re.compile(r"^isn[1-3]$")
 INT_POS = ("int", 1)
 INT_NAO_NEG = ("int", 0)
@@ -77,6 +84,15 @@ PARAMETROS = {
     "exec_teto_s": INT_POS,
     "encerramento_folga_s": INT_POS,
     "volume_exec_mb": INT_POS,
+}
+# W-6c (B-40 secao 4.3): F3 pelo inject-jitter.sh, que recebe --delay/--jitter <n>ms e --distribution destas quatro
+DISTRIBUICOES_NETEM = ("normal", "lognormal", "pareto", "paretonormal")
+PARAMETROS_F3 = {
+    "f3_no": ("no", None),
+    "f3_delay_ms": INT_POS,
+    "f3_jitter_ms": INT_NAO_NEG,
+    "f3_distribuicao": ("enum", DISTRIBUICOES_NETEM),
+    "f3_dur_s": INT_POS,
 }
 ESQUEMA_DECISOES = "decisoes-controlador/1.2"
 ESQUEMA_REFERENCIA = "referencia-p99/1"   # controle/ArquivoReferencia.java (ESQUEMA)
@@ -115,21 +131,26 @@ def conferir_parametros(obj, t_enc_pior_s):
     """{nome: valor} ou ErroUso. t_enc_pior_s e a parcela do teto que vem do orquestrador (M1 da V-W6)."""
     if isinstance(t_enc_pior_s, bool) or not isinstance(t_enc_pior_s, int) or t_enc_pior_s < 0:
         raise ErroUso("--t-enc-pior-s deve ser inteiro >= 0: %r" % (t_enc_pior_s,))
-    if not isinstance(obj, dict) or obj.get("esquema") != ESQUEMA_PARAMETROS:
-        raise ErroUso("esquema deve ser %r" % ESQUEMA_PARAMETROS)
+    esquema = obj.get("esquema") if isinstance(obj, dict) else None
+    if esquema == ESQUEMA_PARAMETROS:
+        nomes = dict(PARAMETROS)
+    elif esquema == ESQUEMA_PARAMETROS_F3:
+        nomes = dict(PARAMETROS, **PARAMETROS_F3)
+    else:
+        raise ErroUso("esquema deve ser %r ou %r (com F3)" % (ESQUEMA_PARAMETROS, ESQUEMA_PARAMETROS_F3))
     if not isinstance(obj.get("versao"), str) or not obj["versao"].strip():
         raise ErroUso("versao ausente")
     ps = obj.get("parametros")
     if not isinstance(ps, dict):
         raise ErroUso("bloco parametros ausente")
-    faltam = sorted(set(PARAMETROS) - set(ps))
-    sobram = sorted(set(ps) - set(PARAMETROS))
+    faltam = sorted(set(nomes) - set(ps))
+    sobram = sorted(set(ps) - set(nomes))
     if faltam:
         raise ErroUso("parametros ausentes (obrigatorios, sem padrao): %s" % ", ".join(faltam))
     if sobram:
         raise ErroUso("parametros desconhecidos: %s" % ", ".join(sobram))
     v = {}
-    for nome, (tipo, arg) in PARAMETROS.items():
+    for nome, (tipo, arg) in nomes.items():
         p = ps[nome]
         if not isinstance(p, dict) or set(p) != {"valor", "origem"}:
             raise ErroUso("%s: use {\"valor\": ..., \"origem\": \"...\"}" % nome)
@@ -147,7 +168,9 @@ def conferir_parametros(obj, t_enc_pior_s):
             if not isinstance(x, str) or not NO_RE.match(x):
                 raise ErroUso("%s deve ser isn1, isn2 ou isn3: %r" % (nome, x))
         v[nome] = x
-    for f in ("f1", "f2", "f4"):
+    for f in ("f1", "f2", "f3", "f4"):
+        if f + "_dur_s" not in v:
+            continue
         if v["inj_offset_s"] + v[f + "_dur_s"] > v["duracao_s"]:
             raise ErroUso("%s acaba depois do fim da carga: inj_offset_s + %s_dur_s = %d > duracao_s = %d"
                           % (f.upper(), f, v["inj_offset_s"] + v[f + "_dur_s"], v["duracao_s"]))
@@ -164,8 +187,8 @@ def conferir_parametros(obj, t_enc_pior_s):
 
 def cmd_parametros(a):
     v = conferir_parametros(ler_json(a.arquivo), a.t_enc_pior_s)
-    for nome in PARAMETROS:
-        print("%s\t%s" % (nome, v[nome]))
+    for nome, x in v.items():
+        print("%s\t%s" % (nome, x))
 
 
 def cmd_controlador(a):
@@ -263,8 +286,26 @@ def ler_trilha(p):
     return linhas, completa
 
 
+def completude(linhas, completa):
+    """(fim, linhas_perdidas, motivo ou None) da trilha de decisoes. W-6c, B-7 do B-40: completa so com a linha fim no
+    final (regra geral 2 do contrato: sem fim = execucao interrompida) e linhas_perdidas = 0 nela (campo do fim de
+    decisoes desde a v1.1: erros de escrita mais linhas recebidas com a trilha fechada)."""
+    if not completa:
+        return "nao", "-", "sem a linha fim (execucao interrompida; contrato JSONL, regra geral 2)"
+    fim = linhas[-1]
+    if "linhas_perdidas" not in fim:
+        return "sim", "-", "fim sem linhas_perdidas (campo do contrato 1.1+)"
+    lp = fim["linhas_perdidas"]
+    if isinstance(lp, bool) or not isinstance(lp, int) or lp < 0:
+        return "sim", "-", "linhas_perdidas invalido no fim: %r" % (lp,)
+    if lp > 0:
+        return "sim", str(lp), "linhas_perdidas = %d no fim" % lp
+    return "sim", "0", None
+
+
 def cmd_trilha(a):
     linhas, completa = ler_trilha(a.decisoes)
+    fim, perdidas, motivo = completude(linhas, completa)
     aplicada, falhou = None, []
     for o in linhas:
         ac = o.get("acao") if isinstance(o.get("acao"), dict) else {}
@@ -278,6 +319,10 @@ def cmd_trilha(a):
     print("ac5_falhou_executada\t%d" % len(falhou))
     print("ac5_falhou_alvos\t%s" % (",".join(falhou) or "-"))
     print("trilha_completa\t%s" % ("sim" if completa else "nao"))
+    print("fim\t%s" % fim)
+    print("linhas_perdidas\t%s" % perdidas)
+    print("trilha_incompleta\t%s" % ("sim" if motivo else "nao"))
+    print("trilha_incompleta_motivo\t%s" % (motivo or "-"))
     if (aplicada or "-") != a.sinal_alvo:
         raise Recusa("AC-5 APLICADA na trilha = %s, na linha de fim da carga = %s" % (aplicada or "-", a.sinal_alvo))
 

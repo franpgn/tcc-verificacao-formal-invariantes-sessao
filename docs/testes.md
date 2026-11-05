@@ -347,3 +347,34 @@ Branch `feature/h4-amostrador-infra` sobre `19d45b9`. Suítes novas, todas no ho
 
 Com `-I`, a suíte inteira perde três módulos que importam `numpy` do `site-packages` do usuário. `test_h4.py` roda
 com `-I`.
+
+## W-5 (B-39.4): `comparar-bracos/2`, guarda G4 e poder (2026-11-05)
+
+Branch `feature/w5-desfechos-coprincipais` sobre `e869a31`. **Escrito sem executar**: o host estava em H0 estrito
+(noite 1 do *rebaseline*); só `python -I -m py_compile` em cada arquivo. As contagens abaixo são as esperadas e
+precisam ser medidas na janela liberada pelo coordenador (`python -E -P -m unittest discover -s analysis`).
+
+| Suíte (nova) | Testes | O que cobre |
+|---|---|---|
+| `analysis/test_guarda_energia.py` | 12 | G4 de 28/10: B39-R1 (W, marcadores e fases da energia; convergência não passada ao `energia_proxy`; JSON incompleto) e B39-R2 (`sem-amostra-valida`) |
+| `analysis/test_desfechos_coprincipais.py` | 78 | taxa de violações (diferença, não razão), Δ_rec principal (censura e fronteira, instante de observação, sem `end`, sem `t_fim_carga_ns`), Δ_rec da Metodologia, Δ_conv a partir de `t_fim_carga_ns`, divergência, p mínimo 2/2^k por enumeração (k = 5..8), p_L ⇔ limite do IC t, regra IU (quatro casos, direção, não avaliável), Holm entre células, tipos de célula, sensibilidades (a)(b)(c) e Wilson, trilha do controlador e rastreabilidade, energia (P_max 181 W, razão central 0,3, sensibilidade 0,5), CLI |
+| `analysis/test_poder.py` | 13 | lote = `permutacao_exata`; poder ≈ 0 com redução 0; 1 com redução total e q = 1; P(k ≥ 6) binomial (0,96 e 0,14 do plano 3.3); α de Holm; CLI |
+| `analysis/test_referencia_erro.py` | 9 | Clopper-Pearson unilateral; zero erros = regra de três; guarda de execução com falha; leitura; CLI |
+
+Commits: `0ffb7a4` (test G4) → `87ff066` (fix G4) → `34f119a` (test W-5, com esqueletos de `poder.py` e
+`referencia_erro.py` para o vermelho cair por asserção e não por `ImportError`) → `347670b` (feat W-5).
+
+| Momento | `unittest` analysis (sem `-I`) |
+|---|---|
+| base `e869a31` | 235 OK, 1 *skip* (registro do W-h4) |
+| esperado depois do W-5, com o patch autorizado | 347 = 235 + 112 novos, 1 *skip* |
+
+**Testes existentes que dependem do `/1` (não editados; aguardam autorização do coordenador, Prompt 2 item 6).**
+Sem o patch, em `analysis/test_comparar_bracos.py`: `C6Determinismo` (5, erro no `setUpClass`: `--primario` saiu e
+`--delta-latencia`/`--w-analise-s` são obrigatórios) e `ExclusoesERegistro.test_n_menor_que_1000_e_steal`
+(assinatura de `comparar` e `energia_min` sem `parametros`/`janela`, que a guarda B39-R1 recusa) falham;
+`C5Pareamento.test_bloco_sem_b`, `C5Pareamento.test_blocos_trocados_de_celula` e os 3 de `Guardas` passam pelo
+motivo errado (exit 2 do `argparse`). O patch troca só a chamada (argumentos do `/2`), o *fixture* `energia_min`
+(campos `janela` e `parametros` coerentes) e, em `test_esquema_e_familias` e `test_boot_de_blocos_so_depende_de_d_b`,
+o nome do esquema, a família `primario` → `co-principal-L`, o conjunto de desfechos e a escala da diferença. As
+asserções sobre chaves que não mudaram ficam iguais.

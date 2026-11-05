@@ -93,3 +93,63 @@ O tamanho de efeito $r = |Z| / \sqrt{N}$ é a métrica de efeito não-paramétri
 ## Decisão sobre p-valor
 
 Critério C1 do Cap. 3 §3.3.5: significância a $\alpha = 0,05$. O script registra `significativo_a_5pct: true|false` por operação. Em um conjunto de 12 cenários × 7 operações = 84 testes, correções por múltiplas comparações (Bonferroni, FDR) podem ser apropriadas; isto fica como decisão metodológica futura, possivelmente abordada por uma flag `--corrigir-multipla` em versão posterior.
+
+## Comparação pareada A × B (`comparar_bracos.py`, esquema `comparar-bracos/2`, B-39.4)
+
+Roda com `python -E -P` (numpy e scipy estão no *site* do usuário; decisão G2 de 28/10). Especificação: seções
+3.1 a 3.5 de `docs/plano-alinhamento-objetivos-2026-11-04.md` e o W-5 de `docs/plano-execucao-2026-11-04.md`.
+
+```mermaid
+%%{init: {'theme':'base','themeVariables':{'background':'#ffffff','primaryColor':'#ffffff','primaryTextColor':'#000000','primaryBorderColor':'#000000','lineColor':'#000000','secondaryColor':'#ffffff','tertiaryColor':'#ffffff','clusterBkg':'#ffffff','clusterBorder':'#000000','edgeLabelBackground':'#ffffff','fontFamily':'Arial'}}}%%
+flowchart LR
+    subgraph EXEC["Diretório de cada execução"]
+        EV["rep-NNN.csv + meta"]
+        S3["s3-acoes-rep-NNN.csv"]
+        MK["marcadores.txt"]
+        CV["convergencia-resumo-rep-NNN.json"]
+        VI["violacoes-rep-NNN.csv"]
+        EN["energia-rep-NNN.json"]
+        DE["decisoes-rep-NNN.jsonl"]
+    end
+    SF["Execuções sem falha"] --> RE["referencia_erro.py"]
+    RE --> REF["referencia-erro.json"]
+    MAN["manifesto.tsv"] --> CB["comparar_bracos.py"]
+    EXEC --> CB
+    REF --> CB
+    CB --> JS["comparacao.json (/2)"]
+    CB --> MD["comparacao.md"]
+    CAL["Taxas do braço A na calibração"] --> PO["poder.py"]
+    PO --> CU["curva de poder (JSON)"]
+```
+
+```bash
+# referência de erro sem falha (Δ_rec de sensibilidade), por célula
+python -E -P analysis/referencia_erro.py --saida runs/.../referencia-erro-async.json runs/.../none-*/rep-001.csv
+
+# comparação (valores do pré-registro B-40; os sem padrão são obrigatórios)
+python -E -P analysis/comparar_bracos.py --manifesto M.tsv --semente-boot S --saida comparacao.json \
+    --delta-latencia 0.10 --w-analise-s W --celulas-teste ASYNC-F1,ASYNC-F2 \
+    --celulas-descritivas ASYNC-none --celulas-referencia SYNC-F2 \
+    --referencia-erro ASYNC-F1=referencia-erro-async.json --p-max-w 181 --razao-ocioso-central 0.3
+
+# curva de poder para escolher o número de blocos (plano 3.3)
+python -E -P analysis/poder.py --taxas-a taxas-braco-a.txt --semente S --n-sim 10000 --saida poder.json
+```
+
+| Desfecho | Família | Escala de d_b |
+|---|---|---|
+| `taxa_violacoes_por_1000` (I1 + I4 + I2 `REAL`) | co-principal-V | y_B − y_A |
+| `acao_s3_p99_com_espera` | co-principal-L | ln(y_B/y_A) |
+| `vazao_util` | não inferioridade (δ = 10 %) | ln |
+| `delta_rec_s`, `delta_conv_s`, `divergencia_persistente` | secundário | y_B − y_A |
+| `evento_p99:*`, `taxa_erro`, `acao_s3_p99_sem_espera`, `falhas_percebidas_por_1000`, `cpu_por_1000_uteis`, `energia_total_j_por_1000_uteis:0.3` | secundário | ln |
+| `delta_rec_metodologia_s`, `energia_total_j_por_1000_uteis:0.5` | sensibilidade (sem Holm) | diferença / ln |
+
+Regra de sucesso (D-1, intersecção-união de Berger 1982): por célula de teste, H_V (troca de sinal exata, bilateral,
+média de d_b < 0) e H_L (limite superior do IC t 95 % da razão do p99 ≤ 1 + δ_L) rejeitadas, vazão não inferior e
+trilha do braço B íntegra; p_IU = max(p_V, p_L); Holm entre as células de teste sobre p_IU. Célula descritiva ou de
+referência não tem p, Holm nem IU. Δ_rec: último evento anômalo (`ERROR_TRANSPORT`, `ERROR_UNAVAILABLE` ou falha
+percebida) observado depois do marcador `end`, censurado nos últimos W_c = `--w-analise-s` da medição. Δ_conv:
+`t_convergencia_abs_ns − t_fim_carga_ns`. Energia: modelo do `energia_proxy.py`, P_max = 181 W, razão ociosa 0,3
+(Barroso e Hölzle 2007, p. 36) com 0,5 (p. 34) como sensibilidade. Guarda G4: a comparação recusa (exit 2) energia
+calculada com outro W, outros marcadores ou outra convergência.

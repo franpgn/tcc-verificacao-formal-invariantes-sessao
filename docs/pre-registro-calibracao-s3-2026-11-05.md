@@ -77,7 +77,7 @@ flowchart LR
 | Célula | Execuções | Por quê | Origem |
 |---|---|---|---|
 | ASYNC sem falha | 5 | distribuições sem falha de latência, erro e defasagem (θ, `lag_in`, `kLag`), vazão (W), p99 de referência ASYNC | plano de 04/11 §5.1 |
-| ASYNC F1 (`isn2`) | 5 | oscilação depois da queda (m), `T_estavel`, falso P1 com nó morto, q̂ | plano §5.1 |
+| ASYNC F1 (`isn2`) | 5 | oscilação depois da queda (m), `T_estavel` e **controle negativo do P1**: com a condição da política (regra 7.13), o P1 não pode aparecer enquanto o `isn2` está morto. No B-40 a F1 é descritiva (decisão do Gestor, 05/11), então não precisa de q̂ | plano §5.1; decisão de 05/11 |
 | ASYNC F2 (`isn3` isolado) | 5 | P1 previsto (`acao` PREVISTA), q̂, `T_hold_viol`, maior Δ_conv | plano §5.1 |
 | SYNC F2 | 3 | comportamento do P1 em SYNC (R3, limitação declarada), q̂ da célula de referência | plano §5.1; R3 |
 | **SYNC sem falha** | **3** | **p99 de referência SYNC**, sem o qual o braço B das células SYNC não roda | **nova (Senior)**: o programa recusa referência de outro perfil (`LigacaoControlador.java:204`), e o `referencia_p99.py` exige n ≥ 1000 por operação (decisão D2 de 27/10). Nenhuma outra célula da calibração dá eventos SYNC sem falha |
@@ -214,12 +214,19 @@ controlador.
 cerca de D/W pares de janelas por execução. Alvo de falso acionamento por par de janelas: **a = 0,05·W/D**
 (Bonferroni sobre os pares, α = 0,05 do projeto; plano de alinhamento §3.6). N = número de janelas usadas.
 
-**Operacionalização do alvo (decisão do Senior, a confirmar pelo Gestor).** Com 5 execuções sem falha e W de alguns
-segundos, N fica entre 250 e 500, e a = 0,05·W/256 fica perto de 10⁻³, abaixo de 1/N. Nesse caso "frequência empírica
-≤ a" equivale a **nenhuma ocorrência nas N janelas**. O plano de alinhamento pedia o limite superior de 95 % ("regra
-de três", 3/N) com poucas janelas, mas 3/N nunca chega a 10⁻³ com N < 3000, e a regra ficaria impossível. A proposta
-é: critério = zero ocorrências; o limite 3/N é reportado ao lado de cada limiar como incerteza. Se o Gestor preferir o
-limite superior, a calibração precisaria de cerca de 60 execuções sem falha, o que não cabe no calendário.
+**Critério de falso acionamento: A DECIDIR pelo Gestor (C-8).** Com 5 execuções sem falha e W de alguns segundos, N
+fica entre 250 e 500, e a = 0,05·W/256 fica perto de 10⁻³, abaixo de 1/N. O plano de alinhamento pedia o limite
+superior de 95 % ("regra de três", 3/N) com poucas janelas, mas 3/N só chega a a com N ≥ 3/a. As duas opções:
+
+- **Opção 1: zero ocorrências, com 3/N reportado.** "Frequência empírica ≤ a" com a < 1/N equivale a nenhuma ocorrência
+  nas N janelas. O limite 3/N vai ao lado de cada limiar como incerteza, sem decidir nada. Custo: nenhum além das 5
+  execuções sem falha. Limite: com N = 250 a 500, o limite de 95 % da taxa por par fica entre 0,6 % e 1,2 %, cerca de
+  6 a 12 vezes o alvo.
+- **Opção 2: limite superior de 95 % ≤ a.** Exige N ≥ 3/a janelas sem nenhuma ocorrência. Com W = 5 s, a = 0,05 × 5/256
+  ≈ 9,8 × 10⁻⁴ e N ≥ 3072; com ~51 janelas por execução (256/5), **cerca de 60 execuções sem falha**, ou seja, ~55 a
+  mais que as 5 deste desenho, ~8 h de VM pela estimativa da seção 8. O número de execuções depende do W calibrado
+  (W maior pede menos janelas por execução, mas o alvo também cresce com W), então ele é fixado depois da regra 7.3,
+  antes de rodar as execuções extras.
 
 | # | Parâmetro | Regra | Dados |
 |---|---|---|---|
@@ -229,20 +236,49 @@ limite superior, a calibração precisaria de cerca de 60 execuções sem falha,
 | 7.4 | viabilidade do AC-5 | se `W ≥ 26,5 s` (`kLag` = 1 deixaria de caber em 39,8 − 13,3), o AC-5 é declarado **inviável antes da avaliação** e o B-40 é revisto (ações §3.1, último item) | — |
 | 7.5 | excedência por janela | recalculada do CSV de eventos com a referência 7.1 e a janela 7.3 (o sinal gravado na calibração usou a referência inerte) | todas |
 | 7.6 | k (núcleo) | **2**, pela derivação binomial do plano de 22/10 §3.2 (com n = 100 e p = 0,01, duas janelas seguidas levam o falso acionamento a ~10⁻⁵ por par sob a hipótese nula). θ é derivado para esse k | — |
-| 7.7 | θ_lat_in, θ_err_in | menor valor tal que "k janelas seguidas ≥ θ_in" tem **zero ocorrências** nas janelas das execuções ASYNC sem falha (operacionalização acima); reportar 3/N | ASYNC sem falha |
+| 7.7 | θ_lat_in, θ_err_in | menor valor tal que "k janelas seguidas ≥ θ_in" cumpre o critério C-8 (opção 1: zero ocorrências, com 3/N reportado; opção 2: limite superior de 95 % ≤ a) nas janelas das execuções ASYNC sem falha | ASYNC sem falha |
 | 7.8 | m, θ_lat_out, θ_err_out, `T_cooldown` | m = 1 + o maior número de janelas calmas seguidas que foi seguido de nova janela alta depois do marcador `end`, nas execuções com falha (uma saída nesse intervalo produziria reentrada); θ_out = maior valor tal que nenhuma janela das execuções sem falha fica entre θ_out e θ_in por mais de m janelas seguidas; `T_cooldown` = m·W (plano de alinhamento §3.6) | F1, F2, F4 (θ_out: sem falha) |
 | 7.9 | `n_err` | = `n_lat` (100). Derivação: com W escolhido para ter ≥ n_lat eventos por janela, o sinal de erro fica determinado em toda janela em que o de latência fica; θ_err é derivado empiricamente para esse n | — |
 | 7.10 | teto da convergência | 600 s se o maior Δ_conv das execuções de calibração que convergiram for < 600/1,5 = 400 s; senão 1,5 × esse maior Δ_conv (fator 1,5 do plano §9, W-6 item 4) | F1, F2, F4 aceitas |
 | 7.11 | `lag_in` | quantil de 99 % das amostras de defasagem (ms) das execuções ASYNC sem falha (plano de 04/11 §4.6) | ASYNC sem falha |
 | 7.12 | `lag_out` | como θ_out (7.8), sobre as amostras de defasagem | ASYNC sem falha |
-| 7.13 | `kLag` | menor k ≥ 1 tal que "S_lag no teto com o mesmo `noSuspeito` em k janelas seguidas, com a vista completa" tem zero ocorrências nas execuções sem partição (sem falha e F1); limitado por `kLag·W + 13,3 < 39,8`. Se o menor k com zero ocorrências passar do limite, o AC-5 é declarado inviável (7.4) | ASYNC sem falha, ASYNC F1 |
+| 7.13 | `kLag` | menor k ≥ 1 que cumpre o critério C-8, nas execuções sem partição (sem falha e F1), contando as janelas em que vale **a mesma condição da política P1**; limitado por `kLag·W + 13,3 < 39,8`. Se o menor k que cumpre o critério passar do limite, o AC-5 é declarado inviável (7.4). Condição exata e contagem à parte: abaixo da tabela | ASYNC sem falha, ASYNC F1 |
 | 7.14 | `T_estavel` | maior duração de um trecho com 3 nós HEALTHY que terminou em nova amostra anômala depois do marcador `end`, mais `P_sonda` (2 s); sem nenhuma recaída, `T_estavel` = `P_sonda` | F1, F2, F4 |
 | 7.15 | `T_hold_viol` | maior intervalo entre duas violações seguidas na mesma execução; sem execução com duas violações, `T_hold_viol` = W | todas |
 | 7.16 | número de blocos | regra do B-40 (seção sobre blocos), a partir da duração medida por execução; **nunca pelo efeito** (ST-5) | todas |
 | 7.17 | `volume_exec_mb`, `exec_teto_s` da avaliação | maior volume medido; `exec_teto_s` pela fórmula de 4.1 com o maior `t_pre` e `t_pos` medidos | todas |
-| 7.18 | q̂ e curva de poder | `poder.py` (W-5) com as taxas do braço A por célula de teste, 8/10/12 blocos, reduções de 0 a 100 %, m das células de teste do B-40. **Só informativo** para o Gestor | ASYNC F1, F2 e F4 |
+| 7.18 | q̂ e curva de poder | `poder.py` (W-5) com as taxas do braço A por célula de teste, 8/10/12 blocos, reduções de 0 a 100 %, m das células de teste do B-40. **Só informativo** para o Gestor | ASYNC F2 e F4 (m = 2) |
 
-As regras 7.7, 7.11 e 7.13 usam só execuções sem falha ou sem partição. Nenhuma usa F3, que não roda aqui.
+**Condição da regra 7.13 (correção de 05/11, defeito apontado pelo coordenador).** A primeira versão dizia "com a
+vista completa", sem dizer qual. Lida como "o JGroups ainda vê 3 membros", ela contaria as janelas do F1 em que o `isn2`
+já está morto (`eth0` derrubada e `kill`) e os outros dois ainda informam 3 membros, cerca de 40 s até o FD_ALL3. Nelas,
+pela regra do mínimo dos pares da `SondaDefasagem`, o `isn2` fica no teto como suspeito único por ~8 janelas de 5 s. O
+menor k com zero ocorrências passaria de 5, e o AC-5 seria declarado inviável por uma situação em que ele nunca
+dispararia. A contagem passa a usar a condição do código, em `PoliticaPorAssinatura.java:158` (`17f2bd4`):
+
+`top.vistaCompleta() && suspeito != null && persistencia >= p.kLag() && top.respondeuEmTodas(suspeito)`
+
+Uma janela w conta como ocorrência para k quando valem, em w:
+
+1. **persistência ≥ k**: S_lag no teto (`lagMaxMs ≥ tetoLagMs`) com o mesmo `noSuspeito` em k janelas seguidas,
+   terminando em w; a sequência zera numa janela abaixo do teto ou sem `noSuspeito`, e quando falta uma janela
+   (`atualizarPersistencia`, `:198-214`);
+2. **`vistaCompleta()`**: cada um dos n nós de `--controller-admin` respondeu à REST em **todas** as amostras de saúde
+   da janela (`Resposta.TODAS`) e informou n membros na menor e na maior amostra (`EstadoTopologia.java:118-129`);
+3. **`respondeuEmTodas(suspeito)`**: o suspeito respondeu à REST em todas as amostras da janela (`:186-189`). Com 2,
+   ela já vale; fica explícita porque o código a escreve.
+
+O perfil CONSERVADOR, que o código também exige (`:152`), **não** entra na contagem: ele depende de θ e `lag_in`, que
+são derivados ao mesmo tempo, e ignorá-lo só torna a contagem mais conservadora. As janelas em que 1 vale e 2 ou 3 não
+são contadas e **reportadas à parte**, como "assinatura sem resposta". No F1, é o esperado enquanto o `isn2` está morto.
+Elas não entram no critério, porque a política não age nelas. Os dados vêm das linhas `defasagem` e `topologia` do
+`observaveis-rep-001.jsonl` (amostras por nó com `respondeu` e `numero_de_nos`), agrupadas pela janela W da regra 7.3.
+As linhas `acao` PREVISTA do braço A, gravadas com o `kLag` provisório de 2, servem só de conferência.
+
+**As outras regras não têm o mesmo problema** (conferido): só a 7.13 depende da assinatura do P1. A 7.7, a 7.11 e a
+7.12 usam só execuções sem falha. A 7.8 e a 7.14 começam no marcador `end` e usam os sinais como o núcleo os vê
+(defasagem indeterminada conta como calma, R4 do plano de 04/11 §4.5), sem condição de política. A 7.3 só lê o atraso
+de início das rodadas. Nenhuma usa F3, que não roda aqui.
 
 **Um só arquivo de controlador para os dois modos.** O orquestrador passa o mesmo `--controller-config` a todas as
 execuções da fase. W, θ, k, m, `lag_in` e `kLag` saem das execuções ASYNC (as células de teste são ASYNC) e valem
@@ -280,7 +316,7 @@ real; a estimativa não decide nada.
 | C-5 | `encerramento_folga_s` | **2 s** (`T_cham`) | B-26.2 |
 | C-6 | `exec_teto_s` | **1005 s**, recalculado depois do X-17 | derivação, 4.1 |
 | C-7 | `volume_exec_mb` | **14 MB**, substituído pelo maior do X-17 | I-3b medido |
-| C-8 | alvo de falso acionamento como "zero ocorrências" e 3/N só reportado | **Sim** | seção 7, notação |
+| C-8 | critério de falso acionamento | **A DECIDIR**: opção 1 (zero ocorrências, 3/N reportado) ou opção 2 (limite superior de 95 % ≤ a, ~60 execuções sem falha, ~8 h a mais de VM) | seção 7, critério |
 | C-9 | k do núcleo = 2 pela derivação binomial de 22/10, e `n_err` = `n_lat` | **Sim** | 7.6 e 7.9 |
 | C-10 | a regra de memória da seção 5 | aprovar junto com a G-3 da retomada | `validacao-noite1-2026-11-05.md:647` |
 

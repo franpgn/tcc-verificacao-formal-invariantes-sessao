@@ -1051,7 +1051,7 @@ correspondente adicionado em `Mesclar` (`spec/SessionStore.tla`, commit `b7d8e0a
 
 ## 2026-11-05 — W-6 (B-46), orquestrador das campanhas S3
 
-### P-41 (W-6; número a conferir na integração) — o amostrador h4 só aceita identificadores do *rebaseline*
+### P-45 (W-6; P-41 na branch do W-6 antes do rebase sobre `17f2bd4`) — o amostrador h4 só aceita identificadores do *rebaseline*
 
 - **Sintoma:** `scripts/amostrador-infra.sh` recusa (exit 2) qualquer `--id` fora de
   `^(piloto|noite1|noite2|reposicoes|ensaio|diag)-<UTC>$`; `vigia-h4.sh` e `analysis/h4.py fase` só aceitam as fases do
@@ -1065,7 +1065,7 @@ correspondente adicionado em `Mesclar` (`spec/SessionStore.tla`, commit `b7d8e0a
   compatível com os testes atuais (o A7 só recusa IDs que continuariam recusados), num commit próprio e validado.
 - **Status:** `ABERTO`.
 
-### P-42 (W-6; número a conferir na integração) — risco: a sonda do laço de convergência lê a topologia de um cliente que não opera no S3
+### P-46 (W-6; P-42 antes do rebase) — risco: a sonda do laço de convergência lê a topologia de um cliente que não opera no S3
 
 - **Observação (código, não medida):** `WorkloadMain.executarConvergencia` usa
   `min(number_of_nodes da REST, servidores na topologia do rcm principal)`. No S3 a carga roda pelos clientes fixados a
@@ -1074,9 +1074,11 @@ correspondente adicionado em `Mesclar` (`spec/SessionStore.tla`, commit `b7d8e0a
   leitura por segmento dos leitores multi-réplica (`segmentosDoServidor`) também usa essa topologia velha, inclusive
   depois de um F1.
 - **Conferir no *smoke* local do controlador:** `getCacheTopologyInfo()` do `rcm` antes e depois de um F1 em S3.
+- **Relação com o P-41 da integração** (leitura por réplica com prazo, `b61c803`): o P-41 resolve o travamento da
+  leitura final no nó parado; este item é sobre qual topologia escolhe os segmentos lidos de cada nó, e continua aberto.
 - **Status:** `ABERTO` (só registro; nenhuma mudança no laço de convergência neste item).
 
-### P-43 (W-6) — o `python3` do Windows escreve CRLF e o `\r` entrava nos parâmetros lidos pelo orquestrador
+### P-47 (W-6; P-43 antes do rebase) — o `python3` do Windows escreve CRLF e o `\r` entrava nos parâmetros lidos pelo orquestrador
 
 - **Sintoma (suíte do orquestrador no host):** `run-campanha-s3.sh: line 265: 200: arithmetic syntax error`, porque o
   `campanha_s3_conferir.py parametros` lido pelo *bash* do Git devolvia `200\r`.
@@ -1084,7 +1086,7 @@ correspondente adicionado em `Mesclar` (`spec/SessionStore.tla`, commit `b7d8e0a
   Na VM (Linux) não há `\r`; a correção só deixa o orquestrador indiferente ao sistema.
 - **Status:** `RESOLVIDO` (05/11, branch `feature/w6-orquestrador-s3`).
 
-### P-44 (W-6, só nos testes) — `grep -q` com `pipefail` dá falso negativo em texto grande
+### P-48 (W-6, só nos testes; P-44 antes do rebase) — `grep -q` com `pipefail` dá falso negativo em texto grande
 
 - **Sintoma:** `contem` da suíte nova (`printf … | grep -qF …`) falhou com a linha presente: o `grep -q` sai no
   primeiro acerto, o `printf` de um log grande morre de SIGPIPE e, com `pipefail`, o *pipeline* falha.
@@ -1092,17 +1094,31 @@ correspondente adicionado em `Mesclar` (`spec/SessionStore.tla`, commit `b7d8e0a
   não foi tocado.
 - **Status:** `RESOLVIDO`.
 
-### P-45 (W-6) — evento do stdout perdido quando o `read -t` vence no meio da linha; carga sem âncora saía ACEITA
+### P-49 (W-6; P-45 antes do rebase) — evento do stdout perdido quando o `read -t` vence no meio da linha; carga sem âncora saía ACEITA
 
 - **Sintoma (suíte do orquestrador no host, S4):** a execução F1 não viu a âncora (a linha estava no `stdout.log`),
   não injetou a falha e saiu ACEITA. Duas causas: (1) o laço de eventos lê o FIFO com `read -t 0,2`; quando o prazo
   vence no meio de uma linha, o bash deixa a parte lida na variável, e o laço a descartava; (2) a recusa "sem âncora"
   só existia para o prazo de 120 s, e uma carga que termina antes dele sem âncora passava.
-- **Correção:** a parte lida no `read -t` que vence fica num *buffer* e é juntada à leitura seguinte; depois do laço,
-  carga sem âncora é RECUSADA ("sem ancora (a carga terminou antes)"). Caso S17 da suíte.
+- **Correção:** primeiro, a parte lida no `read -t` vencido ia a um *buffer*; depois do P-50, o laço deixou de usar
+  `read -t` com prazo: testa com `read -t 0` (não lê) e lê a linha já disponível, que o leitor escreve inteira, então
+  não há leitura parcial. Depois do laço, carga sem âncora é RECUSADA ("sem ancora (a carga terminou antes)"). Caso
+  S17 da suíte.
 - **Alcance:** no Linux da VM, o leitor escreve cada evento numa única escrita menor que `PIPE_BUF`, então a perda
   seria rara; no Git Bash (emulação de pipe do MSYS) apareceu. A correção vale nos dois.
 - **Status:** `RESOLVIDO` (05/11).
+
+### P-50 (W-6) — o bash do Git Bash cai com SIGSEGV quando o SIGTERM chega durante `read -t` num FIFO
+
+- **Sintoma (S7, 2 de 3 rodadas completas e na rodada isolada):** o orquestrador recebe SIGTERM com o laço de eventos
+  parado em `IFS= read -r -t 0.2 -u <fd>` sobre o FIFO de eventos e sai com 139 ("Segmentation fault" na linha do
+  `read`), sem rodar o *trap* (sem a linha FIM no log). Na rodada anterior o S7 tinha passado.
+- **Causa provável:** entrega de sinal durante o `read -t` no bash do MSYS (emulação de FIFO e de sinal). O runner do
+  rebaseline espera com `sleep & wait` (`dormir`), e o R8 dele, que manda SIGTERM no meio da execução, passa nesse
+  ambiente. Não foi reproduzido no Linux (não havia Linux disponível sem subir Podman).
+- **Correção:** o laço de eventos espera com `dormir` (o SIGTERM chega no `wait` e o *trap* roda), testa eventos com
+  `read -t 0` e lê só a linha disponível. A latência de leitura de um evento continua de até 0,2 s.
+- **Status:** `RESOLVIDO` no código (05/11); a confirmar na rodada repetida do S7 e na validação X-17 na VM.
 
 ## Observação de modelagem (não é defeito)
 

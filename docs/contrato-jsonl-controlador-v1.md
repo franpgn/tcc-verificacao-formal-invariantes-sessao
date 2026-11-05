@@ -358,3 +358,10 @@ ligado, o resumo ganha seis campos ao fim, depois de `t_fim_controle_ns` (com o 
 
 Testes: `ReligamentoTest`, `ConvergenciaResumoReligamentoTest`, `CliReligamentoTest`, `ExecutorAc5AplicadoTest` e
 `WorkloadMainReligamentoFonteTest`.
+
+**`convergencia_estado` (W-6, decisão do coordenador de 05/11 depois do I-3b).** Em todo resumo, logo depois de
+`t_fim_controle_ns` (antes dos campos do religamento, quando existem): `convergiu`; `divergente` (houve ao menos uma
+rodada válida e a divergência ficou até o teto); ou `sem_rodada_valida` (nenhuma rodada válida até o teto, por exemplo
+o nó parado pelo AC-5 não voltou e toda rodada saiu "topologia com 2 de 3"). `divergencia_persistente` continua com o
+significado de antes (`true` nos dois últimos casos); a análise trata `sem_rodada_valida` como não avaliável. O
+orquestrador registra o caso como aviso na checagem da execução. Teste: `ConvergenciaEstadoTest`.

@@ -123,7 +123,7 @@ scripts/run-campanha-s3.sh --dry-run --matriz <tsv> --matriz-sha256 <hex> --fase
 # mesma linha sem --dry-run e com --jar <jar> --jar-sha256 <hex> --boot-esperado <boot_id> --h4-id <id>
 ```
 
-Detalhes e porquês: `docs/implementacao.md` (TD-013); testes: `scripts/run-campanha-s3.test.sh` e `docs/testes.md`.
+Detalhes e porquês: `docs/implementacao.md` (TD-014); testes: `scripts/run-campanha-s3.test.sh` e `docs/testes.md`.
 
 ## Fluxo de desenvolvimento
 

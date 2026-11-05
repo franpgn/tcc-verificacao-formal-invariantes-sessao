@@ -120,7 +120,7 @@ flowchart TD
     GR --> REC["podman-compose down/up (XML sem caches);<br/>3 HEALTHY; StartedAt &gt;= recriacao; cria-caches.sh (6 caches,<br/>leitura de volta nos 3 nos)"]
     REC --> C3A["camada 3 antes: rebalancing_enabled, AVAILABLE e config = JSON nos 3 nos"]
     C3A --> K1["portao K1: 60 s de 3 HEALTHY sem tc/iptables residual"]
-    K1 --> CAR["timeout -k (9 s + folga) teto java ... --controller shadow|active<br/>stdout por FIFO: leitor em memoria, log por outro processo"]
+    K1 --> CAR["timeout -k (21 s + folga) teto java ... --controller shadow|active<br/>stdout por FIFO: leitor em memoria, log por outro processo"]
     CAR -- "Warm-up ate +" --> META["janela h4 da linha; meta da trilha (braco certo; B atua)"]
     META --> INJ["+inj_offset: F1 inject-crash --marker | F2 dead-man + inject-partition | F4 dead-man + inject-netdegrade"]
     INJ --> VOL["F1: volta pela REST (P-35); F2/F4: resto de rede, --heal, desarme"]
@@ -141,7 +141,10 @@ flowchart TD
    validação X-17.
 2. **Sinal de fim da carga sem disco no caminho.** O stdout do programa vai a um FIFO; um leitor em segundo plano
    procura a âncora e a linha `Fim da carga:` e as passa por outro FIFO, aberto em leitura e escrita pelo laço
-   principal (`read -t 0,2`), enquanto um `cat` separado grava o `stdout.log`. Um disco travado só atrasa o `cat`. O
+   principal, enquanto um `cat` separado grava o `stdout.log`. Um disco travado só atrasa o `cat`. O laço testa o FIFO
+   com `read -t 0` (sem ler), lê só a linha já disponível e espera entre as voltas com `sleep & wait` (o `dormir` do
+   runner do rebaseline), porque o bash do Git Bash caiu com SIGSEGV ao receber SIGTERM dentro de um `read -t 0,2`
+   (P-50) e a leitura vencida no meio da linha perdia o evento (P-49). O
    alvo do AC-5 vem na própria linha, lido pelo programa do executor em memória (`alvoDoAc5Aplicado`, mesma regra
    de `ac5_aplicada` do `comparar_bracos.py`); a trilha no disco só é conferida depois (`campanha_s3_conferir.py
    trilha`).
@@ -152,14 +155,18 @@ flowchart TD
    esperados ou até `--rejoin-timeout-sec`, e grava `t_religamento_ns` (fim da leitura que viu; sempre antes da
    primeira rodada do laço). Sem o campo, a execução fica ACEITA com aviso: o Δ_conv sai não avaliável na análise,
    e o desfecho V não é afetado.
-4. **Encerramento** por `timeout -k K teto java …`, com `K = 9 s (T_enc no pior caso, contrato v1.2) + encerramento_folga_s`
-   e o teto `exec_teto_s` do arquivo de parâmetros. Uma interrupção do orquestrador manda SIGTERM ao `timeout`, que o
-   repassa à JVM e arma o SIGKILL K s depois; o orquestrador espera K + 2 s antes de um SIGKILL próprio.
+4. **Encerramento** por `timeout -k K teto java …`, com `K = 21 s (T_enc no pior caso do contrato v1.2 depois do P-42:
+   AC-5 com prazo de 17 s e a P2 habilitada; 19 s sem ela) + encerramento_folga_s` e o teto `exec_teto_s` do arquivo
+   de parâmetros. Uma interrupção do orquestrador manda SIGTERM ao `timeout`, que o repassa à JVM e arma o SIGKILL K s
+   depois; o orquestrador espera K + 2 s antes de um SIGKILL próprio. (Antes do rebase sobre `17f2bd4` eram 9 s.)
 5. **Braço B que não atua** (atuador `nulo`, política `nenhuma`, `parametros_politica` nulo, modo errado ou
    `param_sha256` diferente do SHA-256 do `--controller-config`) é recusado assim que a âncora aparece (a `meta` já
    está escrita), antes da falha: a carga é parada e a fase sai com 6, porque o erro é de configuração e se repetiria.
    No pré-voo, o bloco `politica` é exigido no arquivo quando a fase tem braço B. O mesmo arquivo serve aos dois
-   braços, então o `param_sha256` igual em A e B decorre de conferir os dois contra o arquivo.
+   braços, então o `param_sha256` igual em A e B decorre de conferir os dois contra o arquivo. **P2 fora do braço B
+   (D-B do coordenador, 05/11):** toda fase do orquestrador é de calibração ou avaliação, então o pré-voo exige
+   `politica.p2Habilitada = false` (o que exige também o bloco), e a `meta` de cada execução, nos dois braços,
+   `parametros_politica.p2_habilitada = false`; qualquer outro valor para a carga (exit 6).
 6. **Volta do nó depois do F1 pela REST** (P-35): três `health` HEALTHY com 3 nós em até 180 s (PR §6 (e)); o exit do
    `inject-crash.sh` só decide recusa (1, 4) × infraestrutura (2, 3, 5), como no rebaseline.
 7. **h4.** `analysis/h4.py`, `amostrador-infra.sh` e `vigia-h4.sh` não mudam (lista `e9c44819…` da DT-018). O
@@ -180,6 +187,19 @@ flowchart TD
     todos obrigatórios, cada um com `origem` não vazia, nenhum padrão, com duas coerências (a falha acaba antes do fim
     da carga; o teto cobre carga + religamento + convergência). As constantes do orquestrador têm a origem ao lado
     (K1, volta, recriação, âncora, prazo REST, margem e precisão do dead-man, `T_enc`, aviso de 8 s, fator 1,5).
+12. **Religamento antes do teto da convergência** (coordenador, 05/11, depois do I-3b, em que o religamento 30 s depois do
+    fim deu convergência em 35,3 s): o `podman start` sai na mesma volta do laço em que a linha de fim chega, e o
+    programa só começa o laço de convergência depois de ver a topologia completa (ou de esgotar
+    `--rejoin-timeout-sec`). O S5 da suíte exige o `start` dentro do prazo do religamento.
+13. **`convergencia_estado`** no resumo (`convergiu` | `divergente` | `sem_rodada_valida`): com `sem_rodada_valida`, a
+    execução fica ACEITA com aviso (o desfecho V não depende da convergência; Δ_conv e divergência ficam não avaliáveis
+    na análise).
+14. **Pareamento** conferido no pré-voo (também no `--dry-run`): em cada bloco, uma linha A e uma B, a mesma célula e a
+    mesma semente (plano 5.2); senão exit 4. O gerador já garante isso; a conferência pega matriz ou `reposicoes.tsv`
+    editados à mão.
+15. **Arquivo `NUL`** (o `podman machine ssh` do Git Bash grava o `known_hosts` num arquivo `NUL` no diretório
+    corrente): o orquestrador o remove da saída e dos diretórios das execuções, com registro no log, e o exclui dos
+    manifestos.
 
 ### TD-013 — Correções do W-2a depois da integração: P-41, P-42 e D-B (2026-11-05)
 

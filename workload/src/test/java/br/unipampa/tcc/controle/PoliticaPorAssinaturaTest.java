@@ -267,23 +267,26 @@ class PoliticaPorAssinaturaTest {
     // ------------------------------------------------------------------ parametros
 
     @Test
-    @DisplayName("parametros: obrigatorios, sem padrao; ausente, desconhecido, tipo errado ou fora da regra sao recusados")
+    @DisplayName("parametros: obrigatorios, sem padrao, com origem; ausente, desconhecido, tipo errado ou fora da regra sao recusados")
     void parametros() throws Exception {
         ObjectMapper j = new ObjectMapper();
+        String o = ",\"origem\":{\"k\":\"t\",\"tetoLagMs\":\"t\",\"tRebNs\":\"t\",\"cotaAc5\":\"t\"}";
         ParametrosPolitica ok = ParametrosPolitica.deJson(j.readTree(
-                "{\"k\":3,\"tetoLagMs\":2000,\"tRebNs\":60000000000,\"cotaAc5\":1}"));
-        assertEquals(new ParametrosPolitica(3, 2000, 60 * S, 1), ok);
+                "{\"k\":3,\"tetoLagMs\":2000,\"tRebNs\":60000000000,\"cotaAc5\":1" + o + "}"));
+        assertEquals(new ParametrosPolitica(3, 2000, 60 * S, 1, ok.origem()), ok);
+        assertEquals("t", ok.origem().get("tRebNs"));
         for (String ruim : new String[] {
-                "{\"k\":3,\"tetoLagMs\":2000,\"cotaAc5\":1}",
-                "{\"k\":3,\"tetoLagMs\":2000,\"tRebNs\":60000000000}",
-                "{\"tetoLagMs\":2000,\"tRebNs\":60000000000,\"cotaAc5\":1}",
-                "{\"k\":3,\"tetoLagMs\":2000,\"tRebNs\":60000000000,\"cotaAc5\":1,\"extra\":0}",
-                "{\"k\":3.5,\"tetoLagMs\":2000,\"tRebNs\":60000000000,\"cotaAc5\":1}",
-                "{\"k\":\"3\",\"tetoLagMs\":2000,\"tRebNs\":60000000000,\"cotaAc5\":1}",
-                "{\"k\":0,\"tetoLagMs\":2000,\"tRebNs\":60000000000,\"cotaAc5\":1}",
-                "{\"k\":3,\"tetoLagMs\":0,\"tRebNs\":60000000000,\"cotaAc5\":1}",
-                "{\"k\":3,\"tetoLagMs\":2000,\"tRebNs\":0,\"cotaAc5\":1}",
-                "{\"k\":3,\"tetoLagMs\":2000,\"tRebNs\":60000000000,\"cotaAc5\":2}",
+                "{\"k\":3,\"tetoLagMs\":2000,\"cotaAc5\":1" + o + "}",
+                "{\"k\":3,\"tetoLagMs\":2000,\"tRebNs\":60000000000" + o + "}",
+                "{\"tetoLagMs\":2000,\"tRebNs\":60000000000,\"cotaAc5\":1" + o + "}",
+                "{\"k\":3,\"tetoLagMs\":2000,\"tRebNs\":60000000000,\"cotaAc5\":1,\"extra\":0" + o + "}",
+                "{\"k\":3.5,\"tetoLagMs\":2000,\"tRebNs\":60000000000,\"cotaAc5\":1" + o + "}",
+                "{\"k\":\"3\",\"tetoLagMs\":2000,\"tRebNs\":60000000000,\"cotaAc5\":1" + o + "}",
+                "{\"k\":0,\"tetoLagMs\":2000,\"tRebNs\":60000000000,\"cotaAc5\":1" + o + "}",
+                "{\"k\":3,\"tetoLagMs\":0,\"tRebNs\":60000000000,\"cotaAc5\":1" + o + "}",
+                "{\"k\":3,\"tetoLagMs\":2000,\"tRebNs\":0,\"cotaAc5\":1" + o + "}",
+                "{\"k\":3,\"tetoLagMs\":2000,\"tRebNs\":60000000000,\"cotaAc5\":2" + o + "}",
+                "{\"k\":3,\"tetoLagMs\":2000,\"tRebNs\":60000000000,\"cotaAc5\":1}",
                 "[]"}) {
             assertThrows(IllegalArgumentException.class, () -> ParametrosPolitica.deJson(j.readTree(ruim)), ruim);
         }

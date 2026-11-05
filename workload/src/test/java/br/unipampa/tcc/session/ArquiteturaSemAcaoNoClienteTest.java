@@ -46,7 +46,9 @@ class ArquiteturaSemAcaoNoClienteTest {
                     "ClasseViolacao", "Controlador", "EventoOperacao", "ExecutorDeAcoes", "FonteDeDefasagem",
                     "FonteDeSaude", "FonteDeTempo", "FonteDeTopologia", "FonteDeViolacoes", "FormatoJsonl",
                     "LacoDeControle", "MetaExecucao", "ModoAtuacao", "ParametrosControlador", "PoliticaDeAcao",
-                    "Referencia", "SondaTopologia", "TrilhaJsonl", "ViolacaoObservada"));
+                    "Referencia", "SondaTopologia", "TrilhaJsonl", "ViolacaoObservada",
+                    // W-2a (P-38, autorizado em 05/11): ligacao do atuador REST e da politica por assinatura
+                    "PoliticaPorAssinatura", "ParametrosPolitica", "AtuadorPorTipo"));
 
     /** Tipos do portao de emissao retirados no B-27.3. */
     static final List<String> TIPOS_RETIRADOS = List.of(

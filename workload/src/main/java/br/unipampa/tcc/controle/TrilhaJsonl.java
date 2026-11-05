@@ -1,6 +1,5 @@
 package br.unipampa.tcc.controle;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
@@ -10,6 +9,8 @@ import java.io.Writer;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
@@ -34,11 +35,17 @@ import java.util.concurrent.TimeUnit;
  *   <li><b>Fim.</b> {@link #escreverFim} poe a linha {@code fim} fora da capacidade (ela nunca se perde por fila
  *       cheia), fecha a trilha para linhas novas e a gravadora preenche o campo de perdas na hora em que grava,
  *       quando ja conhece os erros de todas as linhas anteriores. Nenhuma linha passa do fim.</li>
+ *   <li><b>Fechamento com prazo</b> ({@link #fechar(long)}, decisao 5 do coordenador em 05/11). Espera a gravadora
+ *       ate o prazo dado (o {@link LacoDeControle} passa o {@code T_enc}); se ela nao terminar (disco travado),
+ *       abandona a fila: o que ainda nao foi gravado (a linha em curso, as da fila e o {@code fim}) e contado em
+ *       {@link #abandonadas()} e nada mais e gravado; a gravadora fecha o arquivo quando o disco voltar. A linha em
+ *       curso no estouro conta como perdida mesmo se o disco a completar depois: o contador e um teto (no maximo uma
+ *       linha a mais por arquivo). {@link #close()} espera sem prazo (testes e ferramentas).</li>
  *   <li><b>Perdas</b> ({@link #linhasPerdidas()}): erros de escrita + transbordadas + descartadas (chegaram
- *       depois do fim ou do {@link #close()}). Uma queda do processo perde as linhas ainda na fila e a linha em
- *       curso.</li>
- *   <li><b>Fechamento.</b> {@link #close()} espera a gravadora terminar a fila e fechar o arquivo (no fim da
- *       carga, fora do caminho critico do laco e do executor).</li>
+ *       depois do fim ou do fechamento) + abandonadas. Uma queda do processo perde as linhas ainda na fila e a
+ *       linha em curso.</li>
+ *   <li>A gravadora nunca morre por uma linha: {@link IOException} ou {@link RuntimeException} da saida contam como
+ *       erro de escrita.</li>
  * </ul>
  */
 public final class TrilhaJsonl implements Closeable {
@@ -66,20 +73,23 @@ public final class TrilhaJsonl implements Closeable {
     private final LinkedBlockingQueue<Item> fila = new LinkedBlockingQueue<>();
     private final Thread gravadora;
 
-    /** Protege {@code aberta}, {@code fechada}, os contadores de entrada e {@code naFila}. Nunca envolve E/S. */
+    /** Protege o estado e todos os contadores. Nunca envolve E/S. */
     private final Object trava = new Object();
     private boolean aberta = true;
     private boolean fechada;
+    private boolean abandonada;
+    private boolean emCurso;
+    private boolean emCursoFim;
     private int naFila;
+    private long linhas;
+    private long errosEscrita;
     private long descartadas;
     private long transbordadas;
+    private long abandonadas;
 
     /** Itens postos na fila e ainda nao terminados pela gravadora (para {@link #aguardarGravacao}). */
     private final Object travaPendentes = new Object();
     private long pendentes;
-
-    private volatile long linhas;
-    private volatile long errosEscrita;
 
     private TrilhaJsonl(Path arquivo, Writer saida, int capacidade) {
         if (capacidade < 1) {
@@ -145,8 +155,8 @@ public final class TrilhaJsonl implements Closeable {
         String json;
         try {
             json = JSON.writeValueAsString(linha);
-        } catch (JsonProcessingException e) {
-            synchronized (this) {
+        } catch (IOException | RuntimeException e) {
+            synchronized (trava) {
                 errosEscrita++;
             }
             return;
@@ -232,51 +242,52 @@ public final class TrilhaJsonl implements Closeable {
             }
             if (it == Item.PARAR) {
                 fecharSaida();
-                concluir();
+                concluir(1);
                 return;
             }
-            if (it.fim() == null) {
-                synchronized (trava) {
+            String json;
+            synchronized (trava) {
+                if (it.fim() == null) {
                     naFila--;
                 }
-                gravarLinha(it.json());
-                concluir();
-                continue;
-            }
-            long perdidas;
-            synchronized (this) {
-                perdidas = errosEscrita;
-            }
-            synchronized (trava) {
-                perdidas += transbordadas + it.descartadasNoPedido();
-            }
-            it.fim().put(it.campoPerdidas(), perdidas);
-            try {
-                gravarLinha(JSON.writeValueAsString(it.fim()));
-            } catch (JsonProcessingException | RuntimeException e) {
-                synchronized (this) {
-                    errosEscrita++;
+                if (abandonada) {
+                    abandonadas++; // tirado da fila depois do estouro e antes de comecar: nao grava, conta
+                    concluir(1);
+                    continue;
+                }
+                emCurso = true;
+                emCursoFim = it.fim() != null;
+                if (it.fim() != null) {
+                    it.fim().put(it.campoPerdidas(), errosEscrita + transbordadas + it.descartadasNoPedido());
                 }
             }
-            fecharSaida();
-            concluir();
-            return;
-        }
-    }
-
-    /** A gravadora nunca morre por uma linha: qualquer falha da saida conta como erro de escrita. */
-    private void gravarLinha(String json) {
-        try {
-            saida.write(json);
-            saida.write('\n');
-            saida.flush();
-            synchronized (this) {
-                linhas++;
+            boolean ok;
+            try {
+                json = it.fim() == null ? it.json() : JSON.writeValueAsString(it.fim());
+                saida.write(json);
+                saida.write('\n');
+                saida.flush();
+                ok = true;
+            } catch (IOException | RuntimeException e) {
+                ok = false;
             }
-        } catch (IOException | RuntimeException e) {
-            synchronized (this) {
-                errosEscrita++;
+            synchronized (trava) {
+                emCurso = false;
+                emCursoFim = false;
+                if (!abandonada) { // abandonada no meio: a linha ja foi contada em abandonadas
+                    if (ok) {
+                        linhas++;
+                    } else {
+                        errosEscrita++;
+                    }
+                }
             }
+            if (it.fim() != null) {
+                fecharSaida();
+                concluir(1);
+                return;
+            }
+            concluir(1);
         }
     }
 
@@ -284,15 +295,17 @@ public final class TrilhaJsonl implements Closeable {
         try {
             saida.close();
         } catch (IOException | RuntimeException e) {
-            synchronized (this) {
-                errosEscrita++;
+            synchronized (trava) {
+                if (!abandonada) {
+                    errosEscrita++;
+                }
             }
         }
     }
 
-    private void concluir() {
+    private void concluir(int n) {
         synchronized (travaPendentes) {
-            pendentes--;
+            pendentes -= n;
             travaPendentes.notifyAll();
         }
     }
@@ -309,12 +322,16 @@ public final class TrilhaJsonl implements Closeable {
     }
 
     /** Linhas gravadas no arquivo. */
-    public synchronized long linhas() {
-        return linhas;
+    public long linhas() {
+        synchronized (trava) {
+            return linhas;
+        }
     }
 
-    public synchronized long errosEscrita() {
-        return errosEscrita;
+    public long errosEscrita() {
+        synchronized (trava) {
+            return errosEscrita;
+        }
     }
 
     /** Linhas que chegaram depois do fim ou do fechamento. */
@@ -331,20 +348,57 @@ public final class TrilhaJsonl implements Closeable {
         }
     }
 
-    /** Linhas que nao chegaram ao arquivo: erros de escrita + transbordadas + descartadas (N3, W-2b). */
-    public long linhasPerdidas() {
-        long e = errosEscrita();
+    /** Linhas nao gravadas porque o fechamento com prazo estourou (decisao 5 do coordenador, W-2b). */
+    public long abandonadas() {
         synchronized (trava) {
-            return e + transbordadas + descartadas;
+            return abandonadas;
+        }
+    }
+
+    /** Linhas que nao chegaram ao arquivo: erros de escrita + transbordadas + descartadas + abandonadas. */
+    public long linhasPerdidas() {
+        synchronized (trava) {
+            return errosEscrita + transbordadas + descartadas + abandonadas;
         }
     }
 
     /**
-     * Fecha a trilha para linhas novas, espera a gravadora terminar a fila (inclusive a linha {@code fim}, se
-     * pedida) e fechar o arquivo. Idempotente. Interrompido, para de esperar e repoe o sinal.
+     * Fecha a trilha para linhas novas e espera a gravadora terminar a fila (inclusive o {@code fim}, se pedido) e
+     * fechar o arquivo, ate {@code prazoNs}. Se o prazo estourar, abandona o que falta (ver a classe) e volta.
+     * Idempotente. Interrompido, para de esperar, abandona e repoe o sinal.
+     *
+     * @return {@code true} se a gravadora terminou no prazo
+     */
+    public boolean fechar(long prazoNs) {
+        pedirFechamento();
+        try {
+            long ns = Math.max(1L, prazoNs);
+            gravadora.join(ns / 1_000_000L, (int) (ns % 1_000_000L));
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
+        boolean terminou = !gravadora.isAlive();
+        if (!terminou) {
+            abandonar();
+        }
+        return terminou;
+    }
+
+    /**
+     * Como {@link #fechar(long)}, sem prazo: espera a gravadora terminar. Interrompido, para de esperar e repoe o
+     * sinal.
      */
     @Override
     public void close() {
+        pedirFechamento();
+        try {
+            gravadora.join();
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
+    }
+
+    private void pedirFechamento() {
         synchronized (trava) {
             if (!fechada) {
                 fechada = true;
@@ -354,10 +408,29 @@ public final class TrilhaJsonl implements Closeable {
                 }
             }
         }
-        try {
-            gravadora.join();
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
+    }
+
+    /** Estouro do prazo: conta o que nao foi gravado e deixa so a parada na fila. */
+    private void abandonar() {
+        synchronized (trava) {
+            if (abandonada || !gravadora.isAlive()) {
+                return;
+            }
+            abandonada = true;
+            List<Item> resto = new ArrayList<>();
+            fila.drainTo(resto);
+            long n = 0;
+            for (Item x : resto) {
+                if (x != Item.PARAR) {
+                    n++;
+                }
+            }
+            naFila = 0;
+            abandonadas += n + (emCurso ? 1 : 0);
+            concluir(resto.size());
+            if (!(emCurso && emCursoFim)) {
+                enfileirar(Item.PARAR); // a gravadora fecha o arquivo quando voltar (com o fim em curso, fecha sozinha)
+            }
         }
     }
 }

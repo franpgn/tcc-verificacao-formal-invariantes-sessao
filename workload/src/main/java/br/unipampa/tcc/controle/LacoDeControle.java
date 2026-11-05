@@ -195,7 +195,10 @@ public final class LacoDeControle implements AutoCloseable {
      * Fim da carga: para a thread, processa as violacoes pendentes e as janelas completas
      * ({@link AgregadorDeJanela#encerrar()}), encerra o executor (desfaz tudo), grava as linhas {@code fim}
      * e fecha os arquivos. Idempotente. W-2b: o {@code fim} vai por {@link TrilhaJsonl#escreverFim} (nunca se
-     * perde por fila cheia, nenhuma linha passa dele) e o fechamento espera a gravadora de cada arquivo.
+     * perde por fila cheia, nenhuma linha passa dele) e o fechamento espera a gravadora de cada arquivo por no
+     * maximo o que sobra do {@code T_enc} usado pelo executor, contado do inicio do encerramento dele
+     * ({@link TrilhaJsonl#fechar(long)}; com o executor fora do prazo, sobra o minimo do {@code join}, 1 ms);
+     * estourado, as linhas nao gravadas vao a {@link #linhasPerdidas()}.
      *
      * @param extrasObservaveis acrescenta campos a linha {@code fim} de {@code observaveis} (ex.: custo da sonda)
      */
@@ -224,7 +227,12 @@ public final class LacoDeControle implements AutoCloseable {
                 processarFechadas();
                 encerrado = true;
             }
+            // W-2b (decisao 5 do coordenador): o encerramento inteiro cabe no T_enc usado pelo executor; as gravadoras
+            // esperam so o que sobra dele depois do executor (como o gancho da JVM)
+            long inicioEncNs = System.nanoTime();
             boolean noPrazo = c.executor().encerrar();
+            Long tEnc = c.executor().prazoEncerramentoUsadoNs();
+            long limite = inicioEncNs + (tEnc == null ? c.executor().prazoChamadaNs() : tEnc);
             AgregadorDeJanela a = c.agregador();
             Resumo r;
             synchronized (travaTick) {
@@ -266,8 +274,10 @@ public final class LacoDeControle implements AutoCloseable {
             fd.put("prazo_chamada_ns", c.executor().prazoChamadaNs());
             fd.put("prazo_encerramento_ns", c.executor().prazoEncerramentoUsadoNs());
             c.decisoes().escreverFim(fd, "linhas_perdidas");
-            c.observaveis().close();
-            c.decisoes().close();
+            // as duas gravadoras correm juntas: o mesmo limite para as duas; o que nao foi gravado no limite vai a
+            // linhasPerdidas() (linha Controlador: do stdout), porque o fim pode nao ter saido
+            c.observaveis().fechar(limite - System.nanoTime());
+            c.decisoes().fechar(limite - System.nanoTime());
             resumo = r;
             return r;
         }

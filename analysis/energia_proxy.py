@@ -47,7 +47,8 @@ CABECALHO_S3_V2 = ("t_ns,ator,operacao,alvo,resultado,tentativas,falha_percebida
 CABECALHO_S3_V1 = "t_ns,ator,operacao,alvo,resultado,tentativas,falha_percebida,nota"
 CABECALHO_EVENTOS = "op_id,operation,start_ns,end_ns,replica,return_code,key"
 LIMIAR_STEAL = Fraction(5, 100)          # plano 5.3, item 5: excluida se steal > 5 % (estrito)
-# Razao P_ocioso / P_max (decisao do coordenador de 2026-11-05, conferencia do Bibliotecario):
+# Razao P_ocioso / P_max (decisao do Gestor de 2026-11-05, transmitida pelo coordenador; Barroso e Holzle
+# p. 36/34, conferencia do Bibliotecario; A-4 da V-W5):
 #   0,3 central: Barroso e Holzle (2007, barroso_holzle_energy_proportional_2007), p. 36, processadores com
 #       menos de um terco do pico em atividade muito baixa; coerente com P_max = 181 W, que e a potencia do
 #       processador (Maximum Turbo Power da ficha intel_i5_14600kf; plano de execucao continua, secao 6);

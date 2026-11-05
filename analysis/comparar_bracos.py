@@ -5,27 +5,41 @@ regra de intersecao-uniao fixa (decisao D-1 do Gestor) e os acrescimos do W-5 de
 docs/plano-execucao-2026-11-04.md, secao 9 (desfechos descritivos do controlador, tipos de celula,
 k e p minimo, Holm entre celulas).
 
+Correcoes da V-W5 (docs/validacao-w5-2026-11-05.md; decisoes do coordenador em nome do Gestor, 05/11):
+instante do evento anomalo = inicio da operacao (P-2); sem t_fim_carga_ns o Delta_rec fica ausente (P-3);
+taxa_erro e falhas_percebidas em diferenca (P-4, G3 de 28/10); --w-recovery-s sem padrao (P-5); Delta_conv
+a partir do religamento do no parado pelo AC-5 (P-6); celula sem evento nas fases recusada (A-2); trilha
+obrigatoria nos dois bracos das celulas de teste (A-3).
+
 Uso (da raiz do repositorio; numpy e scipy estao no site do usuario, por isso -E -P e nao -I, decisao
 G2 de 28/10):
   python -E -P analysis/comparar_bracos.py --manifesto M.tsv --semente-boot S --saida comparacao.json
-      --delta-latencia DL --w-analise-s W
+      --delta-latencia DL --w-analise-s W --w-recovery-s WR
       [--celulas-teste C1,C2] [--celulas-descritivas C3] [--celulas-referencia C4]
       [--referencia-erro CELULA=referencia-erro.json ...] [--p-max-w P --razao-ocioso-central R]
-      [--fases durante,recuperacao] [--rep 1] [--w-recovery-s 60] [--n-boot 10000] [--n-hier 2000]
+      [--fases durante,recuperacao] [--rep 1] [--n-boot 10000] [--n-hier 2000]
       [--delta 0.10] [--marcadores-nome marcadores.txt]
 
 Parametros SEM valor padrao (regra do autor: limiar sem origem no codigo fica obrigatorio; o pre-registro
 B-40 passa o valor): --delta-latencia (delta_L da nao inferioridade do p99; a Proposta da 10 %,
-Metodologia.tex:229) e --w-analise-s (W_c da censura do Delta_rec e janela do Delta_rec de
-sensibilidade; derivada da vazao da calibracao, plano 3.5). Cada celula do manifesto tem de estar em
-exatamente uma das listas --celulas-teste/--celulas-descritivas/--celulas-referencia (exit 2 se nao).
+Metodologia.tex:229), --w-analise-s (W_c da censura do Delta_rec e janela do Delta_rec de sensibilidade;
+derivada da vazao da calibracao, plano 3.5) e --w-recovery-s (W_recovery das fases; o B-40 deriva do
+protocolo do W-6: intervalo entre o fim da falha e o fim da carga; o 60 s antigo era "valor de partida" do
+B-33, nunca fixado). Cada celula do manifesto tem de estar em exatamente uma das listas
+--celulas-teste/--celulas-descritivas/--celulas-referencia (exit 2 se nao). A celula sem falha roda em
+chamada propria com --fases antes: sem marcadores tudo e "antes", e uma celula sem nenhum evento nas fases
+pedidas e recusada (exit 2). Celula de teste: no maximo 16 blocos (permutacao exata), trilha
+decisoes-rep-NNN.jsonl nos dois bracos, braco B com atuador != nulo e politica != nenhuma, e o mesmo
+param_sha256 em A e B de cada bloco (exit 2 se nao).
 
 Manifesto TSV com cabecalho exato `bloco<TAB>celula<TAB>braco<TAB>execucao`, braco em {A, B}, um par
 A/B por (celula, bloco); `execucao` e um diretorio (relativo ao manifesto, se nao for absoluto) com:
   rep-NNN.csv + meta-csv-rep-NNN.json (contrato 2)      desfechos de eventos, Delta_rec
   s3-acoes-rep-NNN.csv (contrato S3 v2, 10 colunas)     desfechos S3 (8 colunas: exit 2)
   marcadores.txt                                         fases, t_fim-falha (Delta_rec)
-  convergencia-resumo-rep-NNN.json                       fases, Delta_conv (t_fim_carga_ns), divergencia
+  convergencia-resumo-rep-NNN.json                       fases, fim da medicao e Delta_conv (t_fim_carga_ns;
+                                                         t_religamento_ns do W-6 quando o AC-5 parou um no),
+                                                         divergencia
   energia-rep-NNN.json (energia_proxy.py)                CPU e energia (opcional; B39-R1 confere W e fases)
   violacoes-rep-NNN.csv (InvariantAuditor.dumpCsv)       taxa de violacoes (sem ele: desfecho ausente)
   decisoes-rep-NNN.jsonl (controlador, contrato v1.x)    descritivos do controlador e rastreabilidade
@@ -34,21 +48,24 @@ Desfechos por execucao e escala da estatistica por bloco:
   taxa_violacoes_por_1000   (I1 + I4 + I2 REAL) x 1000 / acoes S3, fases selecionadas    diferenca
   acao_s3_p99_com_espera    p99 da acao S3 (n >= 1000)                                   log da razao
   vazao_util                acoes uteis por s nas fases selecionadas                     log da razao
-  delta_rec_s               ultimo evento anomalo depois do fim da falha, com censura    diferenca
+  delta_rec_s               ultima operacao iniciada depois do fim da falha que terminou
+                            em anomalia, com censura; sem t_fim_carga_ns: ausente         diferenca
   delta_rec_metodologia_s   primeira janela de W s na linha de base (sensibilidade)      diferenca
-  delta_conv_s              t_convergencia_abs_ns - t_fim_carga_ns (nunca t_fim_ns)      diferenca
+  delta_conv_s              t_convergencia_abs_ns - t_religamento_ns (AC-5 parou um no) ou
+                            - t_fim_carga_ns (sem no parado); nunca t_fim_ns             diferenca
   divergencia_persistente   0/1 do resumo de convergencia                                diferenca
+  taxa_erro, falhas_percebidas_por_1000   taxas com zeros (G3 de 28/10)                  diferenca
+  <taxa>:razao              as mesmas duas, razao com exclusao dos zeros (sensibilidade) log da razao
   energia_total_j_por_1000_uteis:<r>  energia estimada (P_max e r do energia_proxy)      log da razao
-  demais (evento_p99:*, taxa_erro, acao_s3_p99_sem_espera, falhas_percebidas_por_1000,
-  cpu_por_1000_uteis)                                                                    log da razao
+  demais (evento_p99:*, acao_s3_p99_sem_espera, cpu_por_1000_uteis)                      log da razao
 
 Familias: co-principal-V (taxa de violacoes), co-principal-L (p99 da acao S3), nao-inferioridade (vazao
-util), secundario (Holm dentro da celula) e sensibilidade (sem Holm: Delta_rec da Metodologia e energia
-com r diferente do central).
+util), secundario (Holm dentro da celula) e sensibilidade (sem Holm: Delta_rec da Metodologia, <taxa>:razao e
+energia com r diferente do central).
 
 Energia (so com --p-max-w e --razao-ocioso-central, juntos): o P_max de cada energia-rep-NNN.json tem de ser
-o passado (exit 2 se nao) e a razao central tem de existir no JSON. Valores da campanha (decisao do
-coordenador de 05/11, conferencia do Bibliotecario): --p-max-w 181 (Maximum Turbo Power do i5-14600KF,
+o passado (exit 2 se nao) e a razao central tem de existir no JSON. Valores da campanha (decisao do Gestor
+de 05/11, Barroso e Holzle p. 36/34, conferencia do Bibliotecario): --p-max-w 181 (Maximum Turbo Power do i5-14600KF,
 `intel_i5_14600kf`) e --razao-ocioso-central 0.3 (Barroso e Holzle 2007, p. 36: processador com menos de
 um terco do pico em atividade muito baixa); 0,5 (p. 34, servidor inteiro) fica como sensibilidade; 0,7
 saiu por nao ter fonte. P_max cancela nas razoes entre bracos; so escala os joules absolutos.
@@ -114,7 +131,19 @@ DESFECHO_DIV = "divergencia_persistente"
 PREFIXO_ENERGIA = "energia_total_j_por_1000_uteis:"
 ESCALA_LOG = "log-razao"
 ESCALA_DIF = "diferenca"
-ESCALA_DIFERENCA = frozenset((DESFECHO_V, DESFECHO_DREC, DESFECHO_DREC_MET, DESFECHO_DCONV, DESFECHO_DIV))
+DESFECHO_ERRO = "taxa_erro"
+DESFECHO_FALHAS = "falhas_percebidas_por_1000"
+# P-4 da V-W5 (G3 de 28/10): as duas taxas com zeros vao em diferenca; a razao com exclusao dos zeros e
+# sensibilidade, com o nome <taxa> + SUFIXO_RAZAO
+ESCALA_DIFERENCA = frozenset((DESFECHO_V, DESFECHO_DREC, DESFECHO_DREC_MET, DESFECHO_DCONV, DESFECHO_DIV,
+                              DESFECHO_ERRO, DESFECHO_FALHAS))
+SUFIXO_RAZAO = ":razao"
+# P-6 da V-W5 (achado A-1, opcao a): instante em que o orquestrador (W-6) religou o no parado pelo AC-5, no
+# fim da carga e antes do laco de convergencia. Nome provisorio, a combinar com o W-6.
+CAMPO_RELIGAMENTO = "t_religamento_ns"
+TIPO_AC5 = "AC-5"
+ATUADOR_NULO = "nulo"
+POLITICA_NENHUMA = "nenhuma"
 FAMILIA_V = "co-principal-V"
 FAMILIA_L = "co-principal-L"
 FAMILIA_NI = "nao-inferioridade"
@@ -484,14 +513,18 @@ def conclusao_global(regras, alfa=ALFA):
 def delta_rec(anomalos_ns, t_fim_falha_ns, fim_medicao_ns, w_c_ns):
     """(Delta_rec em s, censurada, motivo) pela definicao principal do plano de alinhamento 3.4.
 
-    anomalos_ns: instantes em que cada evento anomalo foi observado (fim da operacao). Delta_rec = ultimo
-    instante > t_fim-falha menos t_fim-falha; 0 sem anomalia depois do fim. Censura: ultimo anomalo dentro
-    dos ultimos W_c da medicao (t > fim_medicao - W_c) => censurada, valor = fim_medicao - t_fim-falha.
+    anomalos_ns: instante de INICIO de cada operacao que terminou em anomalia (P-2 da V-W5: regra de fase do
+    projeto, EventCsvWriter.java:157; o fim incluiria a duracao, que o braco B altera). Delta_rec = ultimo
+    inicio > t_fim-falha menos t_fim-falha; 0 sem anomalia iniciada depois do fim. Censura: ultimo dentro dos
+    ultimos W_c da medicao (t > fim_medicao - W_c) => censurada, valor = fim_medicao - t_fim-falha.
+    fim_medicao_ns e o t_fim_carga_ns do protocolo; sem ele, ausente (P-3 da V-W5).
     """
     if t_fim_falha_ns is None:
         return None, None, "sem marcador end (t_fim-falha)"
     if w_c_ns is None:
         return None, None, "w_analise nao informado"
+    if fim_medicao_ns is None:
+        return None, None, "sem t_fim_carga_ns (o fim da medicao e o do protocolo)"
     if fim_medicao_ns <= t_fim_falha_ns:
         return None, None, "fim da medicao nao passa do fim da falha"
     depois = [t for t in anomalos_ns if t > t_fim_falha_ns]
@@ -506,9 +539,10 @@ def delta_rec(anomalos_ns, t_fim_falha_ns, fim_medicao_ns, w_c_ns):
 def delta_rec_metodologia(eventos, t_fim_falha_ns, fim_medicao_ns, w_ns, p_ref_sup, quantil=QUANTIL_LINHA_DE_BASE):
     """(Delta_rec em s, censurada, motivo) pela definicao da Metodologia.tex:223 (sensibilidade, plano 3.4).
 
-    eventos: [(t_ns de observacao, erro)]. Janelas [t_fim + jW, t_fim + (j+1)W) inteiras ate fim_medicao.
-    A janela j esta na linha de base se tem eventos e a contagem de erros nao passa do quantil de 95 % de
-    Binomial(n_j, p_ref+); Delta = j W da primeira. Nenhuma: censurada, valor = fim_medicao - t_fim.
+    eventos: [(t_ns de inicio da operacao, erro)]. Janelas [t_fim + jW, t_fim + (j+1)W) inteiras ate
+    fim_medicao (t_fim_carga_ns; sem ele, ausente). A janela j esta na linha de base se tem eventos e a
+    contagem de erros nao passa do quantil de 95 % de Binomial(n_j, p_ref+); Delta = j W da primeira.
+    Nenhuma: censurada, valor = fim_medicao - t_fim.
     """
     if t_fim_falha_ns is None:
         return None, None, "sem marcador end (t_fim-falha)"
@@ -516,6 +550,8 @@ def delta_rec_metodologia(eventos, t_fim_falha_ns, fim_medicao_ns, w_ns, p_ref_s
         return None, None, "w_analise nao informado"
     if p_ref_sup is None:
         return None, None, "sem referencia de erro"
+    if fim_medicao_ns is None:
+        return None, None, "sem t_fim_carga_ns (o fim da medicao e o do protocolo)"
     n_jan = (fim_medicao_ns - t_fim_falha_ns) // w_ns
     if n_jan < 1:
         return None, None, "nenhuma janela inteira entre o fim da falha e o fim da medicao"
@@ -604,15 +640,31 @@ def _instante_efetivo(a):
     return _int_ou_none(a.get("t_pedido_ns"))
 
 
-def descrever_controlador(trilha, inicio_falha_ns):
+def ac5_aplicada(trilha):
+    """True se a trilha tem uma aplicacao do AC-5 executada (APLICADA): um no ficou parado na execucao.
+
+    PREVISTA (shadow), NAO_EXECUTADA, FALHOU e DESCARTADA nao param no nenhum (contrato v1.2, linha acao).
+    """
+    if trilha is None:
+        return False
+    for o in trilha["linhas"]:
+        ac = o.get("acao") if isinstance(o.get("acao"), dict) else {}
+        if (o["tipo"] == "acao" and o.get("operacao") == "APLICAR" and ac.get("tipo") == TIPO_AC5
+                and o.get("resultado") == "APLICADA"):
+            return True
+    return False
+
+
+def descrever_controlador(trilha, inicio_falha_ns, fim_medicao_ns=None):
     """Desfechos descritivos do controlador numa execucao (sem teste; W-5 item 1, plano 3.1).
 
     Transicoes, entradas em CONSERVADOR, tempo em CONSERVADOR (janelas x W), atraso da primeira entrada e
     da primeira acao de politica em relacao ao marcador start, acoes por tipo e resultado (executadas:
     APLICADA; previstas: PREVISTA), tempo ativo por tipo (do instante efetivo da aplicacao ate a reversao
-    com sucesso; sem reversao, ate o ultimo instante da trilha, com ativa_no_fim) e reversoes com sucesso
-    ou falha. Sem marcador start, toda entrada e toda acao conta como "antes da falha" (acionamento sem
-    falha em curso).
+    com sucesso) e reversoes com sucesso ou falha, tambem por origem. Acao ainda ativa no fim (o AC-5 nunca e
+    revertido na execucao) conta ate fim_medicao_ns, o t_fim_carga_ns do protocolo (R-5 da V-W5); sem ele, o
+    tempo ativo desse tipo fica None, com ativa_no_fim. Sem marcador start, toda entrada e toda acao conta
+    como "antes da falha" (acionamento sem falha em curso).
     """
     linhas = trilha["linhas"]
     meta = trilha["meta"]
@@ -641,6 +693,7 @@ def descrever_controlador(trilha, inicio_falha_ns):
 
     por_tipo, ativas = {}, {}
     rev = {"sucesso": 0, "falha": 0}
+    rev_origem = {}
     primeira, n_antes = None, 0
     for a in acoes:
         ac = a.get("acao") if isinstance(a.get("acao"), dict) else {}
@@ -661,22 +714,29 @@ def descrever_controlador(trilha, inicio_falha_ns):
             if res in RESULTADOS_ATIVA and chave not in ativas and t_ef is not None:
                 ativas[chave] = t_ef
         elif op == "REVERTER":
+            ro = rev_origem.setdefault(str(a.get("origem")), {"sucesso": 0, "falha": 0})
             if res == "FALHOU":
                 rev["falha"] += 1
+                ro["falha"] += 1
             else:
                 rev["sucesso"] += 1
+                ro["sucesso"] += 1
                 if chave in ativas and t_ef is not None:
                     pt["tempo_ativo_s"] += max(0, t_ef - ativas.pop(chave)) / 1e9
     for chave, t_ini in ativas.items():
         pt = por_tipo[chave[0]]
         pt["ativa_no_fim"] = True
-        if t_ultimo is not None:
-            pt["tempo_ativo_s"] += max(0, t_ultimo - t_ini) / 1e9
+        if fim_medicao_ns is None or pt["tempo_ativo_s"] is None:
+            pt["tempo_ativo_s"] = None
+        else:
+            pt["tempo_ativo_s"] += max(0, fim_medicao_ns - t_ini) / 1e9
     politicas = {}
     for o in pols:
         k = str(o.get("politica"))
         politicas[k] = politicas.get(k, 0) + 1
     return {"modo": meta.get("modo"), "esquema": meta.get("esquema"), "completo": trilha["completo"],
+            "atuador": meta.get("atuador"), "politica": meta.get("politica"), "param_sha256": meta.get("param_sha256"),
+            "ac5_aplicada": ac5_aplicada(trilha), "reversoes_por_origem": rev_origem,
             "decisoes": len(decs), "transicoes": sum(1 for o in decs if o.get("transicao") is True),
             "entradas_conservador": len(entradas),
             "entradas_antes_da_falha": sum(1 for o in entradas if antes(_int_ou_none(o.get("t_fim_ns")))),
@@ -946,11 +1006,16 @@ def desfechos_execucao(execucao, rep, fases_sel, w_recovery_ns, marcadores_nome=
             c = sum(viol[k] for k in INVARIANTES_VIOL)
             out[DESFECHO_V] = dict(_taxa(c, n_acoes, 1000.0), contagem=c)
 
-    # recuperacao (plano 3.4): anomalo = ERROR_TRANSPORT/ERROR_UNAVAILABLE ou acao com falha percebida,
-    # no instante em que foi observado (end_ns do evento, t_fim_ns da acao)
+    # P-4 da V-W5 (G3 de 28/10): as taxas com zeros vao em diferenca; a razao com exclusao e sensibilidade
+    for nome in (DESFECHO_ERRO, DESFECHO_FALHAS):
+        if nome in out:
+            out[nome + SUFIXO_RAZAO] = dict(out[nome])
+
+    # recuperacao (plano 3.4): anomalo = ERROR_TRANSPORT/ERROR_UNAVAILABLE ou acao com falha percebida, no
+    # INICIO da operacao (P-2 da V-W5); fim da medicao = t_fim_carga_ns do protocolo, sem reserva (P-3)
     t_carga = _int_ou_none(resumo.get("t_fim_carga_ns")) if resumo is not None else None
-    fim_med, origem_fim = (t_carga, "t_fim_carga_ns") if t_carga is not None else (t1 - 1, "ultimo-instante-observado")
-    anomalos = [e[1] for e in eventos if e[3] in ERROS] + [a[1] for a in (acoes or []) if a[4]]
+    fim_med, origem_fim = (t_carga, "t_fim_carga_ns") if t_carga is not None else (None, None)
+    anomalos = [e[0] for e in eventos if e[3] in ERROS] + [a[0] for a in (acoes or []) if a[4]]
     y, cens, motivo = delta_rec(anomalos, mk["fim"], fim_med, w_analise_ns)
     out[DESFECHO_DREC] = dict(_ausente(motivo) if y is None else {"y": y, "n": 1, "motivo": None, "eventos": None},
                               censurada=cens)
@@ -958,38 +1023,64 @@ def desfechos_execucao(execucao, rep, fases_sel, w_recovery_ns, marcadores_nome=
         if not eventos:
             out[DESFECHO_DREC_MET] = dict(_ausente("sem CSV de eventos"), censurada=None)
         else:
-            y, cens, motivo = delta_rec_metodologia([(e[1], e[3] in ERROS) for e in eventos], mk["fim"], fim_med,
+            y, cens, motivo = delta_rec_metodologia([(e[0], e[3] in ERROS) for e in eventos], mk["fim"], fim_med,
                                                     w_analise_ns, referencia_erro["p_ref_sup"])
             out[DESFECHO_DREC_MET] = dict(_ausente(motivo) if y is None else
                                           {"y": y, "n": 1, "motivo": None, "eventos": None}, censurada=cens)
 
-    # convergencia (plano 3.4): Delta_conv a partir do fim da carga; nunca t_fim_ns
+    # convergencia (plano 3.4; P-6 da V-W5): Delta_conv a partir do religamento do no parado pelo AC-5 (W-6)
+    # ou, sem no parado, do fim da carga; nunca t_fim_ns. AC-5 aplicado sem o registro do religamento: o laco
+    # nunca ve todos os nos (ConvergenciaLoop.java:20-24), entao Delta_conv e divergencia nao sao avaliaveis.
+    trilha = ler_trilha_decisoes(d / ("decisoes-rep-%s.jsonl" % nnn))
+    com_ac5 = ac5_aplicada(trilha)
+    origem_conv = None
     if resumo is None:
-        out[DESFECHO_DCONV] = _ausente("sem resumo de convergencia")
+        out[DESFECHO_DCONV] = dict(_ausente("sem resumo de convergencia"), origem=None)
         out[DESFECHO_DIV] = _ausente("sem resumo de convergencia")
     else:
         dv = resumo.get("divergencia_persistente")
-        out[DESFECHO_DIV] = (_ausente("sem divergencia_persistente no resumo") if not isinstance(dv, bool)
-                             else {"y": 1.0 if dv else 0.0, "n": 1, "motivo": None, "eventos": None})
         t_conv = _int_ou_none(resumo.get("t_convergencia_abs_ns"))
-        if dv is True:
-            out[DESFECHO_DCONV] = _ausente("divergencia persistente (entra no desfecho binario)")
-        elif t_carga is None:
-            out[DESFECHO_DCONV] = _ausente("sem t_fim_carga_ns no resumo (t_fim_ns nao e usado)")
-        elif t_conv is None:
-            out[DESFECHO_DCONV] = _ausente("sem t_convergencia_abs_ns no resumo")
-        elif t_conv < t_carga:
-            out[DESFECHO_DCONV] = _ausente("t_convergencia_abs_ns antes de t_fim_carga_ns")
+        bruto_relig = resumo.get(CAMPO_RELIGAMENTO)
+        t_relig = _int_ou_none(bruto_relig)
+        if bruto_relig is not None and t_relig is None:
+            motivo = "%s invalido no resumo: %r" % (CAMPO_RELIGAMENTO, bruto_relig)
+            out[DESFECHO_DCONV] = dict(_ausente(motivo), origem=None)
+            out[DESFECHO_DIV] = _ausente(motivo)
+        elif com_ac5 and t_relig is None:
+            motivo = ("AC-5 parou um no e o resumo nao tem %s (religamento do W-6): nao avaliavel"
+                      % CAMPO_RELIGAMENTO)
+            out[DESFECHO_DCONV] = dict(_ausente(motivo), origem=None)
+            out[DESFECHO_DIV] = _ausente(motivo)
         else:
-            out[DESFECHO_DCONV] = {"y": (t_conv - t_carga) / 1e9, "n": 1, "motivo": None, "eventos": None}
+            out[DESFECHO_DIV] = (_ausente("sem divergencia_persistente no resumo") if not isinstance(dv, bool)
+                                 else {"y": 1.0 if dv else 0.0, "n": 1, "motivo": None, "eventos": None})
+            origem, t_origem = (CAMPO_RELIGAMENTO, t_relig) if t_relig is not None else ("t_fim_carga_ns", t_carga)
+            if dv is True:
+                motivo = "divergencia persistente (entra no desfecho binario)"
+            elif t_carga is None:
+                motivo = "sem t_fim_carga_ns no resumo (t_fim_ns nao e usado)"
+            elif t_relig is not None and t_relig < t_carga:
+                motivo = "%s antes de t_fim_carga_ns" % CAMPO_RELIGAMENTO
+            elif t_conv is None:
+                motivo = "sem t_convergencia_abs_ns no resumo"
+            elif t_conv < t_origem:
+                motivo = "t_convergencia_abs_ns antes da origem (%s)" % origem
+            else:
+                motivo = None
+            if motivo is None:
+                origem_conv = origem
+                out[DESFECHO_DCONV] = {"y": (t_conv - t_origem) / 1e9, "n": 1, "motivo": None, "eventos": None,
+                                       "origem": origem}
+            else:
+                out[DESFECHO_DCONV] = dict(_ausente(motivo), origem=None)
 
-    trilha = ler_trilha_decisoes(d / ("decisoes-rep-%s.jsonl" % nnn))
     info = {"n_eventos": len(ev_sel), "n_acoes": n_acoes, "steal_excluida": excluida,
             "energia_presente": en_path.exists(), "violacoes": viol,
             "n_violacoes_base": n_acoes if n_acoes is not None else len(ev_sel),
             "fim_medicao_ns": fim_med, "fim_medicao_origem": origem_fim,
             "t_inicio_falha_ns": mk["inicio"], "t_fim_falha_ns": mk["fim"],
-            "controlador": None if trilha is None else descrever_controlador(trilha, mk["inicio"]),
+            "ac5_aplicada": com_ac5, "delta_conv_origem": origem_conv,
+            "controlador": None if trilha is None else descrever_controlador(trilha, mk["inicio"], fim_med),
             "rastreabilidade": None if trilha is None else conferir_rastreabilidade(trilha)}
     return out, info
 
@@ -1020,7 +1111,7 @@ def familia_de(nome, razao_central=None):
         return FAMILIA_L
     if nome == DESFECHO_NI:
         return FAMILIA_NI
-    if nome == DESFECHO_DREC_MET:
+    if nome == DESFECHO_DREC_MET or nome.endswith(SUFIXO_RAZAO):
         return FAMILIA_SENS
     if nome.startswith(PREFIXO_ENERGIA):
         central = razao_central is not None and nome == PREFIXO_ENERGIA + repr(float(razao_central))
@@ -1125,8 +1216,9 @@ def _co_principal_v(ent, res, usados, semente, indice, n_boot, teste):
         rng = _rng(semente, indice)
         idx = rng.integers(0, m, size=(n_boot, m))
         razoes = (cb_[idx].sum(axis=1) / nb[idx].sum(axis=1)) / (ca[idx].sum(axis=1) / na[idx].sum(axis=1))
-        sens["a_razao_exclusao_zero_a"] = {"blocos": m, "estimativa": float(est),
-                                           "ic_boot_blocos": [float(x) for x in np.percentile(razoes, [2.5, 97.5])]}
+        # R-7 da V-W5: com menos de dois blocos o IC fica None, como em ic_boot_blocos
+        ic = [float(x) for x in np.percentile(razoes, [2.5, 97.5])] if m >= 2 else None
+        sens["a_razao_exclusao_zero_a"] = {"blocos": m, "estimativa": float(est), "ic_boot_blocos": ic}
     else:
         sens["a_razao_exclusao_zero_a"] = None
     soma = tot_c["A"] + tot_c["B"]
@@ -1160,6 +1252,7 @@ def _resumo_controlador(blocos, infos):
              "tempo_conservador_s": (None if any(x["tempo_conservador_s"] is None for x in ds)
                                      else sum(x["tempo_conservador_s"] for x in ds)),
              "reversoes": {k: sum(x["reversoes"][k] for x in ds) for k in ("sucesso", "falha")},
+             "execucoes_com_ac5_aplicada": sum(1 for x in ds if x["ac5_aplicada"]),
              "atrasos_entrada_s": [x["atraso_entrada_conservador_s"] for x in ds],
              "atrasos_primeira_acao_s": [x["atraso_primeira_acao_s"] for x in ds]}
         por_tipo = {}
@@ -1170,7 +1263,9 @@ def _resumo_controlador(blocos, infos):
                 for lado in ("aplicar", "reverter"):
                     for res, k in v[lado].items():
                         pt[lado][res] = pt[lado].get(res, 0) + k
-                pt["tempo_ativo_s"] += v["tempo_ativo_s"]
+                # tempo ativo None (acao ativa no fim sem t_fim_carga_ns) deixa a soma None
+                pt["tempo_ativo_s"] = (None if pt["tempo_ativo_s"] is None or v["tempo_ativo_s"] is None
+                                       else pt["tempo_ativo_s"] + v["tempo_ativo_s"])
                 pt["execucoes_ativa_no_fim"] += 1 if v["ativa_no_fim"] else 0
         t["acoes_por_tipo"] = por_tipo
         for nome in ("atrasos_entrada_s", "atrasos_primeira_acao_s"):
@@ -1190,14 +1285,34 @@ def _rastreabilidade_celula(blocos, infos):
     return out
 
 
-def comparar(manifesto, semente, *, delta_latencia, w_analise_s, tipos_celula, fases=FASES_PADRAO, rep=1,
-             w_recovery_s=60, n_boot=N_BOOT_PADRAO, n_hier=N_HIER_PADRAO, delta=DELTA_PADRAO,
+def _conferir_trilhas_do_teste(celula, blocos, infos):
+    """A-3 da V-W5: na celula de teste, trilha nos dois bracos de cada bloco; braco B que atua de fato
+    (atuador != nulo, politica != nenhuma, contrato v1.2, linha meta); mesmo param_sha256 em A e B."""
+    for b in blocos:
+        ctl = {br: infos[b][br]["controlador"] for br in BRACOS}
+        for br in BRACOS:
+            if ctl[br] is None:
+                raise ErroUso("celula de teste %s, bloco %s, braco %s sem decisoes-rep (trilha obrigatoria nos "
+                              "dois bracos; execucao interrompida e refeita pela DT-014)" % (celula, b, br))
+        atuador, politica = ctl["B"]["atuador"], ctl["B"]["politica"]
+        if not atuador or atuador == ATUADOR_NULO or not politica or politica == POLITICA_NENHUMA:
+            raise ErroUso("celula de teste %s, bloco %s: braco B com atuador %r e politica %r nao atua (na pratica "
+                          "e um braco trocado)" % (celula, b, atuador, politica))
+        sha_a, sha_b = ctl["A"]["param_sha256"], ctl["B"]["param_sha256"]
+        if not sha_a or sha_a != sha_b:
+            raise ErroUso("celula de teste %s, bloco %s: param_sha256 diferente entre A (%r) e B (%r)"
+                          % (celula, b, sha_a, sha_b))
+
+
+def comparar(manifesto, semente, *, delta_latencia, w_analise_s, w_recovery_s, tipos_celula, fases=FASES_PADRAO,
+             rep=1, n_boot=N_BOOT_PADRAO, n_hier=N_HIER_PADRAO, delta=DELTA_PADRAO,
              marcadores_nome="marcadores.txt", referencias_erro=None, energia=None):
     """Dicionario do esquema comparar-bracos/2.
 
-    delta_latencia e w_analise_s sao obrigatorios e sem padrao (pre-registro). tipos_celula: {celula:
-    "teste"|"descritiva"|"referencia"} cobrindo exatamente as celulas do manifesto. referencias_erro:
-    {celula: caminho de referencia-erro/1}. energia: {"p_max_w", "razao_central"} ou None.
+    delta_latencia, w_analise_s e w_recovery_s sao obrigatorios e sem padrao (pre-registro; P-5 da V-W5 para
+    o W_recovery). tipos_celula: {celula: "teste"|"descritiva"|"referencia"} cobrindo exatamente as celulas
+    do manifesto. referencias_erro: {celula: caminho de referencia-erro/1}. energia: {"p_max_w",
+    "razao_central"} ou None.
     """
     man = ler_manifesto(manifesto)
     fases_sel = list(fases)
@@ -1208,6 +1323,10 @@ def comparar(manifesto, semente, *, delta_latencia, w_analise_s, tipos_celula, f
     for nome, v in (("delta_latencia", delta_latencia), ("w_analise_s", w_analise_s)):
         if isinstance(v, bool) or not isinstance(v, (int, float)) or not math.isfinite(v) or v <= 0:
             raise ErroUso("%s deve ser numero > 0 (sem valor padrao; o pre-registro fixa): %r" % (nome, v))
+    if (isinstance(w_recovery_s, bool) or not isinstance(w_recovery_s, (int, float)) or not math.isfinite(w_recovery_s)
+            or w_recovery_s < 0):
+        raise ErroUso("w_recovery_s deve ser numero >= 0 (sem valor padrao; o B-40 deriva do protocolo): %r"
+                      % (w_recovery_s,))
     tipos = dict(tipos_celula or {})
     ruins = {c: t for c, t in tipos.items() if t not in TIPOS_CELULA}
     if ruins:
@@ -1235,19 +1354,31 @@ def comparar(manifesto, semente, *, delta_latencia, w_analise_s, tipos_celula, f
     razao_c = None if energia is None else energia["razao_central"]
     celulas, regras = {}, {}
     for celula, blocos in man.items():
+        if tipos[celula] == "teste" and len(blocos) > N_MAX_PERMUTACAO:
+            raise ErroUso("celula de teste %s com %d blocos: permutacao exata limitada a n <= %d blocos"
+                          % (celula, len(blocos), N_MAX_PERMUTACAO))
+    for celula, blocos in man.items():
         tipo = tipos[celula]
         teste = tipo == "teste"
         res, infos = {}, {}
+        # le a celula inteira antes das guardas, para que o erro de contrato de uma execucao apareca como tal
         for b, par in blocos.items():
             res[b], infos[b] = {}, {}
             for br in BRACOS:
                 res[b][br], infos[b][br] = desfechos_execucao(par[br], rep, fases_sel, w_ns, marcadores_nome,
                                                               w_analise_ns=w_an_ns, referencia_erro=refs.get(celula),
                                                               energia=energia)
+        if all(infos[b][br]["n_eventos"] == 0 and not infos[b][br]["n_acoes"] for b in blocos for br in BRACOS):
+            raise ErroUso("celula %s sem nenhum evento nem acao nas fases pedidas (%s); celula sem falha: chamada "
+                          "propria com --fases antes (A-2 da V-W5)" % (celula, ",".join(fases_sel)))
+        for b, par in blocos.items():
+            for br in BRACOS:
                 ctl = infos[b][br]["controlador"]
                 if ctl is not None and ctl["modo"] != MODO_ESPERADO[br]:
                     raise ErroUso("braco %s do bloco %s da celula %s com trilha em modo %r (esperado %s): %s"
                                   % (br, b, celula, ctl["modo"], MODO_ESPERADO[br], par[br]))
+        if teste:
+            _conferir_trilhas_do_teste(celula, blocos, infos)
         nomes = sorted({n for b in blocos for br in BRACOS for n in res[b][br]})
         desf, usados_por = {}, {}
         for indice, nome in enumerate(nomes):
@@ -1328,7 +1459,11 @@ def comparar(manifesto, semente, *, delta_latencia, w_analise_s, tipos_celula, f
              "controlador": _resumo_controlador(list(blocos), infos),
              "rastreabilidade": rast,
              "recuperacao": {"fim_medicao_origem": {b: {br: infos[b][br]["fim_medicao_origem"] for br in BRACOS}
-                                                    for b in blocos}}}
+                                                    for b in blocos},
+                             "delta_conv_origem": {b: {br: infos[b][br]["delta_conv_origem"] for br in BRACOS}
+                                                   for b in blocos},
+                             "ac5_aplicada": {b: {br: infos[b][br]["ac5_aplicada"] for br in BRACOS}
+                                              for b in blocos}}}
         if DESFECHO_V in desf:
             c["co_principal_v"] = _co_principal_v(desf[DESFECHO_V], res, usados_por[DESFECHO_V], semente,
                                                   len(nomes) + len(INVARIANTES_VIOL), n_boot, teste)
@@ -1357,10 +1492,14 @@ def comparar(manifesto, semente, *, delta_latencia, w_analise_s, tipos_celula, f
                               "energia": (energia if energia is None else
                                           {"p_max_w": energia["p_max_w"], "razao_central": energia["razao_central"]}),
                               "regra": "intersecao-uniao (Berger 1982; D-1); Holm entre celulas de teste sobre p_IU",
-                              "delta_rec": "ultimo evento anomalo (ERROR_TRANSPORT, ERROR_UNAVAILABLE, falha "
-                                           "percebida) observado depois do fim da falha; censura nos ultimos "
-                                           "W_c = w_analise_s da medicao (plano 3.4)",
-                              "delta_conv": "t_convergencia_abs_ns - t_fim_carga_ns (plano 3.4)",
+                              "delta_rec": "ultima operacao iniciada depois do fim da falha que terminou em "
+                                           "anomalia (ERROR_TRANSPORT, ERROR_UNAVAILABLE, falha percebida); censura "
+                                           "nos ultimos W_c = w_analise_s antes de t_fim_carga_ns; sem t_fim_carga_ns, "
+                                           "ausente (plano 3.4; P-2 e P-3 da V-W5)",
+                              "delta_conv": "t_convergencia_abs_ns - %s (no parado pelo AC-5 religado pelo W-6) ou "
+                                            "- t_fim_carga_ns (sem no parado); AC-5 sem registro do religamento: "
+                                            "nao avaliavel (plano 3.4; P-6 da V-W5)" % CAMPO_RELIGAMENTO,
+                              "escala_diferenca": sorted(ESCALA_DIFERENCA),
                               "ic_primario": "t (decisao D3)", "p99": "posto-mais-proximo, n >= %d" % N_MIN_P99,
                               "permutacao": "exata, troca de sinal, bilateral, identidade incluida"},
                "manifesto": {"arquivo": _rel(manifesto), "sha256": hashlib.sha256(Path(manifesto).read_bytes()).hexdigest()},
@@ -1414,6 +1553,10 @@ def tabela_markdown(resultado):
                 _fmt(e["p_holm"]), e["k_nao_nulos"], _fmt(e["p_minimo_atingivel"]), len(e["blocos_excluidos"])))
         linhas.append("")
         linhas.append("Estimativa: razao B/A na escala log-razao; media de y_B - y_A na escala diferenca.")
+        if not c["teste"]:
+            # R-8 da V-W5
+            linhas.append("Celula %s (sem teste): IC descritivo, sem correcao de multiplicidade; um IC que exclui 1 "
+                          "(razao) ou 0 (diferenca) nao e resultado de teste." % c["tipo"])
         r = c.get("regra_iu")
         if r:
             linhas.append("Intersecao-uniao: H_V %s (p = %s, media d_b = %s), H_L %s (limite superior do IC t = %s, "
@@ -1485,7 +1628,7 @@ def main(argv=None):
     ap.add_argument("--razao-ocioso-central", type=float)
     ap.add_argument("--fases", default=",".join(FASES_PADRAO))
     ap.add_argument("--rep", type=int, default=1)
-    ap.add_argument("--w-recovery-s", type=float, default=60.0)
+    ap.add_argument("--w-recovery-s", type=float, required=True)   # P-5 da V-W5: sem padrao
     ap.add_argument("--n-boot", type=int, default=N_BOOT_PADRAO)
     ap.add_argument("--n-hier", type=int, default=N_HIER_PADRAO)
     ap.add_argument("--delta", type=float, default=DELTA_PADRAO)

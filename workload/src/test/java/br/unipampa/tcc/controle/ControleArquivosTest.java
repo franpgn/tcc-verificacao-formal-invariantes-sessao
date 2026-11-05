@@ -132,13 +132,14 @@ class ControleArquivosTest {
         n.fieldNames().forEachRemaining(campos::add);
         assertEquals(List.of("tipo", "operacao", "executada", "modo", "atuador", "acao", "origem", "regra",
                 "t_fim_janela_ns", "t_pedido_ns", "t_inicio_ns", "duracao_ns", "resultado", "codigo_http",
-                "lido", "erro"), campos);
+                "lido", "erro", "reversao"), campos);
+        assertTrue(n.get("reversao").isNull(), "acao reversivel: reversao pela pilha, campo null");
         assertEquals("acao", n.get("tipo").asText());
         assertFalse(n.get("executada").asBoolean());
-        assertEquals("AC-1", n.get("acao").get("tipo").asText());
+        assertEquals("AC-2", n.get("acao").get("tipo").asText());
         assertEquals(List.of("sessions", "counters"), JSON.convertValue(n.get("acao").get("caches"), List.class));
         assertTrue(n.get("acao").get("alvo").isNull());
-        assertEquals("DEGRADED_MODE", n.get("acao").get("valor").asText());
+        assertTrue(n.get("acao").get("valor").isNull());
         assertTrue(n.get("codigo_http").isNull());
     }
 

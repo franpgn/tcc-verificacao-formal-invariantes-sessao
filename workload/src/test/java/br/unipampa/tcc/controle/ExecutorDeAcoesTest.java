@@ -28,9 +28,9 @@ class ExecutorDeAcoesTest {
     static final long S = 1_000_000_000L;
     static final long MS = 1_000_000L;
 
-    static final AcaoCluster AC1 = new AcaoCluster(AcaoCluster.Tipo.AC_1, List.of("sessions", "counters"), null, "DEGRADED_MODE");
-    static final AcaoCluster AC2 = new AcaoCluster(AcaoCluster.Tipo.AC_2, List.of("sessions", "counters"), null, null);
-    static final AcaoCluster AC3 = new AcaoCluster(AcaoCluster.Tipo.AC_3, List.of("sessions"), "isn1", "1500");
+    static final AcaoCluster AC1 = new AcaoCluster(AcaoCluster.Tipo.AC_2, List.of("sessions", "counters"), null, null);
+    static final AcaoCluster AC2 = new AcaoCluster(AcaoCluster.Tipo.AC_2, List.of("sessions-async", "counters-async"), null, null);
+    static final AcaoCluster AC3 = new AcaoCluster(AcaoCluster.Tipo.AC_2, List.of("canario"), null, null);
 
     /** Gancho falso: guarda a thread registrada em vez de entrega-la a JVM. */
     static final class GanchoFalso implements ExecutorDeAcoes.Gancho {
@@ -74,7 +74,8 @@ class ExecutorDeAcoesTest {
                 sb.append(' ');
             }
             sb.append(r.operacao() == RegistroAcao.Operacao.APLICAR ? '+' : '-')
-                    .append(r.acao().tipo().rotulo()).append(':').append(r.resultado());
+                    .append(r.acao().tipo().rotulo()).append('/').append(r.acao().caches().get(0))
+                    .append(':').append(r.resultado());
         }
         return sb.toString();
     }
@@ -92,7 +93,7 @@ class ExecutorDeAcoesTest {
         e.reverterTudo(RegistroAcao.Origem.R4, Decisao.Regra.R4, 40 * S);
         assertTrue(e.encerrar());
         assertEquals(List.of(), a.chamadas());
-        assertEquals("+AC-1:PREVISTA +AC-2:PREVISTA -AC-2:PREVISTA -AC-1:PREVISTA", resumo(trilha()));
+        assertEquals("+AC-2/sessions:PREVISTA +AC-2/sessions-async:PREVISTA -AC-2/sessions-async:PREVISTA -AC-2/sessions:PREVISTA", resumo(trilha()));
         for (RegistroAcao r : trilha()) {
             assertFalse(r.executada());
             assertEquals(ModoAtuacao.SHADOW, r.modo());
@@ -111,7 +112,7 @@ class ExecutorDeAcoesTest {
         e.aplicar(AC1, Decisao.Regra.R3, 10 * S);
         e.reverter(AC2, RegistroAcao.Origem.POLITICA, Decisao.Regra.R3, 10 * S);
         assertEquals(List.of(AC1), e.ativas());
-        assertEquals("+AC-1:PREVISTA", resumo(trilha()));
+        assertEquals("+AC-2/sessions:PREVISTA", resumo(trilha()));
         assertEquals(1, e.contadores().ignoradas());
     }
 
@@ -123,7 +124,7 @@ class ExecutorDeAcoesTest {
         e.aplicar(AC3, Decisao.Regra.R2, 5 * S);
         assertTrue(e.encerrar());
         List<RegistroAcao> t = trilha();
-        assertEquals("+AC-1:PREVISTA +AC-3:PREVISTA -AC-3:PREVISTA -AC-1:PREVISTA", resumo(t));
+        assertEquals("+AC-2/sessions:PREVISTA +AC-2/canario:PREVISTA -AC-2/canario:PREVISTA -AC-2/sessions:PREVISTA", resumo(t));
         assertEquals(RegistroAcao.Origem.ENCERRAMENTO, t.get(2).origem());
         assertEquals(List.of(), e.ativas());
     }
@@ -165,7 +166,7 @@ class ExecutorDeAcoesTest {
         e.aplicar(AC3, Decisao.Regra.R2, 5 * S);
         e.reverterTudo(RegistroAcao.Origem.R4, Decisao.Regra.R4, 60 * S);
         assertTrue(e.aguardarFilaVazia(5 * S));
-        assertEquals("+AC-1:APLICADA +AC-2:APLICADA +AC-3:APLICADA -AC-3:APLICADA -AC-2:APLICADA -AC-1:APLICADA",
+        assertEquals("+AC-2/sessions:APLICADA +AC-2/sessions-async:APLICADA +AC-2/canario:APLICADA -AC-2/canario:APLICADA -AC-2/sessions-async:APLICADA -AC-2/sessions:APLICADA",
                 resumo(trilha()));
         assertEquals(6, a.chamadas().size());
         assertEquals(List.of(), e.ativas());
@@ -186,7 +187,7 @@ class ExecutorDeAcoesTest {
         e.reverter(AC1, RegistroAcao.Origem.POLITICA, Decisao.Regra.R3, 20 * S);
         assertTrue(e.aguardarFilaVazia(5 * S));
         assertEquals(2, a.chamadas().size());
-        assertEquals("+AC-1:APLICADA -AC-1:APLICADA", resumo(trilha()));
+        assertEquals("+AC-2/sessions:APLICADA -AC-2/sessions:APLICADA", resumo(trilha()));
         assertTrue(e.encerrar());
     }
 
@@ -201,7 +202,7 @@ class ExecutorDeAcoesTest {
         e.aplicar(AC1, Decisao.Regra.R2, 5 * S);
         assertTrue(e.aguardarFilaVazia(5 * S));
         List<RegistroAcao> t = trilha();
-        assertEquals("+AC-1:FALHOU -AC-1:APLICADA", resumo(t));
+        assertEquals("+AC-2/sessions:FALHOU -AC-2/sessions:APLICADA", resumo(t));
         assertEquals("leitura de volta divergente", t.get(0).erro());
         assertEquals(RegistroAcao.Origem.FALHA_NA_APLICACAO, t.get(1).origem());
         assertEquals(List.of(), e.ativas());
@@ -214,7 +215,7 @@ class ExecutorDeAcoesTest {
     @DisplayName("active: excecao do atuador vira FALHOU com o nome da excecao; o executor continua vivo")
     void excecaoDoAtuador() throws Exception {
         AtuadorFalso a = new AtuadorFalso().responder((op, x) -> {
-            if (x.tipo() == AcaoCluster.Tipo.AC_1 && op.equals("aplicar")) {
+            if (x.chave().equals(AC1.chave()) && op.equals("aplicar")) {
                 throw new IllegalStateException("conexao recusada");
             }
             return ResultadoAtuacao.aplicada(204, "ok");
@@ -225,7 +226,7 @@ class ExecutorDeAcoesTest {
         e.aplicar(AC2, Decisao.Regra.R2, 5 * S);
         assertTrue(e.aguardarFilaVazia(5 * S));
         List<RegistroAcao> t = trilha();
-        assertEquals("+AC-1:FALHOU -AC-1:APLICADA +AC-2:APLICADA", resumo(t));
+        assertEquals("+AC-2/sessions:FALHOU -AC-2/sessions:APLICADA +AC-2/sessions-async:APLICADA", resumo(t));
         assertTrue(t.get(0).erro().startsWith("IllegalStateException"), t.get(0).erro());
         assertEquals(List.of(AC2), e.ativas());
         assertTrue(e.encerrar());
@@ -248,7 +249,7 @@ class ExecutorDeAcoesTest {
         assertTrue(e.aguardarFilaVazia(5 * S));
         assertTrue(e.encerrar());
         List<RegistroAcao> t = trilha();
-        assertEquals("+AC-1:APLICADA -AC-1:FALHOU -AC-1:APLICADA", resumo(t));
+        assertEquals("+AC-2/sessions:APLICADA -AC-2/sessions:FALHOU -AC-2/sessions:APLICADA", resumo(t));
         assertEquals(RegistroAcao.Origem.ENCERRAMENTO, t.get(2).origem());
         assertEquals(1, e.contadores().reversoesFalhas());
     }
@@ -271,8 +272,8 @@ class ExecutorDeAcoesTest {
         a.liberar();
         assertTrue(e.aguardarFilaVazia(5 * S));
         List<RegistroAcao> t = trilha();
-        // AC-1 termina depois do encerramento e e revertida; AC-2 nunca e chamada
-        assertEquals("+AC-1:APLICADA +AC-2:DESCARTADA -AC-1:APLICADA", resumo(t));
+        // AC1 termina depois do encerramento e e revertida; AC2 nunca e chamada
+        assertEquals("+AC-2/sessions:APLICADA +AC-2/sessions-async:DESCARTADA -AC-2/sessions:APLICADA", resumo(t));
         assertFalse(t.get(1).executada());
         assertEquals(1, a.chamadas().stream().filter(c -> c.operacao().equals("aplicar")).count());
     }
@@ -292,7 +293,7 @@ class ExecutorDeAcoesTest {
         g.join(5000);
         assertFalse(g.isAlive());
         List<RegistroAcao> t = trilha();
-        assertEquals("+AC-1:APLICADA +AC-2:APLICADA -AC-2:APLICADA -AC-1:APLICADA", resumo(t));
+        assertEquals("+AC-2/sessions:APLICADA +AC-2/sessions-async:APLICADA -AC-2/sessions-async:APLICADA -AC-2/sessions:APLICADA", resumo(t));
         assertEquals(RegistroAcao.Origem.GANCHO_JVM, t.get(2).origem());
         assertTrue(e.encerrar(), "encerrar depois do gancho e idempotente");
         assertEquals(4, a.chamadas().size());
@@ -320,7 +321,7 @@ class ExecutorDeAcoesTest {
         assertTrue(e.aguardarFilaVazia(5 * S));
         assertTrue(e.encerrar());
         List<RegistroAcao> t = trilha();
-        assertEquals("+AC-1:NAO_EXECUTADA -AC-1:NAO_EXECUTADA", resumo(t));
+        assertEquals("+AC-2/sessions:NAO_EXECUTADA -AC-2/sessions:NAO_EXECUTADA", resumo(t));
         assertFalse(t.get(0).executada());
         assertEquals("nulo", t.get(0).atuador());
     }
@@ -361,7 +362,7 @@ class ExecutorDeAcoesTest {
         long dur = System.nanoTime() - t0;
         assertEquals(4 * tCham, e.prazoEncerramentoUsadoNs());
         assertTrue(dur >= 3 * tCham, "as tres reversoes gastaram o prazo: " + dur);
-        assertEquals("+AC-1:APLICADA +AC-2:APLICADA +AC-3:APLICADA -AC-3:APLICADA -AC-2:APLICADA -AC-1:APLICADA",
+        assertEquals("+AC-2/sessions:APLICADA +AC-2/sessions-async:APLICADA +AC-2/canario:APLICADA -AC-2/canario:APLICADA -AC-2/sessions-async:APLICADA -AC-2/sessions:APLICADA",
                 resumo(trilha()));
     }
 
@@ -391,12 +392,12 @@ class ExecutorDeAcoesTest {
         e.aplicar(AC1, Decisao.Regra.R2, 5 * S);
         e.reverter(AC1, RegistroAcao.Origem.POLITICA, Decisao.Regra.R3, 10 * S);
         assertTrue(e.aguardarFilaVazia(5 * S));
-        e.aplicar(AC1, Decisao.Regra.R2, 15 * S); // a reversao falhou: AC-1 continua aplicada no cluster
+        e.aplicar(AC1, Decisao.Regra.R2, 15 * S); // a reversao falhou: AC1 continua aplicada no cluster
         assertTrue(e.aguardarFilaVazia(5 * S));
         assertEquals(List.of(AC1), e.ativas());
         assertTrue(e.encerrar());
         List<RegistroAcao> t = trilha();
-        assertEquals("+AC-1:APLICADA -AC-1:FALHOU +AC-1:JA_ATIVA -AC-1:APLICADA", resumo(t));
+        assertEquals("+AC-2/sessions:APLICADA -AC-2/sessions:FALHOU +AC-2/sessions:JA_ATIVA -AC-2/sessions:APLICADA", resumo(t));
         assertFalse(t.get(2).executada());
         assertEquals(15 * S, t.get(2).fimJanelaNs());
         long linhasAplicar = t.stream().filter(r -> r.operacao() == RegistroAcao.Operacao.APLICAR).count();
@@ -408,16 +409,17 @@ class ExecutorDeAcoesTest {
     }
 
     @Test
-    @DisplayName("AcaoCluster: chave ignora o valor; caches obrigatorios; rotulos AC-1..AC-3")
+    @DisplayName("AcaoCluster: chave ignora o valor; caches obrigatorios; rotulos AC-2 e AC-5")
     void acaoCluster() {
-        AcaoCluster outro = new AcaoCluster(AcaoCluster.Tipo.AC_1, List.of("sessions", "counters"), null, "X");
+        AcaoCluster outro = new AcaoCluster(AcaoCluster.Tipo.AC_2, List.of("sessions", "counters"), null, "X");
         assertEquals(AC1.chave(), outro.chave());
         assertNotEquals(AC1.chave(), AC2.chave());
-        assertNotEquals(AC3.chave(), new AcaoCluster(AcaoCluster.Tipo.AC_3, List.of("sessions"), "isn2", "1500").chave());
-        assertEquals(List.of("AC-1", "AC-2", "AC-3"),
-                List.of(AcaoCluster.Tipo.AC_1.rotulo(), AcaoCluster.Tipo.AC_2.rotulo(), AcaoCluster.Tipo.AC_3.rotulo()));
-        assertThrows(IllegalArgumentException.class, () -> new AcaoCluster(AcaoCluster.Tipo.AC_1, List.of(), null, null));
-        assertThrows(IllegalArgumentException.class, () -> new AcaoCluster(AcaoCluster.Tipo.AC_1, List.of(" "), null, null));
+        assertNotEquals(new AcaoCluster(AcaoCluster.Tipo.AC_5, List.of("sessions"), "isn1", null).chave(),
+                new AcaoCluster(AcaoCluster.Tipo.AC_5, List.of("sessions"), "isn2", null).chave());
+        assertEquals(List.of("AC-2", "AC-5"),
+                List.of(AcaoCluster.Tipo.AC_2.rotulo(), AcaoCluster.Tipo.AC_5.rotulo()));
+        assertThrows(IllegalArgumentException.class, () -> new AcaoCluster(AcaoCluster.Tipo.AC_2, List.of(), null, null));
+        assertThrows(IllegalArgumentException.class, () -> new AcaoCluster(AcaoCluster.Tipo.AC_2, List.of(" "), null, null));
         assertThrows(NullPointerException.class, () -> new AcaoCluster(null, List.of("s"), null, null));
     }
 }

@@ -54,7 +54,7 @@ class ExecutorNaoReversivelTest {
         assertTrue(e.aguardarFilaVazia(5 * S));
         assertTrue(e.encerrar());
         assertEquals(List.of("aplicar:AC-5"), ops(a));
-        assertEquals("+AC-5:APLICADA", ExecutorDeAcoesTest.resumo(trilha()));
+        assertEquals("+AC-5/sessions:APLICADA", ExecutorDeAcoesTest.resumo(trilha()));
         assertEquals(1, e.contadores().executadas());
         assertEquals(0, e.contadores().reversoes());
         assertEquals(2 * S, e.prazoEncerramentoUsadoNs(), "pilha vazia: T_enc = T_cham");
@@ -90,7 +90,7 @@ class ExecutorNaoReversivelTest {
         assertTrue(e.aguardarFilaVazia(5 * S));
         assertEquals(List.of("aplicar:AC-2", "aplicar:AC-5", "reverter:AC-2"), ops(a));
         List<RegistroAcao> t = trilha();
-        assertEquals("+AC-2:APLICADA +AC-5:APLICADA -AC-2:APLICADA", ExecutorDeAcoesTest.resumo(t));
+        assertEquals("+AC-2/sessions:APLICADA +AC-5/sessions:APLICADA -AC-2/sessions:APLICADA", ExecutorDeAcoesTest.resumo(t));
         assertEquals(RegistroAcao.Origem.R4, t.get(2).origem());
         assertTrue(e.encerrar());
         assertEquals(3, a.chamadas().size(), "o encerramento nao desfaz o AC-5");
@@ -109,7 +109,7 @@ class ExecutorNaoReversivelTest {
         assertTrue(e.aguardarFilaVazia(5 * S));
         assertTrue(e.encerrar());
         assertEquals(List.of("aplicar:AC-5"), ops(a));
-        assertEquals("+AC-5:FALHOU", ExecutorDeAcoesTest.resumo(trilha()));
+        assertEquals("+AC-5/sessions:FALHOU", ExecutorDeAcoesTest.resumo(trilha()));
         assertEquals(1, e.contadores().falhas());
         assertEquals(1, e.contadores().ignoradas());
         assertEquals(1, e.contadores().pedidas());
@@ -141,7 +141,7 @@ class ExecutorNaoReversivelTest {
         e.aplicar(AC5, Decisao.Regra.R3, 10 * S);
         assertTrue(e.encerrar());
         List<RegistroAcao> t = trilha();
-        assertEquals("+AC-2:PREVISTA +AC-5:PREVISTA -AC-2:PREVISTA", ExecutorDeAcoesTest.resumo(t));
+        assertEquals("+AC-2/sessions:PREVISTA +AC-5/sessions:PREVISTA -AC-2/sessions:PREVISTA", ExecutorDeAcoesTest.resumo(t));
         assertTrue(t.stream().noneMatch(RegistroAcao::executada));
         assertEquals(1, e.contadores().ignoradas());
     }

@@ -60,7 +60,7 @@ class AcaoClusterTiposTest {
     }
 
     @Test
-    @DisplayName("formato JSONL: AC-5 sai com reversao=orquestrador no fim da linha; AC-2 sem o campo")
+    @DisplayName("formato JSONL (decisoes 1.2): reversao sempre presente, orquestrador no AC-5 e null no AC-2")
     void reversaoNoJsonl() {
         RegistroAcao r5 = new RegistroAcao(RegistroAcao.Operacao.APLICAR, AC5_ISN3, ModoAtuacao.ACTIVE, "falso", true,
                 "APLICADA", RegistroAcao.Origem.POLITICA, Decisao.Regra.R3, 5 * S, 6 * S, 6 * S, S, 204,
@@ -74,7 +74,10 @@ class AcaoClusterTiposTest {
 
         RegistroAcao r2 = new RegistroAcao(RegistroAcao.Operacao.APLICAR, AC2, ModoAtuacao.ACTIVE, "falso", true,
                 "APLICADA", RegistroAcao.Origem.POLITICA, Decisao.Regra.R3, 5 * S, 6 * S, 6 * S, S, 204, "x", null);
-        assertFalse(FormatoJsonl.acao(r2).has("reversao"));
+        var n2 = FormatoJsonl.acao(r2);
+        assertTrue(n2.has("reversao"), "campo nunca omitido");
+        assertTrue(n2.get("reversao").isNull());
+        assertEquals("decisoes-controlador/1.2", FormatoJsonl.ESQUEMA_DECISOES);
     }
 
     @Test

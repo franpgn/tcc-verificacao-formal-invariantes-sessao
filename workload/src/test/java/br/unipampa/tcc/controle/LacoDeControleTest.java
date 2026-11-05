@@ -192,10 +192,11 @@ class LacoDeControleTest {
         assertFalse(d.sinais().cooldownExpirado(), "o cooldown da saida em 35 s ainda valia");
         assertTrue(m.executor.aguardarFilaVazia(5 * S));
         m.laco.encerrar();
-        // entrada em 5 s (AC-1, AC-2), R4 em 35 s (reverte), R1 em 40 s (AC-1, AC-2), encerramento (reverte)
-        List<String> ops = a.chamadas().stream().map(c -> c.operacao() + ":" + c.acao().tipo().rotulo()).toList();
-        assertEquals(List.of("aplicar:AC-1", "aplicar:AC-2", "reverter:AC-2", "reverter:AC-1",
-                "aplicar:AC-1", "aplicar:AC-2", "reverter:AC-2", "reverter:AC-1"), ops);
+        // entrada em 5 s (AC1, AC2), R4 em 35 s (reverte), R1 em 40 s (AC1, AC2), encerramento (reverte)
+        List<String> ops = a.chamadas().stream()
+                .map(c -> c.operacao() + ":" + c.acao().tipo().rotulo() + "/" + c.acao().caches().get(0)).toList();
+        assertEquals(List.of("aplicar:AC-2/sessions", "aplicar:AC-2/sessions-async", "reverter:AC-2/sessions-async", "reverter:AC-2/sessions",
+                "aplicar:AC-2/sessions", "aplicar:AC-2/sessions-async", "reverter:AC-2/sessions-async", "reverter:AC-2/sessions"), ops);
         List<JsonNode> acoes = doTipo(ler(m.dec), "acao");
         assertEquals(8, acoes.size());
         assertTrue(acoes.stream().allMatch(n -> n.get("executada").asBoolean()));
@@ -290,8 +291,9 @@ class LacoDeControleTest {
         assertTrue(m.executor.aguardarFilaVazia(5 * S));
         assertEquals(List.of(), m.executor.ativas());
         m.laco.encerrar();
-        List<String> ops = a.chamadas().stream().map(c -> c.operacao() + ":" + c.acao().tipo().rotulo()).toList();
-        assertEquals(List.of("aplicar:AC-1", "aplicar:AC-2", "reverter:AC-2", "reverter:AC-1"), ops);
+        List<String> ops = a.chamadas().stream()
+                .map(c -> c.operacao() + ":" + c.acao().tipo().rotulo() + "/" + c.acao().caches().get(0)).toList();
+        assertEquals(List.of("aplicar:AC-2/sessions", "aplicar:AC-2/sessions-async", "reverter:AC-2/sessions-async", "reverter:AC-2/sessions"), ops);
     }
 
     // ---------------------------------------------------------- origem
@@ -420,7 +422,7 @@ class LacoDeControleTest {
             assertTrue(dNs >= l && dNs <= l + tick, "D = " + dNs + " fora de [L, L + tick]");
         }
         assertEquals(6 * S, ds.get(0).get("t_decisao_ns").asLong(), "janela [0,5) fecha no tick de 6 s");
-        assertEquals("decisoes-controlador/1.1", ler(m.dec).get(0).get("esquema").asText());
+        assertEquals("decisoes-controlador/1.2", ler(m.dec).get(0).get("esquema").asText());
         assertEquals("observaveis-controlador/1.1", ler(m.obs).get(0).get("esquema").asText());
     }
 
@@ -488,8 +490,9 @@ class LacoDeControleTest {
         assertEquals(List.of(AC2), vistas.get(2));
         m.laco.encerrar();
         List<JsonNode> acoes = doTipo(ler(m.dec), "acao");
-        assertEquals(List.of("APLICAR:AC-1", "APLICAR:AC-2", "REVERTER:AC-1", "REVERTER:AC-2"),
-                acoes.stream().map(n -> n.get("operacao").asText() + ":" + n.get("acao").get("tipo").asText()).toList());
+        assertEquals(List.of("APLICAR:AC-2/sessions", "APLICAR:AC-2/sessions-async", "REVERTER:AC-2/sessions", "REVERTER:AC-2/sessions-async"),
+                acoes.stream().map(n -> n.get("operacao").asText() + ":" + n.get("acao").get("tipo").asText()
+                        + "/" + n.get("acao").get("caches").get(0).asText()).toList());
         assertEquals(Map.of("origem", "POLITICA"), Map.of("origem", acoes.get(2).get("origem").asText()));
     }
 }

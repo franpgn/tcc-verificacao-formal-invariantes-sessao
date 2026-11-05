@@ -963,6 +963,12 @@ correspondente adicionado em `Mesclar` (`spec/SessionStore.tla`, commit `b7d8e0a
   o risco R3 ocorreu: as duas chaves da maioria tinham cópia no `isn3`, a escrita ficou presa (`ISPN000476`,
   `ISPN000299`) e as 8 rodadas antes da vista empataram no teto, sem P1. Decisão pendente: declarar a limitação na
   célula SYNC F2 (preferência do coordenador) ou chave por par ordenado.
+- **Decisões do coordenador em nome do Gestor (05/11, depois do smoke):** (1) a prova REST obrigatória sai; valem a
+  prova de colocação (uma chave por *cache* novo e entradas por nó, como no diagnóstico D) e a de comportamento sob corte
+  em ASYNC (como no A10), registradas no contrato; (2) R3: limitação declarada na célula SYNC F2, que é de referência,
+  sem chave por par ordenado; (3) o volume de stderr do cliente Hot Rod sob corte fica como pendência do W-2b, ainda não
+  feito.
+- **Status:** `MITIGADO EM ASYNC; LIMITAÇÃO DECLARADA EM SYNC F2` (05/11).
 
 ## Observação de modelagem (não é defeito)
 

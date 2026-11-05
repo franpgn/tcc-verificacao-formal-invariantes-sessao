@@ -183,7 +183,17 @@ Sem topologia, com X fora da topologia anunciada ou sem achar, a **abertura falh
 nome do Gestor, 05/11): em toda execução com o bloco `defasagem`, nos dois braços, na calibração e na avaliação, a
 execução vai como de infraestrutura (DT-014). `defasagem_chaves` fica como registro de auditoria. O uso de
 `ChannelFactory` (pacote `impl` do cliente) é limitação declarada, nas condições da V-W4 §7.1: cliente fixo em 15.0.0,
-uso só na abertura, falha nunca silenciosa e prova REST obrigatória no *smoke*.
+uso só na abertura e falha nunca silenciosa. **A prova do primário não é a REST** `?action=distribution` (decisão do
+coordenador em nome do Gestor, 05/11, depois do *smoke* do W-4): a REST calcula os donos sobre outra representação da
+chave, porque os *caches* não declaram `encoding`. Valem duas provas: a de **colocação** (uma chave por *cache* novo e
+as entradas em memória por nó, `?action=distribution` do *cache*) e a de **comportamento** sob corte em ASYNC (os pares
+entre os dois nós da maioria vistos, o nó cortado no teto e o suspeito único).
+
+**Limitação declarada: SYNC F2** (decisão do coordenador em nome do Gestor, 05/11). Em SYNC, se as chaves dos dois nós
+da maioria têm cópia no nó cortado, a escrita da sonda fica presa esperando a cópia (`ISPN000476`, depois `ISPN000299`),
+o valor novo não aparece no primário, os três nós empatam no teto, o `no_suspeito` sai `null` e o P1 não dispara antes
+da vista nova. No *smoke* do W-4 isso ocorreu nas 8 rodadas antes da vista. A célula SYNC F2 é de referência; a
+limitação vai declarada nela, e não há chave por par ordenado.
 
 `linhas_perdidas` conta as linhas que não chegaram ao arquivo até a linha `fim`: erros de escrita mais linhas
 recebidas com a trilha já fechada. As linhas que chegam **depois** do `fim` (executor fora do prazo,

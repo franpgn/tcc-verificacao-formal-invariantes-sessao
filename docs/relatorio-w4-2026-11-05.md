@@ -196,11 +196,13 @@ ele roda em *threads* do cliente. É o ponto opcional da V-W4 sobre o P-5, a ava
 | P-43 (P-39 na branch) | resolvido em `bf59e6e` |
 | P-44 (P-40 na branch) | em ASYNC, mitigado e confirmado pelo comportamento (A10, A11). A prova REST de primário não é válida (seção 6). Em SYNC, R3 ocorreu (seção 7) |
 
-## 10. Pontos que precisam de validação
+## 10. Decisões (coordenador em nome do Gestor, 05/11, depois deste relatório)
 
-1. Trocar o A7 e a condição 4 da §7.1 da V-W4 pela prova de colocação mais a prova de comportamento (seção 6).
-2. R3: declarar a limitação na célula SYNC F2, como prefere o coordenador, ou adotar a chave por par ordenado.
-3. Volume de stderr do cliente Hot Rod sob corte (seção 8), para o W-2b.
+1. **A7:** aceita a troca da prova REST obrigatória pela prova de colocação (uma chave por *cache* novo e entradas por
+   nó, como no D) mais a prova de comportamento sob corte em ASYNC (como no A10). Registrado no contrato e no P-44.
+2. **R3:** limitação declarada na célula SYNC F2, que é de referência. Não há chave por par ordenado. Registrado no
+   contrato e no P-44.
+3. **stderr sob corte:** pendência do W-2b, ainda não feito.
 
 ## 11. Brutos
 

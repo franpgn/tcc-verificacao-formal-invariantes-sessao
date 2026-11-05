@@ -212,6 +212,40 @@ seção 8); ~45 min de leitura do Senior. Metade do tempo de VM o *host* fica em
 
 ## 3. Fila de execução encadeada
 
+### 3.0 Fila da VM atualizada em 2026-11-05 ~01:50Z (Senior)
+
+O *gate* fechou: S5, S6 e S7 válidos, o S7 na terceira tentativa (`wt-gate-v4/runs/vm-s7-2026-11-04/V-S7t.md`). X-03 a
+X-06v estão feitos. O que mudou desde a 3.1: o critério h4 (complemento 3 do pré-registro, DT-018) entra antes do piloto
+e pede um amostrador novo na VM (W-h4); o portão de estado final dos blocos novos usa a leitura literal do §5.1 (≥ 120 s
+seguidos bons, `wt-gate-v4/docs/roteiro-vm-2026-11-04.md` §0); e o H0 passa a incluir cópia, `scp` e `git` no host. Esta
+tabela substitui as linhas X-07 a X-15 da 3.1. Daí em diante (X-16 e seguintes), vale a 3.1.
+
+| # | Bloco | Pré-condições | Duração | Dispara | *Host* |
+|---|---|---|---|---|---|
+| G-1 | **Decisões do Gestor**: V-S7t P-1..P-4; complemento 3, C3-1..C3-4; X-02 (leituras elevadas do complemento 1 §5: `AutomaticStopAction`, suspensão, Windows Update) | — | 15-20 min | **Gestor** | — |
+| W-h4 | **Worker**: amostrador, vigia e `analysis/h4.py` (`docs/prompt-worker-h4-amostrador-2026-11-04.md`), na worktree `wt-h4`, só no host | complemento 3 commitado | 3-4 h | Worker | H2 (suítes fora das janelas H0, pela 2.5) |
+| W-h4v | Validação do Senior, integração pelo coordenador, `tar` dos 3 arquivos com SHA-256, adenda da DT-018 | W-h4 | 1-1,5 h | Senior + coord. | H2 |
+| X-07a | ***Bundle* do *rebaseline* à VM** (`git archive 20805b0` + jar `5eced136…`, lista `003814e9…`, comandos da 3.1) e `ensaio-f1.sh` (`01c9712`, `b83e8223…`), cada um com `sha256sum -c` | G-1 não bloqueia (Q-02 já autoriza) | 15-20 min | Coord. | H2, mas sem bloco de medição rodando na VM |
+| X-07b | **Recriação do cluster com o XML do *rebaseline*** (`6d52413b…`, E-2), *size*=3 HEALTHY, brutos da recriação | X-07a; E-1..E-7 (A-5) | 30 min | Coord. | H2 |
+| X-08 | **Ensaio do F1 silencioso** (`ROTEIRO-ENSAIO-F1.md`, 4 GOs). Diagnóstico de I/O na VM (amostrador *ad hoc* em `/run/tccdiag/` como root, ou o do W-h4 se já estiver na VM) e `typeperf` no host. Ao fim, `portao51.sh 180` como portão de estado final (roteiro da VM §0, item 1) | X-07b | 1,5-2 h | Coord. | **H0 estrito** (com disco) |
+| X-08v | Cópia + leitura do Senior: F-1..F-10, portão final pelos 120 s, io do `podman start` dentro do segmento do F1 (C3 §4.2, só informativo), episódios por hora | X-08 | 45-60 min | Senior | H2 |
+| X-09 | **Recriação** do cluster (XML `6d52413b…`) com o instante UTC anotado (`--cluster-criado-apos`), checklist 10.6 passos 4-6, bloco de abertura do complemento 1 §1.3 com as covariáveis do host (C3 §7), `tar` do h4 conferido, `amostrador-infra.sh iniciar --id piloto-<UTC>` e vigia na janela 2 | X-08v; W-h4v; G-1 | 45-60 min | Coord. | H2 até o `iniciar`, depois H0 |
+| X-10 | **Piloto** (rodada 0, 12 execuções), com amostrador e vigia. Ao fim, bloco de fim de fase, `amostrador-infra.sh parar`, `h4.py fase` | X-09 | ~1,5 h | Coord. | **H0 estrito** |
+| X-11 | Validação do piloto: K1..K10, n, tempos, tamanho por execução, **h4** (tabela da fase, conferência do 1,1 s do C3 §3.4, episódios por hora contra o limite de 3,5 do C3 §6); liberação da noite 1 | X-10 | 1,5-2 h | Senior; liberação: Gestor (A-7) | H2 |
+| X-12 | **Noite 1** (rodadas 1..5), com amostrador e vigia. Parada h4 pelo C3 §4.3 (Ctrl-C do coordenador no portão K1 seguinte) | X-11 liberado; `boot_id` = o do fim do piloto | 6,5-8 h | Coord. | **H0 estrito** |
+| X-13 | O-3 da noite 1 e parecer da fase (h1/h2/h3 e **h4**) | X-12 | 1,5-2 h | Coord. + Senior | H2 |
+| X-14 | **Noite 2** (rodadas 6..10), depois `--fase reposicoes` (recusas), `h4.py repor` e `--fase reposicoes` de novo (C3 §5) | X-13 | 6,5-9 h + 1-2 h de reposições h4 | Coord. | **H0 estrito** |
+| X-14b | Reposições que não couberem na X-14, se houver (~8 a 16 h4 previstas na campanha, teto 30) | X-14 | 1-2,5 h | Coord. | **H0 estrito** |
+| X-15 | O-3 da noite 2, parecer, `h4.py visao` e a análise do *rebaseline* sobre a visão | X-14/X-14b | 1-1,5 h | Coord. + Senior | H2 |
+
+Caminho crítico até o piloto: X-07a → X-07b → X-08 → X-08v (~3 a 3,5 h) corre em paralelo com W-h4 → W-h4v (~4 a
+5,5 h). O piloto começa quando os dois terminarem e o G-1 estiver feito. Com início às ~02:00Z, isso é **~07:00 a
+08:00Z de 05/11**. Noite 1 a partir de ~11:00 a 12:00Z, depois da validação do piloto. O regime contínuo da seção 4
+continua valendo, então "noite" quer dizer bloco longo em H0, não horário.
+
+Reposições a prever: ~9 por h4 (de 8 a 16 na faixa de 6 a 12 %), mais as até 6 de recusa do PR. Com uma taxa de h4
+acima de ~25 % no ensaio e no piloto, a noite 1 não começa sem decisão do Gestor (C3 §6).
+
 ### 3.1 A fila
 
 Horários locais (BRT), estimados; cada bloco começa quando o anterior e as pré-condições fecham, não

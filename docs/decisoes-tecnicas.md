@@ -720,3 +720,53 @@ Transmitidas ao Senior pelo coordenador, sobre o parecer de conferência do text
 - **Renovação de sessão.** Constava do objetivo da Proposta, mas não entrou nas operações O1..O7
   definidas no recorte do Trabalho de Conclusão de Curso I; está fora do escopo desde o início (não há
   operação de renovação no modelo nem na carga). Registro para o texto acadêmico; nada muda no código.
+
+## DT-018: critério h4 do *rebaseline* (travamento de I/O ou pausa da VM), PRÉ-REGISTRO (2026-11-04)
+
+> **Critério aprovado** pelo coordenador em nome do Gestor (P-3 da V-S7r, em 2026-11-04), com o pedido de recalibrar os
+> limiares pelos dados do dia. Registrada antes de qualquer execução do piloto. O texto completo está em
+> `docs/pre-registro-rebaseline-complemento-3-2026-11-04.md`. **Os pontos C3-1 a C3-4 do complemento** (regra de parada,
+> segmento do F1, teto de reposições e condição da noite 1, covariáveis do host) **aguardam confirmação do Gestor** e
+> precisam dela antes do piloto.
+
+- **Origem:** V-S7 (pausa de ~10 s da VM), V-S7r §4 (travamento do disco virtual de 176 s, proposta do h4) e V-S7t §4
+  (regime depois das mitigações do host), em `wt-gate-v4/runs/vm-s7-2026-11-04/`.
+- **Motivo:** o disco virtual da VM trava com o host em H0. Durante o travamento, escrita em arquivo, podman e journald
+  param, e a cauda de latência fica exposta. K1..K10 e a parada (h) não percebem isso.
+- **Decisão:** um amostrador de 1 s (`scripts/amostrador-infra.sh`) roda na VM como root numa unit própria e grava
+  em `/run/tccdiag/` (tmpfs; não em `/dev/shm`, por causa do `RemoveIPC`), fora do *runner*. Na janela de medição de cada
+  execução (âncora + 44 s a + 300 s), a execução fica `descartada-infra (h4)` com: **h4a**, janela de 10 s com PSI io
+  `full` ≥ **1,5 s**; **h4b**, intervalo entre amostras ≥ **3,0 s** ou salto de relógio ≥ 1 s; **h4c**, cobertura
+  incompleta. No F1, o h4a não é avaliado em `[reinício − 2 s, reinício + 60 s]` (só registrado). A execução h4 não conta
+  como recusa e é reposta com o próximo i livre (no máximo 30 na campanha). **Parada h4** da fase com 5 h4 entre as
+  últimas 12 execuções, 4 h4 seguidas, um h4c ou o amostrador inativo. Leitura por `analysis/h4.py` (`fase`, `repor`,
+  `visao`) e vigia `scripts/vigia-h4.sh`.
+- **Limiares:** calibrados com os dados de 04 e 05/11. O ruído limpo depois das mitigações teve pior janela de 0,69 s e
+  maior intervalo de 1,014 s. Os episódios ficaram entre 1,73 e 9,32 s. A taxa estimada é de ~6 a 12 % de execuções h4,
+  com ~7 % como valor central. Revisão por DT nova antes da noite 1 se 2 das 4 execuções `none` do piloto que não forem
+  h4 tiverem pior janela entre 1,1 e 1,5 s.
+- **Rejeitado:** parar a fase com 3 h4 (proposta da V-S7r), que pararia ~80 % das noites com p = 7 %; ler o h4 dentro do
+  *runner*, que mudaria o *hash* do *bundle* congelado; amostrador gravando em disco, cujo buraco não separaria pausa de
+  disco travado; e `/dev/shm`, que é apagado pelo logind.
+- **Efeito:** arquivos novos, `scripts/amostrador-infra.sh`, `scripts/vigia-h4.sh`, `analysis/h4.py` e os testes
+  (prompt `docs/prompt-worker-h4-amostrador-2026-11-04.md`). Não mudam `run-rebaseline.sh` (`d95305fe…`),
+  `rebaseline.py` (`3005f49a…`), o jar (`5eced136…`), a matriz nem a lista `003814e9…`. A análise final roda
+  `rebaseline.py tabelas` sobre a árvore do `h4.py visao`.
+- **Adenda a preencher depois da validação e da integração**, antes do piloto: ponta da branch, SHA-256 dos 3 arquivos
+  novos e do `tar` levado à VM, e SHA-256 da lista no formato do `sha256sum`.
+
+## Decisões de 2026-11-04 e 2026-11-05 (madrugada), transmitidas pelo coordenador
+
+- **P-3 da V-S7r (critério h4):** aprovado em nome do Gestor; virou o complemento 3 e a DT-018 acima, com os pontos
+  C3-1..C3-4 pendentes de confirmação.
+- **P-2 da V-S7 (portão de estado final), registrado antes de qualquer dado dos blocos afetados:** nos blocos novos, do
+  F-10 do ensaio do F1 em diante, o portão de estado final usa a leitura literal do `decisoes-senior-2026-10-16.md`
+  §5.1 (**≥ 120 s seguidos bons**), e não zero amostras ruins. A amostra ruim continua registrada e lida. Os *scripts*
+  já congelados (S5..S7) ficam como estão. Operacionalização do Senior (`wt-gate-v4/docs/roteiro-vm-2026-11-04.md` §0,
+  item 1): conta a sequência boa que termina na última amostra do portão. No ensaio, o F-10 do `ensaio-f1.sh` fica sem
+  mudança (já é uma leitura por sequência, K1 de 60 s), e um `portao51.sh 180` no fim do ensaio dá a leitura dos 120 s.
+- **Mitigações do host (P-2 da V-S7r), aplicadas pelo coordenador antes da terceira tentativa do S7:** ASPM do PCIe
+  desligado na tomada (M1), `ReTrim` com 91 GB devolvidos (M3) e exclusão de `C:\Hyper-V` no Defender (M4). A M4 estava
+  condicionada a falha da nova medição e foi aplicada antes dela. Fica registrado, e o Gestor confirma se a exclusão
+  fica até o fim da campanha (C3-4). M2 (APST) e M5 (apagar o *checkpoint*) não foram aplicadas.
+- **S7:** válido na terceira tentativa (`wt-gate-v4/runs/vm-s7-2026-11-04/V-S7t.md`). S1..S7 aprovados, PR §5 satisfeito.

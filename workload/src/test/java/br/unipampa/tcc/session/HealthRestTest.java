@@ -56,10 +56,6 @@ class HealthRestTest {
         assertThrows(IllegalArgumentException.class, () -> HealthRest.interpretar("{}"));
     }
 
-    @Test
-    @DisplayName("configuracao do curl nao leva a senha na linha de comando e escapa aspas")
-    void configCurl() {
-        String cfg = HealthRest.configCurl("admin", "se\"nha\\x");
-        assertTrue(cfg.contains("user = \"admin:se\\\"nha\\\\x\""), cfg);
-    }
+    // W-2b (decisao 3 do coordenador, P-45): o teste configCurl saiu com o curl do HealthRest; a senha agora vai so no
+    // Digest do ClienteAdminRest (HealthRestHttpTest.consultaDigest confere que ela nao aparece em nenhum cabecalho).
 }

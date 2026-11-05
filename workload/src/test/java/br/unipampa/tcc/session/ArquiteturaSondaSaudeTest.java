@@ -24,13 +24,19 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  *       {@code HealthRest} (que ainda tem o {@code curl} da checagem de saude da partida), a sonda so usa o
  *       {@code interpretar}.</li>
  *   <li><b>R-ARQ-5</b>: {@code LigacaoControlador} (que monta a sonda, o atuador e as trilhas) nao cria processo.</li>
+ *   <li><b>R-ARQ-6</b> (W-2b, P-45): nenhuma fonte de {@code main} cria processo; o laco de convergencia consulta a
+ *       saude pelo {@code ClienteAdminRest}.</li>
  * </ul>
  *
  * Comentarios sao ignorados ({@link DetectorFonte#semComentarios}); literais de texto contam.
  */
 class ArquiteturaSondaSaudeTest {
 
-    static final List<String> CAMINHO_DA_SONDA = List.of("ConsultaSaudeRest", "ClienteAdminRest");
+    /** W-2b, decisao 3 do coordenador (P-45): o HealthRest (sonda do laco de convergencia) entra na lista. */
+    static final List<String> CAMINHO_DA_SONDA = List.of("ConsultaSaudeRest", "ClienteAdminRest", "HealthRest");
+
+    /** Criacao de processo em qualquer fonte de main (o gancho de desligamento da JVM nao cria processo). */
+    static final Pattern CRIA_PROCESSO = Pattern.compile("\\bProcessBuilder\\b|\\bProcess\\b|\\.exec\\s*\\(");
 
     static final Pattern PROCESSO_OU_ARQUIVO = Pattern.compile(
             "\\bProcessBuilder\\b|\\bProcess\\b|\\bRuntime\\b|\\.exec\\s*\\(|curl|java\\.nio\\.file");
@@ -90,5 +96,36 @@ class ArquiteturaSondaSaudeTest {
         assertEquals(List.of(), achados(PROCESSO_OU_ARQUIVO, "ProcessHandle.current(); } catch (RuntimeException e) {"));
         assertEquals(List.of("configCurl", "interpretar"),
                 achados(USO_HEALTH_REST, "HealthRest.configCurl(u, s); HealthRest.interpretar(c);"));
+    }
+
+    @Test
+    @DisplayName("R-ARQ-6 (P-45): nenhuma fonte de main cria processo (ProcessBuilder, Process, exec)")
+    void rArq6() throws IOException {
+        TreeMap<String, List<String>> ruins = new TreeMap<>();
+        int lidas = 0;
+        try (java.util.stream.Stream<Path> s = Files.walk(NomesDeCacheSoNoResolvedorTest.raizMain().resolve("java"))) {
+            for (Path f : (Iterable<Path>) s.filter(p -> p.toString().endsWith(".java"))::iterator) {
+                lidas++;
+                List<String> a = achados(CRIA_PROCESSO, ArquiteturaAtuadorTest.fonte(f));
+                if (!a.isEmpty()) {
+                    ruins.put(f.getFileName().toString(), a);
+                }
+            }
+        }
+        assertTrue(lidas > 50, "fontes de main lidas: " + lidas);
+        assertEquals(new TreeMap<>(), ruins);
+        assertEquals(List.of(), achados(CRIA_PROCESSO, "ProcessHandle.current(); executor.execute(r);"));
+        assertEquals(List.of("ProcessBuilder"), achados(CRIA_PROCESSO, "new ProcessBuilder(c)"));
+    }
+
+    @Test
+    @DisplayName("P-45: o laco de convergencia consulta a saude pelo ClienteAdminRest, com o prazo do HealthRest")
+    void convergenciaSemCurl() throws IOException {
+        String fonte = ArquiteturaAtuadorTest.fonte(fonteDe("WorkloadMain"));
+        int i = fonte.indexOf("private static Marcadores executarConvergencia(");
+        assertTrue(i >= 0, "executarConvergencia nao encontrado");
+        String corpo = fonte.substring(i, fonte.indexOf("\n    }\n", i));
+        assertTrue(corpo.contains("new ClienteAdminRest(cli.usuario, cli.senha)"), corpo);
+        assertTrue(corpo.contains("HealthRest.consultar(clienteSaude, cli.restUrl, HealthRest.PRAZO_CONSULTA_NS)"), corpo);
     }
 }

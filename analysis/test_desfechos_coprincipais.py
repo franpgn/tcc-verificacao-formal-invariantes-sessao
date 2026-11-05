@@ -110,9 +110,15 @@ def acao(op, tipo, res, t_pedido, origem="POLITICA", regra="R2", t_fim_janela=No
             "erro": None, "reversao": None}
 
 
-def trilha(modo, meio, w_ns=5 * S, fim=True, linhas_perdidas=0, acoes_pedidas=None):
-    meta = {"tipo": "meta", "esquema": "decisoes-controlador/1.1", "versao_programa": "teste", "rep": 1,
-            "modo": modo, "cenario": "S3", "replicacao": "async", "nos_esperados": 3, "parametros": {"w_ns": w_ns}}
+ATUADOR = "por-tipo(AC-2=rest-infinispan,AC-5=rest-infinispan)"
+SHA_PARAM = "a" * 64
+
+
+def trilha(modo, meio, w_ns=5 * S, fim=True, linhas_perdidas=0, acoes_pedidas=None, atuador=ATUADOR,
+           politica="por-assinatura", param_sha256=SHA_PARAM):
+    meta = {"tipo": "meta", "esquema": "decisoes-controlador/1.2", "versao_programa": "teste", "rep": 1,
+            "modo": modo, "cenario": "S3", "replicacao": "async", "nos_esperados": 3, "parametros": {"w_ns": w_ns},
+            "param_sha256": param_sha256, "atuador": atuador, "politica": politica}
     out = [meta] + list(meio)
     if fim:
         ped = (sum(1 for o in meio if o.get("tipo") == "acao" and o.get("operacao") == "APLICAR")
@@ -200,7 +206,7 @@ class TaxaViolacoes(Base):
         # mutante "diferenca trocada por razao": com razao os dois blocos sairiam (zero num braco)
         linhas = gerar_celula(self.d, "C", viol_a=[0, 2], viol_b=[1, 0], n_acoes=100)
         man = escrever_manifesto(self.d, linhas)
-        r = cb.comparar(man, 3, delta_latencia=0.10, w_analise_s=5, tipos_celula={"C": "teste"},
+        r = cb.comparar(man, 3, delta_latencia=0.10, w_analise_s=5, w_recovery_s=60, tipos_celula={"C": "teste"},
                         n_boot=200, n_hier=200)
         e = r["celulas"]["C"]["desfechos"][cb.DESFECHO_V]
         self.assertEqual("diferenca", e["escala"])
@@ -215,6 +221,8 @@ class TaxaViolacoes(Base):
 # ============================================================================= Delta_rec
 
 class DeltaRec(Base):
+    """Instante do evento anomalo = inicio da operacao (P-2 da V-W5: regra de fase do projeto,
+    EventCsvWriter.java:157; o fim incluiria a duracao, que o braco B altera)."""
 
     def rec(self, erros=(), acoes=None, marcadores=(INI, FIM), resumo=RESUMO, **kw):
         ev = eventos_ok() + [("Login", rc, a, b) for rc, a, b in erros]
@@ -224,7 +232,7 @@ class DeltaRec(Base):
 
     def test_ultimo_erro_conhecido(self):
         r, info = self.rec([("ERROR_TRANSPORT", T0 + 20 * S, T0 + 20 * S + MS),
-                            ("ERROR_TRANSPORT", T0 + 39 * S + 900 * MS, T0 + 40 * S)])
+                            ("ERROR_TRANSPORT", T0 + 40 * S, T0 + 41 * S)])
         self.assertAlmostEqual(10.0, r["y"], places=9)
         self.assertFalse(r["censurada"])
         self.assertEqual("t_fim_carga_ns", info["fim_medicao_origem"])
@@ -235,33 +243,37 @@ class DeltaRec(Base):
         self.assertFalse(r["censurada"])
 
     def test_censurado(self):
-        # mutante "censura esquecida": daria 67 s e censurada = False
+        # mutante "censura esquecida": daria 66 s e censurada = False
         r, _ = self.rec([("ERROR_TRANSPORT", T0 + 96 * S, T0 + 97 * S)])
         self.assertTrue(r["censurada"])
         self.assertAlmostEqual(70.0, r["y"], places=9)
 
     def test_fronteira_da_censura(self):
-        # exatamente fim - W_c nao e censurado (t > fim - W_c); 1 ns depois e
-        r, _ = self.rec([("ERROR_TRANSPORT", T0 + 94 * S, T0 + 95 * S)])
+        # inicio exatamente em fim - W_c nao e censurado (t > fim - W_c); 1 ns depois e
+        r, _ = self.rec([("ERROR_TRANSPORT", T0 + 95 * S, T0 + 96 * S)])
         self.assertFalse(r["censurada"])
         self.assertAlmostEqual(65.0, r["y"], places=9)
         self.tearDown()
         self.setUp()
-        r, _ = self.rec([("ERROR_TRANSPORT", T0 + 94 * S, T0 + 95 * S + 1)])
+        r, _ = self.rec([("ERROR_TRANSPORT", T0 + 95 * S + 1, T0 + 96 * S)])
         self.assertTrue(r["censurada"])
 
     def test_falha_percebida_s3_e_unavailable(self):
-        r, _ = self.rec(acoes=[(T0 + 44 * S, T0 + 45 * S, True), (T0 + 46 * S, T0 + 46 * S + MS, False)])
+        r, _ = self.rec(acoes=[(T0 + 45 * S, T0 + 46 * S, True), (T0 + 47 * S, T0 + 47 * S + MS, False)])
         self.assertAlmostEqual(15.0, r["y"], places=9)
         self.tearDown()
         self.setUp()
-        r, _ = self.rec([("ERROR_UNAVAILABLE", T0 + 41 * S, T0 + 42 * S)])
+        r, _ = self.rec([("ERROR_UNAVAILABLE", T0 + 42 * S, T0 + 43 * S)])
         self.assertAlmostEqual(12.0, r["y"], places=9)
 
-    def test_instante_de_observacao_e_o_fim_da_operacao(self):
-        # comecou antes do fim da falha e voltou com erro depois dele: conta
+    def test_instante_e_o_inicio_da_operacao(self):
+        # mutante "fim da operacao": comecou antes do fim da falha e voltou com erro depois; daria 1 s
         r, _ = self.rec([("ERROR_TRANSPORT", T0 + 29 * S, T0 + 31 * S)])
-        self.assertAlmostEqual(1.0, r["y"], places=9)
+        self.assertEqual(0.0, r["y"])
+        self.tearDown()
+        self.setUp()
+        r, _ = self.rec(acoes=[(T0 + 29 * S, T0 + 31 * S, True)])
+        self.assertEqual(0.0, r["y"])
 
     def test_sem_marcador_end(self):
         r, _ = self.rec([("ERROR_TRANSPORT", T0 + 40 * S, T0 + 41 * S)], marcadores=(INI, None))
@@ -273,16 +285,34 @@ class DeltaRec(Base):
         self.assertIsNone(r["y"])
         self.assertIn("w_analise", r["motivo"])
 
-    def test_fim_da_medicao_sem_t_fim_carga(self):
-        r, info = self.rec([("ERROR_TRANSPORT", T0 + 98 * S, T0 + 99 * S + MS)], resumo=None)
-        self.assertEqual("ultimo-instante-observado", info["fim_medicao_origem"])
-        self.assertTrue(r["censurada"])
-        self.assertAlmostEqual(69.001, r["y"], places=9)
+    def test_sem_t_fim_carga_fica_ausente(self):
+        # P-3 da V-W5: sem fim de medicao de reserva; o fim e o do protocolo (t_fim_carga_ns)
+        r, info = self.rec([("ERROR_TRANSPORT", T0 + 40 * S, T0 + 41 * S)], resumo=None)
+        self.assertIsNone(r["y"])
+        self.assertIsNone(r["censurada"])
+        self.assertIn("t_fim_carga_ns", r["motivo"])
+        self.assertIsNone(info["fim_medicao_ns"])
+        self.assertIsNone(info["fim_medicao_origem"])
+        self.tearDown()
+        self.setUp()
+        sem = dict(RESUMO)
+        del sem["t_fim_carga_ns"]
+        r, _ = self.rec([("ERROR_TRANSPORT", T0 + 40 * S, T0 + 41 * S)], resumo=sem)
+        self.assertIsNone(r["y"])
+
+    def test_sensibilidade_tambem_ausente_sem_t_fim_carga(self):
+        escrever_exec(self.d, eventos=eventos_ok())
+        out, _ = self.desf(self.d, referencia_erro={"p_ref_sup": 0.01})
+        self.assertIsNone(out[cb.DESFECHO_DREC_MET]["y"])
+        self.assertIn("t_fim_carga_ns", out[cb.DESFECHO_DREC_MET]["motivo"])
 
     def test_funcao_pura(self):
         self.assertEqual((0.0, False, None), cb.delta_rec([], FIM, FIM + 10 * S, W5))
         self.assertEqual((None, None, "fim da medicao nao passa do fim da falha"),
                          cb.delta_rec([FIM + S], FIM, FIM, W5))
+        y, cens, motivo = cb.delta_rec([FIM + S], FIM, None, W5)
+        self.assertEqual((None, None), (y, cens))
+        self.assertIn("t_fim_carga_ns", motivo)
 
 
 class DeltaRecMetodologia(unittest.TestCase):
@@ -326,7 +356,8 @@ class DeltaRecMetodologia(unittest.TestCase):
     def test_ligacao_em_desfechos_execucao(self):
         with tempfile.TemporaryDirectory() as tmp:
             d = Path(tmp)
-            ev = [("Login", "ERROR_TRANSPORT" if erro else "OK", t - MS, t) for t, erro in self.eventos([50, 0, 0])]
+            # instante = inicio da operacao (P-2): cada evento comeca em t e termina 1 ms depois
+            ev = [("Login", "ERROR_TRANSPORT" if erro else "OK", t, t + MS) for t, erro in self.eventos([50, 0, 0])]
             escrever_exec(d, eventos=eventos_ok(30) + ev,
                           resumo=dict(RESUMO, t_fim_carga_ns=FIM + 15 * S))
             out, _ = cb.desfechos_execucao(d, 1, FASES, 60 * S, w_analise_ns=W5, referencia_erro={"p_ref_sup": 0.01})
@@ -548,7 +579,7 @@ class ComparacaoCompleta(unittest.TestCase):
         linhas += gerar_celula(r, "C4", cls.VA4, cls.VB4)
         cls.man = escrever_manifesto(r, linhas)
         cls.tipos = {"C1": "teste", "C2": "teste", "C3": "descritiva", "C4": "teste"}
-        cls.j = cb.comparar(cls.man, 7, delta_latencia=0.10, w_analise_s=5, tipos_celula=cls.tipos,
+        cls.j = cb.comparar(cls.man, 7, delta_latencia=0.10, w_analise_s=5, w_recovery_s=60, tipos_celula=cls.tipos,
                             n_boot=500, n_hier=200)
 
     @classmethod
@@ -582,9 +613,11 @@ class ComparacaoCompleta(unittest.TestCase):
         self.assertEqual("nao-inferioridade", des[cb.DESFECHO_NI]["familia"])
         for n in (cb.DESFECHO_V, cb.DESFECHO_L, cb.DESFECHO_NI):
             self.assertIsNone(des[n]["p_holm"], n)
-        for n in (cb.DESFECHO_DREC, cb.DESFECHO_DCONV, cb.DESFECHO_DIV):
+        for n in (cb.DESFECHO_DREC, cb.DESFECHO_DCONV, cb.DESFECHO_DIV, "falhas_percebidas_por_1000"):
             self.assertEqual("secundario", des[n]["familia"], n)
             self.assertEqual("diferenca", des[n]["escala"], n)
+        self.assertEqual("sensibilidade", des["falhas_percebidas_por_1000" + cb.SUFIXO_RAZAO]["familia"])
+        self.assertIsNone(des["falhas_percebidas_por_1000" + cb.SUFIXO_RAZAO]["p_holm"])
         sec = sorted(n for n, e in des.items() if e["familia"] == "secundario" and e["p_permutacao"] is not None)
         for n, pa in zip(sec, cb.holm([des[n]["p_permutacao"] for n in sec])):
             self.assertAlmostEqual(pa, des[n]["p_holm"], places=12)
@@ -677,7 +710,7 @@ class RastreabilidadeQuebradaNaComparacao(Base):
                                      acao("APLICAR", "AC-2", "APLICADA", T0 + 16 * S, t_fim_janela=T0 + 17 * S)])
         linhas = gerar_celula(self.d, "C", [2, 3, 4, 2, 3, 4, 2, 3], [0] * 8, trilha_b=quebrada)
         man = escrever_manifesto(self.d, linhas)
-        r = cb.comparar(man, 7, delta_latencia=0.10, w_analise_s=5, tipos_celula={"C": "teste"},
+        r = cb.comparar(man, 7, delta_latencia=0.10, w_analise_s=5, w_recovery_s=60, tipos_celula={"C": "teste"},
                         n_boot=200, n_hier=200)
         c = r["celulas"]["C"]
         self.assertFalse(c["rastreabilidade"]["B"]["integral"])
@@ -689,7 +722,7 @@ class RastreabilidadeQuebradaNaComparacao(Base):
         linhas = gerar_celula(self.d, "C", [1], [0], n_acoes=50, trilha_a=trilha_minima("active"))
         man = escrever_manifesto(self.d, linhas)
         with self.assertRaises(cb.ErroUso):
-            cb.comparar(man, 7, delta_latencia=0.10, w_analise_s=5, tipos_celula={"C": "teste"},
+            cb.comparar(man, 7, delta_latencia=0.10, w_analise_s=5, w_recovery_s=60, tipos_celula={"C": "teste"},
                         n_boot=200, n_hier=200)
 
 
@@ -700,7 +733,8 @@ class TiposEParametrosDaComparacao(Base):
         self.man = escrever_manifesto(self.d, gerar_celula(self.d, "C", [1], [0], n_acoes=50))
 
     def comparar(self, **kw):
-        base = dict(delta_latencia=0.10, w_analise_s=5, tipos_celula={"C": "teste"}, n_boot=200, n_hier=200)
+        base = dict(delta_latencia=0.10, w_analise_s=5, w_recovery_s=60, tipos_celula={"C": "teste"}, n_boot=200,
+                    n_hier=200)
         base.update(kw)
         return cb.comparar(self.man, 1, **base)
 
@@ -711,11 +745,15 @@ class TiposEParametrosDaComparacao(Base):
                     self.comparar(tipos_celula=tipos)
 
     def test_parametros_obrigatorios_sem_padrao(self):
-        with self.assertRaises(TypeError):
-            cb.comparar(self.man, 1, w_analise_s=5, tipos_celula={"C": "teste"})
-        with self.assertRaises(TypeError):
-            cb.comparar(self.man, 1, delta_latencia=0.1, tipos_celula={"C": "teste"})
-        for kw in ({"delta_latencia": 0}, {"w_analise_s": -1}, {"delta_latencia": float("nan")}):
+        # cada chamada omite um so dos tres (P-5 da V-W5: --w-recovery-s tambem sem padrao)
+        completos = dict(delta_latencia=0.1, w_analise_s=5, w_recovery_s=60)
+        for falta in completos:
+            with self.subTest(falta=falta):
+                kw = {k: v for k, v in completos.items() if k != falta}
+                with self.assertRaises(TypeError):
+                    cb.comparar(self.man, 1, tipos_celula={"C": "teste"}, **kw)
+        for kw in ({"delta_latencia": 0}, {"w_analise_s": -1}, {"delta_latencia": float("nan")},
+                   {"w_recovery_s": -1}, {"w_recovery_s": float("inf")}):
             with self.subTest(kw=kw):
                 with self.assertRaises(cb.ErroUso):
                     self.comparar(**kw)
@@ -737,7 +775,7 @@ class ReferenciaErroNaComparacao(Base):
                 escrever_exec(d, eventos=ev, resumo=RESUMO, trilha=trilha_minima(cb.MODO_ESPERADO[br]))
                 linhas.append("1\t%s\t%s\t%s" % (celula, br, Path(celula) / br))
         man = escrever_manifesto(self.d, linhas)
-        r = cb.comparar(man, 1, delta_latencia=0.10, w_analise_s=5, tipos_celula={"C1": "teste", "C2": "teste"},
+        r = cb.comparar(man, 1, delta_latencia=0.10, w_analise_s=5, w_recovery_s=60, tipos_celula={"C1": "teste", "C2": "teste"},
                         n_boot=200, n_hier=200, referencias_erro={"C1": ref})
         e = r["celulas"]["C1"]["desfechos"][cb.DESFECHO_DREC_MET]
         self.assertEqual("sensibilidade", e["familia"])
@@ -748,7 +786,7 @@ class ReferenciaErroNaComparacao(Base):
         self.assertAlmostEqual(1 - 0.05 ** (1 / 200), r["parametros"]["referencias_erro"]["C1"]["p_ref_sup"],
                                places=15)
         with self.assertRaises(cb.ErroUso):
-            cb.comparar(man, 1, delta_latencia=0.10, w_analise_s=5, tipos_celula={"C1": "teste", "C2": "teste"},
+            cb.comparar(man, 1, delta_latencia=0.10, w_analise_s=5, w_recovery_s=60, tipos_celula={"C1": "teste", "C2": "teste"},
                         n_boot=200, n_hier=200, referencias_erro={"C9": ref})
 
 
@@ -784,8 +822,11 @@ class Controlador(Base):
 
     def test_descritivos(self):
         t = self.ler(self.trilha_cenario())
-        x = cb.descrever_controlador(t, INI)
+        x = cb.descrever_controlador(t, INI, T0 + 40 * S)
         self.assertEqual("active", x["modo"])
+        self.assertEqual(ATUADOR, x["atuador"])
+        self.assertEqual("por-assinatura", x["politica"])
+        self.assertEqual(SHA_PARAM, x["param_sha256"])
         self.assertTrue(x["completo"])
         self.assertEqual(7, x["decisoes"])
         self.assertEqual(2, x["transicoes"])
@@ -803,10 +844,19 @@ class Controlador(Base):
         self.assertEqual({}, ac5["reverter"])
         self.assertAlmostEqual(15.0, ac2["tempo_ativo_s"], places=9)        # 15,5 s a 30,5 s
         self.assertFalse(ac2["ativa_no_fim"])
-        self.assertAlmostEqual(11.9, ac5["tempo_ativo_s"], places=9)        # 23,2 s ao ultimo instante (35,1 s)
+        # R-5 da V-W5: acao ativa no fim conta ate o fim da medicao (t_fim_carga_ns), nao ate a ultima linha
+        self.assertAlmostEqual(16.8, ac5["tempo_ativo_s"], places=9)        # 23,2 s a 40 s
         self.assertTrue(ac5["ativa_no_fim"])
         self.assertEqual({"sucesso": 2, "falha": 0}, x["reversoes"])
+        self.assertEqual({"FALHA_NA_APLICACAO": {"sucesso": 1, "falha": 0}, "R4": {"sucesso": 1, "falha": 0}},
+                         x["reversoes_por_origem"])
         self.assertEqual(T0 + 35 * S + S // 10, x["t_ultimo_ns"])
+
+    def test_ativa_no_fim_sem_fim_da_medicao(self):
+        x = cb.descrever_controlador(self.ler(self.trilha_cenario()), INI, None)
+        self.assertIsNone(x["acoes_por_tipo"]["AC-5"]["tempo_ativo_s"])
+        self.assertTrue(x["acoes_por_tipo"]["AC-5"]["ativa_no_fim"])
+        self.assertAlmostEqual(15.0, x["acoes_por_tipo"]["AC-2"]["tempo_ativo_s"], places=9)
 
     def test_shadow_previstas(self):
         p = S // 10
@@ -815,7 +865,7 @@ class Controlador(Base):
                 dec(T0 + 30 * S, "NORMAL", True, "R4", modo="shadow"),
                 acao("REVERTER", "AC-2", "PREVISTA", T0 + 30 * S + p, origem="R4", regra="R4",
                      t_fim_janela=T0 + 30 * S, modo="shadow")]
-        x = cb.descrever_controlador(self.ler(trilha("shadow", meio)), INI)
+        x = cb.descrever_controlador(self.ler(trilha("shadow", meio)), INI, T0 + 40 * S)
         self.assertEqual({"PREVISTA": 1}, x["acoes_por_tipo"]["AC-2"]["aplicar"])
         self.assertAlmostEqual(15.0, x["acoes_por_tipo"]["AC-2"]["tempo_ativo_s"], places=9)
         self.assertEqual({"sucesso": 1, "falha": 0}, x["reversoes"])
@@ -831,10 +881,10 @@ class Controlador(Base):
                 dec(T0 + 35 * S, "CONSERVADOR", True, "R2"),
                 acao("APLICAR", "AC-2", "JA_ATIVA", T0 + 35 * S, t_fim_janela=T0 + 35 * S),
                 dec(T0 + 40 * S, "CONSERVADOR")]
-        x = cb.descrever_controlador(self.ler(trilha("active", meio)), INI)
+        x = cb.descrever_controlador(self.ler(trilha("active", meio)), INI, T0 + 45 * S)
         ac2 = x["acoes_por_tipo"]["AC-2"]
         self.assertTrue(ac2["ativa_no_fim"])
-        self.assertAlmostEqual(40.1 - 15.5, ac2["tempo_ativo_s"], places=9)
+        self.assertAlmostEqual(45.0 - 15.5, ac2["tempo_ativo_s"], places=9)
         self.assertEqual({"sucesso": 0, "falha": 1}, x["reversoes"])
         self.assertEqual({"APLICADA": 1, "JA_ATIVA": 1}, ac2["aplicar"])
 
@@ -842,7 +892,7 @@ class Controlador(Base):
         p = S // 10
         meio = [dec(T0 + 15 * S, "CONSERVADOR", True, "R2"),
                 acao("APLICAR", "AC-2", "APLICADA", T0 + 15 * S + p, t_fim_janela=T0 + 15 * S)]
-        x = cb.descrever_controlador(self.ler(trilha("active", meio)), None)
+        x = cb.descrever_controlador(self.ler(trilha("active", meio)), None, T0 + 40 * S)
         self.assertEqual(1, x["entradas_antes_da_falha"])
         self.assertEqual(1, x["acoes_politica_antes_da_falha"])
         self.assertIsNone(x["atraso_primeira_acao_s"])
@@ -918,13 +968,14 @@ def escrever_recursos(d, k_max=40):
 
 
 class Energia(Base):
-    """Modelo de 05/11 (coordenador, conferencia do Bibliotecario): P_max = 181 W; razao ociosa central 0,3
-    (Barroso e Holzle 2007, p. 36) e sensibilidade 0,5 (p. 34); 0,7 saiu por nao ter fonte."""
+    """Modelo da decisao do Gestor de 05/11 (conferencia do Bibliotecario): P_max = 181 W; razao ociosa central
+    0,3 (Barroso e Holzle 2007, p. 36) e sensibilidade 0,5 (p. 34); 0,7 saiu por nao ter fonte."""
 
     ENERGIA = {"p_max_w": 181, "razao_central": 0.3}
 
-    def exec_energia(self, d, p_max_w=181, fator=1.0):
-        escrever_exec(d, acoes=acoes_regulares(200, fator=fator), violacoes=[])
+    def exec_energia(self, d, p_max_w=181, fator=1.0, braco=None):
+        tr = None if braco is None else trilha_minima(cb.MODO_ESPERADO[braco])
+        escrever_exec(d, acoes=acoes_regulares(200, fator=fator), violacoes=[], trilha=tr)
         escrever_recursos(d)
         j = ep.analisar_execucao(d, 1, "S3", Path(d) / "marcadores.txt", 60, None, p_max_w)
         (Path(d) / "energia-rep-001.json").write_text(json.dumps(j), encoding="utf-8")
@@ -976,10 +1027,10 @@ class Energia(Base):
         for b in (1, 2):
             for br in "AB":
                 d = self.d / ("e%d%s" % (b, br))
-                self.exec_energia(d, fator=1.0 if br == "A" else 0.9)
+                self.exec_energia(d, fator=1.0 if br == "A" else 0.9, braco=br)
                 linhas.append("%d\tC\t%s\t%s" % (b, br, d.name))
         man = escrever_manifesto(self.d, linhas)
-        r = cb.comparar(man, 1, delta_latencia=0.10, w_analise_s=5, tipos_celula={"C": "teste"},
+        r = cb.comparar(man, 1, delta_latencia=0.10, w_analise_s=5, w_recovery_s=60, tipos_celula={"C": "teste"},
                         n_boot=200, n_hier=200, energia=self.ENERGIA)
         des = r["celulas"]["C"]["desfechos"]
         self.assertEqual("secundario", des[cb.PREFIXO_ENERGIA + "0.3"]["familia"])
@@ -1004,7 +1055,7 @@ class Cli(Base):
         args = ["--manifesto", self.man, "--semente-boot", 5, "--saida", self.d / nome, "--n-boot", 200,
                 "--n-hier", 200]
         if base:
-            args += ["--delta-latencia", 0.10, "--w-analise-s", 5, "--celulas-teste", "C1",
+            args += ["--delta-latencia", 0.10, "--w-analise-s", 5, "--w-recovery-s", 60, "--celulas-teste", "C1",
                      "--celulas-descritivas", "C2"]
         rc, out, err = rodar_cli(*(args + list(extra)), cwd=self.d)
         return rc, self.d / nome, err
@@ -1029,10 +1080,12 @@ class Cli(Base):
         self.assertFalse(saida.exists())
         self.assertFalse(saida.with_suffix(".md").exists())
 
-    def test_sem_delta_latencia_ou_w_analise(self):
-        self.assert_recusa("--w-analise-s", 5, "--celulas-teste", "C1", "--celulas-descritivas", "C2", base=False)
-        self.assert_recusa("--delta-latencia", 0.1, "--celulas-teste", "C1", "--celulas-descritivas", "C2",
-                           base=False)
+    def test_sem_parametros_obrigatorios(self):
+        tipos = ("--celulas-teste", "C1", "--celulas-descritivas", "C2")
+        self.assert_recusa("--w-analise-s", 5, "--w-recovery-s", 60, *tipos, base=False)
+        self.assert_recusa("--delta-latencia", 0.1, "--w-recovery-s", 60, *tipos, base=False)
+        # P-5 da V-W5: --w-recovery-s obrigatorio e sem padrao
+        self.assert_recusa("--delta-latencia", 0.1, "--w-analise-s", 5, *tipos, base=False)
 
     def test_opcoes_retiradas(self):
         self.assert_recusa("--regra", "holm2")
@@ -1040,17 +1093,240 @@ class Cli(Base):
 
     def test_tipos_de_celula(self):
         # C2 sem tipo; celula tipada fora do manifesto; celula em duas listas
-        self.assert_recusa("--delta-latencia", 0.1, "--w-analise-s", 5, "--celulas-teste", "C1", base=False)
+        self.assert_recusa("--delta-latencia", 0.1, "--w-analise-s", 5, "--w-recovery-s", 60, "--celulas-teste", "C1",
+                           base=False)
         self.assert_recusa("--celulas-referencia", "C9")
         self.assert_recusa("--celulas-referencia", "C1")
 
     def test_valores_invalidos(self):
-        self.assert_recusa("--delta-latencia", 0, "--w-analise-s", 5, "--celulas-teste", "C1,C2", base=False)
-        self.assert_recusa("--delta-latencia", 0.1, "--w-analise-s", 0, "--celulas-teste", "C1,C2", base=False)
+        self.assert_recusa("--delta-latencia", 0, "--w-analise-s", 5, "--w-recovery-s", 60, "--celulas-teste", "C1,C2",
+                           base=False)
+        self.assert_recusa("--delta-latencia", 0.1, "--w-analise-s", 0, "--w-recovery-s", 60, "--celulas-teste",
+                           "C1,C2", base=False)
+        self.assert_recusa("--w-recovery-s", -1)
         self.assert_recusa("--referencia-erro", "C1")
         self.assert_recusa("--referencia-erro", "C1=nao-existe.json")
         self.assert_recusa("--p-max-w", 181)
         self.assert_recusa("--razao-ocioso-central", 0.3)
+
+
+# ============================================================================= correcoes da V-W5
+
+def comparar_padrao(man, tipos, **kw):
+    base = dict(delta_latencia=0.10, w_analise_s=5, w_recovery_s=60, tipos_celula=tipos, n_boot=200, n_hier=200)
+    base.update(kw)
+    return cb.comparar(man, 1, **base)
+
+
+class ErroEFalhasEmDiferenca(Base):
+    """P-4 da V-W5 (G3 de 28/10): taxa_erro e falhas_percebidas_por_1000 em diferenca; a razao com exclusao
+    dos zeros fica como sensibilidade (`<nome>:razao`, sem Holm)."""
+
+    def test_sensibilidade_em_desfechos_execucao(self):
+        ev = eventos_ok(20) + [("Login", "ERROR_TRANSPORT", INI + S, INI + S + MS)]
+        escrever_exec(self.d, eventos=ev, acoes=acoes_regulares(50, falhas=(3,)))
+        out, _ = self.desf(self.d)
+        for n in ("taxa_erro", "falhas_percebidas_por_1000"):
+            with self.subTest(n=n):
+                self.assertEqual(out[n]["y"], out[n + cb.SUFIXO_RAZAO]["y"])
+                self.assertIsNotNone(out[n]["y"])
+
+    def test_escalas_e_familias_na_comparacao(self):
+        linhas = []
+        falhas = {("1", "A"): (0, 1), ("1", "B"): (), ("2", "A"): (), ("2", "B"): (5,)}
+        for b in ("1", "2"):
+            for br in "AB":
+                d = self.d / ("e%s%s" % (b, br))
+                escrever_exec(d, acoes=acoes_regulares(100, falhas=falhas[(b, br)]), violacoes=[], resumo=RESUMO,
+                              trilha=trilha_minima(cb.MODO_ESPERADO[br]))
+                linhas.append("%s\tC\t%s\t%s" % (b, br, d.name))
+        r = comparar_padrao(escrever_manifesto(self.d, linhas), {"C": "teste"})
+        des = r["celulas"]["C"]["desfechos"]
+        e = des["falhas_percebidas_por_1000"]
+        self.assertEqual("diferenca", e["escala"])
+        self.assertEqual("secundario", e["familia"])
+        self.assertEqual(2, e["n_blocos"])                        # zeros num braco nao excluem
+        self.assertAlmostEqual(-20.0, e["d_b"]["1"], places=9)    # 0 - 2/100 x 1000
+        self.assertAlmostEqual(10.0, e["d_b"]["2"], places=9)
+        self.assertIsNotNone(e["p_holm"])
+        s = des["falhas_percebidas_por_1000" + cb.SUFIXO_RAZAO]
+        self.assertEqual("log-razao", s["escala"])
+        self.assertEqual("sensibilidade", s["familia"])
+        self.assertEqual(0, s["n_blocos"])                        # razao com exclusao: os dois blocos tem zero
+        self.assertIsNone(s["p_holm"])
+        self.assertEqual("secundario", cb.familia_de("taxa_erro"))
+        self.assertEqual("sensibilidade", cb.familia_de("taxa_erro" + cb.SUFIXO_RAZAO))
+        self.assertIn("taxa_erro", cb.ESCALA_DIFERENCA)
+        self.assertIn("falhas_percebidas_por_1000", cb.ESCALA_DIFERENCA)
+
+
+class Religamento(Base):
+    """P-6 da V-W5 (achado A-1, opcao a): o W-6 religa o no parado pelo AC-5 no fim da carga, antes do laco de
+    convergencia, e grava o instante; o Delta_conv conta desse religamento. Sem o registro, nao avaliavel."""
+
+    P = S // 10
+
+    def trilha_ac5(self, resultado="APLICADA", modo="active", tipo="AC-5"):
+        meio = [dec(T0 + 15 * S, "CONSERVADOR", True, "R2", modo=modo),
+                acao("APLICAR", tipo, resultado, T0 + 15 * S + self.P, t_fim_janela=T0 + 15 * S, modo=modo,
+                     alvo="isn3:11222" if tipo == "AC-5" else None)]
+        return trilha(modo, meio)
+
+    def conv(self, resumo, tr):
+        escrever_exec(self.d, eventos=eventos_ok(), resumo=resumo, trilha=tr)
+        out, info = self.desf(self.d)
+        return out[cb.DESFECHO_DCONV], out[cb.DESFECHO_DIV], info
+
+    def test_ac5_com_religamento(self):
+        dc, dv, info = self.conv(dict(RESUMO, **{cb.CAMPO_RELIGAMENTO: T0 + 101 * S}), self.trilha_ac5())
+        self.assertAlmostEqual(11.0, dc["y"], places=9)               # 112 s - 101 s
+        self.assertEqual(cb.CAMPO_RELIGAMENTO, dc["origem"])
+        self.assertEqual(cb.CAMPO_RELIGAMENTO, info["delta_conv_origem"])
+        self.assertEqual(0.0, dv["y"])
+        self.assertTrue(info["ac5_aplicada"])
+
+    def test_ac5_sem_registro_do_religamento(self):
+        dc, dv, info = self.conv(RESUMO, self.trilha_ac5())
+        self.assertIsNone(dc["y"])
+        self.assertIn("religamento", dc["motivo"])
+        self.assertIsNone(dv["y"])
+        self.assertIn("religamento", dv["motivo"])
+        self.assertIsNone(info["delta_conv_origem"])
+
+    def test_sem_ac5_conta_do_fim_da_carga(self):
+        for tr in (self.trilha_ac5(tipo="AC-2"), self.trilha_ac5("PREVISTA", "shadow"), self.trilha_ac5("FALHOU"),
+                   None):
+            with self.subTest(tr=None if tr is None else tr[2]["resultado"] + tr[2]["acao"]["tipo"]):
+                self.tearDown()
+                self.setUp()
+                dc, dv, info = self.conv(RESUMO, tr)
+                self.assertAlmostEqual(12.0, dc["y"], places=9)
+                self.assertEqual("t_fim_carga_ns", dc["origem"])
+                self.assertEqual(0.0, dv["y"])
+
+    def test_religamento_registrado_e_a_origem(self):
+        dc, _, _ = self.conv(dict(RESUMO, **{cb.CAMPO_RELIGAMENTO: T0 + 101 * S}), None)
+        self.assertAlmostEqual(11.0, dc["y"], places=9)
+        self.assertEqual(cb.CAMPO_RELIGAMENTO, dc["origem"])
+
+    def test_religamento_antes_do_fim_da_carga_e_invalido(self):
+        dc, _, _ = self.conv(dict(RESUMO, **{cb.CAMPO_RELIGAMENTO: T0 + 99 * S}), self.trilha_ac5())
+        self.assertIsNone(dc["y"])
+        self.assertIn(cb.CAMPO_RELIGAMENTO, dc["motivo"])
+
+    def test_origem_na_celula(self):
+        linhas = []
+        for br in "AB":
+            d = self.d / br
+            res = dict(RESUMO, **({cb.CAMPO_RELIGAMENTO: T0 + 101 * S} if br == "B" else {}))
+            tr = trilha_minima("shadow") if br == "A" else self.trilha_ac5()
+            escrever_exec(d, acoes=acoes_regulares(50), violacoes=[], resumo=res, trilha=tr)
+            linhas.append("1\tC\t%s\t%s" % (br, br))
+        r = comparar_padrao(escrever_manifesto(self.d, linhas), {"C": "teste"})
+        c = r["celulas"]["C"]
+        self.assertEqual({"A": "t_fim_carga_ns", "B": cb.CAMPO_RELIGAMENTO}, c["recuperacao"]["delta_conv_origem"]["1"])
+        self.assertAlmostEqual(11.0 - 12.0, c["desfechos"][cb.DESFECHO_DCONV]["d_b"]["1"], places=9)
+
+
+class CelulaSemEventoNasFases(Base):
+    """A-2 da V-W5: celula sem falha nas fases durante/recuperacao sai vazia; recusa, e a chamada propria com
+    --fases antes funciona."""
+
+    def montar(self):
+        linhas = []
+        for br in "AB":
+            d = self.d / br
+            escrever_exec(d, acoes=acoes_regulares(50), violacoes=[], marcadores=None, resumo=RESUMO)
+            linhas.append("1\tN\t%s\t%s" % (br, br))
+        return escrever_manifesto(self.d, linhas)
+
+    def test_recusa_fases_vazias(self):
+        with self.assertRaises(cb.ErroUso) as cm:
+            comparar_padrao(self.montar(), {"N": "descritiva"})
+        self.assertIn("antes", str(cm.exception))
+
+    def test_chamada_propria_com_antes(self):
+        r = comparar_padrao(self.montar(), {"N": "descritiva"}, fases=["antes"])
+        e = r["celulas"]["N"]["desfechos"][cb.DESFECHO_V]
+        self.assertEqual(1, e["n_blocos"])
+        self.assertEqual(50, e["n_por_bloco"]["1"]["A"])
+
+
+class TrilhaObrigatoriaNoTeste(Base):
+    """A-3 da V-W5: nas celulas de teste, trilha nos dois bracos; no B, atuador != nulo e politica != nenhuma;
+    param_sha256 igual entre A e B do mesmo bloco."""
+
+    def montar(self, trilha_a="padrao", trilha_b="padrao"):
+        linhas = []
+        for br, tr in (("A", trilha_a), ("B", trilha_b)):
+            if tr == "padrao":
+                tr = trilha_minima(cb.MODO_ESPERADO[br])
+            d = self.d / br
+            escrever_exec(d, acoes=acoes_regulares(50), violacoes=[], resumo=RESUMO, trilha=tr)
+            linhas.append("1\tC\t%s\t%s" % (br, br))
+        return escrever_manifesto(self.d, linhas)
+
+    def test_coerente_passa(self):
+        r = comparar_padrao(self.montar(), {"C": "teste"})
+        self.assertIn("regra_iu", r["celulas"]["C"])
+
+    def test_recusas(self):
+        casos = {
+            "A sem trilha": dict(trilha_a=None),
+            "B sem trilha": dict(trilha_b=None),
+            "B com atuador nulo": dict(trilha_b=trilha("active", [dec(T0 + 15 * S)], atuador="nulo")),
+            "B com politica nenhuma": dict(trilha_b=trilha("active", [dec(T0 + 15 * S)], politica="nenhuma")),
+            "param_sha256 diferente": dict(trilha_b=trilha("active", [dec(T0 + 15 * S)], param_sha256="b" * 64)),
+        }
+        for nome, kw in casos.items():
+            with self.subTest(caso=nome):
+                self.tearDown()
+                self.setUp()
+                with self.assertRaises(cb.ErroUso):
+                    comparar_padrao(self.montar(**kw), {"C": "teste"})
+
+    def test_descritiva_nao_exige_trilha(self):
+        r = comparar_padrao(self.montar(trilha_a=None, trilha_b=None), {"C": "descritiva"})
+        self.assertFalse(r["celulas"]["C"]["teste"])
+
+
+class MaisDe16BlocosAntecipado(Base):
+
+    def test_recusa_antes_de_ler_as_execucoes(self):
+        # 17 blocos, sem trilha: a recusa tem de ser a do limite da permutacao exata, nao a da trilha
+        linhas = []
+        for b in range(1, 18):
+            for br in "AB":
+                escrever_exec(self.d / ("e%d%s" % (b, br)), acoes=acoes_regulares(3))
+                linhas.append("%d\tC\t%s\te%d%s" % (b, br, b, br))
+        with self.assertRaises(cb.ErroUso) as cm:
+            comparar_padrao(escrever_manifesto(self.d, linhas), {"C": "teste"})
+        self.assertIn("16", str(cm.exception))
+
+
+class SensibilidadeAComUmBloco(Base):
+
+    def test_ic_none(self):
+        # R-7 da V-W5: so um bloco com violacao em A -> estimativa existe, IC None (como ic_boot_blocos)
+        r = comparar_padrao(escrever_manifesto(self.d, gerar_celula(self.d, "C", [2, 0], [1, 0], n_acoes=100)),
+                            {"C": "teste"})
+        a = r["celulas"]["C"]["co_principal_v"]["sensibilidades"]["a_razao_exclusao_zero_a"]
+        self.assertEqual(1, a["blocos"])
+        self.assertAlmostEqual(0.5, a["estimativa"], places=12)
+        self.assertIsNone(a["ic_boot_blocos"])
+
+
+class MarkdownCelulaSemTeste(Base):
+
+    def test_ic_descritivo_rotulado(self):
+        linhas = gerar_celula(self.d, "T", [1, 2], [0, 0], n_acoes=50)
+        linhas += gerar_celula(self.d, "D", [1, 0], [0, 0], n_acoes=50)
+        r = comparar_padrao(escrever_manifesto(self.d, linhas), {"T": "teste", "D": "descritiva"})
+        md = cb.tabela_markdown(r)
+        secao_d = md[md.index("## Celula D"):md.index("## Celula T")]
+        self.assertIn("IC descritivo", secao_d)
+        self.assertIn("nao e resultado de teste", secao_d)
+        self.assertNotIn("IC descritivo", md[md.index("## Celula T"):])
 
 
 if __name__ == "__main__":

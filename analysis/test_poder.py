@@ -87,17 +87,57 @@ class Poder(unittest.TestCase):
             poder.poder_troca_de_sinal(TAXAS, 0.5, 8, 10, 1, alfa=0.0)
 
 
+class CorrelacaoPerfeita(unittest.TestCase):
+    """R-6/P-7 da V-W5: y_B = (1 - r) y_A no mesmo sorteio e limite superior do poder (melhor caso)."""
+
+    def test_k_minimo(self):
+        self.assertEqual(6, poder.k_minimo(0.05))
+        self.assertEqual(7, poder.k_minimo(0.025))
+        self.assertEqual(7, poder.k_minimo(0.05 / 3))
+        self.assertEqual(8, poder.k_minimo(0.0078125))
+
+    def test_e_a_binomial_de_k(self):
+        # todo d_b nao nulo tem o sinal da reducao: poder = P(K >= k_min), K ~ Binomial(n, q)
+        for q, taxas in ((0.5, [1.0, 0.0]), (0.9, [2.0] * 9 + [0.0])):
+            with self.subTest(q=q):
+                obtido = poder.poder_troca_de_sinal(taxas, 0.3, 8, 20000, 6, modelo="correlacao-perfeita")
+                esperado = float(stats.binom.sf(poder.k_minimo(0.05) - 1, 8, q))
+                self.assertLess(abs(obtido - esperado), 0.015)
+
+    def test_extremos(self):
+        self.assertEqual(0.0, poder.poder_troca_de_sinal(TAXAS, 0.0, 8, 200, 7, modelo="correlacao-perfeita"))
+        self.assertEqual(1.0, poder.poder_troca_de_sinal(TAXAS, 0.5, 8, 200, 7, modelo="correlacao-perfeita"))
+
+    def test_modelo_invalido(self):
+        with self.assertRaises(poder.ErroUso):
+            poder.poder_troca_de_sinal(TAXAS, 0.5, 8, 10, 1, modelo="outro")
+
+
 class Curva(unittest.TestCase):
 
     def test_estrutura_e_extremos(self):
-        c = poder.curva_poder(TAXAS, 200, 9)
+        c = poder.curva_poder(TAXAS, 200, 9, m_celulas=2)
         self.assertEqual([8, 10, 12], c["blocos"])
         self.assertEqual([round(0.1 * i, 1) for i in range(11)], c["reducoes"])
         self.assertEqual(1.0, c["q_hat"])
+        self.assertEqual(2, c["m_celulas"])
+        self.assertEqual(0.025, c["alfa"])                      # alfa do primeiro passo do Holm (P-7)
+        self.assertEqual({"independente", "correlacao-perfeita"}, set(c["poder"]))
+        for modelo in ("independente", "correlacao-perfeita"):
+            for n in ("8", "10", "12"):
+                with self.subTest(modelo=modelo, n=n):
+                    v = c["poder"][modelo][n]
+                    self.assertEqual(11, len(v))
+                    self.assertTrue(all(0.0 <= x <= 1.0 for x in v))
+                    self.assertEqual(1.0, v[-1])
         for n in ("8", "10", "12"):
-            self.assertEqual(11, len(c["poder"][n]))
-            self.assertTrue(all(0.0 <= x <= 1.0 for x in c["poder"][n]))
-            self.assertEqual(1.0, c["poder"][n][-1])
+            self.assertEqual(1.0, c["poder"]["correlacao-perfeita"][n][1])     # q = 1, k = n >= 7
+
+    def test_m_celulas_invalido(self):
+        for m in (0, -1, 1.5):
+            with self.subTest(m=m):
+                with self.assertRaises(poder.ErroUso):
+                    poder.curva_poder(TAXAS, 10, 1, m_celulas=m)
 
 
 class Cli(unittest.TestCase):
@@ -119,26 +159,33 @@ class Cli(unittest.TestCase):
     def test_grava(self):
         saida = self.d / "curva.json"
         rc, err = self.rodar("--taxas-a", self.taxas, "--semente", 1, "--n-sim", 100, "--saida", saida,
-                             "--blocos", "8")
+                             "--blocos", "8", "--m-celulas", 2)
         self.assertEqual(0, rc, err)
         j = json.loads(saida.read_text(encoding="utf-8"))
-        self.assertEqual("poder-troca-de-sinal/1", j["esquema"])
+        self.assertEqual("poder-troca-de-sinal/2", j["esquema"])
         self.assertEqual([8], j["blocos"])
         self.assertEqual(len(TAXAS), j["n_taxas"])
         self.assertEqual(64, len(j["taxas_a"]["sha256"]))
-        self.assertEqual(0.05, j["alfa"])
+        self.assertEqual(0.025, j["alfa"])
+        self.assertEqual({"independente", "correlacao-perfeita"}, set(j["poder"]))
 
     def test_recusas(self):
         saida = self.d / "curva.json"
         saida.write_text("x", encoding="utf-8")
-        rc, _ = self.rodar("--taxas-a", self.taxas, "--semente", 1, "--n-sim", 100, "--saida", saida)
+        rc, _ = self.rodar("--taxas-a", self.taxas, "--semente", 1, "--n-sim", 100, "--saida", saida,
+                           "--m-celulas", 2)
         self.assertEqual(2, rc)
         self.assertEqual("x", saida.read_text(encoding="utf-8"))
         ruim = self.d / "ruim.txt"
         ruim.write_text("1.0\nabc\n", encoding="utf-8")
-        rc, _ = self.rodar("--taxas-a", ruim, "--semente", 1, "--n-sim", 100, "--saida", self.d / "b.json")
+        rc, _ = self.rodar("--taxas-a", ruim, "--semente", 1, "--n-sim", 100, "--saida", self.d / "b.json",
+                           "--m-celulas", 2)
         self.assertEqual(2, rc)
         self.assertFalse((self.d / "b.json").exists())
+        # m do pre-registro e obrigatorio e sem padrao (P-7: o alfa e o do primeiro passo do Holm)
+        rc, _ = self.rodar("--taxas-a", self.taxas, "--semente", 1, "--n-sim", 100, "--saida", self.d / "c.json")
+        self.assertEqual(2, rc)
+        self.assertFalse((self.d / "c.json").exists())
 
 
 if __name__ == "__main__":

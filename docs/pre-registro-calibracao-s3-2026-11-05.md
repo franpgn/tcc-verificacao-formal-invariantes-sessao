@@ -11,6 +11,12 @@
 > O B-40 parte 1 (avaliação) está à parte, em `docs/b40-pre-registro-avaliacao` (DT-021), e usa as regras de derivação da
 > seção 7 daqui.
 
+> **Nota de remissão (2026-11-05, ~23:00Z, antes de qualquer dado da calibração):** as leituras das regras da seção 7
+> estão fixadas no **complemento 1** (`docs/pre-registro-calibracao-s3-complemento-1-2026-11-05.md`, DT-022): θ_out e
+> `lag_out` pelo menor valor (A-3), m sem θ_out (A-4, A-5), grade do W derivado e W_min estrito (A-1, A-17), regra de
+> reserva de W para o AC-5 caber em 39,8 s, e as demais leituras do W-9. Onde divergirem, vale o complemento. O texto
+> abaixo não foi editado.
+
 ## Siglas
 
 | Sigla | Significado |

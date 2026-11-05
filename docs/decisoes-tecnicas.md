@@ -876,3 +876,23 @@ Transmitidas ao Senior pelo coordenador, sobre o parecer de conferência do text
   documento. **Sem origem rastreável, não aprovados por essa regra:** C-10 (limiar de *swap* de 1 GiB, provisório na
   G-3; segue a aprovação da G-3), `convergencia_teto_s` = 600 s e `convergencia_periodo_s` = 5 s (só padrão do código
   do B-33; ficam na calibração como estão e a avaliação usa o teto da regra 7.10).
+
+## DT-022: complemento 1 da DT-020, leituras das regras de derivação da calibração S3, PRÉ-REGISTRO (2026-11-05)
+
+> Registrado em 2026-11-05, ~23:00Z, **antes de qualquer dado da calibração** (X-18 previsto para ~01:30Z de 06/11),
+> pelo Senior a pedido do coordenador. Texto vinculante: `docs/pre-registro-calibracao-s3-complemento-1-2026-11-05.md`.
+> Origem: ambiguidades A-1 a A-17 do W-9 (`wt-w9/docs/relatorio-w9-2026-11-05.md`, ponta `4bcca11`). A DT-020 não é
+> editada; onde divergirem, vale esta.
+
+- **A-3:** θ_out e `lag_out` = o **menor** valor que mantém, sem falha, todo trecho de janelas intermediárias com no
+  máximo m janelas (a maior histerese que não prende o controlador); a leitura literal ("maior valor") era degenerada.
+- **A-4, A-5:** m = 1 + o maior trecho máximo de janelas sem nenhum sinal alto (`algumAlto`) que começa em ou depois do
+  `end` e termina numa janela alta, nas ASYNC F1, F2 e F4; m não usa θ_out, o que quebra o ciclo e é conservador.
+- **A-1, A-17:** todas as regras na grade do W derivado (defasagem da janela por `SondaDefasagem.resumir`; com W < 5 s,
+  janelas sem rodada são puladas); `W_min = ⌊tetoLag + atraso_max⌋ + 1`, estrito como o código exige.
+- **W e `kLag`:** sem reserva, o AC-5 ficaria inviável por construção com λ₅ < ~3,85 eventos/s e limitado a `kLag` = 1
+  com λ₅ < ~7,7. **Regra de reserva:** se `kLag_min(W)·W + 13,3 ≥ 39,8`, W passa ao maior inteiro em [W_min, W − 1]
+  viável, com a perda de cobertura do sinal de latência declarada (latência e erro não levam a ação, P2 fora); sem W
+  viável, o AC-5 é declarado inviável antes da avaliação e a DT-021 volta ao Gestor.
+- **Demais:** A-2, A-6 a A-11, A-14 a A-16 confirmadas como o W-9 leu; A-12 e A-13 confirmadas com acréscimo (ciclo
+  completo de execução; `poder.py` com `-E -P`, `--semente 20261105`, `--n-sim 10000`, `--m-celulas 2`, `--blocos 12`).

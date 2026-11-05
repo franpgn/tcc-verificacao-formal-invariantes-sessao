@@ -26,7 +26,7 @@ REAL_SLEEP="$(command -v sleep)"
 REAL_TIMEOUT="$(command -v timeout)"
 TMP="$(mktemp -d)"
 trap '[[ -n "${CS_TESTE_MANTER:-}" ]] && echo "(CS_TESTE_MANTER: ${TMP} mantido)" || rm -rf "${TMP}"' EXIT
-SELECAO=" ${*:-S1 S2 S3 S4 S5 S6 S7 S8 S9 S10 S11 S12 S13 S14 S15 S16 S17 S18 S19 S20 S21 S22 S23 S24 S25 S26 S27 S28} "
+SELECAO=" ${*:-S1 S2 S3 S4 S5 S6 S7 S8 S9 S10 S11 S12 S13 S14 S15 S16 S17 S18 S19 S20 S21 S22 S23 S24 S25 S26 S26h S27 S28} "
 
 PASS=0
 FAIL=0
@@ -259,18 +259,22 @@ fi
 f="${ST}/netem-${p}"
 case "$*" in
     "qdisc add dev eth0 root netem"*)
-        if [[ -f "${ST}/netem-rejeita" ]]; then echo "Error: Specified qdisc kind is unknown." >&2; exit 2; fi
+        if [[ -f "${ST}/tc-rejeita-netem" ]]; then echo "Error: Specified qdisc kind is unknown." >&2; exit 2; fi
         if [[ -f "${f}" || -f "${ST}/prio-${p}" ]]; then echo "Error: Exclusivity flag on, cannot modify." >&2; exit 2; fi
-        # netem-some: o add de verdade (nao o da sonda, delay 1ms) "passa" sem deixar netem (falha nao efetiva)
-        if [[ -f "${ST}/netem-some" && "$*" != *"delay 1ms"* ]]; then exit 0; fi
+        # tc-netem-some: o add de verdade (nao o da sonda, delay 1ms) "passa" sem deixar netem (falha nao efetiva)
+        if [[ -f "${ST}/tc-netem-some" && "$*" != *"delay 1ms"* ]]; then exit 0; fi
         echo "$*" > "${f}" ;;
     "qdisc del dev eth0 root")
-        if [[ -f "${ST}/netem-del-falha" && "$(cat "${ST}/netem-del-n" 2>/dev/null || echo 0)" -ge 1 ]]; then exit 0; fi
-        if [[ -f "${f}" ]]; then rm -f "${f}"; echo $(( $(cat "${ST}/netem-del-n" 2>/dev/null || echo 0) + 1 )) > "${ST}/netem-del-n"
+        if [[ -f "${ST}/tc-del-falha" && "$(cat "${ST}/tc-del-n" 2>/dev/null || echo 0)" -ge 1 ]]; then exit 0; fi
+        if [[ -f "${f}" ]]; then rm -f "${f}"; echo $(( $(cat "${ST}/tc-del-n" 2>/dev/null || echo 0) + 1 )) > "${ST}/tc-del-n"
         else echo "Error: Cannot delete qdisc with handle of zero." >&2; exit 2; fi ;;
     "qdisc show dev eth0")
         out="qdisc noqueue 0: root refcnt 2"
         [[ -f "${f}" ]] && out="qdisc netem 8001: root refcnt 2 limit 1000 delay 20ms  13ms"
+        # S26h: raiz ocupada por um prio de fora no no <pid> so depois da ancora (o K1 passa; o disparo do F3 ve)
+        if [[ -f "${ST}/tc-prio-apos-ancora" && "${p}" == "$(cat "${ST}/tc-prio-apos-ancora")" ]] && compgen -G "${ST}/ancora-*" > /dev/null; then
+            out="qdisc prio 1: root refcnt 2 bands 3"
+        fi
         [[ -f "${ST}/clsact-${p}" ]] && out+=$'\n'"qdisc clsact ffff: parent ffff:fff1"
         [[ -f "${ST}/prio-${p}" ]] && out=$'qdisc prio 1: root refcnt 2 bands 3\nqdisc netem 30: parent 1:3 limit 1000 loss 20%'
         echo "${out}" ;;
@@ -1209,14 +1213,16 @@ fi
 # ============================================================================= S26
 if quer S26; then
 echo "== S26: W-6c: F3 com o inject-jitter.sh real: GO de rede, dead-man antes do netem, marcadores do orquestrador, netem a +2 s =="
-# Teste com a amostra do netem a +30 s virtuais do disparo (CS_NETEM_EFETIVA_MS, so com CS_MODO_TESTE=1): no Git Bash o
-# injetor real leva de 10 a 15 s virtuais (escala 20) para aplicar o netem pelos shims (cerca de 15 processos bash).
-# O valor do protocolo, +2 s, e conferido no --dry-run e no caso S26b, sem o ajuste.
-novo_caso s26
-parametros f3
+# Escala 5 e amostra do netem a +40 s virtuais do disparo (CS_NETEM_EFETIVA_MS, so com CS_MODO_TESTE=1): no Git Bash o
+# injetor real leva cerca de 3,6 s reais para aplicar o netem pelos shims (dezenas de processos bash: sudo, podman,
+# nsenter, sh, tc), e o laco do orquestrador anda em passos de 0,1 a 0,2 s reais. Com a escala 20 isso passava de 70 s
+# virtuais e a amostra caia antes do netem ou depois do fim da janela. O valor do protocolo, +2 s, e conferido no
+# --dry-run (S26g) e no S26b, sem o ajuste.
+novo_caso s26 5
+parametros f3 duracao_s=120 f3_dur_s=80 exec_teto_s=300
 matriz_aval "ASYNC-F3:descritiva:1"
 printf 'go nucleo %s\ngo rede 0\n' "${HOJE}" > "${CS_TTY_ARQUIVO}"
-CS_NETEM_EFETIVA_MS=30000 rodar nucleo
+CS_NETEM_EFETIVA_MS=40000 rodar nucleo
 ok "S26 exit 0" "0" "${RC}"
 DA="$(ls -d "${OUT}"/exec-*-ASYNC-F3-A)"; DB="$(ls -d "${OUT}"/exec-*-ASYNC-F3-B)"
 for D in "${DA}" "${DB}"; do
@@ -1225,15 +1231,15 @@ for D in "${DA}" "${DB}"; do
     ok "S26 ${b}: marcadores start e end do orquestrador" "start end" "$(sed -n 's/^fault=F3 node=isn2 event=\([a-z]*\) t_epoch_ns=[0-9]*$/\1/p' "${D}/marcadores.txt" | paste -sd' ')"
     ok "S26 ${b}: injetor 0" "0" "$(json "${D}/execucao.json" 'd["injetor_exit"]')"
     ok "S26 ${b}: netem na raiz de isn2 na amostra depois do disparo" "True" "$(json "${D}/execucao.json" 'd["falha_efetiva"]["netem_efetiva"]["netem"]')"
-    ok "S26 ${b}: dead-man de 40 + 90 s armado" "True 130" "$(json "${D}/execucao.json" 'd["deadman"]["armado"]') $(json "${D}/execucao.json" 'd["deadman"]["on_active_s"]')"
+    ok "S26 ${b}: dead-man de 80 + 90 s armado" "True 170" "$(json "${D}/execucao.json" 'd["deadman"]["armado"]') $(json "${D}/execucao.json" 'd["deadman"]["on_active_s"]')"
     ok "S26 ${b}: sem resto de rede depois" "False" "$(json "${D}/execucao.json" 'd["rede_pos"]["residuo"]')"
-    contem "S26 ${b}: injetor com os parametros do campanha-s3/2" "NODE=isn2 IFACE=eth0 DELAY=20ms JITTER=13ms DIST=normal DURACAO=40s" "$(cat "${D}/injetor.log")"
+    contem "S26 ${b}: injetor com os parametros do campanha-s3/2" "NODE=isn2 IFACE=eth0 DELAY=20ms JITTER=13ms DIST=normal DURACAO=80s" "$(cat "${D}/injetor.log")"
 done
 G="$(json "${OUT}/nucleo/gates.json" '[g["tipo"] for g in d["execucoes_do_orquestrador"][-1]["gates"]]')"
 ok "S26 GO de rede antes da primeira F3" "['fase', 'rede']" "${G}"
 SR="$(linha_de 'systemd-run|')"; ADD="$(linha_de 'qdisc|add|dev|eth0|root|netem')"
 verdade "S26 dead-man armado antes do netem (e da sonda do injetor)" test "${SR}" -gt 0 -a "${SR}" -lt "${ADD}"
-contem "S26 dead-man: nsenter no PID de isn2 e tc qdisc del da raiz, 130 s, AccuracySec=1s" "--on-active=130s|--timer-property=AccuracySec=1s|${SH}/nsenter|-t|1002|-n|${SH}/tc|qdisc|del|dev|eth0|root" "$(grep 'systemd-run|' "${ST}/chamadas.log" | head -1)"
+contem "S26 dead-man: nsenter no PID de isn2 e tc qdisc del da raiz, 170 s, AccuracySec=1s" "--on-active=170s|--timer-property=AccuracySec=1s|${SH}/nsenter|-t|1002|-n|${SH}/tc|qdisc|del|dev|eth0|root" "$(grep 'systemd-run|' "${ST}/chamadas.log" | head -1)"
 contem "S26 dead-man na unit tcc-heal-cs-<i>" "--unit=tcc-heal-cs-" "$(grep 'systemd-run|' "${ST}/chamadas.log" | head -1)"
 ok "S26 nenhum netem sobrando" "0" "$(ls "${ST}"/netem-* 2>/dev/null | grep -c .)"
 ok "S26 nenhum timer sobrando" "0" "$(ls "${ST}"/timer-* 2>/dev/null | grep -c .)"
@@ -1246,7 +1252,7 @@ echo "-- S26b: netem ausente a +2 s do disparo -> RECUSADA (B-40 secao 4.3); +2 
 novo_caso s26b
 parametros f3
 matriz_calib "ASYNC-F3:calibracao:1"
-: > "${ST}/netem-some"
+: > "${ST}/tc-netem-some"
 printf 'go calibracao %s\ngo rede 0\n' "${HOJE}" > "${CS_TTY_ARQUIVO}"
 rodar calibracao
 ok "S26b exit 0 (a fase segue)" "0" "${RC}"
@@ -1259,7 +1265,7 @@ echo "-- S26c: netem rejeitado pelo kernel (exit 5) com o no de pe -> exit 6, se
 novo_caso s26c
 parametros f3
 matriz_calib "ASYNC-F3:calibracao:1"
-: > "${ST}/netem-rejeita"
+: > "${ST}/tc-rejeita-netem"
 printf 'go calibracao %s\ngo rede 0\n' "${HOJE}" > "${CS_TTY_ARQUIVO}"
 rodar calibracao
 ok "S26c exit 6" "6" "${RC}"
@@ -1270,25 +1276,26 @@ contem "S26c motivo" "injetor F3 saiu com 5" "$(tail -1 "${OUT}/calibracao/orque
 ok "S26c sem timer" "0" "$(ls "${ST}"/timer-* 2>/dev/null | grep -c .)"
 
 echo "-- S26d: netem que o injetor e o orquestrador nao removem -> exit 6, dead-man mantido"
-novo_caso s26d
-parametros f3
+novo_caso s26d 5
+parametros f3 duracao_s=120 f3_dur_s=80 exec_teto_s=300
 matriz_calib "ASYNC-F3:calibracao:1"
-: > "${ST}/netem-del-falha"
+: > "${ST}/tc-del-falha"
 printf 'go calibracao %s\ngo rede 0\n' "${HOJE}" > "${CS_TTY_ARQUIVO}"
-CS_NETEM_EFETIVA_MS=30000 rodar calibracao
+CS_NETEM_EFETIVA_MS=40000 rodar calibracao
 ok "S26d exit 6" "6" "${RC}"
 contem "S26d motivo resto de rede" "resto de rede" "$(tail -1 "${OUT}/calibracao/orquestrador.log")"
 ok "S26d dead-man continua armado" "1" "$(ls "${ST}"/timer-* 2>/dev/null | grep -c .)"
 ok "S26d remocao extra registrada" "True True" "$(json "$(exec_dir 0)/execucao.json" 'd["rede_pos"]["heal_extra"]') $(json "$(exec_dir 0)/execucao.json" 'd["rede_pos"]["residuo"]')"
 
 echo "-- S26e: B1 no F3: o AC-5 do braco B para isn2 sob o netem; o injetor sai com 0 -> aviso, ACEITA"
-# carga de 160 s: AC-5 do duble a dur/2 = +80 s; netem de +10 s (mais o atraso do disparo) por 100 s; amostra a +30 s
-novo_caso s26e
-parametros f3 duracao_s=160 f3_dur_s=100 exec_teto_s=300
+# escala 5, carga de 160 s: AC-5 do duble a dur/2 = +80 s; netem de +10 s (mais o atraso do disparo) por 120 s; amostra
+# a +40 s do disparo, antes do AC-5
+novo_caso s26e 5
+parametros f3 duracao_s=160 f3_dur_s=120 exec_teto_s=300
 matriz_aval "ASYNC-F3:descritiva:1"
 echo "127.0.0.1:11223" > "${ST}/ac5-alvo"
 printf 'go nucleo %s\ngo rede 0\n' "${HOJE}" > "${CS_TTY_ARQUIVO}"
-CS_NETEM_EFETIVA_MS=30000 rodar nucleo
+CS_NETEM_EFETIVA_MS=40000 rodar nucleo
 ok "S26e exit 0" "0" "${RC}"
 DB="$(ls -d "${OUT}"/exec-*-ASYNC-F3-B)"; DA="$(ls -d "${OUT}"/exec-*-ASYNC-F3-A)"
 ok "S26e B: injetor 0 com isn2 parado" "0 isn2" "$(json "${DB}/execucao.json" 'd["injetor_exit"]') $(json "${DB}/execucao.json" 'd["injetor_alvo_parado"]')"
@@ -1299,11 +1306,11 @@ ok "S26e A: injetor 0, sem alvo parado, ACEITA" "0 None ACEITA" "$(json "${DA}/e
 ok "S26e nenhum netem sobrando" "0" "$(ls "${ST}"/netem-* 2>/dev/null | grep -c .)"
 
 echo "-- S26f: TERM no orquestrador com o F3 em curso: netem removido, end gravado, dead-man desarmado"
-novo_caso s26f
-parametros f3
+novo_caso s26f 5
+parametros f3 duracao_s=120 f3_dur_s=80 exec_teto_s=300
 matriz_calib "ASYNC-F3:calibracao:1"
 printf 'go calibracao %s\ngo rede 0\n' "${HOJE}" > "${CS_TTY_ARQUIVO}"
-CS_NETEM_EFETIVA_MS=30000 rodar_fundo calibracao
+CS_NETEM_EFETIVA_MS=40000 rodar_fundo calibracao
 verdade "S26f netem aplicado" esperar_por 'qdisc|add|dev|eth0|root|netem|delay|20ms' 120
 kill -TERM "${BG}"; wait "${BG}"; RC=$?
 ok "S26f exit 143" "143" "${RC}"
@@ -1343,6 +1350,20 @@ ok "S26g GO de rede errado antes da primeira F3 -> exit 5" "5" "${RC}"
 ok "S26g nenhum netem sem o GO" "0" "$(grep -c 'tc|.*|qdisc|add' "${ST}/chamadas.log")"
 fi
 
+# ============================================================================= S26h
+if quer S26h; then
+echo "== S26h: W-6c: raiz do no do F3 ocupada no disparo (F2/F4 de fora) -> exit 6, sem netem nem dead-man =="
+novo_caso s26h
+parametros f3
+matriz_calib "ASYNC-F3:calibracao:1"
+echo 1002 > "${ST}/tc-prio-apos-ancora"
+printf 'go calibracao %s\ngo rede 0\n' "${HOJE}" > "${CS_TTY_ARQUIVO}"
+rodar calibracao
+ok "S26h exit 6" "6" "${RC}"
+contem "S26h motivo raiz ocupada" "raiz de isn2 ocupada ou ilegivel antes da F3" "$(tail -1 "${OUT}/calibracao/orquestrador.log")"
+ok "S26h nenhum netem aplicado nem dead-man armado" "0 0" "$(grep -c 'tc|.*|qdisc|add' "${ST}/chamadas.log") $(grep -c ' systemd-run|' "${ST}/chamadas.log")"
+fi
+
 # ============================================================================= S27
 if quer S27; then
 echo "== S27: W-6c: swap no portao: registrado sempre; com --swap-limite-kb e swap >= limite, recria antes (mesmo i e semente) =="
@@ -1371,7 +1392,7 @@ ok "S27b i=0 swap_usado_kb_k1 = leitura antes do lancamento" "256" "$(json "${D0
 ok "S27b i=1 sem recriacao a mais" "[256] False" "$(json "${D1}/execucao.json" 'd["swap_portao"]["leituras_kb"]') $(json "${D1}/execucao.json" 'd["swap_portao"]["recriado"]')"
 ok "S27b tres ups (duas execucoes e uma recriacao pelo swap)" "3" "$(grep -c ' podman-compose|.*|up|-d' "${ST}/chamadas.log")"
 ok "S27b i=0 roda uma vez com a semente 60000" "1" "$(grep -c ' java|-jar|.*|--seed|60000|' "${ST}/chamadas.log" | head -1)"
-verdade "S27b brutos da primeira recriacao guardados" test -s "${D0}/antes-recriacao-swap/compose-up.log" -a -s "${D0}/antes-recriacao-swap/portao.json"
+verdade "S27b brutos da primeira recriacao guardados" test -f "${D0}/antes-recriacao-swap/compose-up.log" -a -s "${D0}/antes-recriacao-swap/portao.json" -a -s "${D0}/antes-recriacao-swap/caches.tsv"
 verdade "S27b K1 de novo depois da recriacao" test -s "${D0}/portao.json"
 contem "S27b log da recriacao pelo swap" "swap 1048576 kB >= 1048576 kB" "$(cat "${OUT}/calibracao/orquestrador.log")"
 

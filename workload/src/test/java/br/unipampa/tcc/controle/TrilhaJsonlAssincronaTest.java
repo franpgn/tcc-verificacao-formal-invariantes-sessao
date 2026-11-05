@@ -301,6 +301,48 @@ class TrilhaJsonlAssincronaTest {
         t.close();
     }
 
+    @Test
+    @DisplayName("a gravadora nunca morre por uma linha: RuntimeException da saida conta como erro e as linhas seguintes saem")
+    void gravadoraNaoMorre() throws Exception {
+        Writer saida = new Writer() {
+            private final StringBuilder sb = new StringBuilder();
+            private int flushes;
+
+            @Override
+            public void write(char[] c, int off, int len) {
+                sb.append(c, off, len);
+            }
+
+            @Override
+            public void flush() {
+                if (++flushes == 1) {
+                    sb.setLength(0);
+                    throw new IllegalStateException("saida quebrada na primeira linha");
+                }
+            }
+
+            @Override
+            public void close() {
+            }
+
+            @Override
+            public String toString() {
+                return sb.toString();
+            }
+        };
+        TrilhaJsonl t = TrilhaJsonl.sobre(dir.resolve("x.jsonl"), saida, 8);
+        t.escrever(linha("a", 1));
+        t.escrever(linha("a", 2));
+        assertTrue(t.escreverFim(JSON.createObjectNode().put("tipo", "fim"), "linhas_perdidas"));
+        assertTrue(t.aguardarGravacao(5 * S), "a gravadora parou");
+        t.close();
+        List<String> l = new ArrayList<>(List.of(saida.toString().split("\n")));
+        assertEquals(2, l.size(), saida.toString());
+        assertEquals(2, ler(l.get(0)).get("n").asInt());
+        assertEquals(1, ler(l.get(1)).get("linhas_perdidas").asLong());
+        assertEquals(1, t.errosEscrita());
+    }
+
     // ------------------------------------------------------------------ quem chama
 
     /** Atuador que registra o instante (nanoTime) de entrada e de saida de cada chamada. */

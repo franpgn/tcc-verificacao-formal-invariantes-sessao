@@ -868,3 +868,31 @@ Transmitidas ao Senior pelo coordenador, sobre o parecer de conferência do text
   documento. **Sem origem rastreável, não aprovados por essa regra:** C-10 (limiar de *swap* de 1 GiB, provisório na
   G-3; segue a aprovação da G-3), `convergencia_teto_s` = 600 s e `convergencia_periodo_s` = 5 s (só padrão do código
   do B-33; ficam na calibração como estão e a avaliação usa o teto da regra 7.10).
+
+## DT-021: avaliação do controlador na campanha S3 (B-40), parte 1, PRÉ-REGISTRO (2026-11-05)
+
+> **Aprovado** pelo coordenador em nome do Gestor em 2026-11-05 (decisões finais de ~22:30Z), antes da calibração e de
+> qualquer execução da avaliação. Texto completo e vinculante: `docs/pre-registro-b40-avaliacao-2026-11-05.md`, na versão
+> do commit **`2c06890`** (branch `docs/b40-pre-registro-avaliacao`). Rascunhos anteriores: `ebfee35`, `8567bab`. A
+> parte 2 (valores calibrados, seção 11) vira entrada própria, commitada antes da N4, sem comparar braços.
+
+- **Desenho:** braço A (`shadow`) × braço B (`active`, controlador completo: P0/P1 com P1 = AC-5, P2 fora,
+  `p2Habilitada = false`), blocos pareados com a mesma semente e ordem sorteada, *cluster* recriado antes de cada
+  execução. Células: ASYNC F2 e ASYNC F4 de teste com **12 blocos**; ASYNC F1 descritiva com 4 (sem ação para a
+  queda); ASYNC sem falha descritiva com 8; ASYNC F3 descritiva com 4 (falso alarme, *jitter* 20 ± 13 ms em `isn2`);
+  SYNC F2 (limitação R3) e SYNC F4 de referência com 4. **96 execuções.** Piloto embutido nos 3 primeiros blocos.
+- **Estatística:** co-principais V (taxa de violações I1 + I4 + I2 real por mil ações S3, diferença pareada) e L (p99 da
+  ação S3, log da razão); IU (Berger) por célula com `p_IU = max(p_V, p_L)`, δ_L = 10 %; **Holm sobre 2** (F2, F4);
+  "melhoria" exige ainda vazão útil não inferior (δ = 10 %) e rastreabilidade integral; secundários em família fixa de 7
+  com Holm na célula.
+- **Decisões do Gestor:** n = 12 fixo; F1 descritiva; critério de falso acionamento = zero ocorrências com 3/N
+  reportado (DT-020); **nenhuma expectativa numérica de efeito**: ganhos e custos com IC lado a lado, qualquer que seja o
+  sinal, e "melhora" só se a regra passar.
+- **Correções da V-W6b aceitas pelo coordenador** (`wt-w6/docs/validacao-w6b-2026-11-05.md`, `081e1c4`): as quatro
+  condições do B1 para aceitar F2/F4 do braço B com o AC-5 no nó da falha; **N1**, fim nominal da falha no Δ_rec e nas
+  fases dessas execuções; **R4**, limitação da evidência de severidade do F4 quando o AC-5 corta o *ping*; **O1**, AC-5
+  precoce antes do disparo para a fase com 6 até o X-17; veredictos novos do orquestrador do W-6b.
+- **Aprovados pela regra permanente do Gestor** (origem rastreável): B-1, B-2, B-5 a B-9, com a origem na seção 15 do
+  documento. Nenhum item da parte 1 ficou sem origem.
+- **Pré-requisitos:** DT-020 executada (X-18) e parte 2 commitada; integração do W-2b com o W-6b e o I-1; W-6c (F3,
+  *swap*, trilha, fim nominal, linhas do F4); W-9; W-5 com a família de secundários.

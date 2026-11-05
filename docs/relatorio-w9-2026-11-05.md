@@ -109,3 +109,26 @@ Fora da seção 7: a seção 9 (W-9) diz "regras 7.1 a 7.17" e a tarefa diz "7.1
 - Confirmar as demais leituras (A-1, A-2, A-6 a A-17) ou trocar por emenda ao pré-registro antes do X-18.
 - O W-9 parte de `17f2bd4`; a integração já está em `944a36d` (W-2b). Na integração, `docs/implementacao.md` e
   `docs/testes.md` vão conflitar (seções acrescentadas no mesmo ponto); o TD deste item já usa o número 16.
+
+## 8. Ajuste ao complemento 1 (DT-022, `744e6e8`)
+
+O Senior resolveu as ambiguidades no complemento 1 (`docs/pre-registro-calibracao-s3-complemento-1-2026-11-05.md`),
+que prevalece sobre a seção 7. As seções 5 e 7 acima ficam como registro do que foi achado; a situação de cada leitura
+agora está no JSON (`leituras`, com `situacao` = confirmada, emendada, resolvida ou corrigida pelo complemento 1).
+
+| Commit | O quê |
+|---|---|
+| `d0dcce9` test | vermelho: 61 testes, 8 falhas, 11 erros |
+| `a3c34d8` fix | ordem de cálculo; W_min estrito; reserva de W; grade do W final com janela sem rodada pulada; m sem θ_out; θ_out e `lag_out` pelo menor valor; ciclo completo; `n_fora`; comando do `poder.py`; leituras |
+
+Testes na ponta `a3c34d8`: `python3 -I` **PASS** (62: 60 OK, 2 pulados); `python3 -E -P` **PASS** (62 OK). Cinco
+mutantes das regras novas morrem (`docs/testes.md`).
+
+**Duas leituras minhas dentro do complemento, para conferência:**
+
+1. **"Trecho máximo" no m.** Tomo o trecho máximo sobre todas as janelas da execução: um trecho sem alto que começa
+   antes do `end` e o atravessa não conta, porque não "começa em ou depois do `end`".
+2. **Reserva com perda total de cobertura.** Com vazão uniforme, W' = W − 1 deixa todas as janelas sem falha abaixo de
+   `n_lat`. θ_lat_in sai então nulo ("nenhuma janela válida"), e m e T_cooldown, que dependem dele, também. O complemento
+   manda declarar a perda de cobertura, mas não diz o que fazer com θ_lat_in quando ela é total. O script declara
+   "não derivado", sem preencher valor.

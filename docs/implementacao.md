@@ -119,12 +119,17 @@ braços. Relatório: `docs/relatorio-w9-2026-11-05.md`.
   defasagem pela regra de consumo do código (`SondaTopologia.resumirComNosAte`, `SondaDefasagem.resumirAte`), S_lag
   da janela como `SondaDefasagem.resumir` (maior lag de cada nó, suspeito só se o máximo for único). As decisões
   gravadas pelo braço A (valores provisórios) não entram; as linhas `acao` PREVISTA só aparecem como conferência.
-- **Leituras onde a regra é ambígua (A-1 a A-17), no próprio JSON.** As de maior efeito: θ_in é o menor *double*
-  acima do maior mínimo de k janelas seguidas (A-2); θ_out e `lag_out` saem pela leitura literal ("maior valor"),
-  que é degenerada (banda vazia), com a alternativa "menor valor" ao lado para decisão (A-3); m conta o trecho calmo
-  imediatamente seguido de janela alta (A-5).
+- **Complemento 1 (DT-022, `744e6e8`), que prevalece sobre a seção 7.** Ordem: W e `kLag` → θ_in e `lag_in` → m →
+  θ_out e `lag_out` → o resto. W = max(⌈n_lat/λ₅⌉, W_min), com W_min = ⌊tetoLag + atraso_max⌋ + 1 (estrito).
+  **Reserva de W:** se `kLag_min(W)·W + 13,3 ≥ 39,8`, W passa ao maior W' viável entre W_min e W − 1, com a fração de
+  janelas sem falha com latência indeterminada declarada; sem W' viável, o AC-5 é inviável (7.4). Todas as regras
+  usam a grade do W final; janela sem rodada de defasagem é pulada no m, no `lag_out` e no `kLag`. m = 1 + o maior
+  trecho máximo sem sinal alto (`algumAlto`) que começa em ou depois do `end` e termina numa janela alta (não usa
+  θ_out). θ_out e `lag_out` = o **menor** valor sem trecho intermediário maior que m. As leituras A-1 a A-17 vão no JSON
+  com a situação de cada uma no complemento (`leituras`).
 - **7.18** calcula q̂ por célula de teste com Clopper-Pearson (bissecção exata sobre a binomial) e grava as taxas e o
-  comando do `poder.py`, que não roda em `-I` (A-13).
+  comando do `poder.py` (`python -E -P`, `--semente 20261105 --n-sim 10000 --m-celulas 2 --blocos 12`), que não roda
+  em `-I` (A-13).
 
 ```mermaid
 %%{init: {'theme':'base','themeVariables':{'background':'#ffffff','primaryColor':'#ffffff','primaryTextColor':'#000000','primaryBorderColor':'#000000','lineColor':'#000000','secondaryColor':'#ffffff','tertiaryColor':'#ffffff','fontFamily':'Arial'}}}%%
@@ -150,7 +155,7 @@ flowchart LR
 | Regra | Parâmetro no JSON | Células |
 |---|---|---|
 | 7.1 | `referencia_p99_async`, `referencia_p99_sync` | ASYNC sem falha; SYNC sem falha |
-| 7.2, 7.3, 7.4 | `lambda5_por_s`, `W_s`, `viabilidade_ac5` | ASYNC sem falha; atraso de todas |
+| 7.2, 7.3, 7.4 | `lambda5_por_s`, `W_s` (com a reserva de W), `viabilidade_ac5` (candidatos e cobertura da latência) | ASYNC sem falha; atraso de todas; `kLag` de ASYNC sem falha e F1 |
 | 7.5 | `excedencia_por_janela` | todas (referência do perfil) |
 | 7.6, 7.9 | `k`, `n_err` | fixos |
 | 7.7, 7.8, 7.11, 7.12 | `theta_lat_in`, `theta_err_in`, `m`, `theta_lat_out`, `theta_err_out`, `T_cooldown_s`, `lag_in_ms`, `lag_out_ms` | ASYNC sem falha; m de ASYNC F1/F2/F4 |

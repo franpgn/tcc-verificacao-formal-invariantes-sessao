@@ -736,3 +736,24 @@ a execução teve corte do isn3 e era local.
 
 **O que os testes não provam:** que as leituras adotadas nas ambiguidades A-1 a A-17 são as pretendidas (decisão do
 Senior/Gestor); o comportamento com os volumes reais da campanha (26 execuções de 300 s).
+
+### W-9, complemento 1 da calibração (DT-022) (2026-11-05)
+
+Par `d0dcce9` (test, vermelho: 61 testes, 8 falhas, 11 erros) → `a3c34d8` (fix). Depois do vermelho, dois ajustes de
+teste registrados no `fix:`: `test_sem_execucao_nao_deriva` na assinatura nova de `m_reentrada`; e, na reserva em
+que a latência perde toda a cobertura, θ_lat_in, m e T_cooldown não derivam (declarado). Um caso novo de reserva com
+cobertura parcial (4 %) confere T_cooldown = m × W final.
+
+| Comando (ponta `a3c34d8`) | Resultado |
+|---|---|
+| `python3 -I -m unittest discover -s analysis -p "test_calibracao_s3.py"` | **PASS**: 62, 60 OK e 2 pulados (9,4 s) |
+| `python3 -E -P -m unittest discover -s analysis -p "test_calibracao_s3.py"` | **PASS**: 62 OK |
+
+Testes novos ou mudados: W_min estrito (atraso de 1 s exato dá 4), reserva de W pura (viável, reserva, inviável,
+W ≥ 27 s, `kLag` não derivado), reserva de ponta a ponta nos três casos (viável na base; `test_reserva_de_w_aplicada`,
+de 5 para 4 s; `test_ac5_inviavel_sem_w_viavel`, com W' = 5, 4 e 3), janela sem rodada pulada no `kLag` (pura e com
+W = 4 s), m pelo trecho máximo sem alto (o que começa antes do `end` não conta), θ_out pelo menor valor (indeterminada
+quebra o trecho), ciclo completo, `n_fora`, comando do `poder.py` e as leituras com a situação no complemento.
+Mutantes (cada um desfeito): W_min com teto, reserva desligada, m contando trecho que começa antes do `end`, `kLag`
+sem pular a janela sem rodada e θ_out pelo maior candidato: os cinco morrem. O *smoke* com os brutos do I-3b roda a
+reserva de W' = 19 a 3 s em 0,3 s.

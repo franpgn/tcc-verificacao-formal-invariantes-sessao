@@ -131,11 +131,12 @@ AMBIGUIDADES = [
      "leitura": "N = janelas avaliadas pelo criterio: 7.7, posicoes com k janelas seguidas determinadas; 7.13, "
                 "janelas com vista completa (onde o P1 poderia agir); 7.8/7.12, todas as janelas. O total de "
                 "janelas vai ao lado (n_janelas_total)."},
-    {"id": "A-8", "regras": ["7.2", "7.5", "7.7", "7.13"],
+    {"id": "A-8", "regras": ["7.2", "7.3", "7.5", "7.7", "7.11", "7.13"],
      "texto": "Fim da medicao e janelas parciais nao estao fixados (D = 256 s e nominal).",
      "leitura": "janelas [origem_ns + jW, origem_ns + (j+1)W) completas ate t_fim_carga_ns do resumo de "
                 "convergencia (fim da medicao do protocolo); eventos pela janela do end_ns (AgregadorDeJanela); D = "
-                "256 s so no alvo a."},
+                "256 s so no alvo a. A 7.11 (quantil) e o atraso da 7.3 usam todas as linhas defasagem, que so "
+                "existem depois da origem."},
     {"id": "A-9", "regras": ["7.14"],
      "texto": "'duracao de um trecho com 3 nos HEALTHY' nao diz de onde a onde.",
      "leitura": "amostras de topologia com t_ns > end; trecho = amostras seguidas com anomala = false; duracao = "
@@ -389,6 +390,9 @@ def m_reentrada(sequencias):
                 trechos += 1
                 maior = run if maior is None else max(maior, run)
             run = 0
+    if n == 0:
+        return {"valor": None, "maior_trecho": None, "trechos_seguidos_de_alta": 0, "N": 0,
+                "motivo": "nenhuma execucao com janela depois do end nas celulas da regra: nao derivavel"}
     motivo = None
     if maior is None:
         motivo = "nenhum trecho calmo seguido de janela alta depois do end (sem recaida): m = 1 + 0"
@@ -496,11 +500,13 @@ def t_estavel(execucoes, p_sonda_s=P_SONDA_S):
 
     execucoes: [(nome, t_end_ns, [(t_ns, anomala)])].
     """
-    maior, recaidas, por = None, 0, []
+    maior, recaidas, por, n_depois = None, 0, [], 0
     for nome, t_end, amostras in execucoes:
         ini = ult = None
         maior_e = None
-        for t, an in sorted(x for x in amostras if x[0] > t_end):
+        depois = sorted(x for x in amostras if x[0] > t_end)
+        n_depois += len(depois)
+        for t, an in depois:
             if not an:
                 if ini is None:
                     ini = t
@@ -514,6 +520,9 @@ def t_estavel(execucoes, p_sonda_s=P_SONDA_S):
         por.append({"dir": nome, "maior_trecho_s": None if maior_e is None else maior_e / S})
         if maior_e is not None:
             maior = maior_e if maior is None else max(maior, maior_e)
+    if n_depois == 0:
+        return {"valor": None, "maior_trecho_s": None, "recaidas": 0, "por_execucao": por,
+                "motivo": "nenhuma execucao com amostra de topologia depois do end nas celulas da regra: nao derivavel"}
     if maior is None:
         return {"valor": p_sonda_s, "maior_trecho_s": None, "recaidas": 0, "por_execucao": por,
                 "motivo": "nenhuma recaida depois do end: T_estavel = P_sonda"}
@@ -523,6 +532,9 @@ def t_estavel(execucoes, p_sonda_s=P_SONDA_S):
 
 def t_hold_viol(execucoes, w_s):
     """7.15: maior intervalo entre duas violacoes seguidas na mesma execucao; sem execucao com duas, W."""
+    if not execucoes:
+        return {"valor": None, "maior_intervalo_s": None, "por_execucao": [],
+                "motivo": "nenhuma execucao aceita: nao derivavel"}
     maior, por = None, []
     for nome, ts in execucoes:
         ts = sorted(ts)
@@ -1070,7 +1082,7 @@ def derivar(campanha, parametros):
         incerteza={"N": len(amostras_lag),
                    "amostras_acima_ou_no_limiar": None if lag_in is None else sum(1 for v in amostras_lag if v >= lag_in)},
         motivo=None if lag_in is not None else "nenhuma rodada de defasagem nas execucoes ASYNC sem falha",
-        ambiguidades=["A-14"])
+        ambiguidades=["A-8", "A-14"])
 
     # ---- 7.8 m, theta_out (literal), T_cooldown; 7.12 lag_out
     for nome_in, nome_out in (("theta_lat_in", "theta_lat_out"), ("theta_err_in", "theta_err_out")):

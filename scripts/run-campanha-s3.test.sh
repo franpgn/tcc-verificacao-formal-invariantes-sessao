@@ -2,7 +2,7 @@
 #
 # run-campanha-s3.test.sh
 #
-# Testes S1..S24 do scripts/run-campanha-s3.sh (W-6, B-46), no estilo do run-rebaseline.test.sh: sem cluster, sem
+# Testes S1..S25 do scripts/run-campanha-s3.sh (W-6, B-46), no estilo do run-rebaseline.test.sh: sem cluster, sem
 # rede, sem VM, sem tc real. Shims em PATH para java, podman, podman-compose, sudo, nsenter, tc, ip, iptables, curl,
 # systemd-run, systemctl, flock, pgrep, df, sleep, date e timeout. Relogio acelerado: o shim de sleep dorme s/ESCALA de
 # verdade, o de timeout divide os prazos por ESCALA e o de date devolve T0 + (agora - T0) * ESCALA. O injetor de F1 e
@@ -23,7 +23,7 @@ REAL_SLEEP="$(command -v sleep)"
 REAL_TIMEOUT="$(command -v timeout)"
 TMP="$(mktemp -d)"
 trap '[[ -n "${CS_TESTE_MANTER:-}" ]] && echo "(CS_TESTE_MANTER: ${TMP} mantido)" || rm -rf "${TMP}"' EXIT
-SELECAO=" ${*:-S1 S2 S3 S4 S5 S6 S7 S8 S9 S10 S11 S12 S13 S14 S15 S16 S17 S18 S19 S20 S21 S22 S23 S24} "
+SELECAO=" ${*:-S1 S2 S3 S4 S5 S6 S7 S8 S9 S10 S11 S12 S13 S14 S15 S16 S17 S18 S19 S20 S21 S22 S23 S24 S25} "
 
 PASS=0
 FAIL=0
@@ -1151,6 +1151,25 @@ DRY_TXT="$(PATH="${PATH_TESTE}" bash "${ORQ}" --dry-run --matriz "${MAT}" --matr
     --referencia "${REF_A}" --referencia-sha256 "${REF_A_SHA}" --saida "${OUT}" 2>&1)"; RC=$?
 ok "S24 --referencia unica (antiga) -> exit 2" "2" "${RC}"
 contem "S24 motivo da opcao antiga" "--referencia-async/--referencia-sync" "${DRY_TXT}"
+fi
+
+# ============================================================================= S25
+if quer S25; then
+echo "== S25: F1 ainda em curso na linha de fim da carga: o O8 nao religa o no do F1 (o inject-crash.sh religa) =="
+# F1 de +10 a +60 s da ancora, com 60 s de carga: o inject-crash.sh real religa isn2 depois da linha de fim (o disparo
+# sai depois da ancora vista pelo orquestrador). Antes, o O8 religava isn2 por conta propria e, com o prefixo infra do
+# P-53, a execucao virava DESCARTADA-INFRA (achado na suite completa do W-6b, S4 i=1).
+novo_caso s25
+parametros f1_dur_s=50
+matriz_calib "ASYNC-F1:calibracao:1"
+printf 'go calibracao %s\n' "${HOJE}" > "${CS_TTY_ARQUIVO}"
+rodar calibracao
+ok "S25 exit 0" "0" "${RC}"
+D="$(exec_dir 0)"
+ok "S25 ACEITA" "ACEITA" "$(json "${D}/checagem.json" 'd["veredito"]')"
+ok "S25 linha de fim sem outros parados" "None" "$(json "${D}/execucao.json" 'd["sinal_fim_carga"]["outros_parados"]')"
+ok "S25 so o inject-crash.sh religou isn2 (um podman start)" "1" "$(conta ' podman|start|isn2')"
+ok "S25 marcadores do F1 completos" "start end" "$(sed -n 's/.*fault=F1 node=isn2 event=\([a-z]*\) .*/\1/p' "${D}/marcadores.txt" | paste -sd' ')"
 fi
 
 echo

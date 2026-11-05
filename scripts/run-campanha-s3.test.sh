@@ -2,7 +2,7 @@
 #
 # run-campanha-s3.test.sh
 #
-# Testes S1..S25 do scripts/run-campanha-s3.sh (W-6, B-46), no estilo do run-rebaseline.test.sh: sem cluster, sem
+# Testes S1..S26 do scripts/run-campanha-s3.sh (W-6, B-46), no estilo do run-rebaseline.test.sh: sem cluster, sem
 # rede, sem VM, sem tc real. Shims em PATH para java, podman, podman-compose, sudo, nsenter, tc, ip, iptables, curl,
 # systemd-run, systemctl, flock, pgrep, df, sleep, date e timeout. Relogio acelerado: o shim de sleep dorme s/ESCALA de
 # verdade, o de timeout divide os prazos por ESCALA e o de date devolve T0 + (agora - T0) * ESCALA. O injetor de F1 e
@@ -23,7 +23,7 @@ REAL_SLEEP="$(command -v sleep)"
 REAL_TIMEOUT="$(command -v timeout)"
 TMP="$(mktemp -d)"
 trap '[[ -n "${CS_TESTE_MANTER:-}" ]] && echo "(CS_TESTE_MANTER: ${TMP} mantido)" || rm -rf "${TMP}"' EXIT
-SELECAO=" ${*:-S1 S2 S3 S4 S5 S6 S7 S8 S9 S10 S11 S12 S13 S14 S15 S16 S17 S18 S19 S20 S21 S22 S23 S24 S25} "
+SELECAO=" ${*:-S1 S2 S3 S4 S5 S6 S7 S8 S9 S10 S11 S12 S13 S14 S15 S16 S17 S18 S19 S20 S21 S22 S23 S24 S25 S26} "
 
 PASS=0
 FAIL=0
@@ -111,13 +111,31 @@ sha="$(sha256sum "${cfg}" | cut -d' ' -f1)"
 atu="por-tipo(AC-2=rest-infinispan,AC-5=rest-infinispan)"; [[ -f "${ST}/meta-atuador" ]] && atu="$(cat "${ST}/meta-atuador")"
 pol="por-assinatura"; [[ -f "${ST}/meta-politica" ]] && pol="$(cat "${ST}/meta-politica")"
 p2=false; [[ -f "${ST}/meta-p2" ]] && p2="$(cat "${ST}/meta-p2")"
+escrever_meta() {
 printf '{"tipo":"meta","esquema":"decisoes-controlador/1.2","modo":"%s","param_sha256":"%s","atuador":"%s","politica":"%s","parametros_politica":{"k_lag":2,"p2_habilitada":%s}}\n' \
     "${ctl}" "${sha}" "${atu}" "${pol}" "${p2}" > "${csv}/decisoes-rep-001.jsonl"
+}
+# I-1 da V-W6 (S26): no W-2b a TrilhaJsonl grava por uma thread, e a meta pode chegar ao disco depois da ancora.
+# java-meta-atraso (N s virtuais): a meta so sai depois da ancora, passados N s e depois de uma leitura da meta que
+# saiu com 4 (py-meta-rc, gravado pelo python3 do caso). java-meta-nunca: esta carga nao grava a meta (o arquivo e
+# consumido; a carga seguinte grava).
+meta_modo=agora
+if [[ -f "${ST}/java-meta-nunca" ]]; then rm -f "${ST}/java-meta-nunca"; meta_modo=nunca
+elif [[ -f "${ST}/java-meta-atraso" ]]; then meta_modo=atraso; fi
+[[ "${meta_modo}" != agora ]] || escrever_meta
 echo "Configuracao: Cli{scenario=S3, seed=${seed}}"
 dormir 1
 if [[ ! -f "${ST}/java-sem-ancora" ]]; then
     echo "Warm-up ate +30s; medicao a partir de +44s; total ${dur}s"
     vms > "${ST}/ancora-${seed}"
+fi
+if [[ "${meta_modo}" == atraso ]]; then
+    ate=$(( $(vms) + $(cat "${ST}/java-meta-atraso") * 1000 ))
+    for k in $(seq 1 600); do
+        [[ "$(vms)" -ge "${ate}" ]] && grep -qx 4 "${ST}/py-meta-rc" 2>/dev/null && break
+        dormir 0.2
+    done
+    escrever_meta
 fi
 # S7: resiste ao SIGTERM ate o SIGKILL do timeout (o timeout manda o TERM ao grupo e mata o sleep; sem o laco, o duble
 # terminaria sozinho antes de K)
@@ -487,6 +505,17 @@ for k in range(-200, 30000):
                   % (t // 10**6, t % 10**6, 1000 + k + 200, full, " ".join(["1"] * 17)))
 open(arq, "w", encoding="ascii", newline="\n").write("\n".join(linhas) + "\n")
 PY
+}
+
+python_anota_meta() {  # python3 no PATH do caso: o real, anotando em py-meta-rc o exit de cada "conferir meta"
+    # (so a chamada "-I <...>/campanha_s3_conferir.py meta ...": os motivos com "meta" passados a outros python nao contam)
+    cat > "${SH}/python3" <<EOF
+#!/usr/bin/env bash
+rc=0; "${REAL_PY}" "\$@" || rc=\$?
+[[ "\$2" != *campanha_s3_conferir.py || "\$3" != meta ]] || echo "\${rc}" >> "\${CS_ESTADO}/py-meta-rc"
+exit "\${rc}"
+EOF
+    chmod +x "${SH}/python3"
 }
 
 matriz_calib() {  # matriz_calib "<CELULA:calibracao:N>,..."
@@ -1170,6 +1199,46 @@ ok "S25 ACEITA" "ACEITA" "$(json "${D}/checagem.json" 'd["veredito"]')"
 ok "S25 linha de fim sem outros parados" "None" "$(json "${D}/execucao.json" 'd["sinal_fim_carga"]["outros_parados"]')"
 ok "S25 so o inject-crash.sh religou isn2 (um podman start)" "1" "$(conta ' podman|start|isn2')"
 ok "S25 marcadores do F1 completos" "start end" "$(sed -n 's/.*fault=F1 node=isn2 event=\([a-z]*\) .*/\1/p' "${D}/marcadores.txt" | paste -sd' ')"
+fi
+
+# ============================================================================= S26
+if quer S26; then
+echo "== S26: I-1 da V-W6: meta da trilha 1 s depois da ancora (gravadora com fila do W-2b): releitura a cada 0,2 s ate 5 s =="
+# Escala 4: o prazo de 5 s virtuais e 1,25 s reais, varias leituras do python do Windows. O duble so grava a meta
+# depois de uma leitura que saiu com 4, entao a primeira leitura sempre falha.
+novo_caso s26 4
+python_anota_meta
+matriz_calib "ASYNC-none:calibracao:1"
+echo 1 > "${ST}/java-meta-atraso"
+printf 'go calibracao %s\n' "${HOJE}" > "${CS_TTY_ARQUIVO}"
+rodar calibracao
+ok "S26 meta atrasada: exit 0 (a fase nao para)" "0" "${RC}"
+D="$(exec_dir 0)"
+ok "S26 meta atrasada: ACEITA" "ACEITA" "$(json "${D}/checagem.json" 'd["veredito"]' 2>/dev/null)"
+ok "S26 primeira leitura da meta saiu com 4 (arquivo ainda ausente)" "4" "$(head -1 "${ST}/py-meta-rc" 2>/dev/null)"
+ok "S26 ultima leitura da meta saiu com 0" "0" "$(tail -1 "${ST}/py-meta-rc" 2>/dev/null)"
+verdade "S26 carga nao foi parada" test -z "$(cat "${ST}"/java-morto-* 2>/dev/null)"
+contem "S26 log da releitura" "meta da trilha lida na leitura" "$(log_fase calibracao)"
+
+echo "== S26n: meta que nao chega em 5 s: carga parada, DESCARTADA-INFRA sem injecao, e a fase segue (exit 0, nao 6) =="
+# inj_offset_s = 3 s, antes do fim do prazo da meta: a falha nao pode ser disparada numa carga ja parada.
+novo_caso s26n 4
+python_anota_meta
+parametros inj_offset_s=3
+matriz_calib "ASYNC-F1:calibracao:2"
+: > "${ST}/java-meta-nunca"
+printf 'go calibracao %s\n' "${HOJE}" > "${CS_TTY_ARQUIVO}"
+rodar calibracao
+ok "S26n exit 0 (disco lento nao e erro de configuracao)" "0" "${RC}"
+D0="$(exec_dir 0)"; D1="$(exec_dir 1)"
+ok "S26n i=0 DESCARTADA-INFRA" "DESCARTADA-INFRA" "$(json "${D0}/checagem.json" 'd["veredito"]' 2>/dev/null)"
+contem "S26n i=0 motivo meta ausente" "meta da trilha ausente ou ilegivel" "$(json "${D0}/checagem.json" 'd["motivos"]' 2>/dev/null)"
+ok "S26n i=1 ACEITA (a fase seguiu)" "ACEITA" "$(json "${D1}/checagem.json" 'd["veredito"]' 2>/dev/null)"
+ok "S26n uma carga parada (a de i=0)" "1" "$(ls "${ST}"/java-morto-* 2>/dev/null | wc -l | tr -d ' ')"
+N4="$(grep -cx 4 "${ST}/py-meta-rc" 2>/dev/null)"
+verdade "S26n i=0 releu a meta (mais de uma leitura com 4)" test "${N4:-0}" -ge 2
+ok "S26n i=0 sem injecao (marcadores vazios)" "" "$(grep -F 'fault=F1' "${D0}/marcadores.txt" 2>/dev/null)"
+ok "S26n um so podman kill (o F1 de i=1)" "1" "$(conta 'podman|kill')"
 fi
 
 echo

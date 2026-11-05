@@ -15,8 +15,11 @@ public final class FormatoJsonl {
 
     /** v1.1 (V-W3): {@code linhas_perdidas} na linha {@code fim}. */
     public static final String ESQUEMA_OBSERVAVEIS = "observaveis-controlador/1.1";
-    /** v1.1 (V-W3): {@code t_decisao_ns} na linha {@code decisao}; linha {@code fim} com prazos e perdas. */
-    public static final String ESQUEMA_DECISOES = "decisoes-controlador/1.1";
+    /**
+     * v1.1 (V-W3): {@code t_decisao_ns} na linha {@code decisao}; linha {@code fim} com prazos e perdas. v1.2 (W-2a):
+     * {@code reversao} em toda linha {@code acao}, linha {@code politica}, tipos AC-2 e AC-5.
+     */
+    public static final String ESQUEMA_DECISOES = "decisoes-controlador/1.2";
 
     private static final ObjectMapper JSON = new ObjectMapper();
 
@@ -194,10 +197,8 @@ public final class FormatoJsonl {
         o.put("codigo_http", r.codigoHttp());
         o.put("lido", r.lidoDeVolta());
         o.put("erro", r.erro());
-        if (!r.acao().tipo().reversivel()) {
-            // W-2a: acao fora da pilha (AC-5); o campo so aparece nestas linhas (ver o relatorio do W-2a)
-            o.put("reversao", REVERSAO_ORQUESTRADOR);
-        }
+        // decisoes 1.2 (W-2a, P-37): orquestrador na acao fora da pilha (AC-5); null na reversivel (pilha)
+        o.put("reversao", r.acao().tipo().reversivel() ? null : REVERSAO_ORQUESTRADOR);
         return o;
     }
 

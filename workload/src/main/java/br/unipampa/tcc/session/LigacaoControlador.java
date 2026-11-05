@@ -34,11 +34,16 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.LongPredicate;
+import java.util.function.LongSupplier;
 import java.util.function.Supplier;
 
 /**
@@ -70,6 +75,12 @@ import java.util.function.Supplier;
  * origem das janelas; o laco le o S_lag
  * dela, cada rodada vai a uma linha {@code defasagem} de {@code observaveis} e o custo vai aos contadores
  * {@code defasagem_*} do {@code fim}. Sem o bloco: S_lag indeterminado, como no W-3.</p>
+ *
+ * <p><b>W-2b (P-5).</b> Os dois JSONL gravam por uma thread propria ({@link TrilhaJsonl}), com fila de
+ * {@link TrilhaJsonl#capacidadePara 4 x} as linhas esperadas na execucao de {@code --duration}
+ * ({@link #linhasEsperadasObservaveis}, {@link #linhasEsperadasDecisoes}). O gancho de desligamento da JVM do
+ * executor vai envolto ({@link #ganchoComDreno}): depois de desfazer a pilha, espera a gravadora do
+ * {@code decisoes} no que sobra do {@code T_enc}.</p>
  */
 final class LigacaoControlador implements AutoCloseable, WorkloadMain.ControleDaCarga {
 
@@ -93,6 +104,75 @@ final class LigacaoControlador implements AutoCloseable, WorkloadMain.ControleDa
      */
     static long periodoTick(long wNs, long periodoSondaNs) {
         return Math.min(wNs / DIVISOR_TICK, periodoSondaNs / 2);
+    }
+
+    /**
+     * W-2b: linhas esperadas no {@code observaveis} numa execucao de {@code duracaoNs} ({@code --duration}, com o
+     * <i>warm-up</i>, o que so superestima): {@code meta} e {@code fim}; por janela W uma {@code janela} e no maximo
+     * um {@code tick} (so sai o que fecha janela); uma {@code topologia} por rodada da sonda ({@code P_sonda}), com
+     * ela; uma {@code defasagem} por W, com a sonda S_lag (contrato 1.2). Arredonda para cima.
+     */
+    static long linhasEsperadasObservaveis(long duracaoNs, long wNs, long periodoSondaNs, boolean sondaTopologia,
+                                           boolean sondaDefasagem) {
+        long janelas = teto(duracaoNs, wNs);
+        return 2 + 2 * janelas + (sondaTopologia ? teto(duracaoNs, periodoSondaNs) : 0)
+                + (sondaDefasagem ? janelas : 0);
+    }
+
+    /**
+     * W-2b: linhas esperadas no {@code decisoes}: {@code meta} e {@code fim}; por janela W uma {@code decisao}, no
+     * maximo uma {@code politica} (so sai com plano da politica, contrato 1.2) e, em media, no maximo uma
+     * {@code acao} (o braco B tem uma unica chave de AC-2 e cota de 1 AC-5; aplicar e reverter o AC-2 pedem
+     * janelas diferentes). O plano do W-2b fala em "D/W decisoes + acoes"; a linha {@code politica} entrou no
+     * W-2a e vai somada aqui. Arredonda para cima.
+     */
+    static long linhasEsperadasDecisoes(long duracaoNs, long wNs) {
+        return 2 + 3 * teto(duracaoNs, wNs);
+    }
+
+    private static long teto(long a, long b) {
+        if (a <= 0 || b <= 0) {
+            throw new IllegalArgumentException("duracao e periodo precisam ser > 0: " + a + ", " + b);
+        }
+        return (a + b - 1) / b;
+    }
+
+    /**
+     * W-2b: envolve o gancho de desligamento do {@link ExecutorDeAcoes}. A thread registrada em {@code base} tem o
+     * mesmo nome; roda o gancho do executor (que desfaz a pilha e poe as linhas {@code acao} na fila da trilha) e
+     * depois espera a gravadora ({@code aguardarGravacao}) pelo que sobra de {@code prazoNs} (o {@code T_enc} usado
+     * pelo executor). Sem sobra, nao espera: o gancho nunca passa do {@code T_enc}, como antes do W-2b, quando as
+     * linhas eram gravadas na propria thread do executor.
+     */
+    static ExecutorDeAcoes.Gancho ganchoComDreno(ExecutorDeAcoes.Gancho base, LongSupplier prazoNs,
+                                                 LongPredicate aguardarGravacao) {
+        Objects.requireNonNull(base, "base");
+        Objects.requireNonNull(prazoNs, "prazoNs");
+        Objects.requireNonNull(aguardarGravacao, "aguardarGravacao");
+        Map<Thread, Thread> envoltos = new ConcurrentHashMap<>();
+        return new ExecutorDeAcoes.Gancho() {
+            @Override
+            public void registrar(Thread t) {
+                Thread w = new Thread(() -> {
+                    long t0 = System.nanoTime();
+                    t.run();
+                    long resta = prazoNs.getAsLong() - (System.nanoTime() - t0);
+                    if (resta > 0) {
+                        aguardarGravacao.test(resta);
+                    }
+                }, t.getName());
+                envoltos.put(t, w);
+                base.registrar(w);
+            }
+
+            @Override
+            public void remover(Thread t) {
+                Thread w = envoltos.remove(t);
+                if (w != null) {
+                    base.remover(w);
+                }
+            }
+        };
     }
 
     /**
@@ -149,6 +229,8 @@ final class LigacaoControlador implements AutoCloseable, WorkloadMain.ControleDa
     private final RastroCliente rastro;
     private final SondaDefasagem defasagem;
     private final CanalCanario canario;
+    private final TrilhaJsonl trilhaObs;
+    private final TrilhaJsonl trilhaDec;
     private final ConcurrentLinkedQueue<Bruta> violacoes = new ConcurrentLinkedQueue<>();
     private final AtomicLong eventosForaDoContrato = new AtomicLong();
     private volatile boolean fechada;
@@ -156,8 +238,10 @@ final class LigacaoControlador implements AutoCloseable, WorkloadMain.ControleDa
 
     private LigacaoControlador(Configuracao cfg, LacoDeControle laco, SondaTopologia sonda, ConsultaSaudeRest rest,
                                FonteDeTempo tempo, RastroCliente rastro, SondaDefasagem defasagem,
-                               CanalCanario canario) {
+                               CanalCanario canario, TrilhaJsonl trilhaObs, TrilhaJsonl trilhaDec) {
         this.cfg = cfg;
+        this.trilhaObs = trilhaObs;
+        this.trilhaDec = trilhaDec;
         this.laco = laco;
         this.sonda = sonda;
         this.rest = rest;
@@ -418,8 +502,14 @@ final class LigacaoControlador implements AutoCloseable, WorkloadMain.ControleDa
             throws IOException {
         FonteDeTempo tempo = () -> relogio.paraEpochNanos(System.nanoTime());
         Path dir = Path.of(cli.csvDir);
-        TrilhaJsonl obs = TrilhaJsonl.abrir(dir.resolve(String.format("observaveis-rep-%03d.jsonl", rep)));
-        TrilhaJsonl dec = TrilhaJsonl.abrir(dir.resolve(String.format("decisoes-rep-%03d.jsonl", rep)));
+        // W-2b: fila de cada trilha = 4 x as linhas esperadas na execucao de --duration
+        long duracaoNs = TimeUnit.SECONDS.toNanos(cli.duracaoSeg);
+        long wNs = c.parametros().wNs();
+        TrilhaJsonl obs = TrilhaJsonl.abrir(dir.resolve(String.format("observaveis-rep-%03d.jsonl", rep)),
+                TrilhaJsonl.capacidadePara(linhasEsperadasObservaveis(duracaoNs, wNs, pecas.periodoSondaNs(),
+                        pecas.saude() != null, pecas.canario() != null)));
+        TrilhaJsonl dec = TrilhaJsonl.abrir(dir.resolve(String.format("decisoes-rep-%03d.jsonl", rep)),
+                TrilhaJsonl.capacidadePara(linhasEsperadasDecisoes(duracaoNs, wNs)));
         SondaTopologia sonda = null;
         FonteDeTopologia topologia = FonteDeTopologia.INDISPONIVEL;
         if (pecas.saude() != null) {
@@ -440,8 +530,15 @@ final class LigacaoControlador implements AutoCloseable, WorkloadMain.ControleDa
                     tempo, r -> obs.escrever(FormatoJsonl.defasagem(r)));
             defasagem = lag;
         }
+        // W-2b: o gancho da JVM espera a gravadora do decisoes no que sobra do T_enc
+        ExecutorDeAcoes[] exec = new ExecutorDeAcoes[1];
+        ExecutorDeAcoes.Gancho gancho = ganchoComDreno(pecas.gancho(), () -> {
+            Long t = exec[0] == null ? null : exec[0].prazoEncerramentoUsadoNs();
+            return t == null ? 0L : t;
+        }, dec::aguardarGravacao);
         ExecutorDeAcoes executor = new ExecutorDeAcoes(c.modo(), pecas.atuador(), PRAZO_CHAMADA_NS,
-                tempo, r -> dec.escrever(FormatoJsonl.acao(r)), pecas.gancho());
+                tempo, r -> dec.escrever(FormatoJsonl.acao(r)), gancho);
+        exec[0] = executor;
         Referencia ref = c.referencia() == null ? Referencia.vazia() : c.referencia().referencia();
         MetaExecucao meta = new MetaExecucao(VERSAO_PROGRAMA, rep, c.modo(), cli.scenarioS3 ? "S3" : cli.scenario.name(),
                 cli.replicacao.rotulo(), c.nosEsperados(), c.parametros(),
@@ -455,7 +552,7 @@ final class LigacaoControlador implements AutoCloseable, WorkloadMain.ControleDa
                 new AgregadorDeJanela(origemNs, c.parametros(), ref), new Controlador(c.parametros()),
                 topologia, defasagem, violacoes, pecas.politica(), executor, tempo, obs, dec));
         LigacaoControlador l = new LigacaoControlador(c, laco, sonda,
-                pecas.saude() instanceof ConsultaSaudeRest r ? r : null, tempo, rastro, lag, pecas.canario());
+                pecas.saude() instanceof ConsultaSaudeRest r ? r : null, tempo, rastro, lag, pecas.canario(), obs, dec);
         self[0] = l;
         if (sonda != null) {
             sonda.iniciar();
@@ -556,6 +653,16 @@ final class LigacaoControlador implements AutoCloseable, WorkloadMain.ControleDa
                 }
             }
         });
+    }
+
+    /** W-2b: trilha do {@code observaveis} (testes). */
+    TrilhaJsonl trilhaObservaveis() {
+        return trilhaObs;
+    }
+
+    /** W-2b: trilha do {@code decisoes} (testes). */
+    TrilhaJsonl trilhaDecisoes() {
+        return trilhaDec;
     }
 
     /** Linha de stdout depois do {@link #close()}. */

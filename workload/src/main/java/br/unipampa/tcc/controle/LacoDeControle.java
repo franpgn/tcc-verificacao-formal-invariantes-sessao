@@ -194,7 +194,8 @@ public final class LacoDeControle implements AutoCloseable {
     /**
      * Fim da carga: para a thread, processa as violacoes pendentes e as janelas completas
      * ({@link AgregadorDeJanela#encerrar()}), encerra o executor (desfaz tudo), grava as linhas {@code fim}
-     * e fecha os arquivos. Idempotente.
+     * e fecha os arquivos. Idempotente. W-2b: o {@code fim} vai por {@link TrilhaJsonl#escreverFim} (nunca se
+     * perde por fila cheia, nenhuma linha passa dele) e o fechamento espera a gravadora de cada arquivo.
      *
      * @param extrasObservaveis acrescenta campos a linha {@code fim} de {@code observaveis} (ex.: custo da sonda)
      */
@@ -245,8 +246,8 @@ public final class LacoDeControle implements AutoCloseable {
             fo.put("descartados_no_encerramento", r.descartadosNoEncerramento());
             fo.put("violacoes_descartadas_no_encerramento", r.violacoesDescartadasNoEncerramento());
             extrasObservaveis.accept(fo);
-            fo.put("linhas_perdidas", c.observaveis().linhasPerdidas());
-            c.observaveis().escrever(fo);
+            // W-2b: linhas_perdidas e preenchido pela gravadora na hora de gravar o fim (ultimo campo)
+            c.observaveis().escreverFim(fo, "linhas_perdidas");
             ExecutorDeAcoes.Contadores k = r.acoes();
             ObjectNode fd = FormatoJsonl.linha("fim");
             fd.put("decisoes", r.janelas());
@@ -264,8 +265,7 @@ public final class LacoDeControle implements AutoCloseable {
             fd.put("executor_no_prazo", r.executorNoPrazo());
             fd.put("prazo_chamada_ns", c.executor().prazoChamadaNs());
             fd.put("prazo_encerramento_ns", c.executor().prazoEncerramentoUsadoNs());
-            fd.put("linhas_perdidas", c.decisoes().linhasPerdidas());
-            c.decisoes().escrever(fd);
+            c.decisoes().escreverFim(fd, "linhas_perdidas");
             c.observaveis().close();
             c.decisoes().close();
             resumo = r;

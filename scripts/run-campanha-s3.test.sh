@@ -668,6 +668,7 @@ AJUDA="$(bash "${ORQ}" --help 2>&1)"; RC=$?
 ok "S1 --help exit 0" "0" "${RC}"
 contem "S1 --help mostra as variaveis" "Variaveis: PODMAN" "${AJUDA}"
 contem "S1 --help mostra os exit codes" "Exit codes" "${AJUDA}"
+contem "S1 --help mostra o exit 11 (P-56)" "11 parada de memoria" "${AJUDA}"
 contem "S1 --help vai ate o fim do cabecalho" "NAO faz git push" "${AJUDA}"
 nao_contem "S1 --help nao imprime codigo" "set -euo pipefail" "${AJUDA}"
 fi
@@ -1483,17 +1484,27 @@ verdade "S27b brutos da primeira recriacao guardados" test -f "${D0}/antes-recri
 verdade "S27b K1 de novo depois da recriacao" test -s "${D0}/portao.json"
 contem "S27b log da recriacao pelo swap" "swap 1048576 kB >= 1048576 kB" "$(cat "${OUT}/calibracao/orquestrador.log")"
 
-echo "-- S27c: swap continua >= limite depois da recriacao -> roda assim, com aviso (uma recriacao por portao)"
+echo "-- S27c: swap continua >= limite depois da recriacao -> a fase para com 11 sem rodar a execucao (P-56); retomada roda o mesmo i"
 novo_caso s27c
 matriz_calib "ASYNC-none:calibracao:1"
 printf 'MemTotal:       24000000 kB\nSwapTotal:       4194300 kB\nSwapFree:        2000000 kB\n' > "${SH}/meminfo"
 printf 'go calibracao %s\n' "${HOJE}" > "${CS_TTY_ARQUIVO}"
 rodar calibracao --swap-limite-kb 1048576
-ok "S27c exit 0" "0" "${RC}"
+ok "S27c exit 11 (parada de memoria, decisao do coordenador sobre o P-56)" "11" "${RC}"
 D="$(exec_dir 0)"
-ok "S27c ACEITA" "ACEITA" "$(json "${D}/checagem.json" 'd["veredito"]')"
-contem "S27c aviso do swap" "swap continua 2194300 kB >= 1048576 kB depois da recriacao" "$(json "${D}/checagem.json" 'd["avisos"]')"
-ok "S27c dois ups" "2" "$(grep -c ' podman-compose|.*|up|-d' "${ST}/chamadas.log")"
+ok "S27c a execucao nao rodou (nenhuma carga)" "0" "$(cargas)"
+ok "S27c dois ups (a recriacao pelo swap aconteceu)" "2" "$(grep -c ' podman-compose|.*|up|-d' "${ST}/chamadas.log")"
+contem "S27c motivo na ultima linha do log" "parada swap: swap continua 2194300 kB >= 1048576 kB depois da recriacao" "$(tail -1 "${OUT}/calibracao/orquestrador.log")"
+contem "S27c motivo no execucao.json" "swap continua 2194300 kB >= 1048576 kB depois da recriacao" "$(json "${D}/execucao.json" 'd["swap_portao"]["parada"]')"
+ok "S27c leituras no execucao.json" "[2194300, 2194300] True 2194300" "$(json "${D}/execucao.json" 'd["swap_portao"]["leituras_kb"]') $(json "${D}/execucao.json" 'd["swap_portao"]["recriado"]') $(json "${D}/execucao.json" 'd["swap_usado_kb_k1"]')"
+verdade "S27c sem checagem.json (nao e veredito da execucao)" test ! -e "${D}/checagem.json"
+# retomada com o swap baixo: o diretorio sem stdout.log vira .abortada-<UTC> (DT-014) e o mesmo i roda
+printf 'MemTotal:       24000000 kB\nSwapTotal:       4194300 kB\nSwapFree:        4194300 kB\n' > "${SH}/meminfo"
+rodar calibracao --swap-limite-kb 1048576
+ok "S27c retomada exit 0" "0" "${RC}"
+verdade "S27c diretorio da parada guardado como abortada" test -s "$(ls -d "${OUT}"/exec-0000-ASYNC-none-A.abortada-* 2>/dev/null | head -1)/execucao.json"
+ok "S27c o mesmo i roda na retomada (semente 60000, uma carga)" "1" "$(grep -c ' java|-jar|.*|--seed|60000|' "${ST}/chamadas.log")"
+ok "S27c ACEITA na retomada" "ACEITA" "$(json "$(exec_dir 0)/checagem.json" 'd["veredito"]')"
 
 echo "-- S27d: --swap-limite-kb invalido -> 2; /proc/meminfo sem Swap com limite -> 4 no pre-voo; dry-run mostra o limite"
 novo_caso s27d

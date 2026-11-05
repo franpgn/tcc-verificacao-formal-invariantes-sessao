@@ -41,7 +41,8 @@ class ConvergenciaResumoFimCargaTest {
         ConvergenciaLoop.escreverResumo(p, r, 6 * S, 5 * S, 13 * S);
         JsonNode n = new ObjectMapper().readTree(p.toFile());
         assertEquals(List.of("t_fim_ns", "convergiu", "divergencia_persistente", "t_convergencia_ns",
-                "t_convergencia_abs_ns", "rodadas", "rodadas_validas", "t_fim_carga_ns", "t_fim_controle_ns"),
+                "t_convergencia_abs_ns", "rodadas", "rodadas_validas", "t_fim_carga_ns", "t_fim_controle_ns",
+                "convergencia_estado"),
                 campos(n));
         assertEquals(6 * S, n.get("t_fim_ns").asLong());
         assertEquals(5 * S, n.get("t_fim_carga_ns").asLong());
@@ -56,7 +57,8 @@ class ConvergenciaResumoFimCargaTest {
         Path p = dir.resolve("antigo.json");
         ConvergenciaLoop.escreverResumo(p, r, 6 * S);
         JsonNode n = new ObjectMapper().readTree(p.toFile());
-        assertEquals("t_fim_controle_ns", campos(n).get(campos(n).size() - 1));
+        assertEquals("convergencia_estado", campos(n).get(campos(n).size() - 1));
+        assertEquals("t_fim_controle_ns", campos(n).get(campos(n).size() - 2));
         assertTrue(n.get("t_fim_carga_ns").isNull());
         assertTrue(n.get("t_fim_controle_ns").isNull());
     }

@@ -43,7 +43,7 @@ class ConvergenciaResumoReligamentoTest {
 
     static final List<String> ANTERIORES = List.of("t_fim_ns", "convergiu", "divergencia_persistente",
             "t_convergencia_ns", "t_convergencia_abs_ns", "rodadas", "rodadas_validas", "t_fim_carga_ns",
-            "t_fim_controle_ns");
+            "t_fim_controle_ns", "convergencia_estado");
 
     @Test
     @DisplayName("com AC-5: campos anteriores na mesma ordem e os do religamento ao fim, com os valores")

@@ -133,6 +133,20 @@ flowchart LR
 - **Caches** `canario` (SYNC) e `canario-async` (ASYNC) em `cluster/caches/*.json`, sem o envoltório do nome, com
   `remote-timeout` 17500 explícito no SYNC, iguais aos irmãos do XML (`CachesCanarioJsonTest`); criados por
   `scripts/cria-caches.sh` (POST e leitura de volta `?action=config` nos nós). Não estão no XML.
+- **Chave com primário no próprio nó (P-40, decisão do coordenador de 05/11).** Na abertura, um cliente
+  *topology-aware* recebe o hash consistente do cache canario, e para cada nó X a busca testa `lag:<X>`,
+  `lag:<X>#1`, ... até `ChannelFactory.getHashAwareServer` devolver X (até 10 000 candidatas). Sob o corte de um nó C,
+  o par entre os dois nós da maioria só falhava se o primário da chave do escritor fosse C; com o primário no próprio
+  escritor, ele grava localmente e o outro nó lê dele, e o empate no teto some. O cliente fecha logo depois. O
+  resultado (chave, primário, motivo) vai a `defasagem_chaves` no `fim`. Limites no P-40 do registro.
+- **Parâmetros (decisões do coordenador de 05/11).** `passoLeituraMs` = 20 ms, origem `wada_consistency_cloud_2011`
+  §2 (50 leituras por segundo); sob falha, até 100 leituras por par e rodada, custo da sonda nos dois braços. Para a
+  calibração, `cluster/controlador/controlador-calibracao-s3.json`: núcleo = valores provisórios de 22/10;
+  `tetoLagMs` = 2000 (`--hotrod-timeout-ms` padrão, R7); `kLag`, `lagInMs` (2000, o prazo) e `lagOutMs` (1000) com
+  `"origem": "provisorio-calibracao"`. Esses provisórios só mudam as decisões que o braço A registra. O `lagIn` e o
+  `lagOut` definitivos saem do **lag bruto** das linhas `defasagem` das execuções sem falha.
+- **Escolhas aprovadas em 05/11:** clientes Hot Rod próprios, fixados por nó; recusa do carregamento quando
+  `--servers` e `--controller-admin` não batem item a item; tráfego da sonda no *warm-up* dos dois braços (simétrico).
 
 | Peça | Onde |
 |---|---|

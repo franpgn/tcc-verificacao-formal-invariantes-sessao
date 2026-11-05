@@ -142,7 +142,9 @@ o *tick* fecha ao menos uma janela; serve ao *replay* do B-38.
 (os de sonda são `null` sem sonda), `defasagem_rodadas`, `defasagem_rodadas_antes_da_origem`,
 `defasagem_rodadas_puladas`, `defasagem_rodadas_atrasadas`, `defasagem_rodadas_nao_gravadas`, `defasagem_escritas`,
 `defasagem_leituras`, `defasagem_erros_escrita`, `defasagem_erros_leitura`, `defasagem_erros_ouvinte` (1.2, W-4;
-`null` sem a sonda de defasagem), `linhas_perdidas` (v1.1).
+`null` sem a sonda de defasagem), `defasagem_chaves` (1.2, W-4, P-40: lista de `no`, `chave`, `primario`, `motivo`: a chave de
+cada nó, se ela tinha o próprio nó como dono primário na abertura e o `motivo` da escolha; `primario` e `motivo` são `null` quando o canal não escolhe;
+`null` sem a sonda), `linhas_perdidas` (v1.1).
 
 **`defasagem`** (1.2, W-4), uma por rodada da sonda S_lag com início depois da origem, gravada por uma *thread*
 própria da sonda (P-5: um travamento de disco atrasa a gravação, nunca a rodada seguinte), por isso intercalada com
@@ -162,6 +164,20 @@ as outras linhas. Campos, nesta ordem:
 
 Conservação: `defasagem_escritas` = 3 × `defasagem_rodadas` (três nós); a soma de `custo.leituras` das linhas é
 `defasagem_leituras` menos as leituras das rodadas de aquecimento.
+
+**Custo da sonda** (decisão do coordenador de 05/11): sem falha, 3 escritas e 6 leituras por rodada (uma rodada por
+janela W). Sob falha, um par que não vê o valor é lido a cada `passoLeituraMs` até o prazo: no máximo
+`prazo/passo` = 2000/20 = **100 leituras por par e por rodada**, até 600 por rodada com os seis pares no teto. O custo
+é da sonda, está nos dois braços e é contado à parte da carga útil (`custo` e `defasagem_*`).
+
+**Aquecimento** (decisão do coordenador de 05/11): a agenda começa na janela corrente da abertura, antes da origem,
+para aquecer os clientes; essas rodadas põem tráfego da sonda no *warm-up* **dos dois braços**, de forma simétrica, e
+não vão a janela nem ao JSONL (só a `defasagem_rodadas_antes_da_origem`). Nenhuma delas entra no CSV de eventos.
+
+**Chaves** (P-40): a chave de cada nó X é escolhida na abertura para ter X como dono primário, pelo hash consistente
+de um cliente *topology-aware* (`CanalCanarioHotRod`): candidatas `lag:<X>`, `lag:<X>#1`, `lag:<X>#2`..., até 10 000.
+Sem topologia, com X fora da topologia anunciada ou sem achar, fica `lag:<X>`, e o motivo vai a
+`defasagem_chaves`.
 
 `linhas_perdidas` conta as linhas que não chegaram ao arquivo até a linha `fim`: erros de escrita mais linhas
 recebidas com a trilha já fechada. As linhas que chegam **depois** do `fim` (executor fora do prazo,
@@ -242,10 +258,15 @@ SHA-256 do arquivo:
 
 | Campo | Valor | Origem |
 |---|---|---|
-| `lagInMs` | calibração | quantil de 99 % do lag nas execuções sem falha da calibração (plano de alinhamento 4.2; mesma lógica do p99 de referência, B-39.1). Nos arquivos de teste, `"origem": "teste"` |
-| `lagOutMs` | calibração | regra de histerese de θ_out (plano de alinhamento 3.6), com os mesmos dados. Nos arquivos de teste, `"origem": "teste"` |
-| `passoLeituraMs` | decisão declarada | intervalo entre leituras de um par enquanto o valor novo não aparece; fixa a resolução do lag e o custo sob falha (no máximo `teto/passo` leituras por par e rodada). Sem fonte no projeto: a origem vai escrita no arquivo |
+| `lagInMs` | calibração | quantil de 99 % do lag nas execuções sem falha da calibração (plano de alinhamento 4.2; mesma lógica do p99 de referência, B-39.1). Na própria calibração, valor provisório com `"origem": "provisorio-calibracao"` (2000 = o prazo, em `cluster/controlador/controlador-calibracao-s3.json`). Nos arquivos de teste, `"origem": "teste"` |
+| `lagOutMs` | calibração | regra de histerese de θ_out (plano de alinhamento 3.6), com os mesmos dados. Na calibração, provisório com `"origem": "provisorio-calibracao"` (1000). Nos arquivos de teste, `"origem": "teste"` |
+| `passoLeituraMs` | **20** | `wada_consistency_cloud_2011` §2: leitores a 50 leituras por segundo (decisão do coordenador de 05/11, a única opção com fonte na bibliografia). Intervalo entre leituras de um par enquanto o valor novo não aparece; fixa a resolução do lag e o custo sob falha (até 100 leituras por par e rodada, acima) |
 | `origem` | objeto | um texto não vazio para cada um dos três campos acima |
+
+**A calibração usa o lag bruto** (decisão do coordenador de 05/11). O `lagInMs` e o `lagOutMs` vêm das linhas
+`defasagem` das execuções sem falha da calibração (`lag_max_ms` de cada rodada, com `lag_por_no` e `pares` para
+diagnóstico), e não do `nivel` da linha `janela`. Os provisórios só mudam as decisões que o braço A (`shadow`) registra
+na calibração. O lag medido não depende deles.
 
 O prazo de leitura não é campo do bloco: é o `--hotrod-timeout-ms` (decisão do coordenador de 05/11), igual a
 `politica.tetoLagMs` pela R7. O período da sonda é W. O carregamento recusa (exit 2): fora do S3; prazo de leitura

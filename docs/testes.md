@@ -494,13 +494,29 @@ escritos antes do código (`603947d` test, vermelho; `133212d` feat) e só vão 
 | `session/LigacaoControladorDefasagemTest` | 5 | carregamento (só S3, prazo em W, `lagIn`, correspondência, R7 continua), dry-run, `pecas` coerente com o bloco, ponta a ponta em shadow (nó 3 cortado → S_lag `ALTA` com `noSuspeito` canônico → P1 com `no` e AC-5 `PREVISTA` para ele) e sem o bloco |
 | `scripts/cria-caches.test.sh` | 26 asserts | POST com o corpo do arquivo, leitura de volta nos três nós, divergência (exit 4), recusa (exit 3), arquivo ausente ou não compacto (exit 2), argumentos (exit 1), senha só pela entrada padrão |
 
-**Testes existentes que precisam mudar (não commitados, aguardam autorização do Gestor, como a D-C do W-2a):**
+**Testes existentes editados (P-39, autorizados pelo coordenador em nome do Gestor em 05/11; commit `bf59e6e`):**
 
 | Teste | Linha | Mudança | Por quê |
 |---|---|---|---|
 | `session/ArquiteturaSemAcaoNoClienteTest` (R-C1) | `PERMITIDOS` | par novo `CanalCanarioHotRod` → `CanalCanario`; `LigacaoControlador` ganha `CanalCanario`, `ParametrosDefasagem`, `SondaDefasagem` | o adaptador implementa a porta da sonda e a ligação monta a sonda; nenhuma asserção retirada |
 | `controle/LacoDeControleTest` | 426 | `"observaveis-controlador/1.1"` → `"1.2"` | o plano manda o custo da sonda em colunas próprias do `observaveis` (W-4 item 3), o que muda o esquema |
 
-Esperado na H2, se as duas edições forem autorizadas: 974 (esperado do W-2a, ainda não medido) + 47 = **1021/0/0/1**,
-141 arquivos; `cria-caches.test.sh` 26/0. Sem a autorização, R-C1 e `LacoDeControleTest.tDecisaoNs`
-ficam vermelhos. Depois: *smoke* local S3 ASYNC com e sem corte do `isn3` (item 5 do prompt).
+Esperado na H2 com as duas edições: 974 (esperado do W-2a, ainda não medido) + 47 = **1021/0/0/1**,
+141 arquivos; `cria-caches.test.sh` 26/0. Depois: *smoke* local S3 ASYNC com e sem corte do `isn3` (item 5 do prompt).
+
+### W-4, segunda rodada: decisões do coordenador de 05/11 (P-39, passo de 20 ms, provisórios, P-40) (2026-11-05)
+
+Ainda sem execução (H0). Commits: `bf59e6e` test (as duas edições do P-39, autorizadas), `aadbaa3` e `4ed28a3` test
+(vermelhos), `0db755f` feat; `13154c4` test → `5da6767` feat (motivo da escolha).
+
+| Arquivo de teste | Testes | O que prende |
+|---|---|---|
+| `session/EscolhaDeChaveTest` | 8 | P-40: a chave de cada nó tem o próprio nó como dono primário (busca `lag:<nó>`, `lag:<nó>#<j>`); chaves distintas e determinísticas; sem topologia, nó fora da topologia anunciada ou sem achar até 10 000 candidatas, chave simples com o motivo; `hostPorta`; o canal expõe `chave(i)` e `chaveNoPrimario(i)` |
+| `controle/SondaDefasagemChaveTest` | 3 | a sonda escreve e lê `canal.chave(i)`; padrão `lag:<rótulo>`; chave sem prefixo, repetida ou nula recusada |
+| `session/LigacaoControladorChavesTest` | 2 | `defasagem_chaves` (`no`, `chave`, `primario`, `motivo`) no `fim` de `observaveis`; `null` sem a sonda |
+| `session/ArquivoCalibracaoTest` | 2 | `cluster/controlador/controlador-calibracao-s3.json`: `passoLeituraMs` = 20 com origem `wada_consistency_cloud_2011` §2; `lagInMs`, `lagOutMs` e `kLag` com `provisorio-calibracao`; `tetoLagMs` = `--hotrod-timeout-ms` padrão (R7); custo sob falha prazo/passo = 100 leituras por par |
+
+Esperado na H2: 974 (W-2a, ainda não medido) + 47 + 15 = **1036/0/0/1**, 145 arquivos; `cria-caches.test.sh` 26/0.
+O que os testes **não** provam (fica para o *smoke* local): que o `ChannelFactory.getHashAwareServer` do cliente 15.0.0
+devolve, para os bytes da chave, o mesmo primário que o servidor 15.0.21 usa; que a leitura de um nó que não é dono vai
+primeiro ao primário; e que, sob o corte do `isn3`, os pares entre `isn1` e `isn2` deixam de empatar no teto.

@@ -917,7 +917,7 @@ correspondente adicionado em `Mesclar` (`spec/SessionStore.tla`, commit `b7d8e0a
   `LacoDeControleTest.tDecisaoNs` (linha 426) compara o texto `1.1`.
 - **Proposta:** acrescentar os pares (nenhuma asserção retirada) e trocar o literal para `1.2`. As duas edições estão
   no *working tree* da `wt-w4`, **não commitadas**, à espera da autorização do Gestor (como a D-C do W-2a).
-- **Status:** `ABERTO` (05/11).
+- **Status:** `RESOLVIDO` (05/11, `bf59e6e`). Autorizado pelo coordenador em nome do Gestor; nenhuma asserção retirada.
 
 ### P-40 (W-4; número a conferir na integração) — risco: suspeito ambíguo quando as chaves da maioria têm dono primário no nó cortado
 
@@ -933,7 +933,23 @@ correspondente adicionado em `Mesclar` (`spec/SessionStore.tla`, commit `b7d8e0a
   cliente, não como texto). Se a
   ambiguidade aparecer, as opções são duas chaves por escritor (custo dobra) ou escolher chaves com primário no
   próprio escritor (exige topologia no cliente). Decisão do Senior/Gestor.
-- **Status:** `ABERTO` (05/11, risco de desenho).
+- **Status:** `MITIGADO NO CÓDIGO, A CONFIRMAR NO SMOKE` (05/11, `0db755f`). Decisão do coordenador: escolher, para cada
+  nó X, uma chave cujo dono primário seja X. Na abertura, `CanalCanarioHotRod` abre um cliente *topology-aware*
+  (`S3Clientes.configuracaoTopology`), faz uma operação para receber o hash consistente do cache canario e testa as
+  candidatas `lag:<X>`, `lag:<X>#1`, ... até `ChannelFactory.getHashAwareServer` (o mesmo cálculo com que o cliente
+  roteia a operação, sobre os bytes da chave do `DataFormat`) devolver X; limite de 10 000 candidatas
+  ((63/64)^10000 < 1e-60 para um nó dono primário de ao menos 1 dos 64 segmentos). O cliente é fechado logo depois:
+  nada de custo durante a execução, só Hot Rod em memória (P-5). A chave, o primário e o motivo vão a `defasagem_chaves` no `fim`.
+- **Limites, a declarar:** (1) `ChannelFactory` é do pacote `impl` do cliente Hot Rod 15.0.0 (métodos públicos,
+  conferidos nas *flags* do `.class`, mas fora da API estável); (2) a escolha vale para a topologia da abertura: cada
+  execução começa com o *cluster* recriado e o corte parte dela; uma mudança de topologia durante a execução (F1,
+  fusão) pode tirar o primário do nó, o que só importaria para uma segunda falha, fora do desenho; (3) supõe que a
+  leitura de um nó que não é dono vai primeiro ao primário (leitura escalonada do Infinispan), a conferir; (4) sem
+  topologia, nó fora da topologia anunciada (`--servers` com nome e topologia com IP) ou falha, a chave simples volta,
+  com o motivo registrado, e o risco original também.
+- **Conferir no smoke:** `defasagem_chaves` com `primario = true` nos três nós; com o `isn3` cortado, os pares
+  `isn1`↔`isn2` vistos e `no_suspeito = isn3` em todas as rodadas antes da mudança de vista; e o dono primário de cada
+  chave por `GET /rest/v2/caches/{cache}/{chave}?action=distribution`, como prova independente.
 
 ## Observação de modelagem (não é defeito)
 

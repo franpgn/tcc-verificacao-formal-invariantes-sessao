@@ -53,7 +53,7 @@ da calibração entra na avaliação** (D-12; plano de alinhamento §3.6, últim
 %%{init: {'theme':'base','themeVariables':{'background':'#ffffff','primaryColor':'#ffffff','primaryTextColor':'#000000','primaryBorderColor':'#000000','lineColor':'#000000','secondaryColor':'#ffffff','tertiaryColor':'#ffffff','fontFamily':'Arial'}}}%%
 flowchart LR
     PR["este pre-registro<br/>aprovado"] --> X17["X-17<br/>validacao do orquestrador"]
-    X17 --> X18["X-18 calibracao<br/>braco A, 29 execucoes"]
+    X17 --> X18["X-18 calibracao<br/>braco A, 26 execucoes"]
     W9["script de derivacao<br/>(W-9), validado antes da X-18"] --> DER
     X18 --> DER["derivacao (secao 7)<br/>sem olhar efeito"]
     DER --> V["valores no B-40 parte 2<br/>commit antes da N4"]
@@ -82,8 +82,11 @@ flowchart LR
 | SYNC F2 | 3 | comportamento do P1 em SYNC (R3, limitação declarada), q̂ da célula de referência | plano §5.1; R3 |
 | **SYNC sem falha** | **3** | **p99 de referência SYNC**, sem o qual o braço B das células SYNC não roda | **nova (Senior)**: o programa recusa referência de outro perfil (`LigacaoControlador.java:204`), e o `referencia_p99.py` exige n ≥ 1000 por operação (decisão D2 de 27/10). Nenhuma outra célula da calibração dá eventos SYNC sem falha |
 | ASYNC F4 (`isn3`, perda 20 %) | 5 | q̂, P1 previsto sob perda, oscilações | plano §5.1 (intermediário e completo); S5 aprovado |
-| SYNC F1 | 3 | q̂ da célula de referência | plano §5.1 (intermediário e completo) |
-| **Total** | **29** | | o plano tinha 26; +3 do SYNC sem falha |
+| **Total** | **26** | | plano §5.1 (26 no intermediário), com SYNC sem falha × 3 no lugar de SYNC F1 × 3 |
+
+**SYNC F1 sai da calibração.** No plano ela dava o q̂ de uma célula de referência SYNC F1 da avaliação. O desenho do
+B-40 segue o da `Metodologia.tex:347` (células SYNC de referência: F2 e F4), sem SYNC F1, e célula de referência não
+tem teste, então não precisa de q̂. A SYNC F2 × 3 fica, porque mede o R3.
 
 **F3 fica fora da calibração (recomendação do Senior, a confirmar).** A célula ASYNC F3 do B-40 é descritiva e mede
 falso alarme: quantas vezes a defasagem passa do limiar e quantas vezes o AC-5 para o `isn2` sem necessidade. Os
@@ -183,7 +186,7 @@ a G-3 for revista. O orquestrador ainda não lê o *swap*: é item do W-6c (seç
 
 **Reposições.** Cada execução perdida é reposta uma vez, com o próximo i livre e semente nova
 (`campanha_s3_matriz.py repor`). Uma segunda perda da mesma reposição pede decisão do Gestor. Teto de reposições h4 na
-calibração: **7** (25 % das 29, a mesma fração do C3 §4.4: 30 de 120). Uma célula que fechar com menos execuções
+calibração: **6** (25 % das 26, arredondado para baixo, a mesma fração do C3 §4.4: 30 de 120). Uma célula que fechar com menos execuções
 aceitas que o planejado entra nas regras com o que tem, e o relatório diz quantas.
 
 **Amostrador h4:** `amostrador-infra.sh iniciar --id diag-<UTC>` antes da fase (P-47); o orquestrador exige a unit
@@ -237,7 +240,7 @@ limite superior, a calibração precisaria de cerca de 60 execuções sem falha,
 | 7.15 | `T_hold_viol` | maior intervalo entre duas violações seguidas na mesma execução; sem execução com duas violações, `T_hold_viol` = W | todas |
 | 7.16 | número de blocos | regra do B-40 (seção sobre blocos), a partir da duração medida por execução; **nunca pelo efeito** (ST-5) | todas |
 | 7.17 | `volume_exec_mb`, `exec_teto_s` da avaliação | maior volume medido; `exec_teto_s` pela fórmula de 4.1 com o maior `t_pre` e `t_pos` medidos | todas |
-| 7.18 | q̂ e curva de poder | `poder.py` (W-5) com as taxas do braço A por célula de teste, 8/10/12 blocos, reduções de 0 a 100 %, m das células de teste do B-40. **Só informativo** para o Gestor | ASYNC F2, ASYNC F4 |
+| 7.18 | q̂ e curva de poder | `poder.py` (W-5) com as taxas do braço A por célula de teste, 8/10/12 blocos, reduções de 0 a 100 %, m das células de teste do B-40. **Só informativo** para o Gestor | ASYNC F1, F2 e F4 |
 
 As regras 7.7, 7.11 e 7.13 usam só execuções sem falha ou sem partição. Nenhuma usa F3, que não roda aqui.
 
@@ -249,8 +252,8 @@ também nas células SYNC, que são de referência, sem teste. Só a referência
 
 Por execução: recriação (~18 s no I-3b, do início do *harness* ao fim do `cria-caches.sh`), K1 (60 s), processo
 (~2 + 300 + religamento + convergência + ~14 s; no I-3b `ativo-religar`, 349 s do primeiro dado à saída) e pós-checagem
-com h4 (estimativa de 20 s, não medida). Cerca de **8 min por execução**, 29 execuções ≈ **3,9 h**, mais reposições.
-O pior caso do `--dry-run` (recriação de 180 s + K1 + teto) é 1245 s por execução, 10 h para 29. O X-17 mede o tempo
+com h4 (estimativa de 20 s, não medida). Cerca de **8 min por execução**, 26 execuções ≈ **3,5 h**, mais reposições.
+O pior caso do `--dry-run` (recriação de 180 s + K1 + teto) é 1245 s por execução, 9 h para 26. O X-17 mede o tempo
 real; a estimativa não decide nada.
 
 ## 9. Pré-requisitos (todos antes do X-18)
@@ -271,7 +274,7 @@ real; a estimativa não decide nada.
 | # | Pergunta | Recomendação | Origem da recomendação |
 |---|---|---|---|
 | C-1 | F3 na calibração | **Fora** (seção 3) | a célula F3 mede falso alarme; os limiares não podem ter visto F3 |
-| C-2 | SYNC sem falha × 3 a mais | **Sim** | sem ela não há referência SYNC (seção 3) |
+| C-2 | SYNC sem falha × 3 no lugar de SYNC F1 × 3 | **Sim** | sem ela não há referência SYNC; SYNC F1 não está no desenho do B-40 (seção 3) |
 | C-3 | `f4_no`, `f4_direcao`, `f4_dur_s` | `isn3`, `out`, 90 s | S5 validado (`l1.sh:7`, `04-l1.log`); igual ao F2 na duração |
 | C-4 | `w_recovery_s` | **191 s** (do fim da falha ao fim da carga em toda célula com falha). O 60 do código não tem origem (ponto 12 da V-W5) e corta fusões que chegam até ~96 s depois da cura | derivação, 4.1 |
 | C-5 | `encerramento_folga_s` | **2 s** (`T_cham`) | B-26.2 |

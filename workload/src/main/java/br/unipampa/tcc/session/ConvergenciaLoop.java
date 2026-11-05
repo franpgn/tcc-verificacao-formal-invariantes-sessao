@@ -66,7 +66,21 @@ public final class ConvergenciaLoop {
                          Integer divergentesI6, String motivoInvalida) {}
 
     public record Resultado(List<Rodada> rodadas, boolean convergiu, Long tConvergenciaAbsNs,
-                            Long tConvergenciaRelFimNs, boolean divergenciaPersistente) {}
+                            Long tConvergenciaRelFimNs, boolean divergenciaPersistente) {
+
+        /**
+         * W-6 (decisao do coordenador de 05/11, depois do I-3b): {@code convergiu}; {@code divergente} quando houve
+         * ao menos uma rodada valida e a divergencia ficou ate o teto; {@code sem_rodada_valida} quando nenhuma
+         * rodada foi valida (por exemplo, o no parado pelo AC-5 nao voltou: "topologia com 2 de 3"), o que nao e
+         * divergencia medida e a analise trata como nao avaliavel. {@link #divergenciaPersistente()} nao muda.
+         */
+        public String estado() {
+            if (convergiu) {
+                return "convergiu";
+            }
+            return rodadas.stream().anyMatch(Rodada::valida) ? "divergente" : "sem_rodada_valida";
+        }
+    }
 
     private final InvariantAuditor auditor;
     private final List<Supplier<Map<String, SessionState>>> leitoresSessao;
@@ -239,6 +253,7 @@ public final class ConvergenciaLoop {
         m.put("rodadas_validas", validas);
         m.put("t_fim_carga_ns", tFimCargaNs);
         m.put("t_fim_controle_ns", tFimControleNs);
+        m.put("convergencia_estado", r.estado());
         if (religamento != null) {
             m.put("t_sinal_fim_carga_ns", religamento.tSinalNs());
             m.put("religamento_ac5_alvo", religamento.ac5Alvo());

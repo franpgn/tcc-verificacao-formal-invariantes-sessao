@@ -204,6 +204,26 @@ public final class ConvergenciaLoop {
      */
     public static void escreverResumo(Path destino, Resultado r, long tFimNs, Long tFimCargaNs,
                                       Long tFimControleNs) throws IOException {
+        gravarResumo(destino, r, tFimNs, tFimCargaNs, tFimControleNs, null);
+    }
+
+    /**
+     * W-6 (P-6 da V-W5): como a anterior, com o controlador ligado. Acrescenta ao fim, depois de
+     * {@code t_fim_controle_ns}, os campos do religamento do no parado pelo AC-5 ({@link Religamento}):
+     * {@code t_sinal_fim_carga_ns}, {@code religamento_ac5_alvo}, {@code religamento_prazo_ns},
+     * {@code t_religamento_ns} (o campo que {@code analysis/comparar_bracos.py} le), {@code religamento_esgotado}
+     * e {@code religamento_leituras}. Sem AC-5, os mesmos campos com alvo, prazo e instante nulos.
+     */
+    public static void escreverResumo(Path destino, Resultado r, long tFimNs, Long tFimCargaNs,
+                                      Long tFimControleNs, Religamento.Resultado religamento) throws IOException {
+        if (religamento == null) {
+            throw new IllegalArgumentException("religamento nulo: use a assinatura de cinco argumentos");
+        }
+        gravarResumo(destino, r, tFimNs, tFimCargaNs, tFimControleNs, religamento);
+    }
+
+    private static void gravarResumo(Path destino, Resultado r, long tFimNs, Long tFimCargaNs,
+                                     Long tFimControleNs, Religamento.Resultado religamento) throws IOException {
         Path pai = destino.getParent();
         if (pai != null) {
             Files.createDirectories(pai);
@@ -219,6 +239,14 @@ public final class ConvergenciaLoop {
         m.put("rodadas_validas", validas);
         m.put("t_fim_carga_ns", tFimCargaNs);
         m.put("t_fim_controle_ns", tFimControleNs);
+        if (religamento != null) {
+            m.put("t_sinal_fim_carga_ns", religamento.tSinalNs());
+            m.put("religamento_ac5_alvo", religamento.ac5Alvo());
+            m.put("religamento_prazo_ns", religamento.prazoNs());
+            m.put("t_religamento_ns", religamento.tReligamentoNs());
+            m.put("religamento_esgotado", religamento.esgotado());
+            m.put("religamento_leituras", religamento.leituras());
+        }
         new ObjectMapper().enable(SerializationFeature.INDENT_OUTPUT).writeValue(destino.toFile(), m);
     }
 }

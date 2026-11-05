@@ -195,6 +195,19 @@ public final class Cli {
     )
     public long convergenciaPeriodoSeg;
 
+    /**
+     * W-6 (B-46; P-6 da V-W5): prazo, em segundos, para a carga ver de novo todos os servidores depois do fim da
+     * carga, quando o AC-5 parou um no (o orquestrador religa o no ao ler a linha {@code Fim da carga:}). Sem
+     * valor padrao (regra do autor): obrigatorio com {@code --controller active} e {@code --convergence}; aceito e
+     * sem efeito nos demais modos. Fica fora de {@link #toString()}.
+     */
+    @Option(
+        names = {"--rejoin-timeout-sec"},
+        description = "Prazo (s) para a carga ver de novo todos os servidores quando o AC-5 parou um no, antes do "
+            + "laco de convergencia. Sem padrao; obrigatorio com --controller active e --convergence."
+    )
+    public Long religamentoPrazoSeg;
+
     @Option(
         names = {"--sweep"},
         description = "Executa a varredura final global (I1, I4, I2 global, bloqueio perdido) e grava varredura-rep-NNN.csv."
@@ -446,6 +459,9 @@ public final class Cli {
         if (convergenciaPeriodoSeg <= 0) {
             throw new IllegalArgumentException("--convergence-period-sec deve ser > 0");
         }
+        if (religamentoPrazoSeg != null && religamentoPrazoSeg <= 0) {
+            throw new IllegalArgumentException("--rejoin-timeout-sec deve ser > 0");
+        }
         if (paraNoFimDaFalha && (marcadores == null || marcadores.isBlank())) {
             throw new IllegalArgumentException("--stop-at-fault-end exige --marker");
         }
@@ -488,6 +504,10 @@ public final class Cli {
         if (controlador == ModoControlador.ACTIVE && vazio(controladorReferencia)) {
             throw new IllegalArgumentException(modo + " exige --controller-reference (p99 de referencia por "
                     + "operacao, sinal de latencia)");
+        }
+        if (controlador == ModoControlador.ACTIVE && convergencia && religamentoPrazoSeg == null) {
+            throw new IllegalArgumentException(modo + " com --convergence exige --rejoin-timeout-sec (prazo para ver "
+                    + "de novo todos os servidores quando o AC-5 parou um no; sem valor padrao)");
         }
         if (scenarioS3 && vazio(marcadores)) {
             throw new IllegalArgumentException(modo + " com --scenario S3 exige --marker: sem marcador nao ha "

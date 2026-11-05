@@ -443,10 +443,20 @@ public final class WorkloadMain {
             // docs/plano-consolidacao-b21-b23-b24-2026-10-02.md SS3.3.
             long fimCargaNs = cargaEncerrada.fimCargaNs();
             Long fimControleNs = cargaEncerrada.fimControleNs();
+            // W-6 (P-6 da V-W5): com o controlador, a linha de fim da carga vai ao stdout com o alvo do AC-5 aplicado
+            // (lido do executor, em memoria). O orquestrador le o stdout por um pipe e religa o no parado; o laco de
+            // convergencia espera a topologia completa antes de comecar. Sem controlador, nada muda.
+            String ac5Alvo = null;
+            if (controle != null) {
+                ac5Alvo = controle.ac5AplicadaAlvo();
+                System.out.println(Religamento.linhaSinal(rep, fimCargaNs, ac5Alvo));
+                System.out.flush();
+            }
+            Long tSinalNs = controle == null ? null : relogio.paraEpochNanos(System.nanoTime());
             if (cli.convergencia) {
                 // B-33: laco de convergencia substitui a rodada unica.
                 marcadores = executarConvergencia(cli, rcm, leitores, auditor, relogio,
-                        lerMarcadores(cli), fimCargaNs, fimControleNs, rep);
+                        lerMarcadores(cli), fimCargaNs, fimControleNs, rep, tSinalNs, ac5Alvo);
             } else {
                 auditor.rodadaUnica(leitores.leitoresSessao(), leitores.leitoresIdentidade());
                 marcadores = lerMarcadores(cli);
@@ -579,6 +589,14 @@ public final class WorkloadMain {
 
         /** Linha {@code Controlador:} do stdout, depois do {@link #close()}. */
         String linhaResumo();
+
+        /**
+         * W-6 (P-6 da V-W5): alvo do AC-5 que ficou APLICADA na execucao, ou {@code null}; depois do
+         * {@link #close()}. Sem controlador de verdade, nenhum.
+         */
+        default String ac5AplicadaAlvo() {
+            return null;
+        }
     }
 
     /**
@@ -652,7 +670,8 @@ public final class WorkloadMain {
      */
     private static Marcadores executarConvergencia(Cli cli, RemoteCacheManager rcm,
             LeitoresMultiReplica leitores, InvariantAuditor auditor, EpochClock relogio,
-            Marcadores marcadores, long fimCargaNs, Long fimControleNs, int rep) throws java.io.IOException {
+            Marcadores marcadores, long fimCargaNs, Long fimControleNs, int rep, Long tSinalNs, String ac5Alvo)
+            throws java.io.IOException {
         RemoteCache<String, SessionState> sessoesTopologia = rcm.getCache(cli.replicacao.cacheSessoes());
         int esperados = leitores.leitoresSessao().size();
         ConvergenciaLoop.SondaCluster sonda = () -> {
@@ -662,6 +681,17 @@ public final class WorkloadMain {
                     h.healthy(cli.replicacao.cacheSessoes()), h.healthy(cli.replicacao.cacheContadores()));
         };
         long tFimNs = marcadores != null && marcadores.fimNs() != null ? marcadores.fimNs() : fimCargaNs;
+        // W-6 (P-6 da V-W5): com AC-5 aplicado, espera a topologia completa (o orquestrador religou o no ao ler a
+        // linha de fim da carga) antes do laco; sem ele, nenhuma espera. Sem controlador (tSinalNs nulo), nada.
+        Religamento.Resultado religamento = null;
+        if (tSinalNs != null) {
+            religamento = ac5Alvo == null ? Religamento.Resultado.semEspera(tSinalNs)
+                    : Religamento.esperar(sonda, esperados, ConvergenciaLoop.Relogio.sistema(relogio), ac5Alvo,
+                            tSinalNs, cli.religamentoPrazoSeg * 1_000_000_000L, Religamento.PASSO_NS);
+            if (ac5Alvo != null) {
+                System.out.println(religamento.linha());
+            }
+        }
         ConvergenciaLoop laco = new ConvergenciaLoop(auditor,
                 leitores.leitoresSessao(), leitores.leitoresIdentidade(), sonda, esperados,
                 ConvergenciaLoop.Relogio.sistema(relogio),
@@ -674,9 +704,14 @@ public final class WorkloadMain {
         if (cli.csvDir != null && !cli.csvDir.isBlank()) {
             ConvergenciaLoop.escreverCsv(
                     Path.of(cli.csvDir, String.format("convergencia-rep-%03d.csv", rep)), res);
-            ConvergenciaLoop.escreverResumo(
-                    Path.of(cli.csvDir, String.format("convergencia-resumo-rep-%03d.json", rep)),
-                    res, tFimNs, fimCargaNs, fimControleNs);
+            Path resumo = Path.of(cli.csvDir, String.format("convergencia-resumo-rep-%03d.json", rep));
+            if (religamento == null) {
+                ConvergenciaLoop.escreverResumo(resumo,
+                        res, tFimNs, fimCargaNs, fimControleNs);
+            } else {
+                ConvergenciaLoop.escreverResumo(resumo,
+                        res, tFimNs, fimCargaNs, fimControleNs, religamento);
+            }
         }
         if (marcadores == null) {
             return null;

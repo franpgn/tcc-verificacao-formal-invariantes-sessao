@@ -142,6 +142,11 @@ public final class ExecutorDeAcoes implements AutoCloseable {
     private volatile long prazoEmCursoNs;
     /** T_enc usado no encerramento; {@code null} antes dele. */
     private volatile Long prazoEncerramentoUsadoNs;
+    /**
+     * W-6 (P-6 da V-W5): alvo do primeiro AC-5 com resultado APLICADA, ou {@code null}. Escrito so pela thread
+     * executora; lido pelo programa de carga depois do encerramento (que espera a thread terminar).
+     */
+    private volatile String alvoAc5Aplicado;
     private final Object travaPendentes = new Object();
     private int pendentes;
     private volatile boolean encerrando;
@@ -180,6 +185,16 @@ public final class ExecutorDeAcoes implements AutoCloseable {
     /** {@code T_enc} usado no encerramento (normal ou pelo gancho), ou {@code null} antes dele. */
     public Long prazoEncerramentoUsadoNs() {
         return prazoEncerramentoUsadoNs;
+    }
+
+    /**
+     * W-6 (P-6 da V-W5, achado A-1, opcao a): alvo (rotulo {@code host:porta}) do primeiro AC-5 cuja linha
+     * {@code acao} APLICAR saiu com resultado {@code APLICADA}, ou {@code null}. E a mesma regra de
+     * {@code ac5_aplicada} em {@code analysis/comparar_bracos.py}: PREVISTA (shadow), NAO_EXECUTADA e FALHOU nao
+     * contam. O programa de carga poe o valor na linha de fim da carga, e o orquestrador religa esse no.
+     */
+    public String alvoDoAc5Aplicado() {
+        return alvoAc5Aplicado;
     }
 
     public ModoAtuacao modo() {
@@ -487,6 +502,10 @@ public final class ExecutorDeAcoes implements AutoCloseable {
         }
         registrar(RegistroAcao.Operacao.APLICAR, a, t.origem(), t.regra(), t.fimJanelaNs(), t.pedidoNs(), c);
         ResultadoAtuacao r = c.resultado();
+        if (a.tipo() == AcaoCluster.Tipo.AC_5 && r.estado() == ResultadoAtuacao.Estado.APLICADA
+                && alvoAc5Aplicado == null) {
+            alvoAc5Aplicado = a.alvo();
+        }
         if (!reversivel) {
             // fora da pilha: nenhuma reversao, nem na falha (a reversao e do orquestrador)
             synchronized (trava) {

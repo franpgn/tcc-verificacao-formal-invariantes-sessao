@@ -3,7 +3,7 @@
 > Senior, 2026-11-05, com o *host* em silêncio (só leitura e escrita de documentos). Branch
 > `docs/b40-pre-registro-avaliacao` (worktree `wt-b40`), sobre `docs/pre-registro-calibracao-s3` (`254380a`), porque
 > este documento usa as regras de derivação de lá. **Rascunho: não vale até o Gestor aprovar.** Tem duas partes. A
-> **parte 1** (este documento) fixa o desenho, os desfechos, a estatística, as regras de perda e as expectativas, e é
+> **parte 1** (este documento) fixa o desenho, os desfechos, a estatística, as regras de perda, o que se mede e os riscos conhecidos, e é
 > aprovada antes da calibração. A **parte 2** (seção 11) recebe os valores que as regras da calibração produzirem e é
 > commitada antes da primeira noite da avaliação (N4), sem olhar diferença entre braços. Depois da aprovação, as
 > duas viram entradas `DT-0xx (PRÉ-REGISTRO)` em `docs/decisoes-tecnicas.md`. Sem push.
@@ -67,7 +67,7 @@ específico (5) (`Metodologia.tex:347`). Mesmo jar, mesmo XML sem *caches*, mesm
 | Célula | Falha | Papel | Blocos | Fase | Origem |
 |---|---|---|---|---|---|
 | ASYNC F2 | `isn3` isolado 90 s, a +49 s | **teste** | n (seção 7) | núcleo | `Metodologia.tex:347`; plano de 04/11 §5.2 |
-| ASYNC F1 | queda silenciosa de `isn2`, 60 s, a +49 s | **teste** | n | núcleo | idem |
+| ASYNC F1 | queda silenciosa de `isn2`, 60 s, a +49 s | descritiva (o controlador não faz mal na queda) | 4 | núcleo | **decisão do Gestor, 05/11** (seção 3.1) |
 | ASYNC sem falha | — | descritiva (sobrecarga, acionamentos indevidos) | 8 | núcleo | `Metodologia.tex:347` (8 blocos); plano §5.2 dizia 4 |
 | SYNC F2 | igual à ASYNC F2 | referência, sem teste (R3) | 4 | núcleo | `Metodologia.tex:347`; R3 |
 | ASYNC F4 | perda de 20 % (N3) na saída de `isn3`, 90 s, a +49 s | **teste** | n | extra | `Metodologia.tex:347`; parâmetros: C-3 da calibração |
@@ -75,10 +75,26 @@ específico (5) (`Metodologia.tex:347`). Mesmo jar, mesmo XML sem *caches*, mesm
 | **ASYNC F3** | ***jitter* 20 ± 13 ms (normal) na saída de `isn2`, de +49 a +300 s** | **descritiva (falso alarme)** | **4** | extra | **pedido do Gestor, 05/11; seção 4** |
 
 A SYNC F1 do plano de 04/11 (OP-6) não entra: a `Metodologia.tex:347` não a tem, e o contraste SYNC × ASYNC sob F1
-já vem do *rebaseline* em S1/S2. Total com n = 8: 3 × 16 + 16 + 8 + 8 + 8 = **88 execuções**; com n = 12, 112.
+já vem do *rebaseline* em S1/S2. **Total: 2 × (2n + 24) execuções**, isto é, 2 células de teste × 2n, mais sem falha 16,
+F1 8, SYNC F2 8, SYNC F4 8 e F3 8: **80 com n = 8, 96 com n = 12** (seção 7).
 
 Os parâmetros de cada falha (nó, duração, instante, severidade e direção do F4) são os do arquivo `campanha-s3/1` da
 calibração (seção 4.1 de lá), os mesmos nos dois braços e nas duas campanhas.
+
+### 3.1 ASYNC F1 é descritiva (decisão do Gestor, 05/11)
+
+Nas palavras do Gestor: "se não temos ação nenhuma, okay retirá-lo". No braço B não há ação para a queda:
+
+- o P1 exige que o suspeito tenha respondido à REST em todas as amostras da janela e que a vista esteja completa
+  (`PoliticaPorAssinatura.java:158`, `EstadoTopologia.java:118-129` em `17f2bd4`), e o `isn2` morto não responde;
+- o P2 está fora pelo D-B (`p2Habilitada = false`).
+
+Sem ação, não há hipótese de redução a testar. A célula fica, com 4 blocos, para medir que o controlador **não faz mal
+na queda**. Por execução, nos dois braços: número de AC-5 aplicadas no braço B (e previstas no A), contadas por alvo;
+**nó saudável parado**, isto é, qualquer AC-5 aplicada nesta célula (o alvo, pela condição da política, respondia à
+REST; enquanto o `isn2` está morto ela não pode disparar, e depois que ele volta não há partição); p99 da ação S3 e
+vazão útil como diferença pareada (log da razão B/A) com IC 95 % *t*, sem teste; violações por braço com
+Clopper-Pearson. Na calibração, a F1 × 5 continua como controle negativo do P1 (regra 7.13 de lá).
 
 ## 4. A célula ASYNC F3
 
@@ -115,8 +131,8 @@ A pergunta é de especificidade: o controlador age quando não deve? Por execuç
 | amostras no teto | leituras cruzadas que não viram o valor em `tetoLagMs` (2000 ms) | linhas `defasagem` |
 | entradas em CONSERVADOR por defasagem | transições com motivo `DEFASAGEM` | `decisoes-rep-001.jsonl` |
 | AC-5 desnecessário | braço B: `acao` AC-5 `APLICADA` (qualquer alvo; sem partição, toda parada é desnecessária). Braço A: AC-5 `PREVISTA` | trilha; linha `Fim da carga:` |
-| custo em p99 | `ln(p99_B/p99_A)` por bloco, média e IC 95 % *t*, **sem teste** | `comparar_bracos.py`, célula `descritiva` |
-| custo em vazão útil | razão B/A por bloco, média e IC 95 % *t*, sem teste | idem |
+| p99 da ação S3, B frente a A | `ln(p99_B/p99_A)` por bloco, média e IC 95 % *t*, **sem teste** | `comparar_bracos.py`, célula `descritiva` |
+| vazão útil, B frente a A | log da razão B/A por bloco, média e IC 95 % *t*, sem teste | idem |
 | violações | taxa por braço, com Clopper-Pearson (REF-098) | idem |
 
 Fases: `durante` (+49 a +300 s). F3 vai até o fim da carga, então não há fase de recuperação dentro da carga.
@@ -148,16 +164,17 @@ O orquestrador do W-6 não tem F3 (`campanha_s3_matriz.py` só aceita `none|F1|F
 | L | `acao_s3_p99_com_espera`, mesmas fases, n ≥ 1000 | d_b = ln(p99_B/p99_A) | H_L (não inferioridade): limite superior do IC 95 % *t* de exp(média d_b) ≤ 1 + δ_L, δ_L = 0,10; p_L na escala bilateral (2·F_t) |
 
 - `p_IU = max(p_V, p_L)` por célula.
-- **Holm entre as células de teste, m = 3** (ASYNC F1, F2 e F4), FWER 0,05. Uma célula de teste que não rodar (S5,
-  calendário) ou que ficar não avaliável entra com p = 1. O m não muda depois de ver dados (ponto 3 da V-W5).
+- **Holm entre as células de teste, m = 2** (ASYNC F2 e F4), FWER 0,05. A F1 saiu do teste (seção 3.1). Uma célula
+  de teste que não rodar (S5, calendário) ou que ficar não avaliável entra com p = 1. O m não muda depois de ver dados
+  (ponto 3 da V-W5).
 - **Célula "melhoria"**: IU rejeitada depois do Holm, **e** vazão útil não inferior (limite inferior do IC 95 % da
   razão B/A > 0,90), **e** rastreabilidade integral (cada ação do braço B com regra, sinais e leitura de volta, e trilha
   com `meta` e `fim`).
 - **H_V não avaliável** quando o braço A não tem violação em nenhum bloco da célula; relatar "não observada em N ações",
   limite superior ≈ 3/N (`hanley_lippmanhand_zero_1983`).
-- **Poder:** com Holm sobre 3, a menor `p_IU` precisa ficar abaixo de 0,0167, o que exige k ≥ 7 (2/2⁷ = 0,0156); a
-  segunda, abaixo de 0,025, também k ≥ 7; a terceira, abaixo de 0,05, k ≥ 6 (plano de alinhamento §3.3). O relatório
-  dá k e o p mínimo atingível `2/2^k` por célula.
+- **Poder:** com Holm sobre 2, a menor `p_IU` precisa ficar abaixo de 0,025, o que exige k ≥ 7 (2/2⁷ = 0,0156; com
+  k = 6, 2/2⁶ = 0,031 não basta); a segunda, abaixo de 0,05, exige k ≥ 6 (plano de alinhamento §3.3). O relatório dá
+  k e o p mínimo atingível `2/2^k` por célula.
 
 ### 5.2 Sensibilidades (sem Holm, reportadas)
 
@@ -182,7 +199,7 @@ ajustado antes da N4 (W-5b).
 ### 5.4 Descritivos do controlador
 
 Transições, tempo em CONSERVADOR, ações executadas e previstas por tipo, tempo com AC-5 ativa (até o fim da carga),
-atraso entre o marcador `start` e a primeira ação, acionamentos na célula sem falha e na F3 (W-5, item 1).
+atraso entre o marcador `start` e a primeira ação, acionamentos nas células sem falha, F1 e F3 (W-5, item 1).
 
 ## 6. Parâmetros da análise
 
@@ -193,34 +210,35 @@ atraso entre o marcador `start` e a primeira ação, acionamentos na célula sem
 | δ da vazão (`--delta`) | 0,10 | Gestor, 22/10 |
 | W_c (`--w-analise-s`) | = W da parte 2 | plano de alinhamento §3.4-3.5 |
 | W_recovery (`--w-recovery-s`) | = `w_recovery_s` do arquivo da campanha (C-4 da calibração; recomendação 191 s) | B-39.4 §3; a guarda G4 exige o mesmo valor do programa |
-| m (`--m-celulas`) | 3 | seção 5.1 |
+| m (`--m-celulas`) | 2 | seção 5.1 |
 | fases | `durante` + `recuperacao`; célula sem falha com `--fases antes` em chamada própria | plano §3.1; B-39.4 §8 |
 | P_max; razão ociosa | 181 W; 0,3 e 0,5 | Gestor, 05/11 |
 | quantil da linha de base; confiança de p_ref⁺ (Δ_rec de sensibilidade) | 0,95; 0,95 | plano §3.4 |
 | blocos e reduções da curva de poder | 8/10/12; 0 a 1 em passos de 0,1 | plano §3.3 |
 
-## 7. Número de blocos das células de teste (decisão do Gestor)
+## 7. Número de blocos das células de teste: A DECIDIR pelo Gestor
 
-**Regra recomendada (ST-5 do plano de 04/11: pelo tempo medido, nunca pelo efeito).** n é o maior valor em
-{12, 10, 8} tal que a avaliação inteira cabe nos três blocos de VM da fila (X-20, X-21 e X-22, ~10 h cada,
-`plano-execucao-continua-2026-11-04.md` §3.1):
+Duas opções, para as células de teste ASYNC F2 e F4 (as outras células têm o número fixo da seção 3). Execuções =
+2 × (2n + 24). Custo com a estimativa de 8 min por execução (pré-registro da calibração, seção 8; o tempo real sai da
+calibração) e a margem de 1,25 para reposições h4 (a mesma fração do teto do C3 §4.4, 30 de 120):
 
-`(6·n + 40) × T_exec × 1,25 ≤ 30 h`
+| Opção | n | Execuções | Horas de VM sem margem | Com margem 1,25 | Blocos de VM de ~10 h (fila X-20/X-21) |
+|---|---|---|---|---|---|
+| A | 8 | 80 | 10,7 h | 13,3 h | 2 |
+| B | 12 | 96 | 12,8 h | 16,0 h | 2 |
 
-- `6·n + 40` = execuções: 3 células de teste × 2n, mais sem falha 16, SYNC F2 8, SYNC F4 8 e F3 8.
-- `T_exec` = duração média por execução medida na calibração, da recriação do *cluster* ao `MANIFEST` (inclui K1 e
-  pós-checagem).
-- 1,25 = margem de reposições h4, a mesma fração do teto do C3 §4.4 (30 de 120).
-- Piso 8 (`Metodologia.tex:347`); teto 12 (plano de 04/11 §4.6).
-
-Com a estimativa de 8 min por execução (calibração, seção 8), n = 12 cabe (112 execuções, ~18,7 h). Os limites são
-`T_exec` ≤ 12,9 min para n = 12, ≤ 14,4 min para n = 10 e ≤ 16,4 min para n = 8; acima disso, n = 8 e a avaliação
-passa de três blocos de VM. A curva de poder da calibração (regra 7.18 de lá) é mostrada ao Gestor só como informação.
-**Alternativa:** n = 8 fixo, como a `Metodologia.tex:347` diz hoje, sem depender da medida.
+- **O que muda entre elas.** Com Holm sobre 2, a célula de menor valor-p só rejeita com k ≥ 7 blocos de d_b ≠ 0 (seção
+  5.1). Com 8 blocos, isso exige 7 dos 8 com violação em algum braço; com 12, 7 dos 12. A opção B tolera mais blocos
+  sem violação, ao custo de 16 execuções e de cerca de 2,7 h de VM a mais.
+- **Origem dos números:** 8 é o piso da `Metodologia.tex:347`; 12 é o teto do plano de 04/11 §4.6. A curva de poder da
+  calibração (regra 7.18 de lá) é mostrada ao Gestor só como informação. Nenhuma das opções depende do efeito
+  observado (ST-5).
+- Se o `T_exec` medido na calibração passar de ~15 min, a opção B deixa de caber em 2 blocos de VM (96 × 1,25 × 15 min
+  = 30 h). Isso é calendário, não efeito.
 
 ## 8. Matriz e sementes
 
-`campanha_s3_matriz.py gerar --modo avaliacao --nucleo "ASYNC-F2:teste:n,ASYNC-F1:teste:n,ASYNC-none:descritiva:8,SYNC-F2:referencia:4"
+`campanha_s3_matriz.py gerar --modo avaliacao --nucleo "ASYNC-F2:teste:n,ASYNC-F1:descritiva:4,ASYNC-none:descritiva:8,SYNC-F2:referencia:4"
 --extras "ASYNC-F4:teste:n,SYNC-F4:referencia:4,ASYNC-F3:descritiva:4" --ordem-seed <AAAAMMDD do commit da parte 2>
 --s0 400000 --passo-semente 100 --i0 0 --b0 1`, saída `runs/campanha-s3-avaliacao/`.
 
@@ -242,30 +260,41 @@ O F3 na matriz depende do W-6c (seção 4.3).
   pelo AC-5" (correção B1 da V-W6). Não é perda.
 - **Rastreabilidade como condição de protocolo:** trilha sem `fim`, ou com `linhas_perdidas` > 0, nos dois braços,
   torna a execução DESCARTADA-INFRA (o disco, não o efeito, decide). O orquestrador ainda não lê isso: item do W-6c.
-- h4: C3 por execução; parada do C3 §4.3; **teto de reposições h4 = 25 % das execuções planejadas** (C3 §4.4): 22 com
-  n = 8, 28 com n = 12.
+- h4: C3 por execução; parada do C3 §4.3; **teto de reposições h4 = 25 % das execuções planejadas** (C3 §4.4): 20 com
+  n = 8, 24 com n = 12.
 - Regra de memória: a da calibração (seção 5 de lá), se o Gestor aprovar a G-3.
 - DT-014 para execução interrompida.
 - Célula que fechar com menos blocos que o planejado entra com o que tem; o relatório dá k e `2/2^k`.
 
-## 10. Expectativas declaradas antes de qualquer dado
+## 10. O que se mede, como se reporta e riscos conhecidos antes dos dados
 
-| Célula | Expectativa | Base |
-|---|---|---|
-| ASYNC F2 | P1 dispara em `isn3` cerca de `kLag·W` + 3 s depois do corte (13,2 s no I-3b, com `kLag` = 2 e W = 5 s), e o nó para de servir 13,1 a 13,3 s depois do pedido; violações nascidas depois da parada e as da fusão (não há fusão) deixam de ocorrer; as de antes da parada continuam. **V: redução nos blocos em que o braço A viola. L: sem sinal previsto.** **Vazão útil: razão B/A perto de 0,75, abaixo de 0,90, logo a célula não deve registrar "melhoria" mesmo com a IU rejeitada**; o resultado é relatado como troca entre violações e vazão (`Metodologia.tex:353`, MET-73) | I-3b (P1 a 13,2 s; parada sob corte 13,3 s, P-42); I-3b `controle-shadow` 47 I2, `ativo-religar` 0 (n = 1 cada); conta da vazão abaixo |
-| ASYNC F1 | P1 não dispara enquanto `isn2` está morto (a política exige resposta REST do suspeito), e P2 está fora: **B ≈ A**. H_V provavelmente não rejeitada ou não avaliável. H_L verifica que observar e decidir não pioram a cauda | `acoes-controlador-cluster-2026-11-05.md` §5; D-B |
-| ASYNC F4 | sem sinal previsto para V; o P1 pode disparar se a perda levar S_lag ao teto em `kLag` janelas; nenhuma ação mira o M3 | plano de 04/11 §4.3 |
-| ASYNC sem falha | zero AC-5; custo ≈ 0 | desenho |
-| SYNC F2 | P1 não dispara (empate no teto, R3): **B ≈ A** | `wt-w4/docs/relatorio-w4-2026-11-05.md` §7 |
-| SYNC F4 | sem previsão | — |
-| ASYNC F3 | **zero AC-5**: 20 ± 13 ms ficam duas ordens abaixo do teto de 2000 ms, e "no teto" é o que separa nó cortado de nó lento. Entradas em CONSERVADOR por defasagem são possíveis, conforme o `lag_in` calibrado; com P2 fora, elas não geram ação. Custo ≈ 0 | `acoes-controlador-cluster-2026-11-05.md` §3.1 |
+**Sem expectativa numérica de efeito** (decisão do Gestor, 05/11): "não há como saber se o controlador realmente será
+responsável por uma piora de 25 % da vazão, assim como não há como saber quanto ele irá melhorar". Nenhuma razão,
+nenhum "B ≈ A" e nenhum sentido previsto entram neste pré-registro.
 
-**Conta da vazão em ASYNC F2 (grosseira, declarada para não esconder a troca).** Suposição: a carga se divide igualmente
-entre os três servidores de aplicação (a mesma de `opcoes-arquitetura-configuracao-2026-11-05.md` §9.2). Janela de
-medição de 256 s (+44 a +300). Braço A: o servidor de `isn3` erra da detecção (~+90 s: corte a +49 mais 39,8 a 46,4 s)
-até a cura (+139 s), cerca de 47 s, e a vazão útil fica em ~1 − (47/256)/3 ≈ 0,94 do normal. Braço B: o servidor de
-`isn3` erra da parada (~+76 s: corte a +49, P1 13,2 s depois e parada 13,3 s depois do pedido, I-3b e P-42) até o fim
-(+300 s), cerca de 224 s, e a vazão fica em ~1 − (224/256)/3 ≈ 0,71. Razão ≈ 0,71/0,94 ≈ 0,75. A fusão no braço A pode custar mais vazão do que isso; o número é ordem de grandeza.
+**O que se mede**, em toda célula e nos dois braços: taxa de violações (V), p99 da ação S3 (L), vazão útil, energia
+estimada, os secundários da seção 5.3 e o comportamento do controlador (seção 5.4).
+
+**Como se reporta.** Por célula, a diferença pareada B − A (taxas, Δ_rec, Δ_conv, divergência) ou o logaritmo da razão
+B/A (p99, vazão útil, CPU, energia), com a média e o IC 95 % *t* sobre os blocos, e o *bootstrap* de blocos como
+sensibilidade, **qualquer que seja o sinal**. Ganhos e custos aparecem lado a lado, na mesma tabela da célula.
+
+**Quando se diz "melhora".** Só numa célula de teste (ASYNC F2 ou F4) que passe a regra da seção 5.1: IU rejeitada
+depois do Holm sobre 2, vazão útil não inferior e rastreabilidade integral. Uma célula de teste que não passa é relatada
+com as mesmas medidas e os mesmos IC, sem "melhora". Nas células descritivas e de referência não há conclusão de
+efeito, só as medidas com IC.
+
+**Riscos conhecidos antes dos dados (registro, sem número):**
+
+1. Parar um nó tira de serviço o servidor de aplicação fixado nele até o fim da execução, o que reduz a capacidade de
+   atendimento. A vazão útil é medida e entra na regra (`Metodologia.tex:353`, MET-73).
+2. O AC-5 não desfaz o que foi aceito antes da parada (`acoes-controlador-cluster-2026-11-05.md` §4).
+3. O AC-5 pode parar um nó saudável sem partição real (falso positivo). As células sem falha, F1 e F3 contam isso.
+4. Na saída do nó parado, escritas ASYNC ainda em voo podem se perder (risco 1 do AC-5, I-4 do W-2a). As violações que
+   isso causar são contadas como as outras.
+5. Em SYNC, o P1 pode não disparar (R3, limitação declarada da célula SYNC F2).
+6. M2 e M3 (leitura defasada e atualização perdida em ASYNC) não têm ação de servidor (plano de 04/11 §4.3).
+7. Os limiares saem de 5 execuções sem falha, com a incerteza do critério C-8 do pré-registro da calibração.
 
 ## 11. Parte 2: valores a preencher depois da calibração
 
@@ -305,9 +334,11 @@ AC-3 (`remote-timeout`); E-1 (`FORCE_SYNCHRONOUS`). Qualquer um deles na avalia�
 
 | Onde | Texto hoje | Este B-40 |
 |---|---|---|
-| `Metodologia.tex:347` | quatro células ASYNC de 8 blocos e duas SYNC de referência; "cerca de 80 execuções" | mais a célula ASYNC F3 descritiva de 4 blocos; células de teste com n de 8 a 12 pela regra da seção 7 (se o Gestor aprovar); 88 a 112 execuções |
+| `Metodologia.tex:347` | quatro células ASYNC de 8 blocos (sem falha, F2, F4, F1) e duas SYNC de referência; "cerca de 80 execuções" | F2 e F4 de teste com n = 8 ou 12 (a decidir); F1 descritiva com 4 blocos; sem falha descritiva com 8; F3 descritiva com 4; SYNC F2 e F4 de referência com 4; 2 × (2n + 24) = 80 ou 96 execuções |
 | `Metodologia.tex:347` | célula sem falha "para medir sobrecarga e acionamentos indevidos" | igual; explicitar que é descritiva |
-| `Metodologia.tex:351` | Holm "das três células com falha" | igual (F1, F2, F4); dizer que a F3 é descritiva e por quê (seção 4.1) |
+| `Metodologia.tex:349` | "o menor valor-p bilateral … só fica abaixo de 0,05 a partir de k = 6" | acrescentar que, com Holm sobre duas células, a de menor valor-p precisa de k ≥ 7 (2/2⁷ < 0,025) |
+| `Metodologia.tex:351` | Holm "das três células com falha" | **das duas células de teste, F2 e F4**. Razão: no braço B não há ação para a queda (o P1 exige resposta REST do suspeito, e o P2 está fora), então a F1 não tem hipótese de redução; ela vira descritiva, para mostrar que o controlador não faz mal na queda. Dizer também que a F3 é descritiva e por quê (seção 4.1) |
+| `Metodologia.tex:353` (MET-73) | "o pré-registro declara essa troca entre violações e vazão como expectativa" | o pré-registro **registra o risco** (parar o nó reduz a capacidade de atendimento), sem expectativa; a vazão é medida e entra na regra (seção 10) |
 | `Metodologia.tex:353` | "limiares calibrados com dados da campanha com o cenário S3" | acrescentar que a calibração não roda F3, para não ajustar o limiar olhando a célula em que ele é avaliado |
 
 ## 15. Decisões do Gestor
@@ -316,10 +347,12 @@ AC-3 (`remote-timeout`); E-1 (`FORCE_SYNCHRONOUS`). Qualquer um deles na avalia�
 |---|---|---|---|
 | B-1 | Célula ASYNC F3 descritiva, 4 blocos, nas extras | **Sim** | pedido de 05/11; seção 4 |
 | B-2 | F3 fora da calibração (C-1 de lá) | **Sim** | limiar não pode ver a célula de especificidade |
-| B-3 | Número de blocos das células de teste | **regra da seção 7** (esperado n = 12 se `T_exec` ≈ 8 min); alternativa: 8 fixo, como o texto | ST-5; plano §4.6 |
-| B-4 | ASYNC F1 continua célula de teste (m = 3), com expectativa nula declarada | **Sim**: mantém o texto e testa que o controlador não piora a cauda. Alternativa: descritiva de 4 blocos e m = 2, que economiza ~16 execuções mas muda o texto | seção 10 |
+| B-3 | Número de blocos das células de teste (F2, F4) | **A DECIDIR**: opção A, n = 8 (80 execuções), ou opção B, n = 12 (96 execuções); custos na seção 7 | `Metodologia.tex:347`; plano §4.6 |
+| B-4 | ASYNC F1 | **DECIDIDO** (Gestor, 05/11): descritiva com 4 blocos; Holm sobre 2 (F2, F4) | seção 3.1 |
 | B-5 | SYNC F1 fora | **Sim** | texto; contraste vem do *rebaseline* |
 | B-6 | Família dos secundários (7 hipóteses) e p = 1 para quem ficar sem dado | **Sim** | A-5 (ii) da V-W5 |
 | B-7 | Rastreabilidade (`fim` e `linhas_perdidas` = 0) como condição de protocolo, com DESCARTADA-INFRA | **Sim** | seção 9 |
 | B-8 | Piloto embutido nos 3 primeiros blocos, lido só no protocolo | **Sim** | `Metodologia.tex:347` |
 | B-9 | Herdadas da calibração: `f4_*`, `w_recovery_s`, `encerramento_folga_s`, `exec_teto_s`, `volume_exec_mb` (C-3 a C-7) | como lá | pré-registro da calibração §10 |
+| B-10 | Critério de falso acionamento dos limiares (C-8 da calibração) | **A DECIDIR**: zero ocorrências com 3/N reportado, ou limite superior de 95 % com ~60 execuções sem falha | pré-registro da calibração §7 |
+| B-11 | Sem expectativa numérica de efeito; ganhos e custos com IC lado a lado; "melhora" só pela regra | **DECIDIDO** (Gestor, 05/11) | seção 10 |

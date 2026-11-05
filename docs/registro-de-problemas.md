@@ -919,3 +919,28 @@ baterias futuras, ampliar o universo de identidades.
 - **Sintoma:** erros impressos (`Cannot convert ...`, `Not Found`, `ISPN000500`) com `exit=0` (E2, E3, P6a).
 - **Impacto:** o atuador não pode confiar no código de saída da CLI; usar REST (código HTTP) e leitura de volta.
 - **Status:** `ACEITO` (comportamento da ferramenta).
+
+## 2026-11-05 — B-44.1b (`docs/b44-1b-alias-criacao-p30-rebalanceamento.md`)
+
+### P-33 — aliases de cache não servem para trocar a política de replicação em tempo de execução
+
+- **Sintoma:** Hot Rod `getCache(alias)` devolve `null` (1842/1842 e 192/192 operações falharam); a REST continua no
+  cache antigo depois de uma troca de alias com 200 nos 3 nós; uma troca rejeitada (`ISPN000975`) seguida de
+  limpeza deixou o alias sem resolver em 2 de 3 nós; valor vazio cria o alias `""`.
+- **Causa:** `HotRodServer.java:429` só aceita nomes de `getCacheNames()`; `RestCacheManager.java:96-101` guarda a
+  resolução; `ConfigurationManager.removeAliases` remove pelo nome sem conferir o dono.
+- **Status:** `ACEITO` (fora do espaço de ação).
+
+### P-34 — `disable-rebalancing` por cache se perde quando o coordenador cai
+
+- **Sintoma (R2):** com `sessions` desligado, a queda do coordenador `isn1` levou o novo coordenador a rebalancear
+  `sessions` em 4,6 s. A forma global (R3) sobreviveu à queda do coordenador.
+- **Causa:** a recuperação agrega só o flag global (`ClusterTopologyManagerImpl.java:369`).
+- **Status:** `ABERTO` para o B-44.2: usar a forma global.
+
+### P-35 — `inject-crash.sh` sai com 0 quando o nó não consegue voltar
+
+- **Sintoma:** F1a, F1c, B3: `OK: F1 ... reentrada acionada`, exit 0, e o container sai segundos depois
+  (`ISPN000438`/`ISPN000500`).
+- **Impacto:** o *runner* precisa conferir a saúde do nó depois do injetor. Não alterei o injetor.
+- **Status:** `ABERTO`.

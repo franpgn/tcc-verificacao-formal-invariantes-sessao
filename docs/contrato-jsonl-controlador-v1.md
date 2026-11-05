@@ -1,8 +1,8 @@
-# Contrato dos JSONL do controlador, versão 1.2 (W-3, B-28.2, 2026-11-04; W-2a, B-44.2, 2026-11-05)
+# Contrato dos JSONL do controlador, versão 1.2 (W-3, B-28.2, 2026-11-04; W-2a, B-44.2, 2026-11-05; W-4, B-26.3, 2026-11-05)
 
 Com `--controller shadow|active`, cada repetição grava dois arquivos em `--csv-dir`:
 
-- `observaveis-rep-NNN.jsonl` (esquema `observaveis-controlador/1.1`): o que o laço viu.
+- `observaveis-rep-NNN.jsonl` (esquema `observaveis-controlador/1.2`): o que o laço viu.
 - `decisoes-rep-NNN.jsonl` (esquema `decisoes-controlador/1.2`): o que o núcleo decidiu e o que o executor fez.
 
 **Histórico.** v1 (`b883397`): primeira versão. v1.1 (V-W3, `docs/validacao-w3-2026-11-04.md`, antes de qualquer
@@ -11,7 +11,9 @@ dado): `t_decisao_ns` na linha `decisao`; `linhas_perdidas` nas duas linhas `fim
 derivado; regra do *tick*. Todas as mudanças são aditivas. **v1.2** (W-2a, só `decisoes`; aprovação do
 coordenador em 05/11, P-36/P-37/P-38): campo `reversao` em toda linha `acao` (`"orquestrador"` na ação não
 reversível, AC-5; `null` na reversível, AC-2); linha nova `politica`; `parametros_politica` na `meta`; tipos de ação
-só `AC-2` e `AC-5` (AC-1 e AC-3 retirados). `observaveis` continua 1.1: nada mudou nele.
+só `AC-2` e `AC-5` (AC-1 e AC-3 retirados). `observaveis` continua 1.1: nada mudou nele. **observaveis 1.2** (W-4,
+B-26.3, só `observaveis`, aditivo e antes de qualquer dado; aguarda validação): `parametros_defasagem` na `meta`;
+linha nova `defasagem` (uma por rodada da sonda S_lag); contadores `defasagem_*` no `fim`. `decisoes` continua 1.2.
 
 Com `--controller off` nenhum dos dois existe. Código: `workload/src/main/java/br/unipampa/tcc/controle/FormatoJsonl.java`
 (formato), `TrilhaJsonl.java` (gravação), `LacoDeControle.java` (ordem das linhas). Teste de contrato:
@@ -33,6 +35,8 @@ Com `--controller off` nenhum dos dois existe. Código: `workload/src/main/java/
 flowchart LR
     subgraph OBS["observaveis-rep-NNN.jsonl"]
         M1["meta"] --> T1["topologia (por rodada da sonda)"]
+        M1 --> L1["defasagem (por rodada do S_lag, 1.2)"]
+        L1 --> K1
         T1 --> K1["tick (se fechou janela)"]
         K1 --> J1["janela (uma por janela)"]
         J1 --> F1["fim"]
@@ -44,14 +48,15 @@ flowchart LR
     end
 ```
 
-As linhas `topologia` (thread da sonda) e `acao` em `active` (thread do executor) se intercalam com as demais na
-ordem em que acontecem; a ordem entre `tick`, `janela` e `decisao` é a do laço.
+As linhas `topologia` (thread da sonda), `defasagem` (thread gravadora da sonda S_lag, W-4) e `acao` em `active`
+(thread do executor) se intercalam com as demais na ordem em que acontecem; a ordem entre `tick`, `janela` e
+`decisao` é a do laço.
 
 ## `meta` (primeira linha dos dois arquivos)
 
 | Campo | Tipo | Conteúdo |
 |---|---|---|
-| `esquema` | texto | `observaveis-controlador/1.1` ou `decisoes-controlador/1.2` |
+| `esquema` | texto | `observaveis-controlador/1.2` ou `decisoes-controlador/1.2` |
 | `versao_programa` | texto | `session-workload 0.1.0-SNAPSHOT` |
 | `rep` | inteiro | número da repetição |
 | `modo` | texto | `shadow` ou `active` |
@@ -67,7 +72,8 @@ ordem em que acontecem; a ordem entre `tick`, `janela` e `decisao` é a do laço
 | `atuador` | texto | `nulo` sem o bloco `politica` no `--controller-config`; com ele, `por-tipo(AC-2=rest-infinispan,AC-5=rest-infinispan)` (W-2a) |
 | `politica` | texto | `nenhuma` sem o bloco; `por-assinatura` com ele (W-2a) |
 | `parametros_politica` | objeto ou `null` | **só em `decisoes` (1.2).** `k_lag`, `teto_lag_ms`, `t_reb_ns`, `cota_ac5` e `origem` (texto por parâmetro); `null` sem o bloco |
-| `sonda_topologia`, `sonda_defasagem` | booleano | sondas ligadas (`sonda_defasagem` = `false` até o W-4) |
+| `parametros_defasagem` | objeto ou `null` | **só em `observaveis` (1.2, W-4).** `lag_in_ms`, `lag_out_ms`, `passo_leitura_ms`, `periodo_ns` (= W) e `origem` (texto por parâmetro); `null` sem o bloco `defasagem`. O prazo de leitura (o "não viu") é o `--hotrod-timeout-ms` e vai em `teto_ms` de cada linha `defasagem` |
+| `sonda_topologia`, `sonda_defasagem` | booleano | sondas ligadas (`sonda_defasagem` = `true` só com o bloco `defasagem`, W-4) |
 
 ## Regra do *tick* e prazos (v1.1)
 
@@ -120,7 +126,7 @@ execução do braço B tem `politica = por-assinatura` e `parametros_politica` n
 | `viol.fora_do_gatilho` | I3, I5, I6, `I2_JANELA_CASCATA`, `I2_CASCATA_INCOMPLETA` (DT-002) |
 | `viol.atrasadas_fora_do_gatilho` | violações fora do gatilho descartadas por atraso |
 | `top` | `disponivel`, `amostras`, `anomalas`, `nos_min` (S_top da janela) |
-| `lag` | `nivel` (`INDETERMINADA`, `CALMA`, `INTERMEDIARIA`, `ALTA`), `no_suspeito`, `lag_max_ms`, `amostras` (S_lag) |
+| `lag` | `nivel` (`INDETERMINADA`, `CALMA`, `INTERMEDIARIA`, `ALTA`), `no_suspeito`, `lag_max_ms`, `amostras` (S_lag; W-4: `amostras` = rodadas da sonda com início na janela, `lag_max_ms` = maior lag de nó, `no_suspeito` = o nó que o atinge, se único) |
 
 **`tick`**: `seq` (registros do agregador até ali), `agora_ns`, `janelas` (quantas o *tick* fechou). Só sai quando
 o *tick* fecha ao menos uma janela; serve ao *replay* do B-38.
@@ -133,7 +139,29 @@ o *tick* fecha ao menos uma janela; serve ao *replay* do B-38.
 `eventos_apos_encerramento`, `atrasados_total`, `violacoes_atrasadas_total`, `promovidas_total`,
 `descartados_no_encerramento`, `violacoes_descartadas_no_encerramento`, `eventos_fora_do_contrato`,
 `sonda_rodadas`, `sonda_rodadas_puladas`, `sonda_amostras_atrasadas`, `sonda_erros_ouvinte`, `curl_lancados`
-(os de sonda são `null` sem sonda), `linhas_perdidas` (v1.1).
+(os de sonda são `null` sem sonda), `defasagem_rodadas`, `defasagem_rodadas_antes_da_origem`,
+`defasagem_rodadas_puladas`, `defasagem_rodadas_atrasadas`, `defasagem_rodadas_nao_gravadas`, `defasagem_escritas`,
+`defasagem_leituras`, `defasagem_erros_escrita`, `defasagem_erros_leitura`, `defasagem_erros_ouvinte` (1.2, W-4;
+`null` sem a sonda de defasagem), `linhas_perdidas` (v1.1).
+
+**`defasagem`** (1.2, W-4), uma por rodada da sonda S_lag com início depois da origem, gravada por uma *thread*
+própria da sonda (P-5: um travamento de disco atrasa a gravação, nunca a rodada seguinte), por isso intercalada com
+as outras linhas. Campos, nesta ordem:
+
+| Campo | Conteúdo |
+|---|---|
+| `rodada` | número da rodada na execução (a partir de 1; inclui as de aquecimento, antes da origem, que não são gravadas) |
+| `t_inicio_ns`, `t_ns` | início (decide a janela) e fim da rodada |
+| `teto_ms` | prazo de leitura = `--hotrod-timeout-ms` (= `politica.tetoLagMs`, R7): o lag de um par não visto |
+| `lag_max_ms`, `no_suspeito` | maior lag de nó da rodada e o nó que o atinge, se único (`null` em empate) |
+| `lag_max_par_ms` | maior lag de par (só registro: um par alto sozinho não levanta o lag de nenhum nó) |
+| `lag_por_no` | lista de `no`, `lag_ms`: o **menor** lag entre os pares em que o nó escreve ou lê |
+| `pares` | lista de `escritor`, `leitor`, `visto`, `lag_ms` (do início da rodada até o fim da leitura que devolveu o valor novo; o teto se não visto), `leituras` (tentativas), `erros_leitura` |
+| `escritas` | lista de `no`, `ok` (`true`, `false`, ou `null` se pendente no fim do prazo), `duracao_ms`, `erro` (nome da exceção) |
+| `custo` | `escritas`, `leituras`, `erros_escrita`, `erros_leitura` da rodada (contados à parte da carga útil; nunca no CSV de eventos) |
+
+Conservação: `defasagem_escritas` = 3 × `defasagem_rodadas` (três nós); a soma de `custo.leituras` das linhas é
+`defasagem_leituras` menos as leituras das rodadas de aquecimento.
 
 `linhas_perdidas` conta as linhas que não chegaram ao arquivo até a linha `fim`: erros de escrita mais linhas
 recebidas com a trilha já fechada. As linhas que chegam **depois** do `fim` (executor fora do prazo,
@@ -202,7 +230,26 @@ padrão no código, e cobertos pelo SHA-256 do arquivo (`param_sha256`):
 **Rótulo dos nós (requisito do W-4).** Toda peça do controlador identifica um nó pelo mesmo rótulo: `host:porta`
 da URL normalizada de `--controller-admin` (`ConsultaSaudeRest.rotulo`, `AtuadorRestInfinispan.rotulo`). O
 `noSuspeito` do S_lag (W-4) **tem de** usar esse rótulo; com outro, o AC-5 nunca acha o alvo (seguro, mas inútil).
-Teste: `RotulosDosNosTest` (sonda × atuador × rótulo canônico).
+Teste: `RotulosDosNosTest` (sonda × atuador × rótulo canônico). **W-4:** o `CanalCanarioHotRod` usa
+`AtuadorRestInfinispan.rotulo` sobre as mesmas URLs (`CanalCanarioHotRodTest.rotuloCanonico` compara com
+`RotulosDosNosTest.rotuloDoNo`), e o carregamento recusa, com o bloco `defasagem`, um nó `i` de `--servers` (Hot Rod)
+que não seja o mesmo `host:porta` do nó `i` de `--controller-admin` (`CanalCanarioHotRod.conferirCorrespondencia`):
+a sonda escreve pelo Hot Rod do nó `i` e o rotula pela REST do nó `i`.
+
+**Bloco `defasagem` do `--controller-config` (W-4, B-26.3).** Opcional e **só com `--scenario S3`**; sem ele não há
+sonda de defasagem e o S_lag é `INDETERMINADA`. Campos todos obrigatórios, sem valor padrão no código, cobertos pelo
+SHA-256 do arquivo:
+
+| Campo | Valor | Origem |
+|---|---|---|
+| `lagInMs` | calibração | quantil de 99 % do lag nas execuções sem falha da calibração (plano de alinhamento 4.2; mesma lógica do p99 de referência, B-39.1). Nos arquivos de teste, `"origem": "teste"` |
+| `lagOutMs` | calibração | regra de histerese de θ_out (plano de alinhamento 3.6), com os mesmos dados. Nos arquivos de teste, `"origem": "teste"` |
+| `passoLeituraMs` | decisão declarada | intervalo entre leituras de um par enquanto o valor novo não aparece; fixa a resolução do lag e o custo sob falha (no máximo `teto/passo` leituras por par e rodada). Sem fonte no projeto: a origem vai escrita no arquivo |
+| `origem` | objeto | um texto não vazio para cada um dos três campos acima |
+
+O prazo de leitura não é campo do bloco: é o `--hotrod-timeout-ms` (decisão do coordenador de 05/11), igual a
+`politica.tetoLagMs` pela R7. O período da sonda é W. O carregamento recusa (exit 2): fora do S3; prazo de leitura
+que não cabe em W; `passoLeituraMs` maior ou igual ao prazo; `lagInMs` acima do prazo; nós fora de correspondência.
 
 **`fim`**: `decisoes`, `transicoes`, `perfil_final`, `erros_politica`, `acoes_pedidas`, `acoes_ignoradas`
 (pedido repetido de ação já ativa, sem linha), `acoes_executadas`, `acoes_falhas`, `reversoes`, `reversoes_falhas`,

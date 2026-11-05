@@ -95,6 +95,52 @@ o ProtoStream padrão falha ao serializar e toda escrita vira
 
 ## Decisões técnicas a registrar
 
+### TD-012 — W-4 (B-26.3): sonda de defasagem S_lag e *caches* `canario*` (2026-11-05)
+
+Especificação: plano de execução de 04/11, seção 9 (W-4); plano de alinhamento, seção 4.2; documento de 05/11
+(`cc08644`), seções 3.1 e 6; decisões do coordenador de 05/11 (base `9695511`, prazo de leitura = `--hotrod-timeout-ms`,
+rótulo canônico). Branch `feature/w4-sonda-defasagem` sobre `9695511`. **Escrito sem execução** (H0 da noite 1):
+Surefire, `cria-caches.test.sh` e o *smoke* local esperam a liberação.
+
+```mermaid
+%%{init: {'theme':'base','themeVariables':{'background':'#ffffff','primaryColor':'#ffffff','primaryTextColor':'#000000','primaryBorderColor':'#000000','lineColor':'#000000','secondaryColor':'#ffffff','tertiaryColor':'#ffffff','clusterBkg':'#ffffff','clusterBorder':'#000000','edgeLabelBackground':'#ffffff','fontFamily':'Arial'}}}%%
+flowchart LR
+    subgraph CARGA["Processo da carga (--controller shadow|active, S3)"]
+        AG["agenda sonda-defasagem<br/>grade origem + i*W"] --> R["rodada: 3 escritas<br/>6 leitores (passo ate o prazo)"]
+        R -->|"RodadaDefasagem<br/>lag de no = menor par"| B["buffer por janela<br/>(t_inicio)"]
+        R -->|"fila em memoria"| G["gravadora"] --> OBS["observaveis: linha defasagem"]
+        B -->|"resumirAte(fim)"| L["LacoDeControle"]
+        L --> N["Controlador R2/R3/R4<br/>(lagIn/lagOut)"]
+        L --> P["PoliticaPorAssinatura P1<br/>(tetoLagMs, kLag, noSuspeito)"]
+    end
+    R -->|"Hot Rod, um cliente fixado por no"| C["canario / canario-async<br/>(criados pela REST)"]
+```
+
+- **Rodada.** Para cada nó X, `lag:<rótulo de X>` = `<nonce>:<rodada>` pelo cliente de X; cada outro nó Y lê pelo
+  cliente dele, depois de a escrita voltar (no máximo um passo), e lê de novo a cada `passoLeituraMs` até ver o valor
+  ou até o prazo `--hotrod-timeout-ms`. Lag do par = início da rodada → fim da leitura que viu (método de
+  `wada_consistency_cloud_2011` §2); não visto = o prazo, que é o `politica.tetoLagMs` (R7). Sem falha: 3 escritas e
+  6 leituras.
+- **Lag de nó = menor lag dos seus pares** (escritor ou leitor). Só um nó que não troca com ninguém (cortado,
+  pausado) chega ao teto; um enlace lento, um corte parcial ou uma chave com dono primário do outro lado não bastam.
+  `lagMaxMs` = maior lag de nó; `noSuspeito` = o nó que o atinge, se único (empate → `null`, e o P1 não dispara).
+- **Janela.** Período = W, alinhado à grade das janelas; a rodada começa no início da janela e termina até o prazo
+  (< W). Atraso maior que W − prazo, ou tarefa anterior presa: a rodada é pulada e a janela fica `INDETERMINADA`.
+  Rodadas antes da origem aquecem os clientes e não entram.
+- **P-5.** Só Hot Rod em memória no caminho da medida; o JSONL vai por uma *thread* gravadora com fila em memória.
+- **Clientes próprios** (`CanalCanarioHotRod`), com `S3Clientes.configuracaoPinned`: o laço abre antes da carga, o
+  modo `topology` do S3 não tem cliente por nó e a sonda não disputa a fila dos servidores de aplicação.
+- **Caches** `canario` (SYNC) e `canario-async` (ASYNC) em `cluster/caches/*.json`, sem o envoltório do nome, com
+  `remote-timeout` 17500 explícito no SYNC, iguais aos irmãos do XML (`CachesCanarioJsonTest`); criados por
+  `scripts/cria-caches.sh` (POST e leitura de volta `?action=config` nos nós). Não estão no XML.
+
+| Peça | Onde |
+|---|---|
+| `SondaDefasagem` (agenda, rodada, buffer, `resumir`), `RodadaDefasagem` (pares, lag de nó), `ParametrosDefasagem` (bloco `defasagem`), `CanalCanario` (porta) | `controle/` |
+| `CanalCanarioHotRod` (adaptador, rótulos, correspondência `--servers` × `--controller-admin`), `PerfilReplicacao.cacheCanario()` | `session/` |
+| `LigacaoControlador`: `conferirSondaDefasagem` (só S3, prazo em W, correspondência), `pecas(..., canal)`, `abrir` (sonda no laço), `close` (contadores `defasagem_*`) | `session/LigacaoControlador.java` |
+| `FormatoJsonl`: observaveis 1.2 (`parametros_defasagem`, linha `defasagem`) | `controle/FormatoJsonl.java` |
+
 ### TD-011 — W-2a (B-44.2): atuador REST do *cluster* e política por assinatura (2026-11-05)
 
 Especificação: `docs/acoes-controlador-cluster-2026-11-05.md` (`cc08644`), seções 3, 5, 5.1 e 8, com os ajustes de
@@ -151,6 +197,8 @@ recusa `tetoLagMs` diferente de `--hotrod-timeout-ms` (R7); o `--dry-run` mostra
 rótulo de nó é `host:porta` em toda peça
 (`RotulosDosNosTest`); o `noSuspeito` do W-4 tem de seguir o mesmo rótulo. O S_lag ainda é indeterminado
 (`FonteDeDefasagem.INDETERMINADA`), então hoje só o P2 (AC-2) dispara ponta a ponta; o P1 (AC-5) espera o W-4.
+**W-4 (TD-012):** com o bloco `defasagem`, a `SondaDefasagem` alimenta o laço e o P1 dispara ponta a ponta
+(`LigacaoControladorDefasagemTest.pontaAPontaNoCortado`, ainda não executado).
 
 ### TD-010 — W-3 (B-28.2): laço de controle do *cluster* no processo da carga (2026-11-04)
 

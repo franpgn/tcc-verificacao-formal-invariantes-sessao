@@ -475,3 +475,32 @@ Esperado na H2: 971 + 3 testes novos (`kLagIndependenteDoK`, `noDaEscolha`, `tet
 `ParametrosPoliticaArquivoTest`, `PoliticaPorAssinaturaTest.parametros`, `LigacaoControladorAtuadorTest`,
 `AcaoClusterTiposTest.linhaPolitica` e `planoDeAcao`. Textos sem efeito em teste: mensagem de
 `WorkloadMainCargaControleTest:143` e comentários de `LacoDeControleTest` (46, 437, 450).
+
+## W-4 (B-26.3): sonda de defasagem S_lag, *caches* `canario*` e a fonte do controlador (2026-11-05)
+
+Branch `feature/w4-sonda-defasagem` sobre a ponta do W-2a (`9695511`). **Escrito com a VM em H0 (noite 1 do
+*rebaseline*): nenhum Maven, Surefire, `javac`, Python, Podman nem script de teste rodou.** Os testes foram
+escritos antes do código (`603947d` test, vermelho; `133212d` feat) e só vão ser executados na janela H2.
+
+| Arquivo de teste | Testes | O que prende |
+|---|---|---|
+| `controle/ParametrosDefasagemTest` | 5 | bloco `defasagem`: sem padrão, origem obrigatória, tipos estritos, histerese; `validarContra` (prazo em W, passo < prazo, `lagIn` ≤ prazo); SHA-256 cobre o bloco; `parametros_defasagem` na meta de observaveis 1.2 |
+| `controle/SondaDefasagemResumoTest` | 11 | lag de nó = menor par; nó cortado = suspeito no teto; par da maioria no teto (dono primário do outro lado) não muda o suspeito; corte parcial não chega ao teto; empate → `null`; histerese nas bordas; várias rodadas; janela sem rodada = indeterminada; validação da rodada; linha `defasagem`; funções da agenda |
+| `controle/SondaDefasagemRodadaTest` | 12 | canal falso com relógio real: 3 escritas e 6 leituras sem falha, só chaves `lag:<nó>`, `nonce:rodada`; atraso conhecido; nó cortado; leitura bloqueada interrompida no prazo; tarefa presa recusa a rodada seguinte; escrita que falha; buffer por janela (aquecimento, atrasada, fim não recua); agenda alinhada à grade; ouvinte travado não atrasa rodada (P-5); construtor |
+| `controle/ArquiteturaDefasagemTest` | 2 | S_lag em `controle/` sem Infinispan, `session`, processo, arquivo nem nome de *cache* |
+| `session/CanalCanarioHotRodTest` | 4 | rótulo = `RotulosDosNosTest.rotuloDoNo` = sonda de topologia = atuador; correspondência `--servers` × `--controller-admin`; operação vai ao cliente do nó |
+| `session/CanarioArquiteturaTest` | 5 | literal `"canario"` só no resolvedor; `cacheCanario()` só no adaptador; adaptador sem `sessions*`/`counters*`, tipos da carga, processo ou arquivo |
+| `session/CachesCanarioJsonTest` | 3 | `cluster/caches/canario*.json` compactos, sem envoltório, iguais aos irmãos do XML salvo `remote-timeout` (17500 só no SYNC); XML sem `canario` |
+| `session/LigacaoControladorDefasagemTest` | 5 | carregamento (só S3, prazo em W, `lagIn`, correspondência, R7 continua), dry-run, `pecas` coerente com o bloco, ponta a ponta em shadow (nó 3 cortado → S_lag `ALTA` com `noSuspeito` canônico → P1 com `no` e AC-5 `PREVISTA` para ele) e sem o bloco |
+| `scripts/cria-caches.test.sh` | 26 asserts | POST com o corpo do arquivo, leitura de volta nos três nós, divergência (exit 4), recusa (exit 3), arquivo ausente ou não compacto (exit 2), argumentos (exit 1), senha só pela entrada padrão |
+
+**Testes existentes que precisam mudar (não commitados, aguardam autorização do Gestor, como a D-C do W-2a):**
+
+| Teste | Linha | Mudança | Por quê |
+|---|---|---|---|
+| `session/ArquiteturaSemAcaoNoClienteTest` (R-C1) | `PERMITIDOS` | par novo `CanalCanarioHotRod` → `CanalCanario`; `LigacaoControlador` ganha `CanalCanario`, `ParametrosDefasagem`, `SondaDefasagem` | o adaptador implementa a porta da sonda e a ligação monta a sonda; nenhuma asserção retirada |
+| `controle/LacoDeControleTest` | 426 | `"observaveis-controlador/1.1"` → `"1.2"` | o plano manda o custo da sonda em colunas próprias do `observaveis` (W-4 item 3), o que muda o esquema |
+
+Esperado na H2, se as duas edições forem autorizadas: 974 (esperado do W-2a, ainda não medido) + 47 = **1021/0/0/1**,
+141 arquivos; `cria-caches.test.sh` 26/0. Sem a autorização, R-C1 e `LacoDeControleTest.tDecisaoNs`
+ficam vermelhos. Depois: *smoke* local S3 ASYNC com e sem corte do `isn3` (item 5 do prompt).

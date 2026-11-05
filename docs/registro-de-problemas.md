@@ -908,6 +908,33 @@ correspondente adicionado em `Mesclar` (`spec/SessionStore.tla`, commit `b7d8e0a
   e os nós que responderam vêm de `SondaTopologia.respondidosNaUltimaAmostra`. Ponta a ponta com servidor falso em
   `LigacaoControladorAtuadorTest`. A integração I-1..I-5 no *cluster* local espera uma janela H2.
 
+### P-39 (W-4; número a conferir na integração) — ligar a sonda de defasagem muda dois testes existentes
+
+- **Sintoma:** o adaptador `CanalCanarioHotRod` (session) implementa `controle.CanalCanario`, e o
+  `LigacaoControlador` passa a usar `CanalCanario`, `ParametrosDefasagem` e `SondaDefasagem`: o R-C1
+  (`ArquiteturaSemAcaoNoClienteTest.PERMITIDOS`) reprova os dois sem um par a mais. O custo da sonda em colunas
+  próprias do `observaveis` (W-4, item 3) muda o esquema para `observaveis-controlador/1.2`, e
+  `LacoDeControleTest.tDecisaoNs` (linha 426) compara o texto `1.1`.
+- **Proposta:** acrescentar os pares (nenhuma asserção retirada) e trocar o literal para `1.2`. As duas edições estão
+  no *working tree* da `wt-w4`, **não commitadas**, à espera da autorização do Gestor (como a D-C do W-2a).
+- **Status:** `ABERTO` (05/11).
+
+### P-40 (W-4; número a conferir na integração) — risco: suspeito ambíguo quando as chaves da maioria têm dono primário no nó cortado
+
+- **Hipótese (não medida):** sob corte do `isn3`, o par `isn1 → isn2` só falha se o dono primário de `lag:<isn1>` for
+  o `isn3` (a escrita não chega a nenhuma réplica, e a leitura pelo `isn2` busca no primário inacessível). Se as duas
+  chaves da maioria tiverem o primário no `isn3`, os seis pares ficam no teto, os três nós empatam, o `noSuspeito` sai
+  `null` e o P1 não dispara naquela execução. Com 64 segmentos e dono primário mais ou menos uniforme entre 3 nós, a
+  chance por execução seria da ordem de (1/3)² ≈ 11 %; as chaves são fixas por execução.
+- **Efeito:** falha segura (sem AC-5, CONSERVADOR sem ação), mas reduz a sensibilidade do P1.
+- **Medir:** no *smoke* local do W-4, registrar os pares no teto por rodada (linha `defasagem`) e onde ficam as
+  chaves `lag:*`, por `GET /rest/v2/caches/{cache}/{chave}?action=distribution` (REST 15.0 §2.1.18,
+  `leituras/CAND-091`), conferindo o `Key-Content-Type` (as chaves vão pelo `JavaSerializationMarshaller` do
+  cliente, não como texto). Se a
+  ambiguidade aparecer, as opções são duas chaves por escritor (custo dobra) ou escolher chaves com primário no
+  próprio escritor (exige topologia no cliente). Decisão do Senior/Gestor.
+- **Status:** `ABERTO` (05/11, risco de desenho).
+
 ## Observação de modelagem (não é defeito)
 
 Com 8 *threads* = 8 identidades fixas (`user-<tid>`), `incrementFailure`

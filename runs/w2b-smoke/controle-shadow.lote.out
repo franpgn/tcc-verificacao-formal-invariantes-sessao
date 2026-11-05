@@ -1,0 +1,12 @@
+== 2026-11-05T11:45:22.235Z inicio controle-shadow modo=shadow teto_convergencia_s=120 semente=63003 jar_sha256=f47870e7f3d640abb4f6e4341dc66966aeb8fad9e1c2f0445c9f76b4e3dd3d59 cfg_sha256=0ff8714b217a50c10b44cf7e3a992650527692662cd4e9ae33554f1946253c8a base=65165ea
+cluster w2b: 3 nos
+cria-caches canario-async: rc=0
+== 2026-11-05T11:45:40.157Z origem_ns=1793879173823418250
+== 2026-11-05T11:46:43.954Z corte-inicio isn3
+== 2026-11-05T11:46:45.919Z corte-fim isn3 rc=0
+== 2026-11-05T11:47:40.866Z fim-da-carga-visto (linha Controlador:)
+== 2026-11-05T11:47:40.944Z cura-inicio isn3
+== 2026-11-05T11:47:42.845Z cura-fim isn3 rc=0
+== 2026-11-05T11:48:31.899Z carga exit=0
+== 2026-11-05T11:48:45.958Z fim controle-shadow
+exit=0

@@ -1,0 +1,141 @@
+{
+ "execucao": "ativo-sem-religar",
+ "fases": {
+  "inicio": "inicio ativo-sem-religar modo=active teto_convergencia_s=120 semente=63001 jar_sha256=f47870e7f3d640abb4f6e4341dc66966aeb8fad9e1c2f0445c9f76b4e3dd3d59 cfg_sha256=0ff8714b217a50c10b44cf7e3a992650527692662cd4e9ae33554f1946253c8a base=65165ea",
+  "origem_ns=1793878886219214300": "origem_ns=1793878886219214300",
+  "corte-inicio": "corte-inicio isn3",
+  "corte-fim": "corte-fim isn3 rc=0",
+  "fim-da-carga-visto": "fim-da-carga-visto (linha Controlador:)",
+  "cura-inicio": "cura-inicio isn3",
+  "cura-fim": "cura-fim isn3 rc=1",
+  "carga": "carga exit=0",
+  "fim": "fim ativo-sem-religar"
+ },
+ "P1": [
+  {
+   "no": "127.0.0.1:12703",
+   "t_decisao_s": 13.275
+  }
+ ],
+ "AC5": [
+  {
+   "operacao": "APLICAR",
+   "executada": true,
+   "resultado": "APLICADA",
+   "alvo": "127.0.0.1:12703",
+   "codigo_http": 204,
+   "lido": "127.0.0.1:12703=parou;127.0.0.1:12701=HEALTHY;127.0.0.1:12702=HEALTHY",
+   "erro": null,
+   "reversao": "orquestrador",
+   "t_pedido_s": 13.276,
+   "t_inicio_s": 13.277,
+   "duracao_s": 3.152,
+   "t_fim_s": 16.429
+  }
+ ],
+ "saude_isn3": {
+  "amostras": 0,
+  "codigos": {},
+  "ultimo_200_s": null,
+  "primeiro_sem_200_depois_do_pedido_s": null
+ },
+ "hotrod_isn3": {
+  "eventos": 257,
+  "ultimo_sucesso_s": 16.219,
+  "primeiro_erro_depois_do_pedido_s": 13.928,
+  "codigos_depois_do_pedido": {
+   "ERROR_TRANSPORT": 134,
+   "COUNTED": 3,
+   "NONE": 1,
+   "VALID": 3
+  }
+ },
+ "conteiner_isn3": {
+  "status_no_fim": "exited",
+  "exit_code": 0,
+  "finished_at": "2026-11-05T08:42:16.789918834-03:00",
+  "started_at": "2026-11-05T08:40:39.098792745-03:00",
+  "finished_s": 18.496
+ },
+ "instantes_s": {
+  "t_lag": 2.926,
+  "t_P1": 13.275,
+  "t_AC5_pedido": 13.276,
+  "t_AC5_fim": 16.429,
+  "t_saude_isn3_parou": null,
+  "t_vista_maioria": 49.277,
+  "fim-da-carga-visto": 53.741,
+  "cura-fim": 55.844
+ },
+ "stdout": {
+  "leitura_por_replica": [
+   "Leitura por replica: prazo_sem_resposta_ms=2000 sessoes@127.0.0.1:12701=lida contadores@127.0.0.1:12701=lida sessoes@127.0.0.1:12702=lida contadores@127.0.0.1:12702=lida sessoes@127.0.0.1:12703=nao-lida:sem-resposta contadores@127.0.0.1:12703=nao-lida:sem-resposta"
+  ],
+  "convergencia": [
+   "Convergencia: convergiu=false, persistente=true, rodadas=24, t_convergencia=null ns"
+  ],
+  "controlador": [
+   "Controlador: modo=active janelas=16 transicoes=1 acoes_pedidas=1 acoes_executadas=1 reversoes=0 reversoes_falhas=0 executor_no_prazo=true eventos_antes_da_origem=575 linhas_jsonl_perdidas=0"
+  ],
+  "violacoes": [
+   "Violacoes detectadas: 0"
+  ],
+  "total_operacoes": [
+   "Total de operacoes: 1536"
+  ],
+  "erros_s3": [
+   "S3 acao|Block|ERROR_TRANSPORT = 2",
+   "S3 acao|IncrementFailure|ERROR_TRANSPORT = 5",
+   "S3 acao|Login|ERROR_TRANSPORT = 15",
+   "S3 acao|Logout|ERROR_TRANSPORT = 4",
+   "S3 acao|ResetFailures|ERROR_TRANSPORT = 2",
+   "S3 acao|Validate|ERROR_TRANSPORT = 22"
+  ]
+ },
+ "exit": "exit=0",
+ "convergencia_csv": {
+  "rodadas": 24,
+  "validas": 0,
+  "motivos": {
+   "topologia com 2 de 3 servidores": 24
+  },
+  "primeira_valida_s": null,
+  "ultima_s": 168.166
+ },
+ "convergencia_resumo": {
+  "t_fim_ns": 1793878971225477600,
+  "convergiu": false,
+  "divergencia_persistente": true,
+  "t_convergencia_ns": null,
+  "t_convergencia_abs_ns": null,
+  "rodadas": 24,
+  "rodadas_validas": 0,
+  "t_fim_carga_ns": 1793878971225477600,
+  "t_fim_controle_ns": 1793878971237276500
+ },
+ "arquivos": {
+  "convergencia-rep-001.csv": 1544,
+  "convergencia-resumo-rep-001.json": 301,
+  "decisoes-rep-001.jsonl": 17485,
+  "estado-rep-001.json": 179,
+  "isn3-state.json": 2681,
+  "meta-csv-rep-001.json": 18,
+  "observaveis-rep-001.jsonl": 53899,
+  "rep-001.csv": 123261,
+  "resumo.json": 0,
+  "s3-acoes-rep-001.csv": 184105,
+  "s3-resumo-rep-001.json": 1508,
+  "saude-subida-isn1.json": 467,
+  "saude-subida-isn2.json": 467,
+  "saude-subida-isn3.json": 467,
+  "violacoes-rep-001.csv": 55
+ },
+ "jsonl_com_fim": {
+  "observaveis": true,
+  "decisoes": true
+ },
+ "violacoes": {
+  "total": 0,
+  "por_invariante": null
+ }
+}

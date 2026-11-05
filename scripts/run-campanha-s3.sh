@@ -64,6 +64,10 @@
 #     7 a 10 execucoes;
 #   - trilha de decisoes sem a linha fim ou com linhas_perdidas > 0 marca trilha_incompleta no execucao.json; com
 #     --exigir-trilha-completa, a execucao e DESCARTADA-INFRA (a fase segue). As duas opcoes entram no bundle.
+#   Acrescimos da V-W6b: o execucao.json de toda falha injetada traz o fim nominal (fim_nominal_desde_ancora_s =
+#   inj_inicio_offset_s + f*_dur_s) e a saida do injetor (injetor_saida_desde_ancora_s), porque o F4 do braco B sai no
+#   fim do ping quando o AC-5 para o alvo e o end adianta (N1); o B1 exige o marcador start da falha no no (F2, F3, F4)
+#   e, no F4, a linha "degradacao aplicada: alvo <no>" do injetor (R4).
 # Todo numero da campanha vem do --parametros (esquema campanha-s3/1, cada um com a sua origem, sem padrao;
 # scripts/campanha_s3_conferir.py). As constantes abaixo tem a origem ao lado.
 #
@@ -153,7 +157,7 @@ SERVERS="127.0.0.1:11222,127.0.0.1:11223,127.0.0.1:11224"
 ADMIN="http://127.0.0.1:11222,http://127.0.0.1:11223,http://127.0.0.1:11224"
 USERNAME="admin"; PASSWORD="${CS_PASSWORD:-}"
 
-uso() { sed -n '2,60p' "${SELF}" | sed 's/^# \{0,1\}//'; }
+uso() { sed -n '2,/^set -euo pipefail$/p' "${SELF}" | sed '$d' | sed 's/^# \{0,1\}//'; }  # R7 da V-W6b
 erro_uso() { echo "Erro: $*" >&2; exit 2; }
 
 while [[ $# -gt 0 ]]; do
@@ -1038,6 +1042,8 @@ gravar_execucao() {
  "disparo_ms": $(json_ou_null "${E_DISP_MS}"),
  "inj_inicio_offset_s": $(json_ou_null "${E_OFFSET}"),
  "injetor_exit": $(json_ou_null "${E_IEXIT}"),
+ "fim_nominal_desde_ancora_s": $(json_ou_null "$(fim_nominal_s)"),
+ "injetor_saida_desde_ancora_s": $(json_ou_null "$([[ -n "${E_INJ_SAIDA_MS}" && -n "${E_ANC_MS}" ]] && ms_para_s $(( E_INJ_SAIDA_MS - E_ANC_MS )))"),
  "injetor_alvo_parado": $(json_str_ou_null "${E_INJ_PARADO}"),
  "deadman": ${E_DEADMAN:-null},
  "rede_pos": ${E_REDE_POS:-null},
@@ -1054,6 +1060,11 @@ gravar_execucao() {
  "trilha": ${E_TRILHA_JSON:-null}
 }
 EOF
+}
+
+fim_nominal_s() {  # N1 da V-W6b: inj_inicio_offset_s + f*_dur_s (o fim da falha pelo plano, nao pelo end do injetor)
+    [[ -n "${E_DISP_MS}" && -n "${E_ANC_MS}" && "${E_FALHA}" != none ]] || return 0
+    ms_para_s $(( E_DISP_MS - E_ANC_MS + P[${E_FALHA,,}_dur_s] * 1000 ))
 }
 
 gravar_checagem() {  # gravar_checagem <dir> <veredito> : motivos em E_MOTIVOS, avisos em E_AVISOS
@@ -1175,6 +1186,7 @@ amostra_netem_f3() {  # B-40 4.3 (C5 do rebaseline): netem na raiz do no do F3 a
 concluir_injecao() {
     local rc=0 seguem
     wait "${INJ_PID}" || rc=$?
+    E_INJ_SAIDA_MS="$(agora_ms)"   # N1 da V-W6b: no laco, a saida e vista na volta seguinte (passo de POLL_S)
     E_IEXIT="${rc}"; INJ_PID=""; INJ_ESTADO=feita
     log "exec i=${E_I}: injetor saiu com ${rc}"
     if [[ "${E_FALHA}" == F1 ]]; then
@@ -1506,12 +1518,19 @@ resolver_injetor_parado() {  # resolver_injetor_parado <dir> <exit da conferenci
     if [[ "${E_FALHA}" == F2 ]] && ! grep -F -e "OK: ${E_INJ_PARADO} nao conecta a nenhum par" "${d}/injetor.log" > /dev/null 2>&1; then
         falta+="${falta:+; }injetor.log sem 'OK: ${E_INJ_PARADO} nao conecta a nenhum par' (corte nao confirmado)"
     fi
+    # R4 da V-W6b: a falha comecou no no (start) e, no F4, o injetor aplicou a degradacao nele (inject-netdegrade.sh:748)
+    if ! grep -E -e "^fault=${E_FALHA} node=${E_INJ_PARADO} event=start " "${d}/marcadores.txt" > /dev/null 2>&1; then
+        falta+="${falta:+; }marcadores.txt sem o marcador start de ${E_FALHA} em ${E_INJ_PARADO}"
+    fi
+    if [[ "${E_FALHA}" == F4 ]] && ! grep -F -e "degradacao aplicada: alvo ${E_INJ_PARADO}," "${d}/injetor.log" > /dev/null 2>&1; then
+        falta+="${falta:+; }injetor.log sem 'degradacao aplicada: alvo ${E_INJ_PARADO}' (degradacao nao confirmada)"
+    fi
     if [[ -z "${falta}" && "${E_FALHA}" == F3 ]]; then
         E_AVISOS+=("falha efetiva ate a parada do no pelo AC-5; o netem saiu com o netns de ${E_INJ_PARADO} (F3 saiu com ${E_IEXIT}, ${E_INJ_PARADO} parado pelo AC-5 APLICADA; B1 da V-W6 no F3)")
     elif [[ -z "${falta}" ]]; then
         E_AVISOS+=("falha efetiva ate a parada do no pelo AC-5; contadores do injetor nao lidos (${E_FALHA} saiu com ${E_IEXIT}, ${E_INJ_PARADO} parado pelo AC-5 APLICADA; B1 da V-W6)")
     else
-        E_RECUSAS+=("injetor ${E_FALHA} saiu com ${E_IEXIT} com ${E_INJ_PARADO} parado sem AC-5 APLICADA confirmada nele (${falta}) (recusa, como o K6 do rebaseline)")
+        E_RECUSAS+=("injetor ${E_FALHA} saiu com ${E_IEXIT} com ${E_INJ_PARADO} parado, sem as provas do B1 (${falta}) (recusa, como o K6 do rebaseline)")
     fi
 }
 
@@ -1541,7 +1560,7 @@ rodar_execucao() {  # rodar_execucao "<i> <celula> <modo> <falha> <papel> <bloco
     E_FALHA_EF=""; E_VOLTA_F1=""; E_SINAL_JSON=""; E_SINAL_MS=""; E_SINAL_ALVO=""; E_RELIG_JSON=""; E_RELIG_NO=""
     E_FIM_UTC=""; E_WEXIT=""; E_TETO=false; E_SEM_ANCORA=""; E_INFRA_STOP=""; E_PARADA_H4=""; E_META=""; E_PAROU=""
     E_INJ_PARADO=""; E_RELIG_OUTROS=" "; PARADOS=""
-    E_SWAP_KB=""; E_SWAP_LEIT=""; E_SWAP_RECRIADO=false; E_TRILHA_INC=""; E_TRILHA_JSON=""
+    E_SWAP_KB=""; E_SWAP_LEIT=""; E_SWAP_RECRIADO=false; E_TRILHA_INC=""; E_TRILHA_JSON=""; E_INJ_SAIDA_MS=""
     F3_MARCA=""; PID_ALVO=""; NETEM_ESTADO=""; NETEM_AMOSTRA_MS=0
     E_MOTIVOS=(); E_RECUSAS=(); E_AVISOS=(); E_INFRAS=()
     if [[ -d "${d}" ]]; then

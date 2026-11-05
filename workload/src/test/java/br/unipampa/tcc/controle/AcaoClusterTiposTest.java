@@ -14,7 +14,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * W-2a (B-44.2): tipos de acao do braco B (documento de 05/11, secoes 3.1, 3.2 e 5.1). AC-2 global e
- * reversivel com prazo {@code T_cham}; AC-5 num no so, nao reversivel, com prazo {@code T_cham + 3 s}.
+ * reversivel com prazo {@code T_cham}; AC-5 num no so, nao reversivel, com prazo {@code T_cham + 15 s} (P-42: a parada sob
+ * corte medida no I-3 do B-44.2 veio 13,1 a 13,3 s depois do pedido).
  */
 class AcaoClusterTiposTest {
 
@@ -37,13 +38,13 @@ class AcaoClusterTiposTest {
     }
 
     @Test
-    @DisplayName("AC-5: exatamente um no como alvo, nao reversivel, prazo T_cham + 3 s (Server.java:208)")
+    @DisplayName("AC-5: exatamente um no como alvo, nao reversivel, prazo T_cham + 15 s (P-42, parada sob corte no I-3)")
     void ac5() {
         assertFalse(AcaoCluster.Tipo.AC_5.reversivel());
         assertEquals(AcaoCluster.RegraAlvo.UM_NO, AcaoCluster.Tipo.AC_5.alvo());
         assertEquals("AC-5", AcaoCluster.Tipo.AC_5.rotulo());
-        assertEquals(5 * S, AcaoCluster.Tipo.AC_5.prazoNs(2 * S));
-        assertEquals(3 * S + 7, AcaoCluster.Tipo.AC_5.prazoNs(7));
+        assertEquals(17 * S, AcaoCluster.Tipo.AC_5.prazoNs(2 * S));
+        assertEquals(15 * S + 7, AcaoCluster.Tipo.AC_5.prazoNs(7));
         for (String ruim : new String[] {null, "", " ", "isn1,isn2", "isn1 isn2", " isn1", "isn1\t"}) {
             assertThrows(IllegalArgumentException.class,
                     () -> new AcaoCluster(AcaoCluster.Tipo.AC_5, CACHES, ruim, null), "alvo '" + ruim + "'");

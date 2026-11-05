@@ -144,8 +144,8 @@ class LigacaoControladorAtuadorTest {
         String t = LigacaoControlador.textoDryRun(cfg);
         assertTrue(t.contains("atuador=por-tipo(AC-2=rest-infinispan,AC-5=rest-infinispan) politica=por-assinatura"), t);
         assertTrue(t.contains("politica kLag=2 tetoLagMs=2000 tRebNs=60000000000 cotaAc5=1"), t);
-        // V-W2a R1: AC-2 na pilha (2 s) + AC-5 em curso (5 s) + T_cham (2 s)
-        assertTrue(t.contains("prazo_encerramento=em_curso+pilha+T_cham pior_caso_ns=9000000000"), t);
+        // V-W2a R1 e P-42: AC-2 na pilha (2 s) + AC-5 em curso (T_cham + 15 s = 17 s) + T_cham (2 s)
+        assertTrue(t.contains("prazo_encerramento=em_curso+pilha+T_cham pior_caso_ns=21000000000"), t);
         for (String linha : t.split("\\R")) {
             assertTrue(linha.startsWith("dry-run, "), linha);
         }

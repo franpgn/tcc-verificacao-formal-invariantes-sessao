@@ -52,4 +52,17 @@ class ArquivoCalibracaoTest {
         assertEquals(100, prazo / p.defasagem().passoLeituraMs());
         assertTrue(p.defasagem().lagInMs() <= prazo);
     }
+
+    @Test
+    @DisplayName("P-42: kLag viavel na calibracao, kLag * W + t_parada < 39,8 s (com W = 5 s e t_parada = 13,3 s, kLag <= 5)")
+    void kLagViavel() throws Exception {
+        ParametrosControlador p = ParametrosControlador.deJson(arquivo());
+        // t_parada sob corte: 13,1 s (SYNC) e 13,3 s (ASYNC) do pedido a primeira recusa, I-3 do B-44.2
+        // (docs/relatorio-b44-2-2026-11-05.md secao 7); 39,8 s: menor T_det da VM (relatorio-tb-v3, isn3 em +39,8 s)
+        long tParadaNs = 13_300_000_000L;
+        long tDetMinNs = 39_800_000_000L;
+        long kMax = (tDetMinNs - tParadaNs - 1) / p.wNs();
+        assertTrue(p.politica().kLag() * p.wNs() + tParadaNs < tDetMinNs,
+                "kLag = " + p.politica().kLag() + " com W = " + p.wNs() + " ns: o maior viavel e " + kMax);
+    }
 }

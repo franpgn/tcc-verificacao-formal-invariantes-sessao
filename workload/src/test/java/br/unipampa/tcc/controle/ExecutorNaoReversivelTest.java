@@ -14,7 +14,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * W-2a (B-44.2), item 2: acao nao reversivel (AC-5) fora da pilha, nunca desfeita pelo controlador, pedida
- * no maximo uma vez; prazo por tipo ({@code AC-2 = T_cham}, {@code AC-5 = T_cham + 3 s}); {@code T_enc} soma
+ * no maximo uma vez; prazo por tipo ({@code AC-2 = T_cham}, {@code AC-5 = T_cham + 15 s}, P-42); {@code T_enc} soma
  * os prazos da pilha e o da chamada em curso. Mutantes que estes testes matam: "AC-5 empilhada" e "pilha
  * invertida" (junto com os testes LIFO do {@link ExecutorDeAcoesTest}).
  */
@@ -61,7 +61,7 @@ class ExecutorNaoReversivelTest {
     }
 
     @Test
-    @DisplayName("prazo por tipo: AC-2 recebe T_cham e AC-5 recebe T_cham + 3 s")
+    @DisplayName("prazo por tipo: AC-2 recebe T_cham e AC-5 recebe T_cham + 15 s (P-42)")
     void prazoPorTipo() throws Exception {
         AtuadorFalso a = new AtuadorFalso();
         ExecutorDeAcoes e = executor(ModoAtuacao.ACTIVE, a, 2 * S);
@@ -73,9 +73,9 @@ class ExecutorNaoReversivelTest {
         List<AtuadorFalso.Chamada> c = a.chamadas();
         assertEquals(List.of("aplicar:AC-2", "aplicar:AC-5", "reverter:AC-2"), ops(a));
         assertEquals(2 * S, c.get(0).prazoNs());
-        assertEquals(5 * S, c.get(1).prazoNs());
+        assertEquals(17 * S, c.get(1).prazoNs());
         assertEquals(2 * S, c.get(2).prazoNs());
-        assertEquals(5 * S, e.prazoNs(AcaoCluster.Tipo.AC_5));
+        assertEquals(17 * S, e.prazoNs(AcaoCluster.Tipo.AC_5));
     }
 
     @Test
@@ -147,7 +147,7 @@ class ExecutorNaoReversivelTest {
     }
 
     @Test
-    @DisplayName("T_enc: pilha com AC-2 + AC-5 em curso = T_cham + (T_cham + 3 s) + T_cham; A so conta a pilha")
+    @DisplayName("T_enc: pilha com AC-2 + AC-5 em curso = T_cham + (T_cham + 15 s) + T_cham; A so conta a pilha")
     void prazoEncerramentoComAc5EmCurso() throws Exception {
         long tCham = 100 * MS;
         AtuadorFalso a = new AtuadorFalso();
@@ -174,7 +174,7 @@ class ExecutorNaoReversivelTest {
         soltar.start();
         assertTrue(e.encerrar(), "o AC-5 em curso cabe no prazo dele");
         soltar.join();
-        assertEquals(tCham + (tCham + 3 * S) + tCham, e.prazoEncerramentoUsadoNs());
+        assertEquals(tCham + (tCham + 15 * S) + tCham, e.prazoEncerramentoUsadoNs());
         assertEquals(List.of("aplicar:AC-2", "aplicar:AC-5", "reverter:AC-2"), ops(a));
     }
 }

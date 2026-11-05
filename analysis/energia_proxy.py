@@ -3,7 +3,10 @@
 Uso (da raiz do repositorio):
   python -I analysis/energia_proxy.py --execucao DIR --rep N --cenario S1|S2|S3
       [--marcadores ARQ --w-recovery-s 60 [--convergencia ARQ.json]]
-      [--p-max-w W --razoes-ocioso 0.3,0.5,0.7] --saida energia-rep-NNN.json
+      [--p-max-w W --razoes-ocioso 0.3,0.5] --saida energia-rep-NNN.json
+
+Modelo da campanha S3: --p-max-w 181 (ficha do i5-14600KF) e razoes 0,3 (central) e 0,5 (sensibilidade),
+origem em RAZOES_OCIOSO_PADRAO abaixo.
 
 Entradas em DIR (contratos copiados dos prompts do B-37 e do B-27):
   recursos-rep-NNN.csv + recursos-meta-rep-NNN.json   contrato recursos/1
@@ -44,7 +47,13 @@ CABECALHO_S3_V2 = ("t_ns,ator,operacao,alvo,resultado,tentativas,falha_percebida
 CABECALHO_S3_V1 = "t_ns,ator,operacao,alvo,resultado,tentativas,falha_percebida,nota"
 CABECALHO_EVENTOS = "op_id,operation,start_ns,end_ns,replica,return_code,key"
 LIMIAR_STEAL = Fraction(5, 100)          # plano 5.3, item 5: excluida se steal > 5 % (estrito)
-RAZOES_OCIOSO_PADRAO = (0.3, 0.5, 0.7)
+# Razao P_ocioso / P_max (decisao do coordenador de 2026-11-05, conferencia do Bibliotecario):
+#   0,3 central: Barroso e Holzle (2007, barroso_holzle_energy_proportional_2007), p. 36, processadores com
+#       menos de um terco do pico em atividade muito baixa; coerente com P_max = 181 W, que e a potencia do
+#       processador (Maximum Turbo Power da ficha intel_i5_14600kf; plano de execucao continua, secao 6);
+#   0,5 sensibilidade: mesma fonte, p. 34, servidor inteiro ocioso a cerca de metade do pico.
+#   0,7 saiu: sem fonte.
+RAZOES_OCIOSO_PADRAO = (0.3, 0.5)
 FONTE_WORKLOAD = "pid:workload"
 FONTE_VM = "vm"
 FONTE_COLETOR = "coletor"

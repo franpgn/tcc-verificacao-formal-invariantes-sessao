@@ -1,0 +1,2 @@
+[0m2026-11-05 01:28:00,859 INFO  [o.i.CLUSTER] ISPN000094: Received new cluster view for channel cluster-tcc: [isn1-15077|9] (2) [isn1-15077, isn2-28862][m
+[0m2026-11-05 01:30:24,861 INFO  [o.i.CLUSTER] ISPN000093: Received new, MERGED cluster view for channel cluster-tcc: MergeView::[isn1-15077|10] (3) [isn1-15077, isn3-9749, isn2-28862], 2 subgroups: [isn1-15077|9] (2) [isn1-15077, isn2-28862], [isn3-9749|9] (1) [isn3-9749][m

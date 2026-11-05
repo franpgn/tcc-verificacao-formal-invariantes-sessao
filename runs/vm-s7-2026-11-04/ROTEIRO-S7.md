@@ -1,5 +1,17 @@
 # Roteiro do S7 (G-5b-B: o dead-man disparando sozinho), 2026-11-04
 
+> **Estado em 2026-11-05 (Senior): S7 VÁLIDO na terceira tentativa, bloco encerrado, não repetir.**
+>
+> | Tentativa | Diretório | GO (UTC) | Veredito automático | Validação | Causa |
+> |---|---|---|---|---|---|
+> | 1 | `vm-20261104T225329Z/` | 04/11 22:55:51 | `INVALIDO` (B1/A11, 1 amostra ruim no portão pós) | `V-S7.md` | pausa de ~10 s da VM inteira |
+> | 2 | `vm-20261104T232939Z/` | 04/11 23:32:06 | `INVALIDO` (intervalo do saúde-log 20,1 s) | `V-S7r.md` | disco virtual travado por 176 s |
+> | 3 | `vm-20261105T012458Z/` | 05/11 01:27:13 | **`VALIDO (19 criterios OK)`** | **`V-S7t.md`** | — |
+>
+> Antes da terceira tentativa, o coordenador aplicou ao host as mitigações da V-S7r §5 (ASPM desligado, `ReTrim`, exclusão de `C:\Hyper-V` no Defender), mediu 30 min de novo e fez a checagem de 10 min. **A condição de entrada da V-S7r §6, item 3, foi cumprida**: nos 10 min da checagem (01:14:21-01:24:22Z), a pior janela de 10 s de PSI io `full` foi de 1,17 s, abaixo de 1,5 s, com 0 amostras ruins. O `s7.sh`, o `g5b.sh` e o `portao51.sh` não mudaram em nenhuma tentativa. Os brutos das três estão no host, com `sha256sum -c` OK. Com o S7 válido, S1..S7 estão aprovados.
+>
+> Daqui em diante, este roteiro é histórico. O passo seguinte da VM está em `docs/roteiro-vm-2026-11-04.md` §0 e na fila do `plano-execucao-continua-2026-11-04.md` §3.0 (`wt-plano-ctrl`).
+
 Preparado pelo Worker. Não foi executado na VM. Referências: `docs/prompt-worker-s6-s7-g5b-2026-11-04.md`, `decisoes-senior-2026-10-16.md` §5.1, §5.2, §5.7 e §5.8 (na `wt-plano-ctrl`), `runs/vm-s5-2026-10-28/V-s5sh.md` (R-1, R-2, R-3, R-6), `runs/vm-s4-2026-10-28/V-S4.md` (P-2), `docs/roteiro-vm-2026-11-04.md`, seção 9 (Q-11 a Q-16, pendentes do Gestor), e o `runs/vm-s6-2026-11-04/ROTEIRO-S6.md`, do qual este difere só no que é próprio do modo B.
 
 ## O que o S7 prova e o que não prova

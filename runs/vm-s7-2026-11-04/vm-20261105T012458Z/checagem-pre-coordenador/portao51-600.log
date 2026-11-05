@@ -1,0 +1,25 @@
+amostras=120 amostras_ruins=0 janela_s=600 maior_sequencia_boa_s=600 ultima_sequencia_boa_desde=2026-11-05T01:14:21+00:00
+size sessions porta 11222: 0
+size sessions porta 11223: 0
+size sessions porta 11224: 0
+size counters porta 11222: 0
+size counters porta 11223: 0
+size counters porta 11224: 0
+timers tcc-heal: 0 units tcc-heal: 0
+isn1 pid=1407 tc qdisc show (todas as interfaces): qdisc noqueue 0: dev lo root refcnt 2 qdisc noqueue 0: dev eth0 root refcnt 2
+isn1 proibidos(clsact|prio|netem|ingress)=0 eth0_noqueue=1
+isn1 tc filter eth0: []
+isn2 pid=1543 tc qdisc show (todas as interfaces): qdisc noqueue 0: dev lo root refcnt 2 qdisc noqueue 0: dev eth0 root refcnt 2
+isn2 proibidos(clsact|prio|netem|ingress)=0 eth0_noqueue=1
+isn2 tc filter eth0: []
+isn3 pid=1711 tc qdisc show (todas as interfaces): qdisc noqueue 0: dev lo root refcnt 2 qdisc noqueue 0: dev eth0 root refcnt 2
+isn3 proibidos(clsact|prio|netem|ingress)=0 eth0_noqueue=1
+isn3 tc filter eth0: []
+lock: OCUPADO
+isn1 mudancas de vista nos ultimos 5 min (ISPN000094|ISPN000093|ISPN100000|ISPN100001|MergeView): 0
+isn1 ultima mudanca de vista: 2026-11-04 23:35:44,730 INFO  [o.i.CLUSTER] ISPN000093: Received new, MERGED cluster view for channel cluster-tcc: MergeView::[isn1-15077|8] (3) [isn1-15077, isn3-9749, isn2-28862], 2 subgroups: [isn3
+isn2 mudancas de vista nos ultimos 5 min (ISPN000094|ISPN000093|ISPN100000|ISPN100001|MergeView): 0
+isn2 ultima mudanca de vista: 2026-11-04 23:35:44,734 INFO  [o.i.CLUSTER] ISPN000093: Received new, MERGED cluster view for channel cluster-tcc: MergeView::[isn1-15077|8] (3) [isn1-15077, isn3-9749, isn2-28862], 2 subgroups: [isn3
+isn3 mudancas de vista nos ultimos 5 min (ISPN000094|ISPN000093|ISPN100000|ISPN100001|MergeView): 0
+isn3 ultima mudanca de vista: 2026-11-04 23:35:44,730 INFO  [o.i.CLUSTER] ISPN000093: Received new, MERGED cluster view for channel cluster-tcc: MergeView::[isn1-15077|8] (3) [isn1-15077, isn3-9749, isn2-28862], 2 subgroups: [isn3
+fim 2026-11-05T01:24:22+00:00

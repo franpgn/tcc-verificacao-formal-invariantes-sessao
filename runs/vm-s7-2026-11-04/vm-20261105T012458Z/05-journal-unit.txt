@@ -1,0 +1,24 @@
+2026-11-05T01:27:13.946210+00:00 server1 systemd[1]: Started tcc-heal-220823-17766.timer - /usr/bin/bash scripts/inject-partition.sh --heal --minority isn3.
+2026-11-05T01:29:38.981872+00:00 server1 systemd[1]: Started tcc-heal-220823-17766.service - /usr/bin/bash scripts/inject-partition.sh --heal --minority isn3.
+2026-11-05T01:29:38.984911+00:00 server1 bash[230073]: [2026-11-05T01:29:38Z] inject-partition.sh: Heal: removendo clsact em isn3 (iface eth0)
+2026-11-05T01:29:38.987591+00:00 server1 sudo[230078]:     root : PWD=/home/server1/tcc-gate ; USER=root ; COMMAND=/usr/bin/podman inspect isn3
+2026-11-05T01:29:38.987956+00:00 server1 sudo[230078]: pam_unix(sudo:session): session opened for user root(uid=0) by (uid=0)
+2026-11-05T01:29:39.038689+00:00 server1 sudo[230078]: pam_unix(sudo:session): session closed for user root
+2026-11-05T01:29:39.042301+00:00 server1 sudo[230093]:     root : PWD=/home/server1/tcc-gate ; USER=root ; COMMAND=/usr/bin/podman inspect -f {{.State.Status}} isn3
+2026-11-05T01:29:39.042540+00:00 server1 sudo[230093]: pam_unix(sudo:session): session opened for user root(uid=0) by (uid=0)
+2026-11-05T01:29:39.087007+00:00 server1 sudo[230093]: pam_unix(sudo:session): session closed for user root
+2026-11-05T01:29:39.090087+00:00 server1 sudo[230108]:     root : PWD=/home/server1/tcc-gate ; USER=root ; COMMAND=/usr/bin/podman inspect -f {{.State.Pid}} isn3
+2026-11-05T01:29:39.090330+00:00 server1 sudo[230108]: pam_unix(sudo:session): session opened for user root(uid=0) by (uid=0)
+2026-11-05T01:29:39.142437+00:00 server1 sudo[230108]: pam_unix(sudo:session): session closed for user root
+2026-11-05T01:29:39.145914+00:00 server1 sudo[230122]:     root : PWD=/home/server1/tcc-gate ; USER=root ; COMMAND=/usr/bin/readlink /proc/1711/ns/net
+2026-11-05T01:29:39.146151+00:00 server1 sudo[230122]: pam_unix(sudo:session): session opened for user root(uid=0) by (uid=0)
+2026-11-05T01:29:39.146952+00:00 server1 sudo[230122]: pam_unix(sudo:session): session closed for user root
+2026-11-05T01:29:39.150131+00:00 server1 sudo[230125]:     root : PWD=/home/server1/tcc-gate ; USER=root ; COMMAND=/usr/bin/readlink /proc/1/ns/net
+2026-11-05T01:29:39.150371+00:00 server1 sudo[230125]: pam_unix(sudo:session): session opened for user root(uid=0) by (uid=0)
+2026-11-05T01:29:39.151166+00:00 server1 sudo[230125]: pam_unix(sudo:session): session closed for user root
+2026-11-05T01:29:39.155628+00:00 server1 sudo[230127]:     root : PWD=/home/server1/tcc-gate ; USER=root ; COMMAND=/usr/bin/nsenter -t 1711 -n tc qdisc del dev eth0 clsact
+2026-11-05T01:29:39.155916+00:00 server1 sudo[230127]: pam_unix(sudo:session): session opened for user root(uid=0) by (uid=0)
+2026-11-05T01:29:39.157787+00:00 server1 sudo[230127]: pam_unix(sudo:session): session closed for user root
+2026-11-05T01:29:39.159014+00:00 server1 bash[230073]: [2026-11-05T01:29:39Z] inject-partition.sh:   isn3 (pid 1711): clsact removido (ou ja ausente)
+2026-11-05T01:29:39.159567+00:00 server1 systemd[1]: tcc-heal-220823-17766.service: Deactivated successfully.
+2026-11-05T01:29:39.159761+00:00 server1 systemd[1]: tcc-heal-220823-17766.timer: Deactivated successfully.

@@ -1,0 +1,13 @@
+\Hyper-V Virtual Storage Device(*)\Latency
+\Hyper-V Virtual Storage Device(*)\Queue Length
+\Hyper-V Virtual Storage Device(*)\Flush Count
+\Hyper-V Virtual Storage Device(*)\Write Count
+\Hyper-V Virtual Storage Device(*)\Error Count
+\PhysicalDisk(*)\Avg. Disk sec/Write
+\PhysicalDisk(*)\Avg. Disk sec/Read
+\PhysicalDisk(*)\Current Disk Queue Length
+\PhysicalDisk(*)\% Idle Time
+\Hyper-V Hypervisor Virtual Processor(*)\% Guest Run Time
+\Memory\Available MBytes
+\Process(MsMpEng)\% Processor Time
+\Process(MsMpEng)\IO Data Bytes/sec

@@ -1,0 +1,9 @@
+09acf13d523ccf2752632a3430c6727801adc2a7fed442eaf11f8950ae0c514f *./contadores-io.txt
+706a41ee7c8e5c80f69d979a5a848f511f76c7972bac0bc20ea2cbb714935052 *./host-io-antes-mitigacoes.csv
+6a72ef343f01726868a84c3a34bd87c8e7657936f488c28a0d124a91fa31784f *./host-io-depois-mitigacoes.csv
+fcb60e6e350185f830731e5854fd6751e5489e23a678ab406a39b384b02b2f32 *./scripts/analisa_host2.py
+faaab5798695e6daf4c03ec12c5c05188f77de27a92d62e59e50336f2508a6e6 *./scripts/analisa_vm.py
+5c327a95cd815e50dfc2c8c6acdba6ffca132ad1bb1f9e269a47eafa03dcc367 *./scripts/h4.py
+098d24463fd1fbd5d5cfd6a0fcb5cbbba5343e35989dddde3502b5eaae137433 *./scripts/lista.py
+249263486691c637858d64ba1b049f77800273e4e326433173b873336bc87674 *./scripts/taxa.py
+3e4cb77f23e60d96fb51b0b1c914ec127de37fae8ef5f7aae50c51c8c18736bf *./vm-psi-diskstats-depois-mitigacoes.txt

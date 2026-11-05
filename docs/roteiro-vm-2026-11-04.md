@@ -5,6 +5,26 @@
 > As perguntas ao Gestor estão na seção 9, numeradas Q-01..Q-21, cada uma com a recomendação do Senior. As que bloqueiam
 > o passo seguinte estão marcadas **[bloqueia]**.
 
+## 0. Atualização de 2026-11-05 ~01:45Z (Senior): *gate* S5..S7 fechado
+
+O que mudou desde as seções abaixo, que ficam como histórico.
+
+| Item | Estado |
+|---|---|
+| S5 | `VALIDO (23 criterios OK)`, `runs/vm-s5-2026-10-28/vm-20261104T221957Z/`, V-S5 |
+| S6 | `VALIDO (16 criterios OK)`, `runs/vm-s6-2026-11-04/vm-20261104T223805Z/`, V-S6 |
+| S7 | inválido duas vezes (`V-S7.md`: pausa da VM; `V-S7r.md`: disco virtual travado) e **`VALIDO (19 criterios OK)` na terceira tentativa**, `runs/vm-s7-2026-11-04/vm-20261105T012458Z/`, **`V-S7t.md`**. A condição de entrada da V-S7r §6 (10 min sem janela de 10 s com io `full` ≥ 1,5 s) foi cumprida. Não repetir |
+| VM | IP `172.27.114.62`, `boot_id` `f9e98b74-bf1f-4192-9770-b40285877292` do S5 ao fim do S7 (`07-boot-fim.txt` de 01:36:13Z). Cluster do *gate* (XML `8792dea3…`), vista `[isn1-15077\|10] (3)` desde o `MergeView` de 01:30:24Z |
+| Host | Mitigações aplicadas pelo coordenador antes da terceira tentativa: ASPM desligado na tomada, `ReTrim` (91 GB devolvidos; `C:` com 87 GB livres), exclusão de `C:\Hyper-V` no Defender. *Checkpoint* mantido (A-9). Depois delas, o p99 do `PhysicalDisk` caiu de ~305 ms para ~21-25 ms, e a VM passou a ter episódios de io raros e curtos (`V-S7t.md` §4). Essas condições ficam iguais até o fim da campanha (V-S7t P-4) |
+
+Regras novas, registradas antes de qualquer dado dos blocos a que se aplicam:
+
+1. **Portão de estado final (decisão do coordenador, em nome do Gestor, para o P-2 da V-S7).** Nos blocos novos, do F-10 do ensaio do F1 em diante, o portão de estado final usa a leitura literal do `decisoes-senior-2026-10-16.md` §5.1: **≥ 120 s seguidos bons**, e não "zero amostras ruins na janela". Operacionalização do Senior: a sequência boa que conta é a que **termina na última amostra do portão** (`fim − ultima_sequencia_boa_desde ≥ 120 s`, no formato do `portao51.sh`), e todas as outras condições do §5.1 continuam valendo. Uma amostra ruim continua registrada e é lida (LEITURA HUMANA) com o PSI e o `vmstat` do mesmo minuto. Os *scripts* já congelados (`s5.sh`, `s6.sh`, `s7.sh`) ficam como estão. No ensaio, o F-10 do `ensaio-f1.sh` (`b83e8223…`, sem mudança) já é uma leitura por sequência: o portão K1 do PR, com 60 s seguidos bons. Para valer os 120 s do §5.1, o coordenador roda `bash runs/vm-s2-2026-10-27/portao51.sh 180 <vm-UTC do ensaio>/09-portao51-final.csv > <vm-UTC do ensaio>/09-portao51-final.log 2>&1` logo depois do fim do ensaio, a partir de `~/tcc-gate`. Esse portão é lido pela regra acima, com a ressalva D-1 do ensaio: os caches usados pela carga do ensaio ficam isentos do "tamanho 0", e o tamanho deles entra como RESULTADO.
+2. **H0 inclui atividade de disco no host** (V-S7t P-3). Durante um bloco de medição e nos 5 min antes e depois, nada de cópia, `scp`, `git` (inclusive *push*), compressão ou extração no host.
+3. **Diagnóstico de I/O em todo bloco de VM a partir do ensaio.** Na VM, o amostrador de 1 s grava como **root em `/run/tccdiag/`** (tmpfs, fora do alcance do `RemoveIPC` do logind, que apagou a primeira coleta em `/dev/shm` quando a sessão terminou). Até o Worker entregar `scripts/amostrador-infra.sh` (complemento 3 do pré-registro, prompt `docs/prompt-worker-h4-amostrador-2026-11-04.md` em `wt-plano-ctrl`), vale o amostrador *ad hoc* do coordenador, também em `/run/tccdiag/`. No host, `typeperf` com `diag-io-2026-11-05/contadores-io.txt`. No ensaio isso é **só diagnóstico**: o veredito do ensaio é o do `ensaio-f1.sh`, inclusive o F-9 (intervalo do saúde-log ≤ 4 s), que não muda.
+
+Próximos passos da VM, na ordem: *bundle* do *rebaseline*, recriação do cluster com o XML do *rebaseline* (`6d52413b…`), ensaio do F1 silencioso, recriação com anotação do instante e checklist, piloto, noites. A fila com as pré-condições está em `wt-plano-ctrl/docs/plano-execucao-continua-2026-11-04.md` §3.0, que substitui os passos 8 a 11 da seção 3 abaixo.
+
 ## 1. Estado de partida (04/11 ~04:40 UTC)
 
 | Item | Valor |

@@ -1,0 +1,1 @@
+delta_desde_antes_de_armar_ms=145245 delta_desde_depois_de_armar_ms=145235 prazo_s=145 tolerancia_s=10

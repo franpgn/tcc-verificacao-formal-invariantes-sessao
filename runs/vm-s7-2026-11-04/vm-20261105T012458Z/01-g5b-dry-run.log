@@ -1,0 +1,11 @@
+G-5b-B (dry-run; nada executado): duracao=120s, KILL em +70s do start (e so com split confirmado), margem do dead-man=25s
+  0. exigir_go; preflight: size=3 HEALTHY x3, sem clsact/netem em isn1/isn2/isn3, 0 timers tcc-heal
+  1. armar dead-man (120+25 = 145 s, AccuracySec=1s); registrar systemctl cat da unit
+  2. inject-partition.sh --minority isn3 --duration 120 --marker g5b-B/marcadores.txt &; espera event=start
+  3. esperar o split CONFIRMADO nos logs (ate 100 s do start): isn1 e isn2 ISPN000094 com 2 membros; isn3 com 1 membro e
+     DEGRADED_MODE. Sem split confirmado: FAIL (repeticao do G-5, nao vale) e o abort aciona --heal
+  4. kill -KILL do injetor (a partir de +70s): esperado rc=137, sem event=end, clsact FICA; persiste por >= 15 s
+     (clsact presente, sem marcador end, sem MergeView nos logs desde o KILL)
+  5B. NENHUM --heal e NENHUM desarmar: esperar o dead-man. Disparo entre 120+25=145 s e +10 s da armacao
+  6B. journal da unit (heal executado, sem falha); sem clsact; MergeView x3; HEALTHY x3; 0 timers; nenhum --heal manual registrado
+  7. falha inesperada em qualquer ponto: trap EXIT aciona --heal e deixa o dead-man armado (no modo B isso invalida o bloco)

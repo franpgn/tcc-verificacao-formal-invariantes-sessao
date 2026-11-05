@@ -95,6 +95,12 @@ def cmd_fase(a):
     execs, em_curso = execucoes_da_fase(saida, a.fase)
     linhas, janelas = [], []
     for d, ex in execs:
+        if ex.get("ancora_ms") is None:
+            # sem ancora nao ha janela; o h4.py devolve "sem-ancora", que nao e h4 (C3 secao 3.1)
+            linhas.append(h4.avaliar_execucao(serie, ex))
+            janelas.append({"exec": d.name, "ini_desde_ancora_s": None, "fim_desde_ancora_s": None,
+                            "f1_reinicio_padrao_desde_ancora_s": None})
+            continue
         ini, fim, f1 = janela_da_execucao(d, ex)
         with janela(ini, fim, f1):
             linhas.append(h4.avaliar_execucao(serie, ex))

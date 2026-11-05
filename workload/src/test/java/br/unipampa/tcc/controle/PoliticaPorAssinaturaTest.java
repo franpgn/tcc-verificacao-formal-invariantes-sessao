@@ -31,8 +31,11 @@ class PoliticaPorAssinaturaTest {
 
     static final long S = 1_000_000_000L;
     static final List<String> CACHES = List.of("sessions", "counters");
-    /** k = 2, teto 2000 ms, T_reb = 60 s, cota 1 (W = 5 s nos parametros padrao do nucleo). */
-    static final ParametrosPolitica P = new ParametrosPolitica(2, 2000, 60 * S, 1);
+    /**
+     * k = 2, teto 2000 ms, T_reb = 60 s, cota 1 (W = 5 s nos parametros padrao do nucleo), P2 habilitada: o codigo do
+     * AC-2 continua testado para o uso exploratorio (D-B); o modo de avaliacao, sem P2, esta em {@link #p2Desabilitada()}.
+     */
+    static final ParametrosPolitica P = new ParametrosPolitica(2, 2000, 60 * S, 1, true);
 
     static Decisao dec(long fimNs, Perfil perfil) {
         Decisao.Sinais s = new Decisao.Sinais(null, null, null, false, false, false, true, 3, 0, 3, 0, 0, 0, 0, 0,
@@ -201,7 +204,7 @@ class PoliticaPorAssinaturaTest {
         for (int i = 0; i < 5; i++) {
             assertEquals("P0:cota-p1-esgotada", resumo(s.c(COMPLETA, TETO_ISN3)));
         }
-        PoliticaPorAssinatura semCota = new PoliticaPorAssinatura(new ParametrosPolitica(1, 2000, 60 * S, 0), CACHES);
+        PoliticaPorAssinatura semCota = new PoliticaPorAssinatura(new ParametrosPolitica(1, 2000, 60 * S, 0, true), CACHES);
         assertEquals("P0:cota-p1-esgotada", resumo(semCota.planejar(dec(5 * S, Perfil.CONSERVADOR), COMPLETA,
                 TETO_ISN3, List.of())));
     }
@@ -307,16 +310,88 @@ class PoliticaPorAssinaturaTest {
         assertEquals("isn3", parado.no());
     }
 
+    // ------------------------------------------------------------------ D-B: P2/AC-2 fora do braco B
+
+    /** Parametros do modo de avaliacao (D-B): os mesmos de {@link #P}, com a P2 desabilitada. */
+    static final ParametrosPolitica AVALIACAO = new ParametrosPolitica(2, 2000, 60 * S, 1, false);
+
+    /** Uma janela de 5 s sobre a politica, mantendo as ativas como o executor manteria (como {@link Sim}). */
+    static PlanoDeAcao janela(PoliticaPorAssinatura pol, List<AcaoCluster> ativas, long fim, Perfil perfil,
+                              EstadoTopologia top, EstadoDefasagem lag) {
+        PlanoDeAcao p = pol.planejar(dec(fim, perfil), top, lag, List.copyOf(ativas));
+        for (AcaoCluster a : p.reverter()) {
+            ativas.removeIf(x -> x.chave().equals(a.chave()));
+        }
+        for (AcaoCluster a : p.aplicar()) {
+            if (a.tipo().reversivel()) {
+                ativas.add(a);
+            }
+        }
+        return p;
+    }
+
+    @Test
+    @DisplayName("D-B: com p2Habilitada = false a assinatura do P2 vira P0:p2-desabilitada com o no ausente; o P1 continua")
+    void p2Desabilitada() {
+        PoliticaPorAssinatura pol = new PoliticaPorAssinatura(AVALIACAO, CACHES);
+        List<AcaoCluster> ativas = new ArrayList<>();
+        long fim = 0;
+        for (int i = 0; i < 15; i++) { // 75 s de queda do isn3: passa do T_reb sem nunca pedir o AC-2
+            fim += 5 * S;
+            PlanoDeAcao p = janela(pol, ativas, fim, Perfil.CONSERVADOR, QUEDA_ISN3, SEM);
+            assertEquals("P0:p2-desabilitada", resumo(p), "janela " + fim / S);
+            assertEquals("isn3", p.no());
+        }
+        fim += 5 * S;
+        assertEquals("P0:p2-desabilitada", resumo(janela(pol, ativas, fim, Perfil.CONSERVADOR,
+                top(NENHUMA, todas(3, 3), todas(3, 3)), SEM)), "outro no sem resposta: idem");
+        fim += 5 * S;
+        assertEquals("P0:sem-assinatura", resumo(janela(pol, ativas, fim, Perfil.CONSERVADOR, COMPLETA, TETO_ISN3)));
+        fim += 5 * S;
+        assertEquals("P1:isolar-suspeito +AC-5@isn3",
+                resumo(janela(pol, ativas, fim, Perfil.CONSERVADOR, COMPLETA, TETO_ISN3)), "o P1 nao muda");
+        fim += 5 * S;
+        assertEquals("P0:no-parado-pela-politica",
+                resumo(janela(pol, ativas, fim, Perfil.CONSERVADOR, QUEDA_ISN3, SEM)));
+        assertEquals(List.of(), ativas);
+    }
+
+    @Test
+    @DisplayName("D-B: com p2Habilitada = false nenhuma sequencia de janelas faz a politica pedir o AC-2")
+    void p2DesabilitadaNuncaEmiteAc2() {
+        EstadoTopologia[] tops = {COMPLETA, QUEDA_ISN3, PARTICAO_DETECTADA, top(NENHUMA, todas(3, 3), todas(3, 3)),
+                top(todas(3, 3), todas(3, 3), alguma(3, 3)), top(todas(3, 3), NENHUMA, NENHUMA),
+                top(todas(3, 3), todas(2, 3), todas(3, 3))};
+        EstadoDefasagem[] lags = {SEM, TETO_ISN3, lag("isn2", 2000.0), lag("isn3", 1999.0)};
+        Perfil[] perfis = {Perfil.CONSERVADOR, Perfil.CONSERVADOR, Perfil.CONSERVADOR, Perfil.NORMAL};
+        for (long semente = 1; semente <= 20; semente++) {
+            java.util.Random r = new java.util.Random(semente);
+            PoliticaPorAssinatura pol = new PoliticaPorAssinatura(AVALIACAO, CACHES);
+            List<AcaoCluster> ativas = new ArrayList<>();
+            long fim = 0;
+            for (int i = 0; i < 200; i++) {
+                fim += (r.nextInt(10) == 0 ? 10 : 5) * S; // as vezes uma janela sem consulta (R4)
+                PlanoDeAcao p = janela(pol, ativas, fim, perfis[r.nextInt(perfis.length)],
+                        tops[r.nextInt(tops.length)], lags[r.nextInt(lags.length)]);
+                assertTrue(p.aplicar().stream().noneMatch(a -> a.tipo() == AcaoCluster.Tipo.AC_2),
+                        "semente " + semente + ", janela " + i + ": " + resumo(p));
+                assertTrue(!PoliticaPorAssinatura.P2.equals(p.politica()),
+                        "semente " + semente + ", janela " + i + ": " + resumo(p));
+            }
+            assertEquals(List.of(), ativas);
+        }
+    }
+
     // ------------------------------------------------------------------ parametros
 
     @Test
     @DisplayName("parametros: obrigatorios, sem padrao, com origem; ausente, desconhecido, tipo errado ou fora da regra sao recusados")
     void parametros() throws Exception {
         ObjectMapper j = new ObjectMapper();
-        String o = ",\"origem\":{\"kLag\":\"t\",\"tetoLagMs\":\"t\",\"tRebNs\":\"t\",\"cotaAc5\":\"t\"}";
+        String o = ",\"p2Habilitada\":false,\"origem\":{\"kLag\":\"t\",\"tetoLagMs\":\"t\",\"tRebNs\":\"t\",\"cotaAc5\":\"t\",\"p2Habilitada\":\"t\"}";
         ParametrosPolitica ok = ParametrosPolitica.deJson(j.readTree(
                 "{\"kLag\":3,\"tetoLagMs\":2000,\"tRebNs\":60000000000,\"cotaAc5\":1" + o + "}"));
-        assertEquals(new ParametrosPolitica(3, 2000, 60 * S, 1, ok.origem()), ok);
+        assertEquals(new ParametrosPolitica(3, 2000, 60 * S, 1, false, ok.origem()), ok);
         assertEquals("t", ok.origem().get("tRebNs"));
         for (String ruim : new String[] {
                 "{\"kLag\":3,\"tetoLagMs\":2000,\"cotaAc5\":1" + o + "}",
@@ -329,7 +404,7 @@ class PoliticaPorAssinaturaTest {
                 "{\"kLag\":3,\"tetoLagMs\":0,\"tRebNs\":60000000000,\"cotaAc5\":1" + o + "}",
                 "{\"kLag\":3,\"tetoLagMs\":2000,\"tRebNs\":0,\"cotaAc5\":1" + o + "}",
                 "{\"kLag\":3,\"tetoLagMs\":2000,\"tRebNs\":60000000000,\"cotaAc5\":2" + o + "}",
-                "{\"kLag\":3,\"tetoLagMs\":2000,\"tRebNs\":60000000000,\"cotaAc5\":1}",
+                "{\"kLag\":3,\"tetoLagMs\":2000,\"tRebNs\":60000000000,\"cotaAc5\":1,\"p2Habilitada\":false}",
                 "[]"}) {
             assertThrows(IllegalArgumentException.class, () -> ParametrosPolitica.deJson(j.readTree(ruim)), ruim);
         }

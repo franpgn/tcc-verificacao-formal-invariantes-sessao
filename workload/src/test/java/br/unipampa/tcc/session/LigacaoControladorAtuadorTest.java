@@ -36,11 +36,22 @@ class LigacaoControladorAtuadorTest {
 
     static final long MS = 1_000_000L;
 
-    /** Bloco de teste (k e tetoLagMs com origem "teste"; os reais vem da calibracao, D-12). */
+    /**
+     * Bloco de teste (k e tetoLagMs com origem "teste"; os reais vem da calibracao, D-12). P2 habilitada: o
+     * {@link #pontaAPonta()} exercita o codigo do AC-2, que continua para o uso exploratorio (D-B); o modo de avaliacao
+     * esta em {@link #BLOCO_AVALIACAO}.
+     */
     static final String BLOCO = "\"politica\":{\"kLag\":2,\"tetoLagMs\":2000,\"tRebNs\":60000000000,\"cotaAc5\":1,"
+            + "\"p2Habilitada\":true,"
             + "\"origem\":{\"kLag\":\"teste\",\"tetoLagMs\":\"teste\","
             + "\"tRebNs\":\"state-transfer.timeout do XML (60000 ms), acima da deteccao medida de 46,8 s\","
-            + "\"cotaAc5\":\"desenho: uma vez por execucao\"}}";
+            + "\"cotaAc5\":\"desenho: uma vez por execucao\","
+            + "\"p2Habilitada\":\"teste: uso exploratorio do AC-2 (D-B)\"}}";
+
+    /** D-B: o mesmo bloco no modo de avaliacao (P2/AC-2 fora do braco B). */
+    static final String BLOCO_AVALIACAO = BLOCO.replace("\"p2Habilitada\":true,", "\"p2Habilitada\":false,")
+            .replace("\"teste: uso exploratorio do AC-2 (D-B)\"",
+                    "\"D-B do coordenador (05/11): P2/AC-2 fora do braco B (P-39 e P-40)\"");
 
     @TempDir
     Path dir;
@@ -253,6 +264,73 @@ class LigacaoControladorAtuadorTest {
         assertEquals("REVERTER", rev.get("operacao").asText());
         assertEquals("POLITICA", rev.get("origem").asText());
         assertEquals("APLICADA", rev.get("resultado").asText());
+        assertEquals("fim", dec.get(dec.size() - 1).get("tipo").asText());
+    }
+
+    // ------------------------------------------------------------------ D-B: P2/AC-2 fora do braco B
+
+    /** Cli com o bloco de politica dado (sem S3). */
+    Cli cliCom(String modo, String bloco) throws IOException {
+        String base = LigacaoControladorTest.PARAMS_RAPIDOS;
+        Path p = Files.writeString(dir.resolve("controlador-w2a-db.json"),
+                base.substring(0, base.length() - 1) + "," + bloco + "}", StandardCharsets.UTF_8);
+        Path ref = Files.writeString(dir.resolve("ref-db.json"), ControladorCliTest.referencia("S1", "async"));
+        Cli c = new Cli();
+        new CommandLine(c).parseArgs("--controller", modo, "--controller-config", p.toString(),
+                "--controller-reference", ref.toString(), "--controller-admin", admin(), "--servers", admin(),
+                "--csv-dir", dir.toString(), "--replication", "async");
+        c.validar();
+        return c;
+    }
+
+    @Test
+    @DisplayName("D-B: dry-run mostra p2Habilitada; sem P2 o AC-2 nunca entra na pilha e o pior caso do T_enc e 17 + 2 = 19 s")
+    void dryRunAvaliacao() throws IOException {
+        subir();
+        String t = LigacaoControlador.textoDryRun(LigacaoControlador.carregar(cliCom("shadow", BLOCO_AVALIACAO)));
+        assertTrue(t.contains("politica kLag=2 tetoLagMs=2000 tRebNs=60000000000 cotaAc5=1 p2Habilitada=false"), t);
+        assertTrue(t.contains("prazo_encerramento=em_curso+pilha+T_cham pior_caso_ns=19000000000"), t);
+        String e = LigacaoControlador.textoDryRun(LigacaoControlador.carregar(cliCom("shadow", BLOCO)));
+        assertTrue(e.contains("cotaAc5=1 p2Habilitada=true"), e);
+        assertTrue(e.contains("pior_caso_ns=21000000000"), e);
+    }
+
+    @Test
+    @DisplayName("D-B ponta a ponta (active, servidor falso): sem P2, a queda do no 3 nao leva a nenhum AC-2; a linha politica registra P0:p2-desabilitada")
+    void avaliacaoSemP2PontaAPonta() throws Exception {
+        subir();
+        Cli c = cliCom("active", BLOCO_AVALIACAO);
+        LigacaoControlador.Configuracao cfg = LigacaoControlador.carregar(c);
+        AtomicBoolean caido = new AtomicBoolean(false);
+        LigacaoControlador.Pecas pecas = LigacaoControlador.pecas(cfg, c, saude(caido),
+                new LigacaoControladorTest.GanchoNulo(), 10 * MS, 50 * MS, 40 * MS);
+        EpochClock relogio = EpochClock.capturarAgora();
+        LigacaoControlador lig = LigacaoControlador.abrir(cfg, c, 1, relogio, relogio.paraEpochNanos(System.nanoTime()),
+                null, pecas);
+        Thread.sleep(400);
+        caido.set(true);
+        Thread.sleep(1500); // ~15 janelas de 100 ms com o no 3 sem resposta (no pontaAPonta o AC-2 vem bem antes)
+        caido.set(false);
+        Thread.sleep(300);
+        lig.close();
+
+        assertTrue(rebalanceamento.get(), "nenhum disable-rebalancing chegou");
+        for (int i = 0; i < 3; i++) {
+            for (ServidorAdminFalso.Pedido p : nos.get(i).pedidos()) {
+                assertFalse(p.metodo().equals("POST"), i + ": " + p.caminho());
+            }
+        }
+        List<JsonNode> dec = LigacaoControladorTest.ler(dir.resolve("decisoes-rep-001.jsonl"));
+        JsonNode meta = dec.get(0);
+        assertFalse(meta.get("parametros_politica").get("p2_habilitada").asBoolean(true), meta.toString());
+        assertTrue(dec.stream().noneMatch(n -> "acao".equals(n.get("tipo").asText())), "nenhuma linha acao");
+        List<JsonNode> pols = dec.stream().filter(n -> "politica".equals(n.get("tipo").asText())).toList();
+        assertTrue(pols.stream().noneMatch(n -> "P2".equals(n.get("politica").asText())), pols.toString());
+        String no3 = nos.get(2).rotulo();
+        List<JsonNode> desab = pols.stream().filter(n -> "p2-desabilitada".equals(n.get("motivo").asText())).toList();
+        assertFalse(desab.isEmpty(), pols.toString());
+        assertTrue(desab.stream().allMatch(n -> "P0".equals(n.get("politica").asText())
+                && no3.equals(n.get("no").asText())), desab.toString());
         assertEquals("fim", dec.get(dec.size() - 1).get("tipo").asText());
     }
 }

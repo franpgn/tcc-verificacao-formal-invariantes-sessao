@@ -65,4 +65,13 @@ class ArquivoCalibracaoTest {
         assertTrue(p.politica().kLag() * p.wNs() + tParadaNs < tDetMinNs,
                 "kLag = " + p.politica().kLag() + " com W = " + p.wNs() + " ns: o maior viavel e " + kMax);
     }
+
+    @Test
+    @DisplayName("D-B: o arquivo da calibracao tem a P2 desabilitada (AC-2 fora do braco B), com a origem citada")
+    void p2ForaDoBracoB() throws Exception {
+        ParametrosPolitica q = ParametrosControlador.deJson(arquivo()).politica();
+        assertTrue(!q.p2Habilitada(), "a P2/AC-2 ficou exploratoria (D-B)");
+        String o = q.origem().get("p2Habilitada");
+        assertTrue(o != null && o.contains("D-B") && o.contains("P-39") && o.contains("P-40"), String.valueOf(o));
+    }
 }

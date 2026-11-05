@@ -8,12 +8,11 @@ import org.junit.jupiter.api.Test;
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import static br.unipampa.tcc.session.ConsultaSaudeRestTest.LancadorFalso;
-import static br.unipampa.tcc.session.ConsultaSaudeRestTest.ProcessoFalso;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -21,7 +20,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * B-26.2 (T16 e saida JSONL): CLI de smoke {@link SondaTopologiaCli}. Os erros de uso sao testados sem
- * rede (o parse falha antes de qualquer consulta); a saida e testada com o {@code LancadorCurl} falso.
+ * rede (o parse falha antes de qualquer consulta); a saida e testada com tres {@link ServidorAdminFalso} com Digest
+ * (W-2b: a consulta e HTTP em memoria, sem curl).
  */
 class ConsultaSaudeRestCliTest {
 
@@ -38,10 +38,10 @@ class ConsultaSaudeRestCliTest {
         String err() { return err.toString(StandardCharsets.UTF_8); }
     }
 
-    /** Executa sem rede: o lancador falha se for chamado. */
+    /** Executa sem rede: a fabrica do cliente HTTP falha se for chamada. */
     private static int semRede(Saida s, Map<String, String> env, String... argv) {
-        return SondaTopologiaCli.executar(argv, env, s.pOut, s.pErr, comando -> {
-            throw new AssertionError("nenhuma consulta deveria ser feita: " + comando);
+        return SondaTopologiaCli.executar(argv, env, s.pOut, s.pErr, (usuario, senha) -> {
+            throw new AssertionError("nenhuma consulta deveria ser feita: " + usuario);
         });
     }
 
@@ -115,10 +115,27 @@ class ConsultaSaudeRestCliTest {
     @DisplayName("saida: uma linha JSON por amostra e o resumo no fim; perfil async anomalo pela captura sync")
     void saidaJsonl() throws Exception {
         String corpo = ConsultaSaudeRestTest.capturaReal("rep3-isn3-healthy-3nos.json");
-        LancadorFalso l = new LancadorFalso(() -> ProcessoFalso.responde(corpo));
+        List<ServidorAdminFalso> nos = new ArrayList<>();
+        List<String> erros = new ArrayList<>();
+        for (int i = 0; i < 3; i++) {
+            nos.add(new ServidorAdminFalso(ConsultaSaudeRestTest.saudeComDigest("admin", "s3cr3t",
+                    ServidorAdminFalso.Resp.de(200, corpo), erros)));
+        }
+        String servers = String.join(",", nos.stream().map(ServidorAdminFalso::rotulo).toList());
+        // cliente aquecido (desafio Digest guardado e conexao aberta), para o prazo de 100 ms valer so para a consulta
+        ClienteAdminRest cliente = new ClienteAdminRest("admin", "s3cr3t");
+        for (ServidorAdminFalso n : nos) {
+            cliente.pedir("GET", URI.create(n.url() + ConsultaSaudeRestTest.ENDPOINT), 2_000_000_000L);
+        }
         Saida s = new Saida();
-        int exit = SondaTopologiaCli.executar(new String[] {"--servers", SERVERS, "--replication", "async",
-                "--periodo-ms", "200", "--prazo-ms", "100", "--duracao-s", "1"}, COM_SENHA, s.pOut, s.pErr, l);
+        int exit;
+        try {
+            exit = SondaTopologiaCli.executar(new String[] {"--servers", servers, "--replication", "async",
+                    "--periodo-ms", "200", "--prazo-ms", "100", "--duracao-s", "1"}, COM_SENHA, s.pOut, s.pErr,
+                    (usuario, senha) -> cliente);
+        } finally {
+            nos.forEach(ServidorAdminFalso::close);
+        }
         assertEquals(0, exit, s.err());
         ObjectMapper json = new ObjectMapper();
         List<JsonNode> linhas = new ArrayList<>();
@@ -144,16 +161,23 @@ class ConsultaSaudeRestCliTest {
             assertEquals(3, a.get("nos_min").asInt());
             JsonNode porNo = a.get("por_no");
             assertEquals(3, porNo.size());
-            assertEquals("127.0.0.1:12262", porNo.get(0).get("no").asText());
+            assertEquals(nos.get(0).rotulo(), porNo.get(0).get("no").asText());
             assertTrue(porNo.get(0).get("respondeu").asBoolean());
             assertEquals(3, porNo.get(0).get("numero_de_nos").asInt());
             assertEquals("cache-ausente:sessions-async", porNo.get(0).get("motivo").asText());
             assertTrue(porNo.get(0).get("anomalo").asBoolean());
         }
-        // 3 curl por rodada; uma rodada interrompida pelo fim da duracao pode ter lancado e nao entregue
-        int n = l.comandos.size();
+        // 3 GET por rodada (fora os 3 do aquecimento); uma rodada interrompida pelo fim da duracao pode ter pedido
+        // e nao entregue
+        int n = nos.stream().mapToInt(x -> ConsultaSaudeRestTest.autenticados(x).size()).sum() - 3;
         assertTrue(n >= 3 * amostras.size() && n <= 3 * (amostras.size() + 1),
-                n + " curl para " + amostras.size() + " amostras");
+                n + " GET para " + amostras.size() + " amostras");
+        assertEquals(List.of(), erros);
+        for (ServidorAdminFalso x : nos) {
+            for (ServidorAdminFalso.Pedido p : x.pedidos()) {
+                assertFalse(p.autorizacao() != null && p.autorizacao().contains("s3cr3t"), p.autorizacao());
+            }
+        }
         assertFalse(s.out().contains("s3cr3t") || s.err().contains("s3cr3t"));
     }
 }

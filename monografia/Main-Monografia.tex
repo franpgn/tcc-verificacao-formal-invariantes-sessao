@@ -1,0 +1,186 @@
+% =====================================================================
+%  Monografia de Trabalho de Conclusão de Curso I
+%  Tema: Verificação formal de invariantes de sessão em data grids:
+%        replicação assíncrona, failover e controle orientado a SLO
+%  Autor: Francesco Pagani Galvão
+%  Orientador: Prof. Dr. Leonardo Bidese de Pinho
+%  Universidade Federal do Pampa, Bacharelado em Engenharia de Computação
+%  Campus Bagé
+% =====================================================================
+\documentclass[tcc,baec]{unipampa}
+
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{graphicx}
+\usepackage{times}
+\usepackage{mathptmx}
+\usepackage{amssymb}
+\usepackage{amsmath}
+\usepackage{enumitem}
+\usepackage{booktabs}
+\usepackage{caption}
+\usepackage{longtable}
+
+\usepackage[alf,abnt-emphasize=bf]{abntex2cite}
+
+% Compatibilidade natbib: o abntex2cite (opção alf) já define \citet e \citep,
+% mas não \citealt/\citealp. Mapeiam-se para \citeonline (forma "Autor (ano)"),
+% coerente com \citet, evitando "Undefined control sequence" nas chamadas.
+\providecommand{\citealt}{\citeonline}
+\providecommand{\citealp}{\citeonline}
+
+% ---------------------------------------------------------------------
+% Identificação do trabalho
+% ---------------------------------------------------------------------
+\title{Verificação formal de invariantes de sessão em data grids: replicação assíncrona, failover e controle orientado a SLO}
+\author{Galvão}{Francesco Pagani}
+\advisor[Prof.~Dr.]{Pinho}{Leonardo Bidese de}
+
+% Sem coorientador.
+% Banca examinadora (o orientador entra automaticamente via \advisor; abaixo só os demais membros).
+% \banca e \inst são posicionais: cada \banca é pareado com o \inst seguinte na folha de aprovação.
+\banca[Prof.\ Dr.\ Bruno Silveira Neves]{}{}
+\inst{UNIPAMPA}
+\banca[Prof.\ Dr.\ Diego Leonel Cadette Dutra]{}{}
+\inst{UFRJ}
+
+\cutter{---}
+\location{Bagé}{RS}
+
+% Data de publicação (mês e ano que aparecem na folha de rosto / capa).
+\date{Outubro}{2026}
+
+% Data de defesa ainda não fixada: campos em branco na folha de aprovação.
+% A classe exige \defesa definido para compor a folha; não remover a linha.
+\defesa{\underline{\hspace{1cm}}}{\underline{\hspace{3cm}}}{\underline{\hspace{1.2cm}}}
+
+% ---------------------------------------------------------------------
+% Palavras-chave (idioma do documento, português)
+% ---------------------------------------------------------------------
+\keyword{data grid}
+\keyword{replicação assíncrona}
+\keyword{failover}
+\keyword{model checking}
+\keyword{invariantes de sessão}
+\keyword{objetivos de nível de serviço}
+
+\sloppy
+
+% Marcadores invisíveis de revisão (fusão banca TCC I x versão de 30/10).
+% Só registram a página no .aux; são removidos na versão limpa.
+\newcommand{\revini}[1]{\label{revini-#1}}
+\newcommand{\revfim}[1]{\label{revfim-#1}}
+
+\begin{document}
+
+\maketitle
+
+%
+% Dedicatoria (opcional)
+%
+
+% \begin{dedicatoria}
+% Dedico este trabalho ao meu gato, ao meu cachorro e ao meu papagaio.
+% \end{dedicatoria}
+
+%
+% Agradecimentos (opcional)
+%
+% Se você tiver muito a agradecer, pode usar um arquivo à parte e incluí-lo
+% no texto, por meio do comando \input{meus-agradecimenos}. O compilador
+% LaTeX buscará o arquivo meus-agradecimentos.tex e incluirá o texto do mesmo
+% neste local. Isso ajuda a tornar o arquivo principal do trabalho (este)
+% mais limpo, claro e conciso.
+%
+
+% \chapter*{Agradecimento}
+% Agradeço à Antarctica pelas Brahminhas que eles mandaram.
+
+%
+% Epígrafe (opcional)
+%
+% \begin{epigrafe}
+% ``If I have seen farther than others, it is because I stood on the shoulders of giants.''\\
+% --- Sir~Isaac Newton
+% \end{epigrafe}
+
+\begin{abstract}
+Aplicações distribuídas costumam delegar o estado de sessão de seus usuários a um \emph{data grid} replicado, que funciona como camada de sessão compartilhada entre vários nós. Como a replicação é assíncrona para sustentar o desempenho dessa camada, uma atualização aplicada em um nó leva algum tempo até alcançar todas as réplicas, e nesse intervalo as réplicas permanecem temporariamente divergentes. Se um nó cai antes que a última atualização chegue às demais réplicas, o \emph{failover} pode promover uma réplica desatualizada e reverter efeitos que já deveriam ser definitivos, fazendo um \emph{logout} voltar a valer, um contador de tentativas regredir ou um bloqueio desaparecer. Essas falhas comprometem segurança e cumprimento de SLO e escapam ao teste convencional porque dependem de entrelaçamentos específicos entre operações concorrentes e eventos de falha. Este trabalho formaliza tais propriedades como invariantes de sessão, entre elas a irreversibilidade do \emph{logout}, a persistência do bloqueio, a não regressão do contador de tentativas e a convergência do estado, e investiga sob que condições essas garantias resistem ou se rompem diante de replicação assíncrona e \emph{failover}. A proposta especifica formalmente o protocolo e o estado de sessão, aplica verificação de modelos para identificar as condições sob as quais cada invariante falha e, a partir dessas condições, projeta um algoritmo de decisão que atua em tempo de execução sobre as políticas e os parâmetros de configuração do \emph{cluster}, ajustando-os conforme as falhas observadas para reduzir violações e controlar a cauda de latência. Esse controle adaptativo da configuração em \emph{runtime} é o eixo da proposta, pela qual o trabalho intervém sobre o compromisso entre correção do estado e latência. A avaliação apoia-se em verificação de modelos e em experimentação sobre um \emph{cluster} real submetido a falhas induzidas, confrontando o comportamento observado com o que a especificação indica. O trabalho pretende oferecer garantias de correção do estado de sessão sob falhas em \emph{data grids} replicados sem sacrificar os SLO de latência acordados.
+\end{abstract}
+
+\begin{englishabstract}{Data grid, asynchronous replication, failover, model checking, session invariants, service level objectives}
+Distributed applications often delegate their users' session state to a replicated \emph{data grid} that acts as a shared session layer across several nodes. Because replication runs asynchronously to sustain the performance of that layer, an update applied on one node takes some time to reach every replica, and during this interval the replicas remain temporarily divergent. If a node fails before the latest update reaches the other replicas, \emph{failover} may promote a stale replica and revert effects that should already be final, making a \emph{logout} valid again, a login attempt counter regress or a lockout disappear. Such faults compromise security and SLO compliance and escape conventional testing because they depend on specific interleavings between concurrent operations and failure events. This work formalizes these properties as session invariants, among them the irreversibility of \emph{logout}, the persistence of lockout, the non-regression of the attempt counter and state convergence, and investigates under which conditions these guarantees hold or break under asynchronous replication and \emph{failover}. The proposal formally specifies the session protocol and state, applies model checking to identify the conditions under which each invariant fails and, from these conditions, designs a decision algorithm that acts at run time over the policies and configuration parameters of the \emph{cluster}, tuning them according to the observed faults to reduce violations and control the latency tail. This adaptive control of the cluster configuration at runtime is the core of the proposal, through which the work intervenes on the trade-off between state correctness and latency. The evaluation relies on model checking and on experimentation over a real \emph{cluster} subjected to induced faults, confronting the observed behavior with what the specification indicates. The work aims to offer guarantees of session state correctness under faults in replicated \emph{data grids} without sacrificing the agreed latency SLO.
+\end{englishabstract}
+
+\listoffigures
+\listoftables
+
+% Lista de abreviaturas e siglas
+\begin{listofabbrv}{ABNT}
+    \item[ABNT]     \ \ \ \ \ \ \ \ \ \ \ \ \ Associação Brasileira de Normas Técnicas
+    \item[ACM]      \ \ \ \ \ \ \ \ \ \ \ \ \ \emph{Association for Computing Machinery}
+    \item[CAP]      \ \ \ \ \ \ \ \ \ \ \ \ \ \emph{Consistency, Availability, Partition tolerance}
+    \item[CPU]      \ \ \ \ \ \ \ \ \ \ \ \ \ \emph{Central Processing Unit}
+    \item[CRDT]     \ \ \ \ \ \ \ \ \ \ \ \ \ \emph{Conflict-free Replicated Data Type}
+    \item[FLP]      \ \ \ \ \ \ \ \ \ \ \ \ \ Fischer, Lynch e Paterson
+    \item[IEEE]     \ \ \ \ \ \ \ \ \ \ \ \ \ \emph{Institute of Electrical and Electronics Engineers}
+    \item[IMDG]     \ \ \ \ \ \ \ \ \ \ \ \ \ \emph{In-Memory Data Grid}
+    \item[JVM]      \ \ \ \ \ \ \ \ \ \ \ \ \ \emph{Java Virtual Machine}
+    \item[LWW]      \ \ \ \ \ \ \ \ \ \ \ \ \ \emph{Last Writer Wins}
+    \item[MAPE-K]   \ \\ \ \ \ \ \ \ \ \ \ \ \emph{Monitor, Analyze, Plan, Execute over Knowledge}
+    \item[NIST]     \ \ \ \ \ \ \ \ \ \ \ \ \ \emph{National Institute of Standards and Technology}
+    \item[OWASP]    \ \ \ \ \ \ \ \ \ \ \ \ \ \emph{Open Worldwide Application Security Project}
+    \item[PRISMA]   \ \ \ \ \ \ \ \ \ \ \ \ \ \emph{Preferred Reporting Items for Systematic Reviews and Meta-Analyses}
+    \item[RTT]      \ \ \ \ \ \ \ \ \ \ \ \ \ \emph{Round-Trip Time}
+    \item[SEC]      \ \ \ \ \ \ \ \ \ \ \ \ \ \emph{Strong Eventual Consistency}
+    \item[SLA]      \ \ \ \ \ \ \ \ \ \ \ \ \ \emph{Service Level Agreement}
+    \item[SLI]      \ \ \ \ \ \ \ \ \ \ \ \ \ \emph{Service Level Indicator}
+    \item[SLO]      \ \ \ \ \ \ \ \ \ \ \ \ \ \emph{Service Level Objective}
+    \item[SMR]      \ \ \ \ \ \ \ \ \ \ \ \ \ \emph{State Machine Replication}
+    \item[TCC]      \ \ \ \ \ \ \ \ \ \ \ \ \ Trabalho de Conclusão de Curso
+    \item[TLA]      \ \ \ \ \ \ \ \ \ \ \ \ \ \emph{Temporal Logic of Actions}
+    \item[TLC]      \ \ \ \ \ \ \ \ \ \ \ \ \ verificador de modelos de TLA+
+    \item[UNIPAMPA] \ \ \ \ \ \ \ \ \ \ \ \ \ Universidade Federal do Pampa
+\end{listofabbrv}
+
+\tableofcontents
+
+% =====================================================================
+% Capítulos textuais
+% =====================================================================
+\chapter{Introdução}
+\label{cap-introducao}
+\input{Introducao}
+
+\chapter{Fundamentação Teórica}
+\label{cap-fundamentacao}
+\input{FundamentacaoTeorica}
+
+\chapter{Metodologia}
+\label{cap-metodologia}
+\input{Metodologia}
+
+\chapter{Desenvolvimento e Resultados Parciais}
+\label{cap-desenvolvimento}
+\input{Desenvolvimento}
+
+\chapter{Considerações Parciais}
+\label{cap-conclusao}
+\input{ConclusoesParciais}
+
+% =====================================================================
+% Bibliografia
+% =====================================================================
+\bibliographystyle{abntex2-alf}
+\bibliography{bibliografia}
+
+% =====================================================================
+% Apêndices (material de autoria própria)
+% =====================================================================
+\appendix
+
+\chapter{Plano de trabalho para o TCC II}
+\label{ap-plano-tcc2}
+\input{ApPlanoTCC2}
+
+\end{document}

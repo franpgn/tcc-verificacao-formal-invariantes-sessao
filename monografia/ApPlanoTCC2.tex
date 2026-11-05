@@ -1,0 +1,71 @@
+% Apêndice B, Plano de trabalho para TCC-II.
+
+Este apêndice detalha o plano de trabalho previsto para o Trabalho de Conclusão de Curso~II. O cronograma quinzenal aparece na Tabela~\ref{tab-cronograma-tcc2} da Seção~\ref{sec-cronograma}, e cada uma das seis etapas é explicitada a seguir, com entregáveis, dependências e riscos. \revini{APX-01}O plano foi revisado durante a execução, e as atividades que restam para concluir o trabalho constam, ao final deste apêndice, nas Etapas A a F.\revfim{APX-01}
+
+\section*{Etapas 1 e 2: consolidação do modelo formal}
+\label{ap-tcc2-etapa1}
+
+As duas primeiras semanas reúnem três atividades. A primeira consolida o modelo formal do sistema de sessões com canal assíncrono, partindo da especificação inicial descrita na Seção~\ref{sec-spec-formal} e adicionando os refinamentos identificados nas execuções do final do Trabalho de Conclusão de Curso~I. A segunda formaliza o conjunto inicial de invariantes I1 a I6, com tradução das propriedades de convergência (I5 e I6) para um predicado de quiescência reconhecível pelo verificador. A terceira executa a primeira rodada completa de \emph{model checking} sobre o modelo consolidado, com configurações de cardinalidade crescente, e registra todos os contraexemplos gerados.
+
+\section*{Etapas 3 e 4: introdução de falhas explícitas no modelo}
+\label{ap-tcc2-etapa3}
+
+A evolução central das semanas 3 e 4 é a incorporação de falhas explícitas ao modelo formal. As transições adicionadas representam, respectivamente, \emph{crash} silencioso de um nó, recuperação após \emph{crash} e partição de rede entre subconjuntos de nós. Cada falha admite parametrização sobre o número de nós afetados e a duração relativa. O conjunto de invariantes pode ser refinado, com decisão registrada caso o autor opte por adicionar invariantes derivados (por exemplo, unicidade de sessão ativa por identidade, atualmente fora do escopo). Os contraexemplos gerados são analisados e delimitam quais padrões de falha devem ser reproduzidos experimentalmente.
+
+\section*{Etapas 5 e 6: \emph{baseline} experimental sob falhas}
+\label{ap-tcc2-etapa5}
+
+Nas semanas 5 e 6, o \emph{baseline} experimental é executado sob falhas selecionadas. O conjunto cobre os quatro cenários (F1 a F4) já planejados para a linha experimental e, quando aplicável, o cenário F5 de \emph{cross-site}. \revini{APX-10}A replicação entre localidades (\emph{cross-site replication}) saiu do recorte durante o Trabalho de Conclusão de Curso~II, e o cenário F5 não será executado.\revfim{APX-10} Cada cenário é executado o número de vezes definido pelo plano de análise estatística, com cálculo de p95, p99, taxa de erro, tempo de recuperação e taxa de violação de cada invariante. O conjunto de referência produzido alimenta a comparação subsequente com o controlador.
+
+\section*{Etapas 7 e 8: alinhamento formal-experimental e controlador heurístico}
+\label{ap-tcc2-etapa7}
+
+A primeira atividade das semanas 7 e 8 alinha o modelo formal e o experimento. Os contraexemplos identificados nas etapas anteriores são mapeados para padrões observáveis no \emph{baseline}, com ajustes mínimos no programa de carga e na instrumentação para garantir comparabilidade. A segunda atividade implementa o controlador heurístico. O controlador é externo ao \emph{data grid}, lê observáveis em janelas temporais e decide ações conforme regras determinísticas com histerese e intervalo mínimo entre acionamentos. Dois perfis pré-definidos coexistem: um perfil normal, otimizado para latência, e um perfil conservador, ativado quando a taxa de violação aumenta acima de um limiar. \revini{APX-02}O projeto do controlador foi revisado no Trabalho de Conclusão de Curso~II: o gatilho primário combina latência de cauda relativa, taxa de erro e topologia, e as violações de I1, I2 e I4 formam o gatilho secundário (Seção~\ref{sec-controlador}).\revfim{APX-02}
+
+\section*{Etapas 9 e 10: execução com controlador e análise comparativa}
+\label{ap-tcc2-etapa9}
+
+As semanas 9 e 10 executam os mesmos cenários do \emph{baseline} com o controlador ativo. Métricas equivalentes são coletadas e as decisões do controlador são registradas com o respectivo gatilho. A análise comparativa estabelece, por cenário, a diferença entre o \emph{baseline} e a configuração com controlador para cada métrica, com testes estatísticos não paramétricos e intervalos de confiança. A correlação com os contraexemplos formais aproxima os achados experimentais dos padrões previstos pelo modelo.
+
+\section*{Etapas 11 e 12: consolidação e entrega}
+\label{ap-tcc2-etapa11}
+
+As duas últimas semanas concluem a avaliação crítica, sistematizam as limitações remanescentes e finalizam a escrita do trabalho. A descrição do método, os resultados, a discussão e a preparação para entrega e defesa são integradas ao texto. A escrita ocorre em paralelo a todas as etapas, e a consolidação final consiste em integrar as parciais já escritas, revisar a coerência entre as vertentes formal e experimental, e finalizar elementos pré-textuais e pós-textuais.
+
+% APX-03..APX-09: plano de trabalho restante da versão parcial do TCC II (30/10/2026), Etapas A a F.
+
+\section*{\revini{APX-03}Plano de trabalho restante}
+
+O plano das Etapas 1 a 12 foi modificado durante a execução do Trabalho de Conclusão de Curso~II. Esta parte do apêndice detalha as atividades que restam para concluir o trabalho, na ordem imposta pelas dependências entre elas. Não há datas fixas: a duração de várias etapas depende de tempo de máquina, e a estimativa para as três campanhas de medição (nova medição de referência, campanha com o cenário S3 e avaliação do controlador) é de ao menos cinco a sete noites de execução sem falha do hospedeiro, além de sessões diurnas de preparação. As etapas que exigem a máquina virtual são executadas uma de cada vez, com validação antes da seguinte. As demais podem correr em paralelo.\revfim{APX-03}
+
+\section*{\revini{APX-04}Etapa A: preparação da máquina virtual}
+\label{ap-tcc2-etapa-a}
+
+A etapa conclui a sequência de verificações dos injetores descrita na Seção~\ref{sec-verificacao-injetores}: a primeira injeção real de degradação parcial, com perda de 20\,\% por 60\,s sem carga de aplicação, e as duas verificações restantes do injetor de partição, a recomposição manual depois de uma partição real e o disparo do temporizador de segurança armado pelo \emph{script} de verificação. Em seguida, o sistema operacional da máquina virtual é protegido contra atualizações automáticas de \emph{kernel} e reinícios não planejados, porque uma troca de \emph{kernel} no meio de uma campanha alteraria o ambiente medido. A etapa termina com o ensaio do F1 silencioso na máquina virtual e com a recriação do \emph{cluster} com os quatro \emph{caches}, dois síncronos e dois assíncronos.\revfim{APX-04}
+
+\section*{\revini{APX-05}Etapa B: nova medição de referência}
+\label{ap-tcc2-etapa-b}
+
+A etapa executa o protocolo pré-registrado da Seção~\ref{sec-protocolo-rebaseline}. Uma rodada piloto com as doze células, de dia, verifica o orquestrador, os critérios de recusa e os tempos; seus dados não entram em resultado. A campanha de 120 execuções roda em duas noites, com autorização do autor antes de cada uma. A análise pré-registrada produz os percentis por execução, os contrastes entre condições de falha e entre os modos síncrono e assíncrono e as contagens de violação, que formarão as primeiras tabelas de resultados válidas do trabalho. Os números da bateria de junho não serão comparados com os novos.\revfim{APX-05}
+
+\section*{\revini{APX-06}Etapa C: falhas sob carga e cenário S3}
+\label{ap-tcc2-etapa-c}
+
+O orquestrador de experimentos passa a disparar F2 e F4, e o comportamento do modo assíncrono é verificado na documentação e empiricamente, com escrita em um nó e leitura imediata em outro, nos dois modos. Com isso, prepara-se o pré-registro da campanha com o cenário S3, em que \texttt{DIST\_ASYNC} é o alvo, com todas as condições de falha, e \texttt{DIST\_SYNC} entra em células de referência. A estimativa atual é de cerca de 120 execuções. Essa campanha mede as hipóteses sobre o modo assíncrono, como violações de I1 e I4 mesmo sem falha e perda de escritas confirmadas sob partição, e fornece os dados de calibração do controlador.\revfim{APX-06}
+
+\section*{\revini{APX-07}Etapa D: controlador heurístico}
+\label{ap-tcc2-etapa-d}
+
+O desenvolvimento do controlador não depende da máquina virtual até a avaliação. Falta ligá-lo ao laço de carga, com as opções de linha de comando e a gravação das trilhas de decisão; implementar a reprodução das decisões sobre registros gravados, que confere a equivalência entre a decisão ao vivo e a reprodução; acrescentar marcadores de início e fim de F1 e F3 aos registros; e proteger a análise de energia contra parâmetros inválidos. Com os dados da etapa C, os limiares são calibrados pela regra fixada antes, e a avaliação é pré-registrada, testada em execução curta e executada conforme a Seção~\ref{sec-avaliacao-controlador}, com cerca de 80 execuções.
+
+A segunda etapa do controlador trata da atuação sobre a configuração do \emph{cluster} (Seção~\ref{sec-controlador-cluster}). A verificação de quais atributos do Infinispan 15 podem ser alterados em tempo de execução sem reiniciar o \emph{cache} parte da lista de candidatos, que é hipótese de partida, e é feita na documentação e em \emph{cluster} local. Ela pode começar depois da ligação do controlador ao laço de carga, enquanto a implementação, o pré-registro e a execução vêm depois da avaliação da etapa cliente. Antes da implementação, definem-se a lista final de parâmetros, a admissão ou não de ações que alteram a convergência ou a semântica sob partição, estas com extensão do modelo TLA+, e o tempo de máquina, e a etapa recebe pré-registro e avaliação próprios.\revfim{APX-07}
+
+\section*{\revini{APX-08}Etapa E: vertente formal e alinhamento}
+\label{ap-tcc2-etapa-e}
+
+A correção do empate de marcas de tempo, por desempate entre réplicas ou por canal com entrega em ordem, depende de decisão do autor e é seguida de nova verificação de I5 e I6. O mecanismo da fusão de partições não depende dessa correção, e as violações correspondentes devem continuar. As variantes com perda de mensagens e com relógio atualizado pelo máximo são integradas ou descartadas com registro do motivo. O catálogo que relaciona operação, falha e invariante é então confrontado com os resultados experimentais das etapas B e C, para indicar quais contraexemplos do modelo têm correspondente observado e quais não têm.\revfim{APX-08}
+
+\section*{\revini{APX-09}Etapa F: mapeamento sistemático e consolidação}
+\label{ap-tcc2-etapa-f}
+
+O mapeamento sistemático é fechado com a complementação da busca nas bases originais, a classificação dos 165 estudos selecionados nas dimensões D1 a D8 e o fluxograma PRISMA definitivo, o que permite posicionar o trabalho frente a cada agrupamento de estudos. O código desenvolvido, hoje em versões locais, é integrado à versão principal do repositório. A escrita final integra os resultados das campanhas, a discussão e as conclusões, revisa a coerência entre as vertentes formal e experimental e conclui os elementos pré-textuais e pós-textuais. A escrita ocorre em paralelo a todas as etapas.\revfim{APX-09}

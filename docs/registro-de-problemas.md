@@ -1084,6 +1084,130 @@ o W-2b não resolve.
   mesma regra, chave (nó, código do servidor), linha `Hot Rod ISPN004005:` no stdout. O nó sai `desconhecido`: o
   registro do cliente não traz o endereço do servidor. Medida no *smoke* do W-2b (`docs/testes.md`).
 
+## 2026-11-05 — W-6 (B-46), orquestrador das campanhas S3
+
+Branch `feature/w6-orquestrador-s3` (base `17f2bd4`). Na integração (merge em `feature/controlador-integracao`, 05/11)
+os números do W-6 e do W-6b foram deslocados em +2, para depois do P-45 e do P-46 do W-2b: P-45..P-53 da branch do
+W-6 são P-47..P-55 aqui. As mensagens de commit da branch ficam com a numeração antiga.
+
+### P-47 (W-6; P-45 na branch do W-6, P-41 antes do rebase sobre `17f2bd4`; renumerado na integração) — o amostrador h4 só aceita identificadores do *rebaseline*
+
+- **Sintoma:** `scripts/amostrador-infra.sh` recusa (exit 2) qualquer `--id` fora de
+  `^(piloto|noite1|noite2|reposicoes|ensaio|diag)-<UTC>$`; `vigia-h4.sh` e `analysis/h4.py fase` só aceitam as fases do
+  *rebaseline*, e o `h4.py` usa a janela fixa de +44 a +300 s da âncora. Os critérios h4 do C3 e da DT-019 valem para
+  as campanhas S3 (requisito 6 do W-6), mas os três arquivos estão na lista `e9c44819…` da adenda da DT-018.
+- **Contorno no W-6 (nada dos três foi editado):** `scripts/campanha_s3_h4.py` importa o `h4.py` e troca só a janela
+  (lida da linha do programa) e o reinício padrão do F1; o orquestrador faz o papel do vigia (avalia depois de cada
+  execução e para pela regra do C3 §4.3) e exige `--h4-id`, aceitando qualquer `<prefixo>-<UTC>`.
+- **Pendente (decisão do Senior/Gestor):** com o `amostrador-infra.sh` como está, a coleta do S3 só pode ser iniciada
+  com `--id diag-<UTC>`. Alternativa: uma linha a mais no `ID_RE` (`|calibracao|nucleo|extra|reposicoes-s3|validacao`),
+  compatível com os testes atuais (o A7 só recusa IDs que continuariam recusados), num commit próprio e validado.
+- **Decisão (coordenador, 05/11, sobre a V-W6, ponto 6):** o `amostrador-infra.sh` não muda enquanto o *rebaseline*
+  não fechar. Nas campanhas S3 o amostrador é iniciado com `--id diag-<UTC>`, que o `ID_RE` atual aceita, e o
+  orquestrador também (`--h4-id`, expressão `<prefixo>-<UTC>`); o pré-registro da calibração registra isso.
+- **Status:** `RESOLVIDO POR DECISÃO` (contorno `diag-<UTC>`; nenhum dos três arquivos do h4 foi editado).
+
+### P-48 (W-6; P-46 na branch do W-6, P-42 antes do rebase; renumerado na integração) — risco: a sonda do laço de convergência lê a topologia de um cliente que não opera no S3
+
+- **Observação (código, não medida):** `WorkloadMain.executarConvergencia` usa
+  `min(number_of_nodes da REST, servidores na topologia do rcm principal)`. No S3 a carga roda pelos clientes fixados a
+  nós (`S3Clientes`); o `rcm` principal só faz o *reset* e a carga inicial, então a topologia dele fica a da abertura
+  (três servidores) até alguma operação. Para o religamento (W-6) isso não atrapalha: o número vem da REST. Mas a
+  leitura por segmento dos leitores multi-réplica (`segmentosDoServidor`) também usa essa topologia velha, inclusive
+  depois de um F1.
+- **Conferir no *smoke* local do controlador:** `getCacheTopologyInfo()` do `rcm` antes e depois de um F1 em S3.
+- **Relação com o P-41 da integração** (leitura por réplica com prazo, `b61c803`): o P-41 resolve o travamento da
+  leitura final no nó parado; este item é sobre qual topologia escolhe os segmentos lidos de cada nó, e continua aberto.
+- **Status:** `ABERTO` (só registro; nenhuma mudança no laço de convergência neste item).
+
+### P-49 (W-6; P-47 na branch do W-6, P-43 antes do rebase; renumerado na integração) — o `python3` do Windows escreve CRLF e o `\r` entrava nos parâmetros lidos pelo orquestrador
+
+- **Sintoma (suíte do orquestrador no host):** `run-campanha-s3.sh: line 265: 200: arithmetic syntax error`, porque o
+  `campanha_s3_conferir.py parametros` lido pelo *bash* do Git devolvia `200\r`.
+- **Correção:** toda saída Python que o orquestrador interpreta passa pela função `py`, que tira o `\r` e mantém o exit.
+  Na VM (Linux) não há `\r`; a correção só deixa o orquestrador indiferente ao sistema.
+- **Status:** `RESOLVIDO` (05/11, branch `feature/w6-orquestrador-s3`).
+
+### P-50 (W-6, só nos testes; P-48 na branch do W-6, P-44 antes do rebase; renumerado na integração) — `grep -q` com `pipefail` dá falso negativo em texto grande
+
+- **Sintoma:** `contem` da suíte nova (`printf … | grep -qF …`) falhou com a linha presente: o `grep -q` sai no
+  primeiro acerto, o `printf` de um log grande morre de SIGPIPE e, com `pipefail`, o *pipeline* falha.
+- **Correção:** `grep -F … > /dev/null` (lê tudo). O `run-rebaseline.test.sh` tem o mesmo padrão com textos pequenos e
+  não foi tocado.
+- **Status:** `RESOLVIDO`.
+
+### P-51 (W-6; P-49 na branch do W-6, P-45 antes do rebase; renumerado na integração) — evento do stdout perdido quando o `read -t` vence no meio da linha; carga sem âncora saía ACEITA
+
+- **Sintoma (suíte do orquestrador no host, S4):** a execução F1 não viu a âncora (a linha estava no `stdout.log`),
+  não injetou a falha e saiu ACEITA. Duas causas: (1) o laço de eventos lê o FIFO com `read -t 0,2`; quando o prazo
+  vence no meio de uma linha, o bash deixa a parte lida na variável, e o laço a descartava; (2) a recusa "sem âncora"
+  só existia para o prazo de 120 s, e uma carga que termina antes dele sem âncora passava.
+- **Correção:** primeiro, a parte lida no `read -t` vencido ia a um *buffer*; depois do P-52, o laço deixou de usar
+  `read -t` com prazo: testa com `read -t 0` (não lê) e lê a linha já disponível, que o leitor escreve inteira, então
+  não há leitura parcial. Depois do laço, carga sem âncora é RECUSADA ("sem ancora (a carga terminou antes)"). Caso
+  S17 da suíte.
+- **Alcance:** no Linux da VM, o leitor escreve cada evento numa única escrita menor que `PIPE_BUF`, então a perda
+  seria rara; no Git Bash (emulação de pipe do MSYS) apareceu. A correção vale nos dois.
+- **Status:** `RESOLVIDO` (05/11).
+
+### P-52 (W-6; P-50 na branch do W-6, renumerado na integração) — o bash do Git Bash cai com SIGSEGV quando o SIGTERM chega durante `read -t` num FIFO
+
+- **Sintoma (S7, 2 de 3 rodadas completas e na rodada isolada):** o orquestrador recebe SIGTERM com o laço de eventos
+  parado em `IFS= read -r -t 0.2 -u <fd>` sobre o FIFO de eventos e sai com 139 ("Segmentation fault" na linha do
+  `read`), sem rodar o *trap* (sem a linha FIM no log). Na rodada anterior o S7 tinha passado.
+- **Causa provável:** entrega de sinal durante o `read -t` no bash do MSYS (emulação de FIFO e de sinal). O runner do
+  rebaseline espera com `sleep & wait` (`dormir`), e o R8 dele, que manda SIGTERM no meio da execução, passa nesse
+  ambiente. Não foi reproduzido no Linux (não havia Linux disponível sem subir Podman).
+- **Correção:** o laço de eventos espera com `dormir` (o SIGTERM chega no `wait` e o *trap* roda), testa eventos com
+  `read -t 0` e lê só a linha disponível. A latência de leitura de um evento continua de até 0,2 s.
+- **Status:** `RESOLVIDO` no código (05/11); a confirmar na rodada repetida do S7 e na validação X-17 na VM.
+
+### P-53 (W-6b; P-51 na branch do W-6, renumerado na integração; achado B1 da V-W6) — F2/F4 do braço B recusadas sempre que o AC-5 para o nó da falha
+
+- **Sintoma (leitura do Senior, V-W6 §5.1):** com o AC-5 parando o nó em que a F2 ou a F4 foi injetada, o
+  `inject-partition.sh` real sai com 1 (a soma dos contadores pelo `nsenter` com o PID morto falha sob
+  `set -euo pipefail`, `:495`) e o `inject-netdegrade.sh` com 6 (contadores zerados ou *ping* sem resposta). Os dois
+  códigos estavam em `EXITS_REDE_SEGUEM` como recusa, então toda execução F2/F4 do braço B com AC-5 no nó da falha
+  saía RECUSADA, e a reposição tinha o mesmo destino. A suíte não pegava: os dublês saíam sempre com o código pedido.
+- **Correção (orquestrador; os injetores não mudam):** com exit 1 ou 6 e o nó-alvo fora de `running` (ou já religado
+  pela linha de fim, pelo AC-5 ou pelo O8), `concluir_injecao` guarda o caso como pendente (`injetor_alvo_parado` no
+  `execucao.json`). Na pós-checagem, se a linha de fim e a trilha concordam que o AC-5 APLICADA foi nesse nó (e, na F2,
+  o `injetor.log` tem `OK: <no> nao conecta a nenhum par`), a execução segue com o aviso "falha efetiva ate a parada do
+  no pelo AC-5; contadores do injetor nao lidos"; senão, a recusa de antes, com o que faltou. Dublês fiéis: o de F2
+  escreve a linha OK e sai com 1, o de F4 sai com 6, quando o alvo não está `running` no fim da janela. Caso S22.
+- **Status:** `RESOLVIDO` (05/11, W-6b); a confirmar no X-17 (1 F2 `shadow` + 1 F2 `active`).
+
+### P-54 (W-6b; P-52 na branch do W-6, renumerado na integração; achado B2 da adenda da V-W6) — uma só referência de p99 para a fase inteira: toda execução SYNC falharia ao abrir
+
+- **Sintoma (leitura do Senior, V-W6 §11):** o orquestrador passava o mesmo `--controller-reference` a todas as
+  execuções, e o programa recusa referência de outro perfil (`LigacaoControlador.java:204`). Calibração e núcleo têm
+  células SYNC e ASYNC; o pré-voo 4 só rodava o `--dry-run` do programa com `async`, então não via o erro.
+- **Correção:** `--referencia-async` e `--referencia-sync` (cada uma com o seu SHA-256) no lugar de `--referencia`
+  (que agora sai com 2 e uma mensagem); a referência de cada execução vem do modo da linha da matriz; a de cada perfil
+  presente na fila é obrigatória e conferida no pré-voo e no `--dry-run` (`campanha_s3_conferir.py referencia`:
+  esquema, cenário S3, perfil); as duas entram no *bundle*; o pré-voo 4 roda o `--dry-run` do programa em cada perfil
+  da fase; o `execucao.json` registra o `referencia_sha256` usado. O dublê de `java` da suíte recusa referência de
+  outro perfil, como o programa. Caso S24.
+- **Status:** `RESOLVIDO` (05/11, W-6b).
+
+### P-55 (W-6b; P-53 na branch do W-6, renumerado na integração) — nó religado pelo O8 não tornava a execução DESCARTADA-INFRA
+
+- **Sintoma (achado ao escrever o S22):** o veredito `DESCARTADA-INFRA` olha os motivos que começam com `infra`, mas
+  as mensagens de `E_INFRAS` (nó parado sem AC-5 religado pelo O8, `podman start` que falhou no religamento, alvo do
+  AC-5 fora de `--admin`) entravam nos motivos sem esse prefixo. Uma execução com só um desses desvios terminava ACEITA
+  com motivos. Nenhum caso da suíte exercitava o O8 sozinho (o arquivo `sinal-alvo` do dublê não era usado).
+- **Correção:** os motivos de `E_INFRAS` entram com o prefixo `infra: `. O S22 (nó parado sem AC-5) e o S23 (sem a
+  linha de fim) cobrem os dois caminhos. Os nós religados pelo O8 ou pela falta da linha não geram também o motivo de
+  `StartedAt` (já têm o seu).
+- **Efeito colateral achado na suíte completa (S4 i=1):** com o disparo atrasado no Git Bash, o F1 ainda estava em
+  curso quando a linha de fim chegou, e o O8 religou o nó que o `inject-crash.sh` ia religar; com o prefixo, a execução
+  virou `DESCARTADA-INFRA`. O O8 agora pula o nó de um F1 em curso (o injetor o religa e grava o `end`). Caso S25. Na
+  VM o F1 acaba em +109 s numa carga de 300 s, então o caso só aparece se o injetor travar.
+- **Status:** `RESOLVIDO` (05/11, W-6b).
+
+Na integração, P-51..P-53 do W-6b deslocaram como os demais números do W-6 (seção 6 da V-W6, +2): são os P-53..P-55
+acima.
+
 ## Observação de modelagem (não é defeito)
 
 Com 8 *threads* = 8 identidades fixas (`user-<tid>`), `incrementFailure`

@@ -874,3 +874,96 @@ A r2 repete a r1: o stderr dos dois braços fica entre 10 e 24 KB, o P1 e o AC-5
 Incidente de infraestrutura: às 22:11Z uma primeira tentativa da r2 travou no `podman-compose down`, porque a máquina
 Podman do WSL, recém-ligada, aceitava a conexão ssh mas as sessões ficavam presas; `podman machine stop` e `start`
 resolveram e a tentativa (que não chegou a subir o *cluster*) foi apagada. Nada a ver com o código.
+
+## W-6 (B-46): orquestrador das campanhas S3, religamento depois do AC-5 e marcadores do F1 (2026-11-05)
+
+Branch `feature/w6-orquestrador-s3`, começada sobre a ponta do W-4 (`a180a6a`) e rebaseada sobre a integração `17f2bd4` (`int/2026-11-05-fix`; os *hashes* de commit abaixo são os de antes do rebase). A primeira parte foi escrita em H0 (noite 1 do
+*rebaseline*), sem rodar nada; o coordenador abriu a janela H2 em 05/11 e tudo o que está abaixo foi rodado no *host*,
+sem Podman nem VM. Cada bloco tem o commit `test:` (vermelho) antes do `feat:`/`fix:`.
+
+| Suíte | Antes | Depois | Novos | Vermelho conferido |
+|---|---|---|---|---|
+| Surefire (`mvn -o -T1 test`) | 1036/0/0/1 (esperado do W-4) | **1072/0/0/1** sobre `a180a6a`; **1095/0/0/1** depois do rebase sobre `17f2bd4` (1059 da integração + 36); **1100/0/0/1** com o `convergencia_estado` | 36 (7 classes) | falha de compilação sem o código (`d498053`) |
+| `scripts/inject-crash.test.sh` | 118 PASS | **141 PASS, 0 FAIL** | 23 asserts (C16..C21) | 23 FAIL antes do `--marker` (`af5283c`) |
+| `scripts/run-rebaseline.test.sh R7 R13 R14` (injetor novo, runner congelado) | — | 19 PASS, 0 FAIL | — | — |
+| `scripts/test_campanha_s3_matriz.py` | — | 15 OK | 15 | importação falha (`0617f17`) |
+| `scripts/test_campanha_s3_conferir.py` | — | 21 OK | 21 (5 da D-B depois do rebase) | importação falha (`0617f17`) |
+| `scripts/test_campanha_s3_h4.py` | — | 11 OK | 11 | importação falha; o caso sem âncora falhou antes do `fix` (`3ad8740`) |
+| `python -E -P -m unittest discover -s analysis` | 235 OK, 1 *skip* | **235 OK, 1 *skip*** sobre `a180a6a`; **370 OK, 1 *skip*** sobre `17f2bd4` (o da integração; nada de `analysis` mudou) | 0 | — |
+| `scripts/run-campanha-s3.test.sh` (S1..S21) | — | **193 PASS, 0 FAIL** (S1..S21, rodada completa sobre `17f2bd4` com todas as correções) | S1..S21 | S17 falhou antes do `fix` (P-51); S18 antes da D-B |
+
+Classes Java novas: `ReligamentoTest` (11: linha de sinal e a expressão do orquestrador; espera com o instante do fim da
+leitura que viu; sonda que falha conta como incompleta; prazo esgotado com a última leitura no prazo; parâmetros;
+passo = `P_sonda`; `ControleDaCarga` sem AC-5), `ConvergenciaResumoReligamentoTest` (4: seis campos depois de
+`t_fim_controle_ns` com e sem AC-5 e com prazo esgotado; a assinatura de cinco argumentos sem nenhum), `CliReligamentoTest`
+(5: `--rejoin-timeout-sec` sem padrão, obrigatório só com `active` + `--convergence`, > 0, fora do `toString`),
+`ExecutorAc5AplicadoTest` (6: só APLICADA conta; FALHOU, NAO_EXECUTADA e PREVISTA não; o primeiro fica),
+`WorkloadMainReligamentoFonteTest` (3: ordem carga → alvo → sinal → *flush* → convergência; espera antes do laço;
+delegação ao executor), `CachesCargaJsonTest` (4) e `ClusterSemCachesXmlTest` (3). Na primeira rodada nenhum teste
+existente foi editado: o religamento só acrescenta campos pela assinatura nova do resumo, usada com o controlador.
+Depois do I-3b, `ConvergenciaEstadoTest` (5: os três valores de `convergencia_estado` pelo laço real e a posição do
+campo nos dois formatos) e as **edições autorizadas pelo coordenador** que só acompanham o campo novo:
+`ConvergenciaResumoFimCargaTest` (o campo entra na lista do contrato e passa a ser o último da assinatura antiga, com
+`t_fim_controle_ns` em penúltimo) e `ConvergenciaResumoReligamentoTest` (lista `ANTERIORES`). Surefire depois disso:
+**1100/0/0/1**.
+
+`run-campanha-s3.test.sh`: shims de `java`, `podman`, `podman-compose`, `sudo`, `nsenter`, `tc`, `ip`, `iptables`, `curl`
+(saúde, `container`, disponibilidade, criação e `?action=config`), `systemd-run`, `systemctl`, `flock`, `pgrep`, `df`,
+`sleep`, `date` e `timeout` (estes três com o relógio acelerado). O F1 roda o `inject-crash.sh` real; F2 e F4 usam dublês
+(`CS_INJ_PART`, `CS_INJ_DEGR`, só no modo de teste). `cria-caches.sh`, `campanha_s3_conferir.py`, `campanha_s3_h4.py`
+(sobre o `analysis/h4.py`) e `campanha_s3_matriz.py` rodam de verdade.
+
+| Caso | O que prende |
+|---|---|
+| S1 | `--dry-run` da calibração e da avaliação: plano, `timeout -k 23s 200s` (T_enc pior caso 21 s + folga 2 s), F2 com dead-man de 110 s, senha mascarada, nada executado; SHA-256 errado sai com 4 |
+| S2 | parâmetro sem origem, `boot_id` diferente, *lock* ocupado e braço B sem bloco `politica`: exit 4 antes de qualquer carga |
+| S3 | GO da fase e GO de rede com texto exato; GO de rede errado não deixa diretório nem partição |
+| S4 | calibração none + F1 + F2 de ponta a ponta: recriação (`down`/`up`) por execução, seis POST de *cache*, camada 3, K1, janela h4 lida da linha do programa, marcadores do F1 (injetor real) e do F2, volta do F1 pela REST, dead-man antes da partição e desarmado, argumentos do programa, resumo, MANIFEST, h4 |
+| S5 | bloco A/B com F2 e AC-5 no braço B: `podman start isn3` depois da linha de fim da carga e menos de 30 s (o prazo do religamento) depois dela, o programa vê o nó de volta, `convergencia_estado = convergiu`, a mesma semente em A e B, trilha e linha concordam, `manifesto-bracos.tsv` no formato do `comparar_bracos.py` |
+| S6 | braço B com atuador `nulo`, política `nenhuma` ou `param_sha256` diferente: carga parada, `DESCARTADA-INFRA`, exit 6 |
+| S7 | TERM no orquestrador com a JVM ignorando SIGTERM: o orquestrador sai com 143 (sem SIGSEGV, P-52) e o SIGKILL só vem depois de K (23 s virtuais); teto estourado vira RECUSADA |
+| S8 | P-35: `inject-crash.sh` sai com 0 e o nó não volta pela REST: exit 10 |
+| S9 | resto de partição que o `--heal` não tira: exit 6 com o dead-man armado; resto curado: segue |
+| S10 | DT-014 antes da carga (abortada, mesmo i e semente) e depois (RECUSADA sem relançar) |
+| S11 | arquivo PARAR; retomada com o *bundle* diferente do `progresso.json` recusada |
+| S12 | leitura de volta divergente na criação, disponibilidade diferente de `AVAILABLE` e `StartedAt` anterior à recriação: exit 6 |
+| S13 | h4: execuções h4a viram `DESCARTADA-INFRA`, 4 seguidas param a fase (exit 10); unit do amostrador inativa recusa no pré-voo |
+| S14 | primeiro braço perdido: o segundo vira `PULADA` e o `repor` refaz o bloco inteiro |
+| S15 | disco com menos de 1,5 × o volume de uma execução: exit 10; com 1,5 × exatos, segue |
+| S16 | F4 com dead-man e marcadores; nenhum `\|\| true` nas linhas que lançam carga, injetor, conferência, h4 ou *caches* |
+| S17 | carga que termina sem a âncora antes de 120 s: RECUSADA "sem âncora", sem injeção (P-51) |
+| S18 | D-B: `p2Habilitada` diferente de `false` ou sem o bloco `politica` recusa no pré-voo (exit 4); `meta` com `p2_habilitada = true` para a carga (exit 6) |
+| S19 | arquivo `NUL` (do `podman machine ssh` no Git Bash) na saída e no diretório da execução: removido, registrado no log, fora dos manifestos |
+| S20 | pareamento: bloco com semente diferente, célula diferente ou braço faltando recusa no pré-voo (exit 4) |
+| S21 | `convergencia_estado = sem_rodada_valida` vira aviso na checagem, com a execução ACEITA |
+
+### W-6b: ressalvas da V-W6 (B1, B2, S1..S6, M1) (2026-11-05)
+
+Mesma branch, sobre `a34aa36` (adenda da V-W6). Commits `test:` vermelhos antes da implementação: `98149ca` (B1,
+S1..S6, M1), `4dec3df` (B2, M1 alinhada ao pré-registro, folga do S22) e `9c8a8b5` (S25). Nada em `workload/` mudou, então o Surefire
+do W-6 (1100/0/0/1) vale para a árvore Java desta ponta.
+
+| Suíte | Antes | Depois | Vermelho conferido |
+|---|---|---|---|
+| `scripts/test_campanha_s3_conferir.py` | 21 OK | **30 OK** (M1: 4, B2: 5) | 6 falhas antes da M1; 11 antes da M1 revista e do B2 |
+| `scripts/run-campanha-s3.test.sh` | 193 PASS (S1..S21) | **269 PASS, 0 FAIL** (S1..S25, 2373 s) | S1 com 13 falhas antes da M1/S1; S1 com exit 2 antes do B2 |
+| `scripts/test_campanha_s3_matriz.py`, `test_campanha_s3_h4.py` | 15 OK, 11 OK | 15 OK, 11 OK | — |
+| `scripts/inject-crash.test.sh`; `analysis` | 141 PASS; 370 OK, 1 *skip* | iguais | — |
+
+| Caso | O que prende |
+|---|---|
+| S1 (acréscimo) | o `--dry-run` confere o controlador: imprime `controlador conferido: …`; bloco `politica` ausente com braço B, `tetoLagMs` ≠ `hotrod_timeout_ms` e `p2Habilitada = true` saem com 4 sem chamar `java`, `podman`, `sudo`, `curl` nem `systemctl` |
+| S2 (acréscimo) | `exec_teto_s` abaixo de duração + `T_enc` + religamento + convergência + período sai com 4 e cita `t_enc_pior_s (21)`; *timer* `tcc-heal-cs-*` sobrando sai com 4 no pré-voo |
+| S4 (acréscimo) | `bundle.sha256` com o coletor; `MANIFEST.sha256` de cada execução confere com `sha256sum -c` (`stdout.log` completo) |
+| S7 (mudança) | SIGKILL só depois de 2300 ms reais (K = 23 s virtuais na escala 10); teto do S7b no mínimo do M1 (176 s) |
+| S22 | B1: F2 e F4 do braço B com o AC-5 no nó da falha (carga de 120 s): dublês saem com 1 e 6, a execução fica ACEITA com o aviso dos contadores não lidos e `injetor_alvo_parado = isn3`, o braço A segue com 0; F2 sem a linha OK do corte: RECUSADA; exit 1 com o nó de pé: RECUSADA; nó parado sem AC-5: recusa do injetor mais religamento do O8, `DESCARTADA-INFRA`, fase segue |
+| S23 | S3: braço B sem a linha de fim depois de um AC-5: o orquestrador religa `isn3`, a execução vira `DESCARTADA-INFRA` com o motivo, e a fase sai com 0 (antes, a saúde falhava e a fase saía com 10) |
+| S25 | F1 ainda em curso na linha de fim (F1 de +10 a +60 s numa carga de 60 s): o O8 não religa o nó do F1, a execução fica ACEITA, um só `podman start` de `isn2` (o do `inject-crash.sh`) e marcadores `start`/`end` completos. Achado na suíte completa do W-6b (S4 i=1 virou `DESCARTADA-INFRA` depois do P-55) |
+| S24 | B2: fase com SYNC e ASYNC: cada carga com a referência do seu perfil, `--dry-run` do programa nos dois perfis, `referencia_sha256` no `execucao.json`, as duas no *bundle*; referências trocadas recusadas no pré-voo e no `--dry-run`; célula SYNC sem `--referencia-sync` recusada; fase só ASYNC aceita só a `--referencia-async`; `--referencia` antiga sai com 2 |
+
+Dublês alterados para ficarem fiéis: o de F2 escreve a linha `OK: <no> nao conecta a nenhum par` e sai com 1, e o de
+F4 sai com 6, quando o alvo não está `running` no fim da janela; o de `java` recusa referência de outro perfil
+(`LigacaoControlador.java:204`), aceita `java-para-sem-ac5` (para um nó sem entrada na trilha) e
+`java-sem-sinal-<controller>` (omite a linha de fim só num braço). Na primeira rodada do S22 com 60 s de carga, o
+atraso do disparo no Git Bash (6 a 20 s virtuais) empurrou a janela da F2 para depois do religamento em duas
+sub-rodadas; com 120 s a margem é de cerca de 30 s virtuais.

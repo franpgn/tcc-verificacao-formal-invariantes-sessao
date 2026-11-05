@@ -42,6 +42,14 @@
 #   5    infraestrutura (kill/stop nao terminou em 10 s, stop ou start falhou)
 #   129/130/143  sinal (HUP/INT/TERM); o trap devolve o no antes de sair
 #
+# Marcadores (B-25.1, W-6): com --marker <arquivo>, acrescenta ao arquivo as linhas
+#   fault=F1 node=<no> event=start t_epoch_ns=<n>   (logo antes do isolamento, ou do kill/stop nos outros modos)
+#   fault=F1 node=<no> event=end   t_epoch_ns=<n>   (logo depois do podman start que devolveu o no)
+# no formato de inject-partition.sh (F2) e inject-netdegrade.sh (F4), lido por Marcadores.java e analysis/fases.py.
+# O end tambem sai quando o trap devolve o no, quando o isolamento nao pegou (nada foi derrubado) e no ExitCode
+# anomalo; nao sai quando o start falha (exit 5). Falha ao gravar o marcador vira AVISO no log e nao aborta a
+# injecao. Sem --marker, nada muda (mesma ordem de chamadas e mesmas linhas de log).
+#
 # Cobertura: T16/T17 (crash silencioso de 60 s, detectado pelo FD_ALL3).
 set -euo pipefail
 
@@ -63,7 +71,7 @@ POLL_S=0.2
 usage() {
     cat <<EOF
 Uso: ${NOME} [--node <nome>] [--duration <segundos>] [--modo silencioso|kill|stop]
-            [--iface <if>] [--dry-run] [--help]
+            [--iface <if>] [--marker <arquivo>] [--dry-run] [--help]
 
 Injeta a falha F1 (crash silencioso) no cluster Infinispan. Cobre T17 da
 Tabela 1 (60s no minimo) e respeita o timeout de deteccao do FD_ALL3 (T16 = 40s).
@@ -88,6 +96,8 @@ Opcoes:
   --modo <modo>          silencioso, kill ou stop. Padrao: ${MODO_PADRAO}
   --iface <if>           Interface dentro do container (modo silencioso).
                          Padrao: ${IFACE_PADRAO}
+  --marker <arquivo>     Acrescenta marcadores 'fault=F1 node=<no> event=start|end
+                         t_epoch_ns=<n>' (formato de B-25/B-29; B-25.1).
   --dry-run              Imprime o plano e sai sem executar (sem podman, sudo,
                          nsenter nem ip).
   --help                 Mostra esta mensagem.
@@ -113,6 +123,7 @@ DURACAO="${DURACAO_PADRAO}"
 MODO="${MODO_PADRAO}"
 IFACE="${IFACE_PADRAO}"
 DRY_RUN=0
+MARKER=""
 
 while [[ $# -gt 0 ]]; do
     case "$1" in
@@ -128,6 +139,9 @@ while [[ $# -gt 0 ]]; do
         --iface)
             [[ $# -ge 2 ]] || { echo "Erro: --iface exige valor" >&2; exit 2; }
             IFACE="$2"; shift 2 ;;
+        --marker)
+            [[ $# -ge 2 && -n "$2" ]] || { echo "Erro: --marker exige valor" >&2; exit 2; }
+            MARKER="$2"; shift 2 ;;
         --dry-run)
             DRY_RUN=1; shift ;;
         --help|-h)
@@ -167,6 +181,16 @@ log() {
     echo "[$(date -u +%Y-%m-%dT%H:%M:%S.%3NZ)] ${NOME}: $*"
 }
 
+# marcar start|end (B-25.1): uma linha no --marker, no formato dos outros injetores. Sem --marker, nada (nem log).
+# Falha ao gravar vira AVISO e nao aborta a injecao (set -e nao alcanca a gravacao).
+marcar() {
+    [[ -n "${MARKER}" ]] || return 0
+    local rc=0
+    echo "fault=F1 node=${NODE} event=$1 t_epoch_ns=$(date +%s%N)" >> "${MARKER}" 2>/dev/null || rc=$?
+    if [[ "${rc}" -eq 0 ]]; then log "marcador event=$1 -> ${MARKER}"; else log "AVISO: marcador event=$1 nao gravado em ${MARKER} (rc=${rc})"; fi
+    return 0
+}
+
 log "Plano: NODE=${NODE} MODO=${MODO} DURACAO=${DURACAO}s IFACE=${IFACE} DRY_RUN=${DRY_RUN}"
 log "modo=${MODO}"
 
@@ -189,6 +213,7 @@ if [[ "${DRY_RUN}" -eq 1 ]]; then
     esac
     log "  sleep ${DURACAO}"
     log "  ${PODMAN} start ${NODE}"
+    [[ -z "${MARKER}" ]] || log "  marcadores -> ${MARKER}: fault=F1 node=${NODE} event=start|end t_epoch_ns=<n> (start antes do isolamento, end depois do start)"
     log "dry-run: nada executado"
     exit 0
 fi
@@ -283,12 +308,12 @@ tratar_sinal() { # tratar_sinal <exit>
             ${PODMAN} kill "${NODE}" --signal KILL >/dev/null 2>&1 || r=$?
             [[ "${r}" -eq 0 ]] || log "trap: AVISO: podman kill ${NODE} saiu com ${r}"
             r=0; ${PODMAN} start "${NODE}" >/dev/null 2>&1 || r=$?
-            [[ "${r}" -eq 0 ]] || log "trap: AVISO: podman start ${NODE} saiu com ${r}" ;;
+            if [[ "${r}" -eq 0 ]]; then marcar end; else log "trap: AVISO: podman start ${NODE} saiu com ${r}"; fi ;;
         2)
             r=0
             log "trap: sinal (exit ${codigo}) durante a espera; ${PODMAN} start ${NODE}"
             ${PODMAN} start "${NODE}" >/dev/null 2>&1 || r=$?
-            [[ "${r}" -eq 0 ]] || log "trap: AVISO: podman start ${NODE} saiu com ${r}" ;;
+            if [[ "${r}" -eq 0 ]]; then marcar end; else log "trap: AVISO: podman start ${NODE} saiu com ${r}"; fi ;;
         *) log "trap: sinal (exit ${codigo}) depois do start; nada a desfazer" ;;
     esac
     exit "${codigo}"
@@ -314,6 +339,7 @@ esperar_saida() {
 ANOMALIA=0
 
 # --------------------------------------------------------------- injecao
+marcar start
 if [[ "${MODO}" == silencioso ]]; then
     FASE=1
     log "isolando ${NODE}: ip link set dev ${IFACE} down (pid ${PID})"
@@ -323,6 +349,7 @@ if [[ "${MODO}" == silencioso ]]; then
         log "ERRO: ${IFACE} de ${NODE} nao confirmou DOWN (link set down rc=${rd}, verificacao rc=${rc}); tentando link set up"
         r=0; nsip link set dev "${IFACE}" up || r=$?
         log "link set dev ${IFACE} up saiu com ${r}; injecao abortada sem kill"
+        marcar end
         FASE=0
         exit 1
     fi
@@ -373,6 +400,7 @@ if [[ "${rc}" -ne 0 ]]; then
     exit 5
 fi
 FASE=3
+marcar end
 
 if [[ "${ANOMALIA}" -eq 1 ]]; then
     log "FALHA: F1 (modo=${MODO}) com ExitCode=${EXITCODE:-<vazio>}; reentrada de ${NODE} acionada"

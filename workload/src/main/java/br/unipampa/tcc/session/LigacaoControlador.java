@@ -234,6 +234,8 @@ final class LigacaoControlador implements AutoCloseable, WorkloadMain.ControleDa
     private final CanalCanario canario;
     private final TrilhaJsonl trilhaObs;
     private final TrilhaJsonl trilhaDec;
+    /** W-6 (P-6 da V-W5): o executor guarda o alvo do AC-5 APLICADA (linha de fim da carga). */
+    private final ExecutorDeAcoes executor;
     private final ConcurrentLinkedQueue<Bruta> violacoes = new ConcurrentLinkedQueue<>();
     private final AtomicLong eventosForaDoContrato = new AtomicLong();
     private volatile boolean fechada;
@@ -241,7 +243,8 @@ final class LigacaoControlador implements AutoCloseable, WorkloadMain.ControleDa
 
     private LigacaoControlador(Configuracao cfg, LacoDeControle laco, SondaTopologia sonda, ConsultaSaudeRest rest,
                                FonteDeTempo tempo, RastroCliente rastro, SondaDefasagem defasagem,
-                               CanalCanario canario, TrilhaJsonl trilhaObs, TrilhaJsonl trilhaDec) {
+                               CanalCanario canario, TrilhaJsonl trilhaObs, TrilhaJsonl trilhaDec,
+                               ExecutorDeAcoes executor) {
         this.cfg = cfg;
         this.trilhaObs = trilhaObs;
         this.trilhaDec = trilhaDec;
@@ -252,6 +255,7 @@ final class LigacaoControlador implements AutoCloseable, WorkloadMain.ControleDa
         this.rastro = rastro;
         this.defasagem = defasagem;
         this.canario = canario;
+        this.executor = executor;
     }
 
     // ------------------------------------------------------------------ configuracao
@@ -555,7 +559,8 @@ final class LigacaoControlador implements AutoCloseable, WorkloadMain.ControleDa
                 new AgregadorDeJanela(origemNs, c.parametros(), ref), new Controlador(c.parametros()),
                 topologia, defasagem, violacoes, pecas.politica(), executor, tempo, obs, dec));
         LigacaoControlador l = new LigacaoControlador(c, laco, sonda,
-                pecas.saude() instanceof ConsultaSaudeRest r ? r : null, tempo, rastro, lag, pecas.canario(), obs, dec);
+                pecas.saude() instanceof ConsultaSaudeRest r ? r : null, tempo, rastro, lag, pecas.canario(), obs, dec,
+                executor);
         self[0] = l;
         if (sonda != null) {
             sonda.iniciar();
@@ -667,6 +672,15 @@ final class LigacaoControlador implements AutoCloseable, WorkloadMain.ControleDa
     /** W-2b: trilha do {@code decisoes} (testes). */
     TrilhaJsonl trilhaDecisoes() {
         return trilhaDec;
+    }
+
+    /**
+     * W-6 (P-6 da V-W5): alvo ({@code host:porta}) do AC-5 que ficou APLICADA nesta execucao, ou {@code null}. Vem
+     * do executor, em memoria (a trilha no disco nao e lida). Chamado depois do {@link #close()}.
+     */
+    @Override
+    public String ac5AplicadaAlvo() {
+        return executor.alvoDoAc5Aplicado();
     }
 
     /** Linha de stdout depois do {@link #close()}. */

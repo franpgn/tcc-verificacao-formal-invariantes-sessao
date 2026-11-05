@@ -103,6 +103,32 @@ python bootstrap_ic.py ../runs/S1-none
 python compare_scenarios.py ../runs/S1-none ../runs/S1-F1
 ```
 
+### Campanhas S3 do controlador (W-6, B-46; só na VM, com GO)
+
+Matriz (pré-registro fixa as sementes e o número de blocos; nada tem padrão):
+
+```bash
+python3 -I scripts/campanha_s3_matriz.py gerar --modo avaliacao \
+  --nucleo "ASYNC-F1:teste:8,ASYNC-F2:teste:8,ASYNC-none:descritiva:4,SYNC-F2:referencia:4" \
+  --extras "ASYNC-F4:teste:8,SYNC-F1:referencia:4,SYNC-F4:referencia:4" \
+  --ordem-seed <N> --s0 <N> --passo-semente <N> --i0 <N> --b0 <N> --saida runs/campanha-s3/matriz.tsv
+```
+
+Plano sem executar nada, depois a fase (dentro da VM, em `tmux`, com o amostrador h4 já iniciado):
+
+```bash
+scripts/run-campanha-s3.sh --dry-run --matriz <tsv> --matriz-sha256 <hex> --fase nucleo \
+  --parametros <campanha-s3.json> --parametros-sha256 <hex> --controlador <controlador.json> --controlador-sha256 <hex> \
+  --referencia-async <referencia-S3-async.json> --referencia-async-sha256 <hex> \
+  --referencia-sync <referencia-S3-sync.json> --referencia-sync-sha256 <hex> --saida runs/campanha-s3
+# mesma linha sem --dry-run e com --jar <jar> --jar-sha256 <hex> --boot-esperado <boot_id> --h4-id diag-<UTC>
+```
+
+Uma referência de p99 por modo de replicação presente na fase (o programa recusa a de outro perfil). O amostrador h4
+é iniciado com `--id diag-<UTC>` (o `amostrador-infra.sh` não muda enquanto o *rebaseline* não fechar).
+
+Detalhes e porquês: `docs/implementacao.md` (TD-015); testes: `scripts/run-campanha-s3.test.sh` e `docs/testes.md`.
+
 ## Fluxo de desenvolvimento
 
 O trabalho neste repositório segue um protocolo estruturado em quatro passos, descrito em `docs/planejamento-inicial.md`:

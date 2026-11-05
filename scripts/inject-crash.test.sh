@@ -4,7 +4,8 @@
 #
 # Suite de testes do inject-crash.sh (F1 como crash silencioso, opcao B do plano
 # docs/prompt-f1-kill-2026-10-27.md da branch docs/plano-implementacao-controlador,
-# casos C1..C15 do prompt da secao 7) que NAO exigem VM, podman, ip nem privilegio.
+# casos C1..C15 do prompt da secao 7; C16..C21 dos marcadores do B-25.1, W-6) que NAO exigem VM, podman, ip nem
+# privilegio.
 #
 # Os casos com SHIMS colocam scripts falsos de podman, sudo, readlink, nsenter, ip e
 # sleep no inicio do PATH. Os shims registram cada chamada em $SHIM_LOG e simulam o
@@ -462,6 +463,92 @@ done
 contem "C15 primeira linha e o plano" "Plano: NODE=isn2 MODO=silencioso DURACAO=60s IFACE=eth0 DRY_RUN=0" \
     "$(printf '%s\n' "${OUT}" | head -1)"
 verdade "C15 linha 'modo=silencioso' isolada" test -n "$(printf '%s\n' "${OUT}" | grep -E ': modo=silencioso$')"
+
+# =============================================================== C16..C21 (B-25.1, W-6)
+# Marcadores do F1 no formato dos outros injetores (inject-partition.sh: fault=F2; inject-netdegrade.sh: fault=F4),
+# lidos por Marcadores.java (workload) e por analysis/fases.py / comparar_bracos.py:
+#   fault=F1 node=<no> event=start|end t_epoch_ns=<n>
+# start antes do isolamento (ou do kill/stop nos outros modos); end depois do 'podman start' que devolveu o no.
+MARC_RE='^fault=F1 node=isn2 event=(start|end) t_epoch_ns=[0-9]{19}$'
+
+echo "== C16: --marker grava start e end, nessa ordem, no formato fault=F1 node=<no> event=... t_epoch_ns=<n> =="
+reset_shims
+M="${TMP}/marcadores-c16.txt"; rm -f "${M}"
+roda_shim --node isn2 --duration 60 --marker "${M}"
+ok "C16 exit 0" "0" "${RC}"
+ok "C16 duas linhas" "2" "$(grep -c . "${M}" 2>/dev/null)"
+ok "C16 as duas no formato" "2" "$(grep -cE "${MARC_RE}" "${M}" 2>/dev/null)"
+ok "C16 primeira e start, segunda e end" "start end" "$(sed -n 's/.* event=\([a-z]*\) .*/\1/p' "${M}" | paste -sd' ')"
+T_INI="$(sed -n '1s/.*t_epoch_ns=//p' "${M}")"; T_FIM="$(sed -n '2s/.*t_epoch_ns=//p' "${M}")"
+verdade "C16 t_epoch_ns do start <= o do end" test "${T_INI:-1}" -le "${T_FIM:-0}"
+ordem_exata "C16 ordem das chamadas igual ao C1 (o marcador nao chama shim)" \
+    "readlink /proc/4002/ns/net" "readlink /proc/1/ns/net" "ip link show dev eth0" "ip link set dev eth0 down" \
+    "ip -o link show dev eth0" "podman kill isn2 --signal KILL" "podman inspect -f {{.State.ExitCode}} isn2" \
+    "sleep 60" "podman start isn2"
+contem "C16 primeira linha continua o plano de antes" "Plano: NODE=isn2 MODO=silencioso DURACAO=60s IFACE=eth0 DRY_RUN=0" \
+    "$(printf '%s\n' "${OUT}" | head -1)"
+
+echo "== C17: o start ja esta gravado quando a interface cai (antes do kill), e o end ainda nao =="
+reset_shims
+M="${TMP}/marcadores-c17.txt"; rm -f "${M}"
+export SHIM_BLOCK_VERIFY="${TMP}/libera"
+PATH="${PATH_SHIMS}" bash "${CRASH}" --duration 60 --marker "${M}" > "${TMP}/saida" 2>&1 &
+BGPID=$!
+verdade "C17 chegou a verificacao do isolamento" esperar_arquivo "${TMP}/libera.esperando" 30
+ok "C17 so a linha start no arquivo" "start" "$(sed -n 's/.* event=\([a-z]*\) .*/\1/p' "${M}" 2>/dev/null | paste -sd' ')"
+ok "C17 kill ainda nao chamado" "0" "$(conta 'podman kill')"
+: > "${TMP}/libera"
+wait "${BGPID}" 2>/dev/null; RC=$?
+unset SHIM_BLOCK_VERIFY
+ok "C17 exit 0" "0" "${RC}"
+ok "C17 start e end ao fim" "start end" "$(sed -n 's/.* event=\([a-z]*\) .*/\1/p' "${M}" | paste -sd' ')"
+
+echo "== C18: TERM durante a espera -> o trap faz o start e grava o end =="
+reset_shims
+M="${TMP}/marcadores-c18.txt"; rm -f "${M}"
+export SHIM_SLEEP_REAL=1
+PATH="${PATH_SHIMS}" bash "${CRASH}" --duration 30 --marker "${M}" > "${TMP}/saida" 2>&1 &
+BGPID=$!
+verdade "C18 chegou a espera" esperar_log "sleep 30" 30
+"${REAL_SLEEP}" 0.3
+kill -TERM "${BGPID}" 2>/dev/null
+wait "${BGPID}" 2>/dev/null; RC=$?
+unset SHIM_SLEEP_REAL
+ok "C18 exit 143" "143" "${RC}"
+ok "C18 start chamado uma vez" "1" "$(conta 'podman start isn2')"
+ok "C18 start e end gravados" "start end" "$(sed -n 's/.* event=\([a-z]*\) .*/\1/p' "${M}" | paste -sd' ')"
+
+echo "== C19: podman start falha (exit 5) -> start gravado, end nao (o no nao voltou) =="
+reset_shims
+M="${TMP}/marcadores-c19.txt"; rm -f "${M}"
+SHIM_START_FAIL=1 roda_shim --duration 60 --marker "${M}"
+ok "C19 exit 5" "5" "${RC}"
+ok "C19 so start" "start" "$(sed -n 's/.* event=\([a-z]*\) .*/\1/p' "${M}" | paste -sd' ')"
+
+echo "== C20: isolamento que nao pega (exit 1 sem kill) -> start e end (janela tentada e encerrada) =="
+reset_shims
+M="${TMP}/marcadores-c20.txt"; rm -f "${M}"
+SHIM_LINK_STUCK=1 roda_shim --duration 60 --marker "${M}"
+ok "C20 exit 1" "1" "${RC}"
+ok "C20 sem kill" "0" "$(conta 'podman kill')"
+ok "C20 start e end" "start end" "$(sed -n 's/.* event=\([a-z]*\) .*/\1/p' "${M}" | paste -sd' ')"
+
+echo "== C21: ExitCode anomalo (exit 1 depois do start) grava o end; --marker sem valor -> exit 2; dry-run nao grava =="
+reset_shims
+M="${TMP}/marcadores-c21.txt"; rm -f "${M}"
+SHIM_EXITCODE=143 roda_shim --duration 60 --marker "${M}"
+ok "C21 exit 1" "1" "${RC}"
+ok "C21 start e end" "start end" "$(sed -n 's/.* event=\([a-z]*\) .*/\1/p' "${M}" | paste -sd' ')"
+bash "${CRASH}" --dry-run --marker > /dev/null 2>&1; RC=$?
+ok "C21 --marker sem valor -> exit 2" "2" "${RC}"
+rm -f "${TMP}/marcadores-dry.txt"
+OUT="$(bash "${CRASH}" --dry-run --marker "${TMP}/marcadores-dry.txt" 2>&1)"; RC=$?
+ok "C21 dry-run com --marker -> exit 0" "0" "${RC}"
+contem "C21 dry-run descreve o marcador" "fault=F1 node=isn2 event=start|end" "${OUT}"
+verdade "C21 dry-run nao cria o arquivo" test ! -e "${TMP}/marcadores-dry.txt"
+reset_shims
+roda_shim --duration 60
+nao_contem "C21 sem --marker nenhuma linha de marcador no log" "marcador" "${OUT}"
 
 echo
 echo "==== RESULTADO: ${PASS} PASS, ${FAIL} FAIL ===="

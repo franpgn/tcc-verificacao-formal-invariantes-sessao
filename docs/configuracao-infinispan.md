@@ -144,6 +144,35 @@ Para encerrar:
 podman-compose down
 ```
 
+### *Cluster* sem *caches* no XML (calibração e avaliação S3; W-6, B-46)
+
+Na calibração e na avaliação do controlador o XML não declara *cache* nenhum, e os seis (`sessions`, `counters`,
+`sessions-async`, `counters-async`, `canario`, `canario-async`) são criados pela REST a partir de
+`cluster/caches/<nome>.json` (decisão D-G de `docs/acoes-controlador-cluster-2026-11-05.md`, contorno b do P-30 do
+B-44.1b). Os arquivos:
+
+| Arquivo | O que é | Teste |
+|---|---|---|
+| `cluster/infinispan-sem-caches.xml` | o `infinispan-cluster.xml` sem os `distributed-cache` (promovido de `wt-b44-1/runs/b44-1b/cluster/`) | `ClusterSemCachesXmlTest`: nenhum elemento de *cache*; fora dos *caches*, igual ao XML versionado nó a nó |
+| `cluster/podman-compose-sem-caches.yml` | o `podman-compose.yml` com o volume do XML trocado; sem `restart:` (o AC-5 depende disso) | `ClusterSemCachesXmlTest`: só o volume muda |
+| `cluster/caches/{sessions,counters,sessions-async,counters-async}.json` | os quatro da carga, compactos, sem o envoltório do nome; `remote-timeout` 17500 explícito nos SYNC | `CachesCargaJsonTest`: iguais ao *cache* de mesmo nome do XML, salvo `remote-timeout`; o diretório tem exatamente os seis JSON |
+
+O `infinispan-cluster.xml` com *caches* continua o do *rebaseline* e dos testes de irmãos (`ClusterXmlIrmaosTest`);
+os JSON são conferidos contra ele. Subida local, à mão (o orquestrador `scripts/run-campanha-s3.sh` faz o mesmo antes
+de cada execução, com a leitura de volta nos três nós e a camada 3):
+
+```bash
+cd cluster && podman-compose -f podman-compose-sem-caches.yml up -d && cd ..
+# esperar HEALTHY com 3 nos, depois:
+CRIA_CACHES_SENHA=infinispan scripts/cria-caches.sh --url http://127.0.0.1:11222 \
+  --conferir http://127.0.0.1:11222,http://127.0.0.1:11223,http://127.0.0.1:11224 \
+  sessions counters sessions-async counters-async canario canario-async
+```
+
+A leitura de volta `?action=config` dos quatro *caches* da carga criados pela REST ainda não foi conferida contra um
+servidor real (só a dos `canario*` está prevista no *smoke* do W-4): a primeira subida local ou a validação X-17 mostra
+se ela volta byte a byte igual ao JSON, como o `cria-caches.sh` exige.
+
 ## Como verificar conectividade dos nós
 
 ```bash

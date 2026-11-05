@@ -66,7 +66,21 @@ public final class ConvergenciaLoop {
                          Integer divergentesI6, String motivoInvalida) {}
 
     public record Resultado(List<Rodada> rodadas, boolean convergiu, Long tConvergenciaAbsNs,
-                            Long tConvergenciaRelFimNs, boolean divergenciaPersistente) {}
+                            Long tConvergenciaRelFimNs, boolean divergenciaPersistente) {
+
+        /**
+         * W-6 (decisao do coordenador de 05/11, depois do I-3b): {@code convergiu}; {@code divergente} quando houve
+         * ao menos uma rodada valida e a divergencia ficou ate o teto; {@code sem_rodada_valida} quando nenhuma
+         * rodada foi valida (por exemplo, o no parado pelo AC-5 nao voltou: "topologia com 2 de 3"), o que nao e
+         * divergencia medida e a analise trata como nao avaliavel. {@link #divergenciaPersistente()} nao muda.
+         */
+        public String estado() {
+            if (convergiu) {
+                return "convergiu";
+            }
+            return rodadas.stream().anyMatch(Rodada::valida) ? "divergente" : "sem_rodada_valida";
+        }
+    }
 
     private final InvariantAuditor auditor;
     private final List<Supplier<Map<String, SessionState>>> leitoresSessao;
@@ -204,6 +218,26 @@ public final class ConvergenciaLoop {
      */
     public static void escreverResumo(Path destino, Resultado r, long tFimNs, Long tFimCargaNs,
                                       Long tFimControleNs) throws IOException {
+        gravarResumo(destino, r, tFimNs, tFimCargaNs, tFimControleNs, null);
+    }
+
+    /**
+     * W-6 (P-6 da V-W5): como a anterior, com o controlador ligado. Acrescenta ao fim, depois de
+     * {@code t_fim_controle_ns}, os campos do religamento do no parado pelo AC-5 ({@link Religamento}):
+     * {@code t_sinal_fim_carga_ns}, {@code religamento_ac5_alvo}, {@code religamento_prazo_ns},
+     * {@code t_religamento_ns} (o campo que {@code analysis/comparar_bracos.py} le), {@code religamento_esgotado}
+     * e {@code religamento_leituras}. Sem AC-5, os mesmos campos com alvo, prazo e instante nulos.
+     */
+    public static void escreverResumo(Path destino, Resultado r, long tFimNs, Long tFimCargaNs,
+                                      Long tFimControleNs, Religamento.Resultado religamento) throws IOException {
+        if (religamento == null) {
+            throw new IllegalArgumentException("religamento nulo: use a assinatura de cinco argumentos");
+        }
+        gravarResumo(destino, r, tFimNs, tFimCargaNs, tFimControleNs, religamento);
+    }
+
+    private static void gravarResumo(Path destino, Resultado r, long tFimNs, Long tFimCargaNs,
+                                     Long tFimControleNs, Religamento.Resultado religamento) throws IOException {
         Path pai = destino.getParent();
         if (pai != null) {
             Files.createDirectories(pai);
@@ -219,6 +253,15 @@ public final class ConvergenciaLoop {
         m.put("rodadas_validas", validas);
         m.put("t_fim_carga_ns", tFimCargaNs);
         m.put("t_fim_controle_ns", tFimControleNs);
+        m.put("convergencia_estado", r.estado());
+        if (religamento != null) {
+            m.put("t_sinal_fim_carga_ns", religamento.tSinalNs());
+            m.put("religamento_ac5_alvo", religamento.ac5Alvo());
+            m.put("religamento_prazo_ns", religamento.prazoNs());
+            m.put("t_religamento_ns", religamento.tReligamentoNs());
+            m.put("religamento_esgotado", religamento.esgotado());
+            m.put("religamento_leituras", religamento.leituras());
+        }
         new ObjectMapper().enable(SerializationFeature.INDENT_OUTPUT).writeValue(destino.toFile(), m);
     }
 }

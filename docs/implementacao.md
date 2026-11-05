@@ -95,6 +95,162 @@ o ProtoStream padrão falha ao serializar e toda escrita vira
 
 ## Decisões técnicas a registrar
 
+### TD-015 — W-6 (B-46): orquestrador das campanhas S3 e religamento depois do AC-5 (2026-11-05)
+
+Numeração: TD-014 na branch do W-6, renumerado para TD-015 na integração (merge em `feature/controlador-integracao`,
+05/11), depois do TD-014 do W-2b; os P-45..P-53 da branch são os P-47..P-55 do registro de problemas.
+
+Especificação: plano de execução de 04/11, seção 9 (W-6) e seção 5; plano de execução contínua, seções 2 e 3 (X-17 a
+X-25, H0/H1); `docs/acoes-controlador-cluster-2026-11-05.md` seção 6; requisitos acumulados das validações de 05/11
+(P-30 do B-44.1b, R1 e O10 da V-W2a, A-1 e A-3 da V-W5 com a decisão P-6, P-35, C3 e DT-019, B-25.1). Modelo de
+estrutura: `scripts/run-rebaseline.sh` (`d95305fe…`), que **não mudou**.
+
+**Arquivos.** `scripts/run-campanha-s3.sh` (orquestrador), `scripts/campanha_s3_matriz.py` (matriz e reposições),
+`scripts/campanha_s3_conferir.py` (parâmetros, controlador, `meta` do braço B, trilha do AC-5),
+`scripts/campanha_s3_h4.py` (h4 sobre `analysis/h4.py`, sem editá-lo), `cluster/infinispan-sem-caches.xml`,
+`cluster/podman-compose-sem-caches.yml`, `cluster/caches/{sessions,counters,sessions-async,counters-async}.json`;
+no programa de carga, `session/Religamento.java`, a opção `--rejoin-timeout-sec`, a linha `Fim da carga:` e
+`ExecutorDeAcoes.alvoDoAc5Aplicado()`; `scripts/inject-crash.sh --marker` (B-25.1).
+
+```mermaid
+%%{init: {'theme':'base','themeVariables':{'background':'#ffffff','primaryColor':'#ffffff','primaryTextColor':'#000000','primaryBorderColor':'#000000','lineColor':'#000000','secondaryColor':'#ffffff','tertiaryColor':'#ffffff','clusterBkg':'#ffffff','clusterBorder':'#000000','edgeLabelBackground':'#ffffff','fontFamily':'Arial'}}}%%
+flowchart TD
+    PV["pre-voo: flock, SHA-256 (matriz, parametros, controlador, jar),<br/>referencia de cada perfil da fila (cenario S3, perfil certo), boot_id,<br/>parametros com origem, bloco politica (braco B), timers tcc-heal-cs-* sobrando,<br/>unit do amostrador h4, bundle x progresso.json,<br/>--dry-run do programa em cada perfil e controller da fase"] --> GO["GO por tty: go &lt;fase&gt; &lt;data&gt;"]
+    GO --> LAC{"para cada execucao da fase"}
+    LAC --> CHK["PARAR? boot_id? unit h4 ativa? disco &gt;= 1,5 x volume?"]
+    CHK --> DT["DT-014: ja checada, abortada ou interrompida;<br/>bloco ja perdido: PULADA"]
+    DT --> GR["primeira F2/F4: go rede &lt;i&gt;"]
+    GR --> REC["podman-compose down/up (XML sem caches);<br/>3 HEALTHY; StartedAt &gt;= recriacao; cria-caches.sh (6 caches,<br/>leitura de volta nos 3 nos)"]
+    REC --> C3A["camada 3 antes: rebalancing_enabled, AVAILABLE e config = JSON nos 3 nos"]
+    C3A --> K1["portao K1: 60 s de 3 HEALTHY sem tc/iptables residual"]
+    K1 --> CAR["timeout -k (21 s + folga) teto java ... --controller shadow|active<br/>--controller-reference do perfil da linha<br/>stdout por FIFO: leitor em memoria, log por outro processo"]
+    CAR -- "Warm-up ate +" --> META["janela h4 da linha; meta da trilha (braco certo; B atua)"]
+    META --> INJ["+inj_offset: F1 inject-crash --marker | F2 dead-man + inject-partition | F4 dead-man + inject-netdegrade"]
+    INJ --> VOL["F1: volta pela REST (P-35); F2/F4: resto de rede, --heal, desarme;<br/>exit 1/6 com o alvo parado: pendente (B1)"]
+    CAR -- "Fim da carga: ac5_alvo=X" --> REL["podman start X (no parado pelo AC-5);<br/>o programa espera a topologia e grava t_religamento_ns"]
+    REL --> POS["pos: sem linha de fim, religa os nos parados (S3);<br/>StartedAt explicado, 3 HEALTHY, sem resto, camada 3 depois,<br/>trilha x linha de fim (AC-5), pendente do B1, h4 (campanha_s3_h4.py)"]
+    VOL --> POS
+    POS --> CHG["execucao.json, checagem.json (ACEITA, RECUSADA, DESCARTADA-INFRA, PULADA), MANIFEST"]
+    CHG --> LAC
+```
+
+**Escolhas, com o porquê.**
+
+1. **Cluster recriado antes de toda execução** (`down`/`up` com o XML sem *caches* e os seis criados pela REST), não
+   só depois de execução com AC-5 (seção 6, item 5 do documento de ações). Motivos: os dois braços de um bloco partem
+   do mesmo estado; resto de AC-2, de AC-5 ou de atributo mudado não passa de uma execução para a outra; o P-30 e o
+   N-9 não se aplicam a *cache* criado pela REST num *cluster* novo; e a pré-checagem (a) vira o portão de uma
+   recriação conhecida. Custo: a recriação (até 180 s, `recriar.sh`) mais o K1 (60 s) por execução, a medir na
+   validação X-17.
+2. **Sinal de fim da carga sem disco no caminho.** O stdout do programa vai a um FIFO; um leitor em segundo plano
+   procura a âncora e a linha `Fim da carga:` e as passa por outro FIFO, aberto em leitura e escrita pelo laço
+   principal, enquanto um `cat` separado grava o `stdout.log`. Um disco travado só atrasa o `cat`. O laço testa o FIFO
+   com `read -t 0` (sem ler), lê só a linha já disponível e espera entre as voltas com `sleep & wait` (o `dormir` do
+   runner do rebaseline), porque o bash do Git Bash caiu com SIGSEGV ao receber SIGTERM dentro de um `read -t 0,2`
+   (P-52) e a leitura vencida no meio da linha perdia o evento (P-51). O
+   alvo do AC-5 vem na própria linha, lido pelo programa do executor em memória (`alvoDoAc5Aplicado`, mesma regra
+   de `ac5_aplicada` do `comparar_bracos.py`); a trilha no disco só é conferida depois (`campanha_s3_conferir.py
+   trilha`).
+3. **Religamento.** Ao ler a linha com alvo, o laço faz `podman start` do nó (rótulo `host:porta` ↦ `isn1..3` pela
+   posição em `--admin`). Um nó parado **sem** AC-5 APLICADA (por exemplo, AC-5 FALHOU que parou o nó, O8 da V-W2a) é
+   religado também, para o laço de convergência não ir aos 600 s, e a execução vira `DESCARTADA-INFRA`. O programa,
+   com AC-5 aplicado, lê a mesma sonda do laço de convergência a cada `P_sonda` (2 s, B-26.2) até ver os servidores
+   esperados ou até `--rejoin-timeout-sec`, e grava `t_religamento_ns` (fim da leitura que viu; sempre antes da
+   primeira rodada do laço). Sem o campo, a execução fica ACEITA com aviso: o Δ_conv sai não avaliável na análise,
+   e o desfecho V não é afetado.
+4. **Encerramento** por `timeout -k K teto java …`, com `K = 21 s (T_enc no pior caso do contrato v1.2 depois do P-42:
+   AC-5 com prazo de 17 s e a P2 habilitada; 19 s sem ela) + encerramento_folga_s` e o teto `exec_teto_s` do arquivo
+   de parâmetros. Uma interrupção do orquestrador manda SIGTERM ao `timeout`, que o repassa à JVM e arma o SIGKILL K s
+   depois; o orquestrador espera K + 2 s antes de um SIGKILL próprio. (Antes do rebase sobre `17f2bd4` eram 9 s.)
+5. **Braço B que não atua** (atuador `nulo`, política `nenhuma`, `parametros_politica` nulo, modo errado ou
+   `param_sha256` diferente do SHA-256 do `--controller-config`) é recusado assim que a âncora aparece (a `meta` já
+   está escrita), antes da falha: a carga é parada e a fase sai com 6, porque o erro é de configuração e se repetiria.
+   No pré-voo, o bloco `politica` é exigido no arquivo quando a fase tem braço B. O mesmo arquivo serve aos dois
+   braços, então o `param_sha256` igual em A e B decorre de conferir os dois contra o arquivo. **P2 fora do braço B
+   (D-B do coordenador, 05/11):** toda fase do orquestrador é de calibração ou avaliação, então o pré-voo exige
+   `politica.p2Habilitada = false` (o que exige também o bloco), e a `meta` de cada execução, nos dois braços,
+   `parametros_politica.p2_habilitada = false`; qualquer outro valor para a carga (exit 6).
+6. **Volta do nó depois do F1 pela REST** (P-35): três `health` HEALTHY com 3 nós em até 180 s (PR §6 (e)); o exit do
+   `inject-crash.sh` só decide recusa (1, 4) × infraestrutura (2, 3, 5), como no rebaseline.
+7. **h4.** `analysis/h4.py`, `amostrador-infra.sh` e `vigia-h4.sh` não mudam (lista `e9c44819…` da DT-018). O
+   orquestrador exige `--h4-id`, confere a unit antes da fase e de cada execução (C3 §4.3, regra 3) e, depois de cada
+   execução, chama `campanha_s3_h4.py fase`, que reusa `h4.avaliar_execucao` e `h4.avaliar_parada` trocando só a janela
+   (lida da linha `Warm-up ate +Xs; medicao a partir de +Ys; total Zs`) e o reinício padrão do F1 (`inj_offset + f1_dur`).
+   A execução h4 vira `DESCARTADA-INFRA`; a parada do C3 §4.3 sai com 10. O vigia do rebaseline não é usado no S3.
+8. **GO**: `go <fase> <AAAA-MM-DD>` no início e `go rede <i>` antes da primeira F2/F4 da invocação, antes do diretório
+   e do K1 (C2 do runner). O segundo é o análogo do `go f3` do rebaseline (primeiro `tc` num nó); pode ser retirado se o
+   Gestor achar que o primeiro basta.
+9. **Bloco perdido.** Se um braço de um bloco não ficou ACEITA, o outro não roda (`PULADA`): o bloco é refeito inteiro
+   pelo `campanha_s3_matriz.py repor` (plano 5.2), e rodar o outro braço só gastaria VM.
+10. **Camada 3.** Antes da carga, qualquer divergência sai com 6 (o *cluster* acabou de ser recriado). Depois: atributo de
+    *cache* diferente do JSON torna a execução `DESCARTADA-INFRA` (o braço B não muda atributo, R-ARQ-3);
+    `rebalancing_enabled` falso ou disponibilidade diferente de `AVAILABLE` viram aviso, porque a próxima execução
+    recria o *cluster*.
+11. **Números da campanha** só pelo arquivo `campanha-s3/1` (`campanha_s3_conferir.py parametros`): 19 parâmetros,
+    todos obrigatórios, cada um com `origem` não vazia, nenhum padrão, com duas coerências (a falha acaba antes do fim
+    da carga; o teto cobre carga + `T_enc` + religamento + convergência + um período, item 18). As constantes do orquestrador têm a origem ao lado
+    (K1, volta, recriação, âncora, prazo REST, margem e precisão do dead-man, `T_enc`, aviso de 8 s, fator 1,5).
+12. **Religamento antes do teto da convergência** (coordenador, 05/11, depois do I-3b, em que o religamento 30 s depois do
+    fim deu convergência em 35,3 s): o `podman start` sai na mesma volta do laço em que a linha de fim chega, e o
+    programa só começa o laço de convergência depois de ver a topologia completa (ou de esgotar
+    `--rejoin-timeout-sec`). O S5 da suíte exige o `start` dentro do prazo do religamento.
+13. **`convergencia_estado`** no resumo (`convergiu` | `divergente` | `sem_rodada_valida`): com `sem_rodada_valida`, a
+    execução fica ACEITA com aviso (o desfecho V não depende da convergência; Δ_conv e divergência ficam não avaliáveis
+    na análise).
+14. **Pareamento** conferido no pré-voo (também no `--dry-run`): em cada bloco, uma linha A e uma B, a mesma célula e a
+    mesma semente (plano 5.2); senão exit 4. O gerador já garante isso; a conferência pega matriz ou `reposicoes.tsv`
+    editados à mão.
+15. **Arquivo `NUL`** (o `podman machine ssh` do Git Bash grava o `known_hosts` num arquivo `NUL` no diretório
+    corrente): o orquestrador o remove da saída e dos diretórios das execuções, com registro no log, e o exclui dos
+    manifestos.
+
+**W-6b: ressalvas da V-W6 (`docs/validacao-w6-2026-11-05.md` §5 e §11), mesma branch.**
+
+16. **B1, injetor que sai porque o AC-5 parou o nó da falha** (P-53). Com F2/F4, exit 1 ou 6 e o alvo fora de
+    `running` (ou já religado na linha de fim, pelo AC-5 ou pelo O8), a recusa fica pendente até a pós-checagem. Lá, se
+    a linha de fim e a trilha põem o AC-5 APLICADA nesse nó, e, na F2, o `injetor.log` tem
+    `OK: <no> nao conecta a nenhum par` (o corte foi confirmado antes da parada), a execução segue com aviso; em
+    qualquer outro caso, a recusa de antes. A janela da falha na análise continua a dos marcadores; o nó parado depois
+    do AC-5 é efeito da ação. Os injetores não mudam (o `inject-netdegrade.sh` tem o *hash* validado no S5 do *gate*).
+
+```mermaid
+%%{init: {'theme':'base','themeVariables':{'background':'#ffffff','primaryColor':'#ffffff','primaryTextColor':'#000000','primaryBorderColor':'#000000','lineColor':'#000000','secondaryColor':'#ffffff','tertiaryColor':'#ffffff','fontFamily':'Arial'}}}%%
+flowchart TD
+    E["injetor F2/F4 saiu"] --> X{"exit"}
+    X -- "0" --> OK["segue"]
+    X -- "2, 3, 5 ou outro" --> INF["infra: fase sai com 6"]
+    X -- "4" --> RC["RECUSADA"]
+    X -- "1 ou 6" --> P{"alvo fora de running<br/>ou religado na linha de fim?"}
+    P -- "nao" --> RC
+    P -- "sim" --> PD["pendente (injetor_alvo_parado)"]
+    PD --> Q{"linha de fim e trilha: AC-5 APLICADA no alvo?<br/>F2: linha OK do corte no injetor.log?"}
+    Q -- "sim" --> AV["segue com aviso: falha efetiva ate a parada pelo AC-5"]
+    Q -- "nao" --> RC
+```
+
+17. **S1 a S6.** O `--dry-run` roda o `campanha_s3_conferir.py controlador` (bloco `politica` com braço B,
+    `p2Habilitada = false`, `tetoLagMs = hotrod_timeout_ms`) e imprime o resultado, para o *dry-run* do pré-registro
+    pegar o erro sem VM (S1). O pré-voo recusa (exit 4) *timer* `tcc-heal-cs-*` de outra invocação, antes de gastar uma
+    execução (S2). Sem a linha de fim, a pós-checagem religa os nós parados como no O8 e a execução vira
+    `DESCARTADA-INFRA` sem parar a fase (S3). O `collect-resources.sh` entra no *bundle* (S4). O S7 da suíte exige o
+    SIGKILL depois de 2300 ms reais (S5). O leitor do stdout espera o `cat` que grava o `stdout.log` antes de mandar o
+    fim (S6), e o S4 da suíte confere o `MANIFEST` de cada execução com `sha256sum -c`.
+18. **M1, coerência do teto.** `exec_teto_s ≥ duracao_s + T_enc + religamento_prazo_s + convergencia_teto_s +
+    convergencia_periodo_s`, com `T_enc` = 21 s passado pelo orquestrador (`--t-enc-pior-s`). O período a mais cobre a
+    volta do laço de convergência, que dorme antes de olhar o teto (`ConvergenciaLoop.executar`). O tempo do
+    lançamento até a âncora (`t_pre` ≤ 2,4 s no I-3b) e o fechamento depois da convergência (`t_pos` = 13,5 s) são
+    medidos, não constantes: o pré-registro os soma com folga (calibração §4.1: 300 + 21 + 60 + 600 + 1,5 × (2,4 + 13,5)
+    → 1005 s; o mínimo do código com esses números é 986 s). A primeira versão do W-6b somava os 120 s do prazo da
+    âncora e recusaria os 1005 s (mínimo 1106 s); foi trocada depois da adenda da V-W6.
+19. **B2, uma referência de p99 por perfil** (P-54). `--referencia-async` e `--referencia-sync` (cada uma com o seu
+    SHA-256) no lugar de `--referencia`; a de cada execução vem do modo da linha da matriz; a de cada perfil presente
+    na fila é obrigatória e conferida (`campanha_s3_conferir.py referencia`: esquema `referencia-p99/1`, cenário S3,
+    perfil); as duas entram no *bundle*; o pré-voo 4 roda o `--dry-run` do programa em cada perfil e *controller* da
+    fase; o `execucao.json` registra o `referencia_sha256`.
+20. **Veredito do O8** (P-55): os desvios de religamento entram nos motivos com o prefixo `infra: `, que é o que o
+    veredito `DESCARTADA-INFRA` procura. Antes, um nó religado pelo O8 deixava a execução ACEITA com motivos. O O8 pula
+    o nó de um F1 ainda em curso na linha de fim: quem o religa é o `inject-crash.sh`, que grava o `end` (S25).
+
 ### TD-014 — W-2b (P-5): caminho crítico do controlador sem disco e sem processo (2026-11-05)
 
 Branch `fix/p5-caminho-critico` a partir de `17f2bd4` (`feature/controlador-integracao`), plano do Senior em

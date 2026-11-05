@@ -159,10 +159,12 @@ nenhum evento nas fases pedidas: exit 2.
 
 Δ_rec: última operação **iniciada** depois do marcador `end` que terminou em anomalia (`ERROR_TRANSPORT`,
 `ERROR_UNAVAILABLE` ou falha percebida), censurada nos últimos W_c = `--w-analise-s` antes de `t_fim_carga_ns`; sem
-`t_fim_carga_ns`, ausente. Δ_conv: `t_convergencia_abs_ns − t_religamento_ns` quando o AC-5 parou um nó e o
-orquestrador (W-6) o religou no fim da carga, antes do laço de convergência; sem nó parado,
-`t_convergencia_abs_ns − t_fim_carga_ns`; AC-5 aplicado sem o registro do religamento deixa Δ_conv e divergência não
-avaliáveis. O nome `t_religamento_ns` (campo do resumo de convergência) é provisório e se combina com o W-6.
+`t_fim_carga_ns`, ausente. Δ_conv: `t_convergencia_abs_ns − t_religamento_ns` quando o AC-5 parou um nó; sem nó
+parado, `t_convergencia_abs_ns − t_fim_carga_ns`. AC-5 aplicado sem o registro deixa Δ_conv e divergência não
+avaliáveis, e `t_religamento_ns` anterior a `t_fim_carga_ns` é inválido. Desenho fixado pelo coordenador (05/11), a
+levar ao W-6: `t_religamento_ns` fica no resumo de convergência, gravado pelo programa de carga. No fim da carga, se
+houve AC-5, o programa sinaliza o fim, o orquestrador faz o `podman start` do nó parado, e o programa espera a
+topologia completa (com prazo) antes do laço de convergência; o campo é o instante em que ele viu os três nós de volta.
 
 Energia: modelo do `energia_proxy.py`, P_max = 181 W, razão ociosa 0,3 (Barroso e Hölzle 2007, p. 36) com 0,5
 (p. 34) como sensibilidade, por decisão do Gestor de 05/11. Guarda G4: a comparação recusa (exit 2) energia

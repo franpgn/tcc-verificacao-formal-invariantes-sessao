@@ -38,7 +38,8 @@ A/B por (celula, bloco); `execucao` e um diretorio (relativo ao manifesto, se na
   s3-acoes-rep-NNN.csv (contrato S3 v2, 10 colunas)     desfechos S3 (8 colunas: exit 2)
   marcadores.txt                                         fases, t_fim-falha (Delta_rec)
   convergencia-resumo-rep-NNN.json                       fases, fim da medicao e Delta_conv (t_fim_carga_ns;
-                                                         t_religamento_ns do W-6 quando o AC-5 parou um no),
+                                                         t_religamento_ns quando o AC-5 parou um no: instante
+                                                         em que a carga viu os tres nos de volta),
                                                          divergencia
   energia-rep-NNN.json (energia_proxy.py)                CPU e energia (opcional; B39-R1 confere W e fases)
   violacoes-rep-NNN.csv (InvariantAuditor.dumpCsv)       taxa de violacoes (sem ele: desfecho ausente)
@@ -138,8 +139,10 @@ DESFECHO_FALHAS = "falhas_percebidas_por_1000"
 ESCALA_DIFERENCA = frozenset((DESFECHO_V, DESFECHO_DREC, DESFECHO_DREC_MET, DESFECHO_DCONV, DESFECHO_DIV,
                               DESFECHO_ERRO, DESFECHO_FALHAS))
 SUFIXO_RAZAO = ":razao"
-# P-6 da V-W5 (achado A-1, opcao a): instante em que o orquestrador (W-6) religou o no parado pelo AC-5, no
-# fim da carga e antes do laco de convergencia. Nome provisorio, a combinar com o W-6.
+# P-6 da V-W5 (achado A-1, opcao a; desenho fixado pelo coordenador em 05/11): campo do resumo de
+# convergencia, gravado pelo programa de carga. Ao fim da carga, se houve AC-5, o programa sinaliza o fim, o
+# orquestrador (W-6) faz o `podman start` do no parado, e o programa espera a topologia completa (com prazo)
+# antes de iniciar o laco de convergencia; t_religamento_ns e o instante em que ele viu os tres nos de volta.
 CAMPO_RELIGAMENTO = "t_religamento_ns"
 TIPO_AC5 = "AC-5"
 ATUADOR_NULO = "nulo"
@@ -1028,8 +1031,9 @@ def desfechos_execucao(execucao, rep, fases_sel, w_recovery_ns, marcadores_nome=
             out[DESFECHO_DREC_MET] = dict(_ausente(motivo) if y is None else
                                           {"y": y, "n": 1, "motivo": None, "eventos": None}, censurada=cens)
 
-    # convergencia (plano 3.4; P-6 da V-W5): Delta_conv a partir do religamento do no parado pelo AC-5 (W-6)
-    # ou, sem no parado, do fim da carga; nunca t_fim_ns. AC-5 aplicado sem o registro do religamento: o laco
+    # convergencia (plano 3.4; P-6 da V-W5): Delta_conv a partir de t_religamento_ns (topologia completa de volta
+    # depois do religamento do no parado pelo AC-5) ou, sem no parado, do fim da carga; nunca t_fim_ns. AC-5
+    # aplicado sem o registro: o laco
     # nunca ve todos os nos (ConvergenciaLoop.java:20-24), entao Delta_conv e divergencia nao sao avaliaveis.
     trilha = ler_trilha_decisoes(d / ("decisoes-rep-%s.jsonl" % nnn))
     com_ac5 = ac5_aplicada(trilha)
@@ -1496,7 +1500,8 @@ def comparar(manifesto, semente, *, delta_latencia, w_analise_s, w_recovery_s, t
                                            "anomalia (ERROR_TRANSPORT, ERROR_UNAVAILABLE, falha percebida); censura "
                                            "nos ultimos W_c = w_analise_s antes de t_fim_carga_ns; sem t_fim_carga_ns, "
                                            "ausente (plano 3.4; P-2 e P-3 da V-W5)",
-                              "delta_conv": "t_convergencia_abs_ns - %s (no parado pelo AC-5 religado pelo W-6) ou "
+                              "delta_conv": "t_convergencia_abs_ns - %s (topologia completa de volta depois do "
+                                            "religamento do no parado pelo AC-5) ou "
                                             "- t_fim_carga_ns (sem no parado); AC-5 sem registro do religamento: "
                                             "nao avaliavel (plano 3.4; P-6 da V-W5)" % CAMPO_RELIGAMENTO,
                               "escala_diferenca": sorted(ESCALA_DIFERENCA),

@@ -1161,8 +1161,9 @@ class ErroEFalhasEmDiferenca(Base):
 
 
 class Religamento(Base):
-    """P-6 da V-W5 (achado A-1, opcao a): o W-6 religa o no parado pelo AC-5 no fim da carga, antes do laco de
-    convergencia, e grava o instante; o Delta_conv conta desse religamento. Sem o registro, nao avaliavel."""
+    """P-6 da V-W5 (achado A-1, opcao a): no fim da carga o W-6 religa o no parado pelo AC-5, e o programa de
+    carga grava no resumo t_religamento_ns, o instante em que viu os tres nos de volta, antes do laco de
+    convergencia; o Delta_conv conta desse instante. Sem o registro, Delta_conv e divergencia nao avaliaveis."""
 
     P = S // 10
 

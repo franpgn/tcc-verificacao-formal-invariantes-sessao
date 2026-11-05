@@ -551,3 +551,15 @@ primeira e segunda rodadas) + 5 (R1) = 1041; 133 + 12 + 1 = 146 classes. Tudo ve
 | `ExigirPrimarioTest` | 5 |
 
 Falta o *smoke* da seção 9 do parecer (cluster local), que espera o W-2a terminar o I-1..I-5.
+
+### W-4, smoke local da V-W4 §9 (2026-11-05)
+
+Cluster local `w4s` (portas 12611 a 12613), sem VM; relatório completo em `docs/relatorio-w4-2026-11-05.md` (R7).
+Brutos em `runs/w4-smoke/{A,B,D}/` com `MANIFEST.sha256`.
+
+| Bloco | Execução | Resultado |
+|---|---|---|
+| A (ASYNC) | S0 sem falha | A1 a A6 e A8 ok: 312/312 pares vistos, `lag_max_ms` máximo 6,15 ms, 6 leituras por rodada, chaves com primário no próprio nó |
+| A (ASYNC) | S1 com corte do `isn3` | A10 a A13 ok: 9/9 rodadas com suspeito `isn3` no teto antes da vista; P1 e AC-5 previsto 13,2 s depois do corte (vista em 46,5 s) |
+| A e B | prova REST (A7) | não obtida como especificada: a REST erra o conjunto de donos (diagnóstico D: cliente certo em 3/3, REST errada em 2/3) |
+| B (SYNC) | S2a sem falha, S2 com corte | R3 ocorreu: 8/8 rodadas antes da vista com todos os pares no teto e suspeito `null`; nenhum P1 |

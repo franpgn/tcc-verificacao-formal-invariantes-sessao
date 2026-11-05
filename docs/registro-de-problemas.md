@@ -956,6 +956,13 @@ correspondente adicionado em `Mesclar` (`spec/SessionStore.tla`, commit `b7d8e0a
 - **Conferir no smoke:** `defasagem_chaves` com `primario = true` nos três nós; com o `isn3` cortado, os pares
   `isn1`↔`isn2` vistos e `no_suspeito = isn3` em todas as rodadas antes da mudança de vista; e o dono primário de cada
   chave por `GET /rest/v2/caches/{cache}/{chave}?action=distribution`, como prova independente.
+- **Smoke local (05/11, `docs/relatorio-w4-2026-11-05.md`; P-44 no integrador):** em ASYNC a escolha funcionou pelo
+  comportamento: com o `isn3` cortado, 9 de 9 rodadas antes da vista com os pares da maioria vistos e o suspeito
+  `isn3` no teto, e P1 aos 13,2 s. A prova REST `?action=distribution` não serve de oráculo: com uma chave por *cache*
+  novo, o hash do cliente acertou os três conjuntos de donos (entradas em memória por nó) e a REST errou dois. Em SYNC,
+  o risco R3 ocorreu: as duas chaves da maioria tinham cópia no `isn3`, a escrita ficou presa (`ISPN000476`,
+  `ISPN000299`) e as 8 rodadas antes da vista empataram no teto, sem P1. Decisão pendente: declarar a limitação na
+  célula SYNC F2 (preferência do coordenador) ou chave por par ordenado.
 
 ## Observação de modelagem (não é defeito)
 

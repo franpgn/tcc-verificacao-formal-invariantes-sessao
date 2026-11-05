@@ -49,11 +49,12 @@ def escrever(d, nome, obj):
 
 
 def meta(modo="active", atuador="por-tipo(AC-2=rest-infinispan,AC-5=rest-infinispan)", politica="por-assinatura",
-         pp=True, sha=SHA, esquema="decisoes-controlador/1.2"):
+         pp=True, sha=SHA, esquema="decisoes-controlador/1.2", p2="ausente"):
+    pol = {"k_lag": 2, "teto_lag_ms": 2000, "t_reb_ns": 60000000000, "cota_ac5": 1, "origem": {}}
+    if p2 != "ausente":
+        pol["p2_habilitada"] = p2
     return {"tipo": "meta", "esquema": esquema, "modo": modo, "param_sha256": sha, "atuador": atuador,
-            "politica": politica,
-            "parametros_politica": {"k_lag": 2, "teto_lag_ms": 2000, "t_reb_ns": 60000000000, "cota_ac5": 1,
-                                    "origem": {}} if pp else None}
+            "politica": politica, "parametros_politica": pol if pp else None}
 
 
 def acao(tipo, resultado, alvo, executada=True, operacao="APLICAR"):
@@ -197,6 +198,60 @@ class Meta(unittest.TestCase):
             self.assertEqual(4, rodar("meta", "--decisoes", str(ruim), "--braco", "A", "--param-sha256", SHA)[0])
             nao_meta = escrever(d, "n.jsonl", json.dumps({"tipo": "decisao"}) + "\n")
             self.assertEqual(4, rodar("meta", "--decisoes", str(nao_meta), "--braco", "A", "--param-sha256", SHA)[0])
+
+
+class P2ForaDoBracoB(unittest.TestCase):
+    """D-B do coordenador (05/11; contrato JSONL 1.2): a P2 (AC-2) e exploratoria e fica fora do braco B. Na calibracao
+    e na avaliacao (todas as fases do orquestrador) o bloco politica tem p2Habilitada = false e a meta das decisoes,
+    parametros_politica.p2_habilitada = false; qualquer outro valor (true, ausente, nao booleano) e recusa."""
+
+    def ctrl(self, d, p2="ausente", politica=True):
+        c = {"versao": "t", "wNs": 5000000000}
+        if politica:
+            c["politica"] = {"kLag": 2, "tetoLagMs": 2000, "tRebNs": 60000000000, "cotaAc5": 1, "origem": {}}
+            if p2 != "ausente":
+                c["politica"]["p2Habilitada"] = p2
+        return escrever(d, "c.json", c)
+
+    def test_controlador(self):
+        casos = {"false": (False, 0), "true": (True, 5), "ausente": ("ausente", 5), "texto": ("false", 5)}
+        for nome, (p2, esperado) in casos.items():
+            with self.subTest(caso=nome), tempfile.TemporaryDirectory() as d:
+                rc, out, err = rodar("controlador", "--arquivo", str(self.ctrl(d, p2)), "--hotrod-timeout-ms", "2000",
+                                     "--exigir-p2-desabilitada")
+                self.assertEqual(esperado, rc, err)
+                if esperado == 5:
+                    self.assertIn("p2Habilitada", err)
+                else:
+                    self.assertIn("p2_habilitada\tfalse", out)
+
+    def test_controlador_sem_bloco(self):
+        with tempfile.TemporaryDirectory() as d:
+            rc, _, err = rodar("controlador", "--arquivo", str(self.ctrl(d, politica=False)), "--hotrod-timeout-ms",
+                               "2000", "--exigir-p2-desabilitada")
+            self.assertEqual(5, rc)
+
+    def test_sem_a_opcao_nao_exige(self):
+        with tempfile.TemporaryDirectory() as d:
+            rc, out, _ = rodar("controlador", "--arquivo", str(self.ctrl(d, True)), "--hotrod-timeout-ms", "2000")
+            self.assertEqual(0, rc)
+            self.assertIn("p2_habilitada\ttrue", out)
+
+    def test_meta_nos_dois_bracos(self):
+        for braco, modo in (("A", "shadow"), ("B", "active")):
+            casos = {"false": (False, 0), "true": (True, 5), "ausente": ("ausente", 5), "nulo": (None, 5)}
+            for nome, (p2, esperado) in casos.items():
+                with self.subTest(braco=braco, caso=nome), tempfile.TemporaryDirectory() as d:
+                    t = escrever(d, "m.jsonl", json.dumps(meta(modo=modo, p2=p2)) + "\n")
+                    rc, _, err = rodar("meta", "--decisoes", str(t), "--braco", braco, "--param-sha256", SHA,
+                                       "--exigir-p2-desabilitada")
+                    self.assertEqual(esperado, rc, (braco, nome, err))
+
+    def test_meta_sem_parametros_politica(self):
+        with tempfile.TemporaryDirectory() as d:
+            t = escrever(d, "m.jsonl", json.dumps(meta(modo="shadow", pp=False)) + "\n")
+            self.assertEqual(5, rodar("meta", "--decisoes", str(t), "--braco", "A", "--param-sha256", SHA,
+                                      "--exigir-p2-desabilitada")[0])
 
 
 class Trilha(unittest.TestCase):

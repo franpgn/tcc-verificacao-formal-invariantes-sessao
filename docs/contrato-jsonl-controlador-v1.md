@@ -14,6 +14,10 @@ reversível, AC-5; `null` na reversível, AC-2); linha nova `politica`; `paramet
 só `AC-2` e `AC-5` (AC-1 e AC-3 retirados). `observaveis` continua 1.1: nada mudou nele. **observaveis 1.2** (W-4,
 B-26.3, só `observaveis`, aditivo e antes de qualquer dado; validado na V-W4, `ff7ab3c`): `parametros_defasagem` na `meta`;
 linha nova `defasagem` (uma por rodada da sonda S_lag); contadores `defasagem_*` no `fim`. `decisoes` continua 1.2.
+**Correções da integração** (`fix/w2a-p41-p42`, 05/11, decisões do coordenador, aditivas na 1.2 e antes de qualquer
+dado de campanha; os brutos do I-1..I-5 em `runs/b44-2/` são anteriores e não têm os campos novos): `p2_habilitada`
+em `parametros_politica` e o motivo `p2-desabilitada` na linha `politica` (D-B); prazo do AC-5 de 5 s para 17 s e pior
+caso do `T_enc` de 9 s para 21 s (P-42); leitura por réplica da carga S3 com prazo sem resposta (P-41, seção própria).
 
 Com `--controller off` nenhum dos dois existe. Código: `workload/src/main/java/br/unipampa/tcc/controle/FormatoJsonl.java`
 (formato), `TrilhaJsonl.java` (gravação), `LacoDeControle.java` (ordem das linhas). Teste de contrato:
@@ -71,7 +75,7 @@ As linhas `topologia` (thread da sonda), `defasagem` (thread gravadora da sonda 
 | `origem_ns` | inteiro | início da primeira janela = início da medição |
 | `atuador` | texto | `nulo` sem o bloco `politica` no `--controller-config`; com ele, `por-tipo(AC-2=rest-infinispan,AC-5=rest-infinispan)` (W-2a) |
 | `politica` | texto | `nenhuma` sem o bloco; `por-assinatura` com ele (W-2a) |
-| `parametros_politica` | objeto ou `null` | **só em `decisoes` (1.2).** `k_lag`, `teto_lag_ms`, `t_reb_ns`, `cota_ac5` e `origem` (texto por parâmetro); `null` sem o bloco |
+| `parametros_politica` | objeto ou `null` | **só em `decisoes` (1.2).** `k_lag`, `teto_lag_ms`, `t_reb_ns`, `cota_ac5`, `p2_habilitada` (booleano, D-B) e `origem` (texto por parâmetro); `null` sem o bloco |
 | `parametros_defasagem` | objeto ou `null` | **só em `observaveis` (1.2, W-4).** `lag_in_ms`, `lag_out_ms`, `passo_leitura_ms`, `periodo_ns` (= W) e `origem` (texto por parâmetro); `null` sem o bloco `defasagem`. O prazo de leitura (o "não viu") é o `--hotrod-timeout-ms` e vai em `teto_ms` de cada linha `defasagem` |
 | `sonda_topologia`, `sonda_defasagem` | booleano | sondas ligadas (`sonda_defasagem` = `true` só com o bloco `defasagem`, W-4) |
 
@@ -93,21 +97,29 @@ O adaptador do W-2 não pode gastar `T_cham` por pedido.
 
 `T_enc = prazo da aplicação em curso + soma dos prazos de reversão da pilha + T_cham`
 
-- o prazo de cada chamada é o do seu tipo: AC-2 = `T_cham` (2 s); AC-5 = `T_cham` + 3 s = 5 s (`Server.java:208`);
-- a pilha só tem ações reversíveis (AC-2); o AC-5 nunca entra nela, mas se estiver em curso entra com os 5 s dele;
+- o prazo de cada chamada é o do seu tipo: AC-2 = `T_cham` (2 s); AC-5 = `T_cham` + 15 s = **17 s** (P-42, decisão do
+  coordenador de 05/11). Origem: no I-3 do B-44.2, sob corte, o servidor anuncia a parada 3 s depois do pedido
+  (`Server.java:208`), mas a saúde do nó isolado só deixa de responder **13,1 s (SYNC) a 13,3 s (ASYNC)** depois dele
+  (`docs/relatorio-b44-2-2026-11-05.md` §6.1 e §7); com `T_cham` + 3 s o atuador gravava `FALHOU`
+  (`alvo-continua-respondendo`) com o nó parando. Sem corte, 3,06 a 3,24 s;
+- a pilha só tem ações reversíveis (AC-2); o AC-5 nunca entra nela, mas se estiver em curso entra com os 17 s dele;
 - o `+ T_cham` final é a folga da V-W3 para a chamada que chega junto com o encerramento;
 - aplicações ainda na fila são descartadas (`DESCARTADA`) e não entram na conta;
 - o valor usado vai a `prazo_encerramento_ns` no `fim` de `decisoes`.
 
-Só com AC-2 isso é o `(A + 1) × T_cham` da v1.1. **Pior caso com a política do W-2a: 9 s** (AC-2 na pilha, 2 s; AC-5
-em curso, 5 s; `T_cham`, 2 s). A cota do AC-5 é 1 e só há uma chave de AC-2, então não há pior caso maior.
+Só com AC-2 isso é o `(A + 1) × T_cham` da v1.1. **Pior caso com a política do W-2a: 21 s** com a P2 habilitada (AC-2
+na pilha, 2 s; AC-5 em curso, 17 s; `T_cham`, 2 s; uso exploratório) e **19 s** no braço B de avaliação, em que a P2 está
+desabilitada (D-B) e o AC-2 nunca entra na pilha (17 + 2). A cota do AC-5 é 1 e só há uma chave de AC-2, então não há
+pior caso maior. O `--dry-run` mostra o valor da configuração (`pior_caso_ns`). Até o P-42 eram 9 s (AC-5 em 5 s).
 
 O mesmo prazo vale para o gancho de desligamento da JVM.
 
 **Requisito para o orquestrador (W-6).** Para o gancho conseguir desfazer as ações, o processo precisa receber, entre o
-SIGTERM e o SIGKILL, um intervalo maior que `T_enc` no pior caso: **`timeout -k <K>` com `K` > 9 s mais uma folga**
-(o pior caso da v1.2 acima; a v1.1 dizia 8 s com AC-1, AC-2 e AC-3, que não existem mais). O W-6 também confere que uma
-execução do braço B tem `politica = por-assinatura` e `parametros_politica` não nulo na `meta` (V-W2a O10).
+SIGTERM e o SIGKILL, um intervalo maior que `T_enc` no pior caso: **`timeout -k <K>` com `K` > 21 s mais uma folga**
+(o pior caso acima com a P2 habilitada, que cobre também os 19 s do braço B de avaliação; era 9 s antes do P-42, e a
+v1.1 dizia 8 s com AC-1, AC-2 e AC-3, que não existem mais). O W-6 também confere que uma execução do braço B tem
+`politica = por-assinatura` e `parametros_politica` não nulo na `meta` (V-W2a O10) e, numa fase de avaliação,
+`parametros_politica.p2_habilitada = false` (D-B).
 
 ## `observaveis`
 
@@ -232,8 +244,9 @@ gancho; o orquestrador recria o *cluster* depois da execução); `null` quando a
 gravada pelo laço quando a política registra a escolha (só `PoliticaPorAssinatura`): `tipo`, `t_fim_janela_ns`,
 `t_decisao_ns`, `modo`, `perfil`, `regra`, `politica` (`P0`, `P1`, `P2`), `motivo` (`sem-assinatura`,
 `isolar-suspeito`, `cota-p1-esgotada`, `adiar-rebalanceamento`, `ac2-mantida`, `treb-esgotado`,
-`no-parado-pela-politica`, `vistas-divergentes`, `no-voltou`, `teto-treb`), `no` (V-7: rótulo do nó da escolha,
-o suspeito no P1 e em `cota-p1-esgotada`, o ausente no P2, em `treb-esgotado` e em `no-parado-pela-politica`, o nó do
+`no-parado-pela-politica`, `vistas-divergentes`, `no-voltou`, `teto-treb`, `p2-desabilitada`), `no` (V-7: rótulo do
+nó da escolha, o suspeito no P1 e em `cota-p1-esgotada`, o ausente no P2, em `p2-desabilitada`, em `treb-esgotado` e
+em `no-parado-pela-politica`, o nó do
 AC-2 revertido em `no-voltou`, `teto-treb` e `vistas-divergentes`; `null` em `sem-assinatura`), `reverter` e
 `aplicar` (listas de rótulos de tipo). Em NORMAL sem reversão não há linha.
 
@@ -243,11 +256,12 @@ padrão no código, e cobertos pelo SHA-256 do arquivo (`param_sha256`):
 
 | Campo | Valor | Origem (decisão do Gestor, 05/11) |
 |---|---|---|
-| `kLag` | calibração | janelas seguidas, consultadas pela política, com S_lag no teto e o mesmo `noSuspeito` para o AC-5; vem da calibração (D-12). Nos arquivos de teste, `"origem": "teste"`. **Não é o `k` do núcleo** (V-4): aquele conta janelas altas de latência, erro ou defasagem para a entrada em CONSERVADOR (R2); são números independentes |
+| `kLag` | calibração | janelas seguidas, consultadas pela política, com S_lag no teto e o mesmo `noSuspeito` para o AC-5; vem da calibração (D-12). Nos arquivos de teste, `"origem": "teste"`. **Não é o `k` do núcleo** (V-4): aquele conta janelas altas de latência, erro ou defasagem para a entrada em CONSERVADOR (R2); são números independentes. **Requisito da calibração (P-42):** viabilidade do AC-5, `kLag · W + t_parada < 39,8 s` (39,8 s = menor T_det da VM; `t_parada` sob corte = 13,3 s, I-3 do B-44.2); com W = 5 s, **`kLag` ≤ 5**. O arquivo da calibração é conferido por `ArquivoCalibracaoTest.kLagViavel` |
 | `tetoLagMs` | `--hotrod-timeout-ms` | o que conta como "não viu" no S_lag. Tem de ser igual ao prazo de leitura da sonda, o `--hotrod-timeout-ms` da campanha, que o W-4 grava como `lagMaxMs` da leitura não vista: em S3, `LigacaoControlador.carregar` recusa o arquivo se os dois diferirem (V-W2a R7). O prazo vem da calibração (D-12); nos arquivos de teste, `"origem": "teste"` |
 | `tRebNs` | 60 000 000 000 | `state-transfer.timeout` do XML (60 000 ms), acima da maior detecção medida (46,8 s no local, B-44.1 §4.1; 46,4 s na VM) |
 | `cotaAc5` | 1 | desenho: uma vez por execução (com `owners=2`, o *cluster* de 3 nós tolera um nó fora) |
-| `origem` | objeto | um texto não vazio para cada um dos quatro campos acima |
+| `p2Habilitada` | **`false`** no braço B de avaliação e na calibração; `true` só em execução exploratória | D-B do coordenador (05/11), pela regra registrada antes do I-2: a P2 (AC-2) sai do braço B e fica exploratória (P-39: sob falha silenciosa o AC-2 oscila, só entra depois da exclusão e deixa o *cluster* sem rebalanceamento depois da fusão, 3 de 3; P-40: na queda não economiza rodada). Booleano obrigatório, sem padrão. Com `false`, a `PoliticaPorAssinatura` nunca pede o AC-2: a assinatura do P2 sai como `P0`/`p2-desabilitada` com o nó ausente. O código do AC-2 continua para o uso exploratório |
+| `origem` | objeto | um texto não vazio para cada um dos cinco campos acima |
 
 **Rótulo dos nós (requisito do W-4).** Toda peça do controlador identifica um nó pelo mesmo rótulo: `host:porta`
 da URL normalizada de `--controller-admin` (`ConsultaSaudeRest.rotulo`, `AtuadorRestInfinispan.rotulo`). O
@@ -290,6 +304,28 @@ medido na calibração**, com o atraso de início = `t_inicio_ns` − início da
 
 Conservação (v1.1): `acoes_pedidas` = número de linhas `acao` com `operacao = APLICAR`. Isso vale também para a
 repedida de ação cuja reversão falhou, que sai como `JA_ATIVA` (`ExecutorDeAcoesTest.repedidaComReversaoFalhaGravaLinha`).
+
+## Leitura por réplica no S3 (P-41)
+
+A rodada final do auditor (`InvariantAuditor.rodadaUnica`) e o laço de convergência leem cada réplica por um cliente
+BASIC fixado no nó. Com um nó parado até o fim da execução (AC-5), essa leitura ficava presa sem prazo (I-3 do B-44.2,
+`jstack-preso.txt`) e a carga não gravava os CSV. **Com `--scenario S3`**, a leitura de cada réplica tem um **prazo sem
+resposta igual ao `--hotrod-timeout-ms`** (o mesmo prazo de leitura da sonda S_lag; decisão do coordenador de 05/11):
+desiste quando passa esse prazo sem chegar nenhuma entrada nova nem o fim da iteração (o prazo recomeça a cada entrada,
+para uma réplica lenta mas respondendo não ser descartada). A réplica sem resposta vira **não lida**: fica fora da
+comparação de I5/I6 daquela rodada (como a leitura que lança, B-33) e conta em `leiturasFalhas`. Nada trava. Fora do S3
+a leitura não mudou.
+
+Saída (stdout), uma linha por repetição, depois da rodada final e antes de `Total de operacoes`, com a última leitura
+de cada réplica na ordem de `--servers` (sessões e contadores de cada nó):
+
+`Leitura por replica: prazo_sem_resposta_ms=<ms> sessoes@<host:porta>=<resultado> contadores@<host:porta>=<resultado> ...`
+
+`<resultado>`: `lida`; `nao-lida:sem-resposta` (o prazo passou); `nao-lida:erro:<Excecao>` (a leitura lançou, por
+exemplo DEGRADED); `nao-lida:interrompida`; `nao-chamada` (a réplica não foi lida, por exemplo num laço de convergência
+cujas rodadas foram todas inválidas pela topologia). Código: `session/LeituraReplicaComPrazo.java` e
+`WorkloadMain.leitorDaReplica`; teste `LeituraReplicaComPrazoTest`. Efeito no tempo de fim: até
+`2 × --hotrod-timeout-ms` a mais na rodada final (sessões e contadores do nó parado).
 
 ## Arquivo vizinho: `convergencia-resumo-rep-NNN.json`
 

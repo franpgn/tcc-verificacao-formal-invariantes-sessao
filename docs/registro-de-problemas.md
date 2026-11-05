@@ -932,7 +932,11 @@ correspondente adicionado em `Mesclar` (`spec/SessionStore.tla`, commit `b7d8e0a
   depois da fusão, sem que o controlador saiba (ele já reverteu e leu `true`). É a guarda da seção 3.2 (nenhuma fusão
   com o AC-2 ativo) violada por outro caminho: o AC-2 já foi revertido, mas o estado dele sobrevive no nó que estava
   pausado. Também confirma o O3 da V-W2a: sem limite de novas tentativas, a falha persistente vira oscilação.
-- **Status:** `ABERTO`, para o Gestor (D-B): o I-2 recomenda tirar o AC-2 do braço B.
+- **Status:** `DECIDIDO` (05/11, D-B do coordenador, pela regra registrada antes do I-2): a P2/AC-2 sai do braço B e
+  fica exploratória. Campo obrigatório `p2Habilitada` no bloco `politica` (`false` no braço B de avaliação e na
+  calibração, com a origem citada); com `false`, a `PoliticaPorAssinatura` nunca pede o AC-2 (`P0`/`p2-desabilitada`).
+  Commits `91c740d` (test) e `e7d4ed5` (feat), branch `fix/w2a-p41-p42`. O problema do AC-2 em si continua aberto para
+  quem o usar fora da avaliação (itens (a) a (c) da seção 5 do relatório do B-44.2).
 
 ### P-40 — AC-2 depois de uma queda (F1, `podman kill`): o rebalanceamento de saída já aconteceu
 
@@ -946,7 +950,7 @@ correspondente adicionado em `Mesclar` (`spec/SessionStore.tla`, commit `b7d8e0a
   segmentos ao nó que voltou. A troca "uma rodada em vez de duas" da seção 3.2 não ocorre localmente. Com o coordenador
   derrubado, o AC-2 é pedido ao novo coordenador, depois da troca, e o sinalizador global vale nos vivos (o P-34 não
   reaparece, mas também não é exercitado: a política nunca tem o AC-2 ativo antes da queda).
-- **Status:** `ABERTO`, para o Gestor, junto com o P-39.
+- **Status:** `DECIDIDO` (05/11) junto com o P-39 (D-B): a P2/AC-2 fica fora do braço B.
 
 ### P-41 — com um nó parado até o fim, a leitura final por réplica da carga S3 trava sem prazo
 
@@ -958,7 +962,15 @@ correspondente adicionado em `Mesclar` (`spec/SessionStore.tla`, commit `b7d8e0a
   fim. No I-3/I-4 o *harness* religa o nó depois da janela medida, só para a carga terminar (declarado nas fases).
 - **Contorno a decidir:** prazo na leitura final por réplica e réplica sem resposta registrada como ausente, ou o
   orquestrador religar o nó antes do fim da carga. Tem de entrar antes da calibração.
-- **Status:** `ABERTO`.
+- **Status:** `RESOLVIDO NO CÓDIGO, A CONFIRMAR NO SMOKE` (05/11, `d5c58ca` test, `b61c803` fix; decisão do
+  coordenador). Em S3, a leitura de cada réplica (`LeituraReplicaComPrazo`, ligada por `WorkloadMain.leitorDaReplica`)
+  tem prazo sem resposta igual ao `--hotrod-timeout-ms`, o mesmo prazo de leitura da sonda S_lag, contado desde a última
+  entrada recebida; a leitura roda numa *thread* daemon e é interrompida no prazo. A réplica sem resposta fica fora da
+  comparação de I5/I6 (como a leitura que lança, B-33) e a saída ganha a linha `Leitura por replica:` com o resultado
+  de cada uma (`nao-lida:sem-resposta`). Declarado no contrato JSONL, seção "Leitura por réplica no S3". Fora do S3
+  nada mudou. **A conferir no *smoke*:** que a interrupção solta o iterador do cliente Hot Rod 15.0 (o `jstack` mostra
+  `BlockingFlowableIterable.hasNext`, que cancela a assinatura na interrupção) e que o `close` do `RemoteCacheManager`
+  do nó parado, no fim da repetição, não trava (não medido; os testes usam leituras falsas).
 
 ### P-42 — AC-5 sob corte: o nó para 13 s depois do pedido, além do prazo de 5 s, e o pedido a um nó pausado vale na retomada
 
@@ -972,7 +984,15 @@ correspondente adicionado em `Mesclar` (`spec/SessionStore.tla`, commit `b7d8e0a
   AC-5 (`T_cham` + 3 s) é curto para o caso de uso previsto; a linha `acao` do AC-5 sai `FALHOU` com o nó parado (o O8
   da V-W2a acontece). O risco 3 da seção 3.1 existe: a guarda "respondeu na última janela" reduz, mas não elimina, a
   chance de mandar a ordem a um nó que pausa entre a última amostra e o pedido.
-- **Status:** `ABERTO`, para o Gestor.
+- **Status:** `PARCIAL` (05/11, decisões do coordenador). (1) **Prazo do AC-5 = `T_cham` + 15 s = 17 s**, acima da
+  parada sob corte medida (13,1 a 13,3 s): `a47dca7` (test) e `3b3056c` (fix). O pior caso do `T_enc` passa de 9 s a
+  **21 s** com a P2 habilitada e **19 s** no braço B de avaliação (D-B, sem AC-2 na pilha); o `--dry-run` mostra o
+  valor da configuração. **Requisito para o W-6:** `timeout -k <K>` com `K` > 21 s mais a folga (cobre os dois casos);
+  o W-6 (`wt-w6`, `f4eb04f`) ainda usa `T_ENC_PIOR_S=9` (`scripts/run-campanha-s3.sh:83`; o S1 de
+  `run-campanha-s3.test.sh:495` espera `timeout -k 11s`) e tem de passar a 21 na integração dele.
+  (2) **Requisito da calibração:** `kLag · W + t_parada < 39,8 s`; com W = 5 s e `t_parada` = 13,3 s, **`kLag` ≤ 5**
+  (contrato, bloco `politica`; `ArquivoCalibracaoTest.kLagViavel` confere o arquivo da calibração). (3) **Aberto:** o
+  risco 3 (pedido de parada a um nó pausado, executado na retomada, I-5), para o Gestor.
 
 ## 2026-11-05 — W-4 (B-26.3), sonda de defasagem S_lag
 

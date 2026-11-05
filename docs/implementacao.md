@@ -95,6 +95,54 @@ o ProtoStream padrão falha ao serializar e toda escrita vira
 
 ## Decisões técnicas a registrar
 
+### TD-013 — Correções do W-2a depois da integração: P-41, P-42 e D-B (2026-11-05)
+
+Branch `fix/w2a-p41-p42` sobre a ponta integrada (`9b32695`, tag `int/2026-11-05-w5`: W-2a + W-4 + W-5), decisões do
+coordenador de 05/11 a partir do relatório do B-44.2 (`docs/relatorio-b44-2-2026-11-05.md` §9). TDD: cada `test:`
+vermelho antes do `fix:`/`feat:` (vermelhos em `runs/w2a-fix/vermelhos.txt`, fora do git).
+
+- **P-42, prazo do AC-5.** `AcaoCluster.Tipo.AC_5` passa de `T_cham` + 3 s para `T_cham` + 15 s (17 s). Sob corte, a
+  saúde do nó isolado só deixa de responder 13,1 a 13,3 s depois do pedido (I-3), e com 5 s o atuador gravava `FALHOU`
+  com o nó parando. O pior caso do `T_enc` (`AtuadorPorTipo.piorCasoEncerramentoBracoBNs`) passa a depender da P2:
+  21 s com ela (AC-2 na pilha + AC-5 em curso + `T_cham`) e 19 s sem ela. O W-6 precisa de `timeout -k` com K > 21 s
+  mais a folga (hoje `T_ENC_PIOR_S=9` em `scripts/run-campanha-s3.sh` da `wt-w6`). Requisito da calibração: `kLag · W + 13,3 s < 39,8 s` (`kLag` ≤ 5 com W = 5 s), conferido no arquivo
+  da calibração por `ArquivoCalibracaoTest.kLagViavel`.
+- **D-B, P2/AC-2 fora do braço B.** Campo obrigatório `p2Habilitada` no bloco `politica` (`ParametrosPolitica`,
+  booleano, com origem, sem padrão no arquivo nem no código: o construtor de 4 campos saiu). Com `false`, a
+  `PoliticaPorAssinatura` devolve `P0`/`p2-desabilitada` com o nó ausente onde antes pedia o AC-2; a reversão e o P1
+  não mudam. `cluster/controlador/controlador-calibracao-s3.json` fica com `false`. A meta de `decisoes` ganha
+  `p2_habilitada` (aditivo na 1.2). O código do AC-2 continua, testado com `true` (uso exploratório).
+- **P-41, leitura por réplica no S3.** `LeituraReplicaComPrazo` envolve a leitura de cada réplica (sessões e
+  contadores de cada nó) quando `--scenario S3`; `WorkloadMain.leitorDaReplica` decide pelo cenário, e fora do S3 a
+  leitura é a de antes. A leitura roda numa *thread* daemon; `materializar` avisa cada entrada, e quem chama desiste
+  quando passa `--hotrod-timeout-ms` sem entrada nova nem fim, interrompendo a leitura. O auditor trata a exceção como
+  a de um nó DEGRADED (B-33): réplica fora da comparação e contada em `leiturasFalhas`. A saída ganha a linha
+  `Leitura por replica:` (contrato JSONL, seção própria).
+
+```mermaid
+%%{init: {'theme':'base','themeVariables':{'background':'#ffffff','primaryColor':'#ffffff','primaryTextColor':'#000000','primaryBorderColor':'#000000','lineColor':'#000000','secondaryColor':'#ffffff','tertiaryColor':'#ffffff','fontFamily':'Arial'}}}%%
+flowchart LR
+    R["rodadaUnica / laco de convergencia<br/>(InvariantAuditor.ler)"] --> L{"--scenario S3?"}
+    L -- nao --> M0["materializar(entrySet) na thread de quem chama<br/>(sem prazo, como antes)"]
+    L -- sim --> P["LeituraReplicaComPrazo<br/>thread daemon leitura-replica-*"]
+    P --> M1["materializar(entrySet)<br/>batida a cada entrada"]
+    P -- "sem entrada nova em --hotrod-timeout-ms" --> X["interrompe a leitura;<br/>ReplicaSemResposta"]
+    X --> A["auditor: replica fora da comparacao,<br/>leiturasFalhas + 1"]
+    P --> S["linha 'Leitura por replica:'<br/>lida / nao-lida:sem-resposta / nao-lida:erro:*"]
+```
+
+| Peça | Onde |
+|---|---|
+| `AcaoCluster.Tipo.AC_5` (prazo), `AtuadorPorTipo.piorCasoEncerramentoBracoBNs(tCham, p2Habilitada)` | `controle/` |
+| `ParametrosPolitica.p2Habilitada`, `PoliticaPorAssinatura.P2_DESABILITADA`, `FormatoJsonl` (`p2_habilitada`) | `controle/` |
+| `LigacaoControlador.piorCasoEncerramentoNs(ParametrosPolitica)`, `textoPolitica` (`p2Habilitada=`) | `session/LigacaoControlador.java` |
+| `LeituraReplicaComPrazo`, `WorkloadMain.leitorDaReplica`, `linhaLeituraPorReplica`, `materializar(..., batida)` | `session/` |
+
+**Limites, a conferir no *smoke*:** a interrupção solta o iterador do cliente Hot Rod 15.0 (pelo `jstack`, o
+`BlockingFlowableIterable.hasNext` cancela a assinatura quando interrompido); o `close` do `RemoteCacheManager` do nó
+parado, no fim da repetição, não foi medido. Os brutos do I-1..I-5 (`runs/b44-2/integracao/controlador-integracao.json`)
+não têm `p2Habilitada` e não carregam mais: são registro histórico, anteriores à D-B.
+
 ### TD-012 — W-4 (B-26.3): sonda de defasagem S_lag e *caches* `canario*` (2026-11-05)
 
 Especificação: plano de execução de 04/11, seção 9 (W-4); plano de alinhamento, seção 4.2; documento de 05/11
@@ -188,8 +236,8 @@ flowchart LR
 
 | Peça | O que faz | Onde |
 |---|---|---|
-| `AcaoCluster.Tipo` | cada tipo diz se é reversível, a regra do alvo e o prazo (`T_cham` + acréscimo). Só `AC_2` (global, P-34) e `AC_5` (não reversível, um nó, `T_cham` + 3 s, `Server.java:208`); `AC_1`/`AC_3` retirados (P-36) | `controle/AcaoCluster.java` |
-| `ExecutorDeAcoes` | ação não reversível fora da pilha e de `ativas()`, pedida uma vez por execução, nunca desfeita (R4, encerramento, gancho, falha); prazo por tipo; `T_enc` = prazos da pilha + prazo em curso + `T_cham` (com só AC-2, o `(A + 1) x T_cham` de antes; pior caso 9 s, contrato 1.2) | `controle/ExecutorDeAcoes.java` |
+| `AcaoCluster.Tipo` | cada tipo diz se é reversível, a regra do alvo e o prazo (`T_cham` + acréscimo). Só `AC_2` (global, P-34) e `AC_5` (não reversível, um nó, `T_cham` + 15 s desde o P-42, TD-013; era `T_cham` + 3 s, `Server.java:208`); `AC_1`/`AC_3` retirados (P-36) | `controle/AcaoCluster.java` |
+| `ExecutorDeAcoes` | ação não reversível fora da pilha e de `ativas()`, pedida uma vez por execução, nunca desfeita (R4, encerramento, gancho, falha); prazo por tipo; `T_enc` = prazos da pilha + prazo em curso + `T_cham` (com só AC-2, o `(A + 1) x T_cham` de antes; pior caso 21 s com a P2 e 19 s sem ela desde o P-42 e a D-B, TD-013; era 9 s) | `controle/ExecutorDeAcoes.java` |
 | `EstadoTopologia.porNo` | por nó, resposta em `TODAS`/`ALGUMA`/`NENHUMA` as amostras e o menor e o maior `number_of_nodes`; `vistaCompleta()`, `noSemResposta()`, `vistasDivergentes()` (faixas disjuntas). Construtor antigo delega; `SondaTopologia.resumirAte` continua sem `porNo` | `controle/EstadoTopologia.java`, `SondaTopologia.java`, `FonteDeTopologia.java` |
 | `PoliticaPorAssinatura` | tabela da seção 5, pura (tempo = `fimNs` da decisão). Parâmetros `k`, `tetoLagMs`, `tRebNs`, `cotaAc5` sem padrão (`ParametrosPolitica`). Grava `P0`/`P1`/`P2` e o motivo numa linha `politica` | `controle/PoliticaPorAssinatura.java`, `ParametrosPolitica.java`, `PlanoDeAcao.java` |
 | `AtuadorPorTipo` | encaminha cada tipo ao seu atuador; a AC-6 entra como mais uma entrada | `controle/AtuadorPorTipo.java` |

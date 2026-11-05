@@ -623,3 +623,73 @@ R-1 (patch autorizado de `test_comparar_bracos.py`, a aplicar na janela H2): al�
 divergencia_persistente}`), o patch leva `--w-recovery-s 60` em `ARGS_V2` e `w_recovery_s=60` em `ExclusoesERegistro`
 (P-5), os dois desfechos `:razao` no conjunto esperado (P-4) e um `escrever_trilha` mínimo nas execuções das células
 de teste de `C6Determinismo` e `ExclusoesERegistro` (A-3). Nenhuma linha de asserção sai.
+
+## Integração do controlador (W-2a + W-4 + W-5) e correções P-41, P-42 e D-B (2026-11-05)
+
+Branch `feature/controlador-integracao` (worktree `wt-ctrl-integ`), a partir de `e869a31` (tag `int/2026-11-05-h4`).
+Surefire com `mvn -q -T1 clean test` em `workload/` (contado dos `TEST-*.xml`); Python com
+`python -E -P -m unittest discover -s analysis` na raiz (Python 3.12.6). JDK 22.0.2, Maven 3.9.16. Sem VM e sem
+*cluster* (a VM estava parada, janela H2).
+
+| Passo | Ponta | Tag | Surefire (testes/falhas/erros/pulados, arquivos) | `unittest` analysis |
+|---|---|---|---|---|
+| W-2a, *fast-forward* | `3930972` | `int/2026-11-05-w2a` | **974/0/0/1**, 133 | — |
+| W-4, `merge --no-ff` (P-39/P-40 do W-4 renumerados P-43/P-44) | `c10e7ba` | `int/2026-11-05-w4` | **1041/0/0/1**, 146 | — |
+| W-5, `merge --no-ff` | `9b32695` | `int/2026-11-05-w5` | **1041/0/0/1**, 146 | **370 OK, 1 *skip*** |
+| correções (`fix/w2a-p41-p42`) | ponta da branch | `int/2026-11-05-fix` | **1059/0/0/1**, 147 | **370 OK, 1 *skip*** |
+
+Conflitos: `docs/registro-de-problemas.md` e `docs/testes.md` no W-4 (numeração paralela de problemas; tabela de
+renumeração no commit de merge `c10e7ba`) e `docs/testes.md` no W-5 (seções acrescentadas no mesmo ponto).
+
+### Correções P-41, P-42 e D-B (branch `fix/w2a-p41-p42`)
+
+Decisões do coordenador de 05/11 sobre o relatório do B-44.2. Vermelhos conferidos antes de cada `fix:`/`feat:`
+(`runs/w2a-fix/vermelhos.txt`, fora do git): `a47dca7` falha por asserção (21 testes, 4 falhas: `ac5`, `prazoPorTipo`,
+`prazoEncerramentoComAc5EmCurso`, `comBloco`); `91c740d` e `d5c58ca` não compilam (`test-compile` exit 1, só nos testes).
+
+| Commit | O quê |
+|---|---|
+| `a47dca7` test → `3b3056c` fix | P-42: prazo do AC-5 `T_cham` + 15 s (17 s); pior caso do `T_enc` 21 s com o AC-2 na pilha |
+| `91c740d` test → `e7d4ed5` feat | D-B: `p2Habilitada` obrigatório; sem P2, nunca AC-2 (`P0`/`p2-desabilitada`); `p2_habilitada` na meta; pior caso 19 s sem P2; arquivo da calibração com `false` |
+| `d5c58ca` test → `b61c803` fix | P-41: leitura por réplica do S3 com prazo sem resposta = `--hotrod-timeout-ms`; linha `Leitura por replica:` |
+
+Testes novos (18 = 1059 − 1041):
+
+| Teste | Item | O que prende |
+|---|---|---|
+| `session/ArquivoCalibracaoTest.kLagViavel` | P-42 | `kLag · W + 13,3 s < 39,8 s` no arquivo da calibração (guarda, verde desde o início: `kLag` = 2) |
+| `controle/PoliticaPorAssinaturaTest.p2Desabilitada` | D-B | 15 janelas de queda do isn3 (passa do `T_reb`) e outro nó sem resposta: sempre `P0:p2-desabilitada` com o nó; o P1 e `no-parado-pela-politica` não mudam |
+| `controle/PoliticaPorAssinaturaTest.p2DesabilitadaNuncaEmiteAc2` | D-B | 20 sementes × 200 janelas aleatórias (7 topologias, 4 defasagens, NORMAL/CONSERVADOR, janelas sem consulta): nenhum AC-2, nenhum `P2` |
+| `controle/ParametrosPoliticaArquivoTest.p2HabilitadaObrigatoria` | D-B | ausente, sem origem, texto, número ou `null` recusados; `true`/`false` lidos |
+| `controle/ParametrosPoliticaArquivoTest.metaComP2Habilitada` | D-B | `parametros_politica.p2_habilitada` booleano na meta de `decisoes` |
+| `session/LigacaoControladorAtuadorTest.dryRunAvaliacao` | D-B, P-42 | dry-run com `p2Habilitada=false` e `pior_caso_ns=19000000000`; com `true`, 21 s |
+| `session/LigacaoControladorAtuadorTest.avaliacaoSemP2PontaAPonta` | D-B | `active` com servidores REST falsos: queda do nó 3 sem nenhum POST, sem linha `acao`, linhas `politica` `P0:p2-desabilitada` com o rótulo do nó 3 |
+| `session/ArquivoCalibracaoTest.p2ForaDoBracoB` | D-B | arquivo da calibração com `p2Habilitada = false` e origem com D-B, P-39 e P-40 |
+| `session/LeituraReplicaComPrazoTest` (10) | P-41 | prazo a partir da última entrada; interrupção da leitura presa; leitura lenta com progresso não estoura; erro sobe como antes; *thread* daemon; `rodadaUnica` não trava, conta 2 falhas e ainda acha a divergência das lidas; `leitorDaReplica` só em S3; formato da linha; ligação na fonte (`cli.s3.hotrodTimeoutMs`) |
+
+**Testes existentes editados** (números de linha na ponta `9b32695`; só acompanham o prazo novo do P-42 ou o campo
+novo da D-B, nenhuma asserção retirada):
+
+| Arquivo | Linhas | Mudança | Item |
+|---|---|---|---|
+| `controle/AcaoClusterTiposTest` | 17, 40 | Javadoc e `@DisplayName`: `T_cham + 3 s` → `T_cham + 15 s` | P-42 |
+| | 45, 46 | `5 * S` → `17 * S`; `3 * S + 7` → `15 * S + 7` | P-42 |
+| `controle/ExecutorNaoReversivelTest` | 17, 64, 150 | Javadoc e `@DisplayName`: `+ 3 s` → `+ 15 s` | P-42 |
+| | 76, 78 | `5 * S` → `17 * S` | P-42 |
+| | 177 | `tCham + (tCham + 3 * S) + tCham` → `... 15 * S ...` | P-42 |
+| `session/LigacaoControladorAtuadorTest` | 147, 148 | comentário e `pior_caso_ns=9000000000` → `21000000000` (bloco com P2) | P-42 |
+| | 39-43 | `BLOCO` com `"p2Habilitada":true` e a origem (o `pontaAPonta` exercita o AC-2); `BLOCO_AVALIACAO` e o *helper* `cliCom` novos | D-B |
+| `controle/ParametrosPoliticaArquivoTest` | 37-41 | `BLOCO_TESTE` com `"p2Habilitada":false` e a origem (`ORIGEM_P2`) | D-B |
+| | 67 | lista de chaves da origem com `p2Habilitada`; `assertFalse(p.p2Habilitada())` | D-B |
+| | 94-100 | os 7 blocos de `blocoInvalido` com o campo, para cada um falhar pelo motivo dele | D-B |
+| | 175, 176 | mapa de origem esperado com `p2Habilitada`; construtor `(2, 2000, 60 * S, 1, false)` | D-B |
+| `controle/PoliticaPorAssinaturaTest` | 34, 35 | `P` com `p2Habilitada = true` (Javadoc: o código do AC-2, uso exploratório) | D-B |
+| | 204 | `semCota` com `true` | D-B |
+| | 316, 319, 332 | `parametros()`: campo em `o`, construtor de 6 campos, bloco sem origem com o campo | D-B |
+
+Usam os *fixtures* editados sem mudança própria: `ParametrosDefasagemTest` (`BLOCO_TESTE`) e
+`LigacaoControladorDefasagemTest` (`BLOCO`, P1 de ponta a ponta), os dois verdes.
+
+**O que os testes não provam (fica para o *smoke* local):** que a interrupção solta o iterador real do cliente Hot Rod
+15.0 preso no nó parado e que o `close` do `RemoteCacheManager` desse nó não trava (P-41); que, sob corte, o AC-5 sai
+`APLICADA` dentro dos 17 s (P-42).

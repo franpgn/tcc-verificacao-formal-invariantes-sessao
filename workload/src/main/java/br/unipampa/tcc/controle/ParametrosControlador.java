@@ -36,12 +36,16 @@ import java.util.Set;
  * @param sha256      SHA-256 (hex minusculo) do arquivo de origem; {@code null} para {@link #padrao()}
  * @param politica    W-2a (P-38): parametros da {@link PoliticaPorAssinatura}, do bloco opcional
  *                    {@code "politica"} do arquivo; {@code null} sem o bloco (politica {@code nenhuma}, atuador nulo)
+ * @param defasagem   W-4 (B-26.3): parametros da {@link SondaDefasagem}, do bloco opcional {@code "defasagem"};
+ *                    {@code null} sem o bloco (sem sonda, S_lag indeterminado). O prazo de leitura da sonda e
+ *                    {@code --hotrod-timeout-ms} (linha de comando), entao a conferencia contra ele e contra W fica no
+ *                    carregamento ({@code LigacaoControlador.conferirSondaDefasagem})
  */
 public record ParametrosControlador(String versao, long wNs, int nLat, int nErr,
                                     double thetaLatIn, double thetaLatOut,
                                     double thetaErrIn, double thetaErrOut,
                                     int k, int m, long cooldownNs, long estavelNs, long holdViolNs,
-                                    String sha256, ParametrosPolitica politica) {
+                                    String sha256, ParametrosPolitica politica, ParametrosDefasagem defasagem) {
 
     private static final long S = 1_000_000_000L;
 
@@ -54,6 +58,9 @@ public record ParametrosControlador(String versao, long wNs, int nLat, int nErr,
 
     /** W-2a (P-38): bloco opcional com os parametros da politica de acao ({@link ParametrosPolitica#deJson}). */
     public static final String CAMPO_POLITICA = "politica";
+
+    /** W-4 (B-26.3): bloco opcional com os parametros da sonda de defasagem ({@link ParametrosDefasagem#deJson}). */
+    public static final String CAMPO_DEFASAGEM = "defasagem";
 
     public ParametrosControlador {
         if (versao == null) {
@@ -92,7 +99,15 @@ public record ParametrosControlador(String versao, long wNs, int nLat, int nErr,
                                  double thetaErrIn, double thetaErrOut, int k, int m, long cooldownNs,
                                  long estavelNs, long holdViolNs, String sha256) {
         this(versao, wNs, nLat, nErr, thetaLatIn, thetaLatOut, thetaErrIn, thetaErrOut, k, m, cooldownNs, estavelNs,
-                holdViolNs, sha256, null);
+                holdViolNs, sha256, null, null);
+    }
+
+    /** Construtor do W-2a: com a politica e sem a sonda de defasagem. */
+    public ParametrosControlador(String versao, long wNs, int nLat, int nErr, double thetaLatIn, double thetaLatOut,
+                                 double thetaErrIn, double thetaErrOut, int k, int m, long cooldownNs,
+                                 long estavelNs, long holdViolNs, String sha256, ParametrosPolitica politica) {
+        this(versao, wNs, nLat, nErr, thetaLatIn, thetaLatOut, thetaErrIn, thetaErrOut, k, m, cooldownNs, estavelNs,
+                holdViolNs, sha256, politica, null);
     }
 
     /** Valores provisorios da secao 3.5 do plano de 2026-10-22 (a calibrar com a T-F). */
@@ -104,8 +119,8 @@ public record ParametrosControlador(String versao, long wNs, int nLat, int nErr,
 
     /**
      * Le {@code controlador-<nome>.json}. Exige exatamente os campos de {@link #CAMPOS} (sem
-     * desconhecidos, sem {@code sha256}), com tipos estritos, mais o bloco opcional {@value #CAMPO_POLITICA}
-     * (W-2a); calcula o SHA-256 dos bytes lidos, que cobre tambem o bloco.
+     * desconhecidos, sem {@code sha256}), com tipos estritos, mais os blocos opcionais {@value #CAMPO_POLITICA}
+     * (W-2a) e {@value #CAMPO_DEFASAGEM} (W-4); calcula o SHA-256 dos bytes lidos, que cobre tambem os blocos.
      *
      * @throws IOException              falha de leitura do arquivo
      * @throws IllegalArgumentException conteudo invalido (JSON malformado, campo ausente ou
@@ -129,6 +144,7 @@ public record ParametrosControlador(String versao, long wNs, int nLat, int nErr,
         List<String> desconhecidos = new ArrayList<>(presentes);
         desconhecidos.removeAll(CAMPOS);
         desconhecidos.remove(CAMPO_POLITICA);
+        desconhecidos.remove(CAMPO_DEFASAGEM);
         if (!desconhecidos.isEmpty()) {
             throw new IllegalArgumentException("campos desconhecidos em " + arquivo + ": " + desconhecidos);
         }
@@ -149,7 +165,8 @@ public record ParametrosControlador(String versao, long wNs, int nLat, int nErr,
                 inteiroLongo(raiz, "cooldownNs"), inteiroLongo(raiz, "estavelNs"),
                 inteiroLongo(raiz, "holdViolNs"),
                 sha256(bytes),
-                presentes.contains(CAMPO_POLITICA) ? ParametrosPolitica.deJson(raiz.get(CAMPO_POLITICA)) : null);
+                presentes.contains(CAMPO_POLITICA) ? ParametrosPolitica.deJson(raiz.get(CAMPO_POLITICA)) : null,
+                presentes.contains(CAMPO_DEFASAGEM) ? ParametrosDefasagem.deJson(raiz.get(CAMPO_DEFASAGEM)) : null);
     }
 
     private static long inteiroLongo(JsonNode raiz, String campo) {

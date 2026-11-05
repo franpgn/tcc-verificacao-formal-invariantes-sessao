@@ -5,6 +5,7 @@ import br.unipampa.tcc.controle.ArquivoReferencia;
 import br.unipampa.tcc.controle.AtuadorCluster;
 import br.unipampa.tcc.controle.AtuadorNulo;
 import br.unipampa.tcc.controle.AtuadorPorTipo;
+import br.unipampa.tcc.controle.CanalCanario;
 import br.unipampa.tcc.controle.ClasseViolacao;
 import br.unipampa.tcc.controle.Controlador;
 import br.unipampa.tcc.controle.EventoOperacao;
@@ -19,10 +20,12 @@ import br.unipampa.tcc.controle.LacoDeControle;
 import br.unipampa.tcc.controle.MetaExecucao;
 import br.unipampa.tcc.controle.ModoAtuacao;
 import br.unipampa.tcc.controle.ParametrosControlador;
+import br.unipampa.tcc.controle.ParametrosDefasagem;
 import br.unipampa.tcc.controle.ParametrosPolitica;
 import br.unipampa.tcc.controle.PoliticaDeAcao;
 import br.unipampa.tcc.controle.PoliticaPorAssinatura;
 import br.unipampa.tcc.controle.Referencia;
+import br.unipampa.tcc.controle.SondaDefasagem;
 import br.unipampa.tcc.controle.SondaTopologia;
 import br.unipampa.tcc.controle.TrilhaJsonl;
 import br.unipampa.tcc.controle.ViolacaoObservada;
@@ -60,6 +63,13 @@ import java.util.function.Supplier;
  * modo, e {@link AtuadorPorTipo#bracoB} sobre o {@link AtuadorRestInfinispan} (Digest, {@code --controller-admin});
  * os "nos que responderam na ultima janela" do atuador sao os da ultima amostra da sonda de topologia. Em shadow o
  * atuador nunca e chamado.</p>
+ *
+ * <p><b>W-4 (B-26.3).</b> Com o bloco {@code "defasagem"} (so em S3): {@link SondaDefasagem} sobre o
+ * {@link CanalCanarioHotRod} (um cliente Hot Rod fixado por no, no cache canario do perfil), prazo de leitura =
+ * {@code --hotrod-timeout-ms} (o "nao viu", igual a {@code politica.tetoLagMs} pela R7), periodo = W, alinhada a
+ * origem das janelas; o laco le o S_lag
+ * dela, cada rodada vai a uma linha {@code defasagem} de {@code observaveis} e o custo vai aos contadores
+ * {@code defasagem_*} do {@code fim}. Sem o bloco: S_lag indeterminado, como no W-3.</p>
  */
 final class LigacaoControlador implements AutoCloseable, WorkloadMain.ControleDaCarga {
 
@@ -88,11 +98,12 @@ final class LigacaoControlador implements AutoCloseable, WorkloadMain.ControleDa
     /**
      * Arquivos e opcoes do controlador, ja conferidos.
      *
-     * @param referencia {@code null} sem {@code --controller-reference} (shadow): latencia indeterminada
+     * @param referencia    {@code null} sem {@code --controller-reference} (shadow): latencia indeterminada
+     * @param prazoHotRodMs W-4: {@code --hotrod-timeout-ms}, o prazo de leitura da sonda de defasagem (o "nao viu")
      */
     record Configuracao(ModoAtuacao modo, Path arquivoParametros, ParametrosControlador parametros,
                         Path arquivoReferencia, ArquivoReferencia referencia, List<String> urlsAdmin,
-                        int nosEsperados) {
+                        int nosEsperados, long prazoHotRodMs) {
     }
 
     /**
@@ -101,20 +112,29 @@ final class LigacaoControlador implements AutoCloseable, WorkloadMain.ControleDa
      * @param saude       {@code null} = sem sonda de topologia (topologia indisponivel, sinal neutro)
      * @param respondidos W-2a: onde {@link #abrir} pendura a ultima amostra da sonda para o atuador REST, ou
      *                    {@code null} (atuador que nao precisa dela)
+     * @param canario     W-4: canal da sonda de defasagem, ou {@code null} sem o bloco {@code defasagem} (S_lag
+     *                    indeterminado). A ligacao fecha o canal no {@link #close()}
      */
     record Pecas(FonteDeSaude saude, AtuadorCluster atuador, PoliticaDeAcao politica, ExecutorDeAcoes.Gancho gancho,
                  long tickNs, long periodoSondaNs, long prazoSondaNs,
-                 AtomicReference<Supplier<Set<String>>> respondidos) {
+                 AtomicReference<Supplier<Set<String>>> respondidos, CanalCanario canario) {
         Pecas {
             Objects.requireNonNull(atuador, "atuador");
             Objects.requireNonNull(politica, "politica");
             Objects.requireNonNull(gancho, "gancho");
         }
 
-        /** Pecas do W-3 (sem fornecedor da ultima amostra). */
+        /** Pecas do W-3 (sem fornecedor da ultima amostra, sem sonda de defasagem). */
         Pecas(FonteDeSaude saude, AtuadorCluster atuador, PoliticaDeAcao politica, ExecutorDeAcoes.Gancho gancho,
               long tickNs, long periodoSondaNs, long prazoSondaNs) {
-            this(saude, atuador, politica, gancho, tickNs, periodoSondaNs, prazoSondaNs, null);
+            this(saude, atuador, politica, gancho, tickNs, periodoSondaNs, prazoSondaNs, null, null);
+        }
+
+        /** Pecas do W-2a (sem sonda de defasagem). */
+        Pecas(FonteDeSaude saude, AtuadorCluster atuador, PoliticaDeAcao politica, ExecutorDeAcoes.Gancho gancho,
+              long tickNs, long periodoSondaNs, long prazoSondaNs,
+              AtomicReference<Supplier<Set<String>>> respondidos) {
+            this(saude, atuador, politica, gancho, tickNs, periodoSondaNs, prazoSondaNs, respondidos, null);
         }
     }
 
@@ -127,19 +147,24 @@ final class LigacaoControlador implements AutoCloseable, WorkloadMain.ControleDa
     private final ConsultaSaudeRest rest;
     private final FonteDeTempo tempo;
     private final RastroCliente rastro;
+    private final SondaDefasagem defasagem;
+    private final CanalCanario canario;
     private final ConcurrentLinkedQueue<Bruta> violacoes = new ConcurrentLinkedQueue<>();
     private final AtomicLong eventosForaDoContrato = new AtomicLong();
     private volatile boolean fechada;
     private LacoDeControle.Resumo resumo;
 
     private LigacaoControlador(Configuracao cfg, LacoDeControle laco, SondaTopologia sonda, ConsultaSaudeRest rest,
-                               FonteDeTempo tempo, RastroCliente rastro) {
+                               FonteDeTempo tempo, RastroCliente rastro, SondaDefasagem defasagem,
+                               CanalCanario canario) {
         this.cfg = cfg;
         this.laco = laco;
         this.sonda = sonda;
         this.rest = rest;
         this.tempo = tempo;
         this.rastro = rastro;
+        this.defasagem = defasagem;
+        this.canario = canario;
     }
 
     // ------------------------------------------------------------------ configuracao
@@ -183,7 +208,29 @@ final class LigacaoControlador implements AutoCloseable, WorkloadMain.ControleDa
         if (urls.size() != nos) {
             throw new IllegalArgumentException("--controller-admin tem " + urls.size() + " URLs e --servers tem " + nos);
         }
-        return new Configuracao(modo, par, p, refPath, ref, urls, nos);
+        conferirSondaDefasagem(p, cli, urls);
+        return new Configuracao(modo, par, p, refPath, ref, urls, nos, cli.s3.hotrodTimeoutMs);
+    }
+
+    /**
+     * W-4 (B-26.3): com o bloco {@code defasagem}, (1) so em S3 (a sonda usa os parametros Hot Rod do S3 e a
+     * checagem R7 do W-2a so existe em S3); (2) os parametros cabem no prazo de leitura ({@code --hotrod-timeout-ms},
+     * o "nao viu", decisao do coordenador de 05/11) e na janela W ({@link ParametrosDefasagem#validarContra});
+     * (3) o no {@code i} de {@code --servers} e o de {@code --controller-admin} sao o mesmo {@code host:porta}
+     * ({@link CanalCanarioHotRod#conferirCorrespondencia}). A igualdade {@code politica.tetoLagMs} =
+     * {@code --hotrod-timeout-ms} ja e conferida por {@link #conferirTetoDaSonda} (R7).
+     *
+     * @throws IllegalArgumentException com o motivo
+     */
+    static void conferirSondaDefasagem(ParametrosControlador p, Cli cli, List<String> urlsAdmin) {
+        if (p.defasagem() == null) {
+            return;
+        }
+        if (!cli.scenarioS3) {
+            throw new IllegalArgumentException("o bloco defasagem (sonda S_lag, W-4) so vale com --scenario S3");
+        }
+        p.defasagem().validarContra(cli.s3.hotrodTimeoutMs, p.wNs());
+        CanalCanarioHotRod.conferirCorrespondencia(urlsAdmin, cli.servidores);
     }
 
     /**
@@ -247,7 +294,8 @@ final class LigacaoControlador implements AutoCloseable, WorkloadMain.ControleDa
                 + " tick_ns=" + periodoTick(p.wNs(), PERIODO_SONDA_NS) + " sonda_periodo_ns=" + PERIODO_SONDA_NS
                 + " prazo_chamada_ns=" + PRAZO_CHAMADA_NS + " prazo_encerramento=em_curso+pilha+T_cham pior_caso_ns="
                 + piorCasoEncerramentoNs(p.politica() != null)
-                + (p.politica() == null ? "" : n + "dry-run, " + textoPolitica(p.politica()));
+                + (p.politica() == null ? "" : n + "dry-run, " + textoPolitica(p.politica()))
+                + (p.defasagem() == null ? "" : n + "dry-run, " + textoDefasagem(c));
     }
 
     /**
@@ -268,6 +316,18 @@ final class LigacaoControlador implements AutoCloseable, WorkloadMain.ControleDa
                 + " cotaAc5=" + q.cotaAc5() + " origem=" + q.origem();
     }
 
+    /**
+     * Parametros da sonda de defasagem (W-4), com a origem declarada; prazo de leitura (o "nao viu") =
+     * {@code --hotrod-timeout-ms}, periodo = W.
+     */
+    static String textoDefasagem(Configuracao c) {
+        ParametrosControlador p = c.parametros();
+        ParametrosDefasagem d = p.defasagem();
+        return "defasagem lagInMs=" + d.lagInMs() + " lagOutMs=" + d.lagOutMs() + " passoLeituraMs="
+                + d.passoLeituraMs() + " prazo_leitura_ms=" + c.prazoHotRodMs() + " periodo_ns=" + p.wNs()
+                + " origem=" + d.origem();
+    }
+
     /** Pecas de producao: sonda REST, gancho da JVM e, com o bloco {@code politica}, o atuador REST (W-2a). */
     static Pecas pecasPadrao(Configuracao c, Cli cli) {
         return pecas(c, cli, new ConsultaSaudeRest(c.urlsAdmin(), cli.usuario, cli.senha), ExecutorDeAcoes.Gancho.jvm(),
@@ -278,20 +338,53 @@ final class LigacaoControlador implements AutoCloseable, WorkloadMain.ControleDa
      * W-2a (P-38): monta as pecas para uma fonte de saude dada. Sem o bloco {@code politica}: atuador nulo e
      * politica {@code nenhuma}. Com o bloco: {@link PoliticaPorAssinatura} sobre os caches do modo e
      * {@link AtuadorPorTipo#bracoB} sobre o {@link AtuadorRestInfinispan}, cujos "nos que responderam" vem da
-     * ultima amostra da sonda (ligada em {@link #abrir}).
+     * ultima amostra da sonda (ligada em {@link #abrir}). W-4: com o bloco {@code defasagem}, abre o
+     * {@link CanalCanarioHotRod} (Hot Rod, um cliente por no); sem ele, nenhum canal.
      */
     static Pecas pecas(Configuracao c, Cli cli, FonteDeSaude saude, ExecutorDeAcoes.Gancho gancho, long tickNs,
                        long periodoSondaNs, long prazoSondaNs) {
-        ParametrosPolitica q = c.parametros().politica();
-        if (q == null) {
-            return new Pecas(saude, new AtuadorNulo(), PoliticaDeAcao.NENHUMA, gancho, tickNs, periodoSondaNs,
-                    prazoSondaNs);
+        Pecas sem = pecas(c, cli, saude, gancho, tickNs, periodoSondaNs, prazoSondaNs, null, false);
+        if (c.parametros().defasagem() == null) {
+            return sem;
         }
-        AtomicReference<Supplier<Set<String>>> respondidos = new AtomicReference<>(Set::of);
-        AtuadorRestInfinispan rest = new AtuadorRestInfinispan(c.urlsAdmin(),
-                new ClienteAdminRest(cli.usuario, cli.senha), () -> respondidos.get().get(), PASSO_SAUDE_AC5_NS);
-        return new Pecas(saude, AtuadorPorTipo.bracoB(rest), new PoliticaPorAssinatura(q, cli.replicacao.caches()),
-                gancho, tickNs, periodoSondaNs, prazoSondaNs, respondidos);
+        return comCanario(sem, CanalCanarioHotRod.abrir(cli, c.urlsAdmin()));
+    }
+
+    /**
+     * W-4: como {@link #pecas(Configuracao, Cli, FonteDeSaude, ExecutorDeAcoes.Gancho, long, long, long)}, com o
+     * canal da sonda de defasagem dado (testes). O canal e exigido com o bloco {@code defasagem} e recusado sem ele.
+     */
+    static Pecas pecas(Configuracao c, Cli cli, FonteDeSaude saude, ExecutorDeAcoes.Gancho gancho, long tickNs,
+                       long periodoSondaNs, long prazoSondaNs, CanalCanario canario) {
+        return pecas(c, cli, saude, gancho, tickNs, periodoSondaNs, prazoSondaNs, canario, true);
+    }
+
+    private static Pecas pecas(Configuracao c, Cli cli, FonteDeSaude saude, ExecutorDeAcoes.Gancho gancho,
+                               long tickNs, long periodoSondaNs, long prazoSondaNs, CanalCanario canario,
+                               boolean conferirCanario) {
+        if (conferirCanario && (c.parametros().defasagem() == null) != (canario == null)) {
+            throw new IllegalArgumentException(canario == null
+                    ? "o bloco defasagem exige o canal da sonda de defasagem"
+                    : "canal da sonda de defasagem sem o bloco defasagem no " + c.arquivoParametros());
+        }
+        ParametrosPolitica q = c.parametros().politica();
+        Pecas p;
+        if (q == null) {
+            p = new Pecas(saude, new AtuadorNulo(), PoliticaDeAcao.NENHUMA, gancho, tickNs, periodoSondaNs,
+                    prazoSondaNs);
+        } else {
+            AtomicReference<Supplier<Set<String>>> respondidos = new AtomicReference<>(Set::of);
+            AtuadorRestInfinispan rest = new AtuadorRestInfinispan(c.urlsAdmin(),
+                    new ClienteAdminRest(cli.usuario, cli.senha), () -> respondidos.get().get(), PASSO_SAUDE_AC5_NS);
+            p = new Pecas(saude, AtuadorPorTipo.bracoB(rest), new PoliticaPorAssinatura(q, cli.replicacao.caches()),
+                    gancho, tickNs, periodoSondaNs, prazoSondaNs, respondidos);
+        }
+        return canario == null ? p : comCanario(p, canario);
+    }
+
+    private static Pecas comCanario(Pecas p, CanalCanario canario) {
+        return new Pecas(p.saude(), p.atuador(), p.politica(), p.gancho(), p.tickNs(), p.periodoSondaNs(),
+                p.prazoSondaNs(), p.respondidos(), canario);
     }
 
     // ------------------------------------------------------------------ abertura
@@ -307,6 +400,19 @@ final class LigacaoControlador implements AutoCloseable, WorkloadMain.ControleDa
      */
     static LigacaoControlador abrir(Configuracao c, Cli cli, int rep, EpochClock relogio, long origemNs,
                                     RastroCliente rastro, Pecas pecas) throws IOException {
+        try {
+            return abrirComPecas(c, cli, rep, relogio, origemNs, rastro, pecas);
+        } catch (IOException | RuntimeException e) {
+            if (pecas.canario() != null) {
+                pecas.canario().close(); // W-4: os clientes Hot Rod da sonda nao ficam abertos se a abertura falhar
+            }
+            throw e;
+        }
+    }
+
+    private static LigacaoControlador abrirComPecas(Configuracao c, Cli cli, int rep, EpochClock relogio,
+                                                    long origemNs, RastroCliente rastro, Pecas pecas)
+            throws IOException {
         FonteDeTempo tempo = () -> relogio.paraEpochNanos(System.nanoTime());
         Path dir = Path.of(cli.csvDir);
         TrilhaJsonl obs = TrilhaJsonl.abrir(dir.resolve(String.format("observaveis-rep-%03d.jsonl", rep)));
@@ -322,6 +428,15 @@ final class LigacaoControlador implements AutoCloseable, WorkloadMain.ControleDa
                 pecas.respondidos().set(sonda::respondidosNaUltimaAmostra);
             }
         }
+        // W-4: sonda de defasagem; prazo de leitura = --hotrod-timeout-ms (= politica.tetoLagMs pela R7), periodo = W
+        SondaDefasagem lag = null;
+        FonteDeDefasagem defasagem = FonteDeDefasagem.INDETERMINADA;
+        if (pecas.canario() != null) {
+            ParametrosControlador p = c.parametros();
+            lag = new SondaDefasagem(pecas.canario(), p.defasagem(), c.prazoHotRodMs(), p.wNs(), origemNs,
+                    tempo, r -> obs.escrever(FormatoJsonl.defasagem(r)));
+            defasagem = lag;
+        }
         ExecutorDeAcoes executor = new ExecutorDeAcoes(c.modo(), pecas.atuador(), PRAZO_CHAMADA_NS,
                 tempo, r -> dec.escrever(FormatoJsonl.acao(r)), pecas.gancho());
         Referencia ref = c.referencia() == null ? Referencia.vazia() : c.referencia().referencia();
@@ -329,17 +444,21 @@ final class LigacaoControlador implements AutoCloseable, WorkloadMain.ControleDa
                 cli.replicacao.rotulo(), c.nosEsperados(), c.parametros(),
                 c.arquivoReferencia() == null ? null : c.arquivoReferencia().toString(),
                 c.referencia() == null ? null : c.referencia().sha256(), AgregadorDeJanela.TOLERANCIA_PADRAO_NS,
-                pecas.tickNs(), origemNs, pecas.atuador().nome(), pecas.politica().nome(), sonda != null, false);
+                pecas.tickNs(), origemNs, pecas.atuador().nome(), pecas.politica().nome(), sonda != null,
+                lag != null);
         LigacaoControlador[] self = new LigacaoControlador[1];
         FonteDeViolacoes violacoes = () -> self[0].classificarPendentes();
         LacoDeControle laco = new LacoDeControle(new LacoDeControle.Componentes(meta,
                 new AgregadorDeJanela(origemNs, c.parametros(), ref), new Controlador(c.parametros()),
-                topologia, FonteDeDefasagem.INDETERMINADA, violacoes, pecas.politica(), executor, tempo, obs, dec));
+                topologia, defasagem, violacoes, pecas.politica(), executor, tempo, obs, dec));
         LigacaoControlador l = new LigacaoControlador(c, laco, sonda,
-                pecas.saude() instanceof ConsultaSaudeRest r ? r : null, tempo, rastro);
+                pecas.saude() instanceof ConsultaSaudeRest r ? r : null, tempo, rastro, lag, pecas.canario());
         self[0] = l;
         if (sonda != null) {
             sonda.iniciar();
+        }
+        if (lag != null) {
+            lag.iniciar(); // depois da linha meta, gravada pelo construtor do laco
         }
         laco.iniciar(pecas.tickNs());
         return l;
@@ -404,6 +523,12 @@ final class LigacaoControlador implements AutoCloseable, WorkloadMain.ControleDa
         if (sonda != null) {
             sonda.close();
         }
+        if (defasagem != null) {
+            defasagem.close(); // a gravadora termina as linhas na fila antes de o laco fechar o observaveis
+        }
+        if (canario != null) {
+            canario.close();
+        }
         resumo = laco.encerrar(o -> {
             o.put("eventos_fora_do_contrato", eventosForaDoContrato.get());
             o.put("sonda_rodadas", sonda == null ? null : sonda.rodadas());
@@ -411,6 +536,22 @@ final class LigacaoControlador implements AutoCloseable, WorkloadMain.ControleDa
             o.put("sonda_amostras_atrasadas", sonda == null ? null : sonda.amostrasAtrasadas());
             o.put("sonda_erros_ouvinte", sonda == null ? null : sonda.errosOuvinte());
             o.put("curl_lancados", rest == null ? null : rest.lancamentos());
+            // observaveis 1.2 (W-4): custo do S_lag, contado a parte da carga util; null sem a sonda
+            if (defasagem == null) {
+                SondaDefasagem.nomesDosContadores().forEach(o::putNull);
+            } else {
+                defasagem.contadores().forEach(o::put);
+            }
+            // P-44: a chave de cada no e se ela tinha o proprio no como dono primario na abertura
+            if (canario == null) {
+                o.putNull("defasagem_chaves");
+            } else {
+                var chaves = o.putArray("defasagem_chaves");
+                for (int i = 0; i < canario.nos(); i++) {
+                    chaves.addObject().put("no", canario.rotulo(i)).put("chave", canario.chave(i))
+                            .put("primario", canario.chaveNoPrimario(i)).put("motivo", canario.motivoDaChave(i));
+                }
+            }
         });
     }
 

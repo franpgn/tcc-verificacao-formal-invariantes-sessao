@@ -974,6 +974,61 @@ correspondente adicionado em `Mesclar` (`spec/SessionStore.tla`, commit `b7d8e0a
   chance de mandar a ordem a um nó que pausa entre a última amostra e o pedido.
 - **Status:** `ABERTO`, para o Gestor.
 
+## 2026-11-05 — W-4 (B-26.3), sonda de defasagem S_lag
+
+> Numeração: na branch `feature/w4-sonda-defasagem` estas entradas eram P-39 e P-40, numeradas em paralelo com o W-2a
+> (que tem P-39..P-42). Na integração de 05/11 (`feature/controlador-integracao`) passaram a P-43 e P-44; os commits
+> do W-4 anteriores à integração citam os números antigos.
+
+### P-43 (W-4; P-39 na branch do W-4, renumerado na integração) — ligar a sonda de defasagem muda dois testes existentes
+
+- **Sintoma:** o adaptador `CanalCanarioHotRod` (session) implementa `controle.CanalCanario`, e o
+  `LigacaoControlador` passa a usar `CanalCanario`, `ParametrosDefasagem` e `SondaDefasagem`: o R-C1
+  (`ArquiteturaSemAcaoNoClienteTest.PERMITIDOS`) reprova os dois sem um par a mais. O custo da sonda em colunas
+  próprias do `observaveis` (W-4, item 3) muda o esquema para `observaveis-controlador/1.2`, e
+  `LacoDeControleTest.tDecisaoNs` (linha 426) compara o texto `1.1`.
+- **Proposta:** acrescentar os pares (nenhuma asserção retirada) e trocar o literal para `1.2`. As duas edições estão
+  no *working tree* da `wt-w4`, **não commitadas**, à espera da autorização do Gestor (como a D-C do W-2a).
+- **Status:** `RESOLVIDO` (05/11, `bf59e6e`). Autorizado pelo coordenador em nome do Gestor; nenhuma asserção retirada.
+
+### P-44 (W-4; P-40 na branch do W-4, renumerado na integração) — risco: suspeito ambíguo quando as chaves da maioria têm dono primário no nó cortado
+
+- **Hipótese (não medida):** sob corte do `isn3`, o par `isn1 → isn2` só falha se o dono primário de `lag:<isn1>` for
+  o `isn3` (a escrita não chega a nenhuma réplica, e a leitura pelo `isn2` busca no primário inacessível). Se as duas
+  chaves da maioria tiverem o primário no `isn3`, os seis pares ficam no teto, os três nós empatam, o `noSuspeito` sai
+  `null` e o P1 não dispara naquela execução. Com 64 segmentos e dono primário mais ou menos uniforme entre 3 nós, a
+  chance por execução seria da ordem de (1/3)² ≈ 11 %; as chaves são fixas por execução.
+- **Efeito:** falha segura (sem AC-5, CONSERVADOR sem ação), mas reduz a sensibilidade do P1.
+- **Medir:** no *smoke* local do W-4, registrar os pares no teto por rodada (linha `defasagem`) e onde ficam as
+  chaves `lag:*`, por `GET /rest/v2/caches/{cache}/{chave}?action=distribution` (REST 15.0 §2.1.18,
+  `leituras/CAND-091`), conferindo o `Key-Content-Type` (as chaves vão pelo `JavaSerializationMarshaller` do
+  cliente, não como texto). Se a
+  ambiguidade aparecer, as opções são duas chaves por escritor (custo dobra) ou escolher chaves com primário no
+  próprio escritor (exige topologia no cliente). Decisão do Senior/Gestor.
+- **Status:** `MITIGADO NO CÓDIGO, A CONFIRMAR NO SMOKE` (05/11, `0db755f`). Decisão do coordenador: escolher, para cada
+  nó X, uma chave cujo dono primário seja X. Na abertura, `CanalCanarioHotRod` abre um cliente *topology-aware*
+  (`S3Clientes.configuracaoTopology`), faz uma operação para receber o hash consistente do cache canario e testa as
+  candidatas `lag:<X>`, `lag:<X>#1`, ... até `ChannelFactory.getHashAwareServer` (o mesmo cálculo com que o cliente
+  roteia a operação, sobre os bytes da chave do `DataFormat`) devolver X; limite de 10 000 candidatas
+  ((63/64)^10000 < 1e-60 para um nó dono primário de ao menos 1 dos 64 segmentos). O cliente é fechado logo depois:
+  nada de custo durante a execução, só Hot Rod em memória (P-5). A chave, o primário e o motivo vão a `defasagem_chaves` no `fim`.
+- **Limites, a declarar:** (1) `ChannelFactory` é do pacote `impl` do cliente Hot Rod 15.0.0 (métodos públicos,
+  conferidos nas *flags* do `.class`, mas fora da API estável); (2) a escolha vale para a topologia da abertura: cada
+  execução começa com o *cluster* recriado e o corte parte dela; uma mudança de topologia durante a execução (F1,
+  fusão) pode tirar o primário do nó, o que só importaria para uma segunda falha, fora do desenho; (3) supõe que a
+  leitura de um nó que não é dono vai primeiro ao primário (leitura escalonada do Infinispan), a conferir; (4) sem
+  topologia, nó fora da topologia anunciada (`--servers` com nome e topologia com IP) ou falha, a chave simples volta,
+  com o motivo registrado; desde a V-W4 R1 isso faz a abertura falhar, em vez de devolver o risco original.
+- **V-W4 (`ff7ab3c`), decisões do coordenador em nome do Gestor:** R1, o recuo para a chave simples é fatal na abertura
+  em toda execução com o bloco `defasagem` (`exigirPrimario`, `68691ae`); o `ChannelFactory` fica como limitação
+  declarada (cliente fixo em 15.0.0, uso só na abertura, falha nunca silenciosa, prova REST obrigatória no *smoke*,
+  com os bytes da chave Hot Rod em hexadecimal e `contains_key = true`, R2); R3, risco novo só em SYNC (a chave de X
+  com cópia no nó cortado pode deixar o valor invisível em X até a confirmação), decidido depois do *smoke* SYNC, com
+  preferência por declarar a limitação na célula SYNC F2, que é de referência.
+- **Conferir no smoke:** `defasagem_chaves` com `primario = true` nos três nós; com o `isn3` cortado, os pares
+  `isn1`↔`isn2` vistos e `no_suspeito = isn3` em todas as rodadas antes da mudança de vista; e o dono primário de cada
+  chave por `GET /rest/v2/caches/{cache}/{chave}?action=distribution`, como prova independente.
+
 ## Observação de modelagem (não é defeito)
 
 Com 8 *threads* = 8 identidades fixas (`user-<tid>`), `incrementFailure`

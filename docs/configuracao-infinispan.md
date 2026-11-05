@@ -8,6 +8,8 @@
 |---|---|
 | `cluster/podman-compose.yml` | Orquestra três nós Infinispan em *containers* Podman, com rede *bridge* dedicada e *health check* via REST. |
 | `cluster/infinispan-cluster.xml` | Define os *caches* `sessions`/`counters` (DIST_SYNC, controle) e os irmãos `sessions-async`/`counters-async` (DIST_ASYNC, alvo), com partição tratada por `DENY_READ_WRITES`; o *workload* escolhe o par por `--replication sync\|async`. |
+| `cluster/caches/canario.json`, `canario-async.json` | W-4 (B-26.3): *caches* da sonda de defasagem S_lag, **criados pela REST** (`scripts/cria-caches.sh`), não pelo XML. Corpo sem o envoltório do nome; mesmos parâmetros dos irmãos `sessions`/`sessions-async`, com `remote-timeout` 17500 explícito no SYNC (valor efetivo do XML). Fora de todo invariante, auditor, varredura e reset. |
+| `scripts/cria-caches.sh` | W-4: cria pela REST os *caches* de `cluster/caches/<nome>.json` e confere a leitura de volta `?action=config` em cada nó (exit 4 se divergir). Senha só por `CRIA_CACHES_SENHA`. Testes sem *cluster*: `scripts/cria-caches.test.sh`. |
 
 A inicialização ocorre via `cd cluster && podman-compose up -d`. O *health check* é executado pelo Podman a cada 5 s; um nó é considerado saudável quando `GET /rest/v2/cache-managers/default/health/status` retorna 200 com credenciais `admin:infinispan`.
 
@@ -117,6 +119,24 @@ curl -s -u admin:infinispan \
   http://localhost:11222/rest/v2/cache-managers/default/health/status
 # esperado: HEALTHY
 ```
+
+Com a sonda de defasagem (bloco `defasagem` no `controlador-*.json`, W-4), criar os *caches* `canario*` depois de
+`HEALTHY` com 3 nós e antes da carga. O `podman-compose.yml` não monta volume de dados, então o `caches.xml` em que o
+servidor guarda os *caches* criados pela REST vive no contêiner: um `podman start` os preserva (B-44.1b), um
+`podman-compose down/up` os apaga, e a criação se repete a cada subida (um POST de *cache* que já existe é recusado e o
+script sai com 3):
+
+```bash
+CRIA_CACHES_SENHA=infinispan scripts/cria-caches.sh --url http://127.0.0.1:11222 \
+  --conferir http://127.0.0.1:11222,http://127.0.0.1:11223,http://127.0.0.1:11224 \
+  canario canario-async
+```
+
+Por que pela REST e não no XML: no B-44.1b, *cache* criado pela REST não causou `ISPN000438` no reinício do nó (P-30),
+e a decisão do Senior (`cc08644` §6) é tirar todos os *caches* do XML da VM; os `canario*` já nascem assim. O
+`remote-timeout` vai explícito porque, criado pela REST sem ele, o SYNC fica com 15 000 ms, e não com os 17 500 ms do XML
+(B-44.1 §3). O JSON é idêntico, sem o envoltório do nome, à leitura de volta dos irmãos criados pelo XML
+(`wt-b44-1/runs/b44-1/corpos/config-sessions-isn1.txt` e `config-sessions-async-isn1.txt`).
 
 Para encerrar:
 

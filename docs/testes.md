@@ -487,3 +487,83 @@ Esperado na H2: 971 + 3 testes novos (`kLagIndependenteDoK`, `noDaEscolha`, `tet
 - Integração I-1..I-5 no *cluster* local `w2a`: `docs/relatorio-b44-2-2026-11-05.md`. Problemas novos: P-39 (AC-2 sob
   falha silenciosa), P-40 (AC-2 depois da queda), P-41 (leitura final da carga trava com nó parado), P-42 (AC-5 sob corte
   e nó pausado).
+
+## W-4 (B-26.3): sonda de defasagem S_lag, *caches* `canario*` e a fonte do controlador (2026-11-05)
+
+> Integração (05/11, `feature/controlador-integracao`): os problemas do W-4 eram P-39 e P-40 na branch dele e
+> passaram a P-43 e P-44 no registro (o W-2a já tinha P-39..P-42); o texto abaixo usa os números novos e os
+> commits citados, os antigos.
+
+Branch `feature/w4-sonda-defasagem` sobre a ponta do W-2a (`9695511`). **Escrito com a VM em H0 (noite 1 do
+*rebaseline*): nenhum Maven, Surefire, `javac`, Python, Podman nem script de teste rodou.** Os testes foram
+escritos antes do código (`603947d` test, vermelho; `133212d` feat) e só vão ser executados na janela H2.
+
+| Arquivo de teste | Testes | O que prende |
+|---|---|---|
+| `controle/ParametrosDefasagemTest` | 5 | bloco `defasagem`: sem padrão, origem obrigatória, tipos estritos, histerese; `validarContra` (prazo em W, passo < prazo, `lagIn` ≤ prazo); SHA-256 cobre o bloco; `parametros_defasagem` na meta de observaveis 1.2 |
+| `controle/SondaDefasagemResumoTest` | 11 | lag de nó = menor par; nó cortado = suspeito no teto; par da maioria no teto (dono primário do outro lado) não muda o suspeito; corte parcial não chega ao teto; empate → `null`; histerese nas bordas; várias rodadas; janela sem rodada = indeterminada; validação da rodada; linha `defasagem`; funções da agenda |
+| `controle/SondaDefasagemRodadaTest` | 12 | canal falso com relógio real: 3 escritas e 6 leituras sem falha, só chaves `lag:<nó>`, `nonce:rodada`; atraso conhecido; nó cortado; leitura bloqueada interrompida no prazo; tarefa presa recusa a rodada seguinte; escrita que falha; buffer por janela (aquecimento, atrasada, fim não recua); agenda alinhada à grade; ouvinte travado não atrasa rodada (P-5); construtor |
+| `controle/ArquiteturaDefasagemTest` | 2 | S_lag em `controle/` sem Infinispan, `session`, processo, arquivo nem nome de *cache* |
+| `session/CanalCanarioHotRodTest` | 4 | rótulo = `RotulosDosNosTest.rotuloDoNo` = sonda de topologia = atuador; correspondência `--servers` × `--controller-admin`; operação vai ao cliente do nó |
+| `session/CanarioArquiteturaTest` | 5 | literal `"canario"` só no resolvedor; `cacheCanario()` só no adaptador; adaptador sem `sessions*`/`counters*`, tipos da carga, processo ou arquivo |
+| `session/CachesCanarioJsonTest` | 3 | `cluster/caches/canario*.json` compactos, sem envoltório, iguais aos irmãos do XML salvo `remote-timeout` (17500 só no SYNC); XML sem `canario` |
+| `session/LigacaoControladorDefasagemTest` | 5 | carregamento (só S3, prazo em W, `lagIn`, correspondência, R7 continua), dry-run, `pecas` coerente com o bloco, ponta a ponta em shadow (nó 3 cortado → S_lag `ALTA` com `noSuspeito` canônico → P1 com `no` e AC-5 `PREVISTA` para ele) e sem o bloco |
+| `scripts/cria-caches.test.sh` | 26 asserts | POST com o corpo do arquivo, leitura de volta nos três nós, divergência (exit 4), recusa (exit 3), arquivo ausente ou não compacto (exit 2), argumentos (exit 1), senha só pela entrada padrão |
+
+**Testes existentes editados (P-43, autorizados pelo coordenador em nome do Gestor em 05/11; commit `bf59e6e`):**
+
+| Teste | Linha | Mudança | Por quê |
+|---|---|---|---|
+| `session/ArquiteturaSemAcaoNoClienteTest` (R-C1) | `PERMITIDOS` | par novo `CanalCanarioHotRod` → `CanalCanario`; `LigacaoControlador` ganha `CanalCanario`, `ParametrosDefasagem`, `SondaDefasagem` | o adaptador implementa a porta da sonda e a ligação monta a sonda; nenhuma asserção retirada |
+| `controle/LacoDeControleTest` | 426 | `"observaveis-controlador/1.1"` → `"1.2"` | o plano manda o custo da sonda em colunas próprias do `observaveis` (W-4 item 3), o que muda o esquema |
+
+Esperado na H2 com as duas edições: 974 (esperado do W-2a, ainda não medido) + 47 = **1021/0/0/1**,
+141 arquivos; `cria-caches.test.sh` 26/0. Depois: *smoke* local S3 ASYNC com e sem corte do `isn3` (item 5 do prompt).
+
+### W-4, segunda rodada: decisões do coordenador de 05/11 (P-43, passo de 20 ms, provisórios, P-44) (2026-11-05)
+
+Ainda sem execução (H0). Commits: `bf59e6e` test (as duas edições do P-43, autorizadas), `aadbaa3` e `4ed28a3` test
+(vermelhos), `0db755f` feat; `13154c4` test → `5da6767` feat (motivo da escolha).
+
+| Arquivo de teste | Testes | O que prende |
+|---|---|---|
+| `session/EscolhaDeChaveTest` | 8 | P-44: a chave de cada nó tem o próprio nó como dono primário (busca `lag:<nó>`, `lag:<nó>#<j>`); chaves distintas e determinísticas; sem topologia, nó fora da topologia anunciada ou sem achar até 10 000 candidatas, chave simples com o motivo; `hostPorta`; o canal expõe `chave(i)` e `chaveNoPrimario(i)` |
+| `controle/SondaDefasagemChaveTest` | 3 | a sonda escreve e lê `canal.chave(i)`; padrão `lag:<rótulo>`; chave sem prefixo, repetida ou nula recusada |
+| `session/LigacaoControladorChavesTest` | 2 | `defasagem_chaves` (`no`, `chave`, `primario`, `motivo`) no `fim` de `observaveis`; `null` sem a sonda |
+| `session/ArquivoCalibracaoTest` | 2 | `cluster/controlador/controlador-calibracao-s3.json`: `passoLeituraMs` = 20 com origem `wada_consistency_cloud_2011` §2; `lagInMs`, `lagOutMs` e `kLag` com `provisorio-calibracao`; `tetoLagMs` = `--hotrod-timeout-ms` padrão (R7); custo sob falha prazo/passo = 100 leituras por par |
+
+Esperado na H2: 974 (W-2a, ainda não medido) + 47 + 15 = **1036/0/0/1**, 145 arquivos; `cria-caches.test.sh` 26/0.
+O que os testes **não** provam (fica para o *smoke* local): que o `ChannelFactory.getHashAwareServer` do cliente 15.0.0
+devolve, para os bytes da chave, o mesmo primário que o servidor 15.0.21 usa; que a leitura de um nó que não é dono vai
+primeiro ao primário; e que, sob o corte do `isn3`, os pares entre `isn1` e `isn2` deixam de empatar no teto.
+
+### W-4, terceira rodada: ressalvas da V-W4 (R1, R5, R6) e a primeira execução na H2 (2026-11-05)
+
+Parecer `docs/validacao-w4-2026-11-05.md` (`ff7ab3c`), APROVADO COM RESSALVAS. Commits: `5a69551` test (R1
+`ExigirPrimarioTest`, 5 testes, e R6 em `ouvinteLentoNaoAtrasaRodada`), `68691ae` feat (R1 e Javadoc da R5). O vermelho
+da R1 foi conferido antes do feat: com o `main` do `5a69551`, só o `ExigirPrimarioTest` deixa de compilar
+(`exigirPrimario`/`montar` ausentes).
+
+**Medido na H2** (`mvn -B -o test` em `workload/`, Maven 3.9.16, JDK 22.0.2 com alvo 17; contagens copiadas de
+`target/surefire-reports/TEST-*.xml`): **1041/0/0/1, 146 classes**, `BUILD SUCCESS`. A conta: 974 (W-2a) + 62 (W-4,
+primeira e segunda rodadas) + 5 (R1) = 1041; 133 + 12 + 1 = 146 classes. Tudo verde na primeira execução.
+`bash scripts/cria-caches.test.sh`: **26/0**. Brutos em `runs/w4-h2/` (`surefire-por-classe.tsv`,
+`surefire-total.txt`, `cria-caches.test.out`, `comandos.txt`, `MANIFEST.sha256`).
+
+| Classe nova do W-4 | Testes (medido) |
+|---|---|
+| `ParametrosDefasagemTest` | 5 |
+| `SondaDefasagemResumoTest` | 11 |
+| `SondaDefasagemRodadaTest` | 12 (3,4 s) |
+| `ArquiteturaDefasagemTest` | 2 |
+| `SondaDefasagemChaveTest` | 3 |
+| `CanalCanarioHotRodTest` | 4 |
+| `CanarioArquiteturaTest` | 5 |
+| `CachesCanarioJsonTest` | 3 |
+| `LigacaoControladorDefasagemTest` | 5 (3,6 s) |
+| `EscolhaDeChaveTest` | 8 |
+| `LigacaoControladorChavesTest` | 2 |
+| `ArquivoCalibracaoTest` | 2 |
+| `ExigirPrimarioTest` | 5 |
+
+Falta o *smoke* da seção 9 do parecer (cluster local), que espera o W-2a terminar o I-1..I-5.

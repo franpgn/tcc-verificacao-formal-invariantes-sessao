@@ -24,6 +24,8 @@ sys.path.insert(0, str(AQUI))
 import campanha_s3_conferir as cc  # noqa: E402
 
 SHA = "a" * 64
+# M1 da V-W6: o teto conta o tempo ate a ancora (ANCORA_TIMEOUT_S do orquestrador) e o T_enc do pior caso
+EXTRA = ("--t-enc-pior-s", "21", "--ancora-max-s", "120")
 
 
 def rodar(*args):
@@ -36,7 +38,7 @@ def parametros_validos():
     v = {"duracao_s": 300, "warmup_min_s": 30, "inj_offset_s": 49, "f1_no": "isn2", "f1_dur_s": 60,
          "f2_no": "isn3", "f2_dur_s": 90, "f4_no": "isn3", "f4_severidade": "N3", "f4_direcao": "both",
          "f4_dur_s": 90, "hotrod_timeout_ms": 2000, "convergencia_teto_s": 600, "convergencia_periodo_s": 5,
-         "w_recovery_s": 161, "religamento_prazo_s": 180, "exec_teto_s": 1200, "encerramento_folga_s": 2,
+         "w_recovery_s": 161, "religamento_prazo_s": 180, "exec_teto_s": 1300, "encerramento_folga_s": 2,
          "volume_exec_mb": 200}
     return {"esquema": "campanha-s3/1", "versao": "teste",
             "parametros": {k: {"valor": x, "origem": "teste"} for k, x in v.items()}}
@@ -73,7 +75,7 @@ class Parametros(unittest.TestCase):
     def test_validos_imprimem_nome_valor(self):
         with tempfile.TemporaryDirectory() as d:
             p = escrever(d, "p.json", parametros_validos())
-            rc, out, err = rodar("parametros", "--arquivo", str(p))
+            rc, out, err = rodar("parametros", *EXTRA, "--arquivo", str(p))
             self.assertEqual(0, rc, err)
             linhas = dict(l.split("\t") for l in out.strip().split("\n"))
             self.assertEqual("300", linhas["duracao_s"])
@@ -85,7 +87,7 @@ class Parametros(unittest.TestCase):
             with self.subTest(origem=origem), tempfile.TemporaryDirectory() as d:
                 obj = parametros_validos()
                 obj["parametros"]["inj_offset_s"]["origem"] = origem
-                rc, _, err = rodar("parametros", "--arquivo", str(escrever(d, "p.json", obj)))
+                rc, _, err = rodar("parametros", *EXTRA, "--arquivo", str(escrever(d, "p.json", obj)))
                 self.assertEqual(2, rc)
                 self.assertIn("inj_offset_s", err)
 
@@ -102,7 +104,7 @@ class Parametros(unittest.TestCase):
             with self.subTest(caso=nome), tempfile.TemporaryDirectory() as d:
                 obj = parametros_validos()
                 mudar(obj)
-                rc, _, err = rodar("parametros", "--arquivo", str(escrever(d, "p.json", obj)))
+                rc, _, err = rodar("parametros", *EXTRA, "--arquivo", str(escrever(d, "p.json", obj)))
                 self.assertEqual(2, rc, nome)
 
     def test_coerencia_das_janelas(self):
@@ -113,13 +115,46 @@ class Parametros(unittest.TestCase):
             with self.subTest(caso=nome), tempfile.TemporaryDirectory() as d:
                 obj = parametros_validos()
                 obj["parametros"][k]["valor"] = x
-                rc, _, err = rodar("parametros", "--arquivo", str(escrever(d, "p.json", obj)))
+                rc, _, err = rodar("parametros", *EXTRA, "--arquivo", str(escrever(d, "p.json", obj)))
                 self.assertEqual(2, rc, err)
 
     def test_json_invalido(self):
         with tempfile.TemporaryDirectory() as d:
-            rc, _, _ = rodar("parametros", "--arquivo", str(escrever(d, "p.json", "{nao e json")))
+            rc, _, _ = rodar("parametros", *EXTRA, "--arquivo", str(escrever(d, "p.json", "{nao e json")))
             self.assertEqual(2, rc)
+
+
+class TetoComParcelas(unittest.TestCase):
+    """M1 da V-W6: exec_teto_s >= ancora_max_s + duracao_s + t_enc_pior_s + religamento_prazo_s + convergencia_teto_s +
+    convergencia_periodo_s. O tempo ate a ancora (a carga so comeca depois dele; ate 120 s, ANCORA_TIMEOUT_S do
+    orquestrador) e o T_enc (ate 21 s entre o fim da carga e a linha de fim, contrato JSONL 1.2) vem do orquestrador;
+    o ultimo periodo cobre a volta do laco de convergencia que dorme antes de olhar o teto (ConvergenciaLoop.executar).
+    Com os parametros validos: 120 + 300 + 21 + 180 + 600 + 5 = 1226."""
+
+    def teto(self, d, valor, *extra):
+        obj = parametros_validos()
+        obj["parametros"]["exec_teto_s"]["valor"] = valor
+        return rodar("parametros", *extra, "--arquivo", str(escrever(d, "p.json", obj)))
+
+    def test_no_minimo_passa_e_um_abaixo_recusa(self):
+        with tempfile.TemporaryDirectory() as d:
+            self.assertEqual(0, self.teto(d, 1226, *EXTRA)[0])
+            rc, _, err = self.teto(d, 1225, *EXTRA)
+            self.assertEqual(2, rc)
+            for parcela in ("t_enc_pior_s", "ancora_max_s", "convergencia_periodo_s"):
+                self.assertIn(parcela, err)
+
+    def test_as_parcelas_do_orquestrador_mudam_o_minimo(self):
+        with tempfile.TemporaryDirectory() as d:
+            self.assertEqual(2, self.teto(d, 1226, "--t-enc-pior-s", "22", "--ancora-max-s", "120")[0])
+            self.assertEqual(2, self.teto(d, 1226, "--t-enc-pior-s", "21", "--ancora-max-s", "121")[0])
+            self.assertEqual(0, self.teto(d, 1226, "--t-enc-pior-s", "20", "--ancora-max-s", "121")[0])
+
+    def test_parcelas_obrigatorias_e_nao_negativas(self):
+        with tempfile.TemporaryDirectory() as d:
+            self.assertEqual(2, self.teto(d, 2000, "--ancora-max-s", "120")[0], "sem --t-enc-pior-s")
+            self.assertEqual(2, self.teto(d, 2000, "--t-enc-pior-s", "21")[0], "sem --ancora-max-s")
+            self.assertEqual(2, self.teto(d, 2000, "--t-enc-pior-s", "-1", "--ancora-max-s", "120")[0])
 
 
 class Controlador(unittest.TestCase):

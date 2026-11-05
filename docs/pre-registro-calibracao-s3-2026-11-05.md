@@ -16,6 +16,10 @@
 > `lag_out` pelo menor valor (A-3), m sem θ_out (A-4, A-5), grade do W derivado e W_min estrito (A-1, A-17), regra de
 > reserva de W para o AC-5 caber em 39,8 s, e as demais leituras do W-9. Onde divergirem, vale o complemento. O texto
 > abaixo não foi editado.
+>
+> **Nota de remissão (2026-11-05):** o efeito da regra de memória da §5 está no **complemento 2**
+> (`docs/pre-registro-calibracao-s3-complemento-2-2026-11-05.md`, DT-023): recriar e rodar com o mesmo i e a mesma
+> semente, sem parar a fase.
 
 ## Siglas
 
@@ -205,6 +209,11 @@ vira: **no K1 de cada execução, depois da recriação, *swap* ≥ 1 GiB para a
 ter liberado a memória e algo fora do *cluster* a está ocupando. O orquestrador ainda não lê o *swap*: é item do W-6c
 (seção 9).
 
+> **Nota de remissão (2026-11-05, antes de qualquer dado):** o efeito da regra acima está **substituído pelo
+> complemento 2** (`docs/pre-registro-calibracao-s3-complemento-2-2026-11-05.md`, DT-023), alinhado à C-10 aprovada:
+> com *swap* ≥ 1 GiB no portão, o *cluster* é recriado e a execução roda com o mesmo i e a mesma semente, sem recusa e
+> **sem parar a fase** (`--swap-limite-kb 1048576`, W-6c). O texto acima não foi editado.
+
 **Origem medida do 1 GiB** (1 048 576 kB, o `LIM_swap_kB` do supervisor):
 - execução normal: no portão K1, *swap* de 44 240 kB a 404 344 kB (≈ 395 MiB) antes de cada salto (log do supervisor,
   K1 de i = 26 a 32, e K1 de i = 39 nas notas do vigia);
@@ -336,6 +345,9 @@ real; a estimativa não decide nada.
 | 6 | X-17 aprovado, com `t_pre`, `t_pos`, volume e tempo medidos | coordenador + Senior | 4.1 |
 | 7 | `--dry-run` com a matriz e o arquivo `campanha-s3/1` deste documento; ele confere também o arquivo do controlador (S1) e as duas referências | coordenador | V-W6; V-W6b §6 |
 | 8 | Referência SYNC inerte criada e passada em `--referencia-sync` (o orquestrador a põe no *bundle*) | coordenador | 4.2; V-W6b §6 |
+
+> **Nota de remissão (2026-11-05):** no item 3 acima, "com parada ≥ 1 GiB" está substituído pelo complemento 2:
+> recriação do *cluster* e a mesma execução com o mesmo i e a mesma semente (`--swap-limite-kb 1048576`, W-6c).
 
 ## 10. Decisões do Gestor e origem de cada item
 

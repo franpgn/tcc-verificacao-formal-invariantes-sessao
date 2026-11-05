@@ -924,3 +924,15 @@ Transmitidas ao Senior pelo coordenador, sobre o parecer de conferência do text
   viável, o AC-5 é declarado inviável antes da avaliação e a DT-021 volta ao Gestor.
 - **Demais:** A-2, A-6 a A-11, A-14 a A-16 confirmadas como o W-9 leu; A-12 e A-13 confirmadas com acréscimo (ciclo
   completo de execução; `poder.py` com `-E -P`, `--semente 20261105`, `--n-sim 10000`, `--m-celulas 2`, `--blocos 12`).
+
+## DT-023: complemento 2 da DT-020, efeito da regra de memória no portão, PRÉ-REGISTRO (2026-11-05)
+
+> Registrado em 2026-11-05, antes de qualquer dado da calibração. Texto vinculante:
+> `docs/pre-registro-calibracao-s3-complemento-2-2026-11-05.md`. Alinha a §5 e o item 3 da §9 do pré-registro à C-10
+> aprovada (nota de fechamento da DT-020, `2c8b7b8`) e à G-3(b) do Gestor; a DT-020 não é editada.
+
+- Com *swap* usado ≥ 1 048 576 kB no portão (depois do K1), o *cluster* é recriado de novo e a execução roda com o
+  **mesmo i e a mesma semente, sem contar como recusa**; uma recriação por portão; se o *swap* continuar alto, a
+  execução roda com aviso. **A fase não para por *swap*.** Opção `--swap-limite-kb 1048576` (W-6c).
+- Em aberto para o Gestor: o caso em que a segunda leitura repete a primeira (P-56 do W-6c). Até a decisão, vale o
+  aviso; uma mudança depois de haver dados vira entrada nova.

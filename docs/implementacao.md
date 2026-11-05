@@ -124,7 +124,7 @@ flowchart LR
 
 | Peça | O que faz | Onde |
 |---|---|---|
-| `AcaoCluster.Tipo` | cada tipo diz se é reversível, a regra do alvo e o prazo (`T_cham` + acréscimo). `AC_5` novo (não reversível, um nó, `T_cham` + 3 s, `Server.java:208`); `AC_2` só global (P-34). `AC_1`/`AC_3` ficam `@Deprecated` até a lista D-C ser ampliada (P-36) | `controle/AcaoCluster.java` |
+| `AcaoCluster.Tipo` | cada tipo diz se é reversível, a regra do alvo e o prazo (`T_cham` + acréscimo). Só `AC_2` (global, P-34) e `AC_5` (não reversível, um nó, `T_cham` + 3 s, `Server.java:208`); `AC_1`/`AC_3` retirados (P-36) | `controle/AcaoCluster.java` |
 | `ExecutorDeAcoes` | ação não reversível fora da pilha e de `ativas()`, pedida uma vez por execução, nunca desfeita (R4, encerramento, gancho, falha); prazo por tipo; `T_enc` = prazos da pilha + prazo em curso + `T_cham` (com só AC-2, o `(A + 1) x T_cham` de antes) | `controle/ExecutorDeAcoes.java` |
 | `EstadoTopologia.porNo` | por nó, resposta em `TODAS`/`ALGUMA`/`NENHUMA` as amostras e o menor e o maior `number_of_nodes`; `vistaCompleta()`, `noSemResposta()`, `vistasDivergentes()` (faixas disjuntas). Construtor antigo delega; `SondaTopologia.resumirAte` continua sem `porNo` | `controle/EstadoTopologia.java`, `SondaTopologia.java`, `FonteDeTopologia.java` |
 | `PoliticaPorAssinatura` | tabela da seção 5, pura (tempo = `fimNs` da decisão). Parâmetros `k`, `tetoLagMs`, `tRebNs`, `cotaAc5` sem padrão (`ParametrosPolitica`). Grava `P0`/`P1`/`P2` e o motivo numa linha `politica` | `controle/PoliticaPorAssinatura.java`, `ParametrosPolitica.java`, `PlanoDeAcao.java` |
@@ -140,12 +140,13 @@ não foi consultada numa janela (R4); (4) "os outros respondendo" do P2 exige re
 instantes diferentes não conta); (6) o AC-5 conta como "parou" quando a saúde do alvo não responde (conexão recusada
 ou prazo de 1 s).
 
-**Ainda não ligado**: `LigacaoControlador.pecasPadrao` continua com o atuador nulo e a política `nenhuma`. A ligação
-precisa (a) acrescentar `PoliticaPorAssinatura`, `ParametrosPolitica`, `AtuadorPorTipo` à lista do
-`LigacaoControlador` no `ArquiteturaSemAcaoNoClienteTest` (edição não autorizada ainda), (b) definir de onde vêm
-`k`, `tRebNs` e `cotaAc5` (arquivo novo ou campos novos no `controlador-*.json`, que mudam `ParametrosControlador` e
-os testes dele) e `tetoLagMs` (`hotrod_timeout_ms`), e (c) um fornecedor de "nós que responderam na última janela"
-a partir da última amostra da sonda (P-38).
+**Ligação (P-38, aprovada em 05/11).** O `controlador-*.json` ganha o bloco opcional `"politica"` (`k`,
+`tetoLagMs`, `tRebNs`, `cotaAc5` e a `origem` de cada um; contrato JSONL 1.2). Sem o bloco, `LigacaoControlador.pecas`
+monta o atuador nulo e a política `nenhuma`, como no W-3. Com o bloco, monta `PoliticaPorAssinatura` (caches do
+modo) e `AtuadorPorTipo.bracoB(AtuadorRestInfinispan)`; os "nós que responderam na última janela" saem de
+`SondaTopologia.respondidosNaUltimaAmostra`, pendurado em `abrir`. O rótulo de nó é `host:porta` em toda peça
+(`RotulosDosNosTest`); o `noSuspeito` do W-4 tem de seguir o mesmo rótulo. O S_lag ainda é indeterminado
+(`FonteDeDefasagem.INDETERMINADA`), então hoje só o P2 (AC-2) dispara ponta a ponta; o P1 (AC-5) espera o W-4.
 
 ### TD-010 — W-3 (B-28.2): laço de controle do *cluster* no processo da carga (2026-11-04)
 

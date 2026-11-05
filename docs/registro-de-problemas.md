@@ -880,8 +880,9 @@ correspondente adicionado em `Mesclar` (`spec/SessionStore.tla`, commit `b7d8e0a
 - **Contorno aplicado:** `AC_1` e `AC_3` continuam no enum, `@Deprecated`, reversíveis e sem regra de alvo; nenhum
   atuador nem a política os usa (`AtuadorRestInfinispan` devolve `FALHOU tipo-fora-do-braco-b`). Feita só a edição
   autorizada que não depende do rótulo (`WorkloadMainCargaControleTest:132`, AC_1 → AC_2 global).
-- **Status:** `ABERTO`, pede ampliar a D-C (trocar os rótulos nas linhas acima sem retirar asserção) para retirar os
-  dois tipos num *commit* `refactor:`.
+- **Status:** `RESOLVIDO` (05/11). D-C ampliada pelo coordenador; rótulos trocados em `db98466` (AC1/AC2/AC3 =
+  AC-2 em caches distintos e o resumo com tipo/primeiro cache, para a ordem LIFO continuar distinguível); `AC_1` e
+  `AC_3` retirados em `4f74c26`.
 
 ### P-37 — campo `reversao` só nas linhas de ação não reversível
 
@@ -889,9 +890,8 @@ correspondente adicionado em `Mesclar` (`spec/SessionStore.tla`, commit `b7d8e0a
   `ControleArquivosTest.formatoAcao` (133-135) fixa a lista de campos da linha `acao`. Gravar `reversao` em todas as
   linhas reprova esse teste.
 - **Contorno aplicado:** o campo vai só nas linhas de AC-5 (`"orquestrador"`), no fim da linha.
-- **Status:** `ABERTO`; com autorização para editar `ControleArquivosTest:133-135`, o campo passa a todas as linhas
-  (`"pilha"` ou `"orquestrador"`) e o esquema sobe para `decisoes-controlador/1.2` (também fixado em
-  `LacoDeControleTest:423`).
+- **Status:** `RESOLVIDO` (05/11, `18ab8b9`). `reversao` em toda linha `acao` (`"orquestrador"` ou `null`) e
+  esquema `decisoes-controlador/1.2`; testes em `db98466`.
 
 ### P-38 — o atuador real ainda não está ligado ao `--controller active`
 
@@ -903,7 +903,10 @@ correspondente adicionado em `Mesclar` (`spec/SessionStore.tla`, commit `b7d8e0a
   no `controlador-*.json` (muda `ParametrosControlador.CAMPOS`, os arquivos de parâmetros e os testes dele); e o
   fornecedor de "nós que responderam na última janela" (última amostra da sonda). Sem isso o item 9 (integração com
   `--controller active`) não roda.
-- **Status:** `ABERTO`, para o Gestor.
+- **Status:** `RESOLVIDO` (05/11, `2bf6cff`). Bloco opcional `"politica"` no `controlador-*.json` (com a origem de
+  cada parâmetro), `LigacaoControlador.pecas` liga `PoliticaPorAssinatura` e `AtuadorPorTipo.bracoB(AtuadorRestInfinispan)`,
+  e os nós que responderam vêm de `SondaTopologia.respondidosNaUltimaAmostra`. Ponta a ponta com servidor falso em
+  `LigacaoControladorAtuadorTest`. A integração I-1..I-5 no *cluster* local espera uma janela H2.
 
 ## Observação de modelagem (não é defeito)
 

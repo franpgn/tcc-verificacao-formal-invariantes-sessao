@@ -405,3 +405,49 @@ Tarefa zero no *cluster* local `w2a` (3 nós, imagem 15.0.21.Final, XML sem *cac
 `t_par` (fim dos conectores depois do 204) ≈ 3,06 s no local, quase todo o atraso de 3 s do `Server.java:208`. O
 instante da primeira recusa Hot Rod não foi medido com cliente Hot Rod: o Hot Rod e a REST usam o mesmo conector da
 porta 11222, e a recusa da saúde é a mesma. A integração I-1..I-5 (item 9) não rodou: depende da ligação do P-38.
+
+### W-2a, segunda rodada: D-C ampliada, esquema 1.2 e ligação (P-36, P-37, P-38) (2026-11-05)
+
+Decisões do coordenador em nome do Gestor (05/11). Pares na ordem do TDD: `db98466` (test) → `4f74c26` (refactor,
+retira `AC_1`/`AC_3`) → `18ab8b9` (feat, `reversao` e 1.2); `7ae4c17` (test) → `2bf6cff` (feat, ligação). Vermelho
+conferido: depois de `4f74c26`, exatamente os três testes de `reversao`/esquema falham
+(`AcaoClusterTiposTest.reversaoNoJsonl`, `ControleArquivosTest.formatoAcao`, `LacoDeControleTest.tDecisaoNs`); o
+`7ae4c17` não compila sem o `2bf6cff`.
+
+| Momento | Surefire (testes/falhas/erros/pulados, arquivos) |
+|---|---|
+| W-2a, primeira rodada (`68dc72e`) | 961/0/0/1, 130 |
+| W-2a, segunda rodada (`2bf6cff`) | 971/0/0/1, 133 |
+
+971 = 961 − 1 (`AtuadorRestInfinispanTest.tiposForaDoBracoB`, os tipos não existem mais) + 6
+(`controle/ParametrosPoliticaArquivoTest`) + 3 (`session/LigacaoControladorAtuadorTest`) + 2
+(`session/RotulosDosNosTest`). `analysis/` não muda (235 OK, 1 *skip*, medido na primeira rodada).
+
+Linhas de testes existentes editadas (D-C ampliada; só rótulo, nenhuma asserção de comportamento retirada):
+
+| Arquivo | Linhas (na base) | O quê |
+|---|---|---|
+| `controle/ExecutorDeAcoesTest` | 31-33 | AC1/AC2/AC3 = AC-2 em `sessions`, `sessions-async`, `canario` (chaves distintas, todas reversíveis) |
+| | 77 | `resumo` imprime `tipo/primeiro cache`, para a ordem LIFO continuar distinguível com um tipo só |
+| | 95, 114, 126, 168, 189, 204, 228, 251, 275, 295, 323, 364, 399 | rótulos nas asserções de texto |
+| | 217 | `x.tipo() == AC_1` → `x.chave().equals(AC1.chave())` |
+| | 274, 394 | comentários |
+| | 411, 413-420 | `DisplayName`; `AC_1`/`AC_3` → `AC_2`/`AC_5` (a chave com alvo diferente passa a usar AC-5) |
+| `controle/LacoDeControleTest` | 195-198, 293-294, 491-492 | lista de operações com `tipo/primeiro cache` |
+| | 423 | `decisoes-controlador/1.2` |
+| `controle/ControleArquivosTest` | 133-135 | `reversao` no fim da lista de campos e `null` no AC-2 |
+| | 138, 141 | `AC-2`; `valor` `null` |
+| `session/ArquiteturaSemAcaoNoClienteTest` | lista do `LigacaoControlador` | + `PoliticaPorAssinatura`, `ParametrosPolitica`, `AtuadorPorTipo` |
+
+Testes do próprio W-2a ajustados: `ExecutorNaoReversivelTest` (resumo novo), `AcaoClusterTiposTest` (`reversao`
+presente e `null`, esquema 1.2), `PoliticaPorAssinaturaTest.parametros` (origem obrigatória),
+`AtuadorRestInfinispanTest` (sai `tiposForaDoBracoB`).
+
+Ponta a ponta (`LigacaoControladorAtuadorTest.pontaAPonta`, 1,8 s): `--controller active` com o bloco `politica`,
+três servidores REST falsos e uma saúde falsa com os mesmos rótulos. A queda do nó 3 leva a R2 e, na janela
+seguinte (nó 3 sem resposta em todas as amostras), a P2: o `POST /rest/v2/container?action=disable-rebalancing` vai
+ao nó 1 (o primeiro que respondeu na última amostra), a leitura de volta confere. Na volta do nó 3, a política
+reverte (`P0:no-voltou`, `enable-rebalancing`). A `meta` traz o atuador `por-tipo(...)`, a política `por-assinatura`
+e `parametros_politica`.
+
+I-1..I-5 (item 9) não rodaram: a noite 1 do *rebaseline* começou e o host entrou em H0 (podman parado).

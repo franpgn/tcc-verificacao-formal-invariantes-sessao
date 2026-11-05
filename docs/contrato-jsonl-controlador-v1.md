@@ -1,14 +1,17 @@
-# Contrato dos JSONL do controlador, versão 1.1 (W-3, B-28.2, 2026-11-04)
+# Contrato dos JSONL do controlador, versão 1.2 (W-3, B-28.2, 2026-11-04; W-2a, B-44.2, 2026-11-05)
 
 Com `--controller shadow|active`, cada repetição grava dois arquivos em `--csv-dir`:
 
 - `observaveis-rep-NNN.jsonl` (esquema `observaveis-controlador/1.1`): o que o laço viu.
-- `decisoes-rep-NNN.jsonl` (esquema `decisoes-controlador/1.1`): o que o núcleo decidiu e o que o executor fez.
+- `decisoes-rep-NNN.jsonl` (esquema `decisoes-controlador/1.2`): o que o núcleo decidiu e o que o executor fez.
 
 **Histórico.** v1 (`b883397`): primeira versão. v1.1 (V-W3, `docs/validacao-w3-2026-11-04.md`, antes de qualquer
 dado): `t_decisao_ns` na linha `decisao`; `linhas_perdidas` nas duas linhas `fim`; `acoes_ja_ativas`,
 `prazo_chamada_ns` e `prazo_encerramento_ns` no `fim` de `decisoes`; resultado `JA_ATIVA`; prazo de encerramento
-derivado; regra do *tick*. Todas as mudanças são aditivas.
+derivado; regra do *tick*. Todas as mudanças são aditivas. **v1.2** (W-2a, só `decisoes`; aprovação do
+coordenador em 05/11, P-36/P-37/P-38): campo `reversao` em toda linha `acao` (`"orquestrador"` na ação não
+reversível, AC-5; `null` na reversível, AC-2); linha nova `politica`; `parametros_politica` na `meta`; tipos de ação
+só `AC-2` e `AC-5` (AC-1 e AC-3 retirados). `observaveis` continua 1.1: nada mudou nele.
 
 Com `--controller off` nenhum dos dois existe. Código: `workload/src/main/java/br/unipampa/tcc/controle/FormatoJsonl.java`
 (formato), `TrilhaJsonl.java` (gravação), `LacoDeControle.java` (ordem das linhas). Teste de contrato:
@@ -48,7 +51,7 @@ ordem em que acontecem; a ordem entre `tick`, `janela` e `decisao` é a do laço
 
 | Campo | Tipo | Conteúdo |
 |---|---|---|
-| `esquema` | texto | `observaveis-controlador/1` ou `decisoes-controlador/1` |
+| `esquema` | texto | `observaveis-controlador/1.1` ou `decisoes-controlador/1.2` |
 | `versao_programa` | texto | `session-workload 0.1.0-SNAPSHOT` |
 | `rep` | inteiro | número da repetição |
 | `modo` | texto | `shadow` ou `active` |
@@ -61,8 +64,9 @@ ordem em que acontecem; a ordem entre `tick`, `janela` e `decisao` é a do laço
 | `tolerancia_ns` | inteiro | L do agregador (100 ms) |
 | `tick_ns` | inteiro | período Δ do *tick* (regra abaixo) |
 | `origem_ns` | inteiro | início da primeira janela = início da medição |
-| `atuador` | texto | `nulo` até o W-2 |
-| `politica` | texto | `nenhuma` até o W-2 |
+| `atuador` | texto | `nulo` sem o bloco `politica` no `--controller-config`; com ele, `por-tipo(AC-2=rest-infinispan,AC-5=rest-infinispan)` (W-2a) |
+| `politica` | texto | `nenhuma` sem o bloco; `por-assinatura` com ele (W-2a) |
+| `parametros_politica` | objeto ou `null` | **só em `decisoes` (1.2).** `k`, `teto_lag_ms`, `t_reb_ns`, `cota_ac5` e `origem` (texto por parâmetro); `null` sem o bloco |
 | `sonda_topologia`, `sonda_defasagem` | booleano | sondas ligadas (`sonda_defasagem` = `false` até o W-4) |
 
 ## Regra do *tick* e prazos (v1.1)
@@ -165,16 +169,32 @@ se nenhum), `severidade`, `sinais`, `param_sha256`.
 Em shadow, a sequência de linhas `acao` é a que active produziria com um atuador que sempre aplica (mesma pilha
 virtual, mesmas reversões em R4 e no encerramento).
 
-**W-2a (B-44.2), pendente de versão do esquema.** (1) Linha `acao` de ação não reversível (AC-5) leva, no fim, o
-campo `reversao` = `"orquestrador"`: a ação não entra na pilha, nunca tem linha `REVERTER` e não é desfeita no R4,
-no encerramento nem pelo gancho. Por enquanto o campo só aparece nessas linhas, contra a regra "nunca campo
-omitido", porque `ControleArquivosTest.formatoAcao` fixa a lista de campos (P-37). (2) Linha nova **`politica`**,
+**W-2a (B-44.2), v1.2.** (1) Toda linha `acao` termina com `reversao`: `"orquestrador"` quando a ação não é
+reversível (AC-5: não entra na pilha, nunca tem linha `REVERTER` e não é desfeita no R4, no encerramento nem pelo
+gancho; o orquestrador recria o *cluster* depois da execução); `null` quando a reversão é a da pilha (AC-2).
+(2) Linha nova **`politica`**,
 gravada pelo laço quando a política registra a escolha (só `PoliticaPorAssinatura`): `tipo`, `t_fim_janela_ns`,
 `t_decisao_ns`, `modo`, `perfil`, `regra`, `politica` (`P0`, `P1`, `P2`), `motivo` (`sem-assinatura`,
 `isolar-suspeito`, `cota-p1-esgotada`, `adiar-rebalanceamento`, `ac2-mantida`, `treb-esgotado`,
 `no-parado-pela-politica`, `vistas-divergentes`, `no-voltou`, `teto-treb`), `reverter` e `aplicar` (listas de
-rótulos de tipo). Em NORMAL sem reversão não há linha. O esquema continua `decisoes-controlador/1.1` até a versão
-ser decidida (um teste fixa a cadeia).
+rótulos de tipo). Em NORMAL sem reversão não há linha.
+
+**Bloco `politica` do `--controller-config` (W-2a, P-38).** Opcional; sem ele o controlador usa o atuador nulo e
+a política `nenhuma`. Com ele, `PoliticaPorAssinatura` e o atuador REST. Campos todos obrigatórios, sem valor
+padrão no código, e cobertos pelo SHA-256 do arquivo (`param_sha256`):
+
+| Campo | Valor | Origem (decisão do Gestor, 05/11) |
+|---|---|---|
+| `k` | calibração | janelas seguidas com S_lag no teto e o mesmo `noSuspeito` para o AC-5; vem da calibração (D-12). Nos arquivos de teste, `"origem": "teste"` |
+| `tetoLagMs` | calibração | o que conta como "não viu" no S_lag; vem da calibração (D-12). Nos arquivos de teste, `"origem": "teste"` |
+| `tRebNs` | 60 000 000 000 | `state-transfer.timeout` do XML (60 000 ms), acima da maior detecção medida (46,8 s no local, B-44.1 §4.1; 46,4 s na VM) |
+| `cotaAc5` | 1 | desenho: uma vez por execução (com `owners=2`, o *cluster* de 3 nós tolera um nó fora) |
+| `origem` | objeto | um texto não vazio para cada um dos quatro campos acima |
+
+**Rótulo dos nós (requisito do W-4).** Toda peça do controlador identifica um nó pelo mesmo rótulo: `host:porta`
+da URL normalizada de `--controller-admin` (`ConsultaSaudeRest.rotulo`, `AtuadorRestInfinispan.rotulo`). O
+`noSuspeito` do S_lag (W-4) **tem de** usar esse rótulo; com outro, o AC-5 nunca acha o alvo (seguro, mas inútil).
+Teste: `RotulosDosNosTest` (sonda × atuador × rótulo canônico).
 
 **`fim`**: `decisoes`, `transicoes`, `perfil_final`, `erros_politica`, `acoes_pedidas`, `acoes_ignoradas`
 (pedido repetido de ação já ativa, sem linha), `acoes_executadas`, `acoes_falhas`, `reversoes`, `reversoes_falhas`,

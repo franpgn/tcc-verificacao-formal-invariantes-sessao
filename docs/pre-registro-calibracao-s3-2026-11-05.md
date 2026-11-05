@@ -19,7 +19,7 @@
 >
 > **Nota de remissão (2026-11-05):** o efeito da regra de memória da §5 está no **complemento 2**
 > (`docs/pre-registro-calibracao-s3-complemento-2-2026-11-05.md`, DT-023): recriar e rodar com o mesmo i e a mesma
-> semente, sem parar a fase.
+> semente; se o *swap* continuar ≥ 1 GiB depois da recriação, a fase para com código próprio (P-56).
 
 ## Siglas
 
@@ -212,7 +212,8 @@ ter liberado a memória e algo fora do *cluster* a está ocupando. O orquestrado
 > **Nota de remissão (2026-11-05, antes de qualquer dado):** o efeito da regra acima está **substituído pelo
 > complemento 2** (`docs/pre-registro-calibracao-s3-complemento-2-2026-11-05.md`, DT-023), alinhado à C-10 aprovada:
 > com *swap* ≥ 1 GiB no portão, o *cluster* é recriado e a execução roda com o mesmo i e a mesma semente, sem recusa e
-> **sem parar a fase** (`--swap-limite-kb 1048576`, W-6c). O texto acima não foi editado.
+> (`--swap-limite-kb 1048576`, W-6c); se o *swap* continuar ≥ 1 GiB depois da recriação, **a fase para** com código
+> próprio (P-56, decidido em 05/11). O texto acima não foi editado.
 
 **Origem medida do 1 GiB** (1 048 576 kB, o `LIM_swap_kB` do supervisor):
 - execução normal: no portão K1, *swap* de 44 240 kB a 404 344 kB (≈ 395 MiB) antes de cada salto (log do supervisor,

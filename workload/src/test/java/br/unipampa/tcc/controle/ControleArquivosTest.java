@@ -84,6 +84,7 @@ class ControleArquivosTest {
         Path p = dir.resolve("sub/x.jsonl");
         TrilhaJsonl t = TrilhaJsonl.abrir(p);
         t.escrever(JSON.createObjectNode().put("tipo", "a").put("n", 1));
+        assertTrue(t.aguardarGravacao(5 * S), "W-2b: a gravadora propria grava a linha");
         assertEquals(1, Files.readAllLines(p).size(), "flush por linha");
         t.escrever(JSON.createObjectNode().put("tipo", "b"));
         t.close();

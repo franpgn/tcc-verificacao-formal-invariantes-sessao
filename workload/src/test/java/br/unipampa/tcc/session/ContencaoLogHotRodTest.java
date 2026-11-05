@@ -43,6 +43,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class ContencaoLogHotRodTest {
 
     static final String MSG_4007 = "ISPN004007: Exception encountered. Retry 1 out of 1";
+    static final String Q7 = ContencaoLogHotRod.ISPN004007;
+    static final String Q5 = ContencaoLogHotRod.ISPN004005;
 
     /** {@code io.netty.channel.AbstractChannel$AnnotatedConnectException} do I-3b (sem depender do Netty). */
     static final class AnnotatedConnectException extends ConnectException {
@@ -130,7 +132,7 @@ class ContencaoLogHotRodTest {
         LogRecord outra = registro("ISPN004005: Error received from the server: x", prazo());
         assertTrue(c.isLoggable(outra));
         assertSame(prazo().getClass(), outra.getThrown().getClass(), "outra mensagem passa intacta");
-        assertEquals(0, c.total());
+        assertEquals(0, c.total(Q7));
 
         LogRecord r1 = registro(MSG_4007, recusada());
         assertTrue(c.isLoggable(r1));
@@ -152,16 +154,16 @@ class ContencaoLogHotRodTest {
         LogRecord p1 = registro(MSG_4007, prazo());
         assertTrue(c.isLoggable(p1));
         assertTrue(p1.getThrown() != null);
-        assertEquals(13, c.total());
-        assertEquals(2, c.inteiras());
-        assertEquals(11, c.contidas());
+        assertEquals(13, c.total(Q7));
+        assertEquals(2, c.inteiras(Q7));
+        assertEquals(11, c.contidas(Q7));
     }
 
     @Test
     @DisplayName("linha do stdout: total, inteiras, contidas e uma parte por (no, motivo) com n e o primeiro e o ultimo instante, em ordem de n")
     void linhaResumo() {
         ContencaoLogHotRod c = new ContencaoLogHotRod();
-        assertEquals("Hot Rod ISPN004007: total=0 inteiras=0 contidas=0 chaves=0", c.linhaResumo());
+        assertEquals("Hot Rod ISPN004007: total=0 inteiras=0 contidas=0 chaves=0", c.linhaResumo(Q7));
         Instant t0 = Instant.parse("2026-11-05T10:19:20.123456789Z");
         for (int i = 0; i < 3; i++) {
             LogRecord r = registro(MSG_4007, recusada());
@@ -176,9 +178,9 @@ class ContencaoLogHotRodTest {
                 + " | no=127.0.0.1:12613 motivo=AnnotatedConnectException:ConnectException n=3 t_primeira_ns=" + ns0
                 + " t_ultima_ns=" + (ns0 + 2_000_000_000L)
                 + " | no=127.0.0.1:12613 motivo=SocketTimeoutException n=1 t_primeira_ns=" + (ns0 + 500_000_000L)
-                + " t_ultima_ns=" + (ns0 + 500_000_000L), c.linhaResumo());
+                + " t_ultima_ns=" + (ns0 + 500_000_000L), c.linhaResumo(Q7));
         c.reiniciar();
-        assertEquals("Hot Rod ISPN004007: total=0 inteiras=0 contidas=0 chaves=0", c.linhaResumo());
+        assertEquals("Hot Rod ISPN004007: total=0 inteiras=0 contidas=0 chaves=0", c.linhaResumo(Q7));
         LogRecord depois = registro(MSG_4007, recusada());
         assertTrue(c.isLoggable(depois) && depois.getThrown() != null, "depois de reiniciar a primeira sai inteira de novo");
     }
@@ -215,7 +217,7 @@ class ContencaoLogHotRodTest {
         for (Thread t : ts) {
             t.join(10_000);
         }
-        assertEquals(8000, c.total());
+        assertEquals(8000, c.total(Q7));
         assertEquals(2, passaram.get());
         assertEquals(1, inteiras.get());
     }
@@ -227,7 +229,7 @@ class ContencaoLogHotRodTest {
         Filter nega = r -> false;
         c.encadear(nega);
         assertFalse(c.isLoggable(registro(MSG_4007, recusada())));
-        assertEquals(0, c.total(), "o que o filtro anterior recusa nao e contado");
+        assertEquals(0, c.total(Q7), "o que o filtro anterior recusa nao e contado");
         assertThrows(IllegalArgumentException.class, () -> c.encadear(c));
     }
 
@@ -263,11 +265,122 @@ class ContencaoLogHotRodTest {
             for (int i = 0; i < 5; i++) {
                 org.infinispan.client.hotrod.logging.Log.HOTROD.exceptionAndNoRetriesLeft(1, 1, prazo());
             }
-            assertEquals(5, c.total());
+            assertEquals(5, c.total(Q7));
             assertEquals(2, publicados.size(), "uma inteira e um aviso: " + publicados.size());
             assertTrue(publicados.get(0).getMessage().startsWith(MSG_4007), publicados.get(0).getMessage());
             assertTrue(publicados.get(0).getThrown() instanceof SocketTimeoutException);
             assertNull(publicados.get(1).getThrown());
+        } finally {
+            jul.removeHandler(captura);
+            jul.setUseParentHandlers(paisAntes);
+            c.reiniciar();
+        }
+    }
+
+    // ------------------------------------------------------------------ ISPN004005 (decisao 2 do coordenador, P-46)
+
+    /** Linhas reais do stderr do shadow do I-3b (a chave do 306 encurtada so no meio). */
+    static final String MSG_4005_306 = "ISPN004005: Error received from the server:"
+            + " org.infinispan.partitionhandling.AvailabilityException: ISPN000306: Key 'WrappedByteArray[ACED0005\\t0015"
+            + "\\l\\a\\g\\:\\1\\2\\7\\.\\0\\.\\0\\.\\1\\:\\1\\2\\6\\1\\2\\#\\2 (28 bytes)]' is not available. Not all owners"
+            + " are in this partition";
+    static final String MSG_4005_476 = "ISPN004005: Error received from the server:"
+            + " org.infinispan.commons.TimeoutException: ISPN000476: Timed out waiting for responses for request 211 from"
+            + " isn2-25557,isn1-56780 after 14.25 seconds";
+
+    static LogRecord aviso(String msg) {
+        LogRecord r = new LogRecord(Level.WARNING, msg);
+        r.setLoggerName(ContencaoLogHotRod.LOGGER);
+        return r;
+    }
+
+    @Test
+    @DisplayName("ISPN004005: chave (no, codigo do servidor); a mensagem do cliente nao traz o endereco do servidor, e a chave lag:h:p nao conta como no")
+    void chaveDo4005() {
+        assertEquals(new ContencaoLogHotRod.Chave(ContencaoLogHotRod.NO_DESCONHECIDO, "ISPN000306"),
+                ContencaoLogHotRod.chave4005(MSG_4005_306));
+        assertEquals(new ContencaoLogHotRod.Chave(ContencaoLogHotRod.NO_DESCONHECIDO, "ISPN000476"),
+                ContencaoLogHotRod.chave4005(MSG_4005_476));
+        assertEquals(new ContencaoLogHotRod.Chave("127.0.0.1:12613", "ISPN000299"), ContencaoLogHotRod.chave4005(
+                "ISPN004005: Error received from the server: x.Y: ISPN000299: falha em /127.0.0.1:12613"));
+        assertEquals(new ContencaoLogHotRod.Chave(ContencaoLogHotRod.NO_DESCONHECIDO, "IllegalStateException"),
+                ContencaoLogHotRod.chave4005("ISPN004005: Error received from the server: java.lang.IllegalStateException: x"));
+        assertEquals(new ContencaoLogHotRod.Chave(ContencaoLogHotRod.NO_DESCONHECIDO, ContencaoLogHotRod.SEM_CODIGO),
+                ContencaoLogHotRod.chave4005("ISPN004005: Error received from the server: algo"));
+    }
+
+    @Test
+    @DisplayName("ISPN004005: mesma regra (1a inteira, 2a aviso, demais contadas), contagem separada da do ISPN004007")
+    void filtro4005() {
+        ContencaoLogHotRod c = new ContencaoLogHotRod();
+        LogRecord r1 = aviso(MSG_4005_306);
+        assertTrue(c.isLoggable(r1));
+        assertEquals(MSG_4005_306, r1.getMessage(), "a primeira sai inteira");
+        LogRecord r2 = aviso(MSG_4005_306);
+        assertTrue(c.isLoggable(r2));
+        assertTrue(r2.getMessage().startsWith("ISPN004005 [W-2b]") && r2.getMessage().contains("motivo=ISPN000306")
+                && r2.getMessage().contains("Hot Rod ISPN004005:"), r2.getMessage());
+        for (int i = 0; i < 20; i++) {
+            assertFalse(c.isLoggable(aviso(MSG_4005_306)));
+        }
+        assertTrue(c.isLoggable(aviso(MSG_4005_476)), "outro codigo: a primeira sai inteira");
+        assertTrue(c.isLoggable(registro(MSG_4007, recusada())), "o ISPN004007 conta a parte");
+        assertEquals(23, c.total(Q5));
+        assertEquals(2, c.inteiras(Q5));
+        assertEquals(21, c.contidas(Q5));
+        assertEquals(1, c.total(Q7));
+        assertTrue(c.isLoggable(aviso("ISPN004006: outra mensagem")), "mensagem fora da lista passa intacta");
+        assertEquals(List.of("ISPN004007", "ISPN004005"), ContencaoLogHotRod.CODIGOS);
+    }
+
+    @Test
+    @DisplayName("linhasResumo: uma linha por codigo contido, ISPN004007 e depois ISPN004005, no mesmo formato")
+    void linhasResumo() {
+        ContencaoLogHotRod c = new ContencaoLogHotRod();
+        Instant t0 = Instant.parse("2026-11-05T10:33:26Z");
+        LogRecord r = aviso(MSG_4005_306);
+        r.setInstant(t0);
+        c.isLoggable(r);
+        long ns0 = t0.getEpochSecond() * 1_000_000_000L;
+        assertEquals("Hot Rod ISPN004007: total=0 inteiras=0 contidas=0 chaves=0" + System.lineSeparator()
+                + "Hot Rod ISPN004005: total=1 inteiras=1 contidas=0 chaves=1 | no=desconhecido motivo=ISPN000306 n=1"
+                + " t_primeira_ns=" + ns0 + " t_ultima_ns=" + ns0, c.linhasResumo());
+        assertEquals(c.linhaResumo(Q7) + System.lineSeparator() + c.linhaResumo(Q5), c.linhasResumo());
+    }
+
+    @Test
+    @DisplayName("caminho real do ISPN004005: Log.HOTROD.errorFromServer (WARN, mesmo logger org.infinispan.HOTROD) passa pelo filtro")
+    void caminhoReal4005() {
+        ContencaoLogHotRod c = ContencaoLogHotRod.instalar();
+        Logger jul = Logger.getLogger(ContencaoLogHotRod.LOGGER);
+        List<LogRecord> publicados = Collections.synchronizedList(new ArrayList<>());
+        Handler captura = new Handler() {
+            @Override
+            public void publish(LogRecord r) {
+                publicados.add(r);
+            }
+
+            @Override
+            public void flush() {
+            }
+
+            @Override
+            public void close() {
+            }
+        };
+        boolean paisAntes = jul.getUseParentHandlers();
+        jul.addHandler(captura);
+        jul.setUseParentHandlers(false);
+        try {
+            c.reiniciar();
+            String doServidor = MSG_4005_306.substring("ISPN004005: Error received from the server: ".length());
+            for (int i = 0; i < 5; i++) {
+                org.infinispan.client.hotrod.logging.Log.HOTROD.errorFromServer(doServidor);
+            }
+            assertEquals(5, c.total(Q5));
+            assertEquals(2, publicados.size(), "uma inteira e um aviso: " + publicados.size());
+            assertEquals(MSG_4005_306, publicados.get(0).getMessage());
+            assertTrue(publicados.get(1).getMessage().startsWith("ISPN004005 [W-2b]"));
         } finally {
             jul.removeHandler(captura);
             jul.setUseParentHandlers(paisAntes);
@@ -283,7 +396,7 @@ class ContencaoLogHotRodTest {
      * {@code LacoDeRepeticoesTest} exige (chamada direta, sem try).
      */
     @Test
-    @DisplayName("WorkloadMain.executarRepeticao instala e zera a contencao antes do try do rcm e imprime a linha Hot Rod ISPN004007 no finally dele")
+    @DisplayName("WorkloadMain.executarRepeticao instala e zera a contencao antes do try do rcm e imprime as linhas Hot Rod ISPN004007 e ISPN004005 no finally dele")
     void ligacaoNaRepeticao() throws IOException {
         String fonte = DetectorFonte.semComentarios(Files.readString(NomesDeCacheSoNoResolvedorTest.raizMain()
                 .resolve("java/br/unipampa/tcc/session/WorkloadMain.java"), StandardCharsets.UTF_8)
@@ -297,11 +410,11 @@ class ContencaoLogHotRodTest {
         assertTrue(instala >= 0 && zera > instala && tryRcm > zera, "instalar e reiniciar antes do try do rcm");
         // o finally fecha o try do rcm (indentacao de 8) e a linha de resumo e o ultimo statement do metodo
         int fin = c.lastIndexOf("\n        } finally {");
-        String resumo = "System.out.println(contencao.linhaResumo());";
+        String resumo = "System.out.println(contencao.linhasResumo());";
         int imp = c.indexOf(resumo, Math.max(fin, 0));
         assertTrue(fin > tryRcm && imp > fin, "finally do try do rcm com a linha de resumo");
         assertTrue(c.substring(imp + resumo.length()).replace("}", "").isBlank(),
                 "a linha de resumo e o ultimo statement: " + c.substring(imp));
-        assertEquals(1, c.split("linhaResumo\\(\\)", -1).length - 1, "uma linha de resumo por repeticao");
+        assertEquals(1, c.split("linhasResumo\\(\\)", -1).length - 1, "um resumo por repeticao");
     }
 }

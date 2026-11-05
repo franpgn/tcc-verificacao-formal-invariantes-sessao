@@ -34,12 +34,14 @@ import java.util.Set;
  * @param estavelNs   T_estavel sem topologia anomala para R4
  * @param holdViolNs  T_hold_viol desde a ultima violacao para R4
  * @param sha256      SHA-256 (hex minusculo) do arquivo de origem; {@code null} para {@link #padrao()}
+ * @param politica    W-2a (P-38): parametros da {@link PoliticaPorAssinatura}, do bloco opcional
+ *                    {@code "politica"} do arquivo; {@code null} sem o bloco (politica {@code nenhuma}, atuador nulo)
  */
 public record ParametrosControlador(String versao, long wNs, int nLat, int nErr,
                                     double thetaLatIn, double thetaLatOut,
                                     double thetaErrIn, double thetaErrOut,
                                     int k, int m, long cooldownNs, long estavelNs, long holdViolNs,
-                                    String sha256) {
+                                    String sha256, ParametrosPolitica politica) {
 
     private static final long S = 1_000_000_000L;
 
@@ -49,6 +51,9 @@ public record ParametrosControlador(String versao, long wNs, int nLat, int nErr,
     private static final List<String> CAMPOS = List.of("versao", "wNs", "nLat", "nErr",
             "thetaLatIn", "thetaLatOut", "thetaErrIn", "thetaErrOut",
             "k", "m", "cooldownNs", "estavelNs", "holdViolNs");
+
+    /** W-2a (P-38): bloco opcional com os parametros da politica de acao ({@link ParametrosPolitica#deJson}). */
+    public static final String CAMPO_POLITICA = "politica";
 
     public ParametrosControlador {
         if (versao == null) {
@@ -82,6 +87,14 @@ public record ParametrosControlador(String versao, long wNs, int nLat, int nErr,
         naoNegativo("holdViolNs", holdViolNs);
     }
 
+    /** Construtor de antes do W-2a: sem parametros de politica. */
+    public ParametrosControlador(String versao, long wNs, int nLat, int nErr, double thetaLatIn, double thetaLatOut,
+                                 double thetaErrIn, double thetaErrOut, int k, int m, long cooldownNs,
+                                 long estavelNs, long holdViolNs, String sha256) {
+        this(versao, wNs, nLat, nErr, thetaLatIn, thetaLatOut, thetaErrIn, thetaErrOut, k, m, cooldownNs, estavelNs,
+                holdViolNs, sha256, null);
+    }
+
     /** Valores provisorios da secao 3.5 do plano de 2026-10-22 (a calibrar com a T-F). */
     public static ParametrosControlador padrao() {
         return new ParametrosControlador(VERSAO_PADRAO, 5 * S, 100, 50,
@@ -91,7 +104,8 @@ public record ParametrosControlador(String versao, long wNs, int nLat, int nErr,
 
     /**
      * Le {@code controlador-<nome>.json}. Exige exatamente os campos de {@link #CAMPOS} (sem
-     * desconhecidos, sem {@code sha256}), com tipos estritos; calcula o SHA-256 dos bytes lidos.
+     * desconhecidos, sem {@code sha256}), com tipos estritos, mais o bloco opcional {@value #CAMPO_POLITICA}
+     * (W-2a); calcula o SHA-256 dos bytes lidos, que cobre tambem o bloco.
      *
      * @throws IOException              falha de leitura do arquivo
      * @throws IllegalArgumentException conteudo invalido (JSON malformado, campo ausente ou
@@ -114,6 +128,7 @@ public record ParametrosControlador(String versao, long wNs, int nLat, int nErr,
         }
         List<String> desconhecidos = new ArrayList<>(presentes);
         desconhecidos.removeAll(CAMPOS);
+        desconhecidos.remove(CAMPO_POLITICA);
         if (!desconhecidos.isEmpty()) {
             throw new IllegalArgumentException("campos desconhecidos em " + arquivo + ": " + desconhecidos);
         }
@@ -133,7 +148,8 @@ public record ParametrosControlador(String versao, long wNs, int nLat, int nErr,
                 inteiro(raiz, "k"), inteiro(raiz, "m"),
                 inteiroLongo(raiz, "cooldownNs"), inteiroLongo(raiz, "estavelNs"),
                 inteiroLongo(raiz, "holdViolNs"),
-                sha256(bytes));
+                sha256(bytes),
+                presentes.contains(CAMPO_POLITICA) ? ParametrosPolitica.deJson(raiz.get(CAMPO_POLITICA)) : null);
     }
 
     private static long inteiroLongo(JsonNode raiz, String campo) {

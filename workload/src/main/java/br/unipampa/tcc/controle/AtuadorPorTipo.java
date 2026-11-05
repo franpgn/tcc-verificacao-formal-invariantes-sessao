@@ -33,6 +33,21 @@ public final class AtuadorPorTipo implements AtuadorCluster {
         this.nome = j.toString();
     }
 
+    /**
+     * Braco B do W-2a: AC-2 e AC-5 no mesmo adaptador (o REST). Se a AC-6 entrar, ganha a sua entrada aqui.
+     */
+    public static AtuadorPorTipo bracoB(AtuadorCluster rest) {
+        Map<AcaoCluster.Tipo, AtuadorCluster> m = new EnumMap<>(AcaoCluster.Tipo.class);
+        m.put(AcaoCluster.Tipo.AC_2, rest);
+        m.put(AcaoCluster.Tipo.AC_5, rest);
+        return new AtuadorPorTipo(m);
+    }
+
+    /** Nome de {@link #bracoB} para um adaptador com este nome (o {@code --dry-run} usa sem criar o adaptador). */
+    public static String nomeBracoB(String nomeDoAdaptador) {
+        return "por-tipo(AC-2=" + nomeDoAdaptador + ",AC-5=" + nomeDoAdaptador + ")";
+    }
+
     @Override
     public String nome() {
         return nome;

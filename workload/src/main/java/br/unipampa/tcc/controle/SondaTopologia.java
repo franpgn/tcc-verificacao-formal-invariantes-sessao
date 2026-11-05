@@ -1,11 +1,14 @@
 package br.unipampa.tcc.controle;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -64,6 +67,8 @@ public final class SondaTopologia implements AutoCloseable, FonteDeTopologia {
 
     /** Buffer de amostras ainda nao consumidas; protegido por {@code this}. */
     private final List<AmostraTopologia> pendentes = new ArrayList<>();
+    /** Rotulos dos nos que responderam na amostra mais recente (W-2a, P-38); vazio antes da primeira. */
+    private volatile Set<String> respondidos = Set.of();
     private long ultimoFimNs = Long.MIN_VALUE;
     private boolean houveResumo;
     private long atrasadas;
@@ -280,6 +285,13 @@ public final class SondaTopologia implements AutoCloseable, FonteDeTopologia {
     }
 
     private void entregar(AmostraTopologia a) {
+        Set<String> r = new LinkedHashSet<>();
+        for (ResultadoNo n : a.porNo()) {
+            if (n.respondeu()) {
+                r.add(n.no());
+            }
+        }
+        respondidos = Collections.unmodifiableSet(r);
         synchronized (this) {
             pendentes.add(a);
         }
@@ -450,6 +462,14 @@ public final class SondaTopologia implements AutoCloseable, FonteDeTopologia {
         if (interrompido) {
             Thread.currentThread().interrupt();
         }
+    }
+
+    /**
+     * W-2a (P-38): rotulos dos nos que responderam a REST na amostra mais recente (os "nos que responderam na
+     * ultima janela" do atuador). Vazio antes da primeira rodada. Copia imutavel; leitura sem trava.
+     */
+    public Set<String> respondidosNaUltimaAmostra() {
+        return respondidos;
     }
 
     /** Rodadas concluidas e entregues. */

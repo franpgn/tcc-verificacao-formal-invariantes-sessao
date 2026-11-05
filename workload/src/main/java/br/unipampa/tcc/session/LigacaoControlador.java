@@ -4,6 +4,7 @@ import br.unipampa.tcc.controle.AgregadorDeJanela;
 import br.unipampa.tcc.controle.ArquivoReferencia;
 import br.unipampa.tcc.controle.AtuadorCluster;
 import br.unipampa.tcc.controle.AtuadorNulo;
+import br.unipampa.tcc.controle.AtuadorPorTipo;
 import br.unipampa.tcc.controle.ClasseViolacao;
 import br.unipampa.tcc.controle.Controlador;
 import br.unipampa.tcc.controle.EventoOperacao;
@@ -18,7 +19,9 @@ import br.unipampa.tcc.controle.LacoDeControle;
 import br.unipampa.tcc.controle.MetaExecucao;
 import br.unipampa.tcc.controle.ModoAtuacao;
 import br.unipampa.tcc.controle.ParametrosControlador;
+import br.unipampa.tcc.controle.ParametrosPolitica;
 import br.unipampa.tcc.controle.PoliticaDeAcao;
+import br.unipampa.tcc.controle.PoliticaPorAssinatura;
 import br.unipampa.tcc.controle.Referencia;
 import br.unipampa.tcc.controle.SondaTopologia;
 import br.unipampa.tcc.controle.TrilhaJsonl;
@@ -29,8 +32,11 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Supplier;
 
 /**
  * W-3 (B-28.2): liga o laco de controle do <i>cluster</i> ({@link LacoDeControle}) ao programa de carga.
@@ -41,13 +47,19 @@ import java.util.concurrent.atomic.AtomicLong;
  *       e normaliza {@code --controller-admin}. Erro de conteudo = {@link IllegalArgumentException} (exit 2).</li>
  *   <li>{@link #abrir}: monta o agregador (origem = inicio da medicao), o nucleo, a sonda de topologia
  *       (REST, {@code --controller-admin}, caches do perfil, nos esperados = itens de {@code --servers}),
- *       o executor de acoes (atuador nulo e politica {@code nenhuma} ate o W-2) e os dois JSONL em
+ *       o executor de acoes e os dois JSONL em
  *       {@code --csv-dir}; inicia a sonda e a thread do laco.</li>
  *   <li>{@link #ouvinteDeEvento()} e {@link #ouvinteDeViolacao()}: os ganchos de {@link SessionOps} e
  *       {@link InvariantAuditor}. As violacoes sao enfileiradas com o instante em que foram vistas e so
  *       classificadas na thread do laco ({@link #fonteDeViolacoes()}), com o {@link RastroCliente}.</li>
  *   <li>{@link #close()}: no fim da carga, antes da convergencia; desfaz toda acao.</li>
  * </ul>
+ *
+ * <p><b>W-2a (P-38).</b> Sem o bloco {@code "politica"} no {@code controlador-*.json}: atuador nulo e politica
+ * {@code nenhuma}, como no W-3. Com o bloco: {@link PoliticaPorAssinatura} com esses parametros e os caches do
+ * modo, e {@link AtuadorPorTipo#bracoB} sobre o {@link AtuadorRestInfinispan} (Digest, {@code --controller-admin});
+ * os "nos que responderam na ultima janela" do atuador sao os da ultima amostra da sonda de topologia. Em shadow o
+ * atuador nunca e chamado.</p>
  */
 final class LigacaoControlador implements AutoCloseable, WorkloadMain.ControleDaCarga {
 
@@ -59,6 +71,8 @@ final class LigacaoControlador implements AutoCloseable, WorkloadMain.ControleDa
     static final long PRAZO_SONDA_NS = 1_500_000_000L;
     /** Prazo de cada chamada ao atuador: 2 s, o mesmo {@code curl -m} da sonda de saude (secao 4.4.2). */
     static final long PRAZO_CHAMADA_NS = 2_000_000_000L;
+    /** Intervalo entre as consultas de saude do alvo do AC-5 (W-2a). */
+    static final long PASSO_SAUDE_AC5_NS = 100_000_000L;
     /** Divisor de W no tick (V-B26.1 secao 5.9: 1 s com W = 5 s). */
     static final int DIVISOR_TICK = 5;
 
@@ -84,14 +98,23 @@ final class LigacaoControlador implements AutoCloseable, WorkloadMain.ControleDa
     /**
      * Pecas substituiveis (testes e W-2).
      *
-     * @param saude {@code null} = sem sonda de topologia (topologia indisponivel, sinal neutro)
+     * @param saude       {@code null} = sem sonda de topologia (topologia indisponivel, sinal neutro)
+     * @param respondidos W-2a: onde {@link #abrir} pendura a ultima amostra da sonda para o atuador REST, ou
+     *                    {@code null} (atuador que nao precisa dela)
      */
     record Pecas(FonteDeSaude saude, AtuadorCluster atuador, PoliticaDeAcao politica, ExecutorDeAcoes.Gancho gancho,
-                 long tickNs, long periodoSondaNs, long prazoSondaNs) {
+                 long tickNs, long periodoSondaNs, long prazoSondaNs,
+                 AtomicReference<Supplier<Set<String>>> respondidos) {
         Pecas {
             Objects.requireNonNull(atuador, "atuador");
             Objects.requireNonNull(politica, "politica");
             Objects.requireNonNull(gancho, "gancho");
+        }
+
+        /** Pecas do W-3 (sem fornecedor da ultima amostra). */
+        Pecas(FonteDeSaude saude, AtuadorCluster atuador, PoliticaDeAcao politica, ExecutorDeAcoes.Gancho gancho,
+              long tickNs, long periodoSondaNs, long prazoSondaNs) {
+            this(saude, atuador, politica, gancho, tickNs, periodoSondaNs, prazoSondaNs, null);
         }
     }
 
@@ -197,17 +220,44 @@ final class LigacaoControlador implements AutoCloseable, WorkloadMain.ControleDa
                 + (c.referencia() == null ? "nenhuma (latencia indeterminada)"
                         : c.arquivoReferencia() + " sha256=" + c.referencia().sha256()
                         + " operacoes=" + c.referencia().referencia().p99PorOperacao().keySet()) + n
-                + "dry-run, atuador=" + new AtuadorNulo().nome() + " politica=" + PoliticaDeAcao.NENHUMA.nome()
+                + "dry-run, atuador=" + (p.politica() == null ? new AtuadorNulo().nome()
+                        : AtuadorPorTipo.nomeBracoB(AtuadorRestInfinispan.NOME))
+                + " politica=" + (p.politica() == null ? PoliticaDeAcao.NENHUMA.nome() : "por-assinatura")
                 + " tick_ns=" + periodoTick(p.wNs(), PERIODO_SONDA_NS) + " sonda_periodo_ns=" + PERIODO_SONDA_NS
-                + " prazo_chamada_ns=" + PRAZO_CHAMADA_NS + " prazo_encerramento=(A+1)x" + PRAZO_CHAMADA_NS;
+                + " prazo_chamada_ns=" + PRAZO_CHAMADA_NS + " prazo_encerramento=(A+1)x" + PRAZO_CHAMADA_NS
+                + (p.politica() == null ? "" : n + "dry-run, " + textoPolitica(p.politica()));
     }
 
-    /** Pecas de producao ate o W-2: sonda REST, atuador nulo, politica nenhuma, gancho da JVM. */
+    /** Parametros da politica (W-2a), com a origem declarada de cada um. */
+    static String textoPolitica(ParametrosPolitica q) {
+        return "politica k=" + q.k() + " tetoLagMs=" + q.tetoLagMs() + " tRebNs=" + q.tRebNs()
+                + " cotaAc5=" + q.cotaAc5() + " origem=" + q.origem();
+    }
+
+    /** Pecas de producao: sonda REST, gancho da JVM e, com o bloco {@code politica}, o atuador REST (W-2a). */
     static Pecas pecasPadrao(Configuracao c, Cli cli) {
-        return new Pecas(new ConsultaSaudeRest(c.urlsAdmin(), cli.usuario, cli.senha), new AtuadorNulo(),
-                PoliticaDeAcao.NENHUMA, ExecutorDeAcoes.Gancho.jvm(),
-                periodoTick(c.parametros().wNs(), PERIODO_SONDA_NS),
-                PERIODO_SONDA_NS, PRAZO_SONDA_NS);
+        return pecas(c, cli, new ConsultaSaudeRest(c.urlsAdmin(), cli.usuario, cli.senha), ExecutorDeAcoes.Gancho.jvm(),
+                periodoTick(c.parametros().wNs(), PERIODO_SONDA_NS), PERIODO_SONDA_NS, PRAZO_SONDA_NS);
+    }
+
+    /**
+     * W-2a (P-38): monta as pecas para uma fonte de saude dada. Sem o bloco {@code politica}: atuador nulo e
+     * politica {@code nenhuma}. Com o bloco: {@link PoliticaPorAssinatura} sobre os caches do modo e
+     * {@link AtuadorPorTipo#bracoB} sobre o {@link AtuadorRestInfinispan}, cujos "nos que responderam" vem da
+     * ultima amostra da sonda (ligada em {@link #abrir}).
+     */
+    static Pecas pecas(Configuracao c, Cli cli, FonteDeSaude saude, ExecutorDeAcoes.Gancho gancho, long tickNs,
+                       long periodoSondaNs, long prazoSondaNs) {
+        ParametrosPolitica q = c.parametros().politica();
+        if (q == null) {
+            return new Pecas(saude, new AtuadorNulo(), PoliticaDeAcao.NENHUMA, gancho, tickNs, periodoSondaNs,
+                    prazoSondaNs);
+        }
+        AtomicReference<Supplier<Set<String>>> respondidos = new AtomicReference<>(Set::of);
+        AtuadorRestInfinispan rest = new AtuadorRestInfinispan(c.urlsAdmin(),
+                new ClienteAdminRest(cli.usuario, cli.senha), () -> respondidos.get().get(), PASSO_SAUDE_AC5_NS);
+        return new Pecas(saude, AtuadorPorTipo.bracoB(rest), new PoliticaPorAssinatura(q, cli.replicacao.caches()),
+                gancho, tickNs, periodoSondaNs, prazoSondaNs, respondidos);
     }
 
     // ------------------------------------------------------------------ abertura
@@ -234,6 +284,9 @@ final class LigacaoControlador implements AutoCloseable, WorkloadMain.ControleDa
                     pecas.periodoSondaNs(), pecas.prazoSondaNs(), tempo,
                     a -> obs.escrever(FormatoJsonl.topologia(a)));
             topologia = sonda; // W-2a: o laco usa resumirComNosAte (estado por no)
+            if (pecas.respondidos() != null) {
+                pecas.respondidos().set(sonda::respondidosNaUltimaAmostra);
+            }
         }
         ExecutorDeAcoes executor = new ExecutorDeAcoes(c.modo(), pecas.atuador(), PRAZO_CHAMADA_NS,
                 tempo, r -> dec.escrever(FormatoJsonl.acao(r)), pecas.gancho());

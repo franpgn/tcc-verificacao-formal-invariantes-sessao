@@ -67,6 +67,21 @@ public final class FormatoJsonl {
         o.put("politica", m.politica());
         o.put("sonda_topologia", m.sondaTopologia());
         o.put("sonda_defasagem", m.sondaDefasagem());
+        if (ESQUEMA_DECISOES.equals(esquema)) {
+            // decisoes 1.2 (W-2a, P-38): parametros da politica de acao, null sem o bloco "politica"
+            ParametrosPolitica pp = p.politica();
+            if (pp == null) {
+                o.putNull("parametros_politica");
+            } else {
+                ObjectNode q = o.putObject("parametros_politica");
+                q.put("k", pp.k());
+                q.put("teto_lag_ms", pp.tetoLagMs());
+                q.put("t_reb_ns", pp.tRebNs());
+                q.put("cota_ac5", pp.cotaAc5());
+                ObjectNode org = q.putObject("origem");
+                pp.origem().forEach(org::put);
+            }
+        }
         return o;
     }
 

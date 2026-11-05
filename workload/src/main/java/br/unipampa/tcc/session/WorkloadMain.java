@@ -663,8 +663,10 @@ public final class WorkloadMain {
             Marcadores marcadores, long fimCargaNs, Long fimControleNs, int rep) throws java.io.IOException {
         RemoteCache<String, SessionState> sessoesTopologia = rcm.getCache(cli.replicacao.cacheSessoes());
         int esperados = leitores.leitoresSessao().size();
+        // W-2b (P-45): a saude vem pelo HTTP em memoria (Digest), sem um processo curl por rodada
+        ClienteAdminRest clienteSaude = new ClienteAdminRest(cli.usuario, cli.senha);
         ConvergenciaLoop.SondaCluster sonda = () -> {
-            HealthRest.Estado h = HealthRest.consultar(cli.restUrl, cli.usuario, cli.senha);
+            HealthRest.Estado h = HealthRest.consultar(clienteSaude, cli.restUrl, HealthRest.PRAZO_CONSULTA_NS);
             int topologia = sessoesTopologia.getCacheTopologyInfo().getSegmentsPerServer().size();
             return new ConvergenciaLoop.EstadoCluster(Math.min(h.numeroDeNos(), topologia),
                     h.healthy(cli.replicacao.cacheSessoes()), h.healthy(cli.replicacao.cacheContadores()));

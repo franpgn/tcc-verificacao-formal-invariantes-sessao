@@ -238,6 +238,28 @@ conferir_cabecalho() {
     [[ "${cab}" == "${COLS}" ]] || { echo "Erro: cabecalho de $1 nao e o de campanha_s3_matriz.py ('${cab}')" >&2; exit 4; }
 }
 dir_exec() { printf '%s/exec-%04d-%s-%s' "${SAIDA}" "$1" "$2" "$3"; }
+conferir_pareamento() {  # A e B de cada bloco: os dois bracos, a mesma celula e a mesma semente (plano de execucao 5.2)
+    local out
+    out="$(awk -F'\t' '
+        NR == 1 {next}
+        $9 == "-" { if ($10 != "A") print "linha " NR ": braco " $10 " sem bloco"; next }
+        { k = $9; n[k]++; b[k] = b[k] $10
+          c[k] = (k in c && c[k] != $5) ? "DIFERENTE" : $5
+          s[k] = (k in s && s[k] != $12) ? "DIFERENTE" : $12 }
+        END { for (k in n)
+                  if (n[k] != 2 || (b[k] != "AB" && b[k] != "BA") || c[k] == "DIFERENTE" || s[k] == "DIFERENTE")
+                      print "bloco " k ": " n[k] " linha(s), bracos " b[k] ", celula " c[k] ", semente " s[k] }' "$1")"
+    if [[ -n "${out}" ]]; then
+        echo "Erro: pareamento quebrado em $1 (plano 5.2: um A e um B por bloco, mesma celula e mesma semente): ${out//$'\n'/; }" >&2
+        exit 4
+    fi
+}
+tirar_nul() {  # o podman machine ssh do Git Bash grava o known_hosts num arquivo NUL no diretorio corrente: nao e bruto
+    local x
+    for x in "$@"; do
+        if [[ -f "${x}/NUL" ]]; then rm -f "${x}/NUL"; log "AVISO: arquivo NUL (artefato do podman machine ssh) removido de ${x}"; fi
+    done
+}
 
 K_ENC=0
 montar_cmd() {  # montar_cmd <modo> <seed> <csv-dir> <controlador> <marcadores> -> CMD e CMD_MASC
@@ -303,6 +325,7 @@ if [[ "${DRY_RUN}" -eq 1 ]]; then
     else
         ler_fila "${MATRIZ}" "${FASE}"
     fi
+    [[ ! -f "${ARQ_FILA}" ]] || conferir_pareamento "${ARQ_FILA}"
     echo "DRY-RUN fase=${FASE} matriz=${MATRIZ} (SHA-256 confere) parametros=${PARAMS} ($(grep -c . <<< "$(printf '%s\n' "${!P[@]}")") numeros, todos com origem) controlador=${CTRL}"
     imprimir_plano
     echo "DRY-RUN: nada executado (sem java, podman, sudo, tty)"
@@ -351,6 +374,7 @@ else
     ler_fila "${MATRIZ}" "${FASE}"
 fi
 [[ "${#FILA[@]}" -gt 0 ]] || { echo "Erro: nenhuma execucao da fase ${FASE} em ${ARQ_FILA}" >&2; exit 4; }
+conferir_pareamento "${ARQ_FILA}"
 TEM_B=0; TEM_REDE=0
 for l in "${FILA[@]}"; do
     read -r _i _c _m f _p _b br _ct _s <<< "${l}"
@@ -467,6 +491,7 @@ limpar() {
     MOTIVO="${MOTIVO//$'\n'/ | }"   # a ultima linha do log traz exit e motivo inteiros (contrato do runner)
     gravar_progresso "" "fim"
     gravar_resumo
+    tirar_nul "${SAIDA}" "${FASE_DIR}"
     log "FIM exit=${rc} motivo=${MOTIVO}"
     gravar_manifesto
     exit "${rc}"
@@ -541,7 +566,7 @@ gravar_manifesto() {
     [[ "${FASE}" != reposicoes ]] || alvos+=(reposicoes)
     dirs_da_fase
     for d in "${DIRS_FASE[@]}"; do alvos+=("${d}"); done
-    ( cd "${SAIDA}" && find "${alvos[@]}" -type f ! -path "${FASE}/MANIFEST.sha256" ! -name '*.fifo' -print0 \
+    ( cd "${SAIDA}" && find "${alvos[@]}" -type f ! -path "${FASE}/MANIFEST.sha256" ! -name '*.fifo' ! -name NUL -print0 \
         | LC_ALL=C sort -z | xargs -0 sha256sum ) > "${FASE_DIR}/MANIFEST.sha256.tmp" || rc=$?
     if [[ "${rc}" -eq 0 ]]; then mv -f "${FASE_DIR}/MANIFEST.sha256.tmp" "${FASE_DIR}/MANIFEST.sha256"
     else echo "AVISO: MANIFEST.sha256 nao gravado (rc=${rc})" >&2; fi
@@ -551,6 +576,7 @@ trap 'limpar' EXIT
 trap 'MOTIVO="sinal TERM"; exit 143' TERM
 trap 'MOTIVO="sinal INT"; exit 130' INT
 log "inicio fase=${FASE} saida=${SAIDA} matriz=${MATRIZ} bundle=${BUNDLE_SHA} boot=${BOOT} h4=${H4_ID}"
+tirar_nul "${SAIDA}"
 gravar_progresso "" "pre-voo"
 
 # ------------------------------------------------------------------ ambiente.md
@@ -1127,6 +1153,9 @@ pos_execucao() {  # pos-checagem igual a pre: boot, StartedAt explicado, saude, 
     if [[ -n "${E_RELIG_NO:-}" ]] && ! grep -q '"t_religamento_ns" : [0-9]' "${d}/convergencia-resumo-rep-001.json" 2>/dev/null; then
         E_AVISOS+=("AC-5 religado sem t_religamento_ns no resumo (Delta_conv nao avaliavel na analise, P-6 da V-W5)")
     fi
+    if grep -q '"convergencia_estado" : "sem_rodada_valida"' "${d}/convergencia-resumo-rep-001.json" 2>/dev/null; then
+        E_AVISOS+=("convergencia sem rodada valida (convergencia_estado = sem_rodada_valida): Delta_conv e divergencia nao avaliaveis na analise")
+    fi
     E_MOTIVOS+=("${E_INFRAS[@]}")
 }
 
@@ -1217,7 +1246,8 @@ rodar_execucao() {  # rodar_execucao "<i> <celula> <modo> <falha> <papel> <bloco
     if [[ "${#E_RECUSAS[@]}" -gt 0 ]]; then v=RECUSADA; E_MOTIVOS+=("${E_RECUSAS[@]}"); fi
     if [[ -n "${E_INFRA_STOP}" ]] || printf '%s\n' "${E_MOTIVOS[@]}" | grep -qE '^(infra|h4)'; then v=DESCARTADA-INFRA; fi
     gravar_checagem "${d}" "${v}"
-    ( cd "${d}" && find . -type f ! -name MANIFEST.sha256 -print0 | LC_ALL=C sort -z | xargs -0 sha256sum ) > "${d}/MANIFEST.sha256"
+    tirar_nul "${d}"
+    ( cd "${d}" && find . -type f ! -name MANIFEST.sha256 ! -name NUL -print0 | LC_ALL=C sort -z | xargs -0 sha256sum ) > "${d}/MANIFEST.sha256"
     log "exec i=${E_I}: ${v}${E_MOTIVOS[*]+ (${E_MOTIVOS[*]})}"
     gravar_progresso "" "entre-execucoes"
     if [[ -n "${E_PARADA_H4}" ]]; then finalizar 10 "parada h4 depois de i=${E_I}: ${E_PARADA_H4}"; fi

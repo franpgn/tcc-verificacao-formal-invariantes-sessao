@@ -19,11 +19,14 @@
 #     "Fim da carga: ... ac5_alvo=<host:porta|->". Com AC-5 aplicado, podman start do no parado logo ao ler a
 #     linha (P-6 da V-W5, achado A-1, opcao a; requisito 4). O programa espera a topologia completa e grava
 #     t_religamento_ns;
-#   - timeout -k K com K = T_enc no pior caso (9 s, contrato JSONL v1.2, V-W2a R1) + encerramento_folga_s, SIGTERM
-#     antes de SIGKILL (requisito 2);
+#   - timeout -k K com K = T_enc no pior caso (21 s, contrato JSONL v1.2 depois do P-42: AC-5 com prazo de 17 s e
+#     a P2 habilitada; 19 s sem ela) + encerramento_folga_s, SIGTERM antes de SIGKILL (requisito 2);
 #   - braco B recusado se a meta da trilha tiver atuador nulo, politica nenhuma, sem parametros_politica ou
 #     param_sha256 diferente do --controller-config da campanha (o mesmo arquivo nos dois bracos): A-3 da V-W5,
 #     O10 da V-W2a (requisito 3);
+#   - P2 fora do braco B (D-B do coordenador, 05/11): toda fase deste orquestrador e de calibracao ou avaliacao, entao
+#     o --controller-config tem de ter politica.p2Habilitada = false (pre-voo) e a meta de cada execucao, nos dois
+#     bracos, parametros_politica.p2_habilitada = false (senao a carga e parada, exit 6);
 #   - volta do no depois do F1 conferida pela REST, nao pelo exit do inject-crash.sh (P-35; requisito 5);
 #   - criterio h4 do C3 e da DT-019 pelo scripts/campanha_s3_h4.py (sobre analysis/h4.py) depois de cada execucao,
 #     com a parada do C3 secao 4.3 e a unit do amostrador conferida antes e depois (requisito 6);
@@ -80,7 +83,7 @@ readonly GATE_TIMEOUT_S=3600                              # run-rebaseline.sh
 readonly REST_PRAZO_S=5                                   # run-rebaseline.sh (curl --max-time 5 na saude)
 readonly DEADMAN_MARGEM_S=90                              # runs/gate-netdegrade/l-lib.sh e g5b.sh modo A (V-S6A)
 readonly DEADMAN_PRECISAO="AccuracySec=1s"                # runs/gate-b29/g5b.sh (achado de S0: 1 min por padrao)
-readonly T_ENC_PIOR_S=9                                   # docs/contrato-jsonl-controlador-v1.md v1.2 (V-W2a R1)
+readonly T_ENC_PIOR_S=21                                  # contrato JSONL v1.2, P-42 (AC-5 17 s; P2 habilitada; 19 s sem ela)
 readonly CRIACAO_AVISO_MS=8000                            # acoes-controlador secao 6.4: maior criacao vista, 8,0 s
 readonly DISCO_FATOR_X10=15                               # plano de execucao 9 (W-6, item 4): livre >= 1,5 x volume
 readonly NOS="isn1 isn2 isn3"
@@ -109,7 +112,7 @@ SERVERS="127.0.0.1:11222,127.0.0.1:11223,127.0.0.1:11224"
 ADMIN="http://127.0.0.1:11222,http://127.0.0.1:11223,http://127.0.0.1:11224"
 USERNAME="admin"; PASSWORD="${CS_PASSWORD:-}"
 
-uso() { sed -n '2,58p' "${SELF}" | sed 's/^# \{0,1\}//'; }
+uso() { sed -n '2,60p' "${SELF}" | sed 's/^# \{0,1\}//'; }
 erro_uso() { echo "Erro: $*" >&2; exit 2; }
 
 while [[ $# -gt 0 ]]; do
@@ -357,7 +360,7 @@ done
 
 # ------------------------------------------------------------------ pre-voo 3: controlador, h4, bundle
 rc=0; out="$(py "${CONFERIR}" controlador --arquivo "${CTRL}" --hotrod-timeout-ms "${P[hotrod_timeout_ms]}" \
-    $([[ "${TEM_B}" -eq 1 ]] && echo --exigir-politica))" || rc=$?
+    --exigir-p2-desabilitada $([[ "${TEM_B}" -eq 1 ]] && echo --exigir-politica))" || rc=$?
 [[ "${rc}" -eq 0 ]] || { echo "Erro: --controlador recusado: ${out}" >&2; exit 4; }
 CTRL_INFO="${out}"
 H4_UNIT="tcc-amostrador-${H4_ID}"
@@ -981,7 +984,7 @@ leitor_stdout() {  # stdin: saida do programa; stdout: eventos (FIFO em memoria)
 
 conferir_meta() {  # conferir_meta <decisoes>: braco certo e, no B, que ele atua (A-3 da V-W5, O10 da V-W2a)
     local rc=0 out=""
-    out="$(py "${CONFERIR}" meta --decisoes "$1" --braco "${E_BRACO}" --param-sha256 "${CTRL_SHA}")" || rc=$?
+    out="$(py "${CONFERIR}" meta --decisoes "$1" --braco "${E_BRACO}" --param-sha256 "${CTRL_SHA}" --exigir-p2-desabilitada)" || rc=$?
     E_META="${out//$'\n'/ }"
     if [[ "${rc}" -ne 0 ]]; then
         E_INFRA_STOP=6; E_MOTIVOS+=("infra: meta da trilha recusada (exit ${rc}): ${E_META}")

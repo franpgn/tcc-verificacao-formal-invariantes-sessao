@@ -23,7 +23,7 @@ REAL_SLEEP="$(command -v sleep)"
 REAL_TIMEOUT="$(command -v timeout)"
 TMP="$(mktemp -d)"
 trap 'rm -rf "${TMP}"' EXIT
-SELECAO=" ${*:-S1 S2 S3 S4 S5 S6 S7 S8 S9 S10 S11 S12 S13 S14 S15 S16 S17} "
+SELECAO=" ${*:-S1 S2 S3 S4 S5 S6 S7 S8 S9 S10 S11 S12 S13 S14 S15 S16 S17 S18} "
 
 PASS=0
 FAIL=0
@@ -103,8 +103,9 @@ sha="$(sha256sum "${cfg}" | cut -d' ' -f1)"
 [[ -f "${ST}/meta-sha" ]] && sha="$(cat "${ST}/meta-sha")"
 atu="por-tipo(AC-2=rest-infinispan,AC-5=rest-infinispan)"; [[ -f "${ST}/meta-atuador" ]] && atu="$(cat "${ST}/meta-atuador")"
 pol="por-assinatura"; [[ -f "${ST}/meta-politica" ]] && pol="$(cat "${ST}/meta-politica")"
-printf '{"tipo":"meta","esquema":"decisoes-controlador/1.2","modo":"%s","param_sha256":"%s","atuador":"%s","politica":"%s","parametros_politica":{"k_lag":2}}\n' \
-    "${ctl}" "${sha}" "${atu}" "${pol}" > "${csv}/decisoes-rep-001.jsonl"
+p2=false; [[ -f "${ST}/meta-p2" ]] && p2="$(cat "${ST}/meta-p2")"
+printf '{"tipo":"meta","esquema":"decisoes-controlador/1.2","modo":"%s","param_sha256":"%s","atuador":"%s","politica":"%s","parametros_politica":{"k_lag":2,"p2_habilitada":%s}}\n' \
+    "${ctl}" "${sha}" "${atu}" "${pol}" "${p2}" > "${csv}/decisoes-rep-001.jsonl"
 echo "Configuracao: Cli{scenario=S3, seed=${seed}}"
 dormir 1
 if [[ ! -f "${ST}/java-sem-ancora" ]]; then
@@ -424,7 +425,7 @@ controlador() {  # controlador [sem-politica]
     if [[ "${1:-}" == sem-politica ]]; then
         echo '{"versao":"t","wNs":5000000000,"defasagem":{"lagInMs":2000,"lagOutMs":1000,"passoLeituraMs":20,"origem":{}}}' > "${CASO}/controlador.json"
     else
-        echo '{"versao":"t","wNs":5000000000,"politica":{"kLag":2,"tetoLagMs":2000,"tRebNs":60000000000,"cotaAc5":1,"origem":{}},"defasagem":{"lagInMs":2000,"lagOutMs":1000,"passoLeituraMs":20,"origem":{}}}' > "${CASO}/controlador.json"
+        echo '{"versao":"t","wNs":5000000000,"politica":{"kLag":2,"tetoLagMs":2000,"tRebNs":60000000000,"cotaAc5":1,"p2Habilitada":false,"origem":{}},"defasagem":{"lagInMs":2000,"lagOutMs":1000,"passoLeituraMs":20,"origem":{}}}' > "${CASO}/controlador.json"
     fi
     CTRL="${CASO}/controlador.json"; CTRL_SHA="$(sha256sum "${CTRL}" | cut -d' ' -f1)"
     echo '{"esquema":"referencia-p99/1"}' > "${CASO}/referencia.json"
@@ -484,7 +485,7 @@ esperar_por() { local k; for ((k = 0; k < $2 * 10; k++)); do grep -qF -e "$1" "$
 
 # ============================================================================= S1
 if quer S1; then
-echo "== S1: --dry-run da calibracao e da avaliacao: plano, timeout -k 11s, nada executado =="
+echo "== S1: --dry-run da calibracao e da avaliacao: plano, timeout -k 23s (21 + 2), nada executado =="
 novo_caso s1
 matriz_calib "ASYNC-none:calibracao:1,ASYNC-F1:calibracao:1,ASYNC-F2:calibracao:1"
 OUT1="$(PATH="${PATH_TESTE}" bash "${ORQ}" --dry-run --matriz "${MAT}" --matriz-sha256 "${MAT_SHA}" --fase calibracao \
@@ -492,7 +493,7 @@ OUT1="$(PATH="${PATH_TESTE}" bash "${ORQ}" --dry-run --matriz "${MAT}" --matriz-
     --referencia "${REF}" --referencia-sha256 "${REF_SHA}" --saida "${OUT}" 2>&1)"; RC=$?
 ok "S1 calibracao exit 0" "0" "${RC}"
 ok "S1 calibracao: 3 linhas PLANO" "3" "$(grep -c '^PLANO i=' <<< "${OUT1}")"
-contem "S1 timeout -k (9 + folga 2) e teto" "timeout -k 11s 200s java -jar" "${OUT1}"
+contem "S1 timeout -k (T_enc pior caso 21 s + folga 2 s) e teto" "timeout -k 23s 200s java -jar" "${OUT1}"
 contem "S1 comando S3 com controlador shadow, religamento e convergencia" "--controller shadow --controller-config ${CTRL} --controller-reference ${REF}" "${OUT1}"
 contem "S1 --rejoin-timeout-sec do parametro" "--rejoin-timeout-sec 30" "${OUT1}"
 contem "S1 F2 com dead-man de 20 + 90 s" "dead-man 110 s" "${OUT1}"
@@ -575,7 +576,7 @@ for i in 0 1 2; do
     ok "S4 i=${i} ACEITA" "ACEITA" "$(json "${D}/checagem.json" 'd["veredito"]')"
     ok "S4 i=${i} K1 ok" "True" "$(json "${D}/portao.json" 'd["ok"]')"
     ok "S4 i=${i} janela_h4 da linha do programa" "[44, 60]" "$(json "${D}/execucao.json" '[d["janela_h4"]["ini_desde_ancora_s"], d["janela_h4"]["fim_desde_ancora_s"]]')"
-    ok "S4 i=${i} encerramento K = 9 + 2" "11" "$(json "${D}/execucao.json" 'd["encerramento"]["kill_apos_s"]')"
+    ok "S4 i=${i} encerramento K = 21 + 2" "23" "$(json "${D}/execucao.json" 'd["encerramento"]["kill_apos_s"]')"
     ok "S4 i=${i} camada 3 antes sem divergencia" "None" "$(json "${D}/execucao.json" 'd["camada3_pre"]["divergencias"]')"
     verdade "S4 i=${i} MANIFEST.sha256 da execucao" test -s "${D}/MANIFEST.sha256"
     verdade "S4 i=${i} stdout.log com a linha de fim da carga" grep -q '^Fim da carga: rep=1 ' "${D}/stdout.log"
@@ -590,7 +591,7 @@ verdade "S4 F2: dead-man armado antes da particao" test "${SR}" -gt 0 -a "${SR}"
 contem "S4 F2: dead-man de 20 + 90 s com AccuracySec=1s" "--on-active=110s|--timer-property=AccuracySec=1s" "$(chamadas)"
 contem "S4 F2: dead-man cura com inject-partition.sh --heal" "--heal|--minority|isn3" "$(grep 'systemd-run|' "${ST}/chamadas.log")"
 ok "S4 F2: nenhum timer sobrando" "0" "$(ls "${ST}"/timer-* 2>/dev/null | grep -c .)"
-contem "S4 carga com timeout -k 11s e o teto" "timeout|-k|11s|200s|java|-jar" "$(chamadas)"
+contem "S4 carga com timeout -k 23s e o teto" "timeout|-k|23s|200s|java|-jar" "$(chamadas)"
 J="$(grep ' java|-jar|.*--controller|shadow' "${ST}/chamadas.log" | head -1)"
 for a in "--scenario|S3" "--marker|" "--convergence|" "--rejoin-timeout-sec|30" "--hotrod-timeout-ms|2000" "--controller-admin|http://127.0.0.1:11222,http://127.0.0.1:11223,http://127.0.0.1:11224" "--w-recovery-sec|30"; do
     contem "S4 java recebe ${a}" "${a}" "${J}"
@@ -647,21 +648,21 @@ fi
 
 # ============================================================================= S7
 if quer S7; then
-echo "== S7: encerramento: TERM no orquestrador -> SIGTERM a carga, SIGKILL so depois de K = 11 s (virtuais) =="
+echo "== S7: encerramento: TERM no orquestrador -> SIGTERM a carga, SIGKILL so depois de K = 23 s (virtuais) =="
 novo_caso s7 10
 matriz_calib "ASYNC-none:calibracao:1"
 : > "${ST}/java-ignora-term"
 printf 'go calibracao %s\n' "${HOJE}" > "${CS_TTY_ARQUIVO}"
 rodar_fundo calibracao
-verdade "S7 carga lancada" esperar_por 'timeout|-k|11s' 120
+verdade "S7 carga lancada" esperar_por 'timeout|-k|23s' 120
 "${REAL_SLEEP}" 2
 T0="$(agora_real_ms)"
 kill -TERM "${BG}"; wait "${BG}"; RC=$?
 DT=$(( $(agora_real_ms) - T0 ))
 ok "S7 orquestrador sai com 143" "143" "${RC}"
 verdade "S7 a carga recebeu SIGTERM" test -n "$(cat "${ST}"/java-morto-* 2>/dev/null)"
-echo "   (TERM -> fim em ${DT} ms reais; K = 11 s virtuais = $(( 11000 / 10 )) ms reais)"
-verdade "S7 SIGKILL nao veio antes de K (o processo resistiu ao TERM ate o timeout matar)" test "${DT}" -ge 900
+echo "   (TERM -> fim em ${DT} ms reais; K = 23 s virtuais = $(( 23000 / 10 )) ms reais)"
+verdade "S7 SIGKILL nao veio antes de K (o processo resistiu ao TERM ate o timeout matar)" test "${DT}" -ge 2000
 verdade "S7 nenhum java vivo" test -z "$(ps -ef 2>/dev/null | grep -F "${CASO}" | grep -F java | grep -v grep)"
 novo_caso s7b 20
 parametros exec_teto_s=150
@@ -858,6 +859,36 @@ ok "S17 RECUSADA" "RECUSADA" "$(json "${D}/checagem.json" 'd["veredito"]')"
 contem "S17 motivo sem ancora" "sem ancora" "$(json "${D}/checagem.json" 'd["motivos"]')"
 ok "S17 nenhuma injecao" "0" "$(conta 'podman|kill')"
 ok "S17 janela_h4 nula" "None" "$(json "${D}/execucao.json" 'd["janela_h4"]')"
+fi
+
+# ============================================================================= S18
+if quer S18; then
+echo "== S18: D-B: p2Habilitada != false no controlador recusa no pre-voo; p2_habilitada != false na meta para a carga =="
+novo_caso s18
+matriz_calib "ASYNC-none:calibracao:1"
+"${REAL_PY}" -I -c "import json,sys; p=sys.argv[1]; o=json.load(open(p)); o['politica']['p2Habilitada']=True; open(p,'w').write(json.dumps(o))" "${CTRL}"
+CTRL_SHA="$(sha256sum "${CTRL}" | cut -d' ' -f1)"
+printf 'go calibracao %s\n' "${HOJE}" > "${CS_TTY_ARQUIVO}"
+rodar calibracao
+ok "S18 p2Habilitada true -> exit 4 no pre-voo" "4" "${RC}"
+contem "S18 motivo p2Habilitada" "p2Habilitada" "${SAIDA_TXT}"
+ok "S18 sem compose nem carga" "0" "$(( $(conta 'podman-compose|') + $(cargas) ))"
+novo_caso s18c
+matriz_calib "ASYNC-none:calibracao:1"
+controlador sem-politica
+printf 'go calibracao %s\n' "${HOJE}" > "${CS_TTY_ARQUIVO}"
+rodar calibracao
+ok "S18 sem bloco politica -> exit 4 (calibracao tambem exige p2Habilitada = false)" "4" "${RC}"
+contem "S18 motivo do sem bloco" "p2Habilitada" "${SAIDA_TXT}"
+novo_caso s18b
+matriz_aval "ASYNC-none:descritiva:1"
+echo true > "${ST}/meta-p2"
+printf 'go nucleo %s\n' "${HOJE}" > "${CS_TTY_ARQUIVO}"
+rodar nucleo
+ok "S18 meta com p2_habilitada true -> exit 6" "6" "${RC}"
+contem "S18 motivo p2_habilitada" "p2_habilitada" "$(tail -1 "${OUT}/nucleo/orquestrador.log")"
+verdade "S18 carga parada" test -n "$(cat "${ST}"/java-morto-* 2>/dev/null)"
+ok "S18 a primeira execucao (qualquer braco) e DESCARTADA-INFRA" "1" "$(grep -l '"veredito": "DESCARTADA-INFRA"' "${OUT}"/exec-*/checagem.json 2>/dev/null | wc -l | tr -d ' ')"
 fi
 
 echo

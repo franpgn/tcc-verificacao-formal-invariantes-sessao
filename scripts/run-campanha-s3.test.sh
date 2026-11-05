@@ -2,7 +2,7 @@
 #
 # run-campanha-s3.test.sh
 #
-# Testes S1..S23 do scripts/run-campanha-s3.sh (W-6, B-46), no estilo do run-rebaseline.test.sh: sem cluster, sem
+# Testes S1..S24 do scripts/run-campanha-s3.sh (W-6, B-46), no estilo do run-rebaseline.test.sh: sem cluster, sem
 # rede, sem VM, sem tc real. Shims em PATH para java, podman, podman-compose, sudo, nsenter, tc, ip, iptables, curl,
 # systemd-run, systemctl, flock, pgrep, df, sleep, date e timeout. Relogio acelerado: o shim de sleep dorme s/ESCALA de
 # verdade, o de timeout divide os prazos por ESCALA e o de date devolve T0 + (agora - T0) * ESCALA. O injetor de F1 e
@@ -23,7 +23,7 @@ REAL_SLEEP="$(command -v sleep)"
 REAL_TIMEOUT="$(command -v timeout)"
 TMP="$(mktemp -d)"
 trap '[[ -n "${CS_TESTE_MANTER:-}" ]] && echo "(CS_TESTE_MANTER: ${TMP} mantido)" || rm -rf "${TMP}"' EXIT
-SELECAO=" ${*:-S1 S2 S3 S4 S5 S6 S7 S8 S9 S10 S11 S12 S13 S14 S15 S16 S17 S18 S19 S20 S21 S22 S23} "
+SELECAO=" ${*:-S1 S2 S3 S4 S5 S6 S7 S8 S9 S10 S11 S12 S13 S14 S15 S16 S17 S18 S19 S20 S21 S22 S23 S24} "
 
 PASS=0
 FAIL=0
@@ -88,13 +88,20 @@ source "${CS_SHIM_DIR}/_comum.sh"
 registrar java "$@"
 ST="${CS_ESTADO}"
 case "$1" in -version) echo 'openjdk version "21" (shim)' >&2; exit 0 ;; esac
-csv=""; seed=""; ctl=off; dry=0; dur=60; cfg=""
+csv=""; seed=""; ctl=off; dry=0; dur=60; cfg=""; ref=""; repl=""
 while [[ $# -gt 0 ]]; do
     case "$1" in
         --csv-dir) csv="$2" ;; --seed) seed="$2" ;; --controller) ctl="$2" ;; --dry-run) dry=1 ;;
-        --duration) dur="$2" ;; --controller-config) cfg="$2" ;;
+        --duration) dur="$2" ;; --controller-config) cfg="$2" ;; --controller-reference) ref="$2" ;;
+        --replication) repl="$2" ;;
     esac; shift
 done
+if [[ -n "${ref}" ]]; then  # como LigacaoControlador.java:204 (B2 da V-W6)
+    perf="$(sed -n 's/.*"perfil":"\([a-z]*\)".*/\1/p' "${ref}")"
+    if [[ "${perf}" != "${repl}" ]]; then
+        echo "Erro: referencia ${ref} e do perfil ${perf}, mas --replication e ${repl}" >&2; exit 2
+    fi
+fi
 if [[ "${dry}" -eq 1 ]]; then echo "dry-run, configuracao OK (shim ${ctl})"; exit "$(cat "${ST}/java-dry-rc" 2>/dev/null || echo 0)"; fi
 rc="$(cat "${ST}/java-exit-${seed}" 2>/dev/null || echo 0)"
 trap 'echo "morto $(vms)" >> "${ST}/java-morto-${seed}"; [[ -f "${ST}/java-ignora-term" ]] || exit 143' TERM
@@ -440,7 +447,7 @@ import json, sys
 v = {"duracao_s": 60, "warmup_min_s": 30, "inj_offset_s": 10, "f1_no": "isn2", "f1_dur_s": 20, "f2_no": "isn3",
      "f2_dur_s": 20, "f4_no": "isn3", "f4_severidade": "N3", "f4_direcao": "both", "f4_dur_s": 20,
      "hotrod_timeout_ms": 2000, "convergencia_teto_s": 60, "convergencia_periodo_s": 5, "w_recovery_s": 30,
-     "religamento_prazo_s": 30, "exec_teto_s": 300, "encerramento_folga_s": 2, "volume_exec_mb": 10}
+     "religamento_prazo_s": 30, "exec_teto_s": 200, "encerramento_folga_s": 2, "volume_exec_mb": 10}
 for kv in sys.argv[2:]:
     k, x = kv.split("=", 1)
     v[k] = int(x) if x.lstrip("-").isdigit() else x
@@ -458,8 +465,12 @@ controlador() {  # controlador [sem-politica]
         echo '{"versao":"t","wNs":5000000000,"politica":{"kLag":2,"tetoLagMs":2000,"tRebNs":60000000000,"cotaAc5":1,"p2Habilitada":false,"origem":{}},"defasagem":{"lagInMs":2000,"lagOutMs":1000,"passoLeituraMs":20,"origem":{}}}' > "${CASO}/controlador.json"
     fi
     CTRL="${CASO}/controlador.json"; CTRL_SHA="$(sha256sum "${CTRL}" | cut -d' ' -f1)"
-    echo '{"esquema":"referencia-p99/1"}' > "${CASO}/referencia.json"
-    REF="${CASO}/referencia.json"; REF_SHA="$(sha256sum "${REF}" | cut -d' ' -f1)"
+    # B2 da V-W6: uma referencia por perfil (o programa recusa a de outro perfil; o duble de java tambem)
+    echo '{"esquema":"referencia-p99/1","cenario":"S3","perfil":"async","p99_ns":{"Login":10000000000}}' > "${CASO}/referencia-async.json"
+    echo '{"esquema":"referencia-p99/1","cenario":"S3","perfil":"sync","p99_ns":{"Login":10000000000}}' > "${CASO}/referencia-sync.json"
+    REF_A="${CASO}/referencia-async.json"; REF_A_SHA="$(sha256sum "${REF_A}" | cut -d' ' -f1)"
+    REF_S="${CASO}/referencia-sync.json"; REF_S_SHA="$(sha256sum "${REF_S}" | cut -d' ' -f1)"
+    REFS=(--referencia-async "${REF_A}" --referencia-async-sha256 "${REF_A_SHA}" --referencia-sync "${REF_S}" --referencia-sync-sha256 "${REF_S_SHA}")
 }
 
 amostras() {  # amostras [io_full_por_amostra_s]: arquivo do amostrador cobrindo o tempo virtual do caso
@@ -493,14 +504,14 @@ rodar() {  # rodar <fase> [args extras]: RC e SAIDA_TXT
     local fase="$1"; shift
     SAIDA_TXT="$(PATH="${PATH_TESTE}" bash "${ORQ}" --matriz "${MAT}" --matriz-sha256 "${MAT_SHA}" --fase "${fase}" \
         --parametros "${PARAMS}" --parametros-sha256 "${PARAMS_SHA}" --controlador "${CTRL}" --controlador-sha256 "${CTRL_SHA}" \
-        --referencia "${REF}" --referencia-sha256 "${REF_SHA}" --jar "${JAR}" --jar-sha256 "${JAR_SHA}" --saida "${OUT}" \
+        "${REFS[@]}" --jar "${JAR}" --jar-sha256 "${JAR_SHA}" --saida "${OUT}" \
         --boot-esperado "${BOOT}" --h4-id "${H4_ID}" "$@" 2>&1)"; RC=$?
 }
 rodar_fundo() {  # como rodar, em segundo plano; PID em BG
     local fase="$1"; shift
     PATH="${PATH_TESTE}" bash "${ORQ}" --matriz "${MAT}" --matriz-sha256 "${MAT_SHA}" --fase "${fase}" \
         --parametros "${PARAMS}" --parametros-sha256 "${PARAMS_SHA}" --controlador "${CTRL}" --controlador-sha256 "${CTRL_SHA}" \
-        --referencia "${REF}" --referencia-sha256 "${REF_SHA}" --jar "${JAR}" --jar-sha256 "${JAR_SHA}" --saida "${OUT}" \
+        "${REFS[@]}" --jar "${JAR}" --jar-sha256 "${JAR_SHA}" --saida "${OUT}" \
         --boot-esperado "${BOOT}" --h4-id "${H4_ID}" "$@" > "${CASO}/out.txt" 2>&1 &
     BG=$!
 }
@@ -520,11 +531,11 @@ novo_caso s1
 matriz_calib "ASYNC-none:calibracao:1,ASYNC-F1:calibracao:1,ASYNC-F2:calibracao:1"
 OUT1="$(PATH="${PATH_TESTE}" bash "${ORQ}" --dry-run --matriz "${MAT}" --matriz-sha256 "${MAT_SHA}" --fase calibracao \
     --parametros "${PARAMS}" --parametros-sha256 "${PARAMS_SHA}" --controlador "${CTRL}" --controlador-sha256 "${CTRL_SHA}" \
-    --referencia "${REF}" --referencia-sha256 "${REF_SHA}" --saida "${OUT}" 2>&1)"; RC=$?
+    "${REFS[@]}" --saida "${OUT}" 2>&1)"; RC=$?
 ok "S1 calibracao exit 0" "0" "${RC}"
 ok "S1 calibracao: 3 linhas PLANO" "3" "$(grep -c '^PLANO i=' <<< "${OUT1}")"
-contem "S1 timeout -k (T_enc pior caso 21 s + folga 2 s) e teto" "timeout -k 23s 300s java -jar" "${OUT1}"
-contem "S1 comando S3 com controlador shadow, religamento e convergencia" "--controller shadow --controller-config ${CTRL} --controller-reference ${REF}" "${OUT1}"
+contem "S1 timeout -k (T_enc pior caso 21 s + folga 2 s) e teto" "timeout -k 23s 200s java -jar" "${OUT1}"
+contem "S1 comando S3 com controlador shadow, religamento e convergencia" "--controller shadow --controller-config ${CTRL} --controller-reference ${REF_A}" "${OUT1}"
 contem "S1 --rejoin-timeout-sec do parametro" "--rejoin-timeout-sec 30" "${OUT1}"
 contem "S1 F2 com dead-man de 20 + 90 s" "dead-man 110 s" "${OUT1}"
 contem "S1 senha mascarada" "--password ***" "${OUT1}"
@@ -533,20 +544,20 @@ ok "S1 nenhuma chamada a java/podman/sudo/curl" "0" "$(grep -cE ' (java|podman|p
 matriz_aval "ASYNC-F2:teste:2"
 OUT2="$(PATH="${PATH_TESTE}" bash "${ORQ}" --dry-run --matriz "${MAT}" --matriz-sha256 "${MAT_SHA}" --fase nucleo \
     --parametros "${PARAMS}" --parametros-sha256 "${PARAMS_SHA}" --controlador "${CTRL}" --controlador-sha256 "${CTRL_SHA}" \
-    --referencia "${REF}" --referencia-sha256 "${REF_SHA}" --saida "${OUT}" 2>&1)"; RC=$?
+    "${REFS[@]}" --saida "${OUT}" 2>&1)"; RC=$?
 ok "S1 avaliacao exit 0" "0" "${RC}"
 ok "S1 avaliacao: 2 blocos x 2 bracos" "4" "$(grep -c '^PLANO i=' <<< "${OUT2}")"
 ok "S1 avaliacao: 2 active e 2 shadow" "2 2" "$(grep -c 'controller=active' <<< "${OUT2}") $(grep -c 'controller=shadow' <<< "${OUT2}")"
 OUT3="$(PATH="${PATH_TESTE}" bash "${ORQ}" --dry-run --matriz "${MAT}" --matriz-sha256 "$(printf '0%.0s' {1..64})" --fase nucleo \
     --parametros "${PARAMS}" --parametros-sha256 "${PARAMS_SHA}" --controlador "${CTRL}" --controlador-sha256 "${CTRL_SHA}" \
-    --referencia "${REF}" --referencia-sha256 "${REF_SHA}" --saida "${OUT}" 2>&1)"; RC=$?
+    "${REFS[@]}" --saida "${OUT}" 2>&1)"; RC=$?
 ok "S1 SHA-256 errado da matriz -> exit 4" "4" "${RC}"
 # S1 da V-W6: o --dry-run roda o campanha_s3_conferir.py controlador (bloco politica, p2Habilitada, tetoLagMs)
 contem "S1 dry-run da calibracao confere o controlador" "controlador conferido: sha256=${CTRL_SHA} politica=sim p2_habilitada=false" "${OUT1}"
 dry() {
     PATH="${PATH_TESTE}" bash "${ORQ}" --dry-run --matriz "${MAT}" --matriz-sha256 "${MAT_SHA}" --fase "$1" \
         --parametros "${PARAMS}" --parametros-sha256 "${PARAMS_SHA}" --controlador "${CTRL}" --controlador-sha256 "${CTRL_SHA}" \
-        --referencia "${REF}" --referencia-sha256 "${REF_SHA}" --saida "${OUT}" 2>&1
+        "${REFS[@]}" --saida "${OUT}" 2>&1
 }
 controlador sem-politica
 OUT4="$(dry nucleo)"; RC=$?
@@ -580,11 +591,11 @@ rodar calibracao
 ok "S2 parametro sem origem -> exit 4" "4" "${RC}"
 contem "S2 motivo cita o parametro" "inj_offset_s" "${SAIDA_TXT}"
 ok "S2 nenhum java" "0" "$(cargas)"
-parametros exec_teto_s=295
+parametros exec_teto_s=175
 rodar calibracao
-ok "S2 teto abaixo de ancora + duracao + T_enc + religamento + convergencia + periodo (M1 da V-W6) -> exit 4" "4" "${RC}"
+ok "S2 teto abaixo de duracao + T_enc + religamento + convergencia + periodo (M1 da V-W6) -> exit 4" "4" "${RC}"
 contem "S2 M1: o minimo conta o T_enc do orquestrador" "t_enc_pior_s (21)" "${SAIDA_TXT}"
-contem "S2 M1: o minimo conta o prazo da ancora do orquestrador" "ancora_max_s (120)" "${SAIDA_TXT}"
+contem "S2 M1: o minimo conta um periodo da convergencia" "convergencia_periodo_s (5)" "${SAIDA_TXT}"
 parametros
 : > "${ST}/timer-tcc-heal-cs-7"
 rodar calibracao
@@ -657,7 +668,7 @@ verdade "S4 F2: dead-man armado antes da particao" test "${SR}" -gt 0 -a "${SR}"
 contem "S4 F2: dead-man de 20 + 90 s com AccuracySec=1s" "--on-active=110s|--timer-property=AccuracySec=1s" "$(chamadas)"
 contem "S4 F2: dead-man cura com inject-partition.sh --heal" "--heal|--minority|isn3" "$(grep 'systemd-run|' "${ST}/chamadas.log")"
 ok "S4 F2: nenhum timer sobrando" "0" "$(ls "${ST}"/timer-* 2>/dev/null | grep -c .)"
-contem "S4 carga com timeout -k 23s e o teto" "timeout|-k|23s|300s|java|-jar" "$(chamadas)"
+contem "S4 carga com timeout -k 23s e o teto" "timeout|-k|23s|200s|java|-jar" "$(chamadas)"
 J="$(grep ' java|-jar|.*--controller|shadow' "${ST}/chamadas.log" | head -1)"
 for a in "--scenario|S3" "--marker|" "--convergence|" "--rejoin-timeout-sec|30" "--hotrod-timeout-ms|2000" "--controller-admin|http://127.0.0.1:11222,http://127.0.0.1:11223,http://127.0.0.1:11224" "--w-recovery-sec|30"; do
     contem "S4 java recebe ${a}" "${a}" "${J}"
@@ -737,7 +748,7 @@ echo "   (TERM -> fim em ${DT} ms reais; K = 23 s virtuais = $(( 23000 / 10 )) m
 verdade "S7 SIGKILL nao veio antes de K = 2300 ms reais (o processo resistiu ao TERM ate o timeout matar)" test "${DT}" -ge 2300
 verdade "S7 nenhum java vivo" test -z "$(ps -ef 2>/dev/null | grep -F "${CASO}" | grep -F java | grep -v grep)"
 novo_caso s7b 20
-parametros exec_teto_s=296   # o minimo do M1: 120 + 60 + 21 + 30 + 60 + 5
+parametros exec_teto_s=176   # o minimo do M1: 60 + 21 + 30 + 60 + 5
 matriz_calib "ASYNC-none:calibracao:1"
 : > "${ST}/java-pendura"
 printf 'go calibracao %s\n' "${HOJE}" > "${CS_TTY_ARQUIVO}"
@@ -1016,12 +1027,14 @@ fi
 # ============================================================================= S22
 if quer S22; then
 echo "== S22: B1 da V-W6: injetor de F2/F4 sai com 1/6 porque o AC-5 parou o no da falha -> pendente, nao recusa =="
-# O java do shim para o no do AC-5 a dur/2 = +30 s da ancora; a janela da falha vai de +10 a +50 s, entao o injetor
-# encontra o alvo parado no fim da janela e sai como o real (F2: 1; F4: 6).
+# Carga de 120 s: o java do shim para o no do AC-5 a dur/2 = +60 s da ancora; a janela da falha vai de +10 a +50 s
+# mais o atraso do disparo (no Git Bash o laco do orquestrador atrasa o disparo em 6 a 20 s virtuais na escala 20, e o
+# duble leva uns 10 s para gravar o start), entao acaba entre +60 s e +120 s com o alvo parado e o injetor sai como o
+# real (F2: 1; F4: 6). Com 60 s de carga a janela passava do fim e o religamento vinha antes do fim dela.
 for caso in f2 f4 f2-sem-ok; do
     novo_caso "s22-${caso}"
     F="F2"; [[ "${caso}" == f4 ]] && F="F4"
-    parametros "${F,,}_dur_s=40"
+    parametros duracao_s=120 "${F,,}_dur_s=40" exec_teto_s=300
     matriz_aval "ASYNC-${F}:teste:1"
     echo "127.0.0.1:11224" > "${ST}/ac5-alvo"
     [[ "${caso}" != f2-sem-ok ]] || : > "${ST}/inj-sem-ok"
@@ -1055,7 +1068,7 @@ ok "S22 negativo: injetor 1 com o no de pe -> RECUSADA" "RECUSADA" "$(json "${D}
 contem "S22 negativo: motivo injetor" "injetor F2 saiu com 1" "$(json "${D}/checagem.json" 'd["motivos"]')"
 ok "S22 negativo: sem alvo parado" "None" "$(json "${D}/execucao.json" 'd["injetor_alvo_parado"]')"
 novo_caso s22-sem-ac5
-parametros f2_dur_s=40
+parametros duracao_s=120 f2_dur_s=40 exec_teto_s=300
 matriz_calib "ASYNC-F2:calibracao:1"
 echo isn3 > "${ST}/java-para-sem-ac5"
 printf 'go calibracao %s\ngo rede 0\n' "${HOJE}" > "${CS_TTY_ARQUIVO}"
@@ -1085,6 +1098,59 @@ contem "S23 motivo sem a linha de fim com o religamento" "infra: sem a linha de 
 ok "S23 isn3 de volta" "running" "$(cat "${ST}/status-isn3")"
 verdade "S23 podman start isn3 pelo orquestrador" test "$(conta 'podman|start|isn3')" -ge 1
 nao_contem "S23 a fase nao parou por cluster sem 3 HEALTHY" "sem 3 HEALTHY" "$(cat "${OUT}/nucleo/orquestrador.log")"
+fi
+
+# ============================================================================= S24
+if quer S24; then
+echo "== S24: B2 da V-W6: fase com SYNC e ASYNC: referencia por perfil, --dry-run do programa em cada perfil =="
+novo_caso s24
+matriz_calib "SYNC-none:calibracao:1,ASYNC-none:calibracao:1"
+printf 'go calibracao %s\n' "${HOJE}" > "${CS_TTY_ARQUIVO}"
+rodar calibracao
+ok "S24 exit 0" "0" "${RC}"
+DS="$(ls -d "${OUT}"/exec-*-SYNC-none-A)"; DA="$(ls -d "${OUT}"/exec-*-ASYNC-none-A)"
+ok "S24 SYNC e ASYNC ACEITA" "ACEITA ACEITA" "$(json "${DS}/checagem.json" 'd["veredito"]') $(json "${DA}/checagem.json" 'd["veredito"]')"
+CARGAS_J="$(grep -F ' java|-jar|' "${ST}/chamadas.log" | grep -vF -- '--dry-run')"
+contem "S24 carga SYNC com a referencia sync" "--replication|sync|" "$(grep -F -- "--controller-reference|${REF_S}|" <<< "${CARGAS_J}")"
+contem "S24 carga ASYNC com a referencia async" "--replication|async|" "$(grep -F -- "--controller-reference|${REF_A}|" <<< "${CARGAS_J}")"
+DRYS="$(grep -F ' java|-jar|' "${ST}/chamadas.log" | grep -F -- '--dry-run')"
+ok "S24 pre-voo 4: --dry-run do programa nos dois perfis" "1 1" "$(grep -cF -- '--replication|sync|' <<< "${DRYS}") $(grep -cF -- '--replication|async|' <<< "${DRYS}")"
+ok "S24 execucao.json registra a referencia de cada perfil" "${REF_S_SHA} ${REF_A_SHA}" "$(json "${DS}/execucao.json" 'd["referencia_sha256"]') $(json "${DA}/execucao.json" 'd["referencia_sha256"]')"
+contem "S24 bundle cobre a referencia sync" "referencia-sync.json" "$(cat "${OUT}/calibracao/bundle.sha256")"
+contem "S24 bundle cobre a referencia async" "referencia-async.json" "$(cat "${OUT}/calibracao/bundle.sha256")"
+# referencias trocadas: recusa no pre-voo, antes de qualquer cluster (sem B2 a carga SYNC sairia com 2 ao abrir)
+novo_caso s24b
+matriz_calib "SYNC-none:calibracao:1,ASYNC-none:calibracao:1"
+REFS=(--referencia-async "${REF_S}" --referencia-async-sha256 "${REF_S_SHA}" --referencia-sync "${REF_A}" --referencia-sync-sha256 "${REF_A_SHA}")
+printf 'go calibracao %s\n' "${HOJE}" > "${CS_TTY_ARQUIVO}"
+rodar calibracao
+ok "S24 referencias trocadas -> exit 4 no pre-voo" "4" "${RC}"
+contem "S24 motivo perfil" "perfil" "${SAIDA_TXT}"
+ok "S24 trocadas: sem compose nem carga" "0" "$(( $(conta 'podman-compose|') + $(cargas) ))"
+DRY_TXT="$(PATH="${PATH_TESTE}" bash "${ORQ}" --dry-run --matriz "${MAT}" --matriz-sha256 "${MAT_SHA}" --fase calibracao \
+    --parametros "${PARAMS}" --parametros-sha256 "${PARAMS_SHA}" --controlador "${CTRL}" --controlador-sha256 "${CTRL_SHA}" \
+    "${REFS[@]}" --saida "${OUT}" 2>&1)"; RC=$?
+ok "S24 referencias trocadas -> exit 4 tambem no --dry-run (sem VM)" "4" "${RC}"
+# falta a referencia de um perfil presente na fase
+novo_caso s24c
+matriz_calib "SYNC-none:calibracao:1,ASYNC-none:calibracao:1"
+REFS=(--referencia-async "${REF_A}" --referencia-async-sha256 "${REF_A_SHA}")
+printf 'go calibracao %s\n' "${HOJE}" > "${CS_TTY_ARQUIVO}"
+rodar calibracao
+ok "S24 celula SYNC sem --referencia-sync -> exit 4" "4" "${RC}"
+contem "S24 motivo cita --referencia-sync" "--referencia-sync" "${SAIDA_TXT}"
+ok "S24 sem referencia: sem compose nem carga" "0" "$(( $(conta 'podman-compose|') + $(cargas) ))"
+# fase so ASYNC nao precisa da referencia sync; --referencia antiga e recusada como uso
+matriz_calib "ASYNC-none:calibracao:1"
+DRY_TXT="$(PATH="${PATH_TESTE}" bash "${ORQ}" --dry-run --matriz "${MAT}" --matriz-sha256 "${MAT_SHA}" --fase calibracao \
+    --parametros "${PARAMS}" --parametros-sha256 "${PARAMS_SHA}" --controlador "${CTRL}" --controlador-sha256 "${CTRL_SHA}" \
+    "${REFS[@]}" --saida "${OUT}" 2>&1)"; RC=$?
+ok "S24 fase so ASYNC com so --referencia-async -> dry-run exit 0" "0" "${RC}"
+DRY_TXT="$(PATH="${PATH_TESTE}" bash "${ORQ}" --dry-run --matriz "${MAT}" --matriz-sha256 "${MAT_SHA}" --fase calibracao \
+    --parametros "${PARAMS}" --parametros-sha256 "${PARAMS_SHA}" --controlador "${CTRL}" --controlador-sha256 "${CTRL_SHA}" \
+    --referencia "${REF_A}" --referencia-sha256 "${REF_A_SHA}" --saida "${OUT}" 2>&1)"; RC=$?
+ok "S24 --referencia unica (antiga) -> exit 2" "2" "${RC}"
+contem "S24 motivo da opcao antiga" "--referencia-async/--referencia-sync" "${DRY_TXT}"
 fi
 
 echo

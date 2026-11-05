@@ -9,6 +9,7 @@
   bracos do bloco).
 - trilha: o alvo do AC-5 APLICADA na trilha (regra de ac5_aplicada do comparar_bracos.py) bate com o da linha de
   fim da carga.
+- referencia (B2 da V-W6): a referencia de p99 de cada modo de replicacao e do cenario S3 e do perfil daquele modo.
 
 Uso: python -I scripts/test_campanha_s3_conferir.py
 """
@@ -24,8 +25,8 @@ sys.path.insert(0, str(AQUI))
 import campanha_s3_conferir as cc  # noqa: E402
 
 SHA = "a" * 64
-# M1 da V-W6: o teto conta o tempo ate a ancora (ANCORA_TIMEOUT_S do orquestrador) e o T_enc do pior caso
-EXTRA = ("--t-enc-pior-s", "21", "--ancora-max-s", "120")
+# M1 da V-W6: o teto conta o T_enc do pior caso, que e constante do orquestrador
+EXTRA = ("--t-enc-pior-s", "21")
 
 
 def rodar(*args):
@@ -125,36 +126,91 @@ class Parametros(unittest.TestCase):
 
 
 class TetoComParcelas(unittest.TestCase):
-    """M1 da V-W6: exec_teto_s >= ancora_max_s + duracao_s + t_enc_pior_s + religamento_prazo_s + convergencia_teto_s +
-    convergencia_periodo_s. O tempo ate a ancora (a carga so comeca depois dele; ate 120 s, ANCORA_TIMEOUT_S do
-    orquestrador) e o T_enc (ate 21 s entre o fim da carga e a linha de fim, contrato JSONL 1.2) vem do orquestrador;
-    o ultimo periodo cobre a volta do laco de convergencia que dorme antes de olhar o teto (ConvergenciaLoop.executar).
-    Com os parametros validos: 120 + 300 + 21 + 180 + 600 + 5 = 1226."""
+    """M1 da V-W6: exec_teto_s >= duracao_s + t_enc_pior_s + religamento_prazo_s + convergencia_teto_s +
+    convergencia_periodo_s. O T_enc (ate 21 s entre o fim da carga e a linha de fim, contrato JSONL 1.2) vem do
+    orquestrador; o ultimo periodo cobre a volta do laco de convergencia que dorme antes de olhar o teto
+    (ConvergenciaLoop.executar). O tempo ate a ancora (t_pre <= 2,4 s no I-3b) e o fechamento depois da convergencia
+    (t_pos = 13,5 s) sao medidos, nao constantes: entram com folga no pre-registro (adenda da V-W6, secao 11; pre-registro
+    da calibracao 4.1), nao aqui. Com os parametros validos: 300 + 21 + 180 + 600 + 5 = 1106."""
 
-    def teto(self, d, valor, *extra):
+    def teto(self, d, valor, *extra, **outros):
         obj = parametros_validos()
         obj["parametros"]["exec_teto_s"]["valor"] = valor
+        for k, x in outros.items():
+            obj["parametros"][k]["valor"] = x
         return rodar("parametros", *extra, "--arquivo", str(escrever(d, "p.json", obj)))
 
     def test_no_minimo_passa_e_um_abaixo_recusa(self):
         with tempfile.TemporaryDirectory() as d:
-            self.assertEqual(0, self.teto(d, 1226, *EXTRA)[0])
-            rc, _, err = self.teto(d, 1225, *EXTRA)
+            self.assertEqual(0, self.teto(d, 1106, *EXTRA)[0])
+            rc, _, err = self.teto(d, 1105, *EXTRA)
             self.assertEqual(2, rc)
-            for parcela in ("t_enc_pior_s", "ancora_max_s", "convergencia_periodo_s"):
+            for parcela in ("t_enc_pior_s (21)", "religamento_prazo_s (180)", "convergencia_periodo_s (5)"):
                 self.assertIn(parcela, err)
 
-    def test_as_parcelas_do_orquestrador_mudam_o_minimo(self):
+    def test_o_t_enc_do_orquestrador_muda_o_minimo(self):
         with tempfile.TemporaryDirectory() as d:
-            self.assertEqual(2, self.teto(d, 1226, "--t-enc-pior-s", "22", "--ancora-max-s", "120")[0])
-            self.assertEqual(2, self.teto(d, 1226, "--t-enc-pior-s", "21", "--ancora-max-s", "121")[0])
-            self.assertEqual(0, self.teto(d, 1226, "--t-enc-pior-s", "20", "--ancora-max-s", "121")[0])
+            self.assertEqual(2, self.teto(d, 1106, "--t-enc-pior-s", "22")[0])
+            self.assertEqual(0, self.teto(d, 1106, "--t-enc-pior-s", "20")[0])
 
-    def test_parcelas_obrigatorias_e_nao_negativas(self):
+    def test_t_enc_obrigatorio_e_nao_negativo(self):
         with tempfile.TemporaryDirectory() as d:
-            self.assertEqual(2, self.teto(d, 2000, "--ancora-max-s", "120")[0], "sem --t-enc-pior-s")
-            self.assertEqual(2, self.teto(d, 2000, "--t-enc-pior-s", "21")[0], "sem --ancora-max-s")
-            self.assertEqual(2, self.teto(d, 2000, "--t-enc-pior-s", "-1", "--ancora-max-s", "120")[0])
+            self.assertEqual(2, self.teto(d, 2000)[0], "sem --t-enc-pior-s")
+            self.assertEqual(2, self.teto(d, 2000, "--t-enc-pior-s", "-1")[0])
+
+    def test_valores_do_pre_registro_da_calibracao_aceitam_1005(self):
+        """Pre-registro da calibracao 4.1: 300 + 21 + 60 + 600 + 1,5 x (2,4 + 13,5) = 1004,9 -> 1005 s; o minimo do
+        codigo com esses numeros e 300 + 21 + 60 + 600 + 5 = 986."""
+        pr = dict(duracao_s=300, religamento_prazo_s=60, convergencia_teto_s=600, convergencia_periodo_s=5,
+                  inj_offset_s=49, f1_dur_s=60, f2_dur_s=90, f4_dur_s=90, w_recovery_s=191)
+        with tempfile.TemporaryDirectory() as d:
+            self.assertEqual(0, self.teto(d, 1005, *EXTRA, **pr)[0])
+            self.assertEqual(0, self.teto(d, 986, *EXTRA, **pr)[0])
+            self.assertEqual(2, self.teto(d, 985, *EXTRA, **pr)[0])
+
+
+class Referencia(unittest.TestCase):
+    """B2 da V-W6: o programa recusa referencia de outro perfil (LigacaoControlador.java:204), entao o orquestrador
+    passa uma por modo de replicacao e confere cada uma antes (pre-voo e --dry-run)."""
+
+    @staticmethod
+    def ref(perfil="sync", cenario="S3", esquema="referencia-p99/1"):
+        return {"esquema": esquema, "cenario": cenario, "perfil": perfil, "p99_ns": {"Login": 10}}
+
+    def test_perfil_certo_passa_e_imprime(self):
+        with tempfile.TemporaryDirectory() as d:
+            for perfil in ("sync", "async"):
+                p = escrever(d, "r.json", self.ref(perfil))
+                rc, out, _ = rodar("referencia", "--arquivo", str(p), "--perfil", perfil)
+                self.assertEqual(0, rc)
+                self.assertIn("perfil\t%s" % perfil, out)
+                self.assertIn("sha256\t%s" % cc.sha256(p), out)
+
+    def test_perfil_trocado_recusa(self):
+        with tempfile.TemporaryDirectory() as d:
+            rc, _, err = rodar("referencia", "--arquivo", str(escrever(d, "r.json", self.ref("async"))), "--perfil", "sync")
+            self.assertEqual(5, rc)
+            self.assertIn("perfil", err)
+
+    def test_cenario_diferente_de_s3_recusa(self):
+        with tempfile.TemporaryDirectory() as d:
+            rc, _, _ = rodar("referencia", "--arquivo", str(escrever(d, "r.json", self.ref(cenario="S1"))), "--perfil", "sync")
+            self.assertEqual(5, rc)
+
+    def test_esquema_errado_ou_sem_p99_e_uso(self):
+        with tempfile.TemporaryDirectory() as d:
+            rc, _, _ = rodar("referencia", "--arquivo", str(escrever(d, "r.json", self.ref(esquema="x/1"))), "--perfil", "sync")
+            self.assertEqual(2, rc)
+            sem = self.ref()
+            del sem["p99_ns"]
+            rc, _, _ = rodar("referencia", "--arquivo", str(escrever(d, "r.json", sem)), "--perfil", "sync")
+            self.assertEqual(2, rc)
+
+    def test_perfil_fora_de_sync_async_e_uso_e_arquivo_ausente_e_4(self):
+        with tempfile.TemporaryDirectory() as d:
+            p = escrever(d, "r.json", self.ref())
+            self.assertEqual(2, rodar("referencia", "--arquivo", str(p), "--perfil", "SYNC")[0])
+            self.assertEqual(4, rodar("referencia", "--arquivo", str(Path(d) / "nao.json"), "--perfil", "sync")[0])
 
 
 class Controlador(unittest.TestCase):

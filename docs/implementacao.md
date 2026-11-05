@@ -119,8 +119,8 @@ flowchart LR
 - **Rodada.** Para cada nó X, `lag:<rótulo de X>` = `<nonce>:<rodada>` pelo cliente de X; cada outro nó Y lê pelo
   cliente dele, depois de a escrita voltar (no máximo um passo), e lê de novo a cada `passoLeituraMs` até ver o valor
   ou até o prazo `--hotrod-timeout-ms`. Lag do par = início da rodada → fim da leitura que viu (método de
-  `wada_consistency_cloud_2011` §2); não visto = o prazo, que é o `politica.tetoLagMs` (R7). Sem falha: 3 escritas e
-  6 leituras.
+  `wada_consistency_cloud_2011` §2); não visto = o prazo, que é o `politica.tetoLagMs` (R7). Sem falha: 3 escritas e no
+  mínimo 6 leituras (em ASYNC, de 6 a 9).
 - **Lag de nó = menor lag dos seus pares** (escritor ou leitor). Só um nó que não troca com ninguém (cortado,
   pausado) chega ao teto; um enlace lento, um corte parcial ou uma chave com dono primário do outro lado não bastam.
   `lagMaxMs` = maior lag de nó; `noSuspeito` = o nó que o atinge, se único (empate → `null`, e o P1 não dispara).
@@ -138,7 +138,10 @@ flowchart LR
   `lag:<X>#1`, ... até `ChannelFactory.getHashAwareServer` devolver X (até 10 000 candidatas). Sob o corte de um nó C,
   o par entre os dois nós da maioria só falhava se o primário da chave do escritor fosse C; com o primário no próprio
   escritor, ele grava localmente e o outro nó lê dele, e o empate no teto some. O cliente fecha logo depois. O
-  resultado (chave, primário, motivo) vai a `defasagem_chaves` no `fim`. Limites no P-40 do registro.
+  resultado (chave, primário, motivo) vai a `defasagem_chaves` no `fim`. **Sem primário em algum nó, a abertura falha**
+  (`exigirPrimario`, V-W4 R1), em toda execução com o bloco `defasagem`. Limites no P-40 do registro; o `ChannelFactory`
+  é limitação declarada nas condições da V-W4 §7.1 (cliente fixo em 15.0.0, só na abertura, falha nunca silenciosa,
+  prova REST no *smoke*).
 - **Parâmetros (decisões do coordenador de 05/11).** `passoLeituraMs` = 20 ms, origem `wada_consistency_cloud_2011`
   §2 (50 leituras por segundo); sob falha, até 100 leituras por par e rodada, custo da sonda nos dois braços. Para a
   calibração, `cluster/controlador/controlador-calibracao-s3.json`: núcleo = valores provisórios de 22/10;

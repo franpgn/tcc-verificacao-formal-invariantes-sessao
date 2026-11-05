@@ -946,7 +946,13 @@ correspondente adicionado em `Mesclar` (`spec/SessionStore.tla`, commit `b7d8e0a
   fusão) pode tirar o primário do nó, o que só importaria para uma segunda falha, fora do desenho; (3) supõe que a
   leitura de um nó que não é dono vai primeiro ao primário (leitura escalonada do Infinispan), a conferir; (4) sem
   topologia, nó fora da topologia anunciada (`--servers` com nome e topologia com IP) ou falha, a chave simples volta,
-  com o motivo registrado, e o risco original também.
+  com o motivo registrado; desde a V-W4 R1 isso faz a abertura falhar, em vez de devolver o risco original.
+- **V-W4 (`ff7ab3c`), decisões do coordenador em nome do Gestor:** R1, o recuo para a chave simples é fatal na abertura
+  em toda execução com o bloco `defasagem` (`exigirPrimario`, `68691ae`); o `ChannelFactory` fica como limitação
+  declarada (cliente fixo em 15.0.0, uso só na abertura, falha nunca silenciosa, prova REST obrigatória no *smoke*,
+  com os bytes da chave Hot Rod em hexadecimal e `contains_key = true`, R2); R3, risco novo só em SYNC (a chave de X
+  com cópia no nó cortado pode deixar o valor invisível em X até a confirmação), decidido depois do *smoke* SYNC, com
+  preferência por declarar a limitação na célula SYNC F2, que é de referência.
 - **Conferir no smoke:** `defasagem_chaves` com `primario = true` nos três nós; com o `isn3` cortado, os pares
   `isn1`↔`isn2` vistos e `no_suspeito = isn3` em todas as rodadas antes da mudança de vista; e o dono primário de cada
   chave por `GET /rest/v2/caches/{cache}/{chave}?action=distribution`, como prova independente.

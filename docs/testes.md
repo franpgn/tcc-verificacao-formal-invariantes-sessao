@@ -520,3 +520,34 @@ Esperado na H2: 974 (W-2a, ainda não medido) + 47 + 15 = **1036/0/0/1**, 145 ar
 O que os testes **não** provam (fica para o *smoke* local): que o `ChannelFactory.getHashAwareServer` do cliente 15.0.0
 devolve, para os bytes da chave, o mesmo primário que o servidor 15.0.21 usa; que a leitura de um nó que não é dono vai
 primeiro ao primário; e que, sob o corte do `isn3`, os pares entre `isn1` e `isn2` deixam de empatar no teto.
+
+### W-4, terceira rodada: ressalvas da V-W4 (R1, R5, R6) e a primeira execução na H2 (2026-11-05)
+
+Parecer `docs/validacao-w4-2026-11-05.md` (`ff7ab3c`), APROVADO COM RESSALVAS. Commits: `5a69551` test (R1
+`ExigirPrimarioTest`, 5 testes, e R6 em `ouvinteLentoNaoAtrasaRodada`), `68691ae` feat (R1 e Javadoc da R5). O vermelho
+da R1 foi conferido antes do feat: com o `main` do `5a69551`, só o `ExigirPrimarioTest` deixa de compilar
+(`exigirPrimario`/`montar` ausentes).
+
+**Medido na H2** (`mvn -B -o test` em `workload/`, Maven 3.9.16, JDK 22.0.2 com alvo 17; contagens copiadas de
+`target/surefire-reports/TEST-*.xml`): **1041/0/0/1, 146 classes**, `BUILD SUCCESS`. A conta: 974 (W-2a) + 62 (W-4,
+primeira e segunda rodadas) + 5 (R1) = 1041; 133 + 12 + 1 = 146 classes. Tudo verde na primeira execução.
+`bash scripts/cria-caches.test.sh`: **26/0**. Brutos em `runs/w4-h2/` (`surefire-por-classe.tsv`,
+`surefire-total.txt`, `cria-caches.test.out`, `comandos.txt`, `MANIFEST.sha256`).
+
+| Classe nova do W-4 | Testes (medido) |
+|---|---|
+| `ParametrosDefasagemTest` | 5 |
+| `SondaDefasagemResumoTest` | 11 |
+| `SondaDefasagemRodadaTest` | 12 (3,4 s) |
+| `ArquiteturaDefasagemTest` | 2 |
+| `SondaDefasagemChaveTest` | 3 |
+| `CanalCanarioHotRodTest` | 4 |
+| `CanarioArquiteturaTest` | 5 |
+| `CachesCanarioJsonTest` | 3 |
+| `LigacaoControladorDefasagemTest` | 5 (3,6 s) |
+| `EscolhaDeChaveTest` | 8 |
+| `LigacaoControladorChavesTest` | 2 |
+| `ArquivoCalibracaoTest` | 2 |
+| `ExigirPrimarioTest` | 5 |
+
+Falta o *smoke* da seção 9 do parecer (cluster local), que espera o W-2a terminar o I-1..I-5.

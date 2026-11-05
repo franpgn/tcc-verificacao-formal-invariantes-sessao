@@ -1,0 +1,29 @@
+PASS: C1 exit 0
+PASS: C1 2 POST
+PASS: C1 6 GET de leitura de volta
+PASS: C1 POST no endpoint do cache
+PASS: C1 corpo = arquivo, sem o envoltorio do nome
+PASS: C1 SYNC com remote-timeout 17500
+PASS: C1 ASYNC sem remote-timeout
+PASS: C1 senha fora da linha de comando
+PASS: C1 credencial pela entrada padrao, com escape
+PASS: C1 digest
+PASS: C1 8 linhas TSV
+PASS: C2 divergencia exit 4
+PASS: C2 aponta o no
+PASS: C3 recusa exit 3
+PASS: C3 sem GET
+PASS: C4 arquivo ausente exit 2
+PASS: C4 nenhuma chamada
+PASS: C5 sem --url exit 1
+PASS: C5 sem nome exit 1
+PASS: C5 nome invalido exit 1
+PASS: C5 prazo invalido exit 1
+PASS: C5 sem senha exit 1
+PASS: C6 exit 0
+PASS: C6 so o POST
+PASS: C6 --max-time
+PASS: C7 JSON nao compacto exit 2
+----
+PASS=26 FAIL=0
+rc=0

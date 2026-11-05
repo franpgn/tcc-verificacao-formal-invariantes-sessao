@@ -12,7 +12,7 @@ derivado; regra do *tick*. Todas as mudanças são aditivas. **v1.2** (W-2a, só
 coordenador em 05/11, P-36/P-37/P-38): campo `reversao` em toda linha `acao` (`"orquestrador"` na ação não
 reversível, AC-5; `null` na reversível, AC-2); linha nova `politica`; `parametros_politica` na `meta`; tipos de ação
 só `AC-2` e `AC-5` (AC-1 e AC-3 retirados). `observaveis` continua 1.1: nada mudou nele. **observaveis 1.2** (W-4,
-B-26.3, só `observaveis`, aditivo e antes de qualquer dado; aguarda validação): `parametros_defasagem` na `meta`;
+B-26.3, só `observaveis`, aditivo e antes de qualquer dado; validado na V-W4, `ff7ab3c`): `parametros_defasagem` na `meta`;
 linha nova `defasagem` (uma por rodada da sonda S_lag); contadores `defasagem_*` no `fim`. `decisoes` continua 1.2.
 
 Com `--controller off` nenhum dos dois existe. Código: `workload/src/main/java/br/unipampa/tcc/controle/FormatoJsonl.java`
@@ -126,7 +126,7 @@ execução do braço B tem `politica = por-assinatura` e `parametros_politica` n
 | `viol.fora_do_gatilho` | I3, I5, I6, `I2_JANELA_CASCATA`, `I2_CASCATA_INCOMPLETA` (DT-002) |
 | `viol.atrasadas_fora_do_gatilho` | violações fora do gatilho descartadas por atraso |
 | `top` | `disponivel`, `amostras`, `anomalas`, `nos_min` (S_top da janela) |
-| `lag` | `nivel` (`INDETERMINADA`, `CALMA`, `INTERMEDIARIA`, `ALTA`), `no_suspeito`, `lag_max_ms`, `amostras` (S_lag; W-4: `amostras` = rodadas da sonda com início na janela, `lag_max_ms` = maior lag de nó, `no_suspeito` = o nó que o atinge, se único) |
+| `lag` | `nivel` (`INDETERMINADA`, `CALMA`, `INTERMEDIARIA`, `ALTA`), `no_suspeito`, `lag_max_ms`, `amostras` (S_lag; W-4: `amostras` = rodadas consumidas na janela: as com início nela e as atrasadas de janelas anteriores, contadas também em `defasagem_rodadas_atrasadas`; `lag_max_ms` = maior lag de nó; `no_suspeito` = o nó que o atinge, se único, preenchido em toda janela com rodada; só é suspeito de fato com `lag_max_ms` = teto, e o P1 só o usa assim) |
 
 **`tick`**: `seq` (registros do agregador até ali), `agora_ns`, `janelas` (quantas o *tick* fechou). Só sai quando
 o *tick* fecha ao menos uma janela; serve ao *replay* do B-38.
@@ -155,17 +155,20 @@ as outras linhas. Campos, nesta ordem:
 | `rodada` | número da rodada na execução (a partir de 1; inclui as de aquecimento, antes da origem, que não são gravadas) |
 | `t_inicio_ns`, `t_ns` | início (decide a janela) e fim da rodada |
 | `teto_ms` | prazo de leitura = `--hotrod-timeout-ms` (= `politica.tetoLagMs`, R7): o lag de um par não visto |
-| `lag_max_ms`, `no_suspeito` | maior lag de nó da rodada e o nó que o atinge, se único (`null` em empate) |
+| `lag_max_ms`, `no_suspeito` | maior lag de nó da rodada e o nó que o atinge, se único (`null` em empate). O `no_suspeito` sai preenchido em toda rodada, também nas calmas (máximo único entre valores pequenos): **só é suspeito com `lag_max_ms = teto_ms`**, e quem lê o JSONL tem de filtrar assim (o P1 só o usa com `lag_max_ms >= tetoLagMs`) |
 | `lag_max_par_ms` | maior lag de par (só registro: um par alto sozinho não levanta o lag de nenhum nó) |
 | `lag_por_no` | lista de `no`, `lag_ms`: o **menor** lag entre os pares em que o nó escreve ou lê |
 | `pares` | lista de `escritor`, `leitor`, `visto`, `lag_ms` (do início da rodada até o fim da leitura que devolveu o valor novo; o teto se não visto), `leituras` (tentativas), `erros_leitura` |
 | `escritas` | lista de `no`, `ok` (`true`, `false`, ou `null` se pendente no fim do prazo), `duracao_ms`, `erro` (nome da exceção) |
 | `custo` | `escritas`, `leituras`, `erros_escrita`, `erros_leitura` da rodada (contados à parte da carga útil; nunca no CSV de eventos) |
 
-Conservação: `defasagem_escritas` = 3 × `defasagem_rodadas` (três nós); a soma de `custo.leituras` das linhas é
-`defasagem_leituras` menos as leituras das rodadas de aquecimento.
+Conservação: `defasagem_escritas` = 3 × `defasagem_rodadas` (três nós). A soma de `custo.leituras` das linhas é
+`defasagem_leituras` menos as leituras das rodadas de aquecimento, das rodadas não gravadas
+(`defasagem_rodadas_nao_gravadas`), das que o ouvinte recusou (`defasagem_erros_ouvinte`) e das linhas perdidas
+(`linhas_perdidas`). `defasagem_rodadas_puladas` conta também instantes pulados antes da origem: as rodadas puladas
+depois da origem se contam pelas janelas com `lag.amostras = 0`, e não pelo contador.
 
-**Custo da sonda** (decisão do coordenador de 05/11): sem falha, 3 escritas e 6 leituras por rodada (uma rodada por
+**Custo da sonda** (decisão do coordenador de 05/11): sem falha, 3 escritas e **no mínimo** 6 leituras por rodada (em ASYNC, de 6 a 9: o leitor que é cópia lê de novo um passo depois se a replicação ainda não chegou; uma rodada por
 janela W). Sob falha, um par que não vê o valor é lido a cada `passoLeituraMs` até o prazo: no máximo
 `prazo/passo` = 2000/20 = **100 leituras por par e por rodada**, até 600 por rodada com os seis pares no teto. O custo
 é da sonda, está nos dois braços e é contado à parte da carga útil (`custo` e `defasagem_*`).
@@ -176,8 +179,11 @@ não vão a janela nem ao JSONL (só a `defasagem_rodadas_antes_da_origem`). Nen
 
 **Chaves** (P-40): a chave de cada nó X é escolhida na abertura para ter X como dono primário, pelo hash consistente
 de um cliente *topology-aware* (`CanalCanarioHotRod`): candidatas `lag:<X>`, `lag:<X>#1`, `lag:<X>#2`..., até 10 000.
-Sem topologia, com X fora da topologia anunciada ou sem achar, fica `lag:<X>`, e o motivo vai a
-`defasagem_chaves`.
+Sem topologia, com X fora da topologia anunciada ou sem achar, a **abertura falha** (V-W4 R1, decisão do coordenador em
+nome do Gestor, 05/11): em toda execução com o bloco `defasagem`, nos dois braços, na calibração e na avaliação, a
+execução vai como de infraestrutura (DT-014). `defasagem_chaves` fica como registro de auditoria. O uso de
+`ChannelFactory` (pacote `impl` do cliente) é limitação declarada, nas condições da V-W4 §7.1: cliente fixo em 15.0.0,
+uso só na abertura, falha nunca silenciosa e prova REST obrigatória no *smoke*.
 
 `linhas_perdidas` conta as linhas que não chegaram ao arquivo até a linha `fim`: erros de escrita mais linhas
 recebidas com a trilha já fechada. As linhas que chegam **depois** do `fim` (executor fora do prazo,
@@ -271,6 +277,11 @@ na calibração. O lag medido não depende deles.
 O prazo de leitura não é campo do bloco: é o `--hotrod-timeout-ms` (decisão do coordenador de 05/11), igual a
 `politica.tetoLagMs` pela R7. O período da sonda é W. O carregamento recusa (exit 2): fora do S3; prazo de leitura
 que não cabe em W; `passoLeituraMs` maior ou igual ao prazo; `lagInMs` acima do prazo; nós fora de correspondência.
+
+**Requisito para o B-40 (V-W4 R4, decisão do coordenador de 05/11).** O carregamento exige `--hotrod-timeout-ms` < W, e a
+agenda só começa a rodada de uma janela se o atraso de início não passar de W − prazo (`cabeNaJanela`). A regra
+W = ⌈n_lat/λ₅⌉ do plano de alinhamento §3.5 não conhece isso. O B-40 fixa **W ≥ prazo + o maior atraso de início
+medido na calibração**, com o atraso de início = `t_inicio_ns` − início da janela nas linhas `defasagem`.
 
 **`fim`**: `decisoes`, `transicoes`, `perfil_final`, `erros_politica`, `acoes_pedidas`, `acoes_ignoradas`
 (pedido repetido de ação já ativa, sem linha), `acoes_executadas`, `acoes_falhas`, `reversoes`, `reversoes_falhas`,

@@ -1063,7 +1063,10 @@ correspondente adicionado em `Mesclar` (`spec/SessionStore.tla`, commit `b7d8e0a
 - **Pendente (decisão do Senior/Gestor):** com o `amostrador-infra.sh` como está, a coleta do S3 só pode ser iniciada
   com `--id diag-<UTC>`. Alternativa: uma linha a mais no `ID_RE` (`|calibracao|nucleo|extra|reposicoes-s3|validacao`),
   compatível com os testes atuais (o A7 só recusa IDs que continuariam recusados), num commit próprio e validado.
-- **Status:** `ABERTO`.
+- **Decisão (coordenador, 05/11, sobre a V-W6, ponto 6):** o `amostrador-infra.sh` não muda enquanto o *rebaseline*
+  não fechar. Nas campanhas S3 o amostrador é iniciado com `--id diag-<UTC>`, que o `ID_RE` atual aceita, e o
+  orquestrador também (`--h4-id`, expressão `<prefixo>-<UTC>`); o pré-registro da calibração registra isso.
+- **Status:** `RESOLVIDO POR DECISÃO` (contorno `diag-<UTC>`; nenhum dos três arquivos do h4 foi editado).
 
 ### P-46 (W-6; P-42 antes do rebase) — risco: a sonda do laço de convergência lê a topologia de um cliente que não opera no S3
 
@@ -1119,6 +1122,51 @@ correspondente adicionado em `Mesclar` (`spec/SessionStore.tla`, commit `b7d8e0a
 - **Correção:** o laço de eventos espera com `dormir` (o SIGTERM chega no `wait` e o *trap* roda), testa eventos com
   `read -t 0` e lê só a linha disponível. A latência de leitura de um evento continua de até 0,2 s.
 - **Status:** `RESOLVIDO` no código (05/11); a confirmar na rodada repetida do S7 e na validação X-17 na VM.
+
+### P-51 (W-6b; achado B1 da V-W6) — F2/F4 do braço B recusadas sempre que o AC-5 para o nó da falha
+
+- **Sintoma (leitura do Senior, V-W6 §5.1):** com o AC-5 parando o nó em que a F2 ou a F4 foi injetada, o
+  `inject-partition.sh` real sai com 1 (a soma dos contadores pelo `nsenter` com o PID morto falha sob
+  `set -euo pipefail`, `:495`) e o `inject-netdegrade.sh` com 6 (contadores zerados ou *ping* sem resposta). Os dois
+  códigos estavam em `EXITS_REDE_SEGUEM` como recusa, então toda execução F2/F4 do braço B com AC-5 no nó da falha
+  saía RECUSADA, e a reposição tinha o mesmo destino. A suíte não pegava: os dublês saíam sempre com o código pedido.
+- **Correção (orquestrador; os injetores não mudam):** com exit 1 ou 6 e o nó-alvo fora de `running` (ou já religado
+  pela linha de fim, pelo AC-5 ou pelo O8), `concluir_injecao` guarda o caso como pendente (`injetor_alvo_parado` no
+  `execucao.json`). Na pós-checagem, se a linha de fim e a trilha concordam que o AC-5 APLICADA foi nesse nó (e, na F2,
+  o `injetor.log` tem `OK: <no> nao conecta a nenhum par`), a execução segue com o aviso "falha efetiva ate a parada do
+  no pelo AC-5; contadores do injetor nao lidos"; senão, a recusa de antes, com o que faltou. Dublês fiéis: o de F2
+  escreve a linha OK e sai com 1, o de F4 sai com 6, quando o alvo não está `running` no fim da janela. Caso S22.
+- **Status:** `RESOLVIDO` (05/11, W-6b); a confirmar no X-17 (1 F2 `shadow` + 1 F2 `active`).
+
+### P-52 (W-6b; achado B2 da adenda da V-W6) — uma só referência de p99 para a fase inteira: toda execução SYNC falharia ao abrir
+
+- **Sintoma (leitura do Senior, V-W6 §11):** o orquestrador passava o mesmo `--controller-reference` a todas as
+  execuções, e o programa recusa referência de outro perfil (`LigacaoControlador.java:204`). Calibração e núcleo têm
+  células SYNC e ASYNC; o pré-voo 4 só rodava o `--dry-run` do programa com `async`, então não via o erro.
+- **Correção:** `--referencia-async` e `--referencia-sync` (cada uma com o seu SHA-256) no lugar de `--referencia`
+  (que agora sai com 2 e uma mensagem); a referência de cada execução vem do modo da linha da matriz; a de cada perfil
+  presente na fila é obrigatória e conferida no pré-voo e no `--dry-run` (`campanha_s3_conferir.py referencia`:
+  esquema, cenário S3, perfil); as duas entram no *bundle*; o pré-voo 4 roda o `--dry-run` do programa em cada perfil
+  da fase; o `execucao.json` registra o `referencia_sha256` usado. O dublê de `java` da suíte recusa referência de
+  outro perfil, como o programa. Caso S24.
+- **Status:** `RESOLVIDO` (05/11, W-6b).
+
+### P-53 (W-6b) — nó religado pelo O8 não tornava a execução DESCARTADA-INFRA
+
+- **Sintoma (achado ao escrever o S22):** o veredito `DESCARTADA-INFRA` olha os motivos que começam com `infra`, mas
+  as mensagens de `E_INFRAS` (nó parado sem AC-5 religado pelo O8, `podman start` que falhou no religamento, alvo do
+  AC-5 fora de `--admin`) entravam nos motivos sem esse prefixo. Uma execução com só um desses desvios terminava ACEITA
+  com motivos. Nenhum caso da suíte exercitava o O8 sozinho (o arquivo `sinal-alvo` do dublê não era usado).
+- **Correção:** os motivos de `E_INFRAS` entram com o prefixo `infra: `. O S22 (nó parado sem AC-5) e o S23 (sem a
+  linha de fim) cobrem os dois caminhos. Os nós religados pelo O8 ou pela falta da linha não geram também o motivo de
+  `StartedAt` (já têm o seu).
+- **Efeito colateral achado na suíte completa (S4 i=1):** com o disparo atrasado no Git Bash, o F1 ainda estava em
+  curso quando a linha de fim chegou, e o O8 religou o nó que o `inject-crash.sh` ia religar; com o prefixo, a execução
+  virou `DESCARTADA-INFRA`. O O8 agora pula o nó de um F1 em curso (o injetor o religa e grava o `end`). Caso S25. Na
+  VM o F1 acaba em +109 s numa carga de 300 s, então o caso só aparece se o injetor travar.
+- **Status:** `RESOLVIDO` (05/11, W-6b).
+
+Na integração, P-51..P-53 deslocam como os demais números do W-6 (seção 6 da V-W6: hoje +2, P-53..P-55).
 
 ## Observação de modelagem (não é defeito)
 

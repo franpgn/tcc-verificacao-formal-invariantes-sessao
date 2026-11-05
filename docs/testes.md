@@ -755,3 +755,34 @@ campo nos dois formatos) e as **edições autorizadas pelo coordenador** que só
 | S19 | arquivo `NUL` (do `podman machine ssh` no Git Bash) na saída e no diretório da execução: removido, registrado no log, fora dos manifestos |
 | S20 | pareamento: bloco com semente diferente, célula diferente ou braço faltando recusa no pré-voo (exit 4) |
 | S21 | `convergencia_estado = sem_rodada_valida` vira aviso na checagem, com a execução ACEITA |
+
+### W-6b: ressalvas da V-W6 (B1, B2, S1..S6, M1) (2026-11-05)
+
+Mesma branch, sobre `a34aa36` (adenda da V-W6). Commits `test:` vermelhos antes da implementação: `98149ca` (B1,
+S1..S6, M1), `4dec3df` (B2, M1 alinhada ao pré-registro, folga do S22) e `9c8a8b5` (S25). Nada em `workload/` mudou, então o Surefire
+do W-6 (1100/0/0/1) vale para a árvore Java desta ponta.
+
+| Suíte | Antes | Depois | Vermelho conferido |
+|---|---|---|---|
+| `scripts/test_campanha_s3_conferir.py` | 21 OK | **30 OK** (M1: 4, B2: 5) | 6 falhas antes da M1; 11 antes da M1 revista e do B2 |
+| `scripts/run-campanha-s3.test.sh` | 193 PASS (S1..S21) | **269 PASS, 0 FAIL** (S1..S25, 2373 s) | S1 com 13 falhas antes da M1/S1; S1 com exit 2 antes do B2 |
+| `scripts/test_campanha_s3_matriz.py`, `test_campanha_s3_h4.py` | 15 OK, 11 OK | 15 OK, 11 OK | — |
+| `scripts/inject-crash.test.sh`; `analysis` | 141 PASS; 370 OK, 1 *skip* | iguais | — |
+
+| Caso | O que prende |
+|---|---|
+| S1 (acréscimo) | o `--dry-run` confere o controlador: imprime `controlador conferido: …`; bloco `politica` ausente com braço B, `tetoLagMs` ≠ `hotrod_timeout_ms` e `p2Habilitada = true` saem com 4 sem chamar `java`, `podman`, `sudo`, `curl` nem `systemctl` |
+| S2 (acréscimo) | `exec_teto_s` abaixo de duração + `T_enc` + religamento + convergência + período sai com 4 e cita `t_enc_pior_s (21)`; *timer* `tcc-heal-cs-*` sobrando sai com 4 no pré-voo |
+| S4 (acréscimo) | `bundle.sha256` com o coletor; `MANIFEST.sha256` de cada execução confere com `sha256sum -c` (`stdout.log` completo) |
+| S7 (mudança) | SIGKILL só depois de 2300 ms reais (K = 23 s virtuais na escala 10); teto do S7b no mínimo do M1 (176 s) |
+| S22 | B1: F2 e F4 do braço B com o AC-5 no nó da falha (carga de 120 s): dublês saem com 1 e 6, a execução fica ACEITA com o aviso dos contadores não lidos e `injetor_alvo_parado = isn3`, o braço A segue com 0; F2 sem a linha OK do corte: RECUSADA; exit 1 com o nó de pé: RECUSADA; nó parado sem AC-5: recusa do injetor mais religamento do O8, `DESCARTADA-INFRA`, fase segue |
+| S23 | S3: braço B sem a linha de fim depois de um AC-5: o orquestrador religa `isn3`, a execução vira `DESCARTADA-INFRA` com o motivo, e a fase sai com 0 (antes, a saúde falhava e a fase saía com 10) |
+| S25 | F1 ainda em curso na linha de fim (F1 de +10 a +60 s numa carga de 60 s): o O8 não religa o nó do F1, a execução fica ACEITA, um só `podman start` de `isn2` (o do `inject-crash.sh`) e marcadores `start`/`end` completos. Achado na suíte completa do W-6b (S4 i=1 virou `DESCARTADA-INFRA` depois do P-53) |
+| S24 | B2: fase com SYNC e ASYNC: cada carga com a referência do seu perfil, `--dry-run` do programa nos dois perfis, `referencia_sha256` no `execucao.json`, as duas no *bundle*; referências trocadas recusadas no pré-voo e no `--dry-run`; célula SYNC sem `--referencia-sync` recusada; fase só ASYNC aceita só a `--referencia-async`; `--referencia` antiga sai com 2 |
+
+Dublês alterados para ficarem fiéis: o de F2 escreve a linha `OK: <no> nao conecta a nenhum par` e sai com 1, e o de
+F4 sai com 6, quando o alvo não está `running` no fim da janela; o de `java` recusa referência de outro perfil
+(`LigacaoControlador.java:204`), aceita `java-para-sem-ac5` (para um nó sem entrada na trilha) e
+`java-sem-sinal-<controller>` (omite a linha de fim só num braço). Na primeira rodada do S22 com 60 s de carga, o
+atraso do disparo no Git Bash (6 a 20 s virtuais) empurrou a janela da F2 para depois do religamento em duas
+sub-rodadas; com 120 s a margem é de cerca de 30 s virtuais.

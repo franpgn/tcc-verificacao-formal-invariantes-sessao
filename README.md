@@ -119,9 +119,13 @@ Plano sem executar nada, depois a fase (dentro da VM, em `tmux`, com o amostrado
 ```bash
 scripts/run-campanha-s3.sh --dry-run --matriz <tsv> --matriz-sha256 <hex> --fase nucleo \
   --parametros <campanha-s3.json> --parametros-sha256 <hex> --controlador <controlador.json> --controlador-sha256 <hex> \
-  --referencia <referencia.json> --referencia-sha256 <hex> --saida runs/campanha-s3
-# mesma linha sem --dry-run e com --jar <jar> --jar-sha256 <hex> --boot-esperado <boot_id> --h4-id <id>
+  --referencia-async <referencia-S3-async.json> --referencia-async-sha256 <hex> \
+  --referencia-sync <referencia-S3-sync.json> --referencia-sync-sha256 <hex> --saida runs/campanha-s3
+# mesma linha sem --dry-run e com --jar <jar> --jar-sha256 <hex> --boot-esperado <boot_id> --h4-id diag-<UTC>
 ```
+
+Uma referência de p99 por modo de replicação presente na fase (o programa recusa a de outro perfil). O amostrador h4
+é iniciado com `--id diag-<UTC>` (o `amostrador-infra.sh` não muda enquanto o *rebaseline* não fechar).
 
 Detalhes e porquês: `docs/implementacao.md` (TD-014); testes: `scripts/run-campanha-s3.test.sh` e `docs/testes.md`.
 

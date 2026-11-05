@@ -122,7 +122,7 @@ class ConsultaSaudeRestCliTest {
                     ServidorAdminFalso.Resp.de(200, corpo), erros)));
         }
         String servers = String.join(",", nos.stream().map(ServidorAdminFalso::rotulo).toList());
-        // cliente aquecido (desafio Digest guardado e conexao aberta), para o prazo de 100 ms valer so para a consulta
+        // cliente aquecido (desafio Digest guardado e conexao aberta), para o prazo valer so para a consulta
         ClienteAdminRest cliente = new ClienteAdminRest("admin", "s3cr3t");
         for (ServidorAdminFalso n : nos) {
             cliente.pedir("GET", URI.create(n.url() + ConsultaSaudeRestTest.ENDPOINT), 2_000_000_000L);
@@ -131,7 +131,9 @@ class ConsultaSaudeRestCliTest {
         int exit;
         try {
             exit = SondaTopologiaCli.executar(new String[] {"--servers", servers, "--replication", "async",
-                    "--periodo-ms", "200", "--prazo-ms", "100", "--duracao-s", "1"}, COM_SENHA, s.pOut, s.pErr,
+                    // HTTP real no loopback (W-2b): 400 ms de prazo, nao os 100 ms do lancador falso, que respondia
+                    // na hora; com 100 ms a suite inteira estourou o prazo uma vez (nos_min = 0)
+                    "--periodo-ms", "500", "--prazo-ms", "400", "--duracao-s", "2"}, COM_SENHA, s.pOut, s.pErr,
                     (usuario, senha) -> cliente);
         } finally {
             nos.forEach(ServidorAdminFalso::close);

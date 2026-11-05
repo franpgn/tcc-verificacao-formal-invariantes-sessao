@@ -59,9 +59,11 @@
 #   - swap da VM (SwapTotal - SwapFree de /proc/meminfo) lido no portao de cada execucao, depois do K1, e gravado em
 #     execucao.json (swap_usado_kb_k1). Com --swap-limite-kb N e swap >= N, o cluster e recriado de novo pelo mesmo
 #     caminho (down/up, seis caches, camada 3, K1) e a execucao roda depois, com o mesmo i e a mesma semente, sem
-#     recusa; uma recriacao por portao (se o swap continuar >= N, roda com aviso). Medido na campanha de 05/11: a
-#     leitura final por replica sobe ~870 MB em 20 s com os servidores em ~6,4 GB, e a VM passa de 1 GiB de swap a cada
-#     7 a 10 execucoes;
+#     recusa; uma recriacao por portao. Se o swap continuar >= N depois dela, a fase para com 11, sem rodar a execucao
+#     (decisao do coordenador sobre o P-56: nas 4 recriacoes medidas na noite 1 de 05/11 o swap caiu para 39 a 51 MB;
+#     swap alto depois de recriar tem outra causa e nao deve contaminar dados); a retomada roda o mesmo i (DT-014).
+#     Medido na campanha de 05/11: a leitura final por replica sobe ~870 MB em 20 s com os servidores em ~6,4 GB, e a
+#     VM passa de 1 GiB de swap a cada 7 a 10 execucoes;
 #   - trilha de decisoes sem a linha fim ou com linhas_perdidas > 0 marca trilha_incompleta no execucao.json; com
 #     --exigir-trilha-completa, a execucao e DESCARTADA-INFRA (a fase segue). As duas opcoes entram no bundle.
 #   Acrescimos da V-W6b: o execucao.json de toda falha injetada traz o fim nominal (fim_nominal_desde_ancora_s =
@@ -95,6 +97,7 @@
 #   0  fase concluida ou parada por PARAR     2  uso      3  dependencia ausente     4  pre-voo recusado
 #   5  GO nao dado    6  erro de infraestrutura (braco B que nao atua, cache nao criado, residuo de rede, injetor
 #   com exit deterministico)    10 parada (K1, no sem volta, h4, disco, cluster que nao volta)
+#   11 parada de memoria (swap >= --swap-limite-kb depois da recriacao do portao; a execucao nao roda; P-56)
 # A ultima linha de <saida>/<fase>/orquestrador.log traz o exit e o motivo. Nunca apaga brutos. NAO faz git push.
 set -euo pipefail
 
@@ -134,7 +137,7 @@ readonly EXITS_F1_SEGUEM=" 0 1 4 "      # C3/P2 do Gestor (23/10), como no rebas
 readonly EXITS_REDE_SEGUEM=" 0 1 4 6 "  # idem, mais 6 (a falha nao se efetivou) dos injetores de rede: recusa
 readonly EXITS_F3_SEGUEM=" 0 1 4 "      # C3/P2: INJ_EXITS_SEGUEM do run-rebaseline.sh (inject-jitter.sh); 5 e outros: exit 6
 readonly NETEM_EFETIVA_APOS_S=2         # C5 do rebaseline (NETEM_EFETIVA_S = 51 = +49 + 2); B-40 4.3: sem netem, recusa
-readonly EXITS_PREVISTOS=" 0 2 3 4 5 6 10 130 143 "
+readonly EXITS_PREVISTOS=" 0 2 3 4 5 6 10 11 130 143 "
 
 PODMAN="${PODMAN:-sudo podman}"
 export PODMAN
@@ -998,7 +1001,14 @@ portao_swap() {  # W-6c: swap usado no portao; com --swap-limite-kb e swap >= li
         E_SWAP_LEIT+=",${kb:-null}"
         log "exec i=${E_I}: swap usado depois da recriacao: ${kb:-ilegivel} kB"
         if [[ -n "${kb}" && "${kb}" -ge "${SWAP_LIMITE_KB}" ]]; then
-            E_AVISOS+=("swap continua ${kb} kB >= ${SWAP_LIMITE_KB} kB depois da recriacao; a execucao roda assim (uma recriacao por portao, W-6c)")
+            # P-56 (decisao do coordenador, 05/11): swap alto depois de recriar tem outra causa; para a fase sem rodar
+            # a execucao. Sem checagem.json: na retomada o diretorio vira .abortada-<UTC> e o mesmo i roda (DT-014)
+            E_SWAP_KB="${kb}"
+            E_SWAP_PARADA="parada swap: swap continua ${kb} kB >= ${SWAP_LIMITE_KB} kB depois da recriacao, antes de i=${E_I}; a execucao nao roda (P-56: nas recriacoes medidas o swap caiu para 39 a 51 MB)"
+            montar_cmd "${E_MODO}" "${E_SEED}" "${d}/.scratch" "${E_CTL}" "${d}/marcadores.txt"
+            gravar_execucao "${d}"
+            log "exec i=${E_I}: ${E_SWAP_PARADA}"
+            finalizar 11 "${E_SWAP_PARADA}"
         fi
     fi
     [[ -n "${kb}" ]] || E_AVISOS+=("swap ilegivel em ${MEMINFO} no portao")
@@ -1055,7 +1065,7 @@ gravar_execucao() {
  "workload_exit": $(json_ou_null "${E_WEXIT}"),
  "teto_estourado": ${E_TETO:-false},
  "swap_usado_kb_k1": $(json_ou_null "${E_SWAP_KB}"),
- "swap_portao": {"limite_kb": $(json_ou_null "${SWAP_LIMITE_KB}"), "leituras_kb": [${E_SWAP_LEIT}], "recriado": ${E_SWAP_RECRIADO}, "fonte": $(json_str "${MEMINFO}")},
+ "swap_portao": {"limite_kb": $(json_ou_null "${SWAP_LIMITE_KB}"), "leituras_kb": [${E_SWAP_LEIT}], "recriado": ${E_SWAP_RECRIADO}, "parada": $(json_str_ou_null "${E_SWAP_PARADA}"), "fonte": $(json_str "${MEMINFO}")},
  "trilha_incompleta": ${E_TRILHA_INC:-null},
  "trilha": ${E_TRILHA_JSON:-null}
 }
@@ -1560,7 +1570,7 @@ rodar_execucao() {  # rodar_execucao "<i> <celula> <modo> <falha> <papel> <bloco
     E_FALHA_EF=""; E_VOLTA_F1=""; E_SINAL_JSON=""; E_SINAL_MS=""; E_SINAL_ALVO=""; E_RELIG_JSON=""; E_RELIG_NO=""
     E_FIM_UTC=""; E_WEXIT=""; E_TETO=false; E_SEM_ANCORA=""; E_INFRA_STOP=""; E_PARADA_H4=""; E_META=""; E_PAROU=""
     E_INJ_PARADO=""; E_RELIG_OUTROS=" "; PARADOS=""
-    E_SWAP_KB=""; E_SWAP_LEIT=""; E_SWAP_RECRIADO=false; E_TRILHA_INC=""; E_TRILHA_JSON=""; E_INJ_SAIDA_MS=""
+    E_SWAP_KB=""; E_SWAP_LEIT=""; E_SWAP_RECRIADO=false; E_SWAP_PARADA=""; E_TRILHA_INC=""; E_TRILHA_JSON=""; E_INJ_SAIDA_MS=""
     F3_MARCA=""; PID_ALVO=""; NETEM_ESTADO=""; NETEM_AMOSTRA_MS=0
     E_MOTIVOS=(); E_RECUSAS=(); E_AVISOS=(); E_INFRAS=()
     if [[ -d "${d}" ]]; then

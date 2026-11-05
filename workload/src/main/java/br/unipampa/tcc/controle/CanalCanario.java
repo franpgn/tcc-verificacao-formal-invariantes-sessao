@@ -42,6 +42,15 @@ public interface CanalCanario extends AutoCloseable {
     }
 
     /**
+     * P-40: motivo da escolha da chave do no ({@code primario}, {@code sem-topologia}, {@code fora-da-topologia},
+     * {@code nao-encontrada}, {@code nao-escolhida}, {@code falha:<Excecao>}), ou {@code null} se o canal nao escolhe
+     * (padrao). So registro.
+     */
+    default String motivoDaChave(int indice) {
+        return null;
+    }
+
+    /**
      * Escreve {@code valor} em {@code chave} pelo cliente fixado no no {@code indice}. Bloqueia ate a resposta
      * do servidor; deve responder a interrupcao (a sonda interrompe a tarefa no fim do prazo da rodada).
      *

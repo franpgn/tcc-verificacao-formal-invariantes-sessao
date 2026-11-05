@@ -549,7 +549,7 @@ final class LigacaoControlador implements AutoCloseable, WorkloadMain.ControleDa
                 var chaves = o.putArray("defasagem_chaves");
                 for (int i = 0; i < canario.nos(); i++) {
                     chaves.addObject().put("no", canario.rotulo(i)).put("chave", canario.chave(i))
-                            .put("primario", canario.chaveNoPrimario(i));
+                            .put("primario", canario.chaveNoPrimario(i)).put("motivo", canario.motivoDaChave(i));
                 }
             }
         });

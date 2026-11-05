@@ -367,6 +367,11 @@ public final class CanalCanarioHotRod implements CanalCanario {
     }
 
     @Override
+    public String motivoDaChave(int indice) {
+        return chaves.get(indice).motivo();
+    }
+
+    @Override
     public void escrever(int indice, String chave, String valor) {
         exigirAberto();
         alvos.get(indice).put(chave, valor);

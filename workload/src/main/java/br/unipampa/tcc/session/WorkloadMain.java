@@ -19,6 +19,7 @@ import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 import java.util.function.BooleanSupplier;
+import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -450,6 +451,10 @@ public final class WorkloadMain {
                 auditor.rodadaUnica(leitores.leitoresSessao(), leitores.leitoresIdentidade());
                 marcadores = lerMarcadores(cli);
             }
+            if (cli.scenarioS3) {
+                // P-41: resultado da ultima leitura de cada replica (com prazo sem resposta = --hotrod-timeout-ms)
+                System.out.println(linhaLeituraPorReplica(cli.s3.hotrodTimeoutMs, leitores.comPrazo()));
+            }
             if (cli.varredura) {
                 executarVarredura(cli, rcm, invalidacoes, rastro, rep);
             }
@@ -757,6 +762,7 @@ public final class WorkloadMain {
         List<RemoteCacheManager> gerenciadores = new ArrayList<>();
         List<Supplier<Map<String, SessionState>>> leitoresSessao = new ArrayList<>();
         List<Supplier<Map<String, IdentityState>>> leitoresIdentidade = new ArrayList<>();
+        List<LeituraReplicaComPrazo<?>> comPrazo = new ArrayList<>();
         for (String s : cli.servidores.split(",")) {
             String[] hp = s.split(":");
             int porta = Integer.parseInt(hp[1].trim());
@@ -774,12 +780,48 @@ public final class WorkloadMain {
             gerenciadores.add(rcmNo);
             RemoteCache<String, SessionState> sessoesNo = rcmNo.getCache(cli.replicacao.cacheSessoes());
             RemoteCache<String, IdentityState> identidadesNo = rcmNo.getCache(cli.replicacao.cacheContadores());
-            leitoresSessao.add(() ->
-                    materializar(sessoesNo, segmentosDoServidor(sessoesPrincipal, porta)));
-            leitoresIdentidade.add(() ->
-                    materializar(identidadesNo, segmentosDoServidor(identidadesPrincipal, porta)));
+            // P-41: em S3, prazo sem resposta = --hotrod-timeout-ms (o no parado pelo AC-5 nao trava a leitura final)
+            String no = hp[0].trim() + ":" + porta;
+            leitoresSessao.add(leitorDaReplica(cli.scenarioS3, cli.s3.hotrodTimeoutMs, "sessoes@" + no,
+                    batida -> materializar(sessoesNo, segmentosDoServidor(sessoesPrincipal, porta), batida),
+                    comPrazo));
+            leitoresIdentidade.add(leitorDaReplica(cli.scenarioS3, cli.s3.hotrodTimeoutMs, "contadores@" + no,
+                    batida -> materializar(identidadesNo, segmentosDoServidor(identidadesPrincipal, porta), batida),
+                    comPrazo));
         }
-        return new LeitoresMultiReplica(gerenciadores, leitoresSessao, leitoresIdentidade);
+        return new LeitoresMultiReplica(gerenciadores, leitoresSessao, leitoresIdentidade, comPrazo);
+    }
+
+    /** Leitura sem aviso de entrada (fora do S3 ninguem mede o prazo). */
+    private static final Runnable SEM_BATIDA = () -> { };
+
+    /**
+     * P-41: o leitor de uma replica. Em S3 ({@code s3}), {@link LeituraReplicaComPrazo} com prazo sem resposta =
+     * {@code prazoMs} ({@code --hotrod-timeout-ms}, o mesmo prazo de leitura da sonda S_lag), registrado em
+     * {@code comPrazo} para a linha da saida; fora do S3, a leitura de antes, sem prazo e na thread de quem chama (as
+     * campanhas S1/S2 nao mudam).
+     */
+    static <T> Supplier<Map<String, T>> leitorDaReplica(boolean s3, long prazoMs, String rotulo,
+            Function<Runnable, Map<String, T>> leitura, List<LeituraReplicaComPrazo<?>> comPrazo) {
+        if (!s3) {
+            return () -> leitura.apply(SEM_BATIDA);
+        }
+        LeituraReplicaComPrazo<T> l = new LeituraReplicaComPrazo<>(rotulo, prazoMs, leitura);
+        comPrazo.add(l);
+        return l;
+    }
+
+    /**
+     * P-41: linha da saida com a ultima leitura de cada replica, na ordem de {@code --servers} (sessoes e contadores de
+     * cada no): {@code Leitura por replica: prazo_sem_resposta_ms=<ms> <cache>@<host:porta>=<resultado> ...}, com o
+     * resultado de {@link LeituraReplicaComPrazo#ultimoResultado()}.
+     */
+    static String linhaLeituraPorReplica(long prazoMs, List<LeituraReplicaComPrazo<?>> leituras) {
+        StringBuilder sb = new StringBuilder("Leitura por replica: prazo_sem_resposta_ms=").append(prazoMs);
+        for (LeituraReplicaComPrazo<?> l : leituras) {
+            sb.append(' ').append(l.rotulo()).append('=').append(l.ultimoResultado());
+        }
+        return sb.toString();
     }
 
     /**
@@ -804,12 +846,14 @@ public final class WorkloadMain {
         return IntSets.immutableEmptySet();
     }
 
-    private static <K, V> Map<K, V> materializar(RemoteCache<K, V> cache, IntSet segmentos) {
+    /** Le as entradas dos {@code segmentos}; {@code batida} e chamada a cada entrada recebida (P-41). */
+    private static <K, V> Map<K, V> materializar(RemoteCache<K, V> cache, IntSet segmentos, Runnable batida) {
         Map<K, V> out = new HashMap<>();
         if (segmentos.isEmpty()) {
             return out;
         }
         for (Map.Entry<K, V> e : cache.entrySet(segmentos)) {
+            batida.run();
             out.put(e.getKey(), e.getValue());
         }
         return out;
@@ -823,7 +867,8 @@ public final class WorkloadMain {
     private record LeitoresMultiReplica(
             List<RemoteCacheManager> gerenciadores,
             List<Supplier<Map<String, SessionState>>> leitoresSessao,
-            List<Supplier<Map<String, IdentityState>>> leitoresIdentidade)
+            List<Supplier<Map<String, IdentityState>>> leitoresIdentidade,
+            List<LeituraReplicaComPrazo<?>> comPrazo)
             implements AutoCloseable {
         @Override
         public void close() {

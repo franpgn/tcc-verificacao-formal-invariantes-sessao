@@ -401,3 +401,25 @@ ponta de `wt-plano-ctrl`, com commit local e aprovação do Gestor antes de qual
 >    *rebaseline*. Se algo fora desta lista precisar mudar, parar e reportar.
 > 4. Aceite: `run-campanha-s3.test.sh` completo, 0 FAIL, com a contagem; `test_campanha_s3_conferir.py` com os casos do
 >    M1; relatório `docs/relatorio-w6-2026-11-05.md` com os 12 pontos, comandos e contagens (o relatório que hoje falta).
+
+## 11. Adenda (2026-11-05, durante a escrita dos pré-registros da calibração e do B-40)
+
+Escrita com o *host* em silêncio, só por leitura.
+
+- **B2 (novo, bloqueia a calibração e a avaliação nas células SYNC).** O orquestrador passa um único
+  `--controller-reference "${REF}"` a todas as execuções da fase (`run-campanha-s3.sh:273`), e o programa recusa
+  referência de outro perfil (`LigacaoControlador.java:204`: "referencia … e do perfil …"). A calibração tem SYNC F2 e
+  SYNC sem falha, e o núcleo da avaliação tem SYNC F2, junto com células ASYNC. Toda execução SYNC falharia ao abrir, e
+  o pré-voo 4 não pega o erro, porque roda o `--dry-run` do programa só com `async`. Correção (W-6b ou W-6c):
+  `--referencia-async`/`--referencia-sync` com os SHA-256, a referência escolhida pelo modo da linha da matriz, ambas no
+  *bundle*, e o pré-voo 4 rodando o `--dry-run` do programa em cada perfil presente na fase. Caso novo na suíte: fase
+  com uma célula SYNC e uma ASYNC.
+- **Correção da M1 (seção 3).** O tempo do programa até a âncora no I-3b não é "cerca de 20 s": os 20 s incluíam a
+  recriação do *cluster* pelo *harness*. Do fim do `cria-caches.sh` (10:25:05,1Z) à âncora vista (10:25:07,5Z) são no
+  máximo 2,4 s; do fim da convergência à saída do processo, 13,5 s (`wt-w4/runs/i3b/ativo-religar/fases.tsv`,
+  `convergencia-resumo-rep-001.json`). A conclusão da M1 não muda: a coerência do teto não conta `T_enc` nem esses dois
+  tempos. A fórmula está no pré-registro da calibração (§4.1, branch `docs/pre-registro-calibracao-s3`).
+- **W-6c**, pedido pelos pré-registros: F3 no orquestrador e na matriz (`inject-jitter.sh` congelado, dead-man de 341 s,
+  marcadores gravados pelo orquestrador, esquema `campanha-s3/2`), leitura do *swap* no K1 de cada execução com parada
+  ≥ 1 GiB (se o Gestor aprovar a G-3), e a trilha (`fim` e `linhas_perdidas` = 0 nos dois braços) como condição de
+  protocolo. Detalhes no B-40 (branch `docs/b40-pre-registro-avaliacao`), seções 4.3 e 9.

@@ -191,6 +191,19 @@ class TetoComParcelas(unittest.TestCase):
             self.assertEqual(0, self.teto(d, 986, *EXTRA, **pr)[0])
             self.assertEqual(2, self.teto(d, 985, *EXTRA, **pr)[0])
 
+    def test_valores_do_pre_registro_aceitam_1010(self):
+        """R2 da V-W6b: com o periodo da convergencia na formula do pre-registro, 300 + 21 + 60 + 600 + 5 +
+        1,5 x (2,4 + 13,5) = 1009,9 -> 1010 s (C-6). O minimo do codigo com esses numeros continua 986 s."""
+        pr = dict(duracao_s=300, religamento_prazo_s=60, convergencia_teto_s=600, convergencia_periodo_s=5,
+                  inj_offset_s=49, f1_dur_s=60, f2_dur_s=90, f4_dur_s=90, w_recovery_s=191)
+        with tempfile.TemporaryDirectory() as d:
+            self.assertEqual(0, self.teto(d, 1010, *EXTRA, **pr)[0])
+            obj = parametros_v2(f3_dur_s=251)
+            for k, x in dict(pr, exec_teto_s=1010).items():
+                obj["parametros"][k]["valor"] = x
+            rc, _, err = rodar("parametros", *EXTRA, "--arquivo", str(escrever(d, "p2.json", obj)))
+            self.assertEqual(0, rc, "o mesmo teto com o esquema /2 do B-40 (F3 de 251 s): " + err)
+
 
 class Referencia(unittest.TestCase):
     """B2 da V-W6: o programa recusa referencia de outro perfil (LigacaoControlador.java:204), entao o orquestrador

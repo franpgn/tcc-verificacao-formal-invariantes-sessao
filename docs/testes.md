@@ -327,3 +327,23 @@ ordem dos campos de `decisao`), `ControleArquivosTest.formatoDecisao` (`t_decisa
 
 Testes de tempo real na rodada: `prazoDinamicoComTresAcoes` 0,921 s (3 × 300 ms dentro de 1,2 s),
 `pontaAPonta` 1,515 s, `excecaoDaCargaReverteAcaoReal` 0,214 s, `linhasPerdidas` 0,219 s; nenhum oscilou.
+
+## W-h4: amostrador de infraestrutura e critério h4 (DT-018, complemento 3) (2026-11-04)
+
+Branch `feature/h4-amostrador-infra` sobre `19d45b9`. Suítes novas, todas no host, sem VM (relatório
+`docs/relatorio-h4-amostrador-2026-11-04.md`):
+
+| Suíte | Comando | Resultado |
+|---|---|---|
+| `analysis/test_h4.py` (48 testes: janela de 10 s, limiares, janela h4, segmento do F1, h4c, parada, recalibração com os brutos do S7, `repor`, `visao`, constantes cruzadas) | `python -I -m unittest discover -s analysis -p "test_h4.py"` | 48 OK |
+| `scripts/amostrador-infra.test.sh` (A1..A7: `PATH` vazio, formato v1, cadência, SIGTERM, espelho, `iniciar`/`parar`/`estado` com *shims*, `--id`) | `bash scripts/amostrador-infra.test.sh` | 83 PASS, 0 FAIL |
+| `scripts/vigia-h4.test.sh` (V1..V4) | `bash scripts/vigia-h4.test.sh` | 21 PASS, 0 FAIL |
+| `scripts/h4-reposicoes.test.sh` (sequência do C3 §5 com o `run-rebaseline.sh` real) | `bash scripts/h4-reposicoes.test.sh` | 29 PASS, 0 FAIL |
+
+| Momento | `unittest` analysis (sem `-I`) | `run-rebaseline.test.sh` |
+|---|---|---|
+| base `19d45b9` | 187 OK, 1 *skip* | 130 PASS, 0 FAIL (último registro, `relatorio-f1-silencioso-2026-10-27.md`) |
+| depois do W-h4 | 235 OK, 1 *skip* (187 + 48 do `test_h4.py`) | 130 PASS, 0 FAIL (sem mudança) |
+
+Com `-I`, a suíte inteira perde três módulos que importam `numpy` do `site-packages` do usuário. `test_h4.py` roda
+com `-I`.

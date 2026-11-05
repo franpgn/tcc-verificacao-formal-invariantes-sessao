@@ -264,6 +264,7 @@ class SondaDefasagemRodadaTest {
         TimeUnit.MILLISECONDS.sleep(700); // a gravadora ainda esta presa na primeira linha (1 s)
         assertEquals(0, gravadas.size(), "a primeira gravacao ainda nao terminou");
         assertTrue(s.rodadas() >= 3, "rodadas durante o travamento da gravacao: " + s.rodadas());
+        assertEquals(0, s.rodadasPuladas(), "V-W4 R6: a rodada segue na grade com a gravacao travada");
         long ate = System.nanoTime() + 3_000 * MS;
         while (gravadas.size() < 3 && System.nanoTime() < ate) {
             TimeUnit.MILLISECONDS.sleep(10);

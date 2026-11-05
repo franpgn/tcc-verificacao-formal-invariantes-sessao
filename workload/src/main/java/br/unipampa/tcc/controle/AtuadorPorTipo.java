@@ -46,10 +46,14 @@ public final class AtuadorPorTipo implements AtuadorCluster {
     /**
      * V-W2a R1: pior caso do {@code T_enc} do {@link ExecutorDeAcoes} com o braco B: o AC-2 na pilha, o AC-5 em
      * curso e um {@code T_cham} (so ha uma chave de AC-2; a cota do AC-5 e 1). Com {@code T_cham} = 2 s e o AC-5 em
-     * {@code T_cham + 15 s} (P-42), 2 + 17 + 2 = 21 s.
+     * {@code T_cham + 15 s} (P-42), 2 + 17 + 2 = 21 s. Sem a P2 (D-B, modo de avaliacao), o AC-2 nunca entra na
+     * pilha: 17 + 2 = 19 s.
+     *
+     * @param p2Habilitada a politica pode pedir o AC-2 ({@link ParametrosPolitica#p2Habilitada()})
      */
-    public static long piorCasoEncerramentoBracoBNs(long tChamNs) {
-        return AcaoCluster.Tipo.AC_2.prazoNs(tChamNs) + AcaoCluster.Tipo.AC_5.prazoNs(tChamNs) + tChamNs;
+    public static long piorCasoEncerramentoBracoBNs(long tChamNs, boolean p2Habilitada) {
+        return (p2Habilitada ? AcaoCluster.Tipo.AC_2.prazoNs(tChamNs) : 0L) + AcaoCluster.Tipo.AC_5.prazoNs(tChamNs)
+                + tChamNs;
     }
 
     /** Nome de {@link #bracoB} para um adaptador com este nome (o {@code --dry-run} usa sem criar o adaptador). */

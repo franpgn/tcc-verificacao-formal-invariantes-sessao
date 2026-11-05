@@ -293,7 +293,7 @@ final class LigacaoControlador implements AutoCloseable, WorkloadMain.ControleDa
                 + " politica=" + (p.politica() == null ? PoliticaDeAcao.NENHUMA.nome() : "por-assinatura")
                 + " tick_ns=" + periodoTick(p.wNs(), PERIODO_SONDA_NS) + " sonda_periodo_ns=" + PERIODO_SONDA_NS
                 + " prazo_chamada_ns=" + PRAZO_CHAMADA_NS + " prazo_encerramento=em_curso+pilha+T_cham pior_caso_ns="
-                + piorCasoEncerramentoNs(p.politica() != null)
+                + piorCasoEncerramentoNs(p.politica())
                 + (p.politica() == null ? "" : n + "dry-run, " + textoPolitica(p.politica()))
                 + (p.defasagem() == null ? "" : n + "dry-run, " + textoDefasagem(c));
     }
@@ -301,19 +301,22 @@ final class LigacaoControlador implements AutoCloseable, WorkloadMain.ControleDa
     /**
      * V-W2a R1: pior caso de {@code T_enc} (contrato 1.2). Sem politica nenhuma acao e pedida: {@code T_cham}. Com a
      * {@link PoliticaPorAssinatura}: AC-2 na pilha ({@code T_cham}) + AC-5 em curso ({@code T_cham + 15 s}, P-42) +
-     * {@code T_cham} = 21 s, porque so ha uma chave de AC-2 e a cota do AC-5 e 1.
+     * {@code T_cham} = 21 s, porque so ha uma chave de AC-2 e a cota do AC-5 e 1. Sem a P2 (D-B, modo de avaliacao),
+     * o AC-2 nunca entra na pilha: 19 s.
+     *
+     * @param politica parametros do bloco {@code politica}; {@code null} sem o bloco
      */
-    static long piorCasoEncerramentoNs(boolean comPolitica) {
-        if (!comPolitica) {
+    static long piorCasoEncerramentoNs(ParametrosPolitica politica) {
+        if (politica == null) {
             return PRAZO_CHAMADA_NS;
         }
-        return AtuadorPorTipo.piorCasoEncerramentoBracoBNs(PRAZO_CHAMADA_NS);
+        return AtuadorPorTipo.piorCasoEncerramentoBracoBNs(PRAZO_CHAMADA_NS, politica.p2Habilitada());
     }
 
     /** Parametros da politica (W-2a), com a origem declarada de cada um. */
     static String textoPolitica(ParametrosPolitica q) {
         return "politica kLag=" + q.kLag() + " tetoLagMs=" + q.tetoLagMs() + " tRebNs=" + q.tRebNs()
-                + " cotaAc5=" + q.cotaAc5() + " origem=" + q.origem();
+                + " cotaAc5=" + q.cotaAc5() + " p2Habilitada=" + q.p2Habilitada() + " origem=" + q.origem();
     }
 
     /**

@@ -19,7 +19,9 @@ import java.util.Set;
  *       suspeito respondeu a REST em todas as amostras e a cota ainda nao foi usada.</li>
  *   <li><b>P2</b>, adiar o rebalanceamento ({@link AcaoCluster.Tipo#AC_2}, forma global): em CONSERVADOR, um
  *       no sem resposta e os outros respondendo ({@link EstadoTopologia#noSemResposta()}), sem vistas
- *       divergentes.</li>
+ *       divergentes. <b>So com {@link ParametrosPolitica#p2Habilitada()}</b> (D-B de 05/11: a P2 saiu do braco B e
+ *       ficou exploratoria, P-39 e P-40). No modo de avaliacao ({@code p2Habilitada = false}) a mesma assinatura
+ *       vira P0 com o motivo {@value #P2_DESABILITADA} e o no ausente, e o AC-2 nunca e pedido.</li>
  *   <li><b>P0</b>, nenhuma acao, com o motivo registrado.</li>
  * </ul>
  *
@@ -58,6 +60,8 @@ public final class PoliticaPorAssinatura implements PoliticaDeAcao {
     public static final String VISTAS_DIVERGENTES = "vistas-divergentes";
     public static final String NO_VOLTOU = "no-voltou";
     public static final String TETO_TREB = "teto-treb";
+    /** D-B: assinatura do P2 com {@code p2Habilitada = false} (modo de avaliacao); nenhuma acao. */
+    public static final String P2_DESABILITADA = "p2-desabilitada";
 
     private final ParametrosPolitica p;
     private final List<String> caches;
@@ -167,6 +171,11 @@ public final class PoliticaPorAssinatura implements PoliticaDeAcao {
             String no = sem.get();
             if (paradosPelaPolitica.contains(no)) {
                 return new PlanoDeAcao(reverter, List.of(), P0, NO_PARADO_PELA_POLITICA, no);
+            }
+            if (!p.p2Habilitada()) {
+                // D-B: nunca pede o AC-2. Uma reversao pendente (so possivel com um AC-2 vindo de fora) continua valendo
+                return reverter.isEmpty() ? new PlanoDeAcao(List.of(), List.of(), P0, P2_DESABILITADA, no)
+                        : new PlanoDeAcao(reverter, List.of(), P0, motivoReversao, noReversao);
             }
             if (ac2Ativa) {
                 return new PlanoDeAcao(reverter, List.of(), P2, AC2_MANTIDA, no);

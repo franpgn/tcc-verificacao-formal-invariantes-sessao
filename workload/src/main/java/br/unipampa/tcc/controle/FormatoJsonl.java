@@ -81,6 +81,7 @@ public final class FormatoJsonl {
                 q.put("teto_lag_ms", pp.tetoLagMs());
                 q.put("t_reb_ns", pp.tRebNs());
                 q.put("cota_ac5", pp.cotaAc5());
+                q.put("p2_habilitada", pp.p2Habilitada()); // D-B (aditivo na 1.2, antes de dado de campanha)
                 ObjectNode org = q.putObject("origem");
                 pp.origem().forEach(org::put);
             }

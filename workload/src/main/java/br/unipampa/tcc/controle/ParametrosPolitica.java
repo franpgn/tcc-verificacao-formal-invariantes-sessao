@@ -25,7 +25,13 @@ import java.util.Set;
  *   <li>{@code tRebNs} = 60 s: o {@code state-transfer.timeout} de 60 000 ms do XML, acima da maior deteccao
  *       medida (46,8 s no local, B-44.1 secao 4.1; 46,4 s na VM, {@code V-S7r.md:45}); convencao, nao otimo;</li>
  *   <li>{@code kLag} e {@code tetoLagMs}: sem valor padrao, vem da calibracao (D-12). Nos arquivos de teste, com
- *       {@code "origem": "teste"}.</li>
+ *       {@code "origem": "teste"}. <b>Requisito da calibracao (P-42):</b> {@code kLag * W + t_parada < 39,8 s}, com
+ *       {@code t_parada} sob corte = 13,3 s (I-3 do B-44.2) e 39,8 s o menor {@code T_det} da VM; com W = 5 s,
+ *       {@code kLag <= 5};</li>
+ *   <li>{@code p2Habilitada}: D-B do coordenador de 05/11, pela regra registrada antes do I-2: a P2 (AC-2) sai do
+ *       braco B e fica exploratoria (P-39: sob falha silenciosa o AC-2 oscila, so entra depois da exclusao e deixa o
+ *       <i>cluster</i> sem rebalanceamento depois da fusao, 3 de 3; P-40: na queda nao economiza rodada). No braco B
+ *       de avaliacao e na calibracao, {@code false}; {@code true} so em execucao exploratoria.</li>
  * </ul>
  *
  * <p><b>{@code kLag} nao e o {@code k} do nucleo</b> (V-W2a R6, decisao V-4 de 05/11). O {@code k} de
@@ -37,12 +43,15 @@ import java.util.Set;
  * @param tetoLagMs o que conta como "nao viu" no S_lag: {@code lagMaxMs >= tetoLagMs} (&gt; 0)
  * @param tRebNs    teto {@code T_reb} do AC-2 (&gt; 0)
  * @param cotaAc5   AC-5 por execucao, 0 ou 1; 0 desliga o P1
+ * @param p2Habilitada D-B: {@code false} = modo de avaliacao, a politica nunca pede o AC-2 (a assinatura do P2 vira
+ *                  P0 com o motivo {@link PoliticaPorAssinatura#P2_DESABILITADA}); {@code true} = uso exploratorio
  * @param origem    origem declarada de cada parametro (chave = nome do campo); vazio quando construido no codigo
  */
-public record ParametrosPolitica(int kLag, long tetoLagMs, long tRebNs, int cotaAc5, Map<String, String> origem) {
+public record ParametrosPolitica(int kLag, long tetoLagMs, long tRebNs, int cotaAc5, boolean p2Habilitada,
+                                 Map<String, String> origem) {
 
-    /** Campos numericos do bloco, todos obrigatorios. */
-    public static final List<String> CAMPOS = List.of("kLag", "tetoLagMs", "tRebNs", "cotaAc5");
+    /** Campos do bloco, todos obrigatorios e sem valor padrao (os quatro numericos e o booleano da D-B). */
+    public static final List<String> CAMPOS = List.of("kLag", "tetoLagMs", "tRebNs", "cotaAc5", "p2Habilitada");
     /** Campo com a origem de cada parametro, obrigatorio no arquivo. */
     public static final String ORIGEM = "origem";
 
@@ -76,14 +85,14 @@ public record ParametrosPolitica(int kLag, long tetoLagMs, long tRebNs, int cota
         origem = Collections.unmodifiableMap(copia);
     }
 
-    /** Parametros montados no codigo (testes), sem origem declarada. */
-    public ParametrosPolitica(int kLag, long tetoLagMs, long tRebNs, int cotaAc5) {
-        this(kLag, tetoLagMs, tRebNs, cotaAc5, Map.of());
+    /** Parametros montados no codigo (testes), sem origem declarada; a P2 e sempre explicita (D-B). */
+    public ParametrosPolitica(int kLag, long tetoLagMs, long tRebNs, int cotaAc5, boolean p2Habilitada) {
+        this(kLag, tetoLagMs, tRebNs, cotaAc5, p2Habilitada, Map.of());
     }
 
     /**
-     * Le o bloco {@code "politica"} ja lido (sem E/S). Exige exatamente {@link #CAMPOS} (inteiros) e
-     * {@link #ORIGEM} (objeto com um texto nao vazio para cada campo).
+     * Le o bloco {@code "politica"} ja lido (sem E/S). Exige exatamente {@link #CAMPOS} (inteiros, e
+     * {@code p2Habilitada} booleano) e {@link #ORIGEM} (objeto com um texto nao vazio para cada campo).
      *
      * @throws IllegalArgumentException campo ausente, desconhecido, de tipo errado ou fora das regras
      */
@@ -123,8 +132,12 @@ public record ParametrosPolitica(int kLag, long tetoLagMs, long tRebNs, int cota
             throw new IllegalArgumentException("parametros da politica: origem deve ter exatamente " + CAMPOS
                     + ": " + origem.keySet());
         }
+        JsonNode p2 = raiz.get("p2Habilitada");
+        if (!p2.isBoolean()) {
+            throw new IllegalArgumentException("parametros da politica: p2Habilitada deve ser booleano (D-B): " + p2);
+        }
         return new ParametrosPolitica((int) inteiro(raiz, "kLag", true), inteiro(raiz, "tetoLagMs", false),
-                inteiro(raiz, "tRebNs", false), (int) inteiro(raiz, "cotaAc5", true), origem);
+                inteiro(raiz, "tRebNs", false), (int) inteiro(raiz, "cotaAc5", true), p2.booleanValue(), origem);
     }
 
     private static long inteiro(JsonNode raiz, String campo, boolean cabeEmInt) {

@@ -7,7 +7,8 @@ import java.util.Objects;
  * W-3 (B-28.2), W-2a (B-44.2): uma acao do controlador sobre o <i>cluster</i>. Aqui a acao e so um valor;
  * a chamada REST de cada tipo fica no adaptador ({@code session.AtuadorRestInfinispan}). Especificacao:
  * {@code docs/acoes-controlador-cluster-2026-11-05.md} (branch {@code docs/plano-implementacao-controlador},
- * {@code cc08644}), secoes 3, 5 e 5.1.
+ * {@code cc08644}), secoes 3, 5 e 5.1. AC-1 (DEGRADED antecipado, B-44.1 secao 4.1) e AC-3 ({@code remote-timeout},
+ * P-31) ficaram fora do braco B e foram retirados (P-36).
  *
  * <p>O que muda de um tipo para outro fica no proprio {@link Tipo}: se a acao entra na pilha de reversao
  * ({@link Tipo#reversivel()}), a regra do alvo ({@link Tipo#alvo()}) e o prazo da chamada inteira
@@ -29,22 +30,11 @@ public record AcaoCluster(Tipo tipo, List<String> caches, String alvo, String va
         /** Acao global: {@code alvo} tem de ser {@code null}. */
         PROIBIDO,
         /** Acao num unico no: {@code alvo} obrigatorio, um rotulo so (sem virgula nem espaco). */
-        UM_NO,
-        /** Sem regra (so os tipos antigos, fora do braco B). */
-        LIVRE
+        UM_NO
     }
 
     /** Tipos de acao. */
     public enum Tipo {
-        /**
-         * DEGRADED antecipado. <b>Fora do braco B</b> (B-44.1 secao 4.1: {@code DEGRADED_MODE} nao recusa
-         * operacao por chave e quebra o {@code Block}; documento de 05/11, secao 3.4). Nenhum atuador nem
-         * politica do W-2a o usa.
-         *
-         * @deprecated a retirar quando a lista de edicoes de teste D-C for ampliada (relatorio do W-2a)
-         */
-        @Deprecated
-        AC_1("AC-1", true, RegraAlvo.LIVRE, 0L),
         /**
          * Rebalanceamento suspenso, <b>forma global</b>: {@code POST /rest/v2/container?action=disable-rebalancing}
          * (secao 3.2 do documento de 05/11). A forma por cache se perde quando o coordenador cai (P-34; B-44.1b
@@ -52,14 +42,6 @@ public record AcaoCluster(Tipo tipo, List<String> caches, String alvo, String va
          * ({@code enable-rebalancing}), entra na pilha LIFO. Prazo {@code T_cham}.
          */
         AC_2("AC-2", true, RegraAlvo.PROIBIDO, 0L),
-        /**
-         * {@code remote-timeout}. <b>Fora do braco B</b> (B-44.1 secao 4.4, P-31: escrita indeterminada e
-         * replicas divergentes).
-         *
-         * @deprecated a retirar quando a lista de edicoes de teste D-C for ampliada (relatorio do W-2a)
-         */
-        @Deprecated
-        AC_3("AC-3", true, RegraAlvo.LIVRE, 0L),
         /**
          * Parada do no suspeito pela REST local: {@code POST /rest/v2/server/?action=stop} mandado ao proprio
          * no (secao 3.1 do documento de 05/11; achado N-1: o servidor agenda a propria saida para 3 s depois,
@@ -134,7 +116,6 @@ public record AcaoCluster(Tipo tipo, List<String> caches, String alvo, String va
                             + alvo + "'");
                 }
             }
-            case LIVRE -> { }
         }
     }
 

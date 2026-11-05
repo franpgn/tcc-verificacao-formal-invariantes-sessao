@@ -120,7 +120,7 @@ public final class AtuadorRestInfinispan implements AtuadorCluster {
         return switch (acao.tipo()) {
             case AC_2 -> rebalanceamentoGlobal(acao, prazoNs, false);
             case AC_5 -> pararAlvo(acao, prazoNs);
-            default -> ResultadoAtuacao.falhou(null, null, "tipo-fora-do-braco-b:" + acao.tipo().rotulo());
+            default -> ResultadoAtuacao.falhou(null, null, "tipo-sem-rota-rest:" + acao.tipo().rotulo());
         };
     }
 
@@ -129,7 +129,7 @@ public final class AtuadorRestInfinispan implements AtuadorCluster {
         return switch (acao.tipo()) {
             case AC_2 -> rebalanceamentoGlobal(acao, prazoNs, true);
             case AC_5 -> ResultadoAtuacao.naoExecutada(REVERSAO_ORQUESTRADOR);
-            default -> ResultadoAtuacao.falhou(null, null, "tipo-fora-do-braco-b:" + acao.tipo().rotulo());
+            default -> ResultadoAtuacao.falhou(null, null, "tipo-sem-rota-rest:" + acao.tipo().rotulo());
         };
     }
 

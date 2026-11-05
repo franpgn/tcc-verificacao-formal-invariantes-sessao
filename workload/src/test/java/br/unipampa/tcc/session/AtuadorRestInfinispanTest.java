@@ -26,7 +26,6 @@ import java.util.stream.Collectors;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
@@ -429,21 +428,6 @@ class AtuadorRestInfinispanTest {
         assertEquals(List.of(), c.todosPedidos());
         assertEquals(3, trilha.size());
         assertTrue(trilha.stream().noneMatch(RegistroAcao::executada));
-    }
-
-    @Test
-    @DisplayName("tipos fora do braco B (AC-1, AC-3): FALHOU sem pedido")
-    @SuppressWarnings("deprecation")
-    void tiposForaDoBracoB() throws Exception {
-        Cluster c = cluster();
-        AtuadorRestInfinispan a = atuador(c, c.todos());
-        ResultadoAtuacao r = a.aplicar(new AcaoCluster(AcaoCluster.Tipo.AC_1, CACHES, null, "DEGRADED_MODE"), S);
-        assertEquals(ResultadoAtuacao.Estado.FALHOU, r.estado());
-        assertEquals("tipo-fora-do-braco-b:AC-1", r.erro());
-        assertNull(r.codigoHttp());
-        assertEquals(ResultadoAtuacao.Estado.FALHOU,
-                a.reverter(new AcaoCluster(AcaoCluster.Tipo.AC_3, CACHES, "x", "1"), S).estado());
-        assertEquals(List.of(), c.todosPedidos());
     }
 
     /** Gancho que nao toca na JVM. */

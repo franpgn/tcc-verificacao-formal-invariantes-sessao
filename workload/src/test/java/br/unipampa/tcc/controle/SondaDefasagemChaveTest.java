@@ -57,6 +57,7 @@ class SondaDefasagemChaveTest {
         CanalFalso c = new CanalFalso(3);
         assertEquals("lag:no1", c.chave(1));
         assertNull(c.chaveNoPrimario(1));
+        assertNull(c.motivoDaChave(1));
         assertEquals(CanalCanario.PREFIXO_CHAVE, SondaDefasagem.PREFIXO_CHAVE);
     }
 

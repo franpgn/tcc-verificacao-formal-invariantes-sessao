@@ -19,7 +19,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * W-4, P-40: a linha {@code fim} de {@code observaveis} registra a chave de cada no e se ela tinha o proprio no como
- * dono primario ({@code defasagem_chaves}); sem a sonda, {@code null}. E o que o smoke precisa para conferir o P-40.
+ * dono primario, com o motivo da escolha ({@code defasagem_chaves}); sem a sonda, {@code null}. E o que o smoke
+ * precisa para conferir o P-40.
  */
 class LigacaoControladorChavesTest {
 
@@ -78,6 +79,11 @@ class LigacaoControladorChavesTest {
         }
 
         @Override
+        public String motivoDaChave(int indice) {
+            return indice != 1 ? "primario" : "nao-encontrada";
+        }
+
+        @Override
         public void close() {
             base.close();
         }
@@ -90,7 +96,7 @@ class LigacaoControladorChavesTest {
     }
 
     @Test
-    @DisplayName("fim de observaveis: defasagem_chaves com no, chave e primario de cada no")
+    @DisplayName("fim de observaveis: defasagem_chaves com no, chave, primario e motivo de cada no")
     void chavesNoFim() throws Exception {
         Cli c = cli(LigacaoControladorDefasagemTest.parametros(true, true, 100));
         LigacaoControlador.Configuracao cfg = LigacaoControlador.carregar(c);
@@ -110,10 +116,11 @@ class LigacaoControladorChavesTest {
         assertEquals(3, chaves.size());
         for (int i = 0; i < 3; i++) {
             JsonNode k = chaves.get(i);
-            assertEquals(List.of("no", "chave", "primario"), campos(k));
+            assertEquals(List.of("no", "chave", "primario", "motivo"), campos(k));
             assertEquals(rotulos.get(i), k.get("no").asText());
             assertEquals("lag:" + rotulos.get(i) + "#" + i, k.get("chave").asText());
             assertEquals(i != 1, k.get("primario").asBoolean());
+            assertEquals(i != 1 ? "primario" : "nao-encontrada", k.get("motivo").asText());
         }
         assertTrue(obs.stream().filter(n -> "defasagem".equals(n.get("tipo").asText())).count() >= 1);
     }

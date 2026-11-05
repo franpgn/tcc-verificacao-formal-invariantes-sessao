@@ -132,6 +132,7 @@ class EscolhaDeChaveTest {
         for (int i = 0; i < 3; i++) {
             assertEquals(chaves.get(i).chave(), c.chave(i));
             assertEquals(Boolean.TRUE, c.chaveNoPrimario(i));
+            assertEquals("primario", c.motivoDaChave(i));
         }
         assertEquals(chaves, c.escolhas());
         CanalCanarioHotRod simples = new CanalCanarioHotRod("canario", NOS, alvos);
@@ -139,6 +140,7 @@ class EscolhaDeChaveTest {
             assertEquals(CanalCanario.PREFIXO_CHAVE + NOS.get(i), simples.chave(i));
             assertEquals(Boolean.FALSE, simples.chaveNoPrimario(i));
             assertEquals("nao-escolhida", simples.escolhas().get(i).motivo());
+            assertEquals("nao-escolhida", simples.motivoDaChave(i));
         }
     }
 }

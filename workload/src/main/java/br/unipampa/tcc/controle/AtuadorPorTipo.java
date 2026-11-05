@@ -43,6 +43,14 @@ public final class AtuadorPorTipo implements AtuadorCluster {
         return new AtuadorPorTipo(m);
     }
 
+    /**
+     * V-W2a R1: pior caso do {@code T_enc} do {@link ExecutorDeAcoes} com o braco B: o AC-2 na pilha, o AC-5 em
+     * curso e um {@code T_cham} (so ha uma chave de AC-2; a cota do AC-5 e 1). Com {@code T_cham} = 2 s, 9 s.
+     */
+    public static long piorCasoEncerramentoBracoBNs(long tChamNs) {
+        return AcaoCluster.Tipo.AC_2.prazoNs(tChamNs) + AcaoCluster.Tipo.AC_5.prazoNs(tChamNs) + tChamNs;
+    }
+
     /** Nome de {@link #bracoB} para um adaptador com este nome (o {@code --dry-run} usa sem criar o adaptador). */
     public static String nomeBracoB(String nomeDoAdaptador) {
         return "por-tipo(AC-2=" + nomeDoAdaptador + ",AC-5=" + nomeDoAdaptador + ")";

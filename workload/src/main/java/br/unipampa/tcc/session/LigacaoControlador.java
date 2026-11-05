@@ -224,8 +224,21 @@ final class LigacaoControlador implements AutoCloseable, WorkloadMain.ControleDa
                         : AtuadorPorTipo.nomeBracoB(AtuadorRestInfinispan.NOME))
                 + " politica=" + (p.politica() == null ? PoliticaDeAcao.NENHUMA.nome() : "por-assinatura")
                 + " tick_ns=" + periodoTick(p.wNs(), PERIODO_SONDA_NS) + " sonda_periodo_ns=" + PERIODO_SONDA_NS
-                + " prazo_chamada_ns=" + PRAZO_CHAMADA_NS + " prazo_encerramento=(A+1)x" + PRAZO_CHAMADA_NS
+                + " prazo_chamada_ns=" + PRAZO_CHAMADA_NS + " prazo_encerramento=em_curso+pilha+T_cham pior_caso_ns="
+                + piorCasoEncerramentoNs(p.politica() != null)
                 + (p.politica() == null ? "" : n + "dry-run, " + textoPolitica(p.politica()));
+    }
+
+    /**
+     * V-W2a R1: pior caso de {@code T_enc} (contrato 1.2). Sem politica nenhuma acao e pedida: {@code T_cham}. Com a
+     * {@link PoliticaPorAssinatura}: AC-2 na pilha ({@code T_cham}) + AC-5 em curso ({@code T_cham + 3 s}) +
+     * {@code T_cham} = 9 s, porque so ha uma chave de AC-2 e a cota do AC-5 e 1.
+     */
+    static long piorCasoEncerramentoNs(boolean comPolitica) {
+        if (!comPolitica) {
+            return PRAZO_CHAMADA_NS;
+        }
+        return AtuadorPorTipo.piorCasoEncerramentoBracoBNs(PRAZO_CHAMADA_NS);
     }
 
     /** Parametros da politica (W-2a), com a origem declarada de cada um. */

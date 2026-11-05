@@ -4,7 +4,8 @@
 #
 # Suite de testes do inject-crash.sh (F1 como crash silencioso, opcao B do plano
 # docs/prompt-f1-kill-2026-10-27.md da branch docs/plano-implementacao-controlador,
-# casos C1..C15 do prompt da secao 7) que NAO exigem VM, podman, ip nem privilegio.
+# casos C1..C15 do prompt da secao 7; C16..C21 dos marcadores do B-25.1, W-6) que NAO exigem VM, podman, ip nem
+# privilegio.
 #
 # Os casos com SHIMS colocam scripts falsos de podman, sudo, readlink, nsenter, ip e
 # sleep no inicio do PATH. Os shims registram cada chamada em $SHIM_LOG e simulam o

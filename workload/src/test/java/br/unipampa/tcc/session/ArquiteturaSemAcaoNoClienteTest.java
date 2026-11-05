@@ -39,6 +39,8 @@ class ArquiteturaSemAcaoNoClienteTest {
      */
     static final Map<String, Set<String>> PERMITIDOS = Map.of(
             "ConsultaSaudeRest", Set.of("FonteDeSaude", "LeituraSaude"),
+            // W-2a (B-44.2, D-C): o atuador REST do cluster so usa os tipos da interface do atuador
+            "AtuadorRestInfinispan", Set.of("AcaoCluster", "AtuadorCluster", "ResultadoAtuacao"),
             "SondaTopologiaCli", Set.of("AmostraTopologia", "FonteDeTempo", "ResultadoNo", "SondaTopologia"),
             "LigacaoControlador", Set.of("AgregadorDeJanela", "ArquivoReferencia", "AtuadorCluster", "AtuadorNulo",
                     "ClasseViolacao", "Controlador", "EventoOperacao", "ExecutorDeAcoes", "FonteDeDefasagem",

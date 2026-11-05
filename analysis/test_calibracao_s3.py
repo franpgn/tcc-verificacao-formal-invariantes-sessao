@@ -578,6 +578,18 @@ class Bordas(unittest.TestCase):
         self.assertIn("nenhuma", x["motivo"])
         self.assertIsNone(P["exec_teto_s"]["valor"])
 
+    def test_celulas_da_regra_sem_execucao_nao_derivam(self):
+        # sem nenhuma execucao com falha aceita, m e T_estavel nao sao "sem recaida": nao ha dado
+        P = self.derivar({n: dict(omitir=True) for n in ("f1a", "f1b", "f2a", "f2b", "sf2", "f4")})
+        for nome in ("m", "T_cooldown_s", "T_estavel_s", "teto_convergencia_s"):
+            self.assertIsNone(P[nome]["valor"], nome)
+            self.assertIsNotNone(P[nome]["motivo"], nome)
+        self.assertIn("nenhuma execucao", P["m"]["motivo"])
+        self.assertIn("nenhuma execucao", P["T_estavel_s"]["motivo"])
+        self.assertEqual(0, P["q_hat"]["valor"]["ASYNC-F2"]["n"])
+        self.assertIsNone(P["q_hat"]["valor"]["ASYNC-F2"]["q_hat"])
+        self.assertEqual(2, P["kLag"]["valor"])            # so ASYNC sem falha: a exec 0 tem a rodada 6 no teto
+
     def test_celula_vazia_entra_com_o_que_tem(self):
         P = self.derivar({"sf2": dict(omitir=True)})
         self.assertEqual(600, P["teto_convergencia_s"]["valor"])
@@ -646,6 +658,13 @@ class Funcoes(unittest.TestCase):
         r = cal.t_estavel([("e", T0, [(T0 + 1 * S, True), (T0 + 3 * S, False)])], 2)
         self.assertEqual(2, r["valor"])
         self.assertIn("recaida", r["motivo"])
+
+    def test_sem_execucao_nao_deriva(self):
+        self.assertIsNone(cal.m_reentrada([])["valor"])
+        self.assertIsNone(cal.m_reentrada([[], []])["valor"])
+        self.assertIsNone(cal.t_estavel([], 2)["valor"])
+        self.assertIsNone(cal.t_estavel([("e", T0, [(T0 - S, False)])], 2)["valor"])   # nenhuma amostra depois do end
+        self.assertIsNone(cal.t_hold_viol([], 5)["valor"])
 
     def test_t_hold_viol_puro(self):
         r = cal.t_hold_viol([("a", [T0, T0 + 3 * S, T0 + 4 * S]), ("b", [T0 + S])], 5)

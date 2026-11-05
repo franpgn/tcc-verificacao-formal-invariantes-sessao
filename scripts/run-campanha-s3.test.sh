@@ -160,6 +160,12 @@ if [[ -f "${ST}/ac5-apos-start" ]]; then
 else
     dormir "$(( dur - dur / 2 ))"
 fi
+# R3 da V-W6b: com ac5-apos-start, a linha de fim (e o religamento que ela dispara) so sai depois do end da falha; sob
+# carga o disparo atrasava, a janela passava do fim da carga, o no ja estava religado quando o duble olhava e o
+# injetor saia com 0
+if [[ -f "${ST}/ac5-apos-start" ]]; then
+    for ((k = 0; k < 3000; k++)); do grep -q ' event=end ' "${marker}" 2>/dev/null && break; dormir 1; done
+fi
 # R8 da V-W6b: java-espera-parado-<no> segura a linha de fim ate o no sair de running (S25: F1 ainda em curso)
 for f in "${ST}"/java-espera-parado-*; do
     [[ -e "${f}" ]] || continue
@@ -1115,16 +1121,19 @@ fi
 if quer S22; then
 echo "== S22: B1 da V-W6: injetor de F2/F4 sai com 1/6 porque o AC-5 parou o no da falha -> pendente, nao recusa =="
 # R3 da V-W6b: o duble de java para o no 2 s virtuais depois do start da falha (ac5-apos-start), nao a dur/2 do seu
-# relogio; janela de 80 s numa carga de 120 s. F2: o duble sai no fim da janela com o alvo parado (1). F4: como o real,
-# o duble faz a verificacao por ping de 40 s e sai com 6 no fim dela (N1). R4: no F4 o B1 exige a linha
-# "degradacao aplicada: alvo <no>" e o start; na F2, o start (alem da linha OK).
+# relogio, e so escreve a linha de fim depois do end da falha. F2: janela de 80 s numa carga de 120 s; o duble sai no
+# fim da janela com o alvo parado (1). F4: janela de 120 s numa carga de 160 s; como o real, o duble faz a verificacao
+# por ping (60 s aqui, f4-ping-s, para a parada cair dentro dela mesmo com o host carregado; o real faz 40 s) e sai
+# com 6 no fim dela (N1). Teto de 900 s: sob carga o disparo atrasa e a carga espera o end. R4: no F4 o B1 exige a
+# linha "degradacao aplicada: alvo <no>" e o start; na F2, o start (alem da linha OK).
 for caso in f2 f4 f2-sem-ok f2-sem-start f4-sem-aplicada f4-sem-start; do
     novo_caso "s22-${caso}"
-    F="F2"; [[ "${caso}" == f4* ]] && F="F4"
-    parametros duracao_s=120 "${F,,}_dur_s=80" exec_teto_s=300
+    F="F2"; DUR=80; CARGA=120; [[ "${caso}" == f4* ]] && { F="F4"; DUR=120; CARGA=160; }
+    parametros duracao_s="${CARGA}" "${F,,}_dur_s=${DUR}" exec_teto_s=900
     matriz_aval "ASYNC-${F}:teste:1"
     echo "127.0.0.1:11224" > "${ST}/ac5-alvo"
     echo 2 > "${ST}/ac5-apos-start"
+    echo 60 > "${ST}/f4-ping-s"
     case "${caso}" in
         f2-sem-ok) : > "${ST}/inj-sem-ok" ;;
         *-sem-start) : > "${ST}/inj-sem-start" ;;
@@ -1146,7 +1155,7 @@ for caso in f2 f4 f2-sem-ok f2-sem-start f4-sem-aplicada f4-sem-start; do
             ok "S22 ${caso}: braco A (no de pe) com injetor 0 e ACEITA" "0 ACEITA" "$(json "${DA}/execucao.json" 'd["injetor_exit"]') $(json "${DA}/checagem.json" 'd["veredito"]')"
             ok "S22 ${caso}: braco A sem alvo parado" "None" "$(json "${DA}/execucao.json" 'd["injetor_alvo_parado"]')"
             # N1: fim nominal (inj_inicio_offset_s + dur) e saida do injetor, relativos a ancora, nos dois bracos
-            ok "S22 ${caso}: fim nominal = disparo + 80 s (B)" "True" "$(json "${DB}/execucao.json" 'abs(d["fim_nominal_desde_ancora_s"] - d["inj_inicio_offset_s"] - 80) < 0.01')"
+            ok "S22 ${caso}: fim nominal = disparo + ${DUR} s (B)" "True" "$(json "${DB}/execucao.json" "abs(d['fim_nominal_desde_ancora_s'] - d['inj_inicio_offset_s'] - ${DUR}) < 0.01")"
             ok "S22 ${caso}: braco A sai depois do fim nominal" "True" "$(json "${DA}/execucao.json" 'd["injetor_saida_desde_ancora_s"] >= d["fim_nominal_desde_ancora_s"]')"
             if [[ "${F}" == F4 ]]; then
                 ok "S22 f4: N1, braco B sai no fim do ping, bem antes do fim nominal" "True" "$(json "${DB}/execucao.json" 'd["injetor_saida_desde_ancora_s"] < d["fim_nominal_desde_ancora_s"] - 20')"
@@ -1175,7 +1184,7 @@ contem "S22 negativo: motivo injetor" "injetor F2 saiu com 1" "$(json "${D}/chec
 ok "S22 negativo: sem alvo parado" "None" "$(json "${D}/execucao.json" 'd["injetor_alvo_parado"]')"
 ok "S22 negativo: N1 tambem na calibracao (fim nominal e saida)" "True" "$(json "${D}/execucao.json" 'd["fim_nominal_desde_ancora_s"] is not None and d["injetor_saida_desde_ancora_s"] is not None')"
 novo_caso s22-sem-ac5
-parametros duracao_s=120 f2_dur_s=80 exec_teto_s=300
+parametros duracao_s=120 f2_dur_s=80 exec_teto_s=900
 matriz_calib "ASYNC-F2:calibracao:1"
 echo isn3 > "${ST}/java-para-sem-ac5"
 echo 2 > "${ST}/ac5-apos-start"
@@ -1268,10 +1277,11 @@ echo "== S25: F1 ainda em curso na linha de fim da carga: o O8 nao religa o no d
 # sai depois da ancora vista pelo orquestrador). Antes, o O8 religava isn2 por conta propria e, com o prefixo infra do
 # P-53, a execucao virava DESCARTADA-INFRA (achado na suite completa do W-6b, S4 i=1).
 novo_caso s25
-parametros f1_dur_s=50
+parametros f1_dur_s=50 exec_teto_s=900
 matriz_calib "ASYNC-F1:calibracao:1"
 # R8 da V-W6b: a linha de fim espera isn2 parado pelo inject-crash.sh, que so o religa 50 s depois; sem isso, sob
-# carga o kill atrasava, a linha chegava com isn2 de pe e a mutacao do S25 passava
+# carga o kill atrasava, a linha chegava com isn2 de pe e a mutacao do S25 passava. Teto de 900 s: com quatro suites
+# em paralelo o kill chegou depois dos 200 s do teto padrao, e o timeout matava a carga antes da linha de fim
 : > "${ST}/java-espera-parado-isn2"
 printf 'go calibracao %s\n' "${HOJE}" > "${CS_TTY_ARQUIVO}"
 rodar calibracao
@@ -1365,7 +1375,7 @@ echo "-- S26e: B1 no F3: o AC-5 do braco B para isn2 sob o netem; o injetor sai 
 # escala 5, carga de 160 s: AC-5 do duble 60 s virtuais depois do start do F3 (o marcador do orquestrador; R3 da
 # V-W6b), depois da amostra do netem a +40 s do disparo; netem por 120 s
 novo_caso s26e 5
-parametros f3 duracao_s=160 f3_dur_s=120 exec_teto_s=300
+parametros f3 duracao_s=160 f3_dur_s=120 exec_teto_s=900
 matriz_aval "ASYNC-F3:descritiva:1"
 echo "127.0.0.1:11223" > "${ST}/ac5-alvo"
 echo 60 > "${ST}/ac5-apos-start"

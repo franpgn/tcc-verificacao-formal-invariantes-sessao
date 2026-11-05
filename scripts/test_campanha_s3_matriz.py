@@ -162,8 +162,9 @@ class Gerar(unittest.TestCase):
             self.assertEqual(2, rodar(*sem_b0, "--ordem-seed", "1", "--s0", "1")[0], "sem --b0")
 
     def test_celulas_invalidas(self):
-        for ruim in ("ASYNC-F3:teste:8", "ASYNC-F1:outro:8", "ASYNC-F1:teste:0", "ASYNC-F1:teste",
-                     "XSYNC-F1:teste:8", "ASYNC-F1:teste:8,ASYNC-F1:teste:8"):
+        # W-6c: F3 passou a ser falha da matriz; F5 e combinacoes de falhas continuam invalidas (uma falha por execucao)
+        for ruim in ("ASYNC-F5:teste:8", "ASYNC-F3+F4:teste:8", "ASYNC-F2F3:teste:8", "ASYNC-F1:outro:8",
+                     "ASYNC-F1:teste:0", "ASYNC-F1:teste", "XSYNC-F1:teste:8", "ASYNC-F1:teste:8,ASYNC-F1:teste:8"):
             with self.subTest(ruim=ruim):
                 with self.assertRaises(cm.ErroUso):
                     cm.ler_celulas(ruim, "avaliacao")
@@ -171,6 +172,26 @@ class Gerar(unittest.TestCase):
             cm.ler_celulas("ASYNC-F1:teste:8", "calibracao")
         with self.assertRaises(cm.ErroUso):
             cm.ler_celulas("ASYNC-F1:calibracao:5", "avaliacao")
+
+    def test_celula_f3_descritiva_nas_extras(self):
+        """W-6c: a celula ASYNC F3 descritiva de 4 blocos nas extras (B-40, secao 4 e B-1): F3 na coluna falha, uma
+        falha por linha, blocos A/B pareados como os outros."""
+        with tempfile.TemporaryDirectory() as d:
+            saida, _ = gerar_avaliacao(d, extras=EXTRAS + ",ASYNC-F3:descritiva:4")
+            _, linhas = ler_tsv(saida)
+            f3 = [x for x in linhas if x["celula"] == "ASYNC-F3"]
+            self.assertEqual(8, len(f3))
+            self.assertEqual({"F3"}, {x["falha"] for x in f3})
+            self.assertEqual({"extra"}, {x["fase"] for x in f3})
+            self.assertEqual({"descritiva"}, {x["papel"] for x in f3})
+            por_bloco = {}
+            for x in f3:
+                por_bloco.setdefault(x["bloco"], []).append(x)
+            self.assertEqual(4, len(por_bloco))
+            for b in por_bloco.values():
+                self.assertEqual(["A", "B"], sorted(x["braco"] for x in b))
+                self.assertEqual(1, len({x["seed"] for x in b}))
+            self.assertEqual(set(cm.FALHAS), {"none", "F1", "F2", "F3", "F4"})
 
 
 class Repor(unittest.TestCase):

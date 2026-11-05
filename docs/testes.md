@@ -378,3 +378,22 @@ motivo errado (exit 2 do `argparse`). O patch troca só a chamada (argumentos do
 (campos `janela` e `parametros` coerentes) e, em `test_esquema_e_familias` e `test_boot_de_blocos_so_depende_de_d_b`,
 o nome do esquema, a família `primario` → `co-principal-L`, o conjunto de desfechos e a escala da diferença. As
 asserções sobre chaves que não mudaram ficam iguais.
+
+### W-5, correções da V-W5 (R-1..R-11) (2026-11-05)
+
+Parecer `docs/validacao-w5-2026-11-05.md` (`a2e14a8`), decisões P-1..P-7 e A-2..A-4 do coordenador em nome do
+Gestor. Par `0380d26` (test) → `c7dfac4` (fix), **escrito sem executar** (H0 estrito). `test_desfechos_coprincipais.py`
+passa de 78 para 96 testes e `test_poder.py` de 13 para 18; os testes do próprio W-5 que mudaram de assinatura
+(`w_recovery_s`, fim da medição no descritivo do controlador, `--m-celulas`, esquema `poder-troca-de-sinal/2`) foram
+ajustados no mesmo `test:`.
+
+| Momento | `unittest` analysis (sem `-I`) |
+|---|---|
+| base `e869a31` | 235 OK, 1 *skip* |
+| esperado com o patch R-1 aplicado | 370 = 235 + 135 novos (12 + 96 + 18 + 9), 1 *skip* |
+
+R-1 (patch autorizado de `test_comparar_bracos.py`, a aplicar na janela H2): além das duas correções do Senior
+(escala esperada por nome numa lista explícita; secundários sem p exatamente `{delta_rec_s, delta_conv_s,
+divergencia_persistente}`), o patch leva `--w-recovery-s 60` em `ARGS_V2` e `w_recovery_s=60` em `ExclusoesERegistro`
+(P-5), os dois desfechos `:razao` no conjunto esperado (P-4) e um `escrever_trilha` mínimo nas execuções das células
+de teste de `C6Determinismo` e `ExclusoesERegistro` (A-3). Nenhuma linha de asserção sai.

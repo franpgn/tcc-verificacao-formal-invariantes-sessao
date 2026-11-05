@@ -37,7 +37,7 @@
 | W ≥ teto da leitura + maior atraso de início | R4 da V-W4 (`validacao-w4-2026-11-05.md:213`) | regra 7.3 |
 | Energia: razão ociosa 0,3 central e 0,5 de sensibilidade | decisão do Gestor de 05/11; Barroso e Hölzle (2007), p. 36 e 34; P_max 181 W (ficha do i5-14600KF) | só no B-40; a calibração coleta CPU (seção 6) |
 | Religamento depois do fim da carga, com `convergencia_estado` | coordenador, 05/11, depois do I-3b; W-6 | sem efeito no braço A (nenhum AC-5 executado) |
-| h4 do C3, com a regra de memória da noite 1 | C3; DT-018; DT-019; G-3 de `validacao-noite1-2026-11-05.md:647` (**a aprovar pelo Gestor junto com a retomada**) | seção 5 |
+| h4 do C3, com a regra de memória da noite 1 | C3; DT-018; DT-019; G-3 de `validacao-noite1-2026-11-05.md:647` (aprovada pelo Gestor em 05/11; origem medida do 1 GiB na seção 5) | seção 5 |
 | Célula SYNC F2 com a limitação declarada (R3) | `wt-w4/docs/relatorio-w4-2026-11-05.md:203` | seção 3 |
 | Regra dos números | R-N, plano de alinhamento §0.2 | todo número abaixo cita a origem |
 | h4 do S3 com `--id diag-<UTC>`, sem mexer no amostrador | P-47 da V-W6, decisão de 05/11 | seção 5 |
@@ -123,8 +123,8 @@ recomendada, porque a garantia dependeria de disciplina, não de desenho.
 | `f4_direcao` | `out` | direção do S5 validado (`04-l1.log`: "direcao out"; `both` só no *dry-run* do L-0) | aprovado (C-3) |
 | `f4_dur_s` | 90 | igual ao `f2_dur_s`, para F2 e F4 terem a mesma exposição; acima do aviso do injetor (45 s) e da verificação por *ping* (200 × 0,2 s = 40 s, `inject-netdegrade.sh:71-72`) | aprovado (C-3) |
 | `hotrod_timeout_ms` | 2000 | `S3Parametros.java:117`; igual a `tetoLagMs` (R7 da V-W2a) | fixo |
-| `convergencia_teto_s` | 600 | padrão do código do B-33 (`Cli.java:187`), **sem justificativa encontrada** fora do código (plano de alinhamento §3.4); na avaliação é substituído pela regra 7.10, que deriva o teto dos dados | fixo na calibração; **sem origem rastreável, ver seção 10** |
-| `convergencia_periodo_s` | 5 | padrão do código do B-33 (`Cli.java:194`; relatório do B-33, linha 36), **sem justificativa** além do código | fixo; **sem origem rastreável, ver seção 10** |
+| `convergencia_teto_s` | 600 | **limite de censura, não decide desfecho**: a execução que bate no teto é reportada como "não convergiu em 600 s" (censurada), nunca descartada nem imputada. Origem por medição: a fusão do MERGE3 cai em até ~96 s depois da cura (B-44.3: 20 de 21 fusões medidas a ≤ 12 ms de 48 s ou 96 s depois da última troca de vista do líder; `opcoes-arquitetura-configuracao-2026-11-05.md` §9.5, `wt-b44-3/docs/b44-3-ac6-jgroups.md`, `d73b01d`), e o maior Δ_conv medido no projeto é 35,3 s (I-3b `ativo-religar`). 600 s ≥ 6 × 96 s, o que torna improvável censurar uma fusão normal, e cabe no `exec_teto_s` de 1010 s. Na avaliação, o teto sai da regra 7.10 | aprovado (fechamento de 05/11) |
+| `convergencia_periodo_s` | 5 | **derivação: igual a W**, a mesma grade das janelas do controlador, de modo que cada janela tem no máximo uma amostra de convergência; 5 s = o W provisório da calibração (`wNs` de `controlador-calibracao-s3.json`). Na avaliação, acompanha o W da regra 7.3 (parte 2 do B-40) | aprovado (fechamento de 05/11) |
 | `w_recovery_s` | 191 | derivação: cobre do fim da falha ao fim da carga em toda célula com falha da calibração (300 − 49 − 60, o F1 é a falha mais curta) e passa dos ~96 s da janela de fusão do MERGE3 depois da cura (`opcoes-arquitetura-configuracao-2026-11-05.md` §9.5) | aprovado (C-4) |
 | `religamento_prazo_s` | 60 | `T_reb` (`acoes-controlador-cluster-2026-11-05.md` §5.1); no I-3b o nó voltou em 4,5 s | fixo |
 | `exec_teto_s` | 1010 | derivação abaixo, corrigida pela R2 da V-W6b | aprovado (C-6) |
@@ -192,12 +192,26 @@ calibração, que não tem blocos).
 seguidas; uma h4c; a unit do amostrador inativa). **Pré-voo (exit 4):** *timer* `tcc-heal-cs-*` sobrando de outra
 invocação (S2 da V-W6, feito no W-6b), além das recusas que já existiam.
 
-**Regra de memória (G-3 da leitura da noite 1, a aprovar pelo Gestor junto com a retomada do *rebaseline*).** No
-*rebaseline* a regra é: no K1 da primeira execução de cada rodada, com *swap* ≥ 1 GiB, interromper, recriar o
-*cluster* e retomar. No S3 o *cluster* já é recriado antes de toda execução, o que libera as JVMs dos servidores. A
-regra vira: **no K1 de cada execução, depois da recriação, *swap* ≥ 1 GiB para a fase (exit 10)**, porque a recriação
-deveria ter liberado a memória e algo fora do *cluster* a está ocupando. O limiar de 1 GiB é o da G-3 e é revisto se
-a G-3 for revista. O orquestrador ainda não lê o *swap*: é item do W-6c (seção 9).
+**Regra de memória (G-3, aprovada pelo Gestor em 05/11, "aprovo as recomendações", plano de retomada G-1..G-8).**
+Na noite 1 do *rebaseline* ela foi aplicada pelo supervisor, e o Gestor estendeu a guarda a todo portão K1, junto com o
+*watchdog* de 600 s. No S3 o *cluster* já é recriado antes de toda execução, o que libera as JVMs dos servidores. A regra
+vira: **no K1 de cada execução, depois da recriação, *swap* ≥ 1 GiB para a fase (exit 10)**, porque a recriação deveria
+ter liberado a memória e algo fora do *cluster* a está ocupando. O orquestrador ainda não lê o *swap*: é item do W-6c
+(seção 9).
+
+**Origem medida do 1 GiB** (1 048 576 kB, o `LIM_swap_kB` do supervisor):
+- execução normal: no portão K1, *swap* de 44 240 kB a 404 344 kB (≈ 395 MiB) antes de cada salto (log do supervisor,
+  K1 de i = 26 a 32, e K1 de i = 39 nas notas do vigia);
+- nos *clusters* A, B e C da noite 1, o *swap* no portão foi a 2 042 596 kB (K1 de i = 33), 1 704 320 kB (i = 40) e
+  1 651 268 kB (i = 50) numa única passagem de execução, isto é, ≈ 1,57 a 1,95 GiB. O salto vem do fim da carga (leitura
+  final por réplica): +870 MB em ~20 s, medido pelo Senior vigia na i = 39 (344 → 1750 MB entre 19:41:54 e 19:42:14Z),
+  antes de o *workload* sair;
+- a i = 17 falhou no `clear()` com a VM em *swap*. O que está no *host*: 1 980 MB de *swap* no fim da fase, 42 min depois
+  da parada (`validacao-noite1-2026-11-05.md`, §3.2). O coordenador informa ~2,5 GB no instante da falha, valor lido na
+  VM e não conferido no *host*.
+
+Logo 1 GiB fica acima do ruído de uma execução normal e abaixo do nível em que a falha ocorreu. Fontes: `dados-vm/rebaseline-2026-11/noite1-completa-20261105/rebaseline-infra/supervisor-n1s2b.log` (cópia de `~/rebaseline-infra/supervisor-n1s2b.log` da VM) e
+`C:\Users\FRANCE~1\AppData\Local\Temp\claude\98c9abffb040f610\0786b06c-748d-4829-8e8b-152396a994ac\scratchpad\vigia-senior\notas.md` (notas do vigia, fora do repositório).
 
 **Reposições.** Cada execução perdida é reposta uma vez, com o próximo i livre e semente nova
 (`campanha_s3_matriz.py repor`). Uma segunda perda da mesma reposição pede decisão do Gestor. Teto de reposições h4 na
@@ -334,9 +348,10 @@ bibliografia do projeto e não de algum número aleatório"), **só os que têm 
 | C-7 | `volume_exec_mb` | **14 MB**, substituído pelo maior do X-17 | medida (I-3b, 13,6 MB) | aprovado (regra permanente) |
 | C-8 | critério de falso acionamento | **zero ocorrências, 3/N reportado** | decisão do Gestor (05/11), com o registro da seção 7 | **decidido** |
 | C-9 | k do núcleo = 2 e `n_err` = `n_lat` | **sim** | derivação binomial do plano de 22/10 §3.2; derivação 7.9 | aprovado (regra permanente) |
-| C-10 | regra de memória da seção 5 (*swap* ≥ 1 GiB) | — | o 1 GiB é o limiar **provisório** da G-3 (`validacao-noite1-2026-11-05.md:647`), sem medida nem fonte que o fixe | **não aprovado pela regra permanente**: segue a aprovação da G-3 pelo Gestor, com a retomada do *rebaseline* |
+| C-10 | regra de memória da seção 5 (*swap* ≥ 1 GiB) | **sim** | G-3 aprovada pelo Gestor (05/11); origem medida do 1 GiB na seção 5 (log do supervisor e notas do vigia da noite 1) | aprovado (fechamento de 05/11) |
 
-**Itens sem origem rastreável** (listados em vez de aprovados): `convergencia_teto_s` = 600 s e
-`convergencia_periodo_s` = 5 s (só o padrão do código do B-33; para a avaliação, o teto passa a vir da regra 7.10) e o
-limiar de 1 GiB da regra de memória (C-10). Valores de semente (`--ordem-seed`, `--s0`) não são limiares: a única
-exigência é a disjunção das faixas, e ela está derivada na seção 3. As estimativas de tempo da seção 8 não decidem nada.
+**Itens que estavam sem origem rastreável, fechados pelo coordenador em 05/11** (sob a autorização do Gestor de
+~22:30Z): C-10, com a origem medida do 1 GiB (seção 5); `convergencia_periodo_s` = 5 s, por derivação (= W); e
+`convergencia_teto_s` = 600 s, como limite de censura com origem na espera de fusão medida (seção 4.1). Nenhum item
+ficou sem origem. Valores de semente (`--ordem-seed`, `--s0`) não são limiares: a única exigência é a disjunção das
+faixas, e ela está derivada na seção 3. As estimativas de tempo da seção 8 não decidem nada.

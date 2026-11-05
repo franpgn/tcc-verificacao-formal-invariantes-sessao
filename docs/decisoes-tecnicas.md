@@ -847,6 +847,14 @@ Transmitidas ao Senior pelo coordenador, sobre o parecer de conferência do text
 > **Aprovado** pelo coordenador em nome do Gestor em 2026-11-05 (decisões finais de ~22:30Z), antes de qualquer
 > execução da calibração. Texto completo e vinculante: `docs/pre-registro-calibracao-s3-2026-11-05.md`, na versão do
 > commit **`1e4ff2c`** (branch `docs/pre-registro-calibracao-s3`). Rascunhos anteriores: `0180dbd`, `254380a`, `4139ee4`.
+>
+> **Nota de fechamento (2026-11-05, coordenador sob a autorização do Gestor de ~22:30Z).** Os três itens que ficaram sem
+> origem rastreável nesta entrada estão fechados no documento, versão do commit que acrescenta esta nota: **C-10**
+> aprovado (G-3 aprovada pelo Gestor; 1 GiB entre o *swap* normal no K1, ≤ 404 344 kB, e o nível depois do salto do fim
+> da carga, 1 651 268 a 2 042 596 kB, no log do supervisor da noite 1); **`convergencia_periodo_s` = 5 s** por derivação
+> (= W; na avaliação acompanha o W calibrado); **`convergencia_teto_s` = 600 s** como limite de censura (execução no teto
+> = "não convergiu em 600 s", nunca descartada nem imputada), ≥ 6 × a espera máxima de fusão do MERGE3, ~96 s
+> (`opcoes-arquitetura-configuracao-2026-11-05.md` §9.5). O último item da lista abaixo fica superado por esta nota.
 
 - **Objeto:** campanha S3 só com o braço A (`shadow`), mesmo jar, XML sem *caches* e JSON da avaliação; os dados não
   entram na avaliação (D-12). 26 execuções: ASYNC sem falha × 5, F1 × 5 (controle negativo do P1), F2 × 5, F4 × 5;

@@ -151,6 +151,36 @@ class LigacaoControladorAtuadorTest {
         }
     }
 
+    /** Cli S3 shadow com o bloco politica (tetoLagMs = 2000) e o --hotrod-timeout-ms dado. */
+    Cli cliS3(String hotrodTimeoutMs) throws IOException {
+        String base = LigacaoControladorTest.PARAMS_RAPIDOS;
+        Path p = Files.writeString(dir.resolve("controlador-w2a-s3.json"),
+                base.substring(0, base.length() - 1) + "," + BLOCO + "}", StandardCharsets.UTF_8);
+        Path ref = Files.writeString(dir.resolve("ref-s3.json"), ControladorCliTest.referencia("S3", "async"));
+        Cli c = new Cli();
+        new CommandLine(c).parseArgs("--controller", "shadow", "--controller-config", p.toString(),
+                "--controller-reference", ref.toString(), "--controller-admin", admin(), "--servers", admin(),
+                "--csv-dir", dir.toString(), "--replication", "async", "--scenario", "S3",
+                "--marker", dir.resolve("marcadores.log").toString(), "--hotrod-timeout-ms", hotrodTimeoutMs);
+        c.validar();
+        return c;
+    }
+
+    @Test
+    @DisplayName("R7: em S3 o tetoLagMs tem de ser o prazo Hot Rod do S_lag (--hotrod-timeout-ms); divergente, o arquivo e recusado")
+    void tetoLagIgualAoPrazoDaSonda() throws IOException {
+        subir();
+        assertEquals(2000, LigacaoControlador.carregar(cliS3("2000")).parametros().politica().tetoLagMs());
+        Cli diverge = cliS3("1500");
+        IllegalArgumentException e = org.junit.jupiter.api.Assertions.assertThrows(IllegalArgumentException.class,
+                () -> LigacaoControlador.carregar(diverge));
+        assertTrue(e.getMessage().contains("tetoLagMs") && e.getMessage().contains("--hotrod-timeout-ms"),
+                e.getMessage());
+        Cli maior = cliS3("3000");
+        org.junit.jupiter.api.Assertions.assertThrows(IllegalArgumentException.class,
+                () -> LigacaoControlador.carregar(maior), "teto abaixo do prazo tambem diverge");
+    }
+
     @Test
     @DisplayName("ponta a ponta (active, servidor falso): queda do no 3 -> R2 -> P2 AC-2 global aplicado; volta -> reversao pela politica")
     void pontaAPonta() throws Exception {

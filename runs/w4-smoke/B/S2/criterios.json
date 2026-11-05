@@ -1,0 +1,206 @@
+{
+ "execucao": "S2",
+ "rodadas": 52,
+ "janelas": 51,
+ "A2": {
+  "esquema": "observaveis-controlador/1.2",
+  "sonda_defasagem": true,
+  "lag_in_ms": 2000.0,
+  "lag_out_ms": 1000.0,
+  "passo_leitura_ms": 20,
+  "origem": {
+   "lagInMs": "provisorio-calibracao",
+   "lagOutMs": "provisorio-calibracao",
+   "passoLeituraMs": "wada_consistency_cloud_2011 secao 2 (leitores a 50 leituras por segundo)"
+  },
+  "ok": true
+ },
+ "A6": {
+  "chaves": [
+   {
+    "no": "127.0.0.1:12611",
+    "chave": "lag:127.0.0.1:12611#3",
+    "primario": true,
+    "motivo": "primario"
+   },
+   {
+    "no": "127.0.0.1:12612",
+    "chave": "lag:127.0.0.1:12612",
+    "primario": true,
+    "motivo": "primario"
+   },
+   {
+    "no": "127.0.0.1:12613",
+    "chave": "lag:127.0.0.1:12613#1",
+    "primario": true,
+    "motivo": "primario"
+   }
+  ],
+  "ok": true
+ },
+ "contadores": {
+  "defasagem_rodadas": 61,
+  "defasagem_rodadas_antes_da_origem": 9,
+  "defasagem_rodadas_puladas": 0,
+  "defasagem_rodadas_atrasadas": 0,
+  "defasagem_rodadas_nao_gravadas": 0,
+  "defasagem_escritas": 183,
+  "defasagem_leituras": 11700,
+  "defasagem_erros_escrita": 21,
+  "defasagem_erros_leitura": 3796,
+  "defasagem_erros_ouvinte": 0
+ },
+ "A9_chaves_iguais_ao_sem_falha": true,
+ "A10": {
+  "rodadas_no_corte_antes_da_vista": 8,
+  "rodadas_que_cumprem": 0,
+  "rodadas": [
+   {
+    "rodada": 23,
+    "t_inicio_menos_corte_s": 2.5892876,
+    "lag_max_ms": 2000.0,
+    "no_suspeito": null,
+    "maioria_vista": false,
+    "maioria_lag_ms": [
+     2000.0,
+     2000.0
+    ],
+    "suspeito_nao_visto": true,
+    "leituras": 455
+   },
+   {
+    "rodada": 24,
+    "t_inicio_menos_corte_s": 7.5897066,
+    "lag_max_ms": 2000.0,
+    "no_suspeito": null,
+    "maioria_vista": false,
+    "maioria_lag_ms": [
+     2000.0,
+     2000.0
+    ],
+    "suspeito_nao_visto": true,
+    "leituras": 462
+   },
+   {
+    "rodada": 25,
+    "t_inicio_menos_corte_s": 12.589031,
+    "lag_max_ms": 2000.0,
+    "no_suspeito": null,
+    "maioria_vista": false,
+    "maioria_lag_ms": [
+     2000.0,
+     2000.0
+    ],
+    "suspeito_nao_visto": true,
+    "leituras": 461
+   },
+   {
+    "rodada": 26,
+    "t_inicio_menos_corte_s": 17.5892472,
+    "lag_max_ms": 2000.0,
+    "no_suspeito": null,
+    "maioria_vista": false,
+    "maioria_lag_ms": [
+     2000.0,
+     2000.0
+    ],
+    "suspeito_nao_visto": true,
+    "leituras": 456
+   },
+   {
+    "rodada": 27,
+    "t_inicio_menos_corte_s": 22.5894671,
+    "lag_max_ms": 2000.0,
+    "no_suspeito": null,
+    "maioria_vista": false,
+    "maioria_lag_ms": [
+     2000.0,
+     2000.0
+    ],
+    "suspeito_nao_visto": true,
+    "leituras": 461
+   },
+   {
+    "rodada": 28,
+    "t_inicio_menos_corte_s": 27.5892362,
+    "lag_max_ms": 2000.0,
+    "no_suspeito": null,
+    "maioria_vista": false,
+    "maioria_lag_ms": [
+     2000.0,
+     2000.0
+    ],
+    "suspeito_nao_visto": true,
+    "leituras": 455
+   },
+   {
+    "rodada": 29,
+    "t_inicio_menos_corte_s": 32.5892394,
+    "lag_max_ms": 2000.0,
+    "no_suspeito": null,
+    "maioria_vista": false,
+    "maioria_lag_ms": [
+     2000.0,
+     2000.0
+    ],
+    "suspeito_nao_visto": true,
+    "leituras": 436
+   },
+   {
+    "rodada": 30,
+    "t_inicio_menos_corte_s": 37.5889028,
+    "lag_max_ms": 2000.0,
+    "no_suspeito": null,
+    "maioria_vista": false,
+    "maioria_lag_ms": [
+     2000.0,
+     2000.0
+    ],
+    "suspeito_nao_visto": true,
+    "leituras": 465
+   }
+  ],
+  "ok": false
+ },
+ "A11": {
+  "p1": [],
+  "ac5": [],
+  "ok": false
+ },
+ "A12": {
+  "lag_pares_maioria_ms": {
+   "n": 16,
+   "min": 2000.0,
+   "mediana": 2000.0,
+   "p99": 2000.0,
+   "max": 2000.0
+  },
+  "acima_de_1000": 16
+ },
+ "A13": {
+  "leituras_por_rodada_no_corte": {
+   "n": 8,
+   "min": 436,
+   "mediana": 458.5,
+   "p99": 465,
+   "max": 465
+  },
+  "janelas_sem_rodada_no_corte": 0,
+  "ok": true
+ },
+ "instantes": {
+  "t_corte_ns": 1793873114601791500,
+  "t_cura_ns": 1793873204670349200,
+  "t_lag_ns": 1793873162191303100,
+  "t_p1_ns": null,
+  "t_vista_sonda_ns": 1793873156603148600,
+  "t_vista_log_ns": null,
+  "t_vista_log_linha": null,
+  "t_volta_ns": 1793873262190676700,
+  "t_lag_menos_corte_s": 47.59,
+  "t_p1_menos_corte_s": null,
+  "t_vista_sonda_menos_corte_s": 42.001,
+  "t_vista_log_menos_corte_s": null,
+  "t_volta_menos_cura_s": 57.52
+ }
+}

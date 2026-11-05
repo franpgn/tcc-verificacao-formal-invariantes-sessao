@@ -1,0 +1,12 @@
+2026-11-05T09:59:46.018Z	diag-1	POST	http://127.0.0.1:12611/rest/v2/caches/diag-1	200	0.205
+2026-11-05T09:59:46.274Z	diag-1	GET	http://127.0.0.1:12611/rest/v2/caches/diag-1?action=config	200	0.179
+2026-11-05T09:59:46.493Z	diag-1	GET	http://127.0.0.1:12612/rest/v2/caches/diag-1?action=config	200	0.114
+2026-11-05T09:59:46.793Z	diag-1	GET	http://127.0.0.1:12613/rest/v2/caches/diag-1?action=config	200	0.199
+2026-11-05T09:59:47.144Z	diag-2	POST	http://127.0.0.1:12611/rest/v2/caches/diag-2	200	0.172
+2026-11-05T09:59:47.326Z	diag-2	GET	http://127.0.0.1:12611/rest/v2/caches/diag-2?action=config	200	0.116
+2026-11-05T09:59:47.591Z	diag-2	GET	http://127.0.0.1:12612/rest/v2/caches/diag-2?action=config	200	0.117
+2026-11-05T09:59:47.835Z	diag-2	GET	http://127.0.0.1:12613/rest/v2/caches/diag-2?action=config	200	0.141
+2026-11-05T09:59:48.121Z	diag-3	POST	http://127.0.0.1:12611/rest/v2/caches/diag-3	200	0.120
+2026-11-05T09:59:48.284Z	diag-3	GET	http://127.0.0.1:12611/rest/v2/caches/diag-3?action=config	200	0.114
+2026-11-05T09:59:48.466Z	diag-3	GET	http://127.0.0.1:12612/rest/v2/caches/diag-3?action=config	200	0.105
+2026-11-05T09:59:48.688Z	diag-3	GET	http://127.0.0.1:12613/rest/v2/caches/diag-3?action=config	200	0.148

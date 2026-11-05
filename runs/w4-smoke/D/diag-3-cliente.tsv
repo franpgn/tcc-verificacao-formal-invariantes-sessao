@@ -1,0 +1,4 @@
+# rodada=0 topologyId=169439744 objectStorage=false servidores=[127.0.0.1/<unresolved>:12612, 127.0.0.1/<unresolved>:12611, 127.0.0.1/<unresolved>:12613] keyType=application/x-java-serialized-object
+0	169439744	lag:127.0.0.1:12613	aced00057400136c61673a3132372e302e302e313a3132363133	127.0.0.1:12613	14	[127.0.0.1/<unresolved>:12613, 127.0.0.1/<unresolved>:12612]
+# rodada=1 topologyId=169439744 objectStorage=false servidores=[127.0.0.1/<unresolved>:12612, 127.0.0.1/<unresolved>:12611, 127.0.0.1/<unresolved>:12613] keyType=application/x-java-serialized-object
+1	169439744	lag:127.0.0.1:12613	aced00057400136c61673a3132372e302e302e313a3132363133	127.0.0.1:12613	14	[127.0.0.1/<unresolved>:12613, 127.0.0.1/<unresolved>:12612]

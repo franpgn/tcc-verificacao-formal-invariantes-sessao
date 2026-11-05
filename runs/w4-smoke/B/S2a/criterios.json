@@ -1,0 +1,108 @@
+{
+ "execucao": "S2a",
+ "rodadas": 17,
+ "janelas": 16,
+ "A2": {
+  "esquema": "observaveis-controlador/1.2",
+  "sonda_defasagem": true,
+  "lag_in_ms": 2000.0,
+  "lag_out_ms": 1000.0,
+  "passo_leitura_ms": 20,
+  "origem": {
+   "lagInMs": "provisorio-calibracao",
+   "lagOutMs": "provisorio-calibracao",
+   "passoLeituraMs": "wada_consistency_cloud_2011 secao 2 (leitores a 50 leituras por segundo)"
+  },
+  "ok": true
+ },
+ "A6": {
+  "chaves": [
+   {
+    "no": "127.0.0.1:12611",
+    "chave": "lag:127.0.0.1:12611#3",
+    "primario": true,
+    "motivo": "primario"
+   },
+   {
+    "no": "127.0.0.1:12612",
+    "chave": "lag:127.0.0.1:12612",
+    "primario": true,
+    "motivo": "primario"
+   },
+   {
+    "no": "127.0.0.1:12613",
+    "chave": "lag:127.0.0.1:12613#1",
+    "primario": true,
+    "motivo": "primario"
+   }
+  ],
+  "ok": true
+ },
+ "contadores": {
+  "defasagem_rodadas": 24,
+  "defasagem_rodadas_antes_da_origem": 7,
+  "defasagem_rodadas_puladas": 0,
+  "defasagem_rodadas_atrasadas": 0,
+  "defasagem_rodadas_nao_gravadas": 0,
+  "defasagem_escritas": 72,
+  "defasagem_leituras": 144,
+  "defasagem_erros_escrita": 0,
+  "defasagem_erros_leitura": 0,
+  "defasagem_erros_ouvinte": 0
+ },
+ "A3": {
+  "pares_vistos": 102,
+  "pares": 102,
+  "rodadas_no_teto": 0,
+  "lag_max_ms": {
+   "n": 17,
+   "min": 1.8603,
+   "mediana": 2.4104,
+   "p99": 4.3894,
+   "max": 4.3894
+  },
+  "lag_par_ms": {
+   "n": 102,
+   "min": 1.7926,
+   "mediana": 2.7314,
+   "p99": 4.4733,
+   "max": 5.0212
+  },
+  "janelas_alta_ou_intermediaria": 0,
+  "ok": true
+ },
+ "A4": {
+  "janelas_sem_rodada": 0,
+  "rodadas_atrasadas": 0,
+  "ok": true
+ },
+ "A5": {
+  "escritas": 72,
+  "rodadas": 24,
+  "leituras_por_rodada": {
+   "n": 17,
+   "min": 6,
+   "mediana": 6,
+   "p99": 6,
+   "max": 6
+  },
+  "histograma": {
+   "6": 17
+  },
+  "erros_escrita": 0,
+  "erros_leitura": 0,
+  "ok": true
+ },
+ "A8": {
+  "politica_p1": 0,
+  "acao_ac5": 0,
+  "csv_lidos": [
+   "rep-001.csv",
+   "s3-acoes-rep-001.csv",
+   "violacoes-rep-001.csv"
+  ],
+  "csv_com_lag": [],
+  "stdout_menciona_canario": false,
+  "ok": true
+ }
+}

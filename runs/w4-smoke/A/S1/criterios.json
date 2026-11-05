@@ -1,0 +1,232 @@
+{
+ "execucao": "S1",
+ "rodadas": 52,
+ "janelas": 51,
+ "A2": {
+  "esquema": "observaveis-controlador/1.2",
+  "sonda_defasagem": true,
+  "lag_in_ms": 2000.0,
+  "lag_out_ms": 1000.0,
+  "passo_leitura_ms": 20,
+  "origem": {
+   "lagInMs": "provisorio-calibracao",
+   "lagOutMs": "provisorio-calibracao",
+   "passoLeituraMs": "wada_consistency_cloud_2011 secao 2 (leitores a 50 leituras por segundo)"
+  },
+  "ok": true
+ },
+ "A6": {
+  "chaves": [
+   {
+    "no": "127.0.0.1:12611",
+    "chave": "lag:127.0.0.1:12611#1",
+    "primario": true,
+    "motivo": "primario"
+   },
+   {
+    "no": "127.0.0.1:12612",
+    "chave": "lag:127.0.0.1:12612",
+    "primario": true,
+    "motivo": "primario"
+   },
+   {
+    "no": "127.0.0.1:12613",
+    "chave": "lag:127.0.0.1:12613",
+    "primario": true,
+    "motivo": "primario"
+   }
+  ],
+  "ok": true
+ },
+ "contadores": {
+  "defasagem_rodadas": 61,
+  "defasagem_rodadas_antes_da_origem": 9,
+  "defasagem_rodadas_puladas": 0,
+  "defasagem_rodadas_atrasadas": 0,
+  "defasagem_rodadas_nao_gravadas": 0,
+  "defasagem_escritas": 183,
+  "defasagem_leituras": 8237,
+  "defasagem_erros_escrita": 19,
+  "defasagem_erros_leitura": 3437,
+  "defasagem_erros_ouvinte": 0
+ },
+ "A9_chaves_iguais_ao_sem_falha": true,
+ "A10": {
+  "rodadas_no_corte_antes_da_vista": 9,
+  "rodadas_que_cumprem": 9,
+  "rodadas": [
+   {
+    "rodada": 23,
+    "t_inicio_menos_corte_s": 2.89355685,
+    "lag_max_ms": 2000.0,
+    "no_suspeito": "127.0.0.1:12613",
+    "maioria_vista": true,
+    "maioria_lag_ms": [
+     48.4141,
+     1.1692
+    ],
+    "suspeito_nao_visto": true,
+    "leituras": 97
+   },
+   {
+    "rodada": 24,
+    "t_inicio_menos_corte_s": 7.89174585,
+    "lag_max_ms": 2000.0,
+    "no_suspeito": "127.0.0.1:12613",
+    "maioria_vista": true,
+    "maioria_lag_ms": [
+     2.0935,
+     2.1015
+    ],
+    "suspeito_nao_visto": true,
+    "leituras": 93
+   },
+   {
+    "rodada": 25,
+    "t_inicio_menos_corte_s": 12.89174155,
+    "lag_max_ms": 2000.0,
+    "no_suspeito": "127.0.0.1:12613",
+    "maioria_vista": true,
+    "maioria_lag_ms": [
+     1.5787,
+     1.5776
+    ],
+    "suspeito_nao_visto": true,
+    "leituras": 98
+   },
+   {
+    "rodada": 26,
+    "t_inicio_menos_corte_s": 17.89203485,
+    "lag_max_ms": 2000.0,
+    "no_suspeito": "127.0.0.1:12613",
+    "maioria_vista": true,
+    "maioria_lag_ms": [
+     1.365,
+     1.4146
+    ],
+    "suspeito_nao_visto": true,
+    "leituras": 98
+   },
+   {
+    "rodada": 27,
+    "t_inicio_menos_corte_s": 22.89286795,
+    "lag_max_ms": 2000.0,
+    "no_suspeito": "127.0.0.1:12613",
+    "maioria_vista": true,
+    "maioria_lag_ms": [
+     1.2671,
+     1.2908
+    ],
+    "suspeito_nao_visto": true,
+    "leituras": 97
+   },
+   {
+    "rodada": 28,
+    "t_inicio_menos_corte_s": 27.89280185,
+    "lag_max_ms": 2000.0,
+    "no_suspeito": "127.0.0.1:12613",
+    "maioria_vista": true,
+    "maioria_lag_ms": [
+     1.343,
+     1.2395
+    ],
+    "suspeito_nao_visto": true,
+    "leituras": 93
+   },
+   {
+    "rodada": 29,
+    "t_inicio_menos_corte_s": 32.89228975,
+    "lag_max_ms": 2000.0,
+    "no_suspeito": "127.0.0.1:12613",
+    "maioria_vista": true,
+    "maioria_lag_ms": [
+     1.1959,
+     1.2053
+    ],
+    "suspeito_nao_visto": true,
+    "leituras": 90
+   },
+   {
+    "rodada": 30,
+    "t_inicio_menos_corte_s": 37.89270375,
+    "lag_max_ms": 2000.0,
+    "no_suspeito": "127.0.0.1:12613",
+    "maioria_vista": true,
+    "maioria_lag_ms": [
+     1.4864,
+     1.4939
+    ],
+    "suspeito_nao_visto": true,
+    "leituras": 97
+   },
+   {
+    "rodada": 31,
+    "t_inicio_menos_corte_s": 42.89218355,
+    "lag_max_ms": 2000.0,
+    "no_suspeito": "127.0.0.1:12613",
+    "maioria_vista": true,
+    "maioria_lag_ms": [
+     1.2075,
+     1.1788
+    ],
+    "suspeito_nao_visto": true,
+    "leituras": 97
+   }
+  ],
+  "ok": true
+ },
+ "A11": {
+  "p1": [
+   {
+    "no": "127.0.0.1:12613",
+    "t_decisao_ns": 1793872411713231250,
+    "motivo": "isolar-suspeito"
+   }
+  ],
+  "ac5": [
+   {
+    "alvo": "127.0.0.1:12613",
+    "resultado": "PREVISTA",
+    "t_pedido_ns": 1793872411713593050,
+    "executada": false
+   }
+  ],
+  "ok": true
+ },
+ "A12": {
+  "lag_pares_maioria_ms": {
+   "n": 18,
+   "min": 1.1692,
+   "mediana": 1.354,
+   "p99": 48.4141,
+   "max": 48.4141
+  },
+  "acima_de_1000": 0
+ },
+ "A13": {
+  "leituras_por_rodada_no_corte": {
+   "n": 9,
+   "min": 90,
+   "mediana": 97,
+   "p99": 98,
+   "max": 98
+  },
+  "janelas_sem_rodada_no_corte": 0,
+  "ok": true
+ },
+ "instantes": {
+  "t_corte_ns": 1793872398489425700,
+  "t_cura_ns": 1793872488514568100,
+  "t_lag_ns": 1793872401382982550,
+  "t_p1_ns": 1793872411713231250,
+  "t_vista_sonda_ns": 1793872446795352650,
+  "t_vista_log_ns": 1793872445000000000,
+  "t_vista_log_linha": "2026-11-05T06:54:05-03:00 \u001b[0m2026-11-05 09:54:05,461 INFO  [o.i.CLUSTER] ISPN000094: Received new cluster view for channel cluster-tcc: [isn1-59685|3] (2) [isn1-59685, isn2-48372]\u001b[m",
+  "t_volta_ns": 1793872546382121250,
+  "t_lag_menos_corte_s": 2.894,
+  "t_p1_menos_corte_s": 13.224,
+  "t_vista_sonda_menos_corte_s": 48.306,
+  "t_vista_log_menos_corte_s": 46.511,
+  "t_volta_menos_cura_s": 57.868
+ }
+}

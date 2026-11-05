@@ -1,0 +1,35 @@
+== 2026-11-05T09:46:07.454Z bloco A inicio (rep=async cache=canario-async jar_sha256=e928355595849bdb150f9800750b54ed346e89eba5eb85cd51a33c99528161ce)
+cluster w4s: 3 nos
+cria-caches canario-async: rc=0
+== 2026-11-05T09:46:26.078Z S0 inicio
+== 2026-11-05T09:46:28.517Z origem_ns=1793872031172385300
+== 2026-11-05T09:51:29.753Z S0 exit=0
+no_da_chave	chave	via	http	contains_key	primario	primario_rotulo	confere
+127.0.0.1:12611	lag:127.0.0.1:12611#1	isn1	400	?	?	?	nao
+127.0.0.1:12611	lag:127.0.0.1:12611#1	isn2	400	?	?	?	nao
+127.0.0.1:12611	lag:127.0.0.1:12611#1	isn3	400	?	?	?	nao
+127.0.0.1:12612	lag:127.0.0.1:12612	isn1	400	?	?	?	nao
+127.0.0.1:12612	lag:127.0.0.1:12612	isn2	400	?	?	?	nao
+127.0.0.1:12612	lag:127.0.0.1:12612	isn3	400	?	?	?	nao
+127.0.0.1:12613	lag:127.0.0.1:12613	isn1	400	?	?	?	nao
+127.0.0.1:12613	lag:127.0.0.1:12613	isn2	400	?	?	?	nao
+127.0.0.1:12613	lag:127.0.0.1:12613	isn3	400	?	?	?	nao
+no_da_chave	chave	via	http	contains_key	primario	primario_rotulo	confere
+127.0.0.1:12611	lag:127.0.0.1:12611#1	isn1	400	?	?	?	nao
+127.0.0.1:12611	lag:127.0.0.1:12611#1	isn2	400	?	?	?	nao
+127.0.0.1:12611	lag:127.0.0.1:12611#1	isn3	400	?	?	?	nao
+127.0.0.1:12612	lag:127.0.0.1:12612	isn1	400	?	?	?	nao
+127.0.0.1:12612	lag:127.0.0.1:12612	isn2	400	?	?	?	nao
+127.0.0.1:12612	lag:127.0.0.1:12612	isn3	400	?	?	?	nao
+127.0.0.1:12613	lag:127.0.0.1:12613	isn1	400	?	?	?	nao
+127.0.0.1:12613	lag:127.0.0.1:12613	isn2	400	?	?	?	nao
+127.0.0.1:12613	lag:127.0.0.1:12613	isn3	400	?	?	?	nao
+== 2026-11-05T09:51:31.482Z S1 inicio
+== 2026-11-05T09:51:33.762Z origem_ns=1793872336380962950
+== 2026-11-05T09:53:16.485Z corte-inicio isn3
+== 2026-11-05T09:53:18.572Z corte-fim isn3 rc=0
+== 2026-11-05T09:54:46.563Z cura-inicio isn3
+== 2026-11-05T09:54:48.548Z cura-fim isn3 rc=0
+== 2026-11-05T09:56:34.367Z S1 exit=0
+== 2026-11-05T09:56:47.405Z bloco A fim
+fim rc=0

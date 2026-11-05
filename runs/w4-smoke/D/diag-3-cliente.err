@@ -1,0 +1,6 @@
+Nov 05, 2026 7:00:21 AM org.infinispan.client.hotrod.RemoteCacheManager actualStart
+INFO: ISPN004021: Infinispan version: Infinispan 'I'm Still Standing' 15.0.0.Final
+Nov 05, 2026 7:00:21 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=169439744, age=0) containing 3 addresses: [127.0.0.1/<unresolved>:12612, 127.0.0.1/<unresolved>:12611, 127.0.0.1/<unresolved>:12613]
+Nov 05, 2026 7:00:21 AM org.infinispan.client.hotrod.impl.RemoteCacheImpl init
+INFO: ISPN004113: Query module not found. Queries are disabled.

@@ -86,6 +86,27 @@ class EscolhaDeChaveTest {
     }
 
     @Test
+    @DisplayName("servidores da topologia: no fora dela (endereco anunciado diferente) fica com a chave simples, sem busca; topologia vazia = sem-topologia")
+    void foraDaTopologia() {
+        AtomicInteger consultas = new AtomicInteger();
+        Function<String, String> dono = k -> {
+            consultas.incrementAndGet();
+            return donoFalso(k);
+        };
+        List<CanalCanarioHotRod.Chave> l = CanalCanarioHotRod.escolherChaves(NOS,
+                java.util.Set.of(NOS.get(0), NOS.get(1)), dono);
+        assertTrue(l.get(0).primario() && l.get(1).primario());
+        assertEquals(CanalCanario.PREFIXO_CHAVE + NOS.get(2), l.get(2).chave());
+        assertFalse(l.get(2).primario());
+        assertEquals("fora-da-topologia", l.get(2).motivo());
+        assertEquals(0, l.get(2).tentativas());
+        int antes = consultas.get();
+        List<CanalCanarioHotRod.Chave> vazia = CanalCanarioHotRod.escolherChaves(NOS, java.util.Set.of(), dono);
+        assertTrue(vazia.stream().allMatch(c -> "sem-topologia".equals(c.motivo()) && !c.primario()));
+        assertEquals(antes, consultas.get(), "sem topologia, nenhuma consulta");
+    }
+
+    @Test
     @DisplayName("limite da busca: com o no primario de ao menos 1 de 64 segmentos, a chance de nao achar e desprezivel")
     void limiteDaBusca() {
         assertEquals(10_000, CanalCanarioHotRod.LIMITE_BUSCA);

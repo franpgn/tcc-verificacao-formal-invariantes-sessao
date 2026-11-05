@@ -42,13 +42,17 @@ class ArquiteturaSemAcaoNoClienteTest {
             // W-2a (B-44.2, D-C): o atuador REST do cluster so usa os tipos da interface do atuador
             "AtuadorRestInfinispan", Set.of("AcaoCluster", "AtuadorCluster", "ResultadoAtuacao"),
             "SondaTopologiaCli", Set.of("AmostraTopologia", "FonteDeTempo", "ResultadoNo", "SondaTopologia"),
+            // W-4 (B-26.3): o adaptador Hot Rod do S_lag so implementa o canal da sonda
+            "CanalCanarioHotRod", Set.of("CanalCanario"),
             "LigacaoControlador", Set.of("AgregadorDeJanela", "ArquivoReferencia", "AtuadorCluster", "AtuadorNulo",
                     "ClasseViolacao", "Controlador", "EventoOperacao", "ExecutorDeAcoes", "FonteDeDefasagem",
                     "FonteDeSaude", "FonteDeTempo", "FonteDeTopologia", "FonteDeViolacoes", "FormatoJsonl",
                     "LacoDeControle", "MetaExecucao", "ModoAtuacao", "ParametrosControlador", "PoliticaDeAcao",
                     "Referencia", "SondaTopologia", "TrilhaJsonl", "ViolacaoObservada",
                     // W-2a (P-38, autorizado em 05/11): ligacao do atuador REST e da politica por assinatura
-                    "PoliticaPorAssinatura", "ParametrosPolitica", "AtuadorPorTipo"));
+                    "PoliticaPorAssinatura", "ParametrosPolitica", "AtuadorPorTipo",
+                    // W-4 (B-26.3): ligacao da sonda de defasagem (S_lag) ao laco
+                    "CanalCanario", "ParametrosDefasagem", "SondaDefasagem"));
 
     /** Tipos do portao de emissao retirados no B-27.3. */
     static final List<String> TIPOS_RETIRADOS = List.of(

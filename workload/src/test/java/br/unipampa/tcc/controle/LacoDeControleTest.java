@@ -423,7 +423,7 @@ class LacoDeControleTest {
         }
         assertEquals(6 * S, ds.get(0).get("t_decisao_ns").asLong(), "janela [0,5) fecha no tick de 6 s");
         assertEquals("decisoes-controlador/1.2", ler(m.dec).get(0).get("esquema").asText());
-        assertEquals("observaveis-controlador/1.1", ler(m.obs).get(0).get("esquema").asText());
+        assertEquals("observaveis-controlador/1.2", ler(m.obs).get(0).get("esquema").asText());
     }
 
     // ---------------------------------------------------------- N3 (V-W3)

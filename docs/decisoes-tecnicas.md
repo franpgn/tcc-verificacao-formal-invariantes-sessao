@@ -755,6 +755,32 @@ Transmitidas ao Senior pelo coordenador, sobre o parecer de conferência do text
 - **Adenda a preencher depois da validação e da integração**, antes do piloto: ponta da branch, SHA-256 dos 3 arquivos
   novos e do `tar` levado à VM, e SHA-256 da lista no formato do `sha256sum`.
 
+### Adenda da DT-018 (Senior, 2026-11-05, validação W-h4v)
+
+- **Branch** `feature/h4-amostrador-infra`, sobre `19d45b9`. Ponta validada `f15bcfc` (código em `83434b7`, igual em
+  `aec1812` e `f15bcfc`). O parecer está no *commit* `e869a31` (`docs/validacao-h4-2026-11-05.md`): **APROVADO COM
+  RESSALVAS**, feito só por leitura durante o ensaio do F1. Integração na `feature/controlador-integracao` ainda
+  pendente (coordenador).
+- **SHA-256 dos 3 arquivos** (*blobs* do git, conferidos com `git show`), no formato do `sha256sum` e nesta ordem:
+
+  ```
+  e4cc5c794312afbfa7e4743ca556f37033924c51b0246f8f211718a6ee0a8780 *scripts/amostrador-infra.sh
+  1e7462f46923020abc82c2759b7d77937887c60b91a7af0f2dfc971b8cd4391c *scripts/vigia-h4.sh
+  53d7e7cb831856a58dc9df1a717df559437857aae5b57d159d42bbd84feb8b30 *analysis/h4.py
+  ```
+
+  SHA-256 da lista: `e9c4481989f147fc683d5923aef76213826ac2a69e15f5990336e560a57664a6`.
+- **`tar`** `git archive --format=tar -o h4-amostrador-aec1812.tar aec1812 scripts/amostrador-infra.sh
+  scripts/vigia-h4.sh analysis/h4.py`, SHA-256 `45d1d5896f9d657dee5a88f03c53b40a153c6b8894f7e7a889ddec981e8af0fd`,
+  declarado pelo Worker. **A reprodução pelo Senior fica para depois do ensaio** (H0 estrito). O `tar` só vai à VM com
+  esse *hash* reproduzido e com a autorização do Gestor.
+- **Bundle congelado intacto.** `git diff 19d45b9 f15bcfc` sobre o *runner*, o `rebaseline.py`, o
+  `rebaseline_matriz.py`, os `inject-*.sh`, a matriz e o `workload/` está vazio. A lista de 7 linhas reproduz
+  `003814e93929ea7360f7eba35933907f954201ddf6faca2ce0ae9d3c8c2133a4`.
+- **Antes do piloto**: *smoke* do amostrador na VM com id `diag-<UTC>` (seção 6 do parecer) e decisão do Gestor sobre
+  as ressalvas R1 (episódios dentro do segmento F1 na condição de 3,5/h) e R2 (base de episódios do ensaio sem o
+  amostrador).
+
 ## Decisões de 2026-11-04 e 2026-11-05 (madrugada), transmitidas pelo coordenador
 
 - **P-3 da V-S7r (critério h4):** aprovado em nome do Gestor; virou o complemento 3 e a DT-018 acima, com os pontos

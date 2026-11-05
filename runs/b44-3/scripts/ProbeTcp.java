@@ -25,7 +25,7 @@ import java.util.concurrent.CountDownLatch;
  *    Como Util.readBytes para no primeiro byte 0x0A, o prefixo nao pode conter 0x0A: o cliente sorteia
  *    (t1, q1) de novo ate o prefixo sair sem 0x0A (o Probe.java do JGroups nao faz isso).
  *
- * Uso: java ProbeTcp [--passcode X] [--passcode-errado] [--timeout-ms N] alvo=pedido [alvo=pedido ...]
+ * Uso: java ProbeTcp [--passcode X] [--passcode-errado] [--t1 MS] [--timeout-ms N] alvo=pedido [alvo=pedido ...]
  *   alvo = host:porta; os pedidos sao enviados em paralelo (uma thread por alvo, liberadas juntas).
  * Saida (TSV, uma linha por pedido): rotulo t_envio_ms t_resposta_ms dur_ms bytes status resposta_escapada
  */
@@ -33,6 +33,7 @@ public class ProbeTcp {
     static String passcode = null;
     static boolean passcodeErrado = false;
     static int timeoutMs = 10000;
+    static Long t1Fixo = null; // --t1 N: instante fixo no prefixo (teste de repeticao/frescor)
 
     public static void main(String[] args) throws Exception {
         List<String[]> pedidos = new ArrayList<>();
@@ -41,6 +42,7 @@ public class ProbeTcp {
                 case "--passcode": passcode = args[++i]; break;
                 case "--passcode-errado": passcodeErrado = true; break;
                 case "--timeout-ms": timeoutMs = Integer.parseInt(args[++i]); break;
+                case "--t1": t1Fixo = Long.parseLong(args[++i]); break;
                 default:
                     int k = args[i].indexOf('=');
                     pedidos.add(new String[]{args[i].substring(0, k), args[i].substring(k + 1)});
@@ -66,7 +68,7 @@ public class ProbeTcp {
     static byte[] prefixo(String pc) throws Exception {
         SecureRandom rnd = new SecureRandom();
         for (int tent = 0; tent < 1000; tent++) {
-            long t1 = System.currentTimeMillis() + tent;
+            long t1 = (t1Fixo != null ? t1Fixo : System.currentTimeMillis()) + tent;
             double q1 = rnd.nextDouble();
             MessageDigest md = MessageDigest.getInstance("SHA");
             md.update(pc.getBytes());

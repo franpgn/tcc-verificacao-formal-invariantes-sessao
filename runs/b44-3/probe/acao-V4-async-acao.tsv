@@ -1,0 +1,4 @@
+127.0.0.1:12447|op=GMS.suspect[isn3-35090]	1793869764701	1793869764724	23	114	ok	isn1-3179 [ip=10.89.2.3:7800, 2 mbr(s), cluster=cluster-tcc, version=5.3.16.Final (Zoncolan) (java 21.0.8+9-LTS)]\n
+127.0.0.1:12448|op=GMS.suspect[isn3-35090]	1793869764701	1793869764715	14	115	ok	isn2-13550 [ip=10.89.2.4:7800, 3 mbr(s), cluster=cluster-tcc, version=5.3.16.Final (Zoncolan) (java 21.0.8+9-LTS)]\n
+127.0.0.1:12449|op=GMS.suspect[isn1-3179]	1793869764701	1793869766948	2247	115	ok	isn3-35090 [ip=10.89.2.2:7800, 1 mbr(s), cluster=cluster-tcc, version=5.3.16.Final (Zoncolan) (java 21.0.8+9-LTS)]\n
+127.0.0.1:12449|op=GMS.suspect[isn2-13550]	1793869764701	1793869766717	2016	115	ok	isn3-35090 [ip=10.89.2.2:7800, 2 mbr(s), cluster=cluster-tcc, version=5.3.16.Final (Zoncolan) (java 21.0.8+9-LTS)]\n

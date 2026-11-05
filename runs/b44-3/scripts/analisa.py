@@ -21,6 +21,8 @@ from collections import Counter, defaultdict
 RAIZ = sys.argv[1] if len(sys.argv) > 1 else "."
 PORTA_NO = {"127.0.0.1:12444": "isn1", "127.0.0.1:12445": "isn2", "127.0.0.1:12446": "isn3"}
 JANELA_MS = 5000
+# execucoes invalidas (fora das tabelas): V3-async-acao2 teve a maquina Podman parada entre corte e probe
+INVALIDAS = {"V3-async-acao2"}
 
 
 def iso_ms(s):
@@ -163,6 +165,8 @@ def main():
            "esc_ok_isn3_t0_tref", "ops_janela_5s"]
     print("\t".join(cab))
     for rot, f in fs.items():
+        if rot in INVALIDAS:
+            continue
         ev, vi = carga(rot)
         lat = [e[6] for e in ev]
         ok = [e for e in ev if not e[4].startswith("ERROR")]

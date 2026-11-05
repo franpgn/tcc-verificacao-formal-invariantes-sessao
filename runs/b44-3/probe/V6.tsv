@@ -1,0 +1,10 @@
+127.0.0.1:12447|jmx=GMS.view	1793870039586	1793870039596	10	0	vazia	
+127.0.0.1:12447|jmx=GMS.view	1793870039787	1793870039830	43	266	ok	isn1-14810 [ip=10.89.2.2:7800, 3 mbr(s), cluster=cluster-tcc, version=5.3.16.Final (Zoncolan) (java 21.0.8+9-LTS)]\nGMS={view=[isn1-14810|2] (3) [isn1-14810, isn2-51272, isn3-42513], view_ack_collection_timeout=2s, view_handler_size=0, view_handler_suspended=false}\r\n
+127.0.0.1:12447|jmx=GMS.view	1793870040010	1793870040047	37	0	vazia	
+127.0.0.1:12447|jmx=GMS.view	1793870040272	1793870040308	36	266	ok	isn1-14810 [ip=10.89.2.2:7800, 3 mbr(s), cluster=cluster-tcc, version=5.3.16.Final (Zoncolan) (java 21.0.8+9-LTS)]\nGMS={view=[isn1-14810|2] (3) [isn1-14810, isn2-51272, isn3-42513], view_ack_collection_timeout=2s, view_handler_size=0, view_handler_suspended=false}\r\n
+127.0.0.1:12447|jmx=FD_ALL3.timeout	1793870040593	1793870040630	37	168	ok	isn1-14810 [ip=10.89.2.2:7800, 3 mbr(s), cluster=cluster-tcc, version=5.3.16.Final (Zoncolan) (java 21.0.8+9-LTS)]\nFD_ALL3={timeout=40s, timeout_checker_running=true}\r\n
+127.0.0.1:12448|jmx=FD_ALL3.timeout	1793870040593	1793870040633	40	168	ok	isn2-51272 [ip=10.89.2.3:7800, 3 mbr(s), cluster=cluster-tcc, version=5.3.16.Final (Zoncolan) (java 21.0.8+9-LTS)]\nFD_ALL3={timeout=40s, timeout_checker_running=true}\r\n
+127.0.0.1:12449|jmx=FD_ALL3.timeout	1793870040593	1793870040633	40	168	ok	isn3-42513 [ip=10.89.2.4:7800, 3 mbr(s), cluster=cluster-tcc, version=5.3.16.Final (Zoncolan) (java 21.0.8+9-LTS)]\nFD_ALL3={timeout=40s, timeout_checker_running=true}\r\n
+127.0.0.1:12447|op=GMS.suspect[isn3-42513]	1793870040815	1793870041803	988	0	vazia	
+127.0.0.1:12448|op=GMS.suspect[isn3-42513]	1793870040815	1793870041808	993	0	vazia	
+127.0.0.1:12449|op=GMS.suspect[isn1-14810]	1793870040815	1793870041821	1006	0	vazia	

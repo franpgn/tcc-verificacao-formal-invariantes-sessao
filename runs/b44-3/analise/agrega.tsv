@@ -1,0 +1,19 @@
+grupo	n	medida	mediana_ms	min_ms	max_ms
+V-3 + INV, corte, coordenador fora do isn3 (isn1)	7	t_probe	28	17	323
+V-3 + INV, corte, coordenador fora do isn3 (isn1)	7	t_vista_maioria	24	14	321
+V-3 + INV, corte, coordenador fora do isn3 (isn1)	7	t_vista_isn3	18	12	35
+V-3 + INV, corte, coordenador fora do isn3 (isn1)	7	degraded_isn3(max dos 2 caches)	25	21	80
+V-3 + INV, corte, coordenador fora do isn3 (isn1)	7	1a_recusa_isn3	27	23	90
+V-3 + INV, corte, coordenador fora do isn3 (isn1)	7	fim_rebal_maioria	55	27	1655
+V-4, corte, isn3 coordenador	1	t_probe	2247	2247	2247
+V-4, corte, isn3 coordenador	1	t_vista_maioria	20	20	20
+V-4, corte, isn3 coordenador	1	t_vista_isn3	2245	2245	2245
+V-4, corte, isn3 coordenador	1	degraded_isn3(max dos 2 caches)	2253	2253	2253
+V-4, corte, isn3 coordenador	1	1a_recusa_isn3	2254	2254	2254
+V-4, corte, isn3 coordenador	1	fim_rebal_maioria	5510	5510	5510
+V-5, sem corte (falso positivo), isn3 coordenador	2	t_probe	2016.5	2015	2018
+V-5, sem corte (falso positivo), isn3 coordenador	2	t_vista_maioria	16.0	15	17
+V-5, sem corte (falso positivo), isn3 coordenador	2	t_vista_isn3	2016.0	2014	2018
+V-5, sem corte (falso positivo), isn3 coordenador	2	degraded_isn3(max dos 2 caches)	2019.0	2017	2021
+V-5, sem corte (falso positivo), isn3 coordenador	2	1a_recusa_isn3	2623.5	2021	3226
+V-5, sem corte (falso positivo), isn3 coordenador	2	fim_rebal_maioria	54.0	53	55

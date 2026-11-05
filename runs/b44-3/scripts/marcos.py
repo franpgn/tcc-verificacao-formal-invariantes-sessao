@@ -54,11 +54,12 @@ def main():
            "degraded_isn3_sessions", "degraded_isn3_sessions_async", "1a_recusa_hotrod_isn3(ISPN000306)",
            "fim_rebal_maioria(sessions,sessions-async)", "Tdet_maioria_desde_t0", "Tdet_isn3_desde_t0",
            "fusao_ISPN000093_desde_cura_ou_acao(isn1/isn2/isn3)", "resolucao_conflitos(100012..100013)",
-           "isn3_AVAILABLE_apos_fusao_desde_cura_ou_acao", "warn_nao_coord"]
+           "isn3_AVAILABLE_apos_fusao_desde_cura_ou_acao", "warn_nao_coord",
+           "fusao_menos_divisao_isn1_ms", "erros_isn3_tref_fusao", "coord_antes_t0(sonda)"]
     print("\t".join(cab))
     for rot, f in fs.items():
         t0 = f.get("t0")
-        if t0 is None:
+        if t0 is None or rot in analisa.INVALIDAS:
             continue
         pr = analisa.probe(rot)
         t_ref = min(p["ini"] for p in pr) if pr else (f.get("t_nominal") or t0 + 5000)
@@ -94,13 +95,24 @@ def main():
                 conf = "%d..%d" % (ini - ref_f, fim - ref_f)
             a = prim(L["isn3"], ref_f, "[Context=sessions]ISPN100011: Entering availability mode AVAILABLE")
             av3 = "" if a is None else str(a - ref_f)
+        div = prim(L["isn1"], t0, "ISPN000094")
+        fus1 = prim(L["isn1"], ref_f, "ISPN000093") if ref_f else None
+        fmd = "" if (div is None or fus1 is None) else str(fus1 - div)
+        ev, _ = analisa.carga(rot)
+        lim = fus1 if fus1 else 10**15
+        e3 = sum(1 for e in ev if e[3] == "isn3" and e[4].startswith("ERROR") and t_ref <= e[0] <= lim)
+        # coordenador antes de t0, pela sonda REST (coordinator_address); a fusao pode trocar o coordenador
+        co = ""
+        for c in analisa.sonda(rot):
+            if int(c[0]) < t0 and c[3] == "200":
+                co = c[5]
         warn = sum(1 for n in L for t, ln in L[n] if t >= t0 and "I'm not the coordinator" in ln)
         tdet_maj = "" if (pr or vmaj is None) else str(vmaj - t0)
         tdet_3 = "" if (pr or v1 is None) else str(v1 - t0)
         print("\t".join([rot, dt.datetime.fromtimestamp(t0 / 1000, dt.timezone.utc).strftime("%H:%M:%S.%f")[:-3],
                          str(t_ref - t0), str(max((p["dur"] for p in pr), default="")),
                          r(v2a), r(v2b), r(v1), r(dg1), r(dg2), r(rec), r(reb), tdet_maj, tdet_3,
-                         "/".join(fus), conf, av3, str(warn)]))
+                         "/".join(fus), conf, av3, str(warn), fmd, str(e3), co]))
 
 
 if __name__ == "__main__":

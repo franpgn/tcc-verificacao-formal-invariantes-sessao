@@ -86,6 +86,11 @@ salvalogs() { mkdir -p $R/servidores/$1
 espera_ate() { local agora=$(ms); local d=$(( $1 - agora )); [ $d -gt 0 ] && sleep $(awk "BEGIN{print $d/1000}"); }
 
 # execucao ROT MODO SEMENTE CORTE(sim|nao) ACAO(nenhuma|ambos|maioria|isolado) [DUR=130]
+#   variaveis opcionais: CURA_S (cura em t0 + CURA_S s; padrao 60), HOOK (comando em segundo plano logo antes
+#   da acao; usado so nas execucoes de investigacao INV-*)
+# amostra_rede SEGUNDOS "DUMPS" NOS...: ss -tn por segundo e dumps de threads (kill -3) nos nos dados
+amostra_rede() { local n=$1 d=$2; shift 2; local ps=""; for x in "$@"; do eval "ps=\"\$ps \$PID_$x\""; done
+  mkdir -p $R/rede; podman machine ssh "bash -s -- $n '$d' $ps" < $R/scripts/amostra-rede.sh 2>&1 | grep -v cgroups > $R/rede/$ROT.txt; }
 execucao() { ROT=$1; local modo=$2 sem=$3 corte=$4 ac=$5 dur=${6:-130}
   local inicio=$(date -u +%FT%T.%3NZ)
   fase "EXEC $ROT inicio modo=$modo corte=$corte acao=$ac semente=$sem dur=$dur"
@@ -95,8 +100,9 @@ execucao() { ROT=$1; local modo=$2 sem=$3 corte=$4 ac=$5 dur=${6:-130}
   sleep 25
   if [ $corte = sim ]; then cortar; else T0=$(ms); fase "T0 (sem corte) $T0"; fi
   espera_ate $((T0+5000))
+  [ -n "${HOOK:-}" ] && { fase "HOOK inicio: $HOOK"; eval "$HOOK" & }
   if [ $ac != nenhuma ]; then acao $ac; else fase "SEM ACAO (controle) t_nominal=$(ms)"; fi
-  if [ $corte = sim ]; then espera_ate $((T0+60000)); curar; fi
+  if [ $corte = sim ]; then espera_ate $((T0+${CURA_S:-60}*1000)); curar; fi
   wait $CPID; fase "CARGA $ROT fim $(cat $R/carga/$ROT/exit.txt)"
   saudavel 120
   kill $SPID 2>/dev/null; wait $SPID 2>/dev/null

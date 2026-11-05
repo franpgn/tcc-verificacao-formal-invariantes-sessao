@@ -26,7 +26,7 @@ def fase(t, t0, tr, cura):
 print("rot\tfase\tno\ttipo\tn")
 for rot, f in analisa.fases().items():
     t0 = f.get("t0")
-    if t0 is None:
+    if t0 is None or rot in analisa.INVALIDAS:
         continue
     pr = analisa.probe(rot)
     tr = min(p["ini"] for p in pr) if pr else (f.get("t_nominal") or t0 + 5000)

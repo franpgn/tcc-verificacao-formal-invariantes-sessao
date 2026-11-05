@@ -1,0 +1,86 @@
+== 2026-11-05T08:34:37.915Z LOTE2 inicio (janela H2): cluster recriado
+== 2026-11-05T08:34:39.537Z desce podman-compose.b443-diag.yml
+== 2026-11-05T08:35:44.018Z sobe podman-compose.b443-diag.yml ordem isn1 isn2 isn3
+saudavel apos 0s
+== 2026-11-05T08:37:19.415Z nomes isn1=isn1-20680 isn2=isn2-47017 isn3=isn3-54928 coordenador=isn1-20680 pid=895/1276/1657 ip=10.89.2.2/10.89.2.3/10.89.2.4
+== 2026-11-05T08:37:19.481Z EXEC V3-async-acao2r inicio modo=async corte=sim acao=ambos semente=443202 dur=130
+== 2026-11-05T08:37:46.170Z CORTE isn3 pedido=1793867864655 aplicado=1793867865967
+== 2026-11-05T08:37:51.613Z ACAO ambos inicio
+127.0.0.1:12447|op=GMS.suspect[isn3-54928]	1793867872025	1793867872062	37	115	ok	isn1-20680 [ip=10.89.2.2:7800, 2 mbr(s), cluster=cluster-tcc, version=5.3.16.Final (Zoncolan) (java 21.0.8+9-LTS)]\n
+127.0.0.1:12448|op=GMS.suspect[isn3-54928]	1793867872025	1793867872049	24	115	ok	isn2-47017 [ip=10.89.2.3:7800, 3 mbr(s), cluster=cluster-tcc, version=5.3.16.Final (Zoncolan) (java 21.0.8+9-LTS)]\n
+127.0.0.1:12449|op=GMS.suspect[isn1-20680]	1793867872025	1793867872073	48	115	ok	isn3-54928 [ip=10.89.2.4:7800, 1 mbr(s), cluster=cluster-tcc, version=5.3.16.Final (Zoncolan) (java 21.0.8+9-LTS)]\n
+127.0.0.1:12449|op=GMS.suspect[isn2-47017]	1793867872025	1793867872051	26	115	ok	isn3-54928 [ip=10.89.2.4:7800, 3 mbr(s), cluster=cluster-tcc, version=5.3.16.Final (Zoncolan) (java 21.0.8+9-LTS)]\n
+== 2026-11-05T08:37:52.453Z ACAO ambos fim
+== 2026-11-05T08:38:47.059Z CURA isn3 pedido=1793867926332 aplicado=1793867926995
+== 2026-11-05T08:39:33.492Z CARGA V3-async-acao2r fim exit=0
+saudavel apos 0s
+== 2026-11-05T08:39:37.216Z EXEC V3-async-acao2r fim
+== 2026-11-05T08:39:37.277Z EXEC V3-async-ctl2 inicio modo=async corte=sim acao=nenhuma semente=443202 dur=130
+== 2026-11-05T08:40:03.314Z CORTE isn3 pedido=1793868002387 aplicado=1793868003266
+== 2026-11-05T08:40:08.456Z SEM ACAO (controle) t_nominal=1793868008374
+== 2026-11-05T08:41:04.279Z CURA isn3 pedido=1793868063640 aplicado=1793868064191
+== 2026-11-05T08:41:49.868Z CARGA V3-async-ctl2 fim exit=0
+saudavel apos 0s
+== 2026-11-05T08:41:54.468Z EXEC V3-async-ctl2 fim
+== 2026-11-05T08:41:54.534Z EXEC V5-async-ctl inicio modo=async corte=nao acao=nenhuma semente=443501 dur=130
+== 2026-11-05T08:42:19.782Z T0 (sem corte) 1793868139680
+== 2026-11-05T08:42:24.875Z SEM ACAO (controle) t_nominal=1793868144826
+== 2026-11-05T08:44:07.094Z CARGA V5-async-ctl fim exit=0
+saudavel apos 0s
+== 2026-11-05T08:44:08.677Z EXEC V5-async-ctl fim
+== 2026-11-05T08:44:08.735Z EXEC V5-async-acao inicio modo=async corte=nao acao=ambos semente=443501 dur=130
+== 2026-11-05T08:44:33.873Z T0 (sem corte) 1793868273825
+== 2026-11-05T08:44:38.897Z ACAO ambos inicio
+127.0.0.1:12447|op=GMS.suspect[isn3-54928]	1793868278978	1793868278994	16	115	ok	isn1-20680 [ip=10.89.2.2:7800, 2 mbr(s), cluster=cluster-tcc, version=5.3.16.Final (Zoncolan) (java 21.0.8+9-LTS)]\n
+127.0.0.1:12448|op=GMS.suspect[isn3-54928]	1793868278978	1793868278991	13	115	ok	isn2-47017 [ip=10.89.2.3:7800, 3 mbr(s), cluster=cluster-tcc, version=5.3.16.Final (Zoncolan) (java 21.0.8+9-LTS)]\n
+127.0.0.1:12449|op=GMS.suspect[isn1-20680]	1793868278978	1793868280993	2015	115	ok	isn3-54928 [ip=10.89.2.4:7800, 1 mbr(s), cluster=cluster-tcc, version=5.3.16.Final (Zoncolan) (java 21.0.8+9-LTS)]\n
+127.0.0.1:12449|op=GMS.suspect[isn2-47017]	1793868278978	1793868280991	2013	115	ok	isn3-54928 [ip=10.89.2.4:7800, 2 mbr(s), cluster=cluster-tcc, version=5.3.16.Final (Zoncolan) (java 21.0.8+9-LTS)]\n
+== 2026-11-05T08:44:41.096Z ACAO ambos fim
+== 2026-11-05T08:46:21.171Z CARGA V5-async-acao fim exit=0
+saudavel apos 0s
+== 2026-11-05T08:46:24.307Z EXEC V5-async-acao fim
+== 2026-11-05T08:46:24.369Z EXEC V5-sync-acao inicio modo=sync corte=nao acao=ambos semente=443502 dur=130
+== 2026-11-05T08:46:49.543Z T0 (sem corte) 1793868409489
+== 2026-11-05T08:46:57.464Z ACAO ambos inicio
+127.0.0.1:12447|op=GMS.suspect[isn3-54928]	1793868417683	1793868417702	19	115	ok	isn1-20680 [ip=10.89.2.2:7800, 2 mbr(s), cluster=cluster-tcc, version=5.3.16.Final (Zoncolan) (java 21.0.8+9-LTS)]\n
+127.0.0.1:12448|op=GMS.suspect[isn3-54928]	1793868417683	1793868417697	14	115	ok	isn2-47017 [ip=10.89.2.3:7800, 3 mbr(s), cluster=cluster-tcc, version=5.3.16.Final (Zoncolan) (java 21.0.8+9-LTS)]\n
+127.0.0.1:12449|op=GMS.suspect[isn1-20680]	1793868417683	1793868419699	2016	115	ok	isn3-54928 [ip=10.89.2.4:7800, 2 mbr(s), cluster=cluster-tcc, version=5.3.16.Final (Zoncolan) (java 21.0.8+9-LTS)]\n
+127.0.0.1:12449|op=GMS.suspect[isn2-47017]	1793868417683	1793868419701	2018	115	ok	isn3-54928 [ip=10.89.2.4:7800, 1 mbr(s), cluster=cluster-tcc, version=5.3.16.Final (Zoncolan) (java 21.0.8+9-LTS)]\n
+== 2026-11-05T08:46:59.791Z ACAO ambos fim
+== 2026-11-05T08:48:36.991Z CARGA V5-sync-acao fim exit=0
+saudavel apos 0s
+== 2026-11-05T08:48:40.415Z EXEC V5-sync-acao fim
+== 2026-11-05T08:48:40.516Z EXEC V5-sync-ctl inicio modo=sync corte=nao acao=nenhuma semente=443502 dur=130
+== 2026-11-05T08:49:05.724Z T0 (sem corte) 1793868545675
+== 2026-11-05T08:49:10.785Z SEM ACAO (controle) t_nominal=1793868550739
+== 2026-11-05T08:50:52.958Z CARGA V5-sync-ctl fim exit=0
+saudavel apos 0s
+== 2026-11-05T08:50:54.627Z EXEC V5-sync-ctl fim
+== 2026-11-05T08:50:54.689Z EXEC V5b-async-ctl inicio modo=async corte=sim acao=nenhuma semente=443551 dur=130
+== 2026-11-05T08:51:20.482Z CORTE isn3 pedido=1793868679771 aplicado=1793868680437
+== 2026-11-05T08:51:25.587Z SEM ACAO (controle) t_nominal=1793868685500
+== 2026-11-05T08:52:21.153Z CURA isn3 pedido=1793868740540 aplicado=1793868741104
+== 2026-11-05T08:53:07.205Z CARGA V5b-async-ctl fim exit=0
+saudavel apos 0s
+== 2026-11-05T08:53:10.759Z EXEC V5b-async-ctl fim
+== 2026-11-05T08:53:10.824Z EXEC V5b-async-maioria inicio modo=async corte=sim acao=maioria semente=443551 dur=130
+== 2026-11-05T08:53:36.525Z CORTE isn3 pedido=1793868815937 aplicado=1793868816477
+== 2026-11-05T08:53:41.624Z ACAO maioria inicio
+127.0.0.1:12447|op=GMS.suspect[isn3-54928]	1793868821747	1793868821762	15	115	ok	isn1-20680 [ip=10.89.2.2:7800, 2 mbr(s), cluster=cluster-tcc, version=5.3.16.Final (Zoncolan) (java 21.0.8+9-LTS)]\n
+127.0.0.1:12448|op=GMS.suspect[isn3-54928]	1793868821747	1793868821758	11	115	ok	isn2-47017 [ip=10.89.2.3:7800, 3 mbr(s), cluster=cluster-tcc, version=5.3.16.Final (Zoncolan) (java 21.0.8+9-LTS)]\n
+== 2026-11-05T08:53:41.932Z ACAO maioria fim
+== 2026-11-05T08:54:37.205Z CURA isn3 pedido=1793868876611 aplicado=1793868877155
+== 2026-11-05T08:55:23.312Z CARGA V5b-async-maioria fim exit=0
+saudavel apos 0s
+== 2026-11-05T08:55:26.722Z EXEC V5b-async-maioria fim
+== 2026-11-05T08:55:26.821Z EXEC V5b-async-isolado inicio modo=async corte=sim acao=isolado semente=443551 dur=130
+== 2026-11-05T08:56:03.012Z CORTE isn3 pedido=1793868952193 aplicado=1793868962966
+== 2026-11-05T08:56:08.097Z ACAO isolado inicio
+127.0.0.1:12449|op=GMS.suspect[isn1-20680]	1793868968179	1793868973696	5517	115	ok	isn3-54928 [ip=10.89.2.4:7800, 1 mbr(s), cluster=cluster-tcc, version=5.3.16.Final (Zoncolan) (java 21.0.8+9-LTS)]\n
+127.0.0.1:12449|op=GMS.suspect[isn2-47017]	1793868968179	1793868973696	5517	115	ok	isn3-54928 [ip=10.89.2.4:7800, 1 mbr(s), cluster=cluster-tcc, version=5.3.16.Final (Zoncolan) (java 21.0.8+9-LTS)]\n
+== 2026-11-05T08:56:13.806Z ACAO isolado fim
+== 2026-11-05T08:57:03.689Z CURA isn3 pedido=1793869023059 aplicado=1793869023641
+== 2026-11-05T08:57:41.767Z CARGA V5b-async-isolado fim exit=0
+saudavel apos 6s
+== 2026-11-05T08:57:53.474Z EXEC V5b-async-isolado fim
+== 2026-11-05T08:57:53.519Z LOTE2 fim

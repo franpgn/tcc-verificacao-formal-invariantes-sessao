@@ -1,0 +1,54 @@
+== 2026-11-05T09:08:21.603Z V-4 inicio: recria o cluster na ordem isn3, isn1, isn2
+== 2026-11-05T09:08:21.652Z desce podman-compose.b443-diag.yml
+== 2026-11-05T09:08:28.333Z sobe podman-compose.b443-diag.yml ordem isn3 isn1 isn2
+saudavel apos 0s
+== 2026-11-05T09:08:53.682Z nomes isn1=isn1-3179 isn2=isn2-13550 isn3=isn3-35090 coordenador=isn3-35090 pid=38028/39353/37495 ip=10.89.2.3/10.89.2.4/10.89.2.2
+GMS={view=[isn3-35090|2] (3) [isn3-35090, isn1-3179, isn2-13550], view_ack_collection_timeout=2s, view_handler_size=0, view_handler_suspended=false}\r\n
+GMS={view=[isn3-35090|2] (3) [isn3-35090, isn1-3179, isn2-13550], view_ack_collection_timeout=2s, view_handler_size=0, view_handler_suspended=false}\r\n
+== 2026-11-05T09:08:53.896Z EXEC V4-async-acao inicio modo=async corte=sim acao=ambos semente=443401 dur=130
+== 2026-11-05T09:09:19.574Z CORTE isn3 pedido=1793869758983 aplicado=1793869759528
+== 2026-11-05T09:09:24.618Z ACAO ambos inicio
+127.0.0.1:12447|op=GMS.suspect[isn3-35090]	1793869764701	1793869764724	23	114	ok	isn1-3179 [ip=10.89.2.3:7800, 2 mbr(s), cluster=cluster-tcc, version=5.3.16.Final (Zoncolan) (java 21.0.8+9-LTS)]\n
+127.0.0.1:12448|op=GMS.suspect[isn3-35090]	1793869764701	1793869764715	14	115	ok	isn2-13550 [ip=10.89.2.4:7800, 3 mbr(s), cluster=cluster-tcc, version=5.3.16.Final (Zoncolan) (java 21.0.8+9-LTS)]\n
+127.0.0.1:12449|op=GMS.suspect[isn1-3179]	1793869764701	1793869766948	2247	115	ok	isn3-35090 [ip=10.89.2.2:7800, 1 mbr(s), cluster=cluster-tcc, version=5.3.16.Final (Zoncolan) (java 21.0.8+9-LTS)]\n
+127.0.0.1:12449|op=GMS.suspect[isn2-13550]	1793869764701	1793869766717	2016	115	ok	isn3-35090 [ip=10.89.2.2:7800, 2 mbr(s), cluster=cluster-tcc, version=5.3.16.Final (Zoncolan) (java 21.0.8+9-LTS)]\n
+== 2026-11-05T09:09:27.042Z ACAO ambos fim
+== 2026-11-05T09:10:20.286Z CURA isn3 pedido=1793869819619 aplicado=1793869820201
+== 2026-11-05T09:11:06.494Z CARGA V4-async-acao fim exit=0
+saudavel apos 0s
+== 2026-11-05T09:11:09.481Z EXEC V4-async-acao fim
+== 2026-11-05T09:11:09.581Z EXEC V4-async-ctl inicio modo=async corte=sim acao=nenhuma semente=443401 dur=130
+== 2026-11-05T09:11:35.337Z CORTE isn3 pedido=1793869894728 aplicado=1793869895293
+== 2026-11-05T09:11:40.401Z SEM ACAO (controle) t_nominal=1793869900352
+== 2026-11-05T09:12:35.955Z CURA isn3 pedido=1793869955404 aplicado=1793869955862
+== 2026-11-05T09:13:22.084Z CARGA V4-async-ctl fim exit=0
+saudavel apos 0s
+== 2026-11-05T09:13:24.049Z EXEC V4-async-ctl fim
+== 2026-11-05T09:13:24.094Z V-4 fim
+== 2026-11-05T09:13:24.138Z V-6 inicio: cluster com diag.passcode
+== 2026-11-05T09:13:24.182Z desce podman-compose.b443-diag.yml
+== 2026-11-05T09:13:33.658Z sobe podman-compose.b443-pass.yml ordem isn1 isn2 isn3
+saudavel apos 0s
+== 2026-11-05T09:13:59.344Z nomes isn1=isn1-14810 isn2=isn2-51272 isn3=isn3-42513 coordenador=isn1-14810 pid=45973/46459/46946 ip=10.89.2.2/10.89.2.3/10.89.2.4
+== 2026-11-05T09:13:59.505Z V-6 a: sem resumo
+127.0.0.1:12447|jmx=GMS.view	1793870039586	1793870039596	10	0	vazia	
+== 2026-11-05T09:13:59.709Z V-6 b: resumo certo
+127.0.0.1:12447|jmx=GMS.view	1793870039787	1793870039830	43	266	ok	isn1-14810 [ip=10.89.2.2:7800, 3 mbr(s), cluster=cluster-tcc, version=5.3.16.Final (Zoncolan) (java 21.0.8+9-LTS)]\nGMS={view=[isn1-14810|2] (3) [isn1-14810, isn2-51272, isn3-42513], view_ack_collection_timeout=2s, view_handler_size=0, view_handler_suspended=false}\r\n
+== 2026-11-05T09:13:59.933Z V-6 c: passcode errado
+127.0.0.1:12447|jmx=GMS.view	1793870040010	1793870040047	37	0	vazia	
+== 2026-11-05T09:14:00.155Z V-6 d: t1 antigo (repeticao)
+127.0.0.1:12447|jmx=GMS.view	1793870040272	1793870040308	36	266	ok	isn1-14810 [ip=10.89.2.2:7800, 3 mbr(s), cluster=cluster-tcc, version=5.3.16.Final (Zoncolan) (java 21.0.8+9-LTS)]\nGMS={view=[isn1-14810|2] (3) [isn1-14810, isn2-51272, isn3-42513], view_ack_collection_timeout=2s, view_handler_size=0, view_handler_suspended=false}\r\n
+== 2026-11-05T09:14:00.402Z V-6 e: op com resumo nos 3
+127.0.0.1:12447|jmx=FD_ALL3.timeout	1793870040593	1793870040630	37	168	ok	isn1-14810 [ip=10.89.2.2:7800, 3 mbr(s), cluster=cluster-tcc, version=5.3.16.Final (Zoncolan) (java 21.0.8+9-LTS)]\nFD_ALL3={timeout=40s, timeout_checker_running=true}\r\n
+127.0.0.1:12448|jmx=FD_ALL3.timeout	1793870040593	1793870040633	40	168	ok	isn2-51272 [ip=10.89.2.3:7800, 3 mbr(s), cluster=cluster-tcc, version=5.3.16.Final (Zoncolan) (java 21.0.8+9-LTS)]\nFD_ALL3={timeout=40s, timeout_checker_running=true}\r\n
+127.0.0.1:12449|jmx=FD_ALL3.timeout	1793870040593	1793870040633	40	168	ok	isn3-42513 [ip=10.89.2.4:7800, 3 mbr(s), cluster=cluster-tcc, version=5.3.16.Final (Zoncolan) (java 21.0.8+9-LTS)]\nFD_ALL3={timeout=40s, timeout_checker_running=true}\r\n
+== 2026-11-05T09:14:00.748Z V-6 f: op sem resumo nos 3
+127.0.0.1:12447|op=GMS.suspect[isn3-42513]	1793870040815	1793870041803	988	0	vazia	
+127.0.0.1:12448|op=GMS.suspect[isn3-42513]	1793870040815	1793870041808	993	0	vazia	
+127.0.0.1:12449|op=GMS.suspect[isn1-14810]	1793870040815	1793870041821	1006	0	vazia	
+isn1 tamanho=3
+isn2 tamanho=3
+isn3 tamanho=3
+== 2026-11-05T09:14:06.256Z V-6 fim
+== 2026-11-05T09:14:06.299Z desce podman-compose.b443-pass.yml
+== 2026-11-05T09:14:15.584Z B-44.3 fim: cluster b443 derrubado

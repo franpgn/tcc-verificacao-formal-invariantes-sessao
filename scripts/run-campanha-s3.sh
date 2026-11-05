@@ -35,16 +35,27 @@
 #   - GO por tty (requisito 8): "go <fase> <AAAA-MM-DD>" no inicio e "go rede <i>" antes da primeira F2/F4;
 #   - progresso.json por troca atomica, recusa de retomada com o bundle alterado, arquivo PARAR entre execucoes,
 #     limite de disco (plano de execucao 9, W-6, itens 3 e 4).
+# Ressalvas da V-W6 (W-6b, docs/validacao-w6-2026-11-05.md secao 5): B1, injetor de F2/F4 que sai com 1 ou 6 porque
+# o AC-5 parou o no da falha fica pendente e vira aviso quando a linha de fim e a trilha poem o AC-5 APLICADA nesse no
+# (F2: com a linha "OK: <no> nao conecta a nenhum par" no injetor.log); S1, o --dry-run confere o controlador; S2,
+# timer tcc-heal-cs-* sobrando recusa no pre-voo; S3, sem a linha de fim os nos parados sao religados e a execucao
+# vira DESCARTADA-INFRA sem parar a fase; S4, collect-resources.sh no bundle; S6, o cat do stdout.log e esperado;
+# M1, o teto do processo conta o T_enc e um periodo da convergencia (campanha_s3_conferir.py parametros; o tempo ate
+# a ancora e o fechamento, medidos, entram com folga no pre-registro); B2 (adenda da V-W6, secao 11), uma referencia
+# de p99 por modo de replicacao (--referencia-async, --referencia-sync), escolhida pelo modo da linha da matriz,
+# conferida no pre-voo e no --dry-run, e o --dry-run do programa em cada perfil da fase.
 # Todo numero da campanha vem do --parametros (esquema campanha-s3/1, cada um com a sua origem, sem padrao;
 # scripts/campanha_s3_conferir.py). As constantes abaixo tem a origem ao lado.
 #
 # Uso:
 #   scripts/run-campanha-s3.sh --matriz <tsv> --matriz-sha256 <hex> --fase calibracao|nucleo|extra|reposicoes
 #       --parametros <json> --parametros-sha256 <hex> --controlador <json> --controlador-sha256 <hex>
-#       --referencia <json> --referencia-sha256 <hex> --saida <dir>
+#       [--referencia-async <json> --referencia-async-sha256 <hex>] [--referencia-sync <json> --referencia-sync-sha256 <hex>]
+#       --saida <dir>
 #       [--jar <jar> --jar-sha256 <hex> --boot-esperado <uuid> --h4-id <id>]
 #       [--servers h:p,h:p,h:p] [--admin http://h:p,...] [--username <u>] [--password <p>] [--dry-run]
-#   (--jar, --jar-sha256, --boot-esperado e --h4-id sao obrigatorios fora do --dry-run.)
+#   (--jar, --jar-sha256, --boot-esperado e --h4-id sao obrigatorios fora do --dry-run. A referencia de cada modo de
+#   replicacao presente na fase e obrigatoria: o programa recusa referencia de outro perfil.)
 #   A fase "reposicoes" le <saida>/reposicoes/reposicoes.tsv, escrito antes por campanha_s3_matriz.py repor.
 #
 # Variaveis: PODMAN (padrao "sudo podman", exportada aos injetores), PODMAN_COMPOSE (padrao "sudo podman-compose"),
@@ -106,7 +117,8 @@ H4_RUN=/run/tccdiag
 LOCK=/var/lock/tcc-vm.lock
 
 # ------------------------------------------------------------------ opcoes
-MATRIZ=""; MATRIZ_SHA=""; FASE=""; PARAMS=""; PARAMS_SHA=""; CTRL=""; CTRL_SHA=""; REF=""; REF_SHA=""
+MATRIZ=""; MATRIZ_SHA=""; FASE=""; PARAMS=""; PARAMS_SHA=""; CTRL=""; CTRL_SHA=""
+REF_ASYNC=""; REF_ASYNC_SHA=""; REF_SYNC=""; REF_SYNC_SHA=""
 JAR=""; JAR_SHA=""; SAIDA=""; BOOT_ESPERADO=""; H4_ID=""; DRY_RUN=0
 SERVERS="127.0.0.1:11222,127.0.0.1:11223,127.0.0.1:11224"
 ADMIN="http://127.0.0.1:11222,http://127.0.0.1:11223,http://127.0.0.1:11224"
@@ -118,14 +130,16 @@ erro_uso() { echo "Erro: $*" >&2; exit 2; }
 while [[ $# -gt 0 ]]; do
     case "$1" in
         --matriz|--matriz-sha256|--fase|--parametros|--parametros-sha256|--controlador|--controlador-sha256|\
---referencia|--referencia-sha256|--jar|--jar-sha256|--saida|--boot-esperado|--h4-id|--servers|--admin|\
+--referencia-async|--referencia-async-sha256|--referencia-sync|--referencia-sync-sha256|\
+--jar|--jar-sha256|--saida|--boot-esperado|--h4-id|--servers|--admin|\
 --username|--password)
             [[ $# -ge 2 ]] || erro_uso "$1 exige valor"
             case "$1" in
                 --matriz) MATRIZ="$2" ;; --matriz-sha256) MATRIZ_SHA="$2" ;; --fase) FASE="$2" ;;
                 --parametros) PARAMS="$2" ;; --parametros-sha256) PARAMS_SHA="$2" ;;
                 --controlador) CTRL="$2" ;; --controlador-sha256) CTRL_SHA="$2" ;;
-                --referencia) REF="$2" ;; --referencia-sha256) REF_SHA="$2" ;;
+                --referencia-async) REF_ASYNC="$2" ;; --referencia-async-sha256) REF_ASYNC_SHA="$2" ;;
+                --referencia-sync) REF_SYNC="$2" ;; --referencia-sync-sha256) REF_SYNC_SHA="$2" ;;
                 --jar) JAR="$2" ;; --jar-sha256) JAR_SHA="$2" ;; --saida) SAIDA="$2" ;;
                 --boot-esperado) BOOT_ESPERADO="$2" ;; --h4-id) H4_ID="$2" ;;
                 --servers) SERVERS="$2" ;; --admin) ADMIN="$2" ;;
@@ -133,6 +147,8 @@ while [[ $# -gt 0 ]]; do
             esac
             shift 2 ;;
         --dry-run) DRY_RUN=1; shift ;;
+        --referencia|--referencia-sha256)
+            erro_uso "$1 deu lugar a --referencia-async/--referencia-sync: uma referencia por modo de replicacao (B2 da V-W6)" ;;
         --help|-h) uso; exit 0 ;;
         *) erro_uso "argumento desconhecido '$1'" ;;
     esac
@@ -140,13 +156,19 @@ done
 
 case "${FASE}" in calibracao|nucleo|extra|reposicoes) ;; *) erro_uso "--fase deve ser calibracao, nucleo, extra ou reposicoes" ;; esac
 [[ -n "${MATRIZ}" && -f "${MATRIZ}" ]] || erro_uso "--matriz <tsv> existente e obrigatoria"
-for par in "MATRIZ_SHA:--matriz-sha256" "PARAMS_SHA:--parametros-sha256" "CTRL_SHA:--controlador-sha256" \
-           "REF_SHA:--referencia-sha256"; do
+for par in "MATRIZ_SHA:--matriz-sha256" "PARAMS_SHA:--parametros-sha256" "CTRL_SHA:--controlador-sha256"; do
     v="${par%%:*}"; [[ "${!v}" =~ ^[0-9a-f]{64}$ ]] || erro_uso "${par#*:} deve ter 64 hexadecimais"
 done
-for par in "PARAMS:--parametros" "CTRL:--controlador" "REF:--referencia"; do
+for par in "PARAMS:--parametros" "CTRL:--controlador"; do
     v="${par%%:*}"; [[ -n "${!v}" && -f "${!v}" ]] || erro_uso "${par#*:} <arquivo> existente e obrigatorio"
 done
+for perf in async sync; do  # B2: cada referencia vem com o seu SHA-256; qual e obrigatoria depende da fila da fase
+    f="REF_${perf^^}"; s="REF_${perf^^}_SHA"
+    [[ -n "${!f}${!s}" ]] || continue
+    [[ -n "${!f}" && -f "${!f}" ]] || erro_uso "--referencia-${perf} <arquivo> existente e obrigatorio com --referencia-${perf}-sha256"
+    [[ "${!s}" =~ ^[0-9a-f]{64}$ ]] || erro_uso "--referencia-${perf}-sha256 deve ter 64 hexadecimais"
+done
+[[ -n "${REF_ASYNC}${REF_SYNC}" ]] || erro_uso "--referencia-async e/ou --referencia-sync (uma por modo de replicacao da fase) e obrigatoria"
 [[ -n "${SAIDA}" ]] || erro_uso "--saida e obrigatoria"
 if [[ "${DRY_RUN}" -eq 0 ]]; then
     [[ -n "${JAR}" ]] || erro_uso "--jar e obrigatorio fora do --dry-run"
@@ -220,7 +242,8 @@ fi
 declare -A P
 ler_parametros() {
     local rc=0 out="" k v
-    out="$(py "${CONFERIR}" parametros --arquivo "${PARAMS}")" || rc=$?
+    # M1 da V-W6: o teto do processo cobre tambem o T_enc, que e constante daqui
+    out="$(py "${CONFERIR}" parametros --arquivo "${PARAMS}" --t-enc-pior-s "${T_ENC_PIOR_S}")" || rc=$?
     if [[ "${rc}" -ne 0 ]]; then echo "Erro: parametros da campanha recusados: ${out}" >&2; exit 4; fi
     while IFS=$'\t' read -r k v; do [[ -n "${k}" ]] && P[${k}]="${v}"; done <<< "${out}"
 }
@@ -261,6 +284,11 @@ tirar_nul() {  # o podman machine ssh do Git Bash grava o known_hosts num arquiv
     done
 }
 
+ref_de() {  # ref_de <modo>: a referencia de p99 do perfil (B2 da V-W6: o programa recusa a de outro perfil)
+    case "$1" in sync) printf '%s' "${REF_SYNC}" ;; async) printf '%s' "${REF_ASYNC}" ;; *) printf '' ;; esac
+}
+ref_sha_de() { case "$1" in sync) printf '%s' "${REF_SYNC_SHA}" ;; async) printf '%s' "${REF_ASYNC_SHA}" ;; *) printf '' ;; esac; }
+
 K_ENC=0
 montar_cmd() {  # montar_cmd <modo> <seed> <csv-dir> <controlador> <marcadores> -> CMD e CMD_MASC
     K_ENC=$(( T_ENC_PIOR_S + P[encerramento_folga_s] ))
@@ -270,7 +298,7 @@ montar_cmd() {  # montar_cmd <modo> <seed> <csv-dir> <controlador> <marcadores> 
          --username "${USERNAME}" --password "${PASSWORD}" --csv-dir "$3" --rest-url "${ADM[0]}"
          --marker "$5" --w-recovery-sec "${P[w_recovery_s]}" --convergence
          --convergence-timeout-sec "${P[convergencia_teto_s]}" --convergence-period-sec "${P[convergencia_periodo_s]}"
-         --controller "$4" --controller-config "${CTRL}" --controller-reference "${REF}"
+         --controller "$4" --controller-config "${CTRL}" --controller-reference "$(ref_de "$1")"
          --controller-admin "${ADMIN}" --hotrod-timeout-ms "${P[hotrod_timeout_ms]}"
          --rejoin-timeout-sec "${P[religamento_prazo_s]}")
     CMD_MASC=("${CMD[@]}")
@@ -305,12 +333,49 @@ imprimir_plano() {
     echo "PLANO execucoes=${#FILA[@]} encerramento: SIGTERM no teto (${P[exec_teto_s]} s) e SIGKILL ${K_ENC} s depois (T_enc pior caso ${T_ENC_PIOR_S} s + folga ${P[encerramento_folga_s]} s) fim_no_pior_caso=$(iso_ms $(( t0 + k * por_exec * 1000 )))"
 }
 
+TEM_B=0; TEM_REDE=0; PERFIS=" "
+marcar_fila() {  # TEM_B (algum braco B na fila), TEM_REDE (alguma F2/F4) e PERFIS (modos de replicacao da fila)
+    local l _i _c m f _p _b br _ct _s
+    TEM_B=0; TEM_REDE=0; PERFIS=" "
+    for l in "${FILA[@]}"; do
+        read -r _i _c m f _p _b br _ct _s <<< "${l}"
+        [[ "${br}" == B ]] && TEM_B=1
+        [[ "${f}" == F2 || "${f}" == F4 ]] && TEM_REDE=1
+        [[ "${PERFIS}" == *" ${m} "* ]] || PERFIS+="${m} "
+    done
+    return 0
+}
+conferir_referencias() {  # B2 da V-W6: a referencia de cada perfil da fila existe, tem o SHA-256 dado e e daquele perfil
+    local perf f s rc out
+    for perf in ${PERFIS}; do
+        case "${perf}" in sync|async) ;; *) echo "Erro: modo '${perf}' na fila (esperado sync ou async)" >&2; exit 4 ;; esac
+    done
+    for perf in async sync; do
+        f="REF_${perf^^}"; s="REF_${perf^^}_SHA"
+        if [[ -z "${!f}" ]]; then
+            [[ "${PERFIS}" != *" ${perf} "* ]] || { echo "Erro: a fase tem celula ${perf^^} e falta --referencia-${perf} (B2 da V-W6: o programa recusa referencia de outro perfil)" >&2; exit 4; }
+            continue
+        fi
+        [[ "$(sha256 "${!f}")" == "${!s}" ]] || { echo "Erro: SHA-256 de ${!f} difere do registrado" >&2; exit 4; }
+        rc=0; out="$(py "${CONFERIR}" referencia --arquivo "${!f}" --perfil "${perf}")" || rc=$?
+        [[ "${rc}" -eq 0 ]] || { echo "Erro: --referencia-${perf} recusada: ${out}" >&2; exit 4; }
+    done
+}
+CTRL_INFO=""
+conferir_controlador() {  # politica obrigatoria com braco B; p2Habilitada = false e tetoLagMs = hotrod_timeout_ms (D-B, R7)
+    local rc=0 out=""
+    out="$(py "${CONFERIR}" controlador --arquivo "${CTRL}" --hotrod-timeout-ms "${P[hotrod_timeout_ms]}" \
+        --exigir-p2-desabilitada $([[ "${TEM_B}" -eq 1 ]] && echo --exigir-politica))" || rc=$?
+    [[ "${rc}" -eq 0 ]] || { echo "Erro: --controlador recusado: ${out}" >&2; exit 4; }
+    CTRL_INFO="${out}"
+}
+
 ARQ_FILA="${MATRIZ}"
 [[ "${FASE}" != reposicoes ]] || ARQ_FILA="${SAIDA}/reposicoes/reposicoes.tsv"
 
 # ------------------------------------------------------------------ dry-run
 if [[ "${DRY_RUN}" -eq 1 ]]; then
-    for par in "MATRIZ:MATRIZ_SHA" "PARAMS:PARAMS_SHA" "CTRL:CTRL_SHA" "REF:REF_SHA"; do
+    for par in "MATRIZ:MATRIZ_SHA" "PARAMS:PARAMS_SHA" "CTRL:CTRL_SHA"; do
         a="${par%%:*}"; s="${par#*:}"
         [[ "$(sha256 "${!a}")" == "${!s}" ]] || { echo "Erro: SHA-256 de ${!a} difere do registrado" >&2; exit 4; }
     done
@@ -326,7 +391,13 @@ if [[ "${DRY_RUN}" -eq 1 ]]; then
         ler_fila "${MATRIZ}" "${FASE}"
     fi
     [[ ! -f "${ARQ_FILA}" ]] || conferir_pareamento "${ARQ_FILA}"
+    # S1 da V-W6: a mesma conferencia do pre-voo, para o dry-run do pre-registro pegar o erro sem VM
+    marcar_fila
+    conferir_controlador
+    conferir_referencias
     echo "DRY-RUN fase=${FASE} matriz=${MATRIZ} (SHA-256 confere) parametros=${PARAMS} ($(grep -c . <<< "$(printf '%s\n' "${!P[@]}")") numeros, todos com origem) controlador=${CTRL}"
+    echo "DRY-RUN controlador conferido: $(tr '\t\n' '= ' <<< "${CTRL_INFO}" | sed 's/ *$//')"
+    echo "DRY-RUN perfis da fase:${PERFIS% } (referencia de cada um conferida)"
     imprimir_plano
     echo "DRY-RUN: nada executado (sem java, podman, sudo, tty)"
     exit 0
@@ -340,7 +411,7 @@ if [[ -z "${CS_SOB_FLOCK:-}" ]]; then
 fi
 
 # ------------------------------------------------------------------ pre-voo 2: hashes, dependencias, boot, parametros
-for par in "MATRIZ:MATRIZ_SHA" "PARAMS:PARAMS_SHA" "CTRL:CTRL_SHA" "REF:REF_SHA" "JAR:JAR_SHA"; do
+for par in "MATRIZ:MATRIZ_SHA" "PARAMS:PARAMS_SHA" "CTRL:CTRL_SHA" "JAR:JAR_SHA"; do
     a="${par%%:*}"; s="${par#*:}"
     [[ -f "${!a}" ]] || { echo "Erro: '${!a}' ausente" >&2; exit 4; }
     [[ "$(sha256 "${!a}")" == "${!s}" ]] || { echo "Erro: SHA-256 de ${!a} difere do registrado" >&2; exit 4; }
@@ -352,6 +423,13 @@ for dep in ${PODMAN} ${PODMAN_COMPOSE}; do command -v "${dep}" > /dev/null 2>&1 
 rc_sudo=0; sudo -n true > /dev/null 2>&1 || rc_sudo=$?
 [[ "${rc_sudo}" -eq 0 ]] || { echo "Erro: 'sudo -n true' falhou (sudo sem senha e obrigatorio)" >&2; exit 3; }
 NSENTER_BIN="$(command -v nsenter)"; TC_BIN="$(command -v tc)"
+# S2 da V-W6: um dead-man de outra invocacao ainda armado quer dizer rede possivelmente suja e um --heal agendado no
+# meio da proxima carga; recusa antes de gastar uma execucao (a pos-checagem so o via depois da primeira)
+rc_t=0; resto_t="$(systemctl list-timers --all --no-legend 'tcc-heal-cs-*' 2>&1)" || rc_t=$?
+if [[ "${rc_t}" -ne 0 || -n "${resto_t//[[:space:]]/}" ]]; then
+    echo "Erro: timer(s) de dead-man tcc-heal-cs-* de uma invocacao anterior (systemctl rc=${rc_t}): ${resto_t//$'\n'/; }; confira a rede dos tres nos e desarme-os antes" >&2
+    exit 4
+fi
 ler_boot() { cat /proc/sys/kernel/random/boot_id 2>/dev/null | tr -d '\r\n'; }
 if [[ "${CS_MODO_TESTE:-}" == 1 ]]; then ler_boot() { cat "${CS_SHIM_DIR}/boot_id" | tr -d '\r\n'; }; fi
 BOOT="$(ler_boot)"
@@ -375,18 +453,11 @@ else
 fi
 [[ "${#FILA[@]}" -gt 0 ]] || { echo "Erro: nenhuma execucao da fase ${FASE} em ${ARQ_FILA}" >&2; exit 4; }
 conferir_pareamento "${ARQ_FILA}"
-TEM_B=0; TEM_REDE=0
-for l in "${FILA[@]}"; do
-    read -r _i _c _m f _p _b br _ct _s <<< "${l}"
-    [[ "${br}" == B ]] && TEM_B=1
-    [[ "${f}" == F2 || "${f}" == F4 ]] && TEM_REDE=1
-done
+marcar_fila
+conferir_referencias
 
 # ------------------------------------------------------------------ pre-voo 3: controlador, h4, bundle
-rc=0; out="$(py "${CONFERIR}" controlador --arquivo "${CTRL}" --hotrod-timeout-ms "${P[hotrod_timeout_ms]}" \
-    --exigir-p2-desabilitada $([[ "${TEM_B}" -eq 1 ]] && echo --exigir-politica))" || rc=$?
-[[ "${rc}" -eq 0 ]] || { echo "Erro: --controlador recusado: ${out}" >&2; exit 4; }
-CTRL_INFO="${out}"
+conferir_controlador
 H4_UNIT="tcc-amostrador-${H4_ID}"
 H4_AMOSTRAS="${H4_RUN}/${H4_ID}/amostras.txt"
 h4_unit_ativa() { systemctl is-active --quiet "${H4_UNIT}"; }
@@ -394,11 +465,13 @@ h4_unit_ativa || { echo "Erro: unit ${H4_UNIT} inativa (inicie o amostrador-infr
 [[ -s "${H4_AMOSTRAS}" ]] || { echo "Erro: ${H4_AMOSTRAS} ausente ou vazio" >&2; exit 4; }
 
 bundle_lista() {  # SHA-256 de tudo o que a fase usa; a retomada recusa se mudar
-    local f
+    local f refs=()
+    [[ -z "${REF_ASYNC}" ]] || refs+=("${REF_ASYNC}")
+    [[ -z "${REF_SYNC}" ]] || refs+=("${REF_SYNC}")
     for f in "${SELF}" "${CONFERIR}" "${H4S3}" "${SCRIPT_DIR}/campanha_s3_matriz.py" "${REPO_DIR}/analysis/h4.py" \
-             "${CRIA_CACHES}" "${INJ_CRASH}" "${INJ_PART}" "${INJ_DEGR}" "${COMPOSE_ARQ}" \
+             "${CRIA_CACHES}" "${INJ_CRASH}" "${INJ_PART}" "${INJ_DEGR}" "${COLETOR}" "${COMPOSE_ARQ}" \
              "${REPO_DIR}/cluster/infinispan-sem-caches.xml" "${REPO_DIR}/cluster/jgroups-tcp.xml" \
-             "${DIR_CACHES}"/*.json "${JAR}" "${MATRIZ}" "${PARAMS}" "${CTRL}" "${REF}"; do
+             "${DIR_CACHES}"/*.json "${JAR}" "${MATRIZ}" "${PARAMS}" "${CTRL}" "${refs[@]}"; do
         printf '%s  %s\n' "$(sha256 "${f}")" "${f##*/}"
     done
 }
@@ -412,12 +485,15 @@ fi
 printf '%s\n' "${BUNDLE_LISTA}" > "${FASE_DIR}/bundle.sha256"
 
 # ------------------------------------------------------------------ pre-voo 4: o programa aceita as duas linhas de comando
-for ctl in shadow active; do
-    [[ "${ctl}" == shadow || "${TEM_B}" -eq 1 ]] || continue
-    mkdir -p "${FASE_DIR}/.dry-run"
-    montar_cmd async 1 "${FASE_DIR}/.dry-run" "${ctl}" "${FASE_DIR}/.dry-run/marcadores.txt"
-    rc=0; "${CMD[@]:4}" --dry-run > "${FASE_DIR}/dry-run-${ctl}.txt" 2>&1 || rc=$?
-    [[ "${rc}" -eq 0 ]] || { echo "Erro: o programa recusou a linha de comando ${ctl} (--dry-run exit ${rc}): $(tail -3 "${FASE_DIR}/dry-run-${ctl}.txt")" >&2; exit 4; }
+# B2 da V-W6: em cada perfil (modo de replicacao) da fila, com a referencia daquele perfil
+for modo in ${PERFIS}; do
+    for ctl in shadow active; do
+        [[ "${ctl}" == shadow || "${TEM_B}" -eq 1 ]] || continue
+        mkdir -p "${FASE_DIR}/.dry-run"
+        montar_cmd "${modo}" 1 "${FASE_DIR}/.dry-run" "${ctl}" "${FASE_DIR}/.dry-run/marcadores.txt"
+        rc=0; "${CMD[@]:4}" --dry-run > "${FASE_DIR}/dry-run-${ctl}-${modo}.txt" 2>&1 || rc=$?
+        [[ "${rc}" -eq 0 ]] || { echo "Erro: o programa recusou a linha de comando ${ctl} ${modo} (--dry-run exit ${rc}): $(tail -3 "${FASE_DIR}/dry-run-${ctl}-${modo}.txt")" >&2; exit 4; }
+    done
 done
 
 # ------------------------------------------------------------------ estado e encerramento
@@ -826,6 +902,7 @@ gravar_execucao() {
  "jar_sha256": $(json_str "${JAR_SHA}"),
  "parametros_sha256": $(json_str "${PARAMS_SHA}"),
  "controlador_sha256": $(json_str "${CTRL_SHA}"),
+ "referencia_sha256": $(json_str "$(ref_sha_de "${E_MODO}")"),
  "bundle_sha256": $(json_str "${BUNDLE_SHA}"),
  "boot_id": $(json_str "${BOOT}"),
  "comando": [${cmdj}],
@@ -843,6 +920,7 @@ gravar_execucao() {
  "disparo_ms": $(json_ou_null "${E_DISP_MS}"),
  "inj_inicio_offset_s": $(json_ou_null "${E_OFFSET}"),
  "injetor_exit": $(json_ou_null "${E_IEXIT}"),
+ "injetor_alvo_parado": $(json_str_ou_null "${E_INJ_PARADO}"),
  "deadman": ${E_DEADMAN:-null},
  "rede_pos": ${E_REDE_POS:-null},
  "falha_efetiva": ${E_FALHA_EF:-null},
@@ -945,9 +1023,24 @@ concluir_injecao() {
     if [[ "${seguem}" != *" ${E_IEXIT} "* ]]; then
         E_INFRA_STOP=6; E_MOTIVOS+=("infra: injetor ${E_FALHA} saiu com ${E_IEXIT} (so${seguem}seguem)")
         parar_carga
+    elif [[ "${E_FALHA}" != F1 && ( "${E_IEXIT}" -eq 1 || "${E_IEXIT}" -eq 6 ) ]] && alvo_rede_parado; then
+        # B1 da V-W6: o AC-5 do braco B pode parar o no da falha antes do fim da janela; o injetor real sai com 1
+        # (F2: contadores lidos pelo nsenter com o PID morto, sob pipefail) ou 6 (F4: contadores zerados). A decisao
+        # fica para a pos-checagem, que confere a linha de fim e a trilha
+        E_INJ_PARADO="${ALVO_REDE}"
+        log "exec i=${E_I}: injetor ${E_FALHA} saiu com ${E_IEXIT} com ${E_INJ_PARADO} parado; pendente ate a pos-checagem (AC-5?)"
     elif [[ "${E_IEXIT}" -ne 0 ]]; then
         E_RECUSAS+=("injetor ${E_FALHA} saiu com ${E_IEXIT} (recusa, como o K6 do rebaseline)")
     fi
+}
+
+alvo_rede_parado() {  # o no da F2/F4 esta fora de running, ou ja foi religado na linha de fim (AC-5 ou O8)
+    local est
+    ALVO_REDE="${P[${E_FALHA,,}_no]}"
+    [[ "${ALVO_REDE}" == "${E_RELIG_NO:-}" ]] && return 0
+    [[ "${E_RELIG_OUTROS}" == *" ${ALVO_REDE} "* ]] && return 0
+    est="$(podman_campo '{{.State.Status}}' "${ALVO_REDE}")" || est="?"
+    [[ "${est}" != running ]]
 }
 
 amostra_volta_f1() {
@@ -968,8 +1061,26 @@ amostra_volta_f1() {
     fi
 }
 
+religar_parados() {  # religar_parados <no a ignorar|"">: podman start de cada no fora de running; lista em PARADOS
+    local n est rc
+    PARADOS=""
+    for n in ${NOS}; do
+        [[ "${n}" == "$1" ]] && continue
+        # o no de um F1 em curso esta parado pelo inject-crash.sh, que o religa e grava o end; nao e desvio
+        if [[ "${F1_ATIVA}" -eq 1 && "${n}" == "${P[f1_no]}" ]]; then
+            log "exec i=${E_I}: ${n} parado pelo F1 ainda em curso; o inject-crash.sh o religa"
+            continue
+        fi
+        est="$(podman_campo '{{.State.Status}}' "${n}")" || est="?"
+        [[ "${est}" != running ]] || continue
+        PARADOS+="${PARADOS:+,}${n}"; E_RELIG_OUTROS+=" ${n} "
+        rc=0; ${PODMAN} start "${n}" >> "${E_DIR}/religamento.log" 2>&1 || rc=$?
+        [[ "${rc}" -eq 0 ]] || E_INFRAS+=("religamento: podman start ${n} saiu com ${rc}")
+    done
+}
+
 tratar_sinal_fim() {  # tratar_sinal_fim <alvo>: religa o no parado pelo AC-5 (P-6 da V-W5)
-    local alvo="$1" no rc=0 t0 parados="" n est
+    local alvo="$1" no rc=0 t0
     E_SINAL_MS="$(agora_ms)"; E_SINAL_ALVO="${alvo}"
     if [[ "${alvo}" != "-" ]]; then
         if no="$(no_do_rotulo "${alvo}")"; then
@@ -983,29 +1094,25 @@ tratar_sinal_fim() {  # tratar_sinal_fim <alvo>: religa o no parado pelo AC-5 (P
         fi
     fi
     # O8 da V-W2a: um no parado sem AC-5 APLICADA (por exemplo, AC-5 FALHOU que parou o no) e desvio; religa
-    for n in ${NOS}; do
-        [[ "${n}" == "${E_RELIG_NO:-}" ]] && continue
-        est="$(podman_campo '{{.State.Status}}' "${n}")" || est="?"
-        if [[ "${est}" != running ]]; then
-            parados+="${parados:+,}${n}"
-            ${PODMAN} start "${n}" >> "${E_DIR}/religamento.log" 2>&1 || true
-        fi
-    done
-    [[ -z "${parados}" ]] || E_INFRAS+=("no(s) parado(s) no fim da carga sem AC-5 APLICADA na linha de fim: ${parados} (religado(s); O8 da V-W2a)")
-    E_SINAL_JSON="{\"recebido_ms\":${E_SINAL_MS},\"ac5_alvo\":$(json_str "${alvo}"),\"outros_parados\":$(json_str_ou_null "${parados}")}"
+    religar_parados "${E_RELIG_NO:-}"
+    [[ -z "${PARADOS}" ]] || E_INFRAS+=("no(s) parado(s) no fim da carga sem AC-5 APLICADA na linha de fim: ${PARADOS} (religado(s); O8 da V-W2a)")
+    E_SINAL_JSON="{\"recebido_ms\":${E_SINAL_MS},\"ac5_alvo\":$(json_str "${alvo}"),\"outros_parados\":$(json_str_ou_null "${PARADOS}")}"
     log "exec i=${E_I}: linha de fim da carga (ac5_alvo=${alvo})${E_RELIG_NO:+; podman start ${E_RELIG_NO}}"
 }
 
 leitor_stdout() {  # stdin: saida do programa; stdout: eventos (FIFO em memoria); o log vai a disco por outro processo
-    local l
+    local l catpid
     exec 3> >(cat >> "$1")
+    catpid=$!
     while IFS= read -r l || [[ -n "${l}" ]]; do
         if [[ "${l}" =~ ${ANCORA_RE} ]]; then printf 'ANCORA %s %s %s\n' "${BASH_REMATCH[1]}" "${BASH_REMATCH[2]}" "${BASH_REMATCH[3]}"; fi
         if [[ "${l}" =~ ${SINAL_RE} ]]; then printf 'SINAL %s\n' "${BASH_REMATCH[3]}"; fi
         printf '%s\n' "${l}" >&3
     done
-    printf 'EOF\n'
     exec 3>&-
+    # S6 da V-W6: o stdout.log so esta completo quando o cat sai; o EOF vai depois, e o MANIFEST vem depois do EOF
+    wait "${catpid}" 2>/dev/null || true
+    printf 'EOF\n'
 }
 
 conferir_meta() {  # conferir_meta <decisoes>: braco certo e, no B, que ele atua (A-3 da V-W5, O10 da V-W2a)
@@ -1111,14 +1218,22 @@ parar_coletor() {
 }
 
 pos_execucao() {  # pos-checagem igual a pre: boot, StartedAt explicado, saude, residuo, camada 3, trilha
-    local d="$1" n antes depois rc out
+    local d="$1" n antes depois rc out rc_trilha=""
     [[ "$(ler_boot)" == "${BOOT}" ]] || E_MOTIVOS+=("infra: boot_id mudou durante a execucao")
+    if [[ -z "${E_SINAL_MS}" ]]; then
+        # S3 da V-W6: sem a linha de fim ninguem religou o no de um AC-5; religa como o O8, e a execucao vira
+        # DESCARTADA-INFRA sem parar a fase (senao a saude abaixo falharia e a fase sairia com 10)
+        religar_parados ""
+        [[ -z "${PARADOS}" ]] || E_INFRAS+=("sem a linha de fim da carga: no(s) parado(s) ${PARADOS} religado(s) pelo orquestrador (S3 da V-W6, como o O8 da V-W2a)")
+    fi
     E_STARTED_POS="$(started_at)"
     for n in ${NOS}; do
         antes="$(sed -n "s/.*${n}=\([0-9?]*\).*/\1/p" <<< "${E_STARTED_PRE}")"
         depois="$(sed -n "s/.*${n}=\([0-9?]*\).*/\1/p" <<< "${E_STARTED_POS}")"
         if [[ "${antes}" != "${depois}" ]]; then
             if [[ ( "${E_FALHA}" == F1 && "${n}" == "${P[f1_no]}" ) || "${n}" == "${E_RELIG_NO:-}" ]]; then continue; fi
+            # religado pelo O8 ou pelo S3: ja tem o seu motivo
+            [[ "${E_RELIG_OUTROS}" != *" ${n} "* ]] || continue
             E_MOTIVOS+=("infra: ${n} reiniciou sem F1 nem religamento (StartedAt ${antes} -> ${depois}; decisao de 28/10)")
         fi
     done
@@ -1141,6 +1256,7 @@ pos_execucao() {  # pos-checagem igual a pre: boot, StartedAt explicado, saude, 
         rc=0; out="$(py "${CONFERIR}" trilha --decisoes "${d}/decisoes-rep-001.jsonl" \
             --sinal-alvo "${E_SINAL_ALVO:--}")" || rc=$?
         printf '%s\n' "${out}" > "${d}/trilha-ac5.txt"
+        rc_trilha="${rc}"
         case "${rc}" in
             0) [[ "${out}" == *$'ac5_falhou_executada	0'* ]] || E_AVISOS+=("AC-5 FALHOU executado na trilha (O8 da V-W2a): $(grep ac5_falhou_alvos <<< "${out}")") ;;
             5) E_MOTIVOS+=("infra: trilha e linha de fim da carga discordam sobre o AC-5: ${out//$'\n'/ }") ;;
@@ -1150,13 +1266,30 @@ pos_execucao() {  # pos-checagem igual a pre: boot, StartedAt explicado, saude, 
         E_RECUSAS+=("sem decisoes-rep-001.jsonl")
     fi
     [[ -n "${E_SINAL_MS}" ]] || E_RECUSAS+=("sem a linha de fim da carga")
+    if [[ -n "${E_INJ_PARADO}" ]]; then resolver_injetor_parado "${d}" "${rc_trilha}"; fi
     if [[ -n "${E_RELIG_NO:-}" ]] && ! grep -q '"t_religamento_ns" : [0-9]' "${d}/convergencia-resumo-rep-001.json" 2>/dev/null; then
         E_AVISOS+=("AC-5 religado sem t_religamento_ns no resumo (Delta_conv nao avaliavel na analise, P-6 da V-W5)")
     fi
     if grep -q '"convergencia_estado" : "sem_rodada_valida"' "${d}/convergencia-resumo-rep-001.json" 2>/dev/null; then
         E_AVISOS+=("convergencia sem rodada valida (convergencia_estado = sem_rodada_valida): Delta_conv e divergencia nao avaliaveis na analise")
     fi
-    E_MOTIVOS+=("${E_INFRAS[@]}")
+    # o veredito DESCARTADA-INFRA olha o prefixo "infra"; sem ele um no religado pelo O8 terminava ACEITA (W-6b)
+    for n in "${E_INFRAS[@]}"; do E_MOTIVOS+=("infra: ${n}"); done
+}
+
+resolver_injetor_parado() {  # resolver_injetor_parado <dir> <exit da conferencia da trilha|"">: B1 da V-W6
+    local d="$1" rc_trilha="$2" no_ac5="" falta=""
+    if [[ "${E_SINAL_ALVO:--}" != "-" ]]; then no_ac5="$(no_do_rotulo "${E_SINAL_ALVO}")" || no_ac5=""; fi
+    [[ "${no_ac5}" == "${E_INJ_PARADO}" ]] || falta="linha de fim com ac5_alvo=${E_SINAL_ALVO:--}"
+    [[ "${rc_trilha}" == 0 ]] || falta+="${falta:+; }trilha sem AC-5 APLICADA igual a linha (exit ${rc_trilha:-sem trilha})"
+    if [[ "${E_FALHA}" == F2 ]] && ! grep -F -e "OK: ${E_INJ_PARADO} nao conecta a nenhum par" "${d}/injetor.log" > /dev/null 2>&1; then
+        falta+="${falta:+; }injetor.log sem 'OK: ${E_INJ_PARADO} nao conecta a nenhum par' (corte nao confirmado)"
+    fi
+    if [[ -z "${falta}" ]]; then
+        E_AVISOS+=("falha efetiva ate a parada do no pelo AC-5; contadores do injetor nao lidos (${E_FALHA} saiu com ${E_IEXIT}, ${E_INJ_PARADO} parado pelo AC-5 APLICADA; B1 da V-W6)")
+    else
+        E_RECUSAS+=("injetor ${E_FALHA} saiu com ${E_IEXIT} com ${E_INJ_PARADO} parado sem AC-5 APLICADA confirmada nele (${falta}) (recusa, como o K6 do rebaseline)")
+    fi
 }
 
 avaliar_h4() {  # C3 e DT-019 pelo campanha_s3_h4.py; parada h4 pela regra 4.3
@@ -1184,6 +1317,7 @@ rodar_execucao() {  # rodar_execucao "<i> <celula> <modo> <falha> <papel> <bloco
     E_ANC_MS=""; E_ANC_UTC=""; E_JANELA_H4=""; E_DISP_MS=""; E_OFFSET=""; E_IEXIT=""; E_DEADMAN=""; E_REDE_POS=""
     E_FALHA_EF=""; E_VOLTA_F1=""; E_SINAL_JSON=""; E_SINAL_MS=""; E_SINAL_ALVO=""; E_RELIG_JSON=""; E_RELIG_NO=""
     E_FIM_UTC=""; E_WEXIT=""; E_TETO=false; E_SEM_ANCORA=""; E_INFRA_STOP=""; E_PARADA_H4=""; E_META=""; E_PAROU=""
+    E_INJ_PARADO=""; E_RELIG_OUTROS=" "; PARADOS=""
     E_MOTIVOS=(); E_RECUSAS=(); E_AVISOS=(); E_INFRAS=()
     if [[ -d "${d}" ]]; then
         if [[ -f "${d}/checagem.json" ]]; then log "exec i=${E_I} ${E_CEL} ${E_BRACO}: ja checada; pulando"; return 0; fi

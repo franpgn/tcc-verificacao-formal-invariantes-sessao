@@ -3,15 +3,20 @@
 So biblioteca padrao; roda com python3 -I. Cada subcomando imprime linhas "nome<TAB>valor" e sai com:
 0 ok; 2 uso ou arquivo invalido; 4 arquivo ausente ou ilegivel; 5 recusa (a execucao nao pode seguir).
 
-  parametros  --arquivo <campanha.json>
+  parametros  --arquivo <campanha.json> --t-enc-pior-s N
       Arquivo dos numeros da campanha, esquema "campanha-s3/1":
         {"esquema": "campanha-s3/1", "versao": "...",
          "parametros": {"<nome>": {"valor": <v>, "origem": "<texto nao vazio>"}, ...}}
       Todos os nomes de PARAMETROS sao obrigatorios, nenhum tem valor padrao, nenhum nome a mais e aceito, e cada
       um traz a sua origem (regra do autor: limiar sem origem fica obrigatorio e sem padrao; o pre-registro da
       calibracao e o B-40 preenchem). Coerencia: cada falha acaba antes do fim da carga
-      (inj_offset_s + f*_dur_s <= duracao_s) e exec_teto_s >= duracao_s + religamento_prazo_s +
-      convergencia_teto_s (o teto do processo cobre a carga, a espera do religamento e o laco de convergencia).
+      (inj_offset_s + f*_dur_s <= duracao_s) e exec_teto_s >= duracao_s + t_enc_pior_s + religamento_prazo_s +
+      convergencia_teto_s + convergencia_periodo_s (M1 da V-W6: o teto do processo cobre a carga, o encerramento do
+      controlador antes da linha de fim, a espera do religamento e o laco de convergencia, que dorme um periodo antes
+      de olhar o teto). O T_enc vem do orquestrador (--t-enc-pior-s = T_ENC_PIOR_S, contrato JSONL 1.2). O tempo do
+      lancamento ate a ancora (t_pre <= 2,4 s no I-3b) e o fechamento depois da convergencia (t_pos = 13,5 s) sao
+      medidos, nao constantes: o pre-registro os soma com folga acima deste minimo (adenda da V-W6, secao 11;
+      pre-registro da calibracao 4.1: 300 + 21 + 60 + 600 + 1,5 x (2,4 + 13,5) -> 1005 s, minimo daqui 986 s).
       Imprime "nome<TAB>valor" de cada parametro.
 
   controlador --arquivo <controlador-*.json> --hotrod-timeout-ms N [--exigir-politica] [--exigir-p2-desabilitada]
@@ -33,6 +38,12 @@ So biblioteca padrao; roda com python3 -I. Cada subcomando imprime linhas "nome<
       recusa quando o sinal o da como aplicado. Imprime trilha_ac5, ac5_falhou_executada, ac5_falhou_alvos (O8 da
       V-W2a: um FALHOU pode ter parado o no mesmo assim; o orquestrador confere os nos pela REST) e
       trilha_completa.
+
+  referencia --arquivo <referencia.json> --perfil sync|async
+      Referencia de p99 do controlador (esquema referencia-p99/1, controle/ArquivoReferencia.java). B2 da V-W6: o
+      programa recusa referencia de outro perfil (LigacaoControlador.java:204), entao o orquestrador recebe uma por
+      modo de replicacao e confere cada uma no pre-voo e no --dry-run. Recusa (5) se cenario != S3 ou perfil !=
+      --perfil; 2 se o esquema nao for referencia-p99/1 ou faltar p99_ns. Imprime sha256, cenario e perfil.
 """
 import argparse
 import hashlib
@@ -68,6 +79,7 @@ PARAMETROS = {
     "volume_exec_mb": INT_POS,
 }
 ESQUEMA_DECISOES = "decisoes-controlador/1.2"
+ESQUEMA_REFERENCIA = "referencia-p99/1"   # controle/ArquivoReferencia.java (ESQUEMA)
 ATUADOR_NULO = "nulo"
 POLITICA_NENHUMA = "nenhuma"
 TIPO_AC5 = "AC-5"
@@ -99,8 +111,10 @@ def sha256(p):
     return hashlib.sha256(Path(p).read_bytes()).hexdigest()
 
 
-def conferir_parametros(obj):
-    """{nome: valor} ou ErroUso."""
+def conferir_parametros(obj, t_enc_pior_s):
+    """{nome: valor} ou ErroUso. t_enc_pior_s e a parcela do teto que vem do orquestrador (M1 da V-W6)."""
+    if isinstance(t_enc_pior_s, bool) or not isinstance(t_enc_pior_s, int) or t_enc_pior_s < 0:
+        raise ErroUso("--t-enc-pior-s deve ser inteiro >= 0: %r" % (t_enc_pior_s,))
     if not isinstance(obj, dict) or obj.get("esquema") != ESQUEMA_PARAMETROS:
         raise ErroUso("esquema deve ser %r" % ESQUEMA_PARAMETROS)
     if not isinstance(obj.get("versao"), str) or not obj["versao"].strip():
@@ -137,15 +151,19 @@ def conferir_parametros(obj):
         if v["inj_offset_s"] + v[f + "_dur_s"] > v["duracao_s"]:
             raise ErroUso("%s acaba depois do fim da carga: inj_offset_s + %s_dur_s = %d > duracao_s = %d"
                           % (f.upper(), f, v["inj_offset_s"] + v[f + "_dur_s"], v["duracao_s"]))
-    minimo = v["duracao_s"] + v["religamento_prazo_s"] + v["convergencia_teto_s"]
+    minimo = (v["duracao_s"] + t_enc_pior_s + v["religamento_prazo_s"] + v["convergencia_teto_s"]
+              + v["convergencia_periodo_s"])
     if v["exec_teto_s"] < minimo:
-        raise ErroUso("exec_teto_s = %d < duracao_s + religamento_prazo_s + convergencia_teto_s = %d"
-                      % (v["exec_teto_s"], minimo))
+        raise ErroUso("exec_teto_s = %d < duracao_s (%d) + t_enc_pior_s (%d) + religamento_prazo_s (%d) + "
+                      "convergencia_teto_s (%d) + convergencia_periodo_s (%d) = %d (o pre-registro soma ainda o tempo "
+                      "ate a ancora e o fechamento, com folga)"
+                      % (v["exec_teto_s"], v["duracao_s"], t_enc_pior_s, v["religamento_prazo_s"],
+                         v["convergencia_teto_s"], v["convergencia_periodo_s"], minimo))
     return v
 
 
 def cmd_parametros(a):
-    v = conferir_parametros(ler_json(a.arquivo))
+    v = conferir_parametros(ler_json(a.arquivo), a.t_enc_pior_s)
     for nome in PARAMETROS:
         print("%s\t%s" % (nome, v[nome]))
 
@@ -264,11 +282,29 @@ def cmd_trilha(a):
         raise Recusa("AC-5 APLICADA na trilha = %s, na linha de fim da carga = %s" % (aplicada or "-", a.sinal_alvo))
 
 
+def cmd_referencia(a):
+    obj = ler_json(a.arquivo)
+    if not isinstance(obj, dict) or obj.get("esquema") != ESQUEMA_REFERENCIA:
+        raise ErroUso("referencia %s: esquema deve ser %r" % (a.arquivo, ESQUEMA_REFERENCIA))
+    if not isinstance(obj.get("p99_ns"), dict):
+        raise ErroUso("referencia %s sem o objeto p99_ns" % a.arquivo)
+    cenario, perfil = obj.get("cenario"), obj.get("perfil")
+    print("sha256\t%s" % sha256(a.arquivo))
+    print("cenario\t%s" % cenario)
+    print("perfil\t%s" % perfil)
+    if cenario != "S3":
+        raise Recusa("referencia %s e do cenario %r, e as campanhas sao S3" % (a.arquivo, cenario))
+    if perfil != a.perfil:
+        raise Recusa("referencia %s e do perfil %r, mas foi dada como --referencia-%s (B2 da V-W6: o programa a "
+                     "recusaria, LigacaoControlador.java:204)" % (a.arquivo, perfil, a.perfil))
+
+
 def main(argv):
     ap = argparse.ArgumentParser(prog="campanha_s3_conferir.py")
     sub = ap.add_subparsers(dest="cmd")
     p = sub.add_parser("parametros")
     p.add_argument("--arquivo", required=True)
+    p.add_argument("--t-enc-pior-s", type=int, required=True)
     c = sub.add_parser("controlador")
     c.add_argument("--arquivo", required=True)
     c.add_argument("--hotrod-timeout-ms", type=int, required=True)
@@ -282,11 +318,15 @@ def main(argv):
     t = sub.add_parser("trilha")
     t.add_argument("--decisoes", required=True)
     t.add_argument("--sinal-alvo", required=True)
+    r = sub.add_parser("referencia")
+    r.add_argument("--arquivo", required=True)
+    r.add_argument("--perfil", required=True, choices=("sync", "async"))
     try:
         a = ap.parse_args(argv)
     except SystemExit as e:
         return 2 if e.code else 0
-    cmds = {"parametros": cmd_parametros, "controlador": cmd_controlador, "meta": cmd_meta, "trilha": cmd_trilha}
+    cmds = {"parametros": cmd_parametros, "controlador": cmd_controlador, "meta": cmd_meta, "trilha": cmd_trilha,
+            "referencia": cmd_referencia}
     if a.cmd not in cmds:
         ap.print_usage(sys.stderr)
         return 2

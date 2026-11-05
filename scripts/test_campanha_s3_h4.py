@@ -182,6 +182,18 @@ class Fase(unittest.TestCase):
             self.assertEqual(2, rc)
             self.assertIn("janela_h4", err)
 
+    def test_sem_ancora_nao_exige_janela(self):
+        """Execucao sem ancora (recusa 'sem ancora'): o orquestrador nao tem janela; o h4.py da 'sem-ancora'."""
+        with tempfile.TemporaryDirectory() as d:
+            am = escrever_amostras(Path(d) / "a.txt")
+            e = execucao(d, 0, sem_janela=True)
+            ex = json.loads((e / "execucao.json").read_text())
+            ex["ancora_ms"] = None
+            (e / "execucao.json").write_text(json.dumps(ex), encoding="utf-8")
+            rc, out, err = rodar("fase", "--amostras", am, "--saida", d, "--fase", "calibracao", "--exec", e)
+            self.assertEqual(0, rc, err)
+            self.assertIn("VEREDITO 0 sem-ancora", out)
+
     def test_amostras_ilegiveis(self):
         with tempfile.TemporaryDirectory() as d:
             execucao(d, 0)

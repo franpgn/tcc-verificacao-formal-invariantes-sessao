@@ -34,8 +34,9 @@ public interface CanalCanario extends AutoCloseable {
 
     /**
      * P-40: a chave do no tinha o proprio no como dono primario na abertura ({@code true}), nao tinha
-     * ({@code false}), ou o canal nao sabe ({@code null}, padrao). So registro ({@code defasagem_chaves} no
-     * {@code fim}).
+     * ({@code false}), ou o canal nao sabe ({@code null}, padrao). O adaptador Hot Rod recusa a abertura se algum no
+     * ficar sem primario (V-W4 R1); o valor fica registrado em {@code defasagem_chaves} no
+     * {@code fim}.
      */
     default Boolean chaveNoPrimario(int indice) {
         return null;
@@ -44,7 +45,7 @@ public interface CanalCanario extends AutoCloseable {
     /**
      * P-40: motivo da escolha da chave do no ({@code primario}, {@code sem-topologia}, {@code fora-da-topologia},
      * {@code nao-encontrada}, {@code nao-escolhida}, {@code falha:<Excecao>}), ou {@code null} se o canal nao escolhe
-     * (padrao). So registro.
+     * (padrao). Registro de auditoria ({@code defasagem_chaves}); com o adaptador Hot Rod, so {@code primario} abre.
      */
     default String motivoDaChave(int indice) {
         return null;

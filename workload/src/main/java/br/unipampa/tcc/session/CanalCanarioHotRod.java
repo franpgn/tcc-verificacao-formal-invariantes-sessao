@@ -44,9 +44,10 @@ import java.util.function.Function;
  * {@code DataFormat} do cache). Por que: sob o corte de um no C, o par entre os dois nos da maioria so falha se o
  * primario da chave do escritor for C (a escrita nao chega a nenhuma replica); com o primario no proprio escritor, ele
  * grava localmente e a leitura do outro no a busca nele, e o empate no teto que tirava o suspeito deixa de existir. O
- * cliente topology-aware e fechado logo depois da escolha (sem custo durante a execucao). Sem topologia, ou sem
- * achar no limite, a chave simples {@code lag:<X>} e mantida e o motivo fica registrado
- * ({@code defasagem_chaves}). A escolha vale para a topologia da abertura: cada execucao comeca com o
+ * cliente topology-aware e fechado logo depois da escolha (sem custo durante a execucao). Sem topologia, com o no
+ * fora da topologia anunciada ou sem achar no limite, a abertura <b>falha</b> ({@link #exigirPrimario}, V-W4 R1),
+ * em toda execucao com o bloco {@code defasagem}; a escolha fica registrada em {@code defasagem_chaves}. A escolha vale
+ * para a topologia da abertura: cada execucao comeca com o
  * <i>cluster</i> recriado, e a falha (um corte) parte dessa topologia.</p>
  *
  * <p>P-5: so Hot Rod, em memoria; nenhum processo, nenhum arquivo.</p>
@@ -204,6 +205,48 @@ public final class CanalCanarioHotRod implements CanalCanario {
         return List.copyOf(l);
     }
 
+    /**
+     * V-W4 R1 (decisao do coordenador em nome do Gestor, 05/11): toda execucao com o bloco {@code defasagem} exige
+     * que cada no tenha uma chave com o proprio no como dono primario. O recuo para a chave simples devolveria o risco
+     * do P-40 sem que ninguem visse, e na calibracao misturaria duas distribuicoes de lag no quantil do
+     * {@code lagIn}. Vale nos dois bracos, para a exclusao nao depender do braco: a execucao vai como de
+     * infraestrutura (DT-014) e e refeita (funcao pura).
+     *
+     * @throws IllegalStateException com o rotulo e o motivo de cada no sem primario
+     * @throws IllegalArgumentException listas de tamanhos diferentes
+     */
+    static void exigirPrimario(List<String> rotulos, List<Chave> chaves) {
+        if (rotulos.size() != chaves.size()) {
+            throw new IllegalArgumentException("rotulos e chaves de tamanhos diferentes: " + rotulos.size() + " e "
+                    + chaves.size());
+        }
+        List<String> sem = new ArrayList<>();
+        for (int i = 0; i < chaves.size(); i++) {
+            if (!chaves.get(i).primario()) {
+                sem.add(rotulos.get(i) + " (" + chaves.get(i).motivo() + ")");
+            }
+        }
+        if (!sem.isEmpty()) {
+            throw new IllegalStateException("sonda de defasagem: sem chave com dono primario no proprio no em " + sem
+                    + "; o recuo para a chave simples e fatal (V-W4 R1, P-40). Conferir se --servers e"
+                    + " --controller-admin usam o host:porta que o servidor anuncia (external-host)");
+        }
+    }
+
+    /**
+     * Monta o canal com as chaves escolhidas e exige o primario em cada no ({@link #exigirPrimario}); se faltar,
+     * fecha os clientes antes de lancar.
+     */
+    static CanalCanarioHotRod montar(String nomeCache, List<String> rotulos, List<Alvo> alvos, List<Chave> chaves) {
+        try {
+            exigirPrimario(rotulos, chaves);
+        } catch (RuntimeException e) {
+            alvos.forEach(CanalCanarioHotRod::fecharQuieto);
+            throw e;
+        }
+        return new CanalCanarioHotRod(nomeCache, rotulos, alvos, chaves);
+    }
+
     /** A chave simples em todos os nos, com o motivo dado. */
     static List<Chave> chavesSimples(List<String> rotulos, String motivo) {
         List<Chave> l = new ArrayList<>(rotulos.size());
@@ -224,7 +267,7 @@ public final class CanalCanarioHotRod implements CanalCanario {
     /**
      * Escolhe as chaves com o hash consistente de um cliente topology-aware sobre o cache canario, fechado logo
      * depois. Qualquer falha (cache sem topologia, servidor anunciado inalcancavel) deixa a chave simples com o
-     * motivo {@code falha:<Excecao>}: a sonda roda como antes, com o risco do P-40.
+     * motivo {@code falha:<Excecao>}, e a abertura recusa ({@link #exigirPrimario}, V-W4 R1).
      */
     static List<Chave> escolherPelaTopologia(Cli cli, String nomeCache, List<S3Clientes.HostPort> nos,
                                              List<String> rotulos) {
@@ -280,6 +323,8 @@ public final class CanalCanarioHotRod implements CanalCanario {
      * @param urlsAdmin as URLs de {@code --controller-admin}, ja normalizadas
      * @throws IllegalArgumentException listas que nao correspondem ({@link #conferirCorrespondencia})
      * @throws IllegalStateException    o <i>cache</i> nao existe num no (criar com {@code scripts/cria-caches.sh})
+     * @throws IllegalStateException    algum no sem chave com dono primario no proprio no ({@link #exigirPrimario});
+     *                                  os clientes ja abertos sao fechados
      */
     static CanalCanarioHotRod abrir(Cli cli, List<String> urlsAdmin) {
         conferirCorrespondencia(urlsAdmin, cli.servidores);
@@ -304,7 +349,7 @@ public final class CanalCanarioHotRod implements CanalCanario {
             alvos.forEach(CanalCanarioHotRod::fecharQuieto);
             throw e;
         }
-        return new CanalCanarioHotRod(nomeCache, rot, alvos, escolherPelaTopologia(cli, nomeCache, nos, rot));
+        return montar(nomeCache, rot, alvos, escolherPelaTopologia(cli, nomeCache, nos, rot));
     }
 
     private static Alvo alvo(RemoteCacheManager rcm, RemoteCache<String, Object> cache) {

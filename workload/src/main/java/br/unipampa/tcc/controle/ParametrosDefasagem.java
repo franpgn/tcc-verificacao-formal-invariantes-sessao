@@ -35,7 +35,8 @@ import java.util.Set;
  *   <li>{@code lagOutMs}: regra de histerese de theta_out (plano de alinhamento 3.6), com os mesmos dados;</li>
  *   <li>{@code passoLeituraMs}: intervalo entre leituras de um par enquanto o valor novo nao aparece. Nao e
  *       limiar: fixa a resolucao do lag e o custo da sonda sob falha (no maximo {@code teto/passo} leituras por
- *       par e rodada). Sem fonte no projeto; a origem e declarada no arquivo (decisao do Gestor).</li>
+ *       par e rodada). Valor 20 ms, origem {@code wada_consistency_cloud_2011} secao 2 (leitores a 50 leituras por
+ *       segundo), decisao do coordenador de 05/11; ate 100 leituras por par e rodada com o prazo de 2000 ms.</li>
  * </ul>
  *
  * @param lagInMs        entrada da defasagem alta: {@code lag >= lagInMs} (&gt; 0)

@@ -841,3 +841,30 @@ Transmitidas ao Senior pelo coordenador, sobre o parecer de conferência do text
   condicionada a falha da nova medição e foi aplicada antes dela. Fica registrado, e o Gestor confirma se a exclusão
   fica até o fim da campanha (C3-4). M2 (APST) e M5 (apagar o *checkpoint*) não foram aplicadas.
 - **S7:** válido na terceira tentativa (`wt-gate-v4/runs/vm-s7-2026-11-04/V-S7t.md`). S1..S7 aprovados, PR §5 satisfeito.
+
+## DT-020: calibração do controlador na campanha S3, PRÉ-REGISTRO (2026-11-05)
+
+> **Aprovado** pelo coordenador em nome do Gestor em 2026-11-05 (decisões finais de ~22:30Z), antes de qualquer
+> execução da calibração. Texto completo e vinculante: `docs/pre-registro-calibracao-s3-2026-11-05.md`, na versão do
+> commit **`1e4ff2c`** (branch `docs/pre-registro-calibracao-s3`). Rascunhos anteriores: `0180dbd`, `254380a`, `4139ee4`.
+
+- **Objeto:** campanha S3 só com o braço A (`shadow`), mesmo jar, XML sem *caches* e JSON da avaliação; os dados não
+  entram na avaliação (D-12). 26 execuções: ASYNC sem falha × 5, F1 × 5 (controle negativo do P1), F2 × 5, F4 × 5;
+  SYNC F2 × 3 (R3); SYNC sem falha × 3 (referência SYNC). F3 fora (C-1). Matriz com `--ordem-seed 20261105`,
+  `--s0 300000`, passo 100.
+- **Parâmetros:** arquivo `campanha-s3/1` da seção 4.1, cada um com a origem; `exec_teto_s` = 1010 s pela fórmula com o
+  período da convergência (R2 da V-W6b, `wt-w6/docs/validacao-w6b-2026-11-05.md` §5, `081e1c4`).
+- **Decisões do Gestor:** critério de falso acionamento = **zero ocorrências**, com 3/N reportado (C-8). Registro pedido
+  pelo Gestor: validar o alvo de ~10⁻³ por par de janelas exigiria ~60 execuções sem falha (~8 h de VM), custo grande
+  demais para o tempo disponível; a taxa de acionamento indevido é medida de novo na avaliação (células sem falha, F1 e
+  F3). Número de blocos da avaliação = 12 (DT-021).
+- **Correções da V-W6b aceitas pelo coordenador** (origem rastreável): R2 (teto de 1010 s), opções
+  `--referencia-async`/`--referencia-sync` (B2, feito no W-6b), veredictos novos do orquestrador (O8 e carga sem linha
+  de fim viram DESCARTADA-INFRA; *timer* sobrando recusa no pré-voo com 4).
+- **Regras de derivação:** 7.1 a 7.18 do documento, executadas pelo W-9 (`analysis/calibracao_s3.py`), escrito e
+  validado antes do X-18. A 7.13 (`kLag`) usa a condição exata da política P1 (`PoliticaPorAssinatura.java:158` em
+  `17f2bd4`), com contagem à parte das assinaturas sem resposta.
+- **Aprovados pela regra permanente do Gestor** (origem rastreável): C-1 a C-7 e C-9, com a origem na seção 10 do
+  documento. **Sem origem rastreável, não aprovados por essa regra:** C-10 (limiar de *swap* de 1 GiB, provisório na
+  G-3; segue a aprovação da G-3), `convergencia_teto_s` = 600 s e `convergencia_periodo_s` = 5 s (só padrão do código
+  do B-33; ficam na calibração como estão e a avaliação usa o teto da regra 7.10).

@@ -2,7 +2,7 @@
 #
 # run-campanha-s3.test.sh
 #
-# Testes S1..S16 do scripts/run-campanha-s3.sh (W-6, B-46), no estilo do run-rebaseline.test.sh: sem cluster, sem
+# Testes S1..S21 do scripts/run-campanha-s3.sh (W-6, B-46), no estilo do run-rebaseline.test.sh: sem cluster, sem
 # rede, sem VM, sem tc real. Shims em PATH para java, podman, podman-compose, sudo, nsenter, tc, ip, iptables, curl,
 # systemd-run, systemctl, flock, pgrep, df, sleep, date e timeout. Relogio acelerado: o shim de sleep dorme s/ESCALA de
 # verdade, o de timeout divide os prazos por ESCALA e o de date devolve T0 + (agora - T0) * ESCALA. O injetor de F1 e
@@ -23,7 +23,7 @@ REAL_SLEEP="$(command -v sleep)"
 REAL_TIMEOUT="$(command -v timeout)"
 TMP="$(mktemp -d)"
 trap '[[ -n "${CS_TESTE_MANTER:-}" ]] && echo "(CS_TESTE_MANTER: ${TMP} mantido)" || rm -rf "${TMP}"' EXIT
-SELECAO=" ${*:-S1 S2 S3 S4 S5 S6 S7 S8 S9 S10 S11 S12 S13 S14 S15 S16 S17 S18} "
+SELECAO=" ${*:-S1 S2 S3 S4 S5 S6 S7 S8 S9 S10 S11 S12 S13 S14 S15 S16 S17 S18 S19 S20 S21} "
 
 PASS=0
 FAIL=0
@@ -112,6 +112,9 @@ if [[ ! -f "${ST}/java-sem-ancora" ]]; then
     echo "Warm-up ate +30s; medicao a partir de +44s; total ${dur}s"
     vms > "${ST}/ancora-${seed}"
 fi
+# S7: resiste ao SIGTERM ate o SIGKILL do timeout (o timeout manda o TERM ao grupo e mata o sleep; sem o laco, o duble
+# terminaria sozinho antes de K)
+if [[ -f "${ST}/java-ignora-term" ]]; then while :; do dormir 1; done; fi
 dormir "$(( dur / 2 ))"
 alvo="-"
 if [[ "${ctl}" == active && -f "${ST}/ac5-alvo" ]]; then
@@ -129,12 +132,19 @@ fi
 relig=null
 if [[ "${alvo}" != "-" ]]; then
     no="$(no_porta "${alvo##*:}")"
-    for k in $(seq 1 60); do [[ "$(cat "${ST}/status-${no}")" == running ]] && { relig="$(vms)000000"; break; }; dormir 1; done
+    # como o programa: espera a topologia completa ate --rejoin-timeout-sec (30 s nos parametros dos testes)
+    for k in $(seq 1 30); do [[ "$(cat "${ST}/status-${no}")" == running ]] && { relig="$(vms)000000"; break; }; dormir 1; done
     echo "${relig}" > "${ST}/relig-visto-${seed}"
 fi
 dormir 2
+estado=convergiu
+[[ "${alvo}" != "-" && "${relig}" == null ]] && estado=sem_rodada_valida
+[[ -f "${ST}/conv-estado" ]] && estado="$(cat "${ST}/conv-estado")"
 echo "op_id,operation,start_ns,end_ns,replica,return_code,key" > "${csv}/rep-001.csv"
-printf '{\n  "t_fim_carga_ns" : 1,\n  "t_religamento_ns" : %s\n}\n' "${relig}" > "${csv}/convergencia-resumo-rep-001.json"
+printf '{\n  "t_fim_carga_ns" : 1,\n  "convergencia_estado" : "%s",\n  "t_religamento_ns" : %s\n}\n' "${estado}" "${relig}" \
+    > "${csv}/convergencia-resumo-rep-001.json"
+# artefato do podman machine ssh no Git Bash (known_hosts num arquivo NUL no diretorio corrente)
+[[ -f "${ST}/java-cria-nul" ]] && : > "${csv}/NUL"
 echo "Total de operacoes: 1"
 exit "${rc}"
 EOF
@@ -621,6 +631,11 @@ verdade "S5 o programa viu isn3 de volta (t_religamento_ns)" test "$(cat "${ST}/
 START="$(grep -n 'podman|start|isn3' "${ST}/chamadas.log" | tail -1 | cut -d' ' -f1 | cut -d: -f2)"
 FIMJ="$(json "${DB}/execucao.json" 'd["sinal_fim_carga"]["recebido_ms"]')"
 verdade "S5 podman start isn3 depois da linha de fim da carga" test "${START:-0}" -ge "${FIMJ:-1}"
+# I-3b (coordenador, 05/11): o religamento vem logo depois do sinal, dentro do prazo que o programa espera
+# (religamento_prazo_s = 30 s), e portanto antes do laco de convergencia e do seu teto
+verdade "S5 podman start dentro do prazo do religamento (< 30 s virtuais depois do sinal)" test "$(( ${START:-0} - ${FIMJ:-0} ))" -lt 30000
+ok "S5 convergencia_estado do braco B" "convergiu" "$(json "${DB}/convergencia-resumo-rep-001.json" 'd["convergencia_estado"]')"
+ok "S5 mesma semente nos dois bracos do bloco" "$(json "${DA}/execucao.json" 'd["seed"]')" "$(json "${DB}/execucao.json" 'd["seed"]')"
 ok "S5 trilha e linha de fim concordam" $'trilha_ac5	127.0.0.1:11224' "$(head -1 "${DB}/trilha-ac5.txt")"
 verdade "S5 manifesto-bracos.tsv para o comparar_bracos.py" test "$(wc -l < "${OUT}/manifesto-bracos.tsv")" -eq 3
 ok "S5 cabecalho do manifesto" $'bloco	celula	braco	execucao' "$(head -1 "${OUT}/manifesto-bracos.tsv")"
@@ -889,6 +904,56 @@ ok "S18 meta com p2_habilitada true -> exit 6" "6" "${RC}"
 contem "S18 motivo p2_habilitada" "p2_habilitada" "$(tail -1 "${OUT}/nucleo/orquestrador.log")"
 verdade "S18 carga parada" test -n "$(cat "${ST}"/java-morto-* 2>/dev/null)"
 ok "S18 a primeira execucao (qualquer braco) e DESCARTADA-INFRA" "1" "$(grep -l '"veredito": "DESCARTADA-INFRA"' "${OUT}"/exec-*/checagem.json 2>/dev/null | wc -l | tr -d ' ')"
+fi
+
+# ============================================================================= S19
+if quer S19; then
+echo "== S19: arquivo NUL (podman machine ssh no Git Bash) nunca fica em runs/ nem no manifesto =="
+novo_caso s19
+matriz_calib "ASYNC-none:calibracao:1"
+: > "${OUT}/NUL"
+: > "${ST}/java-cria-nul"
+printf 'go calibracao %s\n' "${HOJE}" > "${CS_TTY_ARQUIVO}"
+rodar calibracao
+ok "S19 exit 0" "0" "${RC}"
+ok "S19 nenhum NUL em saida/" "0" "$(find "${OUT}" -name NUL | wc -l | tr -d ' ')"
+ok "S19 nenhum NUL no MANIFEST da fase" "0" "$(grep -c '/NUL$\| NUL$' "${OUT}/calibracao/MANIFEST.sha256")"
+ok "S19 nenhum NUL no MANIFEST da execucao" "0" "$(grep -c '/NUL$' "$(exec_dir 0)/MANIFEST.sha256")"
+contem "S19 remocao registrada no log" "NUL" "$(cat "${OUT}/calibracao/orquestrador.log")"
+fi
+
+# ============================================================================= S20
+if quer S20; then
+echo "== S20: pareamento: bloco com sementes diferentes, celulas diferentes ou braco faltando -> exit 4 no pre-voo =="
+for caso in semente celula braco; do
+    novo_caso "s20-${caso}"
+    matriz_aval "ASYNC-none:descritiva:2"
+    case "${caso}" in
+        semente) awk -F'\t' 'BEGIN {OFS = "\t"} NR > 1 && $10 == "B" && !feito {$12 = $12 + 1; feito = 1} {print}' "${MAT}" > "${MAT}.x" ;;
+        celula) awk -F'\t' 'BEGIN {OFS = "\t"} NR > 1 && $10 == "B" && !feito {$5 = "ASYNC-F1"; $7 = "F1"; feito = 1} {print}' "${MAT}" > "${MAT}.x" ;;
+        braco) awk -F'\t' 'NR > 1 && $10 == "B" && !feito {feito = 1; next} {print}' "${MAT}" > "${MAT}.x" ;;
+    esac
+    mv "${MAT}.x" "${MAT}"; MAT_SHA="$(sha256sum "${MAT}" | cut -d' ' -f1)"
+    printf 'go nucleo %s\n' "${HOJE}" > "${CS_TTY_ARQUIVO}"
+    rodar nucleo
+    ok "S20 ${caso}: exit 4" "4" "${RC}"
+    contem "S20 ${caso}: motivo pareamento" "pareamento" "${SAIDA_TXT}"
+    ok "S20 ${caso}: sem compose nem carga" "0" "$(( $(conta 'podman-compose|') + $(cargas) ))"
+done
+fi
+
+# ============================================================================= S21
+if quer S21; then
+echo "== S21: convergencia sem rodada valida (no parado e nao religado) vira aviso na checagem =="
+novo_caso s21
+matriz_calib "ASYNC-none:calibracao:1"
+echo sem_rodada_valida > "${ST}/conv-estado"
+printf 'go calibracao %s\n' "${HOJE}" > "${CS_TTY_ARQUIVO}"
+rodar calibracao
+ok "S21 exit 0" "0" "${RC}"
+D="$(exec_dir 0)"
+ok "S21 ACEITA (o desfecho V nao depende da convergencia)" "ACEITA" "$(json "${D}/checagem.json" 'd["veredito"]')"
+contem "S21 aviso sem_rodada_valida" "sem_rodada_valida" "$(json "${D}/checagem.json" 'd["avisos"]')"
 fi
 
 echo

@@ -39,7 +39,9 @@ public record AcaoCluster(Tipo tipo, List<String> caches, String alvo, String va
          * Rebalanceamento suspenso, <b>forma global</b>: {@code POST /rest/v2/container?action=disable-rebalancing}
          * (secao 3.2 do documento de 05/11). A forma por cache se perde quando o coordenador cai (P-34; B-44.1b
          * R2, o novo coordenador rebalanceou 4,6 s depois); a global sobreviveu (R3). Reversivel
-         * ({@code enable-rebalancing}), entra na pilha LIFO. Prazo {@code T_cham}.
+         * ({@code enable-rebalancing}), entra na pilha LIFO. Prazo {@code T_cham}. A chave inclui os caches: dois
+         * AC-2 com listas diferentes seriam acoes distintas no executor e o mesmo sinalizador no <i>cluster</i>; a
+         * {@link PoliticaPorAssinatura} so monta uma instancia, entao isso nao acontece (V-W2a O12).
          */
         AC_2("AC-2", true, RegraAlvo.PROIBIDO, 0L),
         /**

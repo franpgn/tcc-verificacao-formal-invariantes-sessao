@@ -34,8 +34,8 @@ import java.util.concurrent.atomic.AtomicLong;
  * {@code qop=auth}) ou Basic. O desafio de cada {@code host:porta} fica guardado e e reaproveitado nos pedidos
  * seguintes (Digest com {@code nc} crescente), de modo que, depois do primeiro, cada pedido custa uma ida e
  * volta. Um {@code 401} com o desafio guardado (por exemplo {@code stale=true}) refaz o pedido uma vez com o
- * desafio novo. A verificacao de qual esquema o servidor 15.0.21 aceita e a tarefa zero do W-2a (a, ainda nao
- * executada): o codigo cobre os dois.</p>
+ * desafio novo. Na tarefa zero do W-2a (05/11, {@code runs/b44-2/verificacao/a-autenticacao.txt}) o servidor 15.0.21
+ * so aceitou Digest (MD5, {@code qop=auth}; Basic deu 403); o ramo Basic fica para outra configuracao do realm.</p>
  *
  * <p><b>Prazo.</b> {@link #pedir} limita o pedido INTEIRO (inclusive a segunda ida do desafio) ao prazo dado;
  * ao estourar, cancela o pedido e lanca {@link TimeoutException}. Responde a interrupcao. Os metodos

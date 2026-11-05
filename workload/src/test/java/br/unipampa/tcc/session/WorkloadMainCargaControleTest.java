@@ -140,7 +140,7 @@ class WorkloadMainCargaControleTest {
                 new LigacaoControlador.Pecas(null, atuador, umaVez, new LigacaoControladorTest.GanchoNulo(),
                         10 * MS, 2000 * MS, 1500 * MS));
         assertThrows(IllegalStateException.class, () -> WorkloadMain.executarCargaComControle(() -> {
-            assertTrue(atuador.esperarPrimeira(), "a politica pediu AC-1 numa das primeiras janelas");
+            assertTrue(atuador.esperarPrimeira(), "a politica pediu o AC-2 numa das primeiras janelas");
             throw new IllegalStateException("falha da carga");
         }, () -> relogio.paraEpochNanos(System.nanoTime()), lig, () -> { }));
         assertEquals(List.of("aplicar", "reverter"),

@@ -43,7 +43,7 @@ class LacoDeControleTest {
     @TempDir
     Path dir;
 
-    /** Politica de teste: ao entrar em CONSERVADOR pede AC-1 e AC-2 (sem regra da tabela 4.5). */
+    /** Politica de teste: ao entrar em CONSERVADOR pede AC1 e AC2 (dois AC-2 em caches distintos; sem regra da tabela 5). */
     static final PoliticaDeAcao ENTRA_E_CONGELA = new PoliticaDeAcao() {
         @Override
         public PlanoDeAcao planejar(Decisao d, EstadoTopologia t, EstadoDefasagem l, List<AcaoCluster> ativas) {
@@ -434,7 +434,7 @@ class LacoDeControleTest {
         AtuadorFalso a = new AtuadorFalso().bloquear();
         Montagem m = new Montagem(ModoAtuacao.ACTIVE, a, ENTRA_E_CONGELA, fim -> fim == 5 * S ? ANOMALA : OK,
                 0L, 100 * MS);
-        m.ticks(1, 6); // R2 em 5 s: AC-1 (travada no atuador) e AC-2 (na fila)
+        m.ticks(1, 6); // R2 em 5 s: AC1 (travada no atuador) e AC2 (na fila)
         assertTrue(a.esperarPrimeira());
         LacoDeControle.Resumo r = m.laco.encerrar();
         assertFalse(r.executorNoPrazo(), "atuador travado: o encerramento estoura T_enc");
@@ -447,7 +447,7 @@ class LacoDeControleTest {
         assertEquals(0, fimObs.get("linhas_perdidas").asLong());
         a.liberar();
         assertTrue(m.executor.aguardarFilaVazia(5 * S));
-        // AC-1 APLICADA, AC-2 DESCARTADA e a reversao de AC-1 chegam com a trilha ja fechada
+        // AC1 APLICADA, AC2 DESCARTADA e a reversao de AC1 chegam com a trilha ja fechada
         assertEquals(3, m.laco.linhasPerdidas());
         assertEquals(dec.size(), ler(m.dec).size(), "nada foi escrito depois do fim");
     }

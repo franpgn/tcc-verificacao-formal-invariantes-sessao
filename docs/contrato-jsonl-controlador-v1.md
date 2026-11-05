@@ -83,19 +83,25 @@ ordem em que acontecem; a ordem entre `tick`, `janela` e `decisao` é a do laço
 a chamada **inteira** do atuador: todos os pedidos HTTP da ação (todos os *caches*, todos os nós) e a leitura de volta.
 O adaptador do W-2 não pode gastar `T_cham` por pedido.
 
-**Prazo do encerramento.** `T_enc = (A + 1) × T_cham`, calculado pelo executor no próprio encerramento:
+**Prazo do encerramento** (v1.2, W-2a; V-W2a R1). Calculado pelo executor no próprio encerramento:
 
-- `A` é o tamanho da pilha de reversão naquele instante, contando a aplicação em curso;
-- o `+ 1` cobre a chamada em curso quando o encerramento chega;
+`T_enc = prazo da aplicação em curso + soma dos prazos de reversão da pilha + T_cham`
+
+- o prazo de cada chamada é o do seu tipo: AC-2 = `T_cham` (2 s); AC-5 = `T_cham` + 3 s = 5 s (`Server.java:208`);
+- a pilha só tem ações reversíveis (AC-2); o AC-5 nunca entra nela, mas se estiver em curso entra com os 5 s dele;
+- o `+ T_cham` final é a folga da V-W3 para a chamada que chega junto com o encerramento;
 - aplicações ainda na fila são descartadas (`DESCARTADA`) e não entram na conta;
 - o valor usado vai a `prazo_encerramento_ns` no `fim` de `decisoes`.
+
+Só com AC-2 isso é o `(A + 1) × T_cham` da v1.1. **Pior caso com a política do W-2a: 9 s** (AC-2 na pilha, 2 s; AC-5
+em curso, 5 s; `T_cham`, 2 s). A cota do AC-5 é 1 e só há uma chave de AC-2, então não há pior caso maior.
 
 O mesmo prazo vale para o gancho de desligamento da JVM.
 
 **Requisito para o orquestrador (W-6).** Para o gancho conseguir desfazer as ações, o processo precisa receber, entre o
-SIGTERM e o SIGKILL, um intervalo maior que `T_enc` no pior caso. Por exemplo, `timeout -k <K>` com
-`K > (A_max + 1) × 2 s` mais uma folga, onde `A_max` é o número de chaves distintas que a política do W-2 pode manter
-ativas ao mesmo tempo, declarado pelo W-2. Com AC-1, AC-2 e AC-3 numa chave cada, `A_max` = 3 e `T_enc` ≤ 8 s.
+SIGTERM e o SIGKILL, um intervalo maior que `T_enc` no pior caso: **`timeout -k <K>` com `K` > 9 s mais uma folga**
+(o pior caso da v1.2 acima; a v1.1 dizia 8 s com AC-1, AC-2 e AC-3, que não existem mais). O W-6 também confere que uma
+execução do braço B tem `politica = por-assinatura` e `parametros_politica` não nulo na `meta` (V-W2a O10).
 
 ## `observaveis`
 

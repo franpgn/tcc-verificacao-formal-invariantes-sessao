@@ -402,7 +402,9 @@ Tarefa zero no *cluster* local `w2a` (3 nós, imagem 15.0.21.Final, XML sem *cac
 | (c) `rebalancing_enabled` | depois do `disable-rebalancing` global (204, 14 ms), `GET /rest/v2/container` e `GET /rest/v2/caches/{c}` dos 4 caches leem `false` nos 3 nós (coordenador era isn2); depois do `enable`, `true` | `c-rebalancing-enabled.txt` |
 | (d) atuador real | `AtuadorRestInfinispan` + `ClienteAdminRest` (Digest real): AC-2 aplicar/reaplicar/reverter/reverter em SYNC e ASYNC, todos `APLICADA` 204, 18 a 182 ms (o primeiro inclui o desafio); AC-5 com a barra em isn3: `APLICADA` 204, `isn3=parou`, os outros `HEALTHY`, 3188,6 ms (prazo 5 s); maioria com 2 nós `HEALTHY` logo depois (saída graciosa; sob corte a saída pelo JGroups não chega) | `d-atuador-ac2-*.txt`, `d-atuador-ac5.txt` |
 
-`t_par` (fim dos conectores depois do 204) ≈ 3,06 s no local, quase todo o atraso de 3 s do `Server.java:208`. O
+`t_parada` (do 204 ao fim dos conectores, **com** o atraso de 3 s do `Server.java:208` dentro; V-W2a R3, decisão V-5)
+≈ 3,06 s no local. A condição de viabilidade do AC-5 passa a ser `k·W + t_parada < 39,8 s` (menor T_det da VM); a
+forma antiga `k·W + 3 s + t_par` contaria os 3 s duas vezes com este número. O
 instante da primeira recusa Hot Rod não foi medido com cliente Hot Rod: o Hot Rod e a REST usam o mesmo conector da
 porta 11222, e a recusa da saúde é a mesma. A integração I-1..I-5 (item 9) não rodou: depende da ligação do P-38.
 

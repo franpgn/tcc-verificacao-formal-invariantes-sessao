@@ -4,9 +4,7 @@ import org.infinispan.client.hotrod.exceptions.TransportException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.PrintStream;
 import java.net.ConnectException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
@@ -25,8 +23,6 @@ import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -281,44 +277,31 @@ class ContencaoLogHotRodTest {
 
     // ------------------------------------------------------------------ WorkloadMain
 
+    /**
+     * A repeticao precisa do cluster; a ligacao e conferida na fonte, como os outros detectores de
+     * {@code executarRepeticao} ({@link DetectorFonte}). O laco de {@code executar} continua como o
+     * {@code LacoDeRepeticoesTest} exige (chamada direta, sem try).
+     */
     @Test
-    @DisplayName("repeticao: zera a contencao no inicio e imprime a linha Hot Rod ISPN004007 no fim, inclusive com excecao")
-    void porRepeticao() throws Exception {
-        ContencaoLogHotRod c = new ContencaoLogHotRod();
-        c.isLoggable(registro(MSG_4007, recusada())); // da repeticao anterior
-        ByteArrayOutputStream bo = new ByteArrayOutputStream();
-        PrintStream out = new PrintStream(bo, true, StandardCharsets.UTF_8);
-        WorkloadMain.comContencao(c, out, () -> {
-            c.isLoggable(registro(MSG_4007, prazo()));
-            c.isLoggable(registro(MSG_4007, prazo()));
-        });
-        assertEquals(c.linhaResumo() + System.lineSeparator(), bo.toString(StandardCharsets.UTF_8));
-        assertTrue(c.linhaResumo().startsWith("Hot Rod ISPN004007: total=2 inteiras=1 contidas=1 chaves=1"));
-        bo.reset();
-        IllegalStateException e = assertThrows(IllegalStateException.class, () -> WorkloadMain.comContencao(c, out,
-                () -> {
-                    c.isLoggable(registro(MSG_4007, recusada()));
-                    throw new IllegalStateException("falha da repeticao");
-                }));
-        assertEquals("falha da repeticao", e.getMessage());
-        assertTrue(bo.toString(StandardCharsets.UTF_8).startsWith("Hot Rod ISPN004007: total=1 inteiras=1"),
-                bo.toString(StandardCharsets.UTF_8));
-    }
-
-    @Test
-    @DisplayName("WorkloadMain.executar instala a contencao antes do laco de repeticoes e passa cada repeticao por comContencao")
-    void ligacaoNoExecutar() throws IOException {
-        String fonte = ArquiteturaAtuadorTest.fonte(NomesDeCacheSoNoResolvedorTest.raizMain()
-                .resolve("java/br/unipampa/tcc/session/WorkloadMain.java"));
-        Matcher m = Pattern.compile("static void executar\\(Cli cli\\)[^{]*\\{(.*?)\\n    }\\n", Pattern.DOTALL)
-                .matcher(fonte);
-        assertTrue(m.find(), "metodo executar nao encontrado");
-        String corpo = m.group(1);
-        int instala = corpo.indexOf("ContencaoLogHotRod.instalar()");
-        int laco = corpo.indexOf("for (int rep = 1;");
-        int com = corpo.indexOf("comContencao(");
-        assertTrue(instala >= 0 && laco > instala && com > laco, corpo);
-        assertTrue(Files.exists(NomesDeCacheSoNoResolvedorTest.raizMain()
-                .resolve("java/br/unipampa/tcc/session/ContencaoLogHotRod.java")));
+    @DisplayName("WorkloadMain.executarRepeticao instala e zera a contencao antes do try do rcm e imprime a linha Hot Rod ISPN004007 no finally dele")
+    void ligacaoNaRepeticao() throws IOException {
+        String fonte = DetectorFonte.semComentarios(Files.readString(NomesDeCacheSoNoResolvedorTest.raizMain()
+                .resolve("java/br/unipampa/tcc/session/WorkloadMain.java"), StandardCharsets.UTF_8)
+                .replace("\r\n", "\n"));
+        int[] corpo = DetectorFonte.corpo(DetectorFonte.mascarado(fonte), DetectorFonte.ASSINATURA_REPETICAO);
+        assertTrue(corpo != null, "executarRepeticao nao encontrado");
+        String c = fonte.substring(corpo[0], corpo[1]);
+        int instala = c.indexOf("ContencaoLogHotRod contencao = ContencaoLogHotRod.instalar();");
+        int zera = c.indexOf("contencao.reiniciar();");
+        int tryRcm = c.indexOf("try (RemoteCacheManager rcm");
+        assertTrue(instala >= 0 && zera > instala && tryRcm > zera, "instalar e reiniciar antes do try do rcm");
+        // o finally fecha o try do rcm (indentacao de 8) e a linha de resumo e o ultimo statement do metodo
+        int fin = c.lastIndexOf("\n        } finally {");
+        String resumo = "System.out.println(contencao.linhaResumo());";
+        int imp = c.indexOf(resumo, Math.max(fin, 0));
+        assertTrue(fin > tryRcm && imp > fin, "finally do try do rcm com a linha de resumo");
+        assertTrue(c.substring(imp + resumo.length()).replace("}", "").isBlank(),
+                "a linha de resumo e o ultimo statement: " + c.substring(imp));
+        assertEquals(1, c.split("linhaResumo\\(\\)", -1).length - 1, "uma linha de resumo por repeticao");
     }
 }

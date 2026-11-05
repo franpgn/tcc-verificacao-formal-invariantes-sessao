@@ -264,6 +264,49 @@ class PoliticaPorAssinaturaTest {
                 resumo(t.c(top(NENHUMA, todas(3, 3), todas(3, 3)), SEM)), "outro no caindo: P2 vale");
     }
 
+    // ------------------------------------------------------------------ V-7: no da linha politica
+
+    @Test
+    @DisplayName("V-7: a linha politica traz o no (suspeito do P1, ausente do P2, alvo da reversao); null sem assinatura")
+    void noDaEscolha() {
+        Sim s = new Sim();
+        assertEquals(null, s.c(COMPLETA, SEM).no(), "sem-assinatura");
+        PlanoDeAcao p2 = s.c(QUEDA_ISN3, SEM);
+        assertEquals("P2:adiar-rebalanceamento|isn3", resumo(p2) .replace(" +AC-2", "") + "|" + p2.no());
+        assertEquals("isn3", s.c(QUEDA_ISN3, SEM).no(), "ac2-mantida");
+        PlanoDeAcao volta = s.c(top(todas(3, 3), todas(3, 3), alguma(3, 3)), SEM);
+        assertEquals("P0:no-voltou", volta.politica() + ":" + volta.motivo());
+        assertEquals("isn3", volta.no(), "no-voltou leva o no do AC-2");
+
+        Sim t = new Sim();
+        t.c(QUEDA_ISN3, SEM);
+        assertEquals("isn3", t.c(PARTICAO_DETECTADA, SEM).no(), "vistas-divergentes leva o no do AC-2 revertido");
+
+        Sim u = new Sim();
+        u.c(QUEDA_ISN3, SEM); // fim = 5 s
+        for (int i = 0; i < 11; i++) {
+            u.c(QUEDA_ISN3, SEM);
+        }
+        PlanoDeAcao teto = u.c(QUEDA_ISN3, SEM);
+        assertEquals("teto-treb", teto.motivo());
+        assertEquals("isn3", teto.no());
+        PlanoDeAcao esgotado = u.c(QUEDA_ISN3, SEM);
+        assertEquals("treb-esgotado", esgotado.motivo());
+        assertEquals("isn3", esgotado.no());
+
+        Sim v = new Sim();
+        v.c(COMPLETA, TETO_ISN3);
+        PlanoDeAcao p1 = v.c(COMPLETA, TETO_ISN3);
+        assertEquals("isolar-suspeito", p1.motivo());
+        assertEquals("isn3", p1.no());
+        PlanoDeAcao cota = v.c(COMPLETA, TETO_ISN3);
+        assertEquals("cota-p1-esgotada", cota.motivo());
+        assertEquals("isn3", cota.no());
+        PlanoDeAcao parado = v.c(QUEDA_ISN3, SEM);
+        assertEquals("no-parado-pela-politica", parado.motivo());
+        assertEquals("isn3", parado.no());
+    }
+
     // ------------------------------------------------------------------ parametros
 
     @Test

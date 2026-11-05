@@ -203,6 +203,10 @@ class LigacaoControladorAtuadorTest {
                 .map(n -> n.get("politica").asText() + ":" + n.get("motivo").asText()).toList();
         assertTrue(politicas.contains("P2:adiar-rebalanceamento"), politicas.toString());
         assertTrue(politicas.contains("P0:no-voltou"), politicas.toString());
+        String no3 = nos.get(2).rotulo();
+        assertTrue(dec.stream().filter(n -> "politica".equals(n.get("tipo").asText()))
+                .filter(n -> "adiar-rebalanceamento".equals(n.get("motivo").asText()))
+                .allMatch(n -> no3.equals(n.get("no").asText())), "V-7: P2 registra o no ausente (rotulo da sonda)");
         List<JsonNode> acoes = dec.stream().filter(n -> "acao".equals(n.get("tipo").asText())).toList();
         assertEquals(2, acoes.size(), acoes.toString());
         JsonNode apl = acoes.get(0);

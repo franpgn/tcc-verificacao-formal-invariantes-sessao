@@ -84,12 +84,16 @@ class AcaoClusterTiposTest {
     @DisplayName("formato JSONL: linha politica com P0/P1/P2, motivo e os tipos pedidos")
     void linhaPolitica() {
         Decisao d = PoliticaPorAssinaturaTest.dec(10 * S, Perfil.CONSERVADOR);
-        PlanoDeAcao p = new PlanoDeAcao(List.of(AC2), List.of(AC5_ISN3), "P1", "isolar-suspeito");
+        PlanoDeAcao p = new PlanoDeAcao(List.of(AC2), List.of(AC5_ISN3), "P1", "isolar-suspeito", "isn3:11222");
         var n = FormatoJsonl.politica(d, p, ModoAtuacao.SHADOW, 11 * S);
         List<String> campos = new java.util.ArrayList<>();
         n.fieldNames().forEachRemaining(campos::add);
         assertEquals(List.of("tipo", "t_fim_janela_ns", "t_decisao_ns", "modo", "perfil", "regra", "politica", "motivo",
-                "reverter", "aplicar"), campos);
+                "no", "reverter", "aplicar"), campos);
+        assertEquals("isn3:11222", n.get("no").asText(), "V-7: no da escolha (suspeito do P1)");
+        var sem = FormatoJsonl.politica(d, new PlanoDeAcao(List.of(), List.of(), "P0", "sem-assinatura"),
+                ModoAtuacao.SHADOW, 11 * S);
+        assertTrue(sem.has("no") && sem.get("no").isNull(), "campo nunca omitido: null sem no");
         assertEquals("politica", n.get("tipo").asText());
         assertEquals("P1", n.get("politica").asText());
         assertEquals("isolar-suspeito", n.get("motivo").asText());
@@ -105,6 +109,9 @@ class AcaoClusterTiposTest {
         assertEquals(null, p.politica());
         assertEquals(PlanoDeAcao.VAZIO, new PlanoDeAcao(List.of(), List.of()));
         assertThrows(IllegalArgumentException.class, () -> new PlanoDeAcao(List.of(), List.of(), null, "x"));
+        assertThrows(IllegalArgumentException.class, () -> new PlanoDeAcao(List.of(), List.of(), null, null, "isn3"),
+                "no sem politica");
+        assertEquals(null, new PlanoDeAcao(List.of(), List.of(), "P0", "sem-assinatura").no());
     }
 
     @Test

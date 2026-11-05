@@ -36,7 +36,8 @@ contem() {
 }
 
 # ----------------------------------------------------------------------------- shims do runner (reuso)
-FUNC="$(sed -n '/^criar_shims() {$/,/^}$/p' "${DIR}/run-rebaseline.test.sh")"
+# vai ate o '}' que fecha a funcao (logo depois do chmod); ha '}' na coluna 0 dentro dos heredocs dos shims
+FUNC="$(awk '/^criar_shims\(\) \{/ {p = 1} p {print} p && /^}$/ && ant ~ /chmod \+x/ {exit} p {ant = $0}' "${DIR}/run-rebaseline.test.sh")"
 [[ -n "${FUNC}" ]] || { echo "FAIL: criar_shims nao encontrada em run-rebaseline.test.sh"; exit 1; }
 eval "${FUNC}"
 agora_real_ms() { local r="${EPOCHREALTIME//[.,]/}"; echo "$((10#${r:0:13}))"; }
@@ -44,6 +45,7 @@ agora_real_ms() { local r="${EPOCHREALTIME//[.,]/}"; echo "$((10#${r:0:13}))"; }
 CASO="${TMP}/seq"; SH="${CASO}/shims"; ST="${CASO}/estado"; OUT="${CASO}/saida"
 mkdir -p "${ST}" "${OUT}"
 criar_shims "${SH}"
+: > "${ST}/chamadas.log"
 cat > "${CASO}/checar_shim.py" <<'PY'
 import json, sys
 from pathlib import Path

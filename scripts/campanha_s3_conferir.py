@@ -14,15 +14,18 @@ So biblioteca padrao; roda com python3 -I. Cada subcomando imprime linhas "nome<
       convergencia_teto_s (o teto do processo cobre a carga, a espera do religamento e o laco de convergencia).
       Imprime "nome<TAB>valor" de cada parametro.
 
-  controlador --arquivo <controlador-*.json> --hotrod-timeout-ms N [--exigir-politica]
+  controlador --arquivo <controlador-*.json> --hotrod-timeout-ms N [--exigir-politica] [--exigir-p2-desabilitada]
       Le o --controller-config. Com --exigir-politica (braco B na avaliacao), recusa (5) sem o bloco "politica"
       (A-3 da V-W5; O10 da V-W2a: sem o bloco o braco B vira o W-3 sem aviso). Com o bloco, recusa se tetoLagMs !=
-      --hotrod-timeout-ms (R7 da V-W2a). Imprime sha256, politica (sim/nao) e defasagem (sim/nao).
+      --hotrod-timeout-ms (R7 da V-W2a). Com --exigir-p2-desabilitada (calibracao e avaliacao: D-B do coordenador,
+      05/11, contrato JSONL 1.2), recusa sem o bloco ou com politica.p2Habilitada diferente de false. Imprime sha256,
+      politica (sim/nao), p2_habilitada (true/false/-) e defasagem (sim/nao).
 
-  meta --decisoes <decisoes-rep-NNN.jsonl> --braco A|B --param-sha256 <hex>
+  meta --decisoes <decisoes-rep-NNN.jsonl> --braco A|B --param-sha256 <hex> [--exigir-p2-desabilitada]
       Primeira linha da trilha (contrato decisoes-controlador/1.2). Braco A: modo shadow. Braco B: modo active,
       atuador != "nulo", politica != "nenhuma", parametros_politica nao nulo. Nos dois: param_sha256 igual ao dado
-      (o SHA-256 do --controller-config, o mesmo arquivo nos dois bracos do bloco).
+      (o SHA-256 do --controller-config, o mesmo arquivo nos dois bracos do bloco). Com --exigir-p2-desabilitada, nos
+      dois bracos, parametros_politica.p2_habilitada tem de ser false (D-B).
 
   trilha --decisoes <decisoes-rep-NNN.jsonl> --sinal-alvo <host:porta|->
       Alvo do AC-5 APLICADA na trilha (a regra de ac5_aplicada do comparar_bracos.py: APLICAR, AC-5, APLICADA) e o
@@ -159,8 +162,13 @@ def cmd_controlador(a):
     if tem_pol and pol.get("tetoLagMs") != a.hotrod_timeout_ms:
         raise Recusa("politica.tetoLagMs = %r difere de --hotrod-timeout-ms = %d (R7 da V-W2a)"
                      % (pol.get("tetoLagMs"), a.hotrod_timeout_ms))
+    p2 = pol.get("p2Habilitada", "ausente") if tem_pol else "sem bloco politica"
+    if a.exigir_p2_desabilitada and p2 is not False:
+        raise Recusa("politica.p2Habilitada = %r: na calibracao e na avaliacao tem de ser false (D-B do coordenador, "
+                     "05/11: a P2/AC-2 e exploratoria e fica fora do braco B)" % (p2,))
     print("sha256\t%s" % sha256(a.arquivo))
     print("politica\t%s" % ("sim" if tem_pol else "nao"))
+    print("p2_habilitada\t%s" % (("true" if p2 else "false") if isinstance(p2, bool) else "-"))
     print("defasagem\t%s" % ("sim" if isinstance(obj.get("defasagem"), dict) else "nao"))
 
 
@@ -196,6 +204,10 @@ def cmd_meta(a):
             problemas.append("politica %r (braco B sem politica nao atua)" % m.get("politica"))
         if m.get("parametros_politica") is None:
             problemas.append("parametros_politica nulo (sem o bloco politica)")
+    pp = m.get("parametros_politica")
+    p2 = pp.get("p2_habilitada", "ausente") if isinstance(pp, dict) else "sem parametros_politica"
+    if a.exigir_p2_desabilitada and p2 is not False:
+        problemas.append("parametros_politica.p2_habilitada = %r (D-B: false na calibracao e na avaliacao)" % (p2,))
     print("modo\t%s" % m.get("modo"))
     print("atuador\t%s" % m.get("atuador"))
     print("politica\t%s" % m.get("politica"))
@@ -261,10 +273,12 @@ def main(argv):
     c.add_argument("--arquivo", required=True)
     c.add_argument("--hotrod-timeout-ms", type=int, required=True)
     c.add_argument("--exigir-politica", action="store_true")
+    c.add_argument("--exigir-p2-desabilitada", action="store_true")
     m = sub.add_parser("meta")
     m.add_argument("--decisoes", required=True)
     m.add_argument("--braco", required=True, choices=("A", "B"))
     m.add_argument("--param-sha256", required=True)
+    m.add_argument("--exigir-p2-desabilitada", action="store_true")
     t = sub.add_parser("trilha")
     t.add_argument("--decisoes", required=True)
     t.add_argument("--sinal-alvo", required=True)

@@ -1,0 +1,81 @@
+{
+  "arquivo" : "/home/server1/tcc-gate/runs/ensaio-f1-silencioso-2026-11-04/vm-20261105T030044Z/exec-4-i2003/rep-001.csv",
+  "sha256" : "b7b28a0dce3e811a0f89bcfc9b1d613368f904b88b1a22b316f98d99cc2ddfe4",
+  "cenario" : "S1",
+  "modo" : "strict",
+  "limiares" : {
+    "login_ok_min" : 0.95,
+    "validate_valid_min_exclusivo" : 0,
+    "validate_ausente_max" : 0.05,
+    "mistura_tolerancia_pp" : 2.0,
+    "status" : "PROVISORIOS (diagnostico 2026-10-22; aceitos pelo Gestor como provisorios)"
+  },
+  "contagens" : {
+    "fora" : {
+      "IncrementFailure" : {
+        "COUNTED" : 114130
+      },
+      "Login" : {
+        "OK" : 285046
+      },
+      "Logout" : {
+        "ERROR_TRANSPORT" : 8,
+        "NONE" : 399024,
+        "NOT_FOUND" : 61
+      },
+      "ResetFailures" : {
+        "NONE" : 56887
+      },
+      "Validate" : {
+        "INVALID" : 29640,
+        "NOT_FOUND" : 125,
+        "VALID" : 826001
+      }
+    },
+    "dentro" : { }
+  },
+  "metricas" : {
+    "eventos_total" : 1710922,
+    "eventos_fora" : 1710922,
+    "eventos_dentro" : 0,
+    "login" : 285046,
+    "login_ok" : 285046,
+    "login_blocked" : 0,
+    "login_ok_frac" : 1.0,
+    "validate" : 855766,
+    "validate_valid" : 826001,
+    "validate_ausente" : 125,
+    "validate_ausente_frac" : 1.460679671779435E-4,
+    "ops" : 1140830,
+    "mistura" : {
+      "Validate" : {
+        "observado" : 0.5002673492106624,
+        "esperado" : 0.5,
+        "desvio_pp" : 0.026734921066240425
+      },
+      "Login" : {
+        "observado" : 0.24985843640156727,
+        "esperado" : 0.25,
+        "desvio_pp" : -0.014156359843273125
+      },
+      "Logout" : {
+        "observado" : 0.09996844402759394,
+        "esperado" : 0.1,
+        "desvio_pp" : -0.0031555972406061006
+      },
+      "IncrementFailure" : {
+        "observado" : 0.10004119807508569,
+        "esperado" : 0.1,
+        "desvio_pp" : 0.004119807508567996
+      },
+      "ResetFailures" : {
+        "observado" : 0.049864572285090676,
+        "esperado" : 0.05,
+        "desvio_pp" : -0.013542771490932665
+      }
+    }
+  },
+  "veredito" : "OK",
+  "motivos" : [ ],
+  "versao" : "b43-3a-i/1"
+}

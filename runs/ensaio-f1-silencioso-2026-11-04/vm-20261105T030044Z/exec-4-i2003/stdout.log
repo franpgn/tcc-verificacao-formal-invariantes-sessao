@@ -1,0 +1,723 @@
+Configuracao: Cli{scenario=S1, duracao=300s, ops=0, rep=1, threads=4, seed=250300, csvDir=/home/server1/tcc-gate/runs/ensaio-f1-silencioso-2026-11-04/vm-20261105T030044Z/exec-4-i2003, warmupMin=30s, dryRun=false}
+Replicacao: replicacao=async caches=sessions-async,counters-async
+Mistura: mix=v3 q=0.05
+Contrato CSV: v2
+== Repeticao 1 / 1 ==
+Nov 05, 2026 3:14:07 AM org.infinispan.client.hotrod.impl.transport.netty.NativeTransport useNativeIOUring
+INFO: ISPN004108: Native IOUring transport not available, using NIO instead: io.netty.incubator.channel.uring.IOUring
+Nov 05, 2026 3:14:07 AM org.infinispan.client.hotrod.RemoteCacheManager actualStart
+INFO: ISPN004021: Infinispan version: Infinispan 'I'm Still Standing' 15.0.0.Final
+Nov 05, 2026 3:14:07 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=617089679, age=0) containing 3 addresses: [127.0.0.1/<unresolved>:11223, 127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:14:07 AM org.infinispan.client.hotrod.impl.RemoteCacheImpl init
+INFO: ISPN004113: Query module not found. Queries are disabled.
+Nov 05, 2026 3:14:07 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=617089679, age=0) containing 3 addresses: [127.0.0.1/<unresolved>:11223, 127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:14:07 AM org.infinispan.client.hotrod.impl.RemoteCacheImpl init
+INFO: ISPN004113: Query module not found. Queries are disabled.
+Nov 05, 2026 3:14:08 AM org.infinispan.client.hotrod.RemoteCacheManager actualStart
+INFO: ISPN004021: Infinispan version: Infinispan 'I'm Still Standing' 15.0.0.Final
+Nov 05, 2026 3:14:08 AM org.infinispan.client.hotrod.impl.RemoteCacheImpl init
+INFO: ISPN004113: Query module not found. Queries are disabled.
+Nov 05, 2026 3:14:08 AM org.infinispan.client.hotrod.impl.RemoteCacheImpl init
+INFO: ISPN004113: Query module not found. Queries are disabled.
+Nov 05, 2026 3:14:08 AM org.infinispan.client.hotrod.RemoteCacheManager actualStart
+INFO: ISPN004021: Infinispan version: Infinispan 'I'm Still Standing' 15.0.0.Final
+Nov 05, 2026 3:14:08 AM org.infinispan.client.hotrod.impl.RemoteCacheImpl init
+INFO: ISPN004113: Query module not found. Queries are disabled.
+Nov 05, 2026 3:14:08 AM org.infinispan.client.hotrod.impl.RemoteCacheImpl init
+INFO: ISPN004113: Query module not found. Queries are disabled.
+Nov 05, 2026 3:14:08 AM org.infinispan.client.hotrod.RemoteCacheManager actualStart
+INFO: ISPN004021: Infinispan version: Infinispan 'I'm Still Standing' 15.0.0.Final
+Nov 05, 2026 3:14:08 AM org.infinispan.client.hotrod.impl.RemoteCacheImpl init
+INFO: ISPN004113: Query module not found. Queries are disabled.
+Nov 05, 2026 3:14:08 AM org.infinispan.client.hotrod.impl.RemoteCacheImpl init
+INFO: ISPN004113: Query module not found. Queries are disabled.
+Reset: reset_state=on caches=sessions-async,counters-async antes=0,0 depois=0,0 ms=18
+Carga: mix=v3 cache=sessions-async slots=100000 entradas=200000 lotes=200 ms=2576
+Warm-up ate +30s; medicao a partir de +44s; total 300s
+Nov 05, 2026 3:15:10 AM org.infinispan.client.hotrod.impl.operations.RetryOnFailureOperation logAndRetryOrFail
+ERROR: ISPN004007: Exception encountered. Retry 3 out of 3
+java.net.SocketTimeoutException: ReplaceIfUnmodifiedOperation{sessions-async, key=c06efea2-53ab-4605-a29e-228c3119541d, value=[B0xACED00057372002462722E756E697061..[575], flags=6, connection=127.0.0.1/127.0.0.1:11224} timed out after 2000 ms
+	at org.infinispan.client.hotrod.impl.operations.HotRodOperation.run(HotRodOperation.java:183)
+	at io.netty.util.concurrent.PromiseTask.runTask(PromiseTask.java:98)
+	at io.netty.util.concurrent.ScheduledFutureTask.run(ScheduledFutureTask.java:153)
+	at io.netty.util.concurrent.AbstractEventExecutor.runTask(AbstractEventExecutor.java:173)
+	at io.netty.util.concurrent.AbstractEventExecutor.safeExecute(AbstractEventExecutor.java:166)
+	at io.netty.util.concurrent.SingleThreadEventExecutor.runAllTasks(SingleThreadEventExecutor.java:470)
+	at io.netty.channel.epoll.EpollEventLoop.run(EpollEventLoop.java:416)
+	at io.netty.util.concurrent.SingleThreadEventExecutor$4.run(SingleThreadEventExecutor.java:997)
+	at io.netty.util.internal.ThreadExecutorMap$2.run(ThreadExecutorMap.java:74)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1136)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)
+	at java.base/java.lang.Thread.run(Thread.java:840)
+
+Nov 05, 2026 3:15:20 AM org.infinispan.client.hotrod.impl.protocol.Codec20 checkForErrorsInResponseStatus
+WARN: ISPN004005: Error received from the server: org.infinispan.commons.TimeoutException: ISPN000476: Timed out waiting for responses for request 255878 from isn2-1323 after 15 seconds
+Nov 05, 2026 3:15:21 AM org.infinispan.client.hotrod.impl.operations.RetryOnFailureOperation logAndRetryOrFail
+ERROR: ISPN004007: Exception encountered. Retry 3 out of 3
+java.net.SocketTimeoutException: ReplaceIfUnmodifiedOperation{sessions-async, key=sid-000008~277, value=[B0xACED00057372002462722E756E697061..[553], flags=6, connection=127.0.0.1/127.0.0.1:11224} timed out after 2000 ms
+	at org.infinispan.client.hotrod.impl.operations.HotRodOperation.run(HotRodOperation.java:183)
+	at io.netty.util.concurrent.PromiseTask.runTask(PromiseTask.java:98)
+	at io.netty.util.concurrent.ScheduledFutureTask.run(ScheduledFutureTask.java:153)
+	at io.netty.util.concurrent.AbstractEventExecutor.runTask(AbstractEventExecutor.java:173)
+	at io.netty.util.concurrent.AbstractEventExecutor.safeExecute(AbstractEventExecutor.java:166)
+	at io.netty.util.concurrent.SingleThreadEventExecutor.runAllTasks(SingleThreadEventExecutor.java:470)
+	at io.netty.channel.epoll.EpollEventLoop.run(EpollEventLoop.java:416)
+	at io.netty.util.concurrent.SingleThreadEventExecutor$4.run(SingleThreadEventExecutor.java:997)
+	at io.netty.util.internal.ThreadExecutorMap$2.run(ThreadExecutorMap.java:74)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1136)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)
+	at java.base/java.lang.Thread.run(Thread.java:840)
+
+Nov 05, 2026 3:15:21 AM org.infinispan.client.hotrod.impl.protocol.Codec20 checkForErrorsInResponseStatus
+WARN: ISPN004005: Error received from the server: org.infinispan.commons.TimeoutException: ISPN000476: Timed out waiting for responses for request 288104 from isn2-1323 after 15 seconds
+Nov 05, 2026 3:15:21 AM org.infinispan.client.hotrod.impl.operations.RetryOnFailureOperation logAndRetryOrFail
+ERROR: ISPN004007: Exception encountered. Retry 3 out of 3
+java.net.SocketTimeoutException: ReplaceIfUnmodifiedOperation{sessions-async, key=sid-000022~111, value=[B0xACED00057372002462722E756E697061..[553], flags=6, connection=127.0.0.1/127.0.0.1:11224} timed out after 2000 ms
+	at org.infinispan.client.hotrod.impl.operations.HotRodOperation.run(HotRodOperation.java:183)
+	at io.netty.util.concurrent.PromiseTask.runTask(PromiseTask.java:98)
+	at io.netty.util.concurrent.ScheduledFutureTask.run(ScheduledFutureTask.java:153)
+	at io.netty.util.concurrent.AbstractEventExecutor.runTask(AbstractEventExecutor.java:173)
+	at io.netty.util.concurrent.AbstractEventExecutor.safeExecute(AbstractEventExecutor.java:166)
+	at io.netty.util.concurrent.SingleThreadEventExecutor.runAllTasks(SingleThreadEventExecutor.java:470)
+	at io.netty.channel.epoll.EpollEventLoop.run(EpollEventLoop.java:416)
+	at io.netty.util.concurrent.SingleThreadEventExecutor$4.run(SingleThreadEventExecutor.java:997)
+	at io.netty.util.internal.ThreadExecutorMap$2.run(ThreadExecutorMap.java:74)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1136)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)
+	at java.base/java.lang.Thread.run(Thread.java:840)
+
+Nov 05, 2026 3:15:22 AM org.infinispan.client.hotrod.impl.operations.RetryOnFailureOperation logAndRetryOrFail
+ERROR: ISPN004007: Exception encountered. Retry 3 out of 3
+io.netty.channel.AbstractChannel$AnnotatedConnectException: finishConnect(..) failed: Connection refused: /127.0.0.1:11223
+Caused by: java.net.ConnectException: finishConnect(..) failed: Connection refused
+	at io.netty.channel.unix.Errors.newConnectException0(Errors.java:166)
+	at io.netty.channel.unix.Errors.handleConnectErrno(Errors.java:131)
+	at io.netty.channel.unix.Socket.finishConnect(Socket.java:359)
+	at io.netty.channel.epoll.AbstractEpollChannel$AbstractEpollUnsafe.doFinishConnect(AbstractEpollChannel.java:711)
+	at io.netty.channel.epoll.AbstractEpollChannel$AbstractEpollUnsafe.finishConnect(AbstractEpollChannel.java:688)
+	at io.netty.channel.epoll.AbstractEpollChannel$AbstractEpollUnsafe.epollOutReady(AbstractEpollChannel.java:567)
+	at io.netty.channel.epoll.EpollEventLoop.processReady(EpollEventLoop.java:499)
+	at io.netty.channel.epoll.EpollEventLoop.run(EpollEventLoop.java:407)
+	at io.netty.util.concurrent.SingleThreadEventExecutor$4.run(SingleThreadEventExecutor.java:997)
+	at io.netty.util.internal.ThreadExecutorMap$2.run(ThreadExecutorMap.java:74)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1136)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)
+	at java.base/java.lang.Thread.run(Thread.java:840)
+
+Nov 05, 2026 3:15:23 AM org.infinispan.client.hotrod.impl.protocol.Codec20 checkForErrorsInResponseStatus
+WARN: ISPN004005: Error received from the server: org.infinispan.commons.TimeoutException: ISPN000476: Timed out waiting for responses for request 288106 from isn2-1323 after 15 seconds
+Nov 05, 2026 3:15:28 AM org.infinispan.client.hotrod.impl.operations.RetryOnFailureOperation logAndRetryOrFail
+ERROR: ISPN004007: Exception encountered. Retry 3 out of 3
+java.net.SocketTimeoutException: ReplaceIfUnmodifiedOperation{sessions-async, key=sid-000007~294, value=[B0xACED00057372002462722E756E697061..[553], flags=6, connection=127.0.0.1/127.0.0.1:11224} timed out after 2000 ms
+	at org.infinispan.client.hotrod.impl.operations.HotRodOperation.run(HotRodOperation.java:183)
+	at io.netty.util.concurrent.PromiseTask.runTask(PromiseTask.java:98)
+	at io.netty.util.concurrent.ScheduledFutureTask.run(ScheduledFutureTask.java:153)
+	at io.netty.util.concurrent.AbstractEventExecutor.runTask(AbstractEventExecutor.java:173)
+	at io.netty.util.concurrent.AbstractEventExecutor.safeExecute(AbstractEventExecutor.java:166)
+	at io.netty.util.concurrent.SingleThreadEventExecutor.runAllTasks(SingleThreadEventExecutor.java:470)
+	at io.netty.channel.epoll.EpollEventLoop.run(EpollEventLoop.java:416)
+	at io.netty.util.concurrent.SingleThreadEventExecutor$4.run(SingleThreadEventExecutor.java:997)
+	at io.netty.util.internal.ThreadExecutorMap$2.run(ThreadExecutorMap.java:74)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1136)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)
+	at java.base/java.lang.Thread.run(Thread.java:840)
+
+Nov 05, 2026 3:15:30 AM org.infinispan.client.hotrod.impl.protocol.Codec20 checkForErrorsInResponseStatus
+WARN: ISPN004005: Error received from the server: org.infinispan.commons.TimeoutException: ISPN000476: Timed out waiting for responses for request 255888 from isn2-1323 after 15 seconds
+Nov 05, 2026 3:15:31 AM org.infinispan.client.hotrod.impl.protocol.Codec20 checkForErrorsInResponseStatus
+WARN: ISPN004005: Error received from the server: org.infinispan.commons.TimeoutException: ISPN000476: Timed out waiting for responses for request 255890 from isn2-1323 after 15 seconds
+Nov 05, 2026 3:15:32 AM org.infinispan.client.hotrod.impl.protocol.Codec20 checkForErrorsInResponseStatus
+WARN: ISPN004005: Error received from the server: org.infinispan.commons.TimeoutException: ISPN000476: Timed out waiting for responses for request 288119 from isn2-1323 after 15 seconds
+Nov 05, 2026 3:15:32 AM org.infinispan.client.hotrod.impl.protocol.Codec20 checkForErrorsInResponseStatus
+WARN: ISPN004005: Error received from the server: org.infinispan.commons.TimeoutException: ISPN000476: Timed out waiting for responses for request 288121 from isn2-1323 after 15 seconds
+Nov 05, 2026 3:15:34 AM org.infinispan.client.hotrod.impl.protocol.Codec20 checkForErrorsInResponseStatus
+WARN: ISPN004005: Error received from the server: org.infinispan.commons.TimeoutException: ISPN000476: Timed out waiting for responses for request 255895 from isn2-1323 after 15 seconds
+Nov 05, 2026 3:15:34 AM org.infinispan.client.hotrod.impl.protocol.Codec20 checkForErrorsInResponseStatus
+WARN: ISPN004005: Error received from the server: org.infinispan.commons.TimeoutException: ISPN000476: Timed out waiting for responses for request 288123 from isn2-1323 after 15 seconds
+Nov 05, 2026 3:15:34 AM org.infinispan.client.hotrod.impl.protocol.Codec20 checkForErrorsInResponseStatus
+WARN: ISPN004005: Error received from the server: org.infinispan.commons.TimeoutException: ISPN000476: Timed out waiting for responses for request 288124 from isn2-1323 after 15 seconds
+Nov 05, 2026 3:15:35 AM org.infinispan.client.hotrod.impl.protocol.Codec20 checkForErrorsInResponseStatus
+WARN: ISPN004005: Error received from the server: org.infinispan.commons.TimeoutException: ISPN000476: Timed out waiting for responses for request 288125 from isn2-1323 after 15 seconds
+Nov 05, 2026 3:15:38 AM org.infinispan.client.hotrod.impl.protocol.Codec20 checkForErrorsInResponseStatus
+WARN: ISPN004005: Error received from the server: org.infinispan.commons.TimeoutException: ISPN000476: Timed out waiting for responses for request 288132 from isn2-1323 after 15 seconds
+Nov 05, 2026 3:15:38 AM org.infinispan.client.hotrod.impl.operations.RetryOnFailureOperation logAndRetryOrFail
+ERROR: ISPN004007: Exception encountered. Retry 3 out of 3
+io.netty.channel.AbstractChannel$AnnotatedConnectException: finishConnect(..) failed: Connection refused: /127.0.0.1:11223
+Caused by: java.net.ConnectException: finishConnect(..) failed: Connection refused
+	at io.netty.channel.unix.Errors.newConnectException0(Errors.java:166)
+	at io.netty.channel.unix.Errors.handleConnectErrno(Errors.java:131)
+	at io.netty.channel.unix.Socket.finishConnect(Socket.java:359)
+	at io.netty.channel.epoll.AbstractEpollChannel$AbstractEpollUnsafe.doFinishConnect(AbstractEpollChannel.java:711)
+	at io.netty.channel.epoll.AbstractEpollChannel$AbstractEpollUnsafe.finishConnect(AbstractEpollChannel.java:688)
+	at io.netty.channel.epoll.AbstractEpollChannel$AbstractEpollUnsafe.epollOutReady(AbstractEpollChannel.java:567)
+	at io.netty.channel.epoll.EpollEventLoop.processReady(EpollEventLoop.java:499)
+	at io.netty.channel.epoll.EpollEventLoop.run(EpollEventLoop.java:407)
+	at io.netty.util.concurrent.SingleThreadEventExecutor$4.run(SingleThreadEventExecutor.java:997)
+	at io.netty.util.internal.ThreadExecutorMap$2.run(ThreadExecutorMap.java:74)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1136)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)
+	at java.base/java.lang.Thread.run(Thread.java:840)
+
+Nov 05, 2026 3:15:39 AM org.infinispan.client.hotrod.impl.protocol.Codec20 checkForErrorsInResponseStatus
+WARN: ISPN004005: Error received from the server: org.infinispan.commons.TimeoutException: ISPN000476: Timed out waiting for responses for request 255907 from isn2-1323 after 15 seconds
+Nov 05, 2026 3:15:42 AM org.infinispan.client.hotrod.impl.protocol.Codec20 checkForErrorsInResponseStatus
+WARN: ISPN004005: Error received from the server: org.infinispan.commons.TimeoutException: ISPN000476: Timed out waiting for responses for request 288138 from isn2-1323 after 15 seconds
+Nov 05, 2026 3:15:42 AM org.infinispan.client.hotrod.impl.operations.RetryOnFailureOperation logAndRetryOrFail
+ERROR: ISPN004007: Exception encountered. Retry 3 out of 3
+java.net.SocketTimeoutException: ReplaceIfUnmodifiedOperation{sessions-async, key=sid-000008~277, value=[B0xACED00057372002462722E756E697061..[553], flags=6, connection=127.0.0.1/127.0.0.1:11224} timed out after 2000 ms
+	at org.infinispan.client.hotrod.impl.operations.HotRodOperation.run(HotRodOperation.java:183)
+	at io.netty.util.concurrent.PromiseTask.runTask(PromiseTask.java:98)
+	at io.netty.util.concurrent.ScheduledFutureTask.run(ScheduledFutureTask.java:153)
+	at io.netty.util.concurrent.AbstractEventExecutor.runTask(AbstractEventExecutor.java:173)
+	at io.netty.util.concurrent.AbstractEventExecutor.safeExecute(AbstractEventExecutor.java:166)
+	at io.netty.util.concurrent.SingleThreadEventExecutor.runAllTasks(SingleThreadEventExecutor.java:470)
+	at io.netty.channel.epoll.EpollEventLoop.run(EpollEventLoop.java:416)
+	at io.netty.util.concurrent.SingleThreadEventExecutor$4.run(SingleThreadEventExecutor.java:997)
+	at io.netty.util.internal.ThreadExecutorMap$2.run(ThreadExecutorMap.java:74)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1136)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)
+	at java.base/java.lang.Thread.run(Thread.java:840)
+
+Nov 05, 2026 3:15:48 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=-844787189, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:48 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory closeChannelPools
+INFO: ISPN004016: Server not in cluster anymore(127.0.0.1/<unresolved>:11223), removing from the pool.
+Nov 05, 2026 3:15:48 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=-844787189, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:48 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory closeChannelPools
+INFO: ISPN004016: Server not in cluster anymore(127.0.0.1/<unresolved>:11223), removing from the pool.
+Nov 05, 2026 3:15:48 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=617089679, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:48 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=-844787189, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:49 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=1901191139, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:49 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=-844787189, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:49 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=1901191139, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:49 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=-844787189, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:49 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=1901191139, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:49 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=-844787189, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:49 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=1901191139, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:49 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=-844787189, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:49 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=1901191139, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:49 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=-844787189, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:49 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=1901191139, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:49 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=-844787189, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:49 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=1901191139, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:49 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=-844787189, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:49 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=1901191139, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:49 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=-844787189, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:49 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=1901191139, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:49 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=-844787189, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:49 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=1901191139, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:49 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=-844787189, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:49 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=1901191139, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:49 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=-844787189, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:49 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=1901191139, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:49 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=-844787189, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:49 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=1901191139, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:49 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=-844787189, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:49 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=1901191139, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:49 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=-844787189, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:49 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=1901191139, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:49 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=-844787189, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:49 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=1901191139, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:49 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=-844787189, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:49 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=1901191139, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:49 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=-844787189, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:49 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=1901191139, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:49 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=-844787189, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:49 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=1901191139, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:49 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=-844787189, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:49 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=1901191139, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:49 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=-844787189, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:49 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=1901191139, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:49 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=-844787189, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:49 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=1901191139, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:49 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=-844787189, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:49 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=1901191139, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:49 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=-844787189, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:49 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=1901191139, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:49 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=-844787189, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:49 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=1901191139, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:49 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=-844787189, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:49 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=1901191139, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:49 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=-844787189, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:49 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=1901191139, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:49 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=-844787189, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:49 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=1901191139, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:49 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=-844787189, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:49 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=1901191139, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:49 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=-844787189, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:49 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=1901191139, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:49 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=-844787189, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:49 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=1901191139, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:49 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=-844787189, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:49 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=1901191139, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:49 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=-844787189, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:49 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=1901191139, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:49 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=-844787189, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:49 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=1901191139, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:49 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=-844787189, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:49 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=1901191139, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:49 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=-844787189, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:49 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=1901191139, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:49 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=-844787189, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:49 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=1901191139, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:49 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=-844787189, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:49 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=1901191139, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:49 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=-844787189, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:49 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=1901191139, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:49 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=-844787189, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:49 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=1901191139, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:49 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=-844787189, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:49 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=1901191139, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:49 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=-844787189, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:49 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=1901191139, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:49 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=-844787189, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:49 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=1901191139, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:49 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=-844787189, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:49 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=1901191139, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:49 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=-844787189, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:49 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=1901191139, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:49 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=-844787189, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:49 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=1901191139, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:49 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=-844787189, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:49 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=1901191139, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:49 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=-844787189, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:49 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=1901191139, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:49 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=-844787189, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:49 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=1901191139, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:49 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=-844787189, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:49 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=1901191139, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:49 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=-844787189, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:49 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=1901191139, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:49 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=-844787189, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:49 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=1901191139, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:49 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=-844787189, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:49 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=1901191139, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:49 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=-844787189, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:49 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=1901191139, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:49 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=-844787189, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:49 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=1901191139, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:49 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=-844787189, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:49 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=1901191139, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:49 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=-844787189, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:49 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=1901191139, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:49 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=-844787189, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:49 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=1901191139, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:49 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=-844787189, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:49 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=1901191139, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:49 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=-844787189, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:49 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=1901191139, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:49 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=-844787189, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:49 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=1901191139, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:49 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=-844787189, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:49 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=1901191139, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:49 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=-844787189, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:49 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=1901191139, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:49 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=-844787189, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:49 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=1901191139, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:49 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=-844787189, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:49 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=1901191139, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:49 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=-844787189, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:49 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=1901191139, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:49 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=-844787189, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:49 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=1901191139, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:49 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=-844787189, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:49 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=1901191139, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:49 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=-844787189, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:49 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=1901191139, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:49 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=-844787189, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:49 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=1901191139, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:49 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=-844787189, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:49 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=1901191139, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:49 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=-844787189, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:49 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=1901191139, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:49 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=-844787189, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:49 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=1901191139, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:49 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=-844787189, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:49 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=1901191139, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:49 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=-844787189, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:49 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=1901191139, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:49 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=-844787189, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:49 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=1901191139, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:49 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=-844787189, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:49 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=1901191139, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:49 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=-844787189, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:49 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=1901191139, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:49 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=-844787189, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:49 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=1901191139, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:49 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=-844787189, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:49 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=1901191139, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:49 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=-844787189, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:49 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=1901191139, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:49 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=-844787189, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:49 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=1901191139, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:49 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=-844787189, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:49 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=1901191139, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:49 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=-844787189, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:49 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=1901191139, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:49 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=-844787189, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:49 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=1901191139, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:49 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=-844787189, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:49 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=1901191139, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:49 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=-844787189, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:49 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=1901191139, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:49 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=-844787189, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:49 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=1901191139, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:49 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=-844787189, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:49 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=1901191139, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:49 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=-844787189, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:49 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=1901191139, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:49 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=-844787189, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:49 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=1901191139, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:49 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=-844787189, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:49 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=1901191139, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:49 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=-844787189, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:49 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=1901191139, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:49 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=-844787189, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:49 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=1901191139, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:49 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=-844787189, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:49 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=1901191139, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:49 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=-844787189, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:49 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=1901191139, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:49 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=-844787189, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:49 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=1901191139, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:49 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=-844787189, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:49 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=1901191139, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:49 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=-844787189, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:49 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=1901191139, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:49 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=-844787189, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:49 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=1901191139, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:49 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=-844787189, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:49 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=1901191139, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:49 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=-844787189, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:49 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=1901191139, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:49 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=-844787189, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:49 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=1901191139, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:49 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=-844787189, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:49 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=1901191139, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:49 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=-844787189, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:49 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=1901191139, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:49 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=-844787189, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:49 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=1901191139, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:49 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=-844787189, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:49 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=1901191139, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:49 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=-844787189, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:49 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=1901191139, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:49 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=-844787189, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:49 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=1901191139, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:49 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=-844787189, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:49 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=1901191139, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:49 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=-844787189, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:49 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=1901191139, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:49 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=-844787189, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:49 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=1901191139, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:49 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=-844787189, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:49 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=1901191139, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:49 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=-844787189, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:49 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=1901191139, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:49 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=-844787189, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:49 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=1901191139, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:49 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=-844787189, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:49 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=1901191139, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:49 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=-844787189, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:49 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=1901191139, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:49 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=-844787189, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:49 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=1901191139, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:49 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=-844787189, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:49 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=1901191139, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:49 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=-844787189, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:49 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=1901191139, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:49 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=-844787189, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:49 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=1901191139, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:49 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=-844787189, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:49 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=1901191139, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:49 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=-844787189, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:49 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=1901191139, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:49 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=-844787189, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:49 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=1901191139, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:52 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=439491777, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:55 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=1901191139, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:55 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=-844787189, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:55 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=1901191139, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:15:55 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=439491777, age=0) containing 2 addresses: [127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:16:09 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=1633779419, age=0) containing 3 addresses: [127.0.0.1/<unresolved>:11223, 127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:16:09 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory updateCacheInfo
+INFO: ISPN004014: New server added(127.0.0.1/<unresolved>:11223), adding to the pool.
+Nov 05, 2026 3:16:09 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=1633779419, age=0) containing 3 addresses: [127.0.0.1/<unresolved>:11223, 127.0.0.1/<unresolved>:11222, 127.0.0.1/<unresolved>:11224]
+Nov 05, 2026 3:16:09 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory updateCacheInfo
+INFO: ISPN004014: New server added(127.0.0.1/<unresolved>:11223), adding to the pool.
+Total de operacoes: 1377822
+Violacoes detectadas: 2
+Auditor: i1_concorrentes=502 i4_concorrentes=0
+Invalidacao: perdida=0 conflito_esgotado=1
+Auditor I2: concorrentes=0 janela_cascata=0 cascata_incompleta=0 sem_marco=0
+Auditor total: i1_concorrentes=604 i4_concorrentes=0 i2_concorrentes=0
+Login: revertido_por_bloqueio=0
+Desfechos Validate: valid=826001 invalid=29640 not_found=125 erro=0
+Mistura v3: validate_isolados=570721 token_antigo=28629 logout_isolados=114048 reposicoes=114042 reposicao_omitida=6 reposicao_erro=0
+login_ok               n=285046 (descartados=59704) p50=582655ns p95=1125375ns p99=1763327ns p999=5689343ns
+logout_ok              n=399022 (descartados=83508) p50=392191ns p95=785407ns p99=1161215ns p999=3971071ns
+reset_ok               n=56887 (descartados=11758) p50=378367ns p95=771071ns p99=1207295ns p999=4341759ns
+inc_failure            n=114130 (descartados=23593) p50=378879ns p95=773631ns p99=1216511ns p999=4089855ns
+validate               n=855765 (descartados=177835) p50=180223ns p95=411135ns p99=635903ns p999=2646015ns
+logout_noop            n=71 (descartados=0) p50=1268735ns p95=6006243327ns p99=10762584063ns p999=10762584063ns
+Eventos gravados em /home/server1/tcc-gate/runs/ensaio-f1-silencioso-2026-11-04/vm-20261105T030044Z/exec-4-i2003/rep-001.csv (registrados=1710922, descartados_warmup=356400)
+Violacoes gravadas em /home/server1/tcc-gate/runs/ensaio-f1-silencioso-2026-11-04/vm-20261105T030044Z/exec-4-i2003/violacoes-rep-001.csv (total=2)

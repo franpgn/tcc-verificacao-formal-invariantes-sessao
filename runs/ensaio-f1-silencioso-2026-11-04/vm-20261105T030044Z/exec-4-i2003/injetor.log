@@ -1,0 +1,10 @@
+[2026-11-05T03:14:59.903Z] inject-crash.sh: Plano: NODE=isn2 MODO=silencioso DURACAO=60s IFACE=eth0 DRY_RUN=0
+[2026-11-05T03:14:59.904Z] inject-crash.sh: modo=silencioso
+[2026-11-05T03:15:00.062Z] inject-crash.sh: isolando isn2: ip link set dev eth0 down (pid 318477)
+[2026-11-05T03:15:00.088Z] inject-crash.sh: sudo podman kill isn2 (--signal KILL)
+isn2
+[2026-11-05T03:15:00.478Z] inject-crash.sh: isn2 ExitCode=137
+[2026-11-05T03:15:00.478Z] inject-crash.sh: aguardando 60s
+[2026-11-05T03:16:00.481Z] inject-crash.sh: sudo podman start isn2
+isn2
+[2026-11-05T03:16:00.674Z] inject-crash.sh: OK: F1 (modo=silencioso) injetada e reentrada de isn2 acionada

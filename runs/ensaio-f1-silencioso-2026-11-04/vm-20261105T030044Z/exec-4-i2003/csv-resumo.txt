@@ -1,0 +1,19 @@
+desfecho COUNTED=114130
+desfecho ERROR_TRANSPORT=8
+desfecho INVALID=29640
+desfecho NONE=455911
+desfecho NOT_FOUND=186
+desfecho OK=285046
+desfecho VALID=826001
+desfecho_op IncrementFailure COUNTED=114130
+desfecho_op Login OK=285046
+desfecho_op Logout ERROR_TRANSPORT=8
+desfecho_op Logout NONE=399024
+desfecho_op Logout NOT_FOUND=61
+desfecho_op ResetFailures NONE=56887
+desfecho_op Validate INVALID=29640
+desfecho_op Validate NOT_FOUND=125
+desfecho_op Validate VALID=826001
+erro ERROR_TRANSPORT=8
+janela da falha (disparo..volta): ops=126329 latencia_max_s=10.761684
+linhas=1710922

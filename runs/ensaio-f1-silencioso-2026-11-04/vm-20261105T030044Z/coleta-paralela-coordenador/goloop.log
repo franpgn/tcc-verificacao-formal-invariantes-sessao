@@ -1,0 +1,4 @@
+03:02:55 inicio (n=1 ja aceito)
+03:04:18 enviado: GO F1 n=2 i=2001 carga=sem
+03:06:33 enviado: GO F1 n=3 i=2002 carga=S1-sync
+03:13:04 enviado: GO F1 n=4 i=2003 carga=S1-async

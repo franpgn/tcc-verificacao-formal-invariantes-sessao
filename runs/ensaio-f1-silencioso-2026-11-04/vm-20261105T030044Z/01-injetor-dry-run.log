@@ -1,0 +1,13 @@
+[2026-11-05T03:00:45.169Z] inject-crash.sh: Plano: NODE=isn2 MODO=silencioso DURACAO=60s IFACE=eth0 DRY_RUN=1
+[2026-11-05T03:00:45.170Z] inject-crash.sh: modo=silencioso
+[2026-11-05T03:00:45.171Z] inject-crash.sh: Comandos previstos:
+[2026-11-05T03:00:45.171Z] inject-crash.sh:   pid=$(sudo podman inspect -f '{{.State.Pid}}' isn2)   # inteiro > 1
+[2026-11-05T03:00:45.173Z] inject-crash.sh:   guarda: sudo readlink /proc/<pid>/ns/net != sudo readlink /proc/1/ns/net
+[2026-11-05T03:00:45.173Z] inject-crash.sh:   sudo nsenter -t <pid> -n ip link show dev eth0
+[2026-11-05T03:00:45.174Z] inject-crash.sh:   sudo nsenter -t <pid> -n ip link set dev eth0 down
+[2026-11-05T03:00:45.175Z] inject-crash.sh:   sudo nsenter -t <pid> -n ip -o link show dev eth0   # confirma que nao esta UP
+[2026-11-05T03:00:45.176Z] inject-crash.sh:   sudo podman kill isn2 --signal KILL
+[2026-11-05T03:00:45.177Z] inject-crash.sh:   sudo podman inspect -f '{{.State.ExitCode}}' isn2   # esperado 137
+[2026-11-05T03:00:45.177Z] inject-crash.sh:   sleep 60
+[2026-11-05T03:00:45.178Z] inject-crash.sh:   sudo podman start isn2
+[2026-11-05T03:00:45.178Z] inject-crash.sh: dry-run: nada executado

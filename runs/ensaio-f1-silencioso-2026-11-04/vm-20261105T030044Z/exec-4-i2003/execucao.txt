@@ -1,0 +1,23 @@
+n=4
+i=2003
+carga=S1
+replicacao=async
+semente=250300
+rotulo=F1 n=4 i=2003 carga=S1-async
+go_utc=2026-11-05T03:13:04Z
+ip_antes=10.89.1.10
+pid_antes=318477
+comando=java -jar /home/server1/rb/rb-20805b0/workload/target/session-workload-0.1.0-SNAPSHOT.jar --scenario S1 --mix v3 --replication async --reset-state on --duration 300 --warmup-min-sec 30 --threads 4 --ops 0 --rep 1 --seed 250300 --servers 127.0.0.1:11222,127.0.0.1:11223,127.0.0.1:11224 --username admin --password *** --csv-dir /home/server1/tcc-gate/runs/ensaio-f1-silencioso-2026-11-04/vm-20261105T030044Z/exec-4-i2003
+lanc_ms=1793848447384
+anc_ms=1793848450889
+disp_ms=1793848499893
+injetor_exit=0
+start_ms=1793848560481
+volta_ok=1
+volta_s=10.454
+pid_depois=338075
+ip_depois=10.89.1.11
+wexit=0
+vexit=0
+c1c3_rc=0
+fim_utc=2026-11-05T03:19:36Z

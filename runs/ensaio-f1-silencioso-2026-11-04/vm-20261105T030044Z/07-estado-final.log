@@ -1,0 +1,14 @@
+PORTAO K1: OK (60.076 s bons)
+timers tcc-heal: 0
+size sessions porta 11222: 521473
+size sessions porta 11223: 521473
+size sessions porta 11224: 521473
+size counters porta 11222: 36
+size counters porta 11223: 36
+size counters porta 11224: 36
+size sessions-async porta 11222: 682555
+size sessions-async porta 11223: 682555
+size sessions-async porta 11224: 682556
+size counters-async porta 11222: 36
+size counters-async porta 11223: 36
+size counters-async porta 11224: 36

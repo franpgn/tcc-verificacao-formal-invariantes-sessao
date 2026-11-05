@@ -1,0 +1,10 @@
+pre rc=0 fim=2026-11-05T03:00:45+00:00
+injetor-dry-run rc=0 fim=2026-11-05T03:00:45+00:00
+portao rc=0 fim=2026-11-05T03:01:48+00:00
+execucao-1 rc=0 fim=2026-11-05T03:04:13+00:00
+execucao-2 rc=0 fim=2026-11-05T03:06:28+00:00
+execucao-3 rc=0 fim=2026-11-05T03:13:00+00:00
+execucao-4 rc=0 fim=2026-11-05T03:19:36+00:00
+estado-final rc=0 fim=2026-11-05T03:20:36+00:00
+avaliacao rc=1 fim=2026-11-05T03:20:43+00:00
+ENSAIO fim 2026-11-05T03:20:43+00:00 rc=6. Saia do tmux com exit (libera o lock).

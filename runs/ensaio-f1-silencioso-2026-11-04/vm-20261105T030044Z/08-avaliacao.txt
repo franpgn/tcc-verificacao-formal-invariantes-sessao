@@ -1,0 +1,127 @@
+== avaliacao do ensaio do F1 silencioso 2026-11-05T03:20:36+00:00 sobre /home/server1/tcc-gate/runs/ensaio-f1-silencioso-2026-11-04/vm-20261105T030044Z
+-- geral
+OK: F-9 boot_id igual no inicio e no fim do ensaio (f9e98b74-bf1f-4192-9770-b40285877292)
+OK: F-10 estado final: portao K1 OK, 0 timers tcc-heal, vazios os caches nao usados por carga (nenhum)
+RESULTADO: tamanho final: size sessions porta 11222: 521473
+RESULTADO: tamanho final: size sessions porta 11223: 521473
+RESULTADO: tamanho final: size sessions porta 11224: 521473
+RESULTADO: tamanho final: size counters porta 11222: 36
+RESULTADO: tamanho final: size counters porta 11223: 36
+RESULTADO: tamanho final: size counters porta 11224: 36
+RESULTADO: tamanho final: size sessions-async porta 11222: 682555
+RESULTADO: tamanho final: size sessions-async porta 11223: 682555
+RESULTADO: tamanho final: size sessions-async porta 11224: 682556
+RESULTADO: tamanho final: size counters-async porta 11222: 36
+RESULTADO: tamanho final: size counters-async porta 11223: 36
+RESULTADO: tamanho final: size counters-async porta 11224: 36
+-- execucao n=1 i=2000 carga=sem
+OK: [n=1] F-1 injetor.log com modo=silencioso, eth0 down, kill isn2, ExitCode=137, start isn2; injetor exit 0
+OK: [n=1] F-2 1 died de isn2, todos com 137; .State.ExitCode antes do start = 137
+OK: [n=1] F-4 Δdet isn1=41.644 s, isn3=41.640 s (>= 30 s)
+OK: [n=1] F-5 nenhuma ISPN000390/ISPN080002 na vida antiga de isn2
+OK: [n=1] F-6 vida nova de isn2 com ISPN000389 e ISPN080001, sem ISPN000693
+OK: [n=1] F-7 3 nos HEALTHY sem REBALANCING a 5.208 s do start (< 180 s)
+OK: [n=1] F-8 eth0 UP no netns novo de isn2 (pid 299841)
+OK: [n=1] F-9 intervalo maximo do saude-log: 2.105 s <= 2 x 2 s
+RESULTADO: [n=1] Δdet isn1 = 41.644 s (dentro de [32, 49] s, faixa explicada pelo FD_ALL3)
+RESULTADO: [n=1] Δdet isn3 = 41.640 s (dentro de [32, 49] s, faixa explicada pelo FD_ALL3)
+RESULTADO: [n=1] volta: 5.208 s do start (amostras em volta.log)
+RESULTADO: [n=1] IP de isn2: antes=10.89.1.6 depois=10.89.1.8 (diferente)
+LEITURA HUMANA: [n=1] ordem nos carimbos: isolamento=2026-11-05T03:03:06.437Z kill=2026-11-05T03:03:06.449Z vista-sem-isn2(isn1)=2026-11-05T03:03:48.081Z start=2026-11-05T03:04:06.673Z vista-com-isn2(isn1)=2026-11-05T03:04:08.873Z
+LEITURA HUMANA: [n=1] duracao do podman start (linha 'podman start' ate 'OK: F1' do injetor): 0.127 s (no WSL deu 51 s)
+EXECUCAO n=1: VALIDA (8 criterios OK)
+-- execucao n=2 i=2001 carga=sem
+OK: [n=2] F-1 injetor.log com modo=silencioso, eth0 down, kill isn2, ExitCode=137, start isn2; injetor exit 0
+OK: [n=2] F-2 1 died de isn2, todos com 137; .State.ExitCode antes do start = 137
+OK: [n=2] F-4 Δdet isn1=43.437 s, isn3=43.434 s (>= 30 s)
+OK: [n=2] F-5 nenhuma ISPN000390/ISPN080002 na vida antiga de isn2
+OK: [n=2] F-6 vida nova de isn2 com ISPN000389 e ISPN080001, sem ISPN000693
+OK: [n=2] F-7 3 nos HEALTHY sem REBALANCING a 5.358 s do start (< 180 s)
+OK: [n=2] F-8 eth0 UP no netns novo de isn2 (pid 307860)
+OK: [n=2] F-9 intervalo maximo do saude-log: 2.074 s <= 2 x 2 s
+RESULTADO: [n=2] Δdet isn1 = 43.437 s (dentro de [32, 49] s, faixa explicada pelo FD_ALL3)
+RESULTADO: [n=2] Δdet isn3 = 43.434 s (dentro de [32, 49] s, faixa explicada pelo FD_ALL3)
+RESULTADO: [n=2] volta: 5.358 s do start (amostras em volta.log)
+RESULTADO: [n=2] IP de isn2: antes=10.89.1.8 depois=10.89.1.9 (diferente)
+LEITURA HUMANA: [n=2] ordem nos carimbos: isolamento=2026-11-05T03:05:20.644Z kill=2026-11-05T03:05:20.656Z vista-sem-isn2(isn1)=2026-11-05T03:06:04.081Z start=2026-11-05T03:06:21.108Z vista-com-isn2(isn1)=2026-11-05T03:06:24.298Z
+LEITURA HUMANA: [n=2] duracao do podman start (linha 'podman start' ate 'OK: F1' do injetor): 0.141 s (no WSL deu 51 s)
+EXECUCAO n=2: VALIDA (8 criterios OK)
+-- execucao n=3 i=2002 carga=S1 replicacao=sync
+OK: [n=3] F-1 injetor.log com modo=silencioso, eth0 down, kill isn2, ExitCode=137, start isn2; injetor exit 0
+OK: [n=3] F-2 1 died de isn2, todos com 137; .State.ExitCode antes do start = 137
+OK: [n=3] F-3 disparo a +49.009 s da ancora (aceito 48 a 51 s)
+OK: [n=3] F-4 Δdet isn1=46.155 s, isn3=46.150 s (>= 30 s)
+OK: [n=3] F-5 nenhuma ISPN000390/ISPN080002 na vida antiga de isn2
+OK: [n=3] F-6 vida nova de isn2 com ISPN000389 e ISPN080001, sem ISPN000693
+OK: [n=3] F-7 3 nos HEALTHY sem REBALANCING a 13.594 s do start (< 180 s)
+OK: [n=3] F-8 eth0 UP no netns novo de isn2 (pid 318477)
+OK: [n=3] F-9 intervalo maximo do saude-log: 3.770 s <= 2 x 2 s
+RESULTADO: [n=3] Δdet isn1 = 46.155 s (dentro de [32, 49] s, faixa explicada pelo FD_ALL3)
+RESULTADO: [n=3] Δdet isn3 = 46.150 s (dentro de [32, 49] s, faixa explicada pelo FD_ALL3)
+RESULTADO: [n=3] volta: 13.594 s do start (amostras em volta.log)
+RESULTADO: [n=3] IP de isn2: antes=10.89.1.9 depois=10.89.1.10 (diferente)
+RESULTADO: [n=3] VerificadorSanidade: exit=0 veredito=OK; K3 do PR ACEITARIA (E-5: so RESULTADO)
+RESULTADO: [n=3] workload exit=0; C1..C3 (rebaseline.criterios_mistura, falha=F1): {"C1": {"terco1_pct": 5.3561, "terco2_pct": 5.2681, "terco3_pct": 5.1668, "dif_1_3_pp": 0.1893, "denominador": 385814, "ok": true}, "C2": {"frac_pct": 5.2367, "denominador": 385814, "invalid": 20204, "ok": true}, "C3": {"k": 19266, "n": 385814, "n_csv": 385814, "z": 3.2905, "p0": 0.05, "dif_stdout_csv": 0, "margem_fronteira": 4, "sanidade": null, "frac_pct": 4.99359795134443, "meia_largura_pp": 0.
+RESULTADO: [n=3] csv: erro ERROR_TRANSPORT=24
+RESULTADO: [n=3] csv: janela da falha (disparo..volta): ops=114962 latencia_max_s=11.148122
+RESULTADO: [n=3] csv: linhas=1157089
+RESULTADO: [n=3] csv: desfecho COUNTED=77488
+RESULTADO: [n=3] csv: desfecho ERROR_TRANSPORT=24
+RESULTADO: [n=3] csv: desfecho INVALID=20204
+RESULTADO: [n=3] csv: desfecho NONE=308501
+RESULTADO: [n=3] csv: desfecho OK=192632
+RESULTADO: [n=3] csv: desfecho VALID=558240
+RESULTADO: [n=3] csv: desfecho_op IncrementFailure COUNTED=77488
+RESULTADO: [n=3] csv: desfecho_op IncrementFailure ERROR_TRANSPORT=4
+RESULTADO: [n=3] csv: desfecho_op Login ERROR_TRANSPORT=12
+RESULTADO: [n=3] csv: desfecho_op Login OK=192632
+RESULTADO: [n=3] csv: desfecho_op Logout ERROR_TRANSPORT=6
+RESULTADO: [n=3] csv: desfecho_op Logout NONE=269718
+RESULTADO: [n=3] csv: desfecho_op ResetFailures ERROR_TRANSPORT=2
+RESULTADO: [n=3] csv: desfecho_op ResetFailures NONE=38783
+RESULTADO: [n=3] csv: desfecho_op Validate INVALID=20204
+RESULTADO: [n=3] csv: desfecho_op Validate VALID=558240
+RESULTADO: [n=3] sha256 do rep-001.csv antes do gzip: 0e2f038446fc1195fa4c2c0b5459ed1003faf16f1d4c862b8cbe7a86429eae7a
+LEITURA HUMANA: [n=3] ordem nos carimbos: isolamento=2026-11-05T03:08:29.933Z kill=2026-11-05T03:08:29.948Z vista-sem-isn2(isn1)=2026-11-05T03:09:16.088Z start=2026-11-05T03:09:30.156Z vista-com-isn2(isn1)=2026-11-05T03:09:40.011Z
+LEITURA HUMANA: [n=3] duracao do podman start (linha 'podman start' ate 'OK: F1' do injetor): 8.448 s (no WSL deu 51 s)
+EXECUCAO n=3: VALIDA (9 criterios OK)
+-- execucao n=4 i=2003 carga=S1 replicacao=async
+OK: [n=4] F-1 injetor.log com modo=silencioso, eth0 down, kill isn2, ExitCode=137, start isn2; injetor exit 0
+OK: [n=4] F-2 1 died de isn2, todos com 137; .State.ExitCode antes do start = 137
+OK: [n=4] F-3 disparo a +49.004 s da ancora (aceito 48 a 51 s)
+OK: [n=4] F-4 Δdet isn1=48.034 s, isn3=48.028 s (>= 30 s)
+OK: [n=4] F-5 nenhuma ISPN000390/ISPN080002 na vida antiga de isn2
+OK: [n=4] F-6 vida nova de isn2 com ISPN000389 e ISPN080001, sem ISPN000693
+OK: [n=4] F-7 3 nos HEALTHY sem REBALANCING a 10.454 s do start (< 180 s)
+OK: [n=4] F-8 eth0 UP no netns novo de isn2 (pid 338075)
+FALHA: [n=4] F-9 intervalo maximo do saude-log: 4.992 s > 2 x 2 s (pausa do host/VM ou coleta ausente)
+RESULTADO: [n=4] Δdet isn1 = 48.034 s (dentro de [32, 49] s, faixa explicada pelo FD_ALL3)
+RESULTADO: [n=4] Δdet isn3 = 48.028 s (dentro de [32, 49] s, faixa explicada pelo FD_ALL3)
+RESULTADO: [n=4] volta: 10.454 s do start (amostras em volta.log)
+RESULTADO: [n=4] IP de isn2: antes=10.89.1.10 depois=10.89.1.11 (diferente)
+RESULTADO: [n=4] VerificadorSanidade: exit=0 veredito=OK; K3 do PR ACEITARIA (E-5: so RESULTADO)
+RESULTADO: [n=4] workload exit=0; C1..C3 (rebaseline.criterios_mistura, falha=F1): {"C1": {"terco1_pct": 5.175, "terco2_pct": 5.2315, "terco3_pct": 5.1612, "dif_1_3_pp": 0.0138, "denominador": 570669, "ok": true}, "C2": {"frac_pct": 5.1939, "denominador": 570669, "invalid": 29640, "ok": true}, "C3": {"k": 28629, "n": 570721, "n_csv": 570721, "z": 3.2905, "p0": 0.05, "dif_stdout_csv": 0, "margem_fronteira": 4, "sanidade": null, "frac_pct": 5.016286416655424, "meia_largura_pp": 0.
+RESULTADO: [n=4] csv: erro ERROR_TRANSPORT=8
+RESULTADO: [n=4] csv: janela da falha (disparo..volta): ops=126329 latencia_max_s=10.761684
+RESULTADO: [n=4] csv: linhas=1710922
+RESULTADO: [n=4] csv: desfecho COUNTED=114130
+RESULTADO: [n=4] csv: desfecho ERROR_TRANSPORT=8
+RESULTADO: [n=4] csv: desfecho INVALID=29640
+RESULTADO: [n=4] csv: desfecho NONE=455911
+RESULTADO: [n=4] csv: desfecho NOT_FOUND=186
+RESULTADO: [n=4] csv: desfecho OK=285046
+RESULTADO: [n=4] csv: desfecho VALID=826001
+RESULTADO: [n=4] csv: desfecho_op IncrementFailure COUNTED=114130
+RESULTADO: [n=4] csv: desfecho_op Login OK=285046
+RESULTADO: [n=4] csv: desfecho_op Logout ERROR_TRANSPORT=8
+RESULTADO: [n=4] csv: desfecho_op Logout NONE=399024
+RESULTADO: [n=4] csv: desfecho_op Logout NOT_FOUND=61
+RESULTADO: [n=4] csv: desfecho_op ResetFailures NONE=56887
+RESULTADO: [n=4] csv: desfecho_op Validate INVALID=29640
+RESULTADO: [n=4] csv: desfecho_op Validate NOT_FOUND=125
+RESULTADO: [n=4] csv: desfecho_op Validate VALID=826001
+RESULTADO: [n=4] sha256 do rep-001.csv antes do gzip: b7b28a0dce3e811a0f89bcfc9b1d613368f904b88b1a22b316f98d99cc2ddfe4
+LEITURA HUMANA: [n=4] ordem nos carimbos: isolamento=2026-11-05T03:15:00.062Z kill=2026-11-05T03:15:00.088Z vista-sem-isn2(isn1)=2026-11-05T03:15:48.096Z start=2026-11-05T03:16:00.481Z vista-com-isn2(isn1)=2026-11-05T03:16:04.598Z
+LEITURA HUMANA: [n=4] duracao do podman start (linha 'podman start' ate 'OK: F1' do injetor): 0.193 s (no WSL deu 51 s)
+EXECUCAO n=4: INVALIDA (1 falha(s) da execucao)
+ENSAIO: 3 de 4 VALIDAS

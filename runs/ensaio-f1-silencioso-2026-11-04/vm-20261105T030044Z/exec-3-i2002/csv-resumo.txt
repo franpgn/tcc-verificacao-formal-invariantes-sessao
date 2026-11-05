@@ -1,0 +1,19 @@
+desfecho COUNTED=77488
+desfecho ERROR_TRANSPORT=24
+desfecho INVALID=20204
+desfecho NONE=308501
+desfecho OK=192632
+desfecho VALID=558240
+desfecho_op IncrementFailure COUNTED=77488
+desfecho_op IncrementFailure ERROR_TRANSPORT=4
+desfecho_op Login ERROR_TRANSPORT=12
+desfecho_op Login OK=192632
+desfecho_op Logout ERROR_TRANSPORT=6
+desfecho_op Logout NONE=269718
+desfecho_op ResetFailures ERROR_TRANSPORT=2
+desfecho_op ResetFailures NONE=38783
+desfecho_op Validate INVALID=20204
+desfecho_op Validate VALID=558240
+erro ERROR_TRANSPORT=24
+janela da falha (disparo..volta): ops=114962 latencia_max_s=11.148122
+linhas=1157089

@@ -1,0 +1,298 @@
+ENSAIO do F1 silencioso inicio 2026-11-05T03:00:44+00:00 saida=/home/server1/tcc-gate/runs/ensaio-f1-silencioso-2026-11-04/vm-20261105T030044Z execucoes=1,2,3,4
+TCC_DIR=/home/server1/tcc-gate (exportado pelo ensaio-f1.sh)
+== pre-condicoes 2026-11-05T03:00:44+00:00
+hostname=server1 ip=172.27.114.62 usuario=server1
+tmux: /tmp/tmux-1000/default,289188,1
+terminal: ok (o GO de cada execucao e interativo)
+lock /var/lock/tcc-vm.lock: OCUPADO (este flock)
+inject-crash.sh: nenhum em execucao (o injetor nao usa lock proprio)
+sudo -n: ok
+bloco anterior: runs/vm-s7-2026-11-04/vm-20261105T012458Z boot_id fim=f9e98b74-bf1f-4192-9770-b40285877292 fim=2026-11-05T01:36:13+00:00 uname -r=6.8.0-147-generic
+boot_id: f9e98b74-bf1f-4192-9770-b40285877292
+uname -r: 6.8.0-147-generic
+-- sha256 do --rb-dir (/home/server1/rb/rb-20805b0) contra a adenda da DT-009 parte 2
+analysis/rebaseline.py: OK
+runs/rebaseline/matriz.tsv: OK
+scripts/inject-crash.sh: OK
+scripts/inject-jitter.sh: OK
+scripts/rebaseline_matriz.py: OK
+scripts/run-rebaseline.sh: OK
+workload/target/session-workload-0.1.0-SNAPSHOT.jar: OK
+hashes do --rb-dir: iguais a adenda
+lista: 003814e93929ea7360f7eba35933907f954201ddf6faca2ce0ae9d3c8c2133a4 (= adenda)
+ensaio-f1.sh: b83e82230b8c69e61777499047e81d3055ec35423378af8a87500cf5ffda8d8c
+cluster/infinispan-cluster.xml do --rb-dir: 6d52413b1c3de47b63179430bfadb02dc29d74ba90b919c584c66ff25437778c
+constantes e montar_cmd lidos de /home/server1/rb/rb-20805b0/scripts/run-rebaseline.sh
+ambiente: sem PODMAN/LOCK_DIR/RB_*/G_TESTE/... herdados (RB_PASSWORD e TCC_DIR permitidos)
+RB_PASSWORD: presente (nao gravado)
+timers tcc-heal: 0
+java: openjdk version "17.0.20.1" 2026-08-18
+-- conteineres e cluster atual
+isn1 54bc2eaf4cf7 Up 37 minutes (healthy) criado=2026-11-05 02:22:55.803185216 +0000 UTC
+isn2 65f45e76d27d Up 37 minutes (healthy) criado=2026-11-05 02:22:57.069771083 +0000 UTC
+isn3 cf4d5659f49e Up 37 minutes (healthy) criado=2026-11-05 02:22:58.445977908 +0000 UTC
+isn1 status=running ip=10.89.1.5 id=54bc2eaf4cf7 Created=1793845375 StartedAt=1793845375
+isn1 XML em uso: /home/server1/rb/rb-20805b0/cluster/infinispan-cluster.xml 6d52413b1c3de47b63179430bfadb02dc29d74ba90b919c584c66ff25437778c
+isn2 status=running ip=10.89.1.6 id=65f45e76d27d Created=1793845377 StartedAt=1793845377
+isn2 XML em uso: /home/server1/rb/rb-20805b0/cluster/infinispan-cluster.xml 6d52413b1c3de47b63179430bfadb02dc29d74ba90b919c584c66ff25437778c
+isn3 status=running ip=10.89.1.7 id=cf4d5659f49e Created=1793845378 StartedAt=1793845378
+isn3 XML em uso: /home/server1/rb/rb-20805b0/cluster/infinispan-cluster.xml 6d52413b1c3de47b63179430bfadb02dc29d74ba90b919c584c66ff25437778c
+size sessions porta 11222: http=200 0
+size sessions porta 11223: http=200 0
+size sessions porta 11224: http=200 0
+size counters porta 11222: http=200 0
+size counters porta 11223: http=200 0
+size counters porta 11224: http=200 0
+size sessions-async porta 11222: http=200 0
+size sessions-async porta 11223: http=200 0
+size sessions-async porta 11224: http=200 0
+size counters-async porta 11222: http=200 0
+size counters-async porta 11223: http=200 0
+size counters-async porta 11224: http=200 0
+PID_isn2=268371
+isn2 netns: diferente do host (net:[4026532220] != net:[4026531840])
+isn2 ip -br link:
+lo               UNKNOWN        00:00:00:00:00:00 <LOOPBACK,UP,LOWER_UP> 
+eth0@if9         UP             e2:7b:69:01:d1:b1 <BROADCAST,MULTICAST,UP,LOWER_UP> 
+pre rc=0 fim=2026-11-05T03:00:45+00:00
+[2026-11-05T03:00:45.169Z] inject-crash.sh: Plano: NODE=isn2 MODO=silencioso DURACAO=60s IFACE=eth0 DRY_RUN=1
+[2026-11-05T03:00:45.170Z] inject-crash.sh: modo=silencioso
+[2026-11-05T03:00:45.171Z] inject-crash.sh: Comandos previstos:
+[2026-11-05T03:00:45.171Z] inject-crash.sh:   pid=$(sudo podman inspect -f '{{.State.Pid}}' isn2)   # inteiro > 1
+[2026-11-05T03:00:45.173Z] inject-crash.sh:   guarda: sudo readlink /proc/<pid>/ns/net != sudo readlink /proc/1/ns/net
+[2026-11-05T03:00:45.173Z] inject-crash.sh:   sudo nsenter -t <pid> -n ip link show dev eth0
+[2026-11-05T03:00:45.174Z] inject-crash.sh:   sudo nsenter -t <pid> -n ip link set dev eth0 down
+[2026-11-05T03:00:45.175Z] inject-crash.sh:   sudo nsenter -t <pid> -n ip -o link show dev eth0   # confirma que nao esta UP
+[2026-11-05T03:00:45.176Z] inject-crash.sh:   sudo podman kill isn2 --signal KILL
+[2026-11-05T03:00:45.177Z] inject-crash.sh:   sudo podman inspect -f '{{.State.ExitCode}}' isn2   # esperado 137
+[2026-11-05T03:00:45.177Z] inject-crash.sh:   sleep 60
+[2026-11-05T03:00:45.178Z] inject-crash.sh:   sudo podman start isn2
+[2026-11-05T03:00:45.178Z] inject-crash.sh: dry-run: nada executado
+injetor-dry-run rc=0 fim=2026-11-05T03:00:45+00:00
+PORTAO K1: OK (63.173 s bons)
+portao rc=0 fim=2026-11-05T03:01:48+00:00
+== execucao 1: F1 n=1 i=2000 carga=sem 2026-11-05T03:01:48+00:00
+>>> F1 n=1 i=2000 carga=sem: digite exatamente "GO F1 n=1 i=2000 carga=sem" em ate 900 s (qualquer outra coisa aborta sem injetar): 
+PORTAO K1: OK (62.318 s bons)
+F1: inject-crash.sh --node isn2 --duration 60 2026-11-05T03:03:06.352Z
+[2026-11-05T03:03:06.356Z] inject-crash.sh: Plano: NODE=isn2 MODO=silencioso DURACAO=60s IFACE=eth0 DRY_RUN=0
+[2026-11-05T03:03:06.357Z] inject-crash.sh: modo=silencioso
+[2026-11-05T03:03:06.437Z] inject-crash.sh: isolando isn2: ip link set dev eth0 down (pid 268371)
+[2026-11-05T03:03:06.449Z] inject-crash.sh: sudo podman kill isn2 (--signal KILL)
+isn2
+[2026-11-05T03:03:06.670Z] inject-crash.sh: isn2 ExitCode=137
+[2026-11-05T03:03:06.671Z] inject-crash.sh: aguardando 60s
+[2026-11-05T03:04:06.673Z] inject-crash.sh: sudo podman start isn2
+isn2
+[2026-11-05T03:04:06.800Z] inject-crash.sh: OK: F1 (modo=silencioso) injetada e reentrada de isn2 acionada
+volta: ok=1 a 5.208 s do start
+Δdet isn1 = 41.644 s
+Δdet isn3 = 41.640 s
+execucao-1 rc=0 fim=2026-11-05T03:04:13+00:00
+== execucao 2: F1 n=2 i=2001 carga=sem 2026-11-05T03:04:13+00:00
+>>> F1 n=2 i=2001 carga=sem: digite exatamente "GO F1 n=2 i=2001 carga=sem" em ate 900 s (qualquer outra coisa aborta sem injetar): 
+PORTAO K1: OK (62.029 s bons)
+F1: inject-crash.sh --node isn2 --duration 60 2026-11-05T03:05:20.551Z
+[2026-11-05T03:05:20.556Z] inject-crash.sh: Plano: NODE=isn2 MODO=silencioso DURACAO=60s IFACE=eth0 DRY_RUN=0
+[2026-11-05T03:05:20.556Z] inject-crash.sh: modo=silencioso
+[2026-11-05T03:05:20.644Z] inject-crash.sh: isolando isn2: ip link set dev eth0 down (pid 299841)
+[2026-11-05T03:05:20.656Z] inject-crash.sh: sudo podman kill isn2 (--signal KILL)
+isn2
+[2026-11-05T03:05:21.105Z] inject-crash.sh: isn2 ExitCode=137
+[2026-11-05T03:05:21.106Z] inject-crash.sh: aguardando 60s
+[2026-11-05T03:06:21.108Z] inject-crash.sh: sudo podman start isn2
+isn2
+[2026-11-05T03:06:21.249Z] inject-crash.sh: OK: F1 (modo=silencioso) injetada e reentrada de isn2 acionada
+volta: ok=1 a 5.358 s do start
+Δdet isn1 = 43.437 s
+Δdet isn3 = 43.434 s
+execucao-2 rc=0 fim=2026-11-05T03:06:28+00:00
+== execucao 3: F1 n=3 i=2002 carga=S1-sync 2026-11-05T03:06:28+00:00
+>>> F1 n=3 i=2002 carga=S1-sync: digite exatamente "GO F1 n=3 i=2002 carga=S1-sync" em ate 900 s (qualquer outra coisa aborta sem injetar): 
+PORTAO K1: OK (62.759 s bons)
+workload: java -jar /home/server1/rb/rb-20805b0/workload/target/session-workload-0.1.0-SNAPSHOT.jar --scenario S1 --mix v3 --replication sync --reset-state on --duration 300 --warmup-min-sec 30 --threads 4 --ops 0 --rep 1 --seed 250200 --servers 127.0.0.1:11222,127.0.0.1:11223,127.0.0.1:11224 --username admin --password *** --csv-dir /home/server1/tcc-gate/runs/ensaio-f1-silencioso-2026-11-04/vm-20261105T030044Z/exec-3-i2002
+ancora a +4.302 s do lancamento
+F1: inject-crash.sh --node isn2 --duration 60 2026-11-05T03:08:29.820Z
+[2026-11-05T03:08:29.825Z] inject-crash.sh: Plano: NODE=isn2 MODO=silencioso DURACAO=60s IFACE=eth0 DRY_RUN=0
+[2026-11-05T03:08:29.826Z] inject-crash.sh: modo=silencioso
+[2026-11-05T03:08:29.933Z] inject-crash.sh: isolando isn2: ip link set dev eth0 down (pid 307860)
+[2026-11-05T03:08:29.948Z] inject-crash.sh: sudo podman kill isn2 (--signal KILL)
+isn2
+[2026-11-05T03:08:30.153Z] inject-crash.sh: isn2 ExitCode=137
+[2026-11-05T03:08:30.153Z] inject-crash.sh: aguardando 60s
+[2026-11-05T03:09:30.156Z] inject-crash.sh: sudo podman start isn2
+isn2
+[2026-11-05T03:09:38.604Z] inject-crash.sh: OK: F1 (modo=silencioso) injetada e reentrada de isn2 acionada
+volta: ok=1 a 13.594 s do start
+Δdet isn1 = 46.155 s
+Δdet isn3 = 46.150 s
+workload saiu com 0
+VerificadorSanidade saiu com 0
+execucao-3 rc=0 fim=2026-11-05T03:13:00+00:00
+== execucao 4: F1 n=4 i=2003 carga=S1-async 2026-11-05T03:13:00+00:00
+>>> F1 n=4 i=2003 carga=S1-async: digite exatamente "GO F1 n=4 i=2003 carga=S1-async" em ate 900 s (qualquer outra coisa aborta sem injetar): 
+PORTAO K1: OK (62.995 s bons)
+workload: java -jar /home/server1/rb/rb-20805b0/workload/target/session-workload-0.1.0-SNAPSHOT.jar --scenario S1 --mix v3 --replication async --reset-state on --duration 300 --warmup-min-sec 30 --threads 4 --ops 0 --rep 1 --seed 250300 --servers 127.0.0.1:11222,127.0.0.1:11223,127.0.0.1:11224 --username admin --password *** --csv-dir /home/server1/tcc-gate/runs/ensaio-f1-silencioso-2026-11-04/vm-20261105T030044Z/exec-4-i2003
+ancora a +3.505 s do lancamento
+F1: inject-crash.sh --node isn2 --duration 60 2026-11-05T03:14:59.893Z
+[2026-11-05T03:14:59.903Z] inject-crash.sh: Plano: NODE=isn2 MODO=silencioso DURACAO=60s IFACE=eth0 DRY_RUN=0
+[2026-11-05T03:14:59.904Z] inject-crash.sh: modo=silencioso
+[2026-11-05T03:15:00.062Z] inject-crash.sh: isolando isn2: ip link set dev eth0 down (pid 318477)
+[2026-11-05T03:15:00.088Z] inject-crash.sh: sudo podman kill isn2 (--signal KILL)
+isn2
+[2026-11-05T03:15:00.478Z] inject-crash.sh: isn2 ExitCode=137
+[2026-11-05T03:15:00.478Z] inject-crash.sh: aguardando 60s
+[2026-11-05T03:16:00.481Z] inject-crash.sh: sudo podman start isn2
+isn2
+[2026-11-05T03:16:00.674Z] inject-crash.sh: OK: F1 (modo=silencioso) injetada e reentrada de isn2 acionada
+volta: ok=1 a 10.454 s do start
+Δdet isn1 = 48.034 s
+Δdet isn3 = 48.028 s
+workload saiu com 0
+VerificadorSanidade saiu com 0
+execucao-4 rc=0 fim=2026-11-05T03:19:36+00:00
+PORTAO K1: OK (60.076 s bons)
+timers tcc-heal: 0
+size sessions porta 11222: 521473
+size sessions porta 11223: 521473
+size sessions porta 11224: 521473
+size counters porta 11222: 36
+size counters porta 11223: 36
+size counters porta 11224: 36
+size sessions-async porta 11222: 682555
+size sessions-async porta 11223: 682555
+size sessions-async porta 11224: 682556
+size counters-async porta 11222: 36
+size counters-async porta 11223: 36
+size counters-async porta 11224: 36
+estado-final rc=0 fim=2026-11-05T03:20:36+00:00
+boot_id fim: f9e98b74-bf1f-4192-9770-b40285877292 2026-11-05T03:20:36+00:00
+== avaliacao do ensaio do F1 silencioso 2026-11-05T03:20:36+00:00 sobre /home/server1/tcc-gate/runs/ensaio-f1-silencioso-2026-11-04/vm-20261105T030044Z
+-- geral
+OK: F-9 boot_id igual no inicio e no fim do ensaio (f9e98b74-bf1f-4192-9770-b40285877292)
+OK: F-10 estado final: portao K1 OK, 0 timers tcc-heal, vazios os caches nao usados por carga (nenhum)
+RESULTADO: tamanho final: size sessions porta 11222: 521473
+RESULTADO: tamanho final: size sessions porta 11223: 521473
+RESULTADO: tamanho final: size sessions porta 11224: 521473
+RESULTADO: tamanho final: size counters porta 11222: 36
+RESULTADO: tamanho final: size counters porta 11223: 36
+RESULTADO: tamanho final: size counters porta 11224: 36
+RESULTADO: tamanho final: size sessions-async porta 11222: 682555
+RESULTADO: tamanho final: size sessions-async porta 11223: 682555
+RESULTADO: tamanho final: size sessions-async porta 11224: 682556
+RESULTADO: tamanho final: size counters-async porta 11222: 36
+RESULTADO: tamanho final: size counters-async porta 11223: 36
+RESULTADO: tamanho final: size counters-async porta 11224: 36
+-- execucao n=1 i=2000 carga=sem
+OK: [n=1] F-1 injetor.log com modo=silencioso, eth0 down, kill isn2, ExitCode=137, start isn2; injetor exit 0
+OK: [n=1] F-2 1 died de isn2, todos com 137; .State.ExitCode antes do start = 137
+OK: [n=1] F-4 Δdet isn1=41.644 s, isn3=41.640 s (>= 30 s)
+OK: [n=1] F-5 nenhuma ISPN000390/ISPN080002 na vida antiga de isn2
+OK: [n=1] F-6 vida nova de isn2 com ISPN000389 e ISPN080001, sem ISPN000693
+OK: [n=1] F-7 3 nos HEALTHY sem REBALANCING a 5.208 s do start (< 180 s)
+OK: [n=1] F-8 eth0 UP no netns novo de isn2 (pid 299841)
+OK: [n=1] F-9 intervalo maximo do saude-log: 2.105 s <= 2 x 2 s
+RESULTADO: [n=1] Δdet isn1 = 41.644 s (dentro de [32, 49] s, faixa explicada pelo FD_ALL3)
+RESULTADO: [n=1] Δdet isn3 = 41.640 s (dentro de [32, 49] s, faixa explicada pelo FD_ALL3)
+RESULTADO: [n=1] volta: 5.208 s do start (amostras em volta.log)
+RESULTADO: [n=1] IP de isn2: antes=10.89.1.6 depois=10.89.1.8 (diferente)
+LEITURA HUMANA: [n=1] ordem nos carimbos: isolamento=2026-11-05T03:03:06.437Z kill=2026-11-05T03:03:06.449Z vista-sem-isn2(isn1)=2026-11-05T03:03:48.081Z start=2026-11-05T03:04:06.673Z vista-com-isn2(isn1)=2026-11-05T03:04:08.873Z
+LEITURA HUMANA: [n=1] duracao do podman start (linha 'podman start' ate 'OK: F1' do injetor): 0.127 s (no WSL deu 51 s)
+EXECUCAO n=1: VALIDA (8 criterios OK)
+-- execucao n=2 i=2001 carga=sem
+OK: [n=2] F-1 injetor.log com modo=silencioso, eth0 down, kill isn2, ExitCode=137, start isn2; injetor exit 0
+OK: [n=2] F-2 1 died de isn2, todos com 137; .State.ExitCode antes do start = 137
+OK: [n=2] F-4 Δdet isn1=43.437 s, isn3=43.434 s (>= 30 s)
+OK: [n=2] F-5 nenhuma ISPN000390/ISPN080002 na vida antiga de isn2
+OK: [n=2] F-6 vida nova de isn2 com ISPN000389 e ISPN080001, sem ISPN000693
+OK: [n=2] F-7 3 nos HEALTHY sem REBALANCING a 5.358 s do start (< 180 s)
+OK: [n=2] F-8 eth0 UP no netns novo de isn2 (pid 307860)
+OK: [n=2] F-9 intervalo maximo do saude-log: 2.074 s <= 2 x 2 s
+RESULTADO: [n=2] Δdet isn1 = 43.437 s (dentro de [32, 49] s, faixa explicada pelo FD_ALL3)
+RESULTADO: [n=2] Δdet isn3 = 43.434 s (dentro de [32, 49] s, faixa explicada pelo FD_ALL3)
+RESULTADO: [n=2] volta: 5.358 s do start (amostras em volta.log)
+RESULTADO: [n=2] IP de isn2: antes=10.89.1.8 depois=10.89.1.9 (diferente)
+LEITURA HUMANA: [n=2] ordem nos carimbos: isolamento=2026-11-05T03:05:20.644Z kill=2026-11-05T03:05:20.656Z vista-sem-isn2(isn1)=2026-11-05T03:06:04.081Z start=2026-11-05T03:06:21.108Z vista-com-isn2(isn1)=2026-11-05T03:06:24.298Z
+LEITURA HUMANA: [n=2] duracao do podman start (linha 'podman start' ate 'OK: F1' do injetor): 0.141 s (no WSL deu 51 s)
+EXECUCAO n=2: VALIDA (8 criterios OK)
+-- execucao n=3 i=2002 carga=S1 replicacao=sync
+OK: [n=3] F-1 injetor.log com modo=silencioso, eth0 down, kill isn2, ExitCode=137, start isn2; injetor exit 0
+OK: [n=3] F-2 1 died de isn2, todos com 137; .State.ExitCode antes do start = 137
+OK: [n=3] F-3 disparo a +49.009 s da ancora (aceito 48 a 51 s)
+OK: [n=3] F-4 Δdet isn1=46.155 s, isn3=46.150 s (>= 30 s)
+OK: [n=3] F-5 nenhuma ISPN000390/ISPN080002 na vida antiga de isn2
+OK: [n=3] F-6 vida nova de isn2 com ISPN000389 e ISPN080001, sem ISPN000693
+OK: [n=3] F-7 3 nos HEALTHY sem REBALANCING a 13.594 s do start (< 180 s)
+OK: [n=3] F-8 eth0 UP no netns novo de isn2 (pid 318477)
+OK: [n=3] F-9 intervalo maximo do saude-log: 3.770 s <= 2 x 2 s
+RESULTADO: [n=3] Δdet isn1 = 46.155 s (dentro de [32, 49] s, faixa explicada pelo FD_ALL3)
+RESULTADO: [n=3] Δdet isn3 = 46.150 s (dentro de [32, 49] s, faixa explicada pelo FD_ALL3)
+RESULTADO: [n=3] volta: 13.594 s do start (amostras em volta.log)
+RESULTADO: [n=3] IP de isn2: antes=10.89.1.9 depois=10.89.1.10 (diferente)
+RESULTADO: [n=3] VerificadorSanidade: exit=0 veredito=OK; K3 do PR ACEITARIA (E-5: so RESULTADO)
+RESULTADO: [n=3] workload exit=0; C1..C3 (rebaseline.criterios_mistura, falha=F1): {"C1": {"terco1_pct": 5.3561, "terco2_pct": 5.2681, "terco3_pct": 5.1668, "dif_1_3_pp": 0.1893, "denominador": 385814, "ok": true}, "C2": {"frac_pct": 5.2367, "denominador": 385814, "invalid": 20204, "ok": true}, "C3": {"k": 19266, "n": 385814, "n_csv": 385814, "z": 3.2905, "p0": 0.05, "dif_stdout_csv": 0, "margem_fronteira": 4, "sanidade": null, "frac_pct": 4.99359795134443, "meia_largura_pp": 0.
+RESULTADO: [n=3] csv: erro ERROR_TRANSPORT=24
+RESULTADO: [n=3] csv: janela da falha (disparo..volta): ops=114962 latencia_max_s=11.148122
+RESULTADO: [n=3] csv: linhas=1157089
+RESULTADO: [n=3] csv: desfecho COUNTED=77488
+RESULTADO: [n=3] csv: desfecho ERROR_TRANSPORT=24
+RESULTADO: [n=3] csv: desfecho INVALID=20204
+RESULTADO: [n=3] csv: desfecho NONE=308501
+RESULTADO: [n=3] csv: desfecho OK=192632
+RESULTADO: [n=3] csv: desfecho VALID=558240
+RESULTADO: [n=3] csv: desfecho_op IncrementFailure COUNTED=77488
+RESULTADO: [n=3] csv: desfecho_op IncrementFailure ERROR_TRANSPORT=4
+RESULTADO: [n=3] csv: desfecho_op Login ERROR_TRANSPORT=12
+RESULTADO: [n=3] csv: desfecho_op Login OK=192632
+RESULTADO: [n=3] csv: desfecho_op Logout ERROR_TRANSPORT=6
+RESULTADO: [n=3] csv: desfecho_op Logout NONE=269718
+RESULTADO: [n=3] csv: desfecho_op ResetFailures ERROR_TRANSPORT=2
+RESULTADO: [n=3] csv: desfecho_op ResetFailures NONE=38783
+RESULTADO: [n=3] csv: desfecho_op Validate INVALID=20204
+RESULTADO: [n=3] csv: desfecho_op Validate VALID=558240
+RESULTADO: [n=3] sha256 do rep-001.csv antes do gzip: 0e2f038446fc1195fa4c2c0b5459ed1003faf16f1d4c862b8cbe7a86429eae7a
+LEITURA HUMANA: [n=3] ordem nos carimbos: isolamento=2026-11-05T03:08:29.933Z kill=2026-11-05T03:08:29.948Z vista-sem-isn2(isn1)=2026-11-05T03:09:16.088Z start=2026-11-05T03:09:30.156Z vista-com-isn2(isn1)=2026-11-05T03:09:40.011Z
+LEITURA HUMANA: [n=3] duracao do podman start (linha 'podman start' ate 'OK: F1' do injetor): 8.448 s (no WSL deu 51 s)
+EXECUCAO n=3: VALIDA (9 criterios OK)
+-- execucao n=4 i=2003 carga=S1 replicacao=async
+OK: [n=4] F-1 injetor.log com modo=silencioso, eth0 down, kill isn2, ExitCode=137, start isn2; injetor exit 0
+OK: [n=4] F-2 1 died de isn2, todos com 137; .State.ExitCode antes do start = 137
+OK: [n=4] F-3 disparo a +49.004 s da ancora (aceito 48 a 51 s)
+OK: [n=4] F-4 Δdet isn1=48.034 s, isn3=48.028 s (>= 30 s)
+OK: [n=4] F-5 nenhuma ISPN000390/ISPN080002 na vida antiga de isn2
+OK: [n=4] F-6 vida nova de isn2 com ISPN000389 e ISPN080001, sem ISPN000693
+OK: [n=4] F-7 3 nos HEALTHY sem REBALANCING a 10.454 s do start (< 180 s)
+OK: [n=4] F-8 eth0 UP no netns novo de isn2 (pid 338075)
+FALHA: [n=4] F-9 intervalo maximo do saude-log: 4.992 s > 2 x 2 s (pausa do host/VM ou coleta ausente)
+RESULTADO: [n=4] Δdet isn1 = 48.034 s (dentro de [32, 49] s, faixa explicada pelo FD_ALL3)
+RESULTADO: [n=4] Δdet isn3 = 48.028 s (dentro de [32, 49] s, faixa explicada pelo FD_ALL3)
+RESULTADO: [n=4] volta: 10.454 s do start (amostras em volta.log)
+RESULTADO: [n=4] IP de isn2: antes=10.89.1.10 depois=10.89.1.11 (diferente)
+RESULTADO: [n=4] VerificadorSanidade: exit=0 veredito=OK; K3 do PR ACEITARIA (E-5: so RESULTADO)
+RESULTADO: [n=4] workload exit=0; C1..C3 (rebaseline.criterios_mistura, falha=F1): {"C1": {"terco1_pct": 5.175, "terco2_pct": 5.2315, "terco3_pct": 5.1612, "dif_1_3_pp": 0.0138, "denominador": 570669, "ok": true}, "C2": {"frac_pct": 5.1939, "denominador": 570669, "invalid": 29640, "ok": true}, "C3": {"k": 28629, "n": 570721, "n_csv": 570721, "z": 3.2905, "p0": 0.05, "dif_stdout_csv": 0, "margem_fronteira": 4, "sanidade": null, "frac_pct": 5.016286416655424, "meia_largura_pp": 0.
+RESULTADO: [n=4] csv: erro ERROR_TRANSPORT=8
+RESULTADO: [n=4] csv: janela da falha (disparo..volta): ops=126329 latencia_max_s=10.761684
+RESULTADO: [n=4] csv: linhas=1710922
+RESULTADO: [n=4] csv: desfecho COUNTED=114130
+RESULTADO: [n=4] csv: desfecho ERROR_TRANSPORT=8
+RESULTADO: [n=4] csv: desfecho INVALID=29640
+RESULTADO: [n=4] csv: desfecho NONE=455911
+RESULTADO: [n=4] csv: desfecho NOT_FOUND=186
+RESULTADO: [n=4] csv: desfecho OK=285046
+RESULTADO: [n=4] csv: desfecho VALID=826001
+RESULTADO: [n=4] csv: desfecho_op IncrementFailure COUNTED=114130
+RESULTADO: [n=4] csv: desfecho_op Login OK=285046
+RESULTADO: [n=4] csv: desfecho_op Logout ERROR_TRANSPORT=8
+RESULTADO: [n=4] csv: desfecho_op Logout NONE=399024
+RESULTADO: [n=4] csv: desfecho_op Logout NOT_FOUND=61
+RESULTADO: [n=4] csv: desfecho_op ResetFailures NONE=56887
+RESULTADO: [n=4] csv: desfecho_op Validate INVALID=29640
+RESULTADO: [n=4] csv: desfecho_op Validate NOT_FOUND=125
+RESULTADO: [n=4] csv: desfecho_op Validate VALID=826001
+RESULTADO: [n=4] sha256 do rep-001.csv antes do gzip: b7b28a0dce3e811a0f89bcfc9b1d613368f904b88b1a22b316f98d99cc2ddfe4
+LEITURA HUMANA: [n=4] ordem nos carimbos: isolamento=2026-11-05T03:15:00.062Z kill=2026-11-05T03:15:00.088Z vista-sem-isn2(isn1)=2026-11-05T03:15:48.096Z start=2026-11-05T03:16:00.481Z vista-com-isn2(isn1)=2026-11-05T03:16:04.598Z
+LEITURA HUMANA: [n=4] duracao do podman start (linha 'podman start' ate 'OK: F1' do injetor): 0.193 s (no WSL deu 51 s)
+EXECUCAO n=4: INVALIDA (1 falha(s) da execucao)
+ENSAIO: 3 de 4 VALIDAS
+avaliacao rc=1 fim=2026-11-05T03:20:43+00:00
+ENSAIO fim rc=6

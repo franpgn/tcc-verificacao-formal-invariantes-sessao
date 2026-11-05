@@ -1,0 +1,54 @@
+== pre-condicoes 2026-11-05T03:00:44+00:00
+hostname=server1 ip=172.27.114.62 usuario=server1
+tmux: /tmp/tmux-1000/default,289188,1
+terminal: ok (o GO de cada execucao e interativo)
+lock /var/lock/tcc-vm.lock: OCUPADO (este flock)
+inject-crash.sh: nenhum em execucao (o injetor nao usa lock proprio)
+sudo -n: ok
+bloco anterior: runs/vm-s7-2026-11-04/vm-20261105T012458Z boot_id fim=f9e98b74-bf1f-4192-9770-b40285877292 fim=2026-11-05T01:36:13+00:00 uname -r=6.8.0-147-generic
+boot_id: f9e98b74-bf1f-4192-9770-b40285877292
+uname -r: 6.8.0-147-generic
+-- sha256 do --rb-dir (/home/server1/rb/rb-20805b0) contra a adenda da DT-009 parte 2
+analysis/rebaseline.py: OK
+runs/rebaseline/matriz.tsv: OK
+scripts/inject-crash.sh: OK
+scripts/inject-jitter.sh: OK
+scripts/rebaseline_matriz.py: OK
+scripts/run-rebaseline.sh: OK
+workload/target/session-workload-0.1.0-SNAPSHOT.jar: OK
+hashes do --rb-dir: iguais a adenda
+lista: 003814e93929ea7360f7eba35933907f954201ddf6faca2ce0ae9d3c8c2133a4 (= adenda)
+ensaio-f1.sh: b83e82230b8c69e61777499047e81d3055ec35423378af8a87500cf5ffda8d8c
+cluster/infinispan-cluster.xml do --rb-dir: 6d52413b1c3de47b63179430bfadb02dc29d74ba90b919c584c66ff25437778c
+constantes e montar_cmd lidos de /home/server1/rb/rb-20805b0/scripts/run-rebaseline.sh
+ambiente: sem PODMAN/LOCK_DIR/RB_*/G_TESTE/... herdados (RB_PASSWORD e TCC_DIR permitidos)
+RB_PASSWORD: presente (nao gravado)
+timers tcc-heal: 0
+java: openjdk version "17.0.20.1" 2026-08-18
+-- conteineres e cluster atual
+isn1 54bc2eaf4cf7 Up 37 minutes (healthy) criado=2026-11-05 02:22:55.803185216 +0000 UTC
+isn2 65f45e76d27d Up 37 minutes (healthy) criado=2026-11-05 02:22:57.069771083 +0000 UTC
+isn3 cf4d5659f49e Up 37 minutes (healthy) criado=2026-11-05 02:22:58.445977908 +0000 UTC
+isn1 status=running ip=10.89.1.5 id=54bc2eaf4cf7 Created=1793845375 StartedAt=1793845375
+isn1 XML em uso: /home/server1/rb/rb-20805b0/cluster/infinispan-cluster.xml 6d52413b1c3de47b63179430bfadb02dc29d74ba90b919c584c66ff25437778c
+isn2 status=running ip=10.89.1.6 id=65f45e76d27d Created=1793845377 StartedAt=1793845377
+isn2 XML em uso: /home/server1/rb/rb-20805b0/cluster/infinispan-cluster.xml 6d52413b1c3de47b63179430bfadb02dc29d74ba90b919c584c66ff25437778c
+isn3 status=running ip=10.89.1.7 id=cf4d5659f49e Created=1793845378 StartedAt=1793845378
+isn3 XML em uso: /home/server1/rb/rb-20805b0/cluster/infinispan-cluster.xml 6d52413b1c3de47b63179430bfadb02dc29d74ba90b919c584c66ff25437778c
+size sessions porta 11222: http=200 0
+size sessions porta 11223: http=200 0
+size sessions porta 11224: http=200 0
+size counters porta 11222: http=200 0
+size counters porta 11223: http=200 0
+size counters porta 11224: http=200 0
+size sessions-async porta 11222: http=200 0
+size sessions-async porta 11223: http=200 0
+size sessions-async porta 11224: http=200 0
+size counters-async porta 11222: http=200 0
+size counters-async porta 11223: http=200 0
+size counters-async porta 11224: http=200 0
+PID_isn2=268371
+isn2 netns: diferente do host (net:[4026532220] != net:[4026531840])
+isn2 ip -br link:
+lo               UNKNOWN        00:00:00:00:00:00 <LOOPBACK,UP,LOWER_UP> 
+eth0@if9         UP             e2:7b:69:01:d1:b1 <BROADCAST,MULTICAST,UP,LOWER_UP> 

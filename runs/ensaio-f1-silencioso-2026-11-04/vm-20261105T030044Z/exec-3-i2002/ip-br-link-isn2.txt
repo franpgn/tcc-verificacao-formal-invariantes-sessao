@@ -1,0 +1,2 @@
+lo               UNKNOWN        00:00:00:00:00:00 <LOOPBACK,UP,LOWER_UP> 
+eth0@if13        UP             ea:9e:65:53:cb:fb <BROADCAST,MULTICAST,UP,LOWER_UP> 

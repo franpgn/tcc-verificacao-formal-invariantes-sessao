@@ -1,0 +1,17 @@
+n=2
+i=2001
+carga=sem
+replicacao=
+semente=
+rotulo=F1 n=2 i=2001 carga=sem
+go_utc=2026-11-05T03:04:18Z
+ip_antes=10.89.1.8
+pid_antes=299841
+disp_ms=1793847920551
+injetor_exit=0
+start_ms=1793847981108
+volta_ok=1
+volta_s=5.358
+pid_depois=307860
+ip_depois=10.89.1.9
+fim_utc=2026-11-05T03:06:28Z

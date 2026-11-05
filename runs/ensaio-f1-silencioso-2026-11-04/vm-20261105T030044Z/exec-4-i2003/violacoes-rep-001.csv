@@ -1,0 +1,3 @@
+instante,invariante,chave,mensagem
+2026-11-05T03:19:25.756857009Z,I5,59a886b8-3f82-4402-8703-7e32834832e4,divergencia entre replicas: estado VALID vs INVALID; motivo NONE vs LOGOUT; identidade user-2-0 vs user-2-0
+2026-11-05T03:19:25.756870925Z,I5,sid-000115~33,divergencia entre replicas: estado INVALID vs VALID; motivo LOGOUT vs NONE; identidade user-2-4 vs user-2-4

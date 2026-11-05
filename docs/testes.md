@@ -693,3 +693,75 @@ Usam os *fixtures* editados sem mudança própria: `ParametrosDefasagemTest` (`B
 **O que os testes não provam (fica para o *smoke* local):** que a interrupção solta o iterador real do cliente Hot Rod
 15.0 preso no nó parado e que o `close` do `RemoteCacheManager` desse nó não trava (P-41); que, sob corte, o AC-5 sai
 `APLICADA` dentro dos 17 s (P-42).
+
+## W-2b (P-5): caminho crítico sem disco e sem processo (2026-11-05)
+
+Branch `fix/p5-caminho-critico` (worktree `wt-w2b`), a partir de `17f2bd4` (`feature/controlador-integracao`).
+Surefire com `mvn -q -T1 clean test` em `workload/` (contado dos `TEST-*.xml`); Python com
+`python -E -P -m unittest discover -s analysis` na raiz. JDK 22.0.2, Maven 3.9.16. Sem VM e sem *cluster* Podman (a VM
+estava parada, janela H2). Vermelhos conferidos antes de cada `fix:`: os três `test:` não compilam (`test-compile`
+exit 1, erros só nos arquivos de teste do item).
+
+| Passo | Commit | Surefire (testes/falhas/erros/pulados, arquivos) |
+|---|---|---|
+| base | `17f2bd4` | **1059/0/0/1**, 147 |
+| trilha JSONL assíncrona (N-8) | `7376a1a` test → `c3ae70c` fix | **1074/0/0/1**, 149 |
+| sonda de saúde sem `curl` (N-7) | `28c2fdf` test → `eca637b` fix | **1078/0/0/1**, 150 |
+| contenção do `ISPN004007` | `0d42f82` test → `ed7276d` fix | **1086/0/0/1**, 151 |
+
+`unittest discover -s analysis`: **370 OK, 1 *skip*** (igual à base).
+
+Conta: 1086 = 1059 + 15 (trilha) + 4 (sonda: 3 do `ArquiteturaSondaSaudeTest` e o `semConexao`; os outros testes do
+`ConsultaSaudeRestTest` foram reescritos, não somados) + 8 (contenção).
+
+Testes novos (27):
+
+| Teste | Item | O que prende |
+|---|---|---|
+| `controle/TrilhaJsonlAssincronaTest` (10) | N-8 | `escrever` volta em < 200 ms com a gravadora travada e a ordem se mantém; fila cheia conta `transbordadas` sem bloquear e o `fim` entra fora da capacidade com o total; `linhas_perdidas` do `fim` conta o erro de uma linha que ainda estava na fila no pedido e é o último campo; nenhuma linha passa do `fim` (descartadas fora dele, contadas em `linhasPerdidas`); `close` espera a fila; `aguardarGravacao`; `capacidadePara` = 4 × linhas esperadas; gravadora daemon com o nome do arquivo; **o teste do plano**: trilha travada 5 s não atrasa a chamada seguinte do atuador além do prazo do tipo (`T_cham` = 500 ms); 30 *ticks* do laço em < 1 s com as duas gravadoras travadas |
+| `session/LigacaoControladorTrilhaTest` (5) | N-8 | linhas esperadas por arquivo (600 s, W = 5 s, P = 2 s: 662/542/242 e 362; arredondamento para cima); capacidade das duas trilhas na abertura; gancho envolto com o mesmo nome que roda o do executor e depois espera a gravadora no que sobra do `T_enc`; sem sobra não espera; ligação `active` registra e remove o gancho envolto |
+| `session/ArquiteturaSondaSaudeTest` (3) | N-7 | R-ARQ-4: `ConsultaSaudeRest` e `ClienteAdminRest` sem `ProcessBuilder`, `Process`, `Runtime`, `curl`, `java.nio.file`, e de `HealthRest` só `interpretar`/`Estado`; R-ARQ-5: `LigacaoControlador` sem processo; detectores |
+| `session/ConsultaSaudeRestTest.semConexao` | N-7 | conexão recusada vira `IOException` de classe exata (motivo `falha:IOException`, o mesmo do I-3b) |
+| `session/ContencaoLogHotRodTest` (8) | stderr | nó e motivo das mensagens reais do I-3b (`connection=`, `getsockopt: /h:p`, `h/<unresolved>:p`, `TransportException.getServerAddress`, a chave `lag:h:p` da sonda não conta); filtro (só o `ISPN004007`; 1ª inteira, 2ª aviso sem pilha, demais fora; chaves separadas); linha do stdout com `n` e o primeiro e o último instante; `reiniciar`; 8 × 1000 registros concorrentes = 8000 contados, uma inteira e um aviso; filtro anterior encadeado; **caminho real** `Log.HOTROD.exceptionAndNoRetriesLeft` → JBoss Logging → `java.util.logging` → filtro no logger `org.infinispan.HOTROD` (5 chamadas, 2 publicadas); ligação em `executarRepeticao` (instala e zera antes do `try` do `rcm`, imprime no `finally` dele) |
+
+**Testes existentes editados** (números de linha na ponta `ed7276d`):
+
+| Arquivo | Linhas | Mudança | Item |
+|---|---|---|---|
+| `controle/ControleArquivosTest` | 87 | linha nova `assertTrue(t.aguardarGravacao(5 * S), ...)` antes de `"flush por linha"` (a gravação passou para a gravadora); nenhuma asserção retirada | N-8 |
+| `session/ConsultaSaudeRestTest` | 1-273 (o arquivo inteiro; 273 linhas antes e depois) | reescrito: saem `ProcessoFalso`/`LancadorFalso`, entra `saudeComDigest` sobre o `ServidorAdminFalso` do W-2a | N-7 |
+| | `comandoSemSenha` → `pedidoDigestSemSenha` | as asserções do comando `curl` (`--digest`, `--fail`, `-K -`, `--max-time`, URL no fim, senha fora dos argumentos, sem `-u`, configuração no stdin e stdin fechado) viram: `GET` no endpoint de saúde, desafio + pedido Digest + pedido com o desafio guardado (3 pedidos), resumo Digest conferido pelo servidor, senha em nenhum cabeçalho, `lancamentos() = 0`, `pedidos() = 2` | N-7 |
+| | `maxTime` → `urlDoIndice` | URL do índice pedido e um `GET` autenticado por consulta (`pedidos() = 3`); as asserções de `--max-time` (`1`, `1`, `3`) saem: o prazo é o da sonda no pedido inteiro, provado em `servidorLento` | N-7 |
+| | `exitNaoZero` → `codigoNaoSucesso` | `exit 22` vira 503/404/500 → `IOException` de classe exata com o código na mensagem | N-7 |
+| | `processoTravado` → `servidorLento` | processo que não termina vira servidor que responde em 5 s; `TimeoutException` em < 1 s com prazo de 100 ms (antes < 1 s também); a asserção `destroyForcibly` sai (não há processo; R-ARQ-4) | N-7 |
+| | `interrupcao` | mesmo nome e mesmas asserções (`InterruptedException`, *thread* termina em 1 s); espera o pedido autenticado chegar em vez do processo; a asserção `destroyForcibly` sai | N-7 |
+| | `corpoReal`, `corpoInvalido` | mesmas asserções, corpo servido pelo servidor falso | N-7 |
+| | `nosERotulos` | construtor público (sem lançador); mesmas asserções | N-7 |
+| | T14 (`urlsDoPadraoDaCli`, `espacos`, `invalidos`) | sem mudança | — |
+| `session/ConsultaSaudeRestCliTest` | 11, 15-16, 23-24 | `import java.net.URI`; saem os `import static` de `LancadorFalso`/`ProcessoFalso`; Javadoc | N-7 |
+| | 41, 43-44 | `semRede` passa uma fábrica de cliente que falha se chamada (antes, um lançador que falhava) | N-7 |
+| | 118-129, 131-138 | `saidaJsonl`: três servidores falsos com Digest e um cliente aquecido (desafio guardado), `--servers` com os rótulos deles | N-7 |
+| | 164 | rótulo do 1º nó = o do servidor falso (antes `127.0.0.1:12262`) | N-7 |
+| | 170-180 | contagem de `GET` autenticados menos os 3 do aquecimento, mesma faixa `3·amostras .. 3·(amostras+1)` (antes, comandos `curl`); novas: nenhum resumo Digest errado, senha em nenhum cabeçalho | N-7 |
+
+Não editados, verdes: os testes da `SondaTopologia` (contrato da `FonteDeSaude` inalterado), `LacoDeControleTest`,
+`ExecutorDeAcoesTest`, `LacoDeRepeticoesTest` (o laço de `executar` não mudou) e os detectores de
+`executarRepeticao` (`DetectorFonte`, `AuditorLinhaTest`, `InvalidacaoProducaoTest`, `ResetEstadoPosicaoTest`).
+
+**Medições sem *cluster*:**
+
+- *Smoke* do filtro com o cliente Hot Rod real (programa descartável no *scratchpad*, fora do git): 200 `getCache`
+  contra a porta fechada `127.0.0.1:12709`, `maxRetries = 1`. Sem a contenção, 200 `ISPN004007` com pilha,
+  stderr de 299 569 B; com ela, 1 inteira + 1 aviso, 2 018 B, e a linha
+  `Hot Rod ISPN004007: total=200 inteiras=1 contidas=199 chaves=1 | no=127.0.0.1:12709 motivo=AnnotatedConnectException:ConnectException n=200 ...`.
+  O chamador viu as 200 falhas nos dois casos.
+- Regra reaplicada ao stderr bruto do I-3b (`wt-w4/runs/i3b/*/stderr.log.gz`, só leitura): `ativo-sem-religar`
+  9 887 694 B → 18 553 B (6 450 `ISPN004007` em 4 chaves: 6 366 `AnnotatedConnectException`, 76
+  `TransportException:ISPN004071`, 6 `SocketTimeoutException` no `127.0.0.1:12613`, 2 sem nó na mensagem);
+  `ativo-religar` 12 123 100 B → 28 840 B (6 348 em 6 chaves); `controle-shadow` 1 498 576 B → 1 455 311 B (33
+  `ISPN004007`; o resto é `ISPN004005`, P-46).
+
+**O que os testes não provam (fica para o *smoke* local, se o Gestor pedir):** a trilha com disco travado de verdade
+(os testes travam um `Writer` falso); a sonda REST nova contra o Infinispan 15.0.21 (o Digest do `ClienteAdminRest`
+já passou na tarefa zero e no I-1..I-5 do W-2a, mas não pelo endpoint `/rest/v2/cache-managers/default/health`); o
+volume real de stderr de uma execução com corte (só a reaplicação da regra aos brutos do I-3b).

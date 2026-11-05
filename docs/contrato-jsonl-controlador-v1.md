@@ -18,6 +18,11 @@ linha nova `defasagem` (uma por rodada da sonda S_lag); contadores `defasagem_*`
 dado de campanha; os brutos do I-1..I-5 em `runs/b44-2/` são anteriores e não têm os campos novos): `p2_habilitada`
 em `parametros_politica` e o motivo `p2-desabilitada` na linha `politica` (D-B); prazo do AC-5 de 5 s para 17 s e pior
 caso do `T_enc` de 9 s para 21 s (P-42); leitura por réplica da carga S3 com prazo sem resposta (P-41, seção própria).
+**W-2b** (`fix/p5-caminho-critico`, 05/11, P-5; nenhum campo novo, nenhum campo retirado, esquemas continuam
+`observaveis-controlador/1.2` e `decisoes-controlador/1.2`): a gravação passa para uma *thread* gravadora por arquivo,
+com fila em memória (regra 1); `linhas_perdidas` passa a contar também as linhas recusadas com a fila cheia e é
+preenchido na hora em que a linha `fim` é gravada; a sonda de topologia deixa de criar processo e `curl_lancados`
+vale 0 com ela.
 
 Com `--controller off` nenhum dos dois existe. Código: `workload/src/main/java/br/unipampa/tcc/controle/FormatoJsonl.java`
 (formato), `TrilhaJsonl.java` (gravação), `LacoDeControle.java` (ordem das linhas). Teste de contrato:
@@ -25,8 +30,14 @@ Com `--controller off` nenhum dos dois existe. Código: `workload/src/main/java/
 
 ## Regras gerais
 
-1. Uma linha = um objeto JSON em UTF-8, terminado em `\n`, com *flush* a cada linha. Uma queda do processo
-   perde no máximo a linha em curso.
+1. Uma linha = um objeto JSON em UTF-8, terminado em `\n`, com *flush* a cada linha. **W-2b (P-5):** quem produz
+   a linha (laço, executor, sondas) só a põe numa fila em memória e volta; uma *thread* gravadora por arquivo
+   (`trilha-jsonl-<arquivo>`) grava na ordem da fila. Um travamento de disco atrasa a gravação, não o laço nem o
+   atuador. A fila tem capacidade fixa, calculada na abertura: 4 × as linhas esperadas na execução de `--duration`
+   (`observaveis`: 2 + 2·⌈D/W⌉ + ⌈D/P_sonda⌉ com a sonda de topologia + ⌈D/W⌉ com a S_lag; `decisoes`:
+   2 + 3·⌈D/W⌉); com ela cheia, a linha é recusada e contada em `linhas_perdidas`. A linha `fim` entra fora da
+   capacidade (nunca se perde por fila cheia) e nenhuma linha passa dela. Uma queda do processo perde as linhas
+   ainda na fila e a linha em curso.
 2. Todo objeto tem `tipo`. A primeira linha dos dois arquivos é `meta`; a última, num encerramento normal, é `fim`.
    Um arquivo sem `fim` vem de execução interrompida.
 3. Campos em `snake_case`. Ausência de valor é `null`; nenhum campo do esquema é omitido.
@@ -54,7 +65,8 @@ flowchart LR
 
 As linhas `topologia` (thread da sonda), `defasagem` (thread gravadora da sonda S_lag, W-4) e `acao` em `active`
 (thread do executor) se intercalam com as demais na ordem em que acontecem; a ordem entre `tick`, `janela` e
-`decisao` é a do laço.
+`decisao` é a do laço. Desde o W-2b, "na ordem em que acontecem" é a ordem em que entram na fila do arquivo, que é a
+mesma em que antes eram gravadas.
 
 ## `meta` (primeira linha dos dois arquivos)
 
@@ -151,7 +163,8 @@ o *tick* fecha ao menos uma janela; serve ao *replay* do B-38.
 `eventos_apos_encerramento`, `atrasados_total`, `violacoes_atrasadas_total`, `promovidas_total`,
 `descartados_no_encerramento`, `violacoes_descartadas_no_encerramento`, `eventos_fora_do_contrato`,
 `sonda_rodadas`, `sonda_rodadas_puladas`, `sonda_amostras_atrasadas`, `sonda_erros_ouvinte`, `curl_lancados`
-(os de sonda são `null` sem sonda), `defasagem_rodadas`, `defasagem_rodadas_antes_da_origem`,
+(os de sonda são `null` sem sonda; `curl_lancados` vale 0 com a sonda REST desde o W-2b, que trocou o `curl` por
+HTTP em memória, e fica no esquema para não mudá-lo), `defasagem_rodadas`, `defasagem_rodadas_antes_da_origem`,
 `defasagem_rodadas_puladas`, `defasagem_rodadas_atrasadas`, `defasagem_rodadas_nao_gravadas`, `defasagem_escritas`,
 `defasagem_leituras`, `defasagem_erros_escrita`, `defasagem_erros_leitura`, `defasagem_erros_ouvinte` (1.2, W-4;
 `null` sem a sonda de defasagem), `defasagem_chaves` (1.2, W-4, P-44: lista de `no`, `chave`, `primario`, `motivo`: a chave de
@@ -198,7 +211,8 @@ execução vai como de infraestrutura (DT-014). `defasagem_chaves` fica como reg
 uso só na abertura, falha nunca silenciosa e prova REST obrigatória no *smoke*.
 
 `linhas_perdidas` conta as linhas que não chegaram ao arquivo até a linha `fim`: erros de escrita mais linhas
-recebidas com a trilha já fechada. As linhas que chegam **depois** do `fim` (executor fora do prazo,
+recebidas com a trilha já fechada e, desde o W-2b, linhas recusadas com a fila cheia. A *thread* gravadora preenche o
+campo na hora de gravar o `fim`, quando já conhece o resultado de todas as linhas anteriores. As linhas que chegam **depois** do `fim` (executor fora do prazo,
 `executor_no_prazo = false`) não podem estar nele. Elas aparecem em `linhas_jsonl_perdidas=` na linha `Controlador:`
 do stdout.
 
@@ -326,6 +340,25 @@ exemplo DEGRADED); `nao-lida:interrompida`; `nao-chamada` (a réplica não foi l
 cujas rodadas foram todas inválidas pela topologia). Código: `session/LeituraReplicaComPrazo.java` e
 `WorkloadMain.leitorDaReplica`; teste `LeituraReplicaComPrazoTest`. Efeito no tempo de fim: até
 `2 × --hotrod-timeout-ms` a mais na rodada final (sessões e contadores do nó parado).
+
+## Contenção do `ISPN004007` do cliente Hot Rod (W-2b)
+
+Vale com qualquer `--controller` (inclusive `off`): é da carga, não do controlador. O cliente Hot Rod grava um
+`ISPN004007` (ERROR, com a pilha) por operação que esgotou as novas tentativas. Por repetição e por (nó, motivo), a
+primeira ocorrência sai inteira no stderr, a segunda sai como um aviso de uma linha sem pilha
+(`ISPN004007 [W-2b] as proximas ocorrencias de no=... motivo=... so sao contadas ...`) e as demais só são contadas.
+Nenhuma outra mensagem do cliente muda. Saída (stdout), uma linha por repetição, no fim dela (depois de fechados os
+clientes; também quando a repetição falha):
+
+`Hot Rod ISPN004007: total=<n> inteiras=<n> contidas=<n> chaves=<k> | no=<host:porta> motivo=<motivo> n=<n> t_primeira_ns=<ns> t_ultima_ns=<ns> | ...`
+
+Uma parte por (nó, motivo), em ordem decrescente de `n` (empate: nó, motivo); `contidas = total - inteiras`.
+`no`: endereço do servidor da `TransportException`, senão o `connection=/h:p` da mensagem, senão o primeiro
+`host/ip:porta` da cadeia de causas, senão `desconhecido`. `motivo`: classe da exceção mais o primeiro código `ISPN` da
+cadeia (por exemplo `TransportException:ISPN004071`) ou, sem código, mais a classe da causa raiz
+(`AnnotatedConnectException:ConnectException`); `sem-excecao` sem exceção. Instantes em epoch-ns do relógio de parede do
+registro de log. Código: `session/ContencaoLogHotRod.java` e `WorkloadMain.executarRepeticao`; teste
+`ContencaoLogHotRodTest`.
 
 ## Arquivo vizinho: `convergencia-resumo-rep-NNN.json`
 

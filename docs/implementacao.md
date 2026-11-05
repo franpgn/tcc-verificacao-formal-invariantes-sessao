@@ -95,6 +95,71 @@ o ProtoStream padrão falha ao serializar e toda escrita vira
 
 ## Decisões técnicas a registrar
 
+### TD-014 — W-2b (P-5): caminho crítico do controlador sem disco e sem processo (2026-11-05)
+
+Branch `fix/p5-caminho-critico` a partir de `17f2bd4` (`feature/controlador-integracao`), plano do Senior em
+`docs/acoes-controlador-cluster-2026-11-05.md` §8 (W-2b, achados N-7 e N-8) e pendência do stderr deixada pelo W-4 e
+pelo I-3b. TDD: cada `test:` vermelho (`test-compile` exit 1, erros só nos testes do item) antes do `fix:`.
+
+- **Trilha JSONL assíncrona (N-8).** `TrilhaJsonl.escrever` serializa a linha e a põe numa fila em memória; nenhuma
+  E/S sob trava. Uma *thread* gravadora por arquivo (`trilha-jsonl-<arquivo>`, daemon) grava na ordem da fila, com
+  *flush* por linha. Capacidade fixa na abertura: `TrilhaJsonl.capacidadePara(linhas esperadas)` = 4 × linhas
+  esperadas (fator do plano, item 1), com as linhas esperadas de `LigacaoControlador.linhasEsperadasObservaveis`
+  (2 + 2·⌈D/W⌉ + ⌈D/P_sonda⌉ com sonda + ⌈D/W⌉ com S_lag) e `linhasEsperadasDecisoes` (2 + 3·⌈D/W⌉: decisão,
+  política e, em média, uma ação por janela), D = `--duration`. Fila cheia: a linha é recusada e contada
+  (`transbordadas`, dentro de `linhas_perdidas`). O `fim` vai por `escreverFim`: fora da capacidade, fecha a trilha
+  para linhas novas, e a gravadora preenche `linhas_perdidas` na hora de gravar. `close` espera a gravadora (no fim da
+  carga, fora do laço e do executor). O gancho de desligamento da JVM do executor vai envolto
+  (`LigacaoControlador.ganchoComDreno`): depois de desfazer a pilha, espera a gravadora do `decisoes` pelo que sobra
+  do `T_enc` usado; sem sobra, não espera, e o gancho nunca passa do `T_enc`.
+- **Sonda de saúde sem `curl` (N-7).** `ConsultaSaudeRest.consultar` faz `GET /rest/v2/cache-managers/default/health`
+  pelo `ClienteAdminRest` do W-2a (`HttpClient`, Digest com o desafio guardado por nó), com o prazo da sonda no pedido
+  inteiro. Os motivos da amostra não mudam: rede e resposta fora de 2xx viram `IOException` exata
+  (`falha:IOException`, o mesmo do `exit` do `curl --fail`), prazo vira `TimeoutException` (`timeout`), corpo inválido
+  vira `IllegalArgumentException`. `curl_lancados` fica no `fim` e vale 0. A CLI de *smoke* (`SondaTopologiaCli`)
+  recebe a fábrica do cliente e imprime `pedidos_http=` no custo.
+- **Contenção do `ISPN004007` (stderr sob falha).** No cliente 15.0.0 o `ISPN004007` é gravado uma vez por operação
+  que esgotou as novas tentativas (`RetryOnFailureOperation.logAndRetryOrFail` → `Log.HOTROD.exceptionAndNoRetriesLeft`,
+  nível ERROR; a nova tentativa em si só sai em TRACE), no logger `org.infinispan.HOTROD`, compartilhado por todas as
+  mensagens do cliente, pelo `java.util.logging` (JBoss Logging sem logback nem log4j). Baixar o nível não isola essa
+  mensagem; por isso `ContencaoLogHotRod` é um `Filter` nesse logger: por repetição e por (nó, motivo), a primeira
+  ocorrência sai inteira, a segunda vira um aviso de uma linha e as demais só são contadas, com o primeiro e o último
+  instante. `WorkloadMain.executarRepeticao` instala e zera a contenção no início e imprime a linha
+  `Hot Rod ISPN004007:` no `finally` do `try` do `rcm` (também quando a repetição falha). Limite novo:
+  `IMPRESSAS_POR_CHAVE = 1`, origem no Javadoc (W-2b item 3 e I-3b).
+
+```mermaid
+%%{init: {'theme':'base','themeVariables':{'background':'#ffffff','primaryColor':'#ffffff','primaryTextColor':'#000000','primaryBorderColor':'#000000','lineColor':'#000000','secondaryColor':'#ffffff','tertiaryColor':'#ffffff','fontFamily':'Arial'}}}%%
+flowchart LR
+    subgraph CRIT["caminho critico (memoria)"]
+        L["laco: janela, decisao, politica"] --> Q1["fila do observaveis / decisoes"]
+        E["executor: acao"] --> Q2["fila do decisoes"]
+        T["sonda de topologia"] -- "GET + Digest (HttpClient)" --> R["REST de cada no"]
+        T --> Q1
+        D["gravadora da S_lag"] --> Q1
+    end
+    Q1 --> G1["trilha-jsonl-observaveis"] --> F1[("observaveis-rep-NNN.jsonl")]
+    Q2 --> G2["trilha-jsonl-decisoes"] --> F2[("decisoes-rep-NNN.jsonl")]
+    H["threads do cliente Hot Rod"] -- "ISPN004007" --> C{"ContencaoLogHotRod"}
+    C -- "1a por (no, motivo): inteira; 2a: aviso" --> S[("stderr")]
+    C -- "contagem" --> O["linha 'Hot Rod ISPN004007:' no stdout"]
+```
+
+| Peça | Onde |
+|---|---|
+| `TrilhaJsonl` (`abrir(Path, int)`, `capacidadePara`, `escreverFim`, `aguardarGravacao`, `transbordadas`) | `controle/TrilhaJsonl.java` |
+| `LacoDeControle.encerrar` (as duas linhas `fim` por `escreverFim`) | `controle/LacoDeControle.java` |
+| `linhasEsperadasObservaveis`, `linhasEsperadasDecisoes`, `ganchoComDreno`, capacidade na abertura | `session/LigacaoControlador.java` |
+| `ConsultaSaudeRest` sobre `ClienteAdminRest`; `SondaTopologiaCli.FabricaCliente` | `session/` |
+| `ContencaoLogHotRod`; `WorkloadMain.executarRepeticao` (instala, zera, imprime) | `session/` |
+
+**Limites, declarados:** (1) `close` da trilha espera a gravadora sem prazo, como antes esperava a escrita síncrona:
+um disco travado no fim da carga atrasa o encerramento e o `fimControleNs`; (2) a contenção supõe o JBoss Logging sobre
+o `java.util.logging` (provado por `ContencaoLogHotRodTest.caminhoReal` com o classpath do projeto); com outro *backend*
+as linhas voltam a sair inteiras e a contagem fica em 0, sem esconder nada; (3) o `ISPN004005` (WARN, sem pilha, erros
+do servidor) não é contido: no I-3b ele é o grosso do stderr do `shadow` (P-46); (4) o laço de convergência ainda chama
+`HealthRest.consultar`, que cria um `curl` por rodada (P-45).
+
 ### TD-013 — Correções do W-2a depois da integração: P-41, P-42 e D-B (2026-11-05)
 
 Branch `fix/w2a-p41-p42` sobre a ponta integrada (`9b32695`, tag `int/2026-11-05-w5`: W-2a + W-4 + W-5), decisões do

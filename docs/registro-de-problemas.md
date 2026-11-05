@@ -1049,6 +1049,37 @@ correspondente adicionado em `Mesclar` (`spec/SessionStore.tla`, commit `b7d8e0a
   `isn1`↔`isn2` vistos e `no_suspeito = isn3` em todas as rodadas antes da mudança de vista; e o dono primário de cada
   chave por `GET /rest/v2/caches/{cache}/{chave}?action=distribution`, como prova independente.
 
+## 2026-11-05 — W-2b (P-5), caminho crítico sem disco e sem processo
+
+Branch `fix/p5-caminho-critico` (base `17f2bd4`). Numeração na branch do W-2b; renumerar na integração se colidir.
+Os itens do plano (N-7, N-8 e o stderr sob corte) estão em `docs/implementacao.md` TD-014; aqui ficam os achados que
+o W-2b não resolve.
+
+### P-45 (W-2b) — o laço de convergência ainda cria um processo `curl` por rodada
+
+- **Sintoma:** `WorkloadMain.executarConvergencia` usa `HealthRest.consultar` (`ProcessBuilder("curl", ...)`,
+  `--max-time 5`, espera de até 10 s) como sonda do *cluster* em cada rodada do laço de convergência (B-33). O
+  controlador já fechou nesse ponto, então não é caminho crítico do controlador; mas o tempo de convergência
+  (`t_convergencia`) é desfecho medido, e na VM o travamento de disco travou junto a criação de processos (P-5,
+  `V-S7r.md:61`): um travamento nessa fase atrasa a rodada e infla o `t_convergencia`.
+- **Proposta:** trocar por `ConsultaSaudeRest` (mesmo endpoint, HTTP em memória, Digest), com um prazo próprio com
+  origem declarada. Muda o laço de convergência, fora do escopo do W-2b.
+- **Status:** `ABERTO`, decisão do Senior/Gestor.
+
+### P-46 (W-2b) — depois da contenção do `ISPN004007`, o stderr do `shadow` passa a ser o maior
+
+- **Medido (I-3b, `wt-w4/runs/i3b/`, sem execução nova):** reaplicando a regra da `ContencaoLogHotRod` ao stderr bruto,
+  os braços ativos vão de 9 887 694 B para 18 553 B e de 12 123 100 B para 28 840 B; o `shadow` vai de 1 498 576 B para
+  1 455 311 B. O resto do `shadow` é `ISPN004005` (WARN, uma linha por erro devolvido pelo servidor, sem pilha;
+  3 897 linhas, 1 440 008 B), quase todo `AvailabilityException`/`ISPN000306` das leituras da sonda S_lag pelo `isn3`
+  em DEGRADED (1 767 linhas para cada uma das chaves `lag:*` do `isn1` e do `isn2`).
+- **Efeito:** a escrita no stderr roda nas *threads* de E/S do cliente Hot Rod (as mesmas da sonda S_lag). Sem a
+  contenção, os braços ativos escreviam 6,6 e 8,1 vezes o volume do `shadow`; com ela, escrevem 1/78 e 1/50 dele. Os dois braços
+  continuam com escrita em disco no caminho do cliente sob corte, em volumes diferentes.
+- **Proposta:** a mesma regra para o `ISPN004005`, com chave (código do servidor, por exemplo `ISPN000306`,
+  `ISPN000476`), sem nó (a mensagem não traz o endereço). É uma linha na lista de mensagens contidas mais os testes.
+- **Status:** `ABERTO`, decisão do Gestor (o item 3 do W-2b pediu o `ISPN004007`).
+
 ## Observação de modelagem (não é defeito)
 
 Com 8 *threads* = 8 identidades fixas (`user-<tid>`), `incrementFailure`

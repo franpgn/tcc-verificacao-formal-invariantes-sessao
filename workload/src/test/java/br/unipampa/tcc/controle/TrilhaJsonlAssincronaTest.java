@@ -343,6 +343,81 @@ class TrilhaJsonlAssincronaTest {
         assertEquals(1, t.errosEscrita());
     }
 
+    @Test
+    @DisplayName("fechar(prazo) com o disco travado: volta no prazo, abandona a fila e conta como perdidas a linha em curso, as da fila e o fim")
+    void fecharComPrazoAbandona() throws Exception {
+        SaidaLenta s = SaidaLenta.travandoNaPrimeira(5_000);
+        TrilhaJsonl t = TrilhaJsonl.sobre(dir.resolve("x.jsonl"), s, 16);
+        t.escrever(linha("a", 1));
+        assertTrue(s.entrouNaTrava.await(2, TimeUnit.SECONDS));
+        t.escrever(linha("a", 2));
+        t.escrever(linha("a", 3));
+        assertTrue(t.escreverFim(JSON.createObjectNode().put("tipo", "fim"), "linhas_perdidas"));
+        long t0 = System.nanoTime();
+        assertFalse(t.fechar(200 * MS), "o disco travado nao deixa terminar no prazo");
+        long decorrido = System.nanoTime() - t0;
+        assertTrue(decorrido < 1_000 * MS, "fechar levou " + decorrido / MS + " ms com prazo de 200 ms");
+        // teto: a linha em curso no estouro conta como perdida mesmo se o disco a completar depois
+        assertEquals(4, t.abandonadas());
+        assertEquals(4, t.linhasPerdidas());
+        s.liberar();
+        assertTrue(t.aguardarGravacao(5 * S), "a gravadora termina a linha em curso e fecha o arquivo");
+        t.escrever(linha("tarde", 4));
+        assertEquals(1, s.linhas().size(), "nada da fila abandonada e gravado: " + s.texto());
+        assertTrue(s.fechada, "o arquivo e fechado quando a gravadora volta");
+        assertEquals(5, t.linhasPerdidas(), "abandonadas + a que chegou depois");
+        assertTrue(t.fechar(100 * MS), "fechar de novo: a gravadora ja terminou");
+    }
+
+    @Test
+    @DisplayName("fechar(prazo) com o disco bom: grava tudo, inclusive o fim, e devolve true")
+    void fecharNoPrazo() throws Exception {
+        Path p = dir.resolve("ok.jsonl");
+        TrilhaJsonl t = TrilhaJsonl.abrir(p, 16);
+        t.escrever(linha("a", 1));
+        assertTrue(t.escreverFim(JSON.createObjectNode().put("tipo", "fim"), "linhas_perdidas"));
+        assertTrue(t.fechar(2 * S));
+        List<String> l = Files.readAllLines(p, StandardCharsets.UTF_8);
+        assertEquals(2, l.size());
+        assertEquals("fim", ler(l.get(1)).get("tipo").asText());
+        assertEquals(0, t.abandonadas());
+        assertEquals(0, t.linhasPerdidas());
+    }
+
+    @Test
+    @DisplayName("encerramento do laco com o disco do observaveis travado: volta dentro do T_enc usado (mais o do executor) e as linhas nao gravadas vao a linhasPerdidas (stdout)")
+    void encerramentoNaoEsperaODiscoTravado() throws Exception {
+        SaidaLenta so = SaidaLenta.travandoNaPrimeira(10_000);
+        TrilhaJsonl obs = TrilhaJsonl.sobre(dir.resolve("observaveis-rep-001.jsonl"), so, 256);
+        Path pd = dir.resolve("decisoes-rep-001.jsonl");
+        TrilhaJsonl dec = TrilhaJsonl.abrir(pd, 256);
+        AtomicLong relogio = new AtomicLong(0);
+        ParametrosControlador p = ParametrosControlador.padrao();
+        long tCham = 300 * MS;
+        ExecutorDeAcoes ex = new ExecutorDeAcoes(ModoAtuacao.SHADOW, AtuadorFalso.proibido(), tCham, relogio::get,
+                r -> dec.escrever(FormatoJsonl.acao(r)), new ExecutorDeAcoesTest.GanchoFalso());
+        MetaExecucao meta = new MetaExecucao("teste-0", 1, ModoAtuacao.SHADOW, "S3", "async", 3, p, null, null,
+                AgregadorDeJanela.TOLERANCIA_PADRAO_NS, S, 0L, "falso", PoliticaDeAcao.NENHUMA.nome(), true, false);
+        LacoDeControle laco = new LacoDeControle(new LacoDeControle.Componentes(meta,
+                new AgregadorDeJanela(0L, p, Referencia.vazia()), new Controlador(p),
+                fim -> new EstadoTopologia(true, 2, 0, 3), fim -> EstadoDefasagem.indeterminada(), List::of,
+                PoliticaDeAcao.NENHUMA, ex, relogio::get, obs, dec));
+        assertTrue(so.entrouNaTrava.await(2, TimeUnit.SECONDS));
+        for (int s = 1; s <= 12; s++) {
+            relogio.set(s * S);
+            laco.tick();
+        }
+        long t0 = System.nanoTime();
+        laco.encerrar();
+        long decorrido = System.nanoTime() - t0;
+        assertTrue(decorrido < 2 * tCham + 1_000 * MS, "encerrar levou " + decorrido / MS + " ms (T_enc = 300 ms)");
+        assertTrue(obs.abandonadas() >= 2, "ao menos a meta em curso e o fim: " + obs.abandonadas());
+        assertEquals(obs.abandonadas(), laco.linhasPerdidas(), "o decisoes gravou tudo");
+        List<String> ld = Files.readAllLines(pd, StandardCharsets.UTF_8);
+        assertEquals("fim", ler(ld.get(ld.size() - 1)).get("tipo").asText(), "o decisoes tem fim");
+        so.liberar();
+    }
+
     // ------------------------------------------------------------------ quem chama
 
     /** Atuador que registra o instante (nanoTime) de entrada e de saida de cada chamada. */

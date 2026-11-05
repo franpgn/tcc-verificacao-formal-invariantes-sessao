@@ -44,6 +44,9 @@
 # a ancora e o fechamento, medidos, entram com folga no pre-registro); B2 (adenda da V-W6, secao 11), uma referencia
 # de p99 por modo de replicacao (--referencia-async, --referencia-sync), escolhida pelo modo da linha da matriz,
 # conferida no pre-voo e no --dry-run, e o --dry-run do programa em cada perfil da fase.
+# I-1 da V-W6 (secao 5.2, integracao com o W-2b, cuja TrilhaJsonl grava por thread): a meta da trilha e relida a cada
+# 0,2 s por ate 5 s enquanto a conferencia sair com 4 (trilha ausente ou primeira linha ilegivel); se nao chegar, a
+# carga e parada e a execucao vira DESCARTADA-INFRA sem parar a fase. O exit 6 fica so para a recusa (exit 5).
 # Todo numero da campanha vem do --parametros (esquema campanha-s3/1, cada um com a sua origem, sem padrao;
 # scripts/campanha_s3_conferir.py). As constantes abaixo tem a origem ao lado.
 #
@@ -92,6 +95,7 @@ readonly RECRIAR_TIMEOUT_S=180 RECRIAR_PERIODO_S=2        # runs/gate-b29/recria
 readonly ANCORA_TIMEOUT_S=120 POLL_S=0.2                  # run-rebaseline.sh (ANCORA_TIMEOUT_S, ANCORA_POLL_S)
 readonly GATE_TIMEOUT_S=3600                              # run-rebaseline.sh
 readonly REST_PRAZO_S=5                                   # run-rebaseline.sh (curl --max-time 5 na saude)
+readonly META_PRAZO_S=5 META_PERIODO_S=0.2                # I-1 da V-W6, secao 5.2 (releitura da meta da trilha)
 readonly DEADMAN_MARGEM_S=90                              # runs/gate-netdegrade/l-lib.sh e g5b.sh modo A (V-S6A)
 readonly DEADMAN_PRECISAO="AccuracySec=1s"                # runs/gate-b29/g5b.sh (achado de S0: 1 min por padrao)
 readonly T_ENC_PIOR_S=21                                  # contrato JSONL v1.2, P-42 (AC-5 17 s; P2 habilitada; 19 s sem ela)
@@ -1116,10 +1120,27 @@ leitor_stdout() {  # stdin: saida do programa; stdout: eventos (FIFO em memoria)
 }
 
 conferir_meta() {  # conferir_meta <decisoes>: braco certo e, no B, que ele atua (A-3 da V-W5, O10 da V-W2a)
-    local rc=0 out=""
-    out="$(py "${CONFERIR}" meta --decisoes "$1" --braco "${E_BRACO}" --param-sha256 "${CTRL_SHA}" --exigir-p2-desabilitada)" || rc=$?
+    # I-1 da V-W6: a TrilhaJsonl (W-2b) grava por uma thread com fila, entao a meta pode chegar ao disco depois da
+    # ancora (disco lento, o caso h4). Exit 4 (trilha ausente ou primeira linha ilegivel): nova leitura a cada
+    # META_PERIODO_S ate META_PRAZO_S contados da primeira. Ainda 4: a carga e parada e a execucao vira
+    # DESCARTADA-INFRA, mas a fase segue (disco lento nao e erro de configuracao). Qualquer outro exit (5, recusa de
+    # verdade; 2, uso) para a fase com 6, como antes.
+    local rc out t0 leituras=0
+    t0="$(agora_ms)"
+    while :; do
+        rc=0; out=""; leituras=$(( leituras + 1 ))
+        out="$(py "${CONFERIR}" meta --decisoes "$1" --braco "${E_BRACO}" --param-sha256 "${CTRL_SHA}" --exigir-p2-desabilitada)" || rc=$?
+        [[ "${rc}" -eq 4 && $(( $(agora_ms) - t0 )) -lt $(( META_PRAZO_S * 1000 )) ]] || break
+        dormir "${META_PERIODO_S}"
+    done
     E_META="${out//$'\n'/ }"
-    if [[ "${rc}" -ne 0 ]]; then
+    if [[ "${rc}" -eq 0 ]]; then
+        [[ "${leituras}" -eq 1 ]] || log "exec i=${E_I}: meta da trilha lida na leitura ${leituras} (exit 4 antes; I-1)"
+    elif [[ "${rc}" -eq 4 ]]; then
+        E_MOTIVOS+=("infra: meta da trilha ausente ou ilegivel ${META_PRAZO_S} s depois da ancora (exit 4, ${leituras} leituras): ${E_META}")
+        log "exec i=${E_I}: meta da trilha ausente ou ilegivel depois de ${leituras} leituras em ${META_PRAZO_S} s: ${E_META}; parando a carga (a fase segue)"
+        parar_carga
+    else
         E_INFRA_STOP=6; E_MOTIVOS+=("infra: meta da trilha recusada (exit ${rc}): ${E_META}")
         log "exec i=${E_I}: meta recusada: ${E_META}; parando a carga"
         parar_carga
@@ -1168,8 +1189,9 @@ rodar_carga() {  # lanca o programa, le os eventos e conduz a falha; volta quand
             E_SEM_ANCORA=1; E_RECUSAS+=("sem ancora em ${ANCORA_TIMEOUT_S} s"); log "exec i=${E_I}: sem ancora; parando a carga"
             parar_carga
         fi
+        # sem injecao numa carga que o orquestrador ja parou (E_PAROU; I-1: meta que nao chegou, sem E_INFRA_STOP)
         if [[ -n "${E_ANC_MS}" && "${E_FALHA}" != none && "${INJ_ESTADO}" == pendente && -z "${E_INFRA_STOP}" \
-              && "${agora}" -ge $(( E_ANC_MS + P[inj_offset_s] * 1000 )) ]]; then
+              && -z "${E_PAROU}" && "${agora}" -ge $(( E_ANC_MS + P[inj_offset_s] * 1000 )) ]]; then
             if [[ "${E_FALHA}" != F1 ]]; then
                 guarda_netns "${P[${E_FALHA,,}_no]}" || { E_INFRA_STOP=6; E_MOTIVOS+=("infra: guarda de netns antes da ${E_FALHA}"); parar_carga; INJ_ESTADO=feita; }
             fi

@@ -74,7 +74,7 @@ public final class FormatoJsonl {
                 o.putNull("parametros_politica");
             } else {
                 ObjectNode q = o.putObject("parametros_politica");
-                q.put("k", pp.k());
+                q.put("k_lag", pp.kLag());
                 q.put("teto_lag_ms", pp.tetoLagMs());
                 q.put("t_reb_ns", pp.tRebNs());
                 q.put("cota_ac5", pp.cotaAc5());

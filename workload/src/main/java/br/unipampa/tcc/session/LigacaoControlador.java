@@ -243,7 +243,7 @@ final class LigacaoControlador implements AutoCloseable, WorkloadMain.ControleDa
 
     /** Parametros da politica (W-2a), com a origem declarada de cada um. */
     static String textoPolitica(ParametrosPolitica q) {
-        return "politica k=" + q.k() + " tetoLagMs=" + q.tetoLagMs() + " tRebNs=" + q.tRebNs()
+        return "politica kLag=" + q.kLag() + " tetoLagMs=" + q.tetoLagMs() + " tRebNs=" + q.tRebNs()
                 + " cotaAc5=" + q.cotaAc5() + " origem=" + q.origem();
     }
 

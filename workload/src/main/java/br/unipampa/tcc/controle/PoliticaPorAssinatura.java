@@ -15,7 +15,7 @@ import java.util.Set;
  * <ul>
  *   <li><b>P1</b>, isolar o no suspeito ({@link AcaoCluster.Tipo#AC_5}): em CONSERVADOR, vista completa nos
  *       nos em todas as amostras da janela ({@link EstadoTopologia#vistaCompleta()}), S_lag no teto
- *       ({@code lagMaxMs >= tetoLagMs}) com o mesmo {@code noSuspeito} em {@code k} janelas seguidas, o
+ *       ({@code lagMaxMs >= tetoLagMs}) com o mesmo {@code noSuspeito} em {@code kLag} janelas seguidas, o
  *       suspeito respondeu a REST em todas as amostras e a cota ainda nao foi usada.</li>
  *   <li><b>P2</b>, adiar o rebalanceamento ({@link AcaoCluster.Tipo#AC_2}, forma global): em CONSERVADOR, um
  *       no sem resposta e os outros respondendo ({@link EstadoTopologia#noSemResposta()}), sem vistas
@@ -30,7 +30,7 @@ import java.util.Set;
  *
  * <p>Duas escolhas que a tabela nao fixa, registradas no relatorio do W-2a: (1) o AC-2 nao e aplicado para
  * um no que a propria politica parou pelo AC-5 (ele nao volta na execucao, e o AC-2 so estenderia a copia
- * unica ate o teto); (2) a persistencia de {@code k} janelas zera quando a politica nao foi consultada numa
+ * unica ate o teto); (2) a persistencia de {@code kLag} janelas zera quando a politica nao foi consultada numa
  * janela (janela do R4), detectado pelo salto de {@code fimNs} maior que {@code W}.</p>
  *
  * <p>Pura: sem E/S e sem relogio (o tempo e o {@code fimNs} da decisao). Guarda estado entre janelas
@@ -80,7 +80,7 @@ public final class PoliticaPorAssinatura implements PoliticaDeAcao {
     }
 
     /**
-     * @param parametros   {@code k}, {@code tetoLagMs}, {@code tRebNs}, {@code cotaAc5}, sem padrao
+     * @param parametros   {@code kLag}, {@code tetoLagMs}, {@code tRebNs}, {@code cotaAc5}, sem padrao
      * @param cachesDoModo os caches do modo ativo (leitura de volta do atuador)
      * @param tipoP1       tipo da acao de P1: nao reversivel e com alvo num no
      */
@@ -148,7 +148,7 @@ public final class PoliticaPorAssinatura implements PoliticaDeAcao {
         }
 
         // ---- P1: vista completa e S_lag no teto com o mesmo suspeito em k janelas
-        if (top.vistaCompleta() && suspeito != null && persistencia >= p.k() && top.respondeuEmTodas(suspeito)) {
+        if (top.vistaCompleta() && suspeito != null && persistencia >= p.kLag() && top.respondeuEmTodas(suspeito)) {
             if (usadasP1 < p.cotaAc5()) {
                 usadasP1++;
                 paradosPelaPolitica.add(suspeito);

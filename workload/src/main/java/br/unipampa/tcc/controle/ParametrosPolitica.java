@@ -24,26 +24,31 @@ import java.util.Set;
  *       tolera um no fora);</li>
  *   <li>{@code tRebNs} = 60 s: o {@code state-transfer.timeout} de 60 000 ms do XML, acima da maior deteccao
  *       medida (46,8 s no local, B-44.1 secao 4.1; 46,4 s na VM, {@code V-S7r.md:45}); convencao, nao otimo;</li>
- *   <li>{@code k} e {@code tetoLagMs}: sem valor padrao, vem da calibracao (D-12). Nos arquivos de teste, com
+ *   <li>{@code kLag} e {@code tetoLagMs}: sem valor padrao, vem da calibracao (D-12). Nos arquivos de teste, com
  *       {@code "origem": "teste"}.</li>
  * </ul>
  *
- * @param k         janelas seguidas com S_lag no teto e o mesmo {@code noSuspeito} para o AC-5 (&gt;= 1)
+ * <p><b>{@code kLag} nao e o {@code k} do nucleo</b> (V-W2a R6, decisao V-4 de 05/11). O {@code k} de
+ * {@link ParametrosControlador} conta janelas altas seguidas de latencia, erro ou defasagem para a entrada em
+ * CONSERVADOR (R2). O {@code kLag} conta janelas seguidas, ja consultadas pela politica, com S_lag no teto e o mesmo
+ * {@code noSuspeito}, para o P1 (AC-5). Sao numeros independentes, calibrados separadamente.</p>
+ *
+ * @param kLag      janelas seguidas com S_lag no teto e o mesmo {@code noSuspeito} para o AC-5 (&gt;= 1)
  * @param tetoLagMs o que conta como "nao viu" no S_lag: {@code lagMaxMs >= tetoLagMs} (&gt; 0)
  * @param tRebNs    teto {@code T_reb} do AC-2 (&gt; 0)
  * @param cotaAc5   AC-5 por execucao, 0 ou 1; 0 desliga o P1
  * @param origem    origem declarada de cada parametro (chave = nome do campo); vazio quando construido no codigo
  */
-public record ParametrosPolitica(int k, long tetoLagMs, long tRebNs, int cotaAc5, Map<String, String> origem) {
+public record ParametrosPolitica(int kLag, long tetoLagMs, long tRebNs, int cotaAc5, Map<String, String> origem) {
 
     /** Campos numericos do bloco, todos obrigatorios. */
-    public static final List<String> CAMPOS = List.of("k", "tetoLagMs", "tRebNs", "cotaAc5");
+    public static final List<String> CAMPOS = List.of("kLag", "tetoLagMs", "tRebNs", "cotaAc5");
     /** Campo com a origem de cada parametro, obrigatorio no arquivo. */
     public static final String ORIGEM = "origem";
 
     public ParametrosPolitica {
-        if (k < 1) {
-            throw new IllegalArgumentException("k deve ser >= 1: " + k);
+        if (kLag < 1) {
+            throw new IllegalArgumentException("kLag deve ser >= 1: " + kLag);
         }
         if (tetoLagMs <= 0) {
             throw new IllegalArgumentException("tetoLagMs deve ser > 0: " + tetoLagMs);
@@ -72,8 +77,8 @@ public record ParametrosPolitica(int k, long tetoLagMs, long tRebNs, int cotaAc5
     }
 
     /** Parametros montados no codigo (testes), sem origem declarada. */
-    public ParametrosPolitica(int k, long tetoLagMs, long tRebNs, int cotaAc5) {
-        this(k, tetoLagMs, tRebNs, cotaAc5, Map.of());
+    public ParametrosPolitica(int kLag, long tetoLagMs, long tRebNs, int cotaAc5) {
+        this(kLag, tetoLagMs, tRebNs, cotaAc5, Map.of());
     }
 
     /**
@@ -118,7 +123,7 @@ public record ParametrosPolitica(int k, long tetoLagMs, long tRebNs, int cotaAc5
             throw new IllegalArgumentException("parametros da politica: origem deve ter exatamente " + CAMPOS
                     + ": " + origem.keySet());
         }
-        return new ParametrosPolitica((int) inteiro(raiz, "k", true), inteiro(raiz, "tetoLagMs", false),
+        return new ParametrosPolitica((int) inteiro(raiz, "kLag", true), inteiro(raiz, "tetoLagMs", false),
                 inteiro(raiz, "tRebNs", false), (int) inteiro(raiz, "cotaAc5", true), origem);
     }
 

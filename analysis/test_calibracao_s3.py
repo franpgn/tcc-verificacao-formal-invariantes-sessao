@@ -325,12 +325,22 @@ class CampanhaBase(unittest.TestCase):
 
     def test_cada_parametro_tem_regra_valor_dados_e_incerteza(self):
         for nome, x in self.P.items():
-            for campo in ("regra", "valor", "dados", "incerteza", "motivo", "ambiguidades"):
+            for campo in ("regra", "valor", "dados", "incerteza", "motivo", "leituras"):
                 self.assertIn(campo, x, "%s sem %s" % (nome, campo))
             self.assertIn("execucoes", x["dados"], nome)
             self.assertIn("n_execucoes", x["dados"], nome)
         regras = {x["regra"] for x in self.P.values()}
         self.assertEqual({"7.%d" % k for k in range(1, 19)}, regras)
+
+    def test_leituras_do_complemento_1(self):
+        lt = {x["id"]: x for x in self.r["leituras"]}
+        self.assertEqual({"A-%d" % k for k in range(1, 18)}, set(lt))
+        for i, x in lt.items():
+            self.assertIn("complemento 1", x["situacao"], i)
+            self.assertNotIn("aberta", x["situacao"], i)
+        for i in ["A-2"] + ["A-%d" % k for k in range(6, 17)]:
+            self.assertTrue(lt[i]["situacao"].startswith("confirmada"), i)
+        self.assertIn("DT-022", self.r["pre_registro"])
 
     # ---- 7.1, 7.2, 7.3, 7.4, 7.5
     def test_7_1_referencias_por_perfil(self):
@@ -353,8 +363,10 @@ class CampanhaBase(unittest.TestCase):
     def test_7_3_w(self):
         x = self.P["W_s"]
         self.assertEqual(5, x["valor"])
+        self.assertEqual(5, x["dados"]["w_formula_s"])
         self.assertEqual(5, x["dados"]["termo_vazao_s"])
-        self.assertEqual(3, x["dados"]["termo_leitura_s"])
+        self.assertEqual(3, x["dados"]["w_min_s"])          # floor(2 + 0,04) + 1
+        self.assertFalse(x["dados"]["reserva_aplicada"])
         self.assertEqual(40 * MS, x["dados"]["atraso_max_ns"])
         self.assertEqual(11, x["dados"]["n_execucoes"])
 
@@ -362,6 +374,10 @@ class CampanhaBase(unittest.TestCase):
         x = self.P["viabilidade_ac5"]["valor"]
         self.assertTrue(x["viavel"])
         self.assertEqual([], x["motivos"])
+        self.assertFalse(x["reserva_aplicada"])
+        self.assertEqual([{"W_s": 5, "kLag_min": 2, "viavel": True}], x["candidatos"])
+        cob = self.P["viabilidade_ac5"]["dados"]["cobertura_latencia"]
+        self.assertEqual(0.0, cob["fracao_indeterminada"])
 
     def test_7_5_excedencia_recalculada(self):
         x = self.P["excedencia_por_janela"]
@@ -396,17 +412,16 @@ class CampanhaBase(unittest.TestCase):
         self.assertEqual(2000.0, x["valor"])
         self.assertEqual(60, x["dados"]["N"])
 
-    def test_7_8_e_7_12_saida_literal_e_alternativa(self):
+    def test_7_8_e_7_12_saida_pelo_menor_valor(self):
+        # complemento 1 §2: menor c em {0} U {observados abaixo do limiar} sem trecho intermediario maior que m
         lat = self.P["theta_lat_out"]
-        self.assertEqual(math.nextafter(math.nextafter(0.03, math.inf), -math.inf), lat["valor"])
-        self.assertIn("A-3", lat["ambiguidades"])
-        # menor valor tal que nenhuma janela sem falha fica na banda por mais de m = 5 seguidas
-        self.assertEqual(0.0, lat["dados"]["alternativa_menor_valor"])
+        self.assertEqual(0.0, lat["valor"])
+        self.assertIn("A-3", lat["leituras"])
+        self.assertNotIn("alternativa_menor_valor", lat["dados"])
         self.assertEqual(0.0, self.P["theta_err_out"]["valor"])
-        lo = self.P["lag_out_ms"]
-        self.assertEqual(math.nextafter(2000.0, -math.inf), lo["valor"])
         # janelas sem falha em 1,5 ms: com lag_out < 1,5 todas ficariam na banda (20 seguidas > m)
-        self.assertEqual(1.5, lo["dados"]["alternativa_menor_valor"])
+        self.assertEqual(1.5, self.P["lag_out_ms"]["valor"])
+        self.assertEqual(5, self.P["lag_out_ms"]["dados"]["m"])
 
     def test_7_8_m_e_cooldown(self):
         x = self.P["m"]
@@ -414,6 +429,8 @@ class CampanhaBase(unittest.TestCase):
         self.assertEqual(4, x["dados"]["maior_trecho"])
         self.assertEqual(["ASYNC-F1", "ASYNC-F2", "ASYNC-F4"], x["dados"]["celulas"])
         self.assertEqual(25, self.P["T_cooldown_s"]["valor"])
+        # complemento 1 §3: m nao usa theta_out
+        self.assertEqual({"theta_lat_in", "theta_err_in", "lag_in"}, set(x["dados"]["limiares_usados"]))
 
     # ---- 7.10
     def test_7_10_teto_convergencia(self):
@@ -422,6 +439,7 @@ class CampanhaBase(unittest.TestCase):
         self.assertAlmostEqual(35.3, x["dados"]["maior_delta_conv_s"])
         self.assertEqual(5, x["dados"]["n_convergiram"])
         self.assertIn("exec-0008-ASYNC-F2-A", [e["dir"] for e in x["dados"]["fora"]])
+        self.assertEqual(1, x["dados"]["n_fora"])
 
     # ---- 7.13
     def test_7_13_klag_conta_so_o_predicado_da_politica(self):
@@ -467,6 +485,7 @@ class CampanhaBase(unittest.TestCase):
         x = self.P["n_blocos"]
         self.assertEqual(12, x["valor"])
         self.assertEqual(11, len(x["dados"]["t_exec_s"]))
+        self.assertIn("calibracao", x["dados"]["ciclo_completo"]["por_fase"])
 
     def test_7_17_volume_e_teto(self):
         v = self.P["volume_exec_mb"]
@@ -491,8 +510,8 @@ class CampanhaBase(unittest.TestCase):
         self.assertAlmostEqual(3 * 1000 / 320, taxas["exec-0007-ASYNC-F2-A"])
         self.assertEqual(0.0, taxas["exec-0008-ASYNC-F2-A"])
         cmd = self.P["curva_de_poder"]["valor"]["comando"]
-        self.assertIn("--m-celulas 2", cmd)
-        self.assertIn("--blocos 12", cmd)
+        for trecho in ("python -E -P", "--semente 20261105", "--n-sim 10000", "--m-celulas 2", "--blocos 12"):
+            self.assertIn(trecho, cmd)
 
     def test_so_braco_a(self):
         self.assertEqual({"A"}, {e["braco"] for e in self.r["execucoes"]["usadas"]})
@@ -509,21 +528,60 @@ class Bordas(unittest.TestCase):
             montar_campanha(base, mud)
             return cal.derivar(base, parametros_campanha(tmp))["parametros"]
 
-    def test_klag_limite_estourado_declara_ac5_inviavel(self):
-        P = self.derivar({"n0": dict(lag_teto={j: ISN3 for j in range(4, 9)})})   # persistencia 5
+    def test_reserva_de_w_aplicada(self):
+        # persistencia 5 em W = 5: kLag 6, 6 x 5 + 13,3 >= 39,8. Em W' = 4 a janela [36, 40) fica sem rodada e e
+        # pulada: persistencia 5, kLag 6, 6 x 4 + 13,3 = 37,3 < 39,8 -> W = 4 (complemento 1 §4.3)
+        P = self.derivar({"n0": dict(lag_teto={j: ISN3 for j in range(4, 9)})})
+        self.assertEqual(4, P["W_s"]["valor"])
+        self.assertEqual(5, P["W_s"]["dados"]["w_formula_s"])
+        self.assertTrue(P["W_s"]["dados"]["reserva_aplicada"])
         x = P["kLag"]
         self.assertEqual(6, x["valor"])
-        self.assertFalse(x["dados"]["dentro_do_limite"])
-        self.assertEqual(5, x["dados"]["k_max_no_limite"])
+        self.assertTrue(x["dados"]["dentro_do_limite"])
+        v = P["viabilidade_ac5"]["valor"]
+        self.assertTrue(v["viavel"])
+        self.assertTrue(v["reserva_aplicada"])
+        self.assertEqual([{"W_s": 5, "kLag_min": 6, "viavel": False}, {"W_s": 4, "kLag_min": 6, "viavel": True}],
+                         v["candidatos"])
+        cob = P["viabilidade_ac5"]["dados"]["cobertura_latencia"]
+        self.assertEqual(1.0, cob["fracao_indeterminada"])     # 80 elegiveis por janela de 4 s < n_lat
+        self.assertTrue(cob["passa_de_5_por_cento"])
+        self.assertIn("perdeu cobertura", cob["declaracao"])
+        self.assertIsNone(P["theta_lat_in"]["valor"])
+        self.assertEqual(4 * P["m"]["valor"], P["T_cooldown_s"]["valor"])
+
+    def test_ac5_inviavel_sem_w_viavel(self):
+        # persistencia 10 em qualquer W' de W_min = 3 a 5: kLag 11 nao cabe
+        P = self.derivar({"n0": dict(lag_teto={j: ISN3 for j in range(4, 14)})})
         v = P["viabilidade_ac5"]["valor"]
         self.assertFalse(v["viavel"])
-        self.assertTrue(any("7.13" in m for m in v["motivos"]))
+        self.assertFalse(v["reserva_aplicada"])
+        self.assertEqual([5, 4, 3], [c["W_s"] for c in v["candidatos"]])
+        self.assertEqual({11}, {c["kLag_min"] for c in v["candidatos"]})
+        self.assertTrue(any("nenhum W" in m for m in v["motivos"]))
+        self.assertEqual(5, P["W_s"]["valor"])
+        self.assertEqual(11, P["kLag"]["valor"])
+        self.assertFalse(P["kLag"]["dados"]["dentro_do_limite"])
+
+    def test_janela_sem_rodada_pulada(self):
+        # 3 operacoes: 30 elegiveis/s -> W = 4 < 5 s. Rodadas no teto em 15 s e 20 s caem nas janelas 3 e 5; a 4
+        # ([16, 20) s) nao tem rodada e e pulada: persistencia 2, kLag 3 (sem pular, 1 e kLag 2)
+        tres = ("Login", "Validate", "IncrementFailure")
+        mud = {n: dict(ops=tres) for n in ("n0", "n1", "n2", "s0", "s1", "f1a", "f1b", "f2a", "f2b", "sf2", "f4",
+                                         "rec", "dsc")}
+        mud["n0"]["lag_teto"] = {3: ISN3, 4: ISN3}
+        P = self.derivar(mud)
+        self.assertEqual(4, P["W_s"]["valor"])
+        self.assertFalse(P["W_s"]["dados"]["reserva_aplicada"])
+        self.assertEqual(3, P["kLag"]["valor"])
+        self.assertGreater(P["kLag"]["dados"]["janelas_sem_rodada"], 0)
 
     def test_klag_cinco_ainda_cabe(self):
         P = self.derivar({"n0": dict(lag_teto={j: ISN3 for j in range(4, 8)})})   # persistencia 4
         self.assertEqual(5, P["kLag"]["valor"])
         self.assertTrue(P["kLag"]["dados"]["dentro_do_limite"])
         self.assertTrue(P["viabilidade_ac5"]["valor"]["viavel"])
+        self.assertFalse(P["viabilidade_ac5"]["valor"]["reserva_aplicada"])
 
     def test_klag_zero_ocorrencias(self):
         P = self.derivar({"n0": dict(lag_teto={}), "f1b": dict(lag_teto={j: ISN2 for j in range(6, 10)})})
@@ -615,19 +673,23 @@ class Funcoes(unittest.TestCase):
     def test_limiar_saida(self):
         # banda (theta_out, 0,1): com m = 2, tres janelas seguidas em 0,05 obrigam theta_out >= 0,05
         r = cal.limiar_saida([[0.01, 0.05, 0.05, 0.05, 0.0, 0.02]], 0.1, 2)
-        self.assertEqual(math.nextafter(0.1, -math.inf), r["valor"])
-        self.assertEqual(0.05, r["alternativa_menor_valor"])
+        self.assertEqual(0.05, r["valor"])
+        self.assertNotIn("alternativa_menor_valor", r)
         r = cal.limiar_saida([[0.01, 0.05, 0.05, 0.0, 0.02]], 0.1, 2)
-        self.assertEqual(0.01, r["alternativa_menor_valor"])   # (0,01; 0,1) deixa 2 seguidas em 0,05: cabe em m
+        self.assertEqual(0.01, r["valor"])   # (0,01; 0,1) deixa 2 seguidas em 0,05: cabe em m
+        # indeterminada conta como calma e quebra o trecho
+        self.assertEqual(0.0, cal.limiar_saida([[0.05, 0.05, None, 0.05, 0.05]], 0.1, 2)["valor"])
         self.assertIsNone(cal.limiar_saida([[0.1]], None, 2)["valor"])
 
     def test_m_reentrada(self):
-        r = cal.m_reentrada([list("HCCHCCCCHCCC"), list("CHC")])
+        # complemento 1 §3: trecho maximo sem alto que comeca em ou depois do end e termina numa janela alta
+        r = cal.m_reentrada([("HHHNNHNNNNHNNN", 2), ("NHN", 0)])
         self.assertEqual(5, r["valor"])
         self.assertEqual(4, r["maior_trecho"])
-        r = cal.m_reentrada([list("CCIH")])       # o trecho calmo seguido de intermediaria nao conta (A-5)
-        self.assertEqual(1, r["valor"])
-        r = cal.m_reentrada([list("HCCCC"), []])   # nenhuma recaida
+        r = cal.m_reentrada([("NNNNHNH", 2)])     # o trecho 0..3 comeca antes do end: nao conta
+        self.assertEqual(2, r["valor"])
+        self.assertEqual(3, cal.m_reentrada([("NNH", 0)])["valor"])
+        r = cal.m_reentrada([("HNNNN", 0)])       # nenhum trecho termina em alta
         self.assertEqual(1, r["valor"])
         self.assertIn("recaida", r["motivo"])
 
@@ -651,6 +713,16 @@ class Funcoes(unittest.TestCase):
         r = cal.klag(ex, 2000, 9)        # 3 x 9 + 13,3 = 40,3 >= 39,8
         self.assertFalse(r["dentro_do_limite"])
         self.assertEqual(2, r["k_max_no_limite"])
+
+    def test_klag_pula_janela_sem_rodada(self):
+        J = lambda lag, sus: {"lag_max": lag, "suspeito": sus, "vista_completa": True, "lag_rodadas": 1,
+                              "respondeu_em_todas": {"a", "b", "c"}}
+        sem = {"lag_max": None, "suspeito": None, "vista_completa": True, "lag_rodadas": 0,
+               "respondeu_em_todas": {"a", "b", "c"}}
+        r = cal.klag([("e", [J(2000.0, "a"), sem, J(2000.0, "a")])], 2000, 4)
+        self.assertEqual(3, r["valor"])        # a janela sem rodada nao quebra a persistencia
+        self.assertEqual(2, r["N"])
+        self.assertEqual(1, r["janelas_puladas"])
 
     def test_t_estavel_puro(self):
         a = [(T0 + 1 * S, True), (T0 + 3 * S, False), (T0 + 5 * S, False), (T0 + 7 * S, True), (T0 + 9 * S, False)]
@@ -680,14 +752,39 @@ class Funcoes(unittest.TestCase):
 
     def test_calcular_w(self):
         r = cal.calcular_w(Fraction(20), 40 * MS, 2000)
-        self.assertEqual((5, 5, 3), (r["valor"], r["termo_vazao_s"], r["termo_leitura_s"]))
-        r = cal.calcular_w(Fraction(40), 1500 * MS, 2000)       # leitura domina: ceil(3,5) = 4 > ceil(2,5) = 3
-        self.assertEqual((4, 3, 4), (r["valor"], r["termo_vazao_s"], r["termo_leitura_s"]))
-        r = cal.calcular_w(Fraction(20), 0, 2000)                # atraso 0: W = prazo, recusado pelo codigo (A-17)
-        self.assertEqual(5, r["valor"])
+        self.assertEqual((5, 5, 3), (r["valor"], r["termo_vazao_s"], r["w_min_s"]))
+        r = cal.calcular_w(Fraction(40), 1500 * MS, 2000)       # W_min domina: floor(3,5) + 1 = 4 > ceil(2,5) = 3
+        self.assertEqual((4, 3, 4), (r["valor"], r["termo_vazao_s"], r["w_min_s"]))
+        r = cal.calcular_w(Fraction(40), 1000 * MS, 2000)       # 2 + 1 = 3 exato: W_min estrito = 4
+        self.assertEqual(4, r["w_min_s"])
+        r = cal.calcular_w(Fraction(200), 0, 2000)               # W_min = 3 > prazo de 2 s
+        self.assertEqual((3, 1, 3), (r["valor"], r["termo_vazao_s"], r["w_min_s"]))
         self.assertTrue(r["aceito_pelo_codigo"])
         self.assertIsNone(cal.calcular_w(Fraction(0), 0, 2000)["valor"])
-        self.assertFalse(cal.calcular_w(Fraction(200), 0, 2000)["aceito_pelo_codigo"])
+
+    def test_reserva_w(self):
+        kl = {5: 6, 4: 6, 3: 6}
+        r = cal.reserva_w(5, 3, kl.get)
+        self.assertEqual((4, 6, True, True), (r["W_s"], r["kLag"], r["viavel"], r["reserva_aplicada"]))
+        r = cal.reserva_w(5, 3, {5: 2}.get)
+        self.assertEqual((5, 2, True, False), (r["W_s"], r["kLag"], r["viavel"], r["reserva_aplicada"]))
+        self.assertEqual(1, len(r["candidatos"]))
+        r = cal.reserva_w(5, 3, {5: 11, 4: 11, 3: 11}.get)
+        self.assertEqual((5, 11, False, False), (r["W_s"], r["kLag"], r["viavel"], r["reserva_aplicada"]))
+        self.assertEqual(3, len(r["candidatos"]))
+        r = cal.reserva_w(30, 3, lambda w: 1)                     # 1 x 26 + 13,3 = 39,3 < 39,8
+        self.assertEqual((26, 1, True), (r["W_s"], r["kLag"], r["reserva_aplicada"]))
+        r = cal.reserva_w(5, 3, lambda w: None)                   # kLag nao derivado: nao avaliavel
+        self.assertIsNone(r["viavel"])
+        self.assertEqual(5, r["W_s"])
+
+    def test_ciclo_completo(self):
+        r = cal.ciclo_completo([("a", "calibracao", 1000), ("b", "calibracao", 481000), ("c", "reposicoes", 5000),
+                                ("d", "calibracao", 1021000), ("e", "calibracao", None)])
+        self.assertEqual([480.0, 540.0], [x["s"] for x in r["por_fase"]["calibracao"]])
+        self.assertEqual([], r["por_fase"]["reposicoes"])
+        self.assertEqual(540.0, r["maximo_s"])
+        self.assertEqual(510.0, r["mediana_s"])
 
     def test_viabilidade(self):
         self.assertTrue(cal.viabilidade(26, 1)["viavel"])

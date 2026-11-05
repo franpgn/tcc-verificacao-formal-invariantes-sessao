@@ -116,6 +116,7 @@ public final class PoliticaPorAssinatura implements PoliticaDeAcao {
         boolean ac2Ativa = ativas.stream().anyMatch(a -> a.tipo() == AcaoCluster.Tipo.AC_2);
         List<AcaoCluster> reverter = new ArrayList<>();
         String motivoReversao = null;
+        String noReversao = null; // V-7: no do AC-2 revertido
         if (!ac2Ativa) {
             ac2InicioNs = null;
             ac2No = null;
@@ -132,6 +133,7 @@ public final class PoliticaPorAssinatura implements PoliticaDeAcao {
                 tRebEsgotadoNo = ac2No;
             }
             if (motivoReversao != null) {
+                noReversao = ac2No;
                 for (AcaoCluster a : ativas) {
                     if (a.tipo() == AcaoCluster.Tipo.AC_2) {
                         reverter.add(a);
@@ -144,7 +146,8 @@ public final class PoliticaPorAssinatura implements PoliticaDeAcao {
         }
 
         if (d.perfil() != Perfil.CONSERVADOR) {
-            return reverter.isEmpty() ? PlanoDeAcao.VAZIO : new PlanoDeAcao(reverter, List.of(), P0, motivoReversao);
+            return reverter.isEmpty() ? PlanoDeAcao.VAZIO
+                    : new PlanoDeAcao(reverter, List.of(), P0, motivoReversao, noReversao);
         }
 
         // ---- P1: vista completa e S_lag no teto com o mesmo suspeito em k janelas
@@ -153,9 +156,9 @@ public final class PoliticaPorAssinatura implements PoliticaDeAcao {
                 usadasP1++;
                 paradosPelaPolitica.add(suspeito);
                 return new PlanoDeAcao(reverter, List.of(new AcaoCluster(tipoP1, caches, suspeito, null)), P1,
-                        ISOLAR_SUSPEITO);
+                        ISOLAR_SUSPEITO, suspeito);
             }
-            return new PlanoDeAcao(reverter, List.of(), P0, COTA_P1_ESGOTADA);
+            return new PlanoDeAcao(reverter, List.of(), P0, COTA_P1_ESGOTADA, suspeito);
         }
 
         // ---- P2: um no sem resposta, os outros respondendo, sem vistas divergentes
@@ -163,23 +166,24 @@ public final class PoliticaPorAssinatura implements PoliticaDeAcao {
         if (sem.isPresent() && !top.vistasDivergentes()) {
             String no = sem.get();
             if (paradosPelaPolitica.contains(no)) {
-                return new PlanoDeAcao(reverter, List.of(), P0, NO_PARADO_PELA_POLITICA);
+                return new PlanoDeAcao(reverter, List.of(), P0, NO_PARADO_PELA_POLITICA, no);
             }
             if (ac2Ativa) {
-                return new PlanoDeAcao(reverter, List.of(), P2, AC2_MANTIDA);
+                return new PlanoDeAcao(reverter, List.of(), P2, AC2_MANTIDA, no);
             }
             if (!reverter.isEmpty()) {
-                return new PlanoDeAcao(reverter, List.of(), P0, motivoReversao);
+                return new PlanoDeAcao(reverter, List.of(), P0, motivoReversao, noReversao);
             }
             if (no.equals(tRebEsgotadoNo)) {
-                return new PlanoDeAcao(List.of(), List.of(), P0, TREB_ESGOTADO);
+                return new PlanoDeAcao(List.of(), List.of(), P0, TREB_ESGOTADO, no);
             }
             ac2InicioNs = d.fimNs();
             ac2No = no;
-            return new PlanoDeAcao(List.of(), List.of(ac2), P2, ADIAR_REBALANCEAMENTO);
+            return new PlanoDeAcao(List.of(), List.of(ac2), P2, ADIAR_REBALANCEAMENTO, no);
         }
 
-        return new PlanoDeAcao(reverter, List.of(), P0, reverter.isEmpty() ? SEM_ASSINATURA : motivoReversao);
+        return reverter.isEmpty() ? new PlanoDeAcao(List.of(), List.of(), P0, SEM_ASSINATURA)
+                : new PlanoDeAcao(reverter, List.of(), P0, motivoReversao, noReversao);
     }
 
     private void atualizarPersistencia(Decisao d, EstadoDefasagem lag) {

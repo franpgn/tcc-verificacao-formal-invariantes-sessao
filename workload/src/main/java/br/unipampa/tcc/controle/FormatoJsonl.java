@@ -233,6 +233,7 @@ public final class FormatoJsonl {
         o.put("regra", d.regra().name());
         o.put("politica", p.politica());
         o.put("motivo", p.motivo());
+        o.put("no", p.no()); // V-7 (aditivo na 1.2): no da escolha, ou null
         ArrayNode rev = o.putArray("reverter");
         p.reverter().forEach(x -> rev.add(x.tipo().rotulo()));
         ArrayNode apl = o.putArray("aplicar");

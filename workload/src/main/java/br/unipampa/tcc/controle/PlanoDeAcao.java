@@ -16,8 +16,10 @@ import java.util.Objects;
  * @param aplicar  acoes a aplicar
  * @param politica politica de reacao escolhida ({@code P0}, {@code P1}, {@code P2}), ou {@code null}
  * @param motivo   motivo da escolha (sem espaco), ou {@code null}
+ * @param no       V-7: rotulo do no da escolha (suspeito do P1, ausente do P2, no do AC-2 revertido), ou {@code null}
  */
-public record PlanoDeAcao(List<AcaoCluster> reverter, List<AcaoCluster> aplicar, String politica, String motivo) {
+public record PlanoDeAcao(List<AcaoCluster> reverter, List<AcaoCluster> aplicar, String politica, String motivo,
+                          String no) {
 
     /** Nada a fazer. */
     public static final PlanoDeAcao VAZIO = new PlanoDeAcao(List.of(), List.of());
@@ -25,13 +27,18 @@ public record PlanoDeAcao(List<AcaoCluster> reverter, List<AcaoCluster> aplicar,
     public PlanoDeAcao {
         reverter = List.copyOf(Objects.requireNonNull(reverter, "reverter"));
         aplicar = List.copyOf(Objects.requireNonNull(aplicar, "aplicar"));
-        if (politica == null && motivo != null) {
-            throw new IllegalArgumentException("motivo sem politica: " + motivo);
+        if (politica == null && (motivo != null || no != null)) {
+            throw new IllegalArgumentException("motivo ou no sem politica: " + motivo + " " + no);
         }
+    }
+
+    /** Plano com politica e motivo, sem no. */
+    public PlanoDeAcao(List<AcaoCluster> reverter, List<AcaoCluster> aplicar, String politica, String motivo) {
+        this(reverter, aplicar, politica, motivo, null);
     }
 
     /** Plano sem registro de politica (W-3). */
     public PlanoDeAcao(List<AcaoCluster> reverter, List<AcaoCluster> aplicar) {
-        this(reverter, aplicar, null, null);
+        this(reverter, aplicar, null, null, null);
     }
 }

@@ -145,7 +145,10 @@ ou prazo de 1 s).
 `tetoLagMs`, `tRebNs`, `cotaAc5` e a `origem` de cada um; contrato JSONL 1.2). Sem o bloco, `LigacaoControlador.pecas`
 monta o atuador nulo e a política `nenhuma`, como no W-3. Com o bloco, monta `PoliticaPorAssinatura` (caches do
 modo) e `AtuadorPorTipo.bracoB(AtuadorRestInfinispan)`; os "nós que responderam na última janela" saem de
-`SondaTopologia.respondidosNaUltimaAmostra`, pendurado em `abrir`. O rótulo de nó é `host:porta` em toda peça
+`SondaTopologia.respondidosNaUltimaAmostra`, pendurado em `abrir`. Depois da V-W2a (05/11): `politica.k` virou
+`kLag` (independente do `k` do núcleo, V-4); a linha `politica` traz o `no` da escolha (V-7); em S3, o carregamento
+recusa `tetoLagMs` diferente de `--hotrod-timeout-ms` (R7); o `--dry-run` mostra o pior caso do `T_enc` (R1). O
+rótulo de nó é `host:porta` em toda peça
 (`RotulosDosNosTest`); o `noSuspeito` do W-4 tem de seguir o mesmo rótulo. O S_lag ainda é indeterminado
 (`FonteDeDefasagem.INDETERMINADA`), então hoje só o P2 (AC-2) dispara ponta a ponta; o P1 (AC-5) espera o W-4.
 

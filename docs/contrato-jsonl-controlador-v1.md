@@ -66,7 +66,7 @@ ordem em que acontecem; a ordem entre `tick`, `janela` e `decisao` é a do laço
 | `origem_ns` | inteiro | início da primeira janela = início da medição |
 | `atuador` | texto | `nulo` sem o bloco `politica` no `--controller-config`; com ele, `por-tipo(AC-2=rest-infinispan,AC-5=rest-infinispan)` (W-2a) |
 | `politica` | texto | `nenhuma` sem o bloco; `por-assinatura` com ele (W-2a) |
-| `parametros_politica` | objeto ou `null` | **só em `decisoes` (1.2).** `k`, `teto_lag_ms`, `t_reb_ns`, `cota_ac5` e `origem` (texto por parâmetro); `null` sem o bloco |
+| `parametros_politica` | objeto ou `null` | **só em `decisoes` (1.2).** `k_lag`, `teto_lag_ms`, `t_reb_ns`, `cota_ac5` e `origem` (texto por parâmetro); `null` sem o bloco |
 | `sonda_topologia`, `sonda_defasagem` | booleano | sondas ligadas (`sonda_defasagem` = `false` até o W-4) |
 
 ## Regra do *tick* e prazos (v1.1)
@@ -182,8 +182,10 @@ gancho; o orquestrador recria o *cluster* depois da execução); `null` quando a
 gravada pelo laço quando a política registra a escolha (só `PoliticaPorAssinatura`): `tipo`, `t_fim_janela_ns`,
 `t_decisao_ns`, `modo`, `perfil`, `regra`, `politica` (`P0`, `P1`, `P2`), `motivo` (`sem-assinatura`,
 `isolar-suspeito`, `cota-p1-esgotada`, `adiar-rebalanceamento`, `ac2-mantida`, `treb-esgotado`,
-`no-parado-pela-politica`, `vistas-divergentes`, `no-voltou`, `teto-treb`), `reverter` e `aplicar` (listas de
-rótulos de tipo). Em NORMAL sem reversão não há linha.
+`no-parado-pela-politica`, `vistas-divergentes`, `no-voltou`, `teto-treb`), `no` (V-7: rótulo do nó da escolha,
+o suspeito no P1 e em `cota-p1-esgotada`, o ausente no P2, em `treb-esgotado` e em `no-parado-pela-politica`, o nó do
+AC-2 revertido em `no-voltou`, `teto-treb` e `vistas-divergentes`; `null` em `sem-assinatura`), `reverter` e
+`aplicar` (listas de rótulos de tipo). Em NORMAL sem reversão não há linha.
 
 **Bloco `politica` do `--controller-config` (W-2a, P-38).** Opcional; sem ele o controlador usa o atuador nulo e
 a política `nenhuma`. Com ele, `PoliticaPorAssinatura` e o atuador REST. Campos todos obrigatórios, sem valor
@@ -191,8 +193,8 @@ padrão no código, e cobertos pelo SHA-256 do arquivo (`param_sha256`):
 
 | Campo | Valor | Origem (decisão do Gestor, 05/11) |
 |---|---|---|
-| `k` | calibração | janelas seguidas com S_lag no teto e o mesmo `noSuspeito` para o AC-5; vem da calibração (D-12). Nos arquivos de teste, `"origem": "teste"` |
-| `tetoLagMs` | calibração | o que conta como "não viu" no S_lag; vem da calibração (D-12). Nos arquivos de teste, `"origem": "teste"` |
+| `kLag` | calibração | janelas seguidas, consultadas pela política, com S_lag no teto e o mesmo `noSuspeito` para o AC-5; vem da calibração (D-12). Nos arquivos de teste, `"origem": "teste"`. **Não é o `k` do núcleo** (V-4): aquele conta janelas altas de latência, erro ou defasagem para a entrada em CONSERVADOR (R2); são números independentes |
+| `tetoLagMs` | `--hotrod-timeout-ms` | o que conta como "não viu" no S_lag. Tem de ser igual ao prazo de leitura da sonda, o `--hotrod-timeout-ms` da campanha, que o W-4 grava como `lagMaxMs` da leitura não vista: em S3, `LigacaoControlador.carregar` recusa o arquivo se os dois diferirem (V-W2a R7). O prazo vem da calibração (D-12); nos arquivos de teste, `"origem": "teste"` |
 | `tRebNs` | 60 000 000 000 | `state-transfer.timeout` do XML (60 000 ms), acima da maior detecção medida (46,8 s no local, B-44.1 §4.1; 46,4 s na VM) |
 | `cotaAc5` | 1 | desenho: uma vez por execução (com `owners=2`, o *cluster* de 3 nós tolera um nó fora) |
 | `origem` | objeto | um texto não vazio para cada um dos quatro campos acima |

@@ -453,3 +453,25 @@ reverte (`P0:no-voltou`, `enable-rebalancing`). A `meta` traz o atuador `por-tip
 e `parametros_politica`.
 
 I-1..I-5 (item 9) não rodaram: a noite 1 do *rebaseline* começou e o host entrou em H0 (podman parado).
+
+### W-2a, terceira rodada: ressalvas da V-W2a (R1, R3, R7, V-4, V-7, O7) (2026-11-05)
+
+Parecer `docs/validacao-w2a-2026-11-05.md` (`27b50de`), APROVADO COM RESSALVAS; decisões do coordenador em nome do
+Gestor (05/11). Escrito com a VM em H0: **nenhum Maven nem Surefire**. Só `javac` isolado sobre os arquivos mudados
+(classpath montado à mão a partir do repositório Maven local, `target/classes` e `target/test-classes` da rodada
+anterior), para conferir a sintaxe; todos compilam. Os vermelhos e as contagens ficam para a janela H2.
+
+| Commit | O quê |
+|---|---|
+| `f686643` docs | R1 (`T_enc` por tipo, pior caso 9 s, `timeout -k` com K > 9 s no W-6), R3 (`t_parada` com os 3 s dentro), O7, O12 |
+| `31ca8c5` test → `d2e9553` fix | texto do `--dry-run`: `prazo_encerramento=em_curso+pilha+T_cham pior_caso_ns=9000000000` (2 s sem a política) |
+| `e5b992f` test → `e7df3dd` feat | `politica.k` → `kLag`; `k_lag` na `meta`; teste novo `kLagIndependenteDoK` |
+| `9cb25b2` test → `32bc531` feat | V-7: campo `no` na linha `politica`; teste novo `noDaEscolha` |
+| `9bf55f5` test → `883855d` feat | R7: em S3, `tetoLagMs` tem de ser igual a `--hotrod-timeout-ms`; teste novo `tetoLagIgualAoPrazoDaSonda` |
+| `e349c68` test | `SmokeAtuador` com `t_pedido_epoch_ns`/`t_retorno_epoch_ns` pelo `EpochClock` |
+
+Esperado na H2: 971 + 3 testes novos (`kLagIndependenteDoK`, `noDaEscolha`, `tetoLagIgualAoPrazoDaSonda`) = **974/0/0/1,
+133 arquivos**. Testes do próprio W-2a editados só para acompanhar o nome `kLag`, o campo `no` e o texto do dry-run:
+`ParametrosPoliticaArquivoTest`, `PoliticaPorAssinaturaTest.parametros`, `LigacaoControladorAtuadorTest`,
+`AcaoClusterTiposTest.linhaPolitica` e `planoDeAcao`. Textos sem efeito em teste: mensagem de
+`WorkloadMainCargaControleTest:143` e comentários de `LacoDeControleTest` (46, 437, 450).

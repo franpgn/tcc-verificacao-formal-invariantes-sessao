@@ -126,6 +126,10 @@ class LigacaoControladorAtuadorTest {
         assertEquals("nulo", p.atuador().nome());
         assertSame(PoliticaDeAcao.NENHUMA, p.politica());
         assertTrue(LigacaoControlador.textoDryRun(cfg).contains("atuador=nulo politica=nenhuma"));
+        // V-W2a R1: sem acao possivel, o pior caso do encerramento e um T_cham
+        assertTrue(LigacaoControlador.textoDryRun(cfg)
+                .contains("prazo_encerramento=em_curso+pilha+T_cham pior_caso_ns=2000000000"));
+        assertFalse(LigacaoControlador.textoDryRun(cfg).contains("(A+1)x"));
     }
 
     @Test
@@ -140,6 +144,8 @@ class LigacaoControladorAtuadorTest {
         String t = LigacaoControlador.textoDryRun(cfg);
         assertTrue(t.contains("atuador=por-tipo(AC-2=rest-infinispan,AC-5=rest-infinispan) politica=por-assinatura"), t);
         assertTrue(t.contains("politica k=2 tetoLagMs=2000 tRebNs=60000000000 cotaAc5=1"), t);
+        // V-W2a R1: AC-2 na pilha (2 s) + AC-5 em curso (5 s) + T_cham (2 s)
+        assertTrue(t.contains("prazo_encerramento=em_curso+pilha+T_cham pior_caso_ns=9000000000"), t);
         for (String linha : t.split("\\R")) {
             assertTrue(linha.startsWith("dry-run, "), linha);
         }

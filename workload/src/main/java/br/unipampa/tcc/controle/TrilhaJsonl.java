@@ -253,7 +253,7 @@ public final class TrilhaJsonl implements Closeable {
             it.fim().put(it.campoPerdidas(), perdidas);
             try {
                 gravarLinha(JSON.writeValueAsString(it.fim()));
-            } catch (JsonProcessingException e) {
+            } catch (JsonProcessingException | RuntimeException e) {
                 synchronized (this) {
                     errosEscrita++;
                 }
@@ -264,6 +264,7 @@ public final class TrilhaJsonl implements Closeable {
         }
     }
 
+    /** A gravadora nunca morre por uma linha: qualquer falha da saida conta como erro de escrita. */
     private void gravarLinha(String json) {
         try {
             saida.write(json);
@@ -272,7 +273,7 @@ public final class TrilhaJsonl implements Closeable {
             synchronized (this) {
                 linhas++;
             }
-        } catch (IOException e) {
+        } catch (IOException | RuntimeException e) {
             synchronized (this) {
                 errosEscrita++;
             }
@@ -282,7 +283,7 @@ public final class TrilhaJsonl implements Closeable {
     private void fecharSaida() {
         try {
             saida.close();
-        } catch (IOException e) {
+        } catch (IOException | RuntimeException e) {
             synchronized (this) {
                 errosEscrita++;
             }

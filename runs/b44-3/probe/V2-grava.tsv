@@ -1,0 +1,3 @@
+127.0.0.1:12447|jmx=FD_ALL3.timeout=10000	1793857070972	1793857070986	14	115	ok	isn1-10211 [ip=10.89.2.2:7800, 3 mbr(s), cluster=cluster-tcc, version=5.3.16.Final (Zoncolan) (java 21.0.8+9-LTS)]\n
+127.0.0.1:12448|jmx=FD_ALL3.timeout=10000	1793857070972	1793857070986	14	115	ok	isn2-60404 [ip=10.89.2.3:7800, 3 mbr(s), cluster=cluster-tcc, version=5.3.16.Final (Zoncolan) (java 21.0.8+9-LTS)]\n
+127.0.0.1:12449|jmx=FD_ALL3.timeout=10000	1793857070972	1793857070986	14	115	ok	isn3-38280 [ip=10.89.2.4:7800, 3 mbr(s), cluster=cluster-tcc, version=5.3.16.Final (Zoncolan) (java 21.0.8+9-LTS)]\n

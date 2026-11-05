@@ -1,0 +1,13 @@
+rot	t0_utc	t_ref_menos_t0	probe_dur_ms(max)	vista2_isn1	vista2_isn2	vista1_isn3	degraded_isn3_sessions	degraded_isn3_sessions_async	1a_recusa_hotrod_isn3(ISPN000306)	fim_rebal_maioria(sessions,sessions-async)	Tdet_maioria_desde_t0	Tdet_isn3_desde_t0	fusao_ISPN000093_desde_cura_ou_acao(isn1/isn2/isn3)	resolucao_conflitos(100012..100013)	isn3_AVAILABLE_apos_fusao_desde_cura_ou_acao	warn_nao_coord
+V1-nodiag-sync	05:30:30.620	5073														0
+V1-nodiag-async	05:31:56.888	5097														0
+V1-diag-sync	05:34:09.023	5075														0
+V1-diag-async	05:35:34.189	5124														0
+V2	05:37:55.059	5000		41133	41140	41672	41691	41691		41162	46140	46672	23444/23449/23447	23457..23680		0
+V3-sync-ctl1	05:40:37.578	5136		38479	38483	39496	39502	39502	39504	38500	43619	44632	30891/30894/30893	30900..31034		0
+V3-sync-acao1	05:42:55.392	5266	24	17	20	16	20	22	23	55			40434/40437/40435	40443..40536		2
+V3-sync-acao2	05:45:13.426	5533	31	21	25	22	28	28	29	65			43764/43770/43765	43778..44053		2
+V3-sync-ctl2	05:47:32.242	5256		42423	42426	42430	42437	42437	42440	42453	47682	47686	35008/35010/35010	35013..35093		0
+V3-async-ctl1	05:50:01.084	5081		37758	37761	38765	38768	38768	38770	37767	42842	43846	30205/30207/30206	30209..30259		0
+V3-async-acao1	05:52:17.238	5334	28	21	24	21	25	25	26	37			40667/40670/40669	40673..40749		2
+V3-async-acao2	05:54:34.478	5381	16										//			0

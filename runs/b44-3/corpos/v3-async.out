@@ -1,0 +1,29 @@
+== 2026-11-05T05:49:35.313Z nomes isn1=isn1-10211 isn2=isn2-60404 isn3=isn3-38280 coordenador=isn1-10211 pid=4806/5317/6021 ip=10.89.2.2/10.89.2.3/10.89.2.4
+== 2026-11-05T05:49:35.430Z EXEC V3-async-ctl1 inicio modo=async corte=sim acao=nenhuma semente=443201 dur=130
+== 2026-11-05T05:50:01.144Z CORTE isn3 pedido=1793857800551 aplicado=1793857801084
+== 2026-11-05T05:50:06.223Z SEM ACAO (controle) t_nominal=1793857806165
+== 2026-11-05T05:51:01.785Z CURA isn3 pedido=1793857861160 aplicado=1793857861721
+== 2026-11-05T05:51:48.128Z CARGA V3-async-ctl1 fim exit=0
+saudavel apos 0s
+== 2026-11-05T05:51:51.457Z EXEC V3-async-ctl1 fim
+== 2026-11-05T05:51:51.528Z EXEC V3-async-acao1 inicio modo=async corte=sim acao=ambos semente=443201 dur=130
+== 2026-11-05T05:52:17.296Z CORTE isn3 pedido=1793857936619 aplicado=1793857937238
+== 2026-11-05T05:52:22.384Z ACAO ambos inicio
+127.0.0.1:12447|op=GMS.suspect[isn3-38280]	1793857942572	1793857942600	28	115	ok	isn1-10211 [ip=10.89.2.2:7800, 2 mbr(s), cluster=cluster-tcc, version=5.3.16.Final (Zoncolan) (java 21.0.8+9-LTS)]\n
+127.0.0.1:12448|op=GMS.suspect[isn3-38280]	1793857942572	1793857942592	20	115	ok	isn2-60404 [ip=10.89.2.3:7800, 3 mbr(s), cluster=cluster-tcc, version=5.3.16.Final (Zoncolan) (java 21.0.8+9-LTS)]\n
+127.0.0.1:12449|op=GMS.suspect[isn1-10211]	1793857942572	1793857942599	27	115	ok	isn3-38280 [ip=10.89.2.4:7800, 1 mbr(s), cluster=cluster-tcc, version=5.3.16.Final (Zoncolan) (java 21.0.8+9-LTS)]\n
+127.0.0.1:12449|op=GMS.suspect[isn2-60404]	1793857942572	1793857942592	20	115	ok	isn3-38280 [ip=10.89.2.4:7800, 3 mbr(s), cluster=cluster-tcc, version=5.3.16.Final (Zoncolan) (java 21.0.8+9-LTS)]\n
+== 2026-11-05T05:52:22.773Z ACAO ambos fim
+== 2026-11-05T05:53:18.048Z CURA isn3 pedido=1793857997349 aplicado=1793857997930
+== 2026-11-05T05:54:04.478Z CARGA V3-async-acao1 fim exit=0
+saudavel apos 0s
+== 2026-11-05T05:54:08.863Z EXEC V3-async-acao1 fim
+== 2026-11-05T05:54:08.987Z EXEC V3-async-acao2 inicio modo=async corte=sim acao=ambos semente=443202 dur=130
+Error: vm "podman-machine-default" is not running
+== 2026-11-05T05:54:34.529Z CORTE isn3 pedido=1793858074234 aplicado=1793858074478
+== 2026-11-05T05:54:39.774Z ACAO ambos inicio
+127.0.0.1:12447|op=GMS.suspect[isn3-38280]	1793858079859	1793858079875	16	0	erro:ConnectException:Connection refused: getsockopt	
+127.0.0.1:12448|op=GMS.suspect[isn3-38280]	1793858079859	1793858079875	16	0	erro:ConnectException:Connection refused: getsockopt	
+127.0.0.1:12449|op=GMS.suspect[isn1-10211]	1793858079859	1793858079875	16	0	erro:ConnectException:Connection refused: getsockopt	
+127.0.0.1:12449|op=GMS.suspect[isn2-60404]	1793858079859	1793858079875	16	0	erro:ConnectException:Connection refused: getsockopt	
+== 2026-11-05T05:54:40.428Z ACAO ambos fim

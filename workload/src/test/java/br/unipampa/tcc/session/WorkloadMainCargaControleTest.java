@@ -129,7 +129,7 @@ class WorkloadMainCargaControleTest {
                 "--controller-reference", ref.toString(), "--controller-admin", ControladorCliTest.SERVIDORES,
                 "--servers", ControladorCliTest.SERVIDORES, "--csv-dir", dir.toString());
         cli.validar();
-        AcaoCluster ac1 = new AcaoCluster(AcaoCluster.Tipo.AC_1, List.of("sessions", "counters"), null, "DEGRADED_MODE");
+        AcaoCluster ac1 = new AcaoCluster(AcaoCluster.Tipo.AC_2, List.of("sessions", "counters"), null, null);
         AtomicBoolean pediu = new AtomicBoolean();
         PoliticaDeAcao umaVez = (d, t, l, ativas) -> pediu.compareAndSet(false, true)
                 ? new PlanoDeAcao(List.of(), List.of(ac1)) : PlanoDeAcao.VAZIO;

@@ -4,34 +4,108 @@ import java.util.List;
 import java.util.Objects;
 
 /**
- * W-3 (B-28.2): uma acao do controlador sobre o <i>cluster</i> (plano de execucao de 2026-11-04,
- * secao 4.4). Os nomes de chamada de cada tipo sao do W-2 (B-44.2), que so usa o que o B-44.1 marcou
- * como verificado; aqui a acao e so um valor.
+ * W-3 (B-28.2), W-2a (B-44.2): uma acao do controlador sobre o <i>cluster</i>. Aqui a acao e so um valor;
+ * a chamada REST de cada tipo fica no adaptador ({@code session.AtuadorRestInfinispan}). Especificacao:
+ * {@code docs/acoes-controlador-cluster-2026-11-05.md} (branch {@code docs/plano-implementacao-controlador},
+ * {@code cc08644}), secoes 3, 5 e 5.1.
  *
- * @param tipo   AC-1, AC-2 ou AC-3
- * @param caches caches afetados (nao vazio)
- * @param alvo   rotulo do no de destino, ou {@code null} quando a acao vale para o <i>cluster</i>
- * @param valor  valor a aplicar (ex.: {@code DEGRADED_MODE}, um {@code remote-timeout}), ou {@code null}
+ * <p>O que muda de um tipo para outro fica no proprio {@link Tipo}: se a acao entra na pilha de reversao
+ * ({@link Tipo#reversivel()}), a regra do alvo ({@link Tipo#alvo()}) e o prazo da chamada inteira
+ * ({@link Tipo#prazoNs(long)}). O {@link ExecutorDeAcoes} e a {@link PoliticaPorAssinatura} so leem essas
+ * propriedades, de modo que um tipo novo (por exemplo a AC-6, exclusao forcada pelo JGroups,
+ * {@code docs/opcoes-arquitetura-configuracao-2026-11-05.md} secao 2.4, se o B-44.3 aprovar) entra como uma
+ * constante a mais e um adaptador a mais ({@link AtuadorPorTipo}), sem mudar o executor.</p>
+ *
+ * @param tipo   tipo da acao
+ * @param caches caches do modo ativo (nao vazio); no AC-2 e no AC-5 servem so a leitura de volta e ao registro
+ * @param alvo   rotulo do no de destino, ou {@code null} quando a acao vale para o <i>cluster</i>; a regra
+ *               de cada tipo esta em {@link Tipo#alvo()}
+ * @param valor  valor a aplicar, ou {@code null} (nenhum tipo do braco B usa valor)
  */
 public record AcaoCluster(Tipo tipo, List<String> caches, String alvo, String valor) {
 
-    /** Tipos de acao da secao 4.4 do plano de execucao. */
+    /** Como o tipo trata o {@code alvo}. */
+    public enum RegraAlvo {
+        /** Acao global: {@code alvo} tem de ser {@code null}. */
+        PROIBIDO,
+        /** Acao num unico no: {@code alvo} obrigatorio, um rotulo so (sem virgula nem espaco). */
+        UM_NO,
+        /** Sem regra (so os tipos antigos, fora do braco B). */
+        LIVRE
+    }
+
+    /** Tipos de acao. */
     public enum Tipo {
-        /** DEGRADED antecipado (mecanismo M1). */
-        AC_1("AC-1"),
-        /** Rebalanceamento suspenso (M5). */
-        AC_2("AC-2"),
-        /** {@code remote-timeout} (latencia em SYNC). */
-        AC_3("AC-3");
+        /**
+         * DEGRADED antecipado. <b>Fora do braco B</b> (B-44.1 secao 4.1: {@code DEGRADED_MODE} nao recusa
+         * operacao por chave e quebra o {@code Block}; documento de 05/11, secao 3.4). Nenhum atuador nem
+         * politica do W-2a o usa.
+         *
+         * @deprecated a retirar quando a lista de edicoes de teste D-C for ampliada (relatorio do W-2a)
+         */
+        @Deprecated
+        AC_1("AC-1", true, RegraAlvo.LIVRE, 0L),
+        /**
+         * Rebalanceamento suspenso, <b>forma global</b>: {@code POST /rest/v2/container?action=disable-rebalancing}
+         * (secao 3.2 do documento de 05/11). A forma por cache se perde quando o coordenador cai (P-34; B-44.1b
+         * R2, o novo coordenador rebalanceou 4,6 s depois); a global sobreviveu (R3). Reversivel
+         * ({@code enable-rebalancing}), entra na pilha LIFO. Prazo {@code T_cham}.
+         */
+        AC_2("AC-2", true, RegraAlvo.PROIBIDO, 0L),
+        /**
+         * {@code remote-timeout}. <b>Fora do braco B</b> (B-44.1 secao 4.4, P-31: escrita indeterminada e
+         * replicas divergentes).
+         *
+         * @deprecated a retirar quando a lista de edicoes de teste D-C for ampliada (relatorio do W-2a)
+         */
+        @Deprecated
+        AC_3("AC-3", true, RegraAlvo.LIVRE, 0L),
+        /**
+         * Parada do no suspeito pela REST local: {@code POST /rest/v2/server/?action=stop} mandado ao proprio
+         * no (secao 3.1 do documento de 05/11; achado N-1: o servidor agenda a propria saida para 3 s depois,
+         * {@code Server.java:208} {@code SHUTDOWN_DELAY_SECONDS = 3}, sem falar com o coordenador). <b>Nao
+         * reversivel</b> dentro da execucao: religar exige reiniciar o conteiner, o que o P-5 tira do caminho do
+         * controlador; o orquestrador recria o <i>cluster</i> depois da execucao. Prazo
+         * {@code T_cham + 3 s} (secao 5.1).
+         */
+        AC_5("AC-5", false, RegraAlvo.UM_NO, 3_000_000_000L);
 
         private final String rotulo;
+        private final boolean reversivel;
+        private final RegraAlvo alvo;
+        private final long acrescimoPrazoNs;
 
-        Tipo(String rotulo) {
+        Tipo(String rotulo, boolean reversivel, RegraAlvo alvo, long acrescimoPrazoNs) {
             this.rotulo = rotulo;
+            this.reversivel = reversivel;
+            this.alvo = alvo;
+            this.acrescimoPrazoNs = acrescimoPrazoNs;
         }
 
         public String rotulo() {
             return rotulo;
+        }
+
+        /**
+         * {@code true}: a acao entra na pilha LIFO do {@link ExecutorDeAcoes} e e desfeita no R4, no
+         * encerramento e pelo gancho da JVM. {@code false}: fica fora da pilha, nunca e desfeita pelo
+         * controlador e a linha {@code acao} sai com {@code "reversao": "orquestrador"}.
+         */
+        public boolean reversivel() {
+            return reversivel;
+        }
+
+        public RegraAlvo alvo() {
+            return alvo;
+        }
+
+        /**
+         * Prazo da chamada INTEIRA deste tipo ao atuador (todos os pedidos e a leitura de volta).
+         *
+         * @param tChamNs {@code T_cham} (2 s, B-26.2)
+         */
+        public long prazoNs(long tChamNs) {
+            return tChamNs + acrescimoPrazoNs;
         }
     }
 
@@ -47,6 +121,21 @@ public record AcaoCluster(Tipo tipo, List<String> caches, String alvo, String va
             }
         }
         caches = List.copyOf(caches);
+        switch (tipo.alvo()) {
+            case PROIBIDO -> {
+                if (alvo != null) {
+                    throw new IllegalArgumentException(tipo.rotulo() + " e global e nao aceita alvo: '" + alvo + "'");
+                }
+            }
+            case UM_NO -> {
+                if (alvo == null || alvo.isBlank() || alvo.indexOf(',') >= 0 || !alvo.strip().equals(alvo)
+                        || alvo.chars().anyMatch(Character::isWhitespace)) {
+                    throw new IllegalArgumentException(tipo.rotulo() + " exige exatamente um no como alvo: '"
+                            + alvo + "'");
+                }
+            }
+            case LIVRE -> { }
+        }
     }
 
     /**

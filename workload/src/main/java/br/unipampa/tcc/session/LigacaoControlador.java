@@ -233,7 +233,7 @@ final class LigacaoControlador implements AutoCloseable, WorkloadMain.ControleDa
             sonda = new SondaTopologia(pecas.saude(), cli.replicacao.caches(), c.nosEsperados(),
                     pecas.periodoSondaNs(), pecas.prazoSondaNs(), tempo,
                     a -> obs.escrever(FormatoJsonl.topologia(a)));
-            topologia = sonda::resumirAte;
+            topologia = sonda; // W-2a: o laco usa resumirComNosAte (estado por no)
         }
         ExecutorDeAcoes executor = new ExecutorDeAcoes(c.modo(), pecas.atuador(), PRAZO_CHAMADA_NS,
                 tempo, r -> dec.escrever(FormatoJsonl.acao(r)), pecas.gancho());

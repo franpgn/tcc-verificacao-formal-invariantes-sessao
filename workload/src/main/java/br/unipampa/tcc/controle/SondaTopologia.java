@@ -2,6 +2,7 @@ package br.unipampa.tcc.controle;
 
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -36,7 +37,7 @@ import java.util.function.Consumer;
  * thread daemon {@code sonda-topologia} a taxa fixa e PULA (e conta) o instante em que a rodada anterior
  * ainda nao terminou, inclusive quando uma consulta interrompida ainda nao cedeu.</p>
  */
-public final class SondaTopologia implements AutoCloseable {
+public final class SondaTopologia implements AutoCloseable, FonteDeTopologia {
 
     static final String SAUDAVEL = "HEALTHY";
     static final String NOME_AGENDA = "sonda-topologia";
@@ -356,13 +357,28 @@ public final class SondaTopologia implements AutoCloseable {
      *
      * @throws IllegalArgumentException se {@code fimNs} recuar em relacao a chamada anterior
      */
+    @Override
     public synchronized EstadoTopologia resumirAte(long fimNs) {
+        return resumirComNosAte(fimNs).semPorNo();
+    }
+
+    /**
+     * W-2a (B-44.2): o mesmo que {@link #resumirAte(long)} (consome as mesmas amostras), mais o estado de cada
+     * no na janela ({@link EstadoTopologia#porNo()}): em quantas das amostras consumidas ele respondeu e o
+     * menor e o maior {@code number_of_nodes} que informou. Ordem dos nos: a da {@link FonteDeSaude}.
+     */
+    @Override
+    public synchronized EstadoTopologia resumirComNosAte(long fimNs) {
         if (houveResumo && fimNs < ultimoFimNs) {
             throw new IllegalArgumentException("fimNs recuou: " + fimNs + " < " + ultimoFimNs);
         }
         int consumidas = 0;
         int anomalas = 0;
         int nosMinimo = Integer.MAX_VALUE;
+        Map<String, int[]> porNo = new LinkedHashMap<>(); // respostas, menor, maior
+        for (int i = 0; i < nos; i++) {
+            porNo.put(fonte.rotulo(i), new int[] {0, Integer.MAX_VALUE, -1});
+        }
         for (Iterator<AmostraTopologia> it = pendentes.iterator(); it.hasNext(); ) {
             AmostraTopologia a = it.next();
             if (a.tNs() >= fimNs) {
@@ -374,13 +390,31 @@ public final class SondaTopologia implements AutoCloseable {
                 anomalas++;
             }
             nosMinimo = Math.min(nosMinimo, a.nosMinimo());
+            for (ResultadoNo r : a.porNo()) {
+                int[] c = porNo.computeIfAbsent(r.no(), k -> new int[] {0, Integer.MAX_VALUE, -1});
+                if (r.respondeu()) {
+                    c[0]++;
+                    c[1] = Math.min(c[1], r.numeroDeNos());
+                    c[2] = Math.max(c[2], r.numeroDeNos());
+                }
+            }
             if (houveResumo && a.tNs() < ultimoFimNs) {
                 atrasadas++;
             }
         }
         ultimoFimNs = fimNs;
         houveResumo = true;
-        return new EstadoTopologia(true, consumidas, anomalas, consumidas == 0 ? 0 : nosMinimo);
+        Map<String, EstadoTopologia.No> estados = new LinkedHashMap<>();
+        if (consumidas > 0) {
+            for (Map.Entry<String, int[]> e : porNo.entrySet()) {
+                int[] c = e.getValue();
+                EstadoTopologia.Resposta resp = c[0] == 0 ? EstadoTopologia.Resposta.NENHUMA
+                        : c[0] >= consumidas ? EstadoTopologia.Resposta.TODAS : EstadoTopologia.Resposta.ALGUMA;
+                estados.put(e.getKey(), c[0] == 0 ? new EstadoTopologia.No(resp, -1, -1)
+                        : new EstadoTopologia.No(resp, c[1], c[2]));
+            }
+        }
+        return new EstadoTopologia(true, consumidas, anomalas, consumidas == 0 ? 0 : nosMinimo, estados);
     }
 
     /**

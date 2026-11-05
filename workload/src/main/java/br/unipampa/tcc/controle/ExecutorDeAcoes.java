@@ -4,14 +4,17 @@ import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Deque;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
 
 /**
@@ -40,8 +43,18 @@ import java.util.function.Consumer;
  *       instante e na mesma ordem em que active os executaria.</li>
  * </ul>
  *
+ * <p><b>W-2a (B-44.2): acao nao reversivel e prazo por tipo.</b> Uma acao cujo
+ * {@link AcaoCluster.Tipo#reversivel()} e falso (AC-5) nao entra na pilha nem em {@link #ativas()}, nunca e
+ * desfeita (R4, encerramento, gancho, falha na aplicacao) e e pedida no maximo uma vez por executor
+ * (repetida, e ignorada); a reversao fica com o orquestrador, entre execucoes. Cada chamada leva o prazo do
+ * seu tipo, {@link AcaoCluster.Tipo#prazoNs(long)} sobre {@code T_cham} (AC-2: {@code T_cham}; AC-5:
+ * {@code T_cham + 3 s}, {@code Server.java:208}). O prazo do encerramento soma os prazos de reversao da
+ * pilha, o prazo da chamada em curso e um {@code T_cham}: com so acoes de prazo {@code T_cham} na pilha,
+ * e o mesmo {@code (A + 1) x T_cham} de antes, e {@code A} so conta a pilha (o AC-5 em curso entra com o
+ * prazo dele, nao como mais um elemento da pilha).</p>
+ *
  * <p>A camada 3 (o orquestrador confere e restaura a configuracao antes e depois de cada execucao) e do
- * W-6. O teto {@code T_cong} do AC-1 e da politica do W-2.</p>
+ * W-6. O teto {@code T_reb} do AC-2 e da {@link PoliticaPorAssinatura}.</p>
  */
 public final class ExecutorDeAcoes implements AutoCloseable {
 
@@ -104,6 +117,8 @@ public final class ExecutorDeAcoes implements AutoCloseable {
 
     /** Acoes pedidas e nao revertidas (intencao), em ordem de aplicacao. Protegido por {@code trava}. */
     private final Map<String, AcaoCluster> ativas = new LinkedHashMap<>();
+    /** Chaves das acoes nao reversiveis ja pedidas (no maximo uma vez cada). Protegido por {@code trava}. */
+    private final Set<String> naoReversiveisPedidas = new HashSet<>();
     private final Object trava = new Object();
     private long pedidas;
     private long ignoradas;
@@ -119,10 +134,12 @@ public final class ExecutorDeAcoes implements AutoCloseable {
     private final LinkedBlockingQueue<Tarefa> fila = new LinkedBlockingQueue<>();
     /** Pilha das acoes aplicadas; so a thread executora mexe. Topo = primeiro. */
     private final Deque<AcaoCluster> pilha = new ArrayDeque<>();
-    /** Tamanho da pilha, legivel fora da thread executora (calculo de T_enc). */
+    /** Tamanho da pilha, legivel fora da thread executora. */
     private final AtomicInteger tamanhoPilha = new AtomicInteger();
-    /** Ha uma aplicacao em curso na thread executora (conta em A). */
-    private volatile boolean aplicando;
+    /** Soma dos prazos de reversao da pilha, legivel fora da thread executora (calculo de T_enc). */
+    private final AtomicLong prazoPilhaNs = new AtomicLong();
+    /** Prazo da aplicacao em curso na thread executora, ou 0 sem aplicacao em curso (entra em T_enc). */
+    private volatile long prazoEmCursoNs;
     /** T_enc usado no encerramento; {@code null} antes dele. */
     private volatile Long prazoEncerramentoUsadoNs;
     private final Object travaPendentes = new Object();
@@ -205,16 +222,32 @@ public final class ExecutorDeAcoes implements AutoCloseable {
         }
     }
 
-    /** Pede a aplicacao (origem {@code POLITICA}); repetida enquanto ativa, e ignorada. */
+    /** Prazo de uma chamada deste tipo: {@link AcaoCluster.Tipo#prazoNs(long)} sobre {@code T_cham}. */
+    public long prazoNs(AcaoCluster.Tipo tipo) {
+        return tipo.prazoNs(prazoChamadaNs);
+    }
+
+    /**
+     * Pede a aplicacao (origem {@code POLITICA}); repetida enquanto ativa, e ignorada. Acao nao
+     * reversivel: pedida no maximo uma vez por executor (a repetida e ignorada) e nunca entra em
+     * {@link #ativas()}.
+     */
     public void aplicar(AcaoCluster acao, Decisao.Regra regra, long fimJanelaNs) {
         Objects.requireNonNull(acao, "acao");
         synchronized (trava) {
             exigirAberto();
-            if (ativas.containsKey(acao.chave())) {
-                ignoradas++;
-                return;
+            if (!acao.tipo().reversivel()) {
+                if (!naoReversiveisPedidas.add(acao.chave())) {
+                    ignoradas++;
+                    return;
+                }
+            } else {
+                if (ativas.containsKey(acao.chave())) {
+                    ignoradas++;
+                    return;
+                }
+                ativas.put(acao.chave(), acao);
             }
-            ativas.put(acao.chave(), acao);
             pedidas++;
         }
         long agora = tempo.agoraNs();
@@ -312,7 +345,11 @@ public final class ExecutorDeAcoes implements AutoCloseable {
                 t = executora;
             }
             if (modo == ModoAtuacao.SHADOW || t == null) {
-                prazoEncerramentoUsadoNs = (lifo.size() + 1L) * prazoChamadaNs;
+                long soma = prazoChamadaNs;
+                for (AcaoCluster x : lifo) {
+                    soma += prazoNs(x.tipo());
+                }
+                prazoEncerramentoUsadoNs = soma;
                 Collections.reverse(lifo);
                 long agora = tempo.agoraNs();
                 for (AcaoCluster a : lifo) {
@@ -322,9 +359,12 @@ public final class ExecutorDeAcoes implements AutoCloseable {
                 return true;
             }
             encerrando = true;
-            // R2 (V-W3): A = pilha + aplicacao em curso, lidos agora; aplicacoes ainda na fila sao descartadas
-            long a = tamanhoPilha.get() + (aplicando ? 1L : 0L);
-            long prazoNs = (a + 1L) * prazoChamadaNs;
+            // R2 (V-W3) e W-2a: prazos de reversao da pilha + prazo da aplicacao em curso + T_cham, lidos
+            // agora; aplicacoes ainda na fila sao descartadas. So com acoes de prazo T_cham: (A + 1) x T_cham.
+            // ordem de leitura: em curso antes da pilha (a executora empilha antes de zerar o em curso), para
+            // nunca deixar de contar a acao que esta passando de um para o outro
+            long emCurso = prazoEmCursoNs;
+            long prazoNs = emCurso + prazoPilhaNs.get() + prazoChamadaNs;
             prazoEncerramentoUsadoNs = prazoNs;
             long agora = tempo.agoraNs();
             enfileirar(new Tarefa(TipoTarefa.REVERTER_TUDO, null, origem, null, null, agora));
@@ -432,19 +472,32 @@ public final class ExecutorDeAcoes implements AutoCloseable {
                     "reversao anterior falhou; acao ainda aplicada"));
             return;
         }
-        aplicando = true;
+        boolean reversivel = a.tipo().reversivel();
+        prazoEmCursoNs = prazoNs(a.tipo());
         Chamada c;
         try {
             c = chamar(true, a);
-            if (c.resultado().estado() != ResultadoAtuacao.Estado.FALHOU) {
-                pilha.push(a); // antes de zerar 'aplicando': A nunca deixa de contar esta acao
+            if (reversivel && c.resultado().estado() != ResultadoAtuacao.Estado.FALHOU) {
+                pilha.push(a); // antes de zerar o prazo em curso: T_enc nunca deixa de contar esta acao
                 tamanhoPilha.set(pilha.size());
+                prazoPilhaNs.addAndGet(prazoNs(a.tipo()));
             }
         } finally {
-            aplicando = false;
+            prazoEmCursoNs = 0L;
         }
         registrar(RegistroAcao.Operacao.APLICAR, a, t.origem(), t.regra(), t.fimJanelaNs(), t.pedidoNs(), c);
         ResultadoAtuacao r = c.resultado();
+        if (!reversivel) {
+            // fora da pilha: nenhuma reversao, nem na falha (a reversao e do orquestrador)
+            synchronized (trava) {
+                if (r.estado() == ResultadoAtuacao.Estado.FALHOU) {
+                    falhas++;
+                } else if (r.executada()) {
+                    executadas++;
+                }
+            }
+            return;
+        }
         if (r.estado() == ResultadoAtuacao.Estado.FALHOU) {
             synchronized (trava) {
                 falhas++;
@@ -473,6 +526,7 @@ public final class ExecutorDeAcoes implements AutoCloseable {
                 if (it.next().chave().equals(a.chave())) {
                     it.remove();
                     tamanhoPilha.set(pilha.size());
+                    prazoPilhaNs.addAndGet(-prazoNs(a.tipo()));
                     break;
                 }
             }
@@ -503,7 +557,8 @@ public final class ExecutorDeAcoes implements AutoCloseable {
         long t0 = System.nanoTime();
         ResultadoAtuacao r;
         try {
-            r = aplicar ? atuador.aplicar(a, prazoChamadaNs) : atuador.reverter(a, prazoChamadaNs);
+            long prazo = prazoNs(a.tipo());
+            r = aplicar ? atuador.aplicar(a, prazo) : atuador.reverter(a, prazo);
             if (r == null) {
                 r = ResultadoAtuacao.falhou(null, null, "atuador devolveu null");
             }

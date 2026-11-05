@@ -194,6 +194,33 @@ public final class FormatoJsonl {
         o.put("codigo_http", r.codigoHttp());
         o.put("lido", r.lidoDeVolta());
         o.put("erro", r.erro());
+        if (!r.acao().tipo().reversivel()) {
+            // W-2a: acao fora da pilha (AC-5); o campo so aparece nestas linhas (ver o relatorio do W-2a)
+            o.put("reversao", REVERSAO_ORQUESTRADOR);
+        }
+        return o;
+    }
+
+    /** Valor de {@code reversao} na linha {@code acao} de uma acao nao reversivel. */
+    public static final String REVERSAO_ORQUESTRADOR = "orquestrador";
+
+    /**
+     * W-2a (B-44.2): politica de reacao escolhida numa janela ({@code P0}, {@code P1}, {@code P2}) e o
+     * motivo, quando a politica de acao registra a escolha ({@link PlanoDeAcao#politica()} nao nulo).
+     */
+    public static ObjectNode politica(Decisao d, PlanoDeAcao p, ModoAtuacao modo, long tNs) {
+        ObjectNode o = linha("politica");
+        o.put("t_fim_janela_ns", d.fimNs());
+        o.put("t_decisao_ns", tNs);
+        o.put("modo", modo.rotulo());
+        o.put("perfil", d.perfil().name());
+        o.put("regra", d.regra().name());
+        o.put("politica", p.politica());
+        o.put("motivo", p.motivo());
+        ArrayNode rev = o.putArray("reverter");
+        p.reverter().forEach(x -> rev.add(x.tipo().rotulo()));
+        ArrayNode apl = o.putArray("aplicar");
+        p.aplicar().forEach(x -> apl.add(x.tipo().rotulo()));
         return o;
     }
 }

@@ -299,7 +299,7 @@ public final class LacoDeControle implements AutoCloseable {
 
     private void processar(JanelaObservada o) {
         Janela j = o.janela();
-        EstadoTopologia top = c.topologia().resumirAte(j.fimNs());
+        EstadoTopologia top = c.topologia().resumirComNosAte(j.fimNs());
         EstadoDefasagem lag = c.defasagem().resumirAte(j.fimNs());
         Decisao d = c.controlador().avaliar(j, top, lag);
         janelas++;
@@ -319,6 +319,9 @@ public final class LacoDeControle implements AutoCloseable {
         } catch (RuntimeException e) {
             errosPolitica++;
             return;
+        }
+        if (plano.politica() != null) {
+            c.decisoes().escrever(FormatoJsonl.politica(d, plano, modo, c.tempo().agoraNs()));
         }
         for (AcaoCluster a : plano.reverter()) {
             c.executor().reverter(a, RegistroAcao.Origem.POLITICA, d.regra(), d.fimNs());

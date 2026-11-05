@@ -699,8 +699,8 @@ Usam os *fixtures* editados sem mudança própria: `ParametrosDefasagemTest` (`B
 Branch `fix/p5-caminho-critico` (worktree `wt-w2b`), a partir de `17f2bd4` (`feature/controlador-integracao`).
 Surefire com `mvn -q -T1 clean test` em `workload/` (contado dos `TEST-*.xml`); Python com
 `python -E -P -m unittest discover -s analysis` na raiz. JDK 22.0.2, Maven 3.9.16. Sem VM e sem *cluster* Podman (a VM
-estava parada, janela H2). Vermelhos conferidos antes de cada `fix:`: os três `test:` não compilam (`test-compile`
-exit 1, erros só nos arquivos de teste do item).
+estava parada, janela H2). Vermelhos conferidos antes de cada `fix:`: os três primeiros `test:` não compilam
+(`test-compile` exit 1, erros só nos arquivos de teste do item); o quarto (`db84d70`) falha por asserção.
 
 | Passo | Commit | Surefire (testes/falhas/erros/pulados, arquivos) |
 |---|---|---|
@@ -708,17 +708,18 @@ exit 1, erros só nos arquivos de teste do item).
 | trilha JSONL assíncrona (N-8) | `7376a1a` test → `c3ae70c` fix | **1074/0/0/1**, 149 |
 | sonda de saúde sem `curl` (N-7) | `28c2fdf` test → `eca637b` fix | **1078/0/0/1**, 150 |
 | contenção do `ISPN004007` | `0d42f82` test → `ed7276d` fix | **1086/0/0/1**, 151 |
+| gravadora que nunca morre por uma linha | `db84d70` test (vermelho por asserção) → `07b174f` fix | **1087/0/0/1**, 151 |
 
 `unittest discover -s analysis`: **370 OK, 1 *skip*** (igual à base).
 
-Conta: 1086 = 1059 + 15 (trilha) + 4 (sonda: 3 do `ArquiteturaSondaSaudeTest` e o `semConexao`; os outros testes do
+Conta: 1087 = 1059 + 16 (trilha, com `gravadoraNaoMorre`) + 4 (sonda: 3 do `ArquiteturaSondaSaudeTest` e o `semConexao`; os outros testes do
 `ConsultaSaudeRestTest` foram reescritos, não somados) + 8 (contenção).
 
-Testes novos (27):
+Testes novos (28):
 
 | Teste | Item | O que prende |
 |---|---|---|
-| `controle/TrilhaJsonlAssincronaTest` (10) | N-8 | `escrever` volta em < 200 ms com a gravadora travada e a ordem se mantém; fila cheia conta `transbordadas` sem bloquear e o `fim` entra fora da capacidade com o total; `linhas_perdidas` do `fim` conta o erro de uma linha que ainda estava na fila no pedido e é o último campo; nenhuma linha passa do `fim` (descartadas fora dele, contadas em `linhasPerdidas`); `close` espera a fila; `aguardarGravacao`; `capacidadePara` = 4 × linhas esperadas; gravadora daemon com o nome do arquivo; **o teste do plano**: trilha travada 5 s não atrasa a chamada seguinte do atuador além do prazo do tipo (`T_cham` = 500 ms); 30 *ticks* do laço em < 1 s com as duas gravadoras travadas |
+| `controle/TrilhaJsonlAssincronaTest` (11) | N-8 | `escrever` volta em < 200 ms com a gravadora travada e a ordem se mantém; fila cheia conta `transbordadas` sem bloquear e o `fim` entra fora da capacidade com o total; `linhas_perdidas` do `fim` conta o erro de uma linha que ainda estava na fila no pedido e é o último campo; nenhuma linha passa do `fim` (descartadas fora dele, contadas em `linhasPerdidas`); `close` espera a fila; `aguardarGravacao`; `capacidadePara` = 4 × linhas esperadas; gravadora daemon com o nome do arquivo; **o teste do plano**: trilha travada 5 s não atrasa a chamada seguinte do atuador além do prazo do tipo (`T_cham` = 500 ms); 30 *ticks* do laço em < 1 s com as duas gravadoras travadas; a gravadora não morre com `RuntimeException` da saída (conta como erro, a fila segue) |
 | `session/LigacaoControladorTrilhaTest` (5) | N-8 | linhas esperadas por arquivo (600 s, W = 5 s, P = 2 s: 662/542/242 e 362; arredondamento para cima); capacidade das duas trilhas na abertura; gancho envolto com o mesmo nome que roda o do executor e depois espera a gravadora no que sobra do `T_enc`; sem sobra não espera; ligação `active` registra e remove o gancho envolto |
 | `session/ArquiteturaSondaSaudeTest` (3) | N-7 | R-ARQ-4: `ConsultaSaudeRest` e `ClienteAdminRest` sem `ProcessBuilder`, `Process`, `Runtime`, `curl`, `java.nio.file`, e de `HealthRest` só `interpretar`/`Estado`; R-ARQ-5: `LigacaoControlador` sem processo; detectores |
 | `session/ConsultaSaudeRestTest.semConexao` | N-7 | conexão recusada vira `IOException` de classe exata (motivo `falha:IOException`, o mesmo do I-3b) |

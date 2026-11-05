@@ -108,7 +108,8 @@ pelo I-3b. TDD: cada `test:` vermelho (`test-compile` exit 1, erros só nos test
   (2 + 2·⌈D/W⌉ + ⌈D/P_sonda⌉ com sonda + ⌈D/W⌉ com S_lag) e `linhasEsperadasDecisoes` (2 + 3·⌈D/W⌉: decisão,
   política e, em média, uma ação por janela), D = `--duration`. Fila cheia: a linha é recusada e contada
   (`transbordadas`, dentro de `linhas_perdidas`). O `fim` vai por `escreverFim`: fora da capacidade, fecha a trilha
-  para linhas novas, e a gravadora preenche `linhas_perdidas` na hora de gravar. `close` espera a gravadora (no fim da
+  para linhas novas, e a gravadora preenche `linhas_perdidas` na hora de gravar. A gravadora nunca morre por uma linha
+  (`IOException` ou `RuntimeException` da saída contam como erro de escrita). `close` espera a gravadora (no fim da
   carga, fora do laço e do executor). O gancho de desligamento da JVM do executor vai envolto
   (`LigacaoControlador.ganchoComDreno`): depois de desfazer a pilha, espera a gravadora do `decisoes` pelo que sobra
   do `T_enc` usado; sem sobra, não espera, e o gancho nunca passa do `T_enc`.

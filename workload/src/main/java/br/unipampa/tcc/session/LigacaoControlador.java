@@ -90,7 +90,10 @@ final class LigacaoControlador implements AutoCloseable, WorkloadMain.ControleDa
     /** Periodo e prazo da sonda de topologia: os do B-26.2 (log de saude do gate). */
     static final long PERIODO_SONDA_NS = 2_000_000_000L;
     static final long PRAZO_SONDA_NS = 1_500_000_000L;
-    /** Prazo de cada chamada ao atuador: 2 s, o mesmo {@code curl -m} da sonda de saude (secao 4.4.2). */
+    /**
+     * Prazo de cada chamada ao atuador: 2 s, o mesmo {@code curl -m} da sonda de saude do B-26.2 (secao 4.4.2). Desde o
+     * W-2b a sonda e HTTP em memoria; a origem do valor continua a mesma.
+     */
     static final long PRAZO_CHAMADA_NS = 2_000_000_000L;
     /** Intervalo entre as consultas de saude do alvo do AC-5 (W-2a). */
     static final long PASSO_SAUDE_AC5_NS = 100_000_000L;
@@ -635,6 +638,7 @@ final class LigacaoControlador implements AutoCloseable, WorkloadMain.ControleDa
             o.put("sonda_rodadas_puladas", sonda == null ? null : sonda.rodadasPuladas());
             o.put("sonda_amostras_atrasadas", sonda == null ? null : sonda.amostrasAtrasadas());
             o.put("sonda_erros_ouvinte", sonda == null ? null : sonda.errosOuvinte());
+            // W-2b (P-5): a sonda REST nao cria processo; o campo fica no esquema e vale 0 com ela
             o.put("curl_lancados", rest == null ? null : rest.lancamentos());
             // observaveis 1.2 (W-4): custo do S_lag, contado a parte da carga util; null sem a sonda
             if (defasagem == null) {

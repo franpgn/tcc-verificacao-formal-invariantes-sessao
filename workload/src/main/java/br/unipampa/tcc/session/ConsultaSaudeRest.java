@@ -3,62 +3,50 @@ package br.unipampa.tcc.session;
 import br.unipampa.tcc.controle.FonteDeSaude;
 import br.unipampa.tcc.controle.LeituraSaude;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.nio.charset.StandardCharsets;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * B-26.2: adaptador REST da sonda de topologia ({@link br.unipampa.tcc.controle.SondaTopologia}). Cada
- * consulta e um {@code curl --digest} ao endpoint de saude de UM no
- * ({@code GET /rest/v2/cache-managers/default/health}), com o mesmo mecanismo de {@link HealthRest}:
- * credenciais SO por stdin ({@code -K -}, {@link HealthRest#configCurl}), corpo interpretado por
- * {@link HealthRest#interpretar}.
+ * consulta e um {@code GET} ao endpoint de saude de UM no ({@code GET /rest/v2/cache-managers/default/health}),
+ * com o corpo interpretado por {@link HealthRest#interpretar}.
  *
- * <p>Diferente de {@link HealthRest#consultar}, respeita o prazo pedido pela sonda: {@code --max-time} e
- * o prazo arredondado para cima (minimo 1 s) e a espera do processo para no prazo; ao passar dele, ou
- * se a thread for interrompida, o curl e destruido a forca.</p>
+ * <p><b>W-2b (P-5, achado N-7 do documento de 05/11).</b> Ate o W-2b cada consulta criava um processo
+ * {@code curl --digest}; na VM, o travamento de disco travou junto a criacao de processos. Agora a consulta e
+ * feita em memoria pelo {@link ClienteAdminRest} do W-2a ({@link java.net.http.HttpClient}, Digest RFC 7616 com o
+ * desafio de cada no guardado e reaproveitado): nenhum processo, nenhum disco. O prazo e o que a sonda pede
+ * ({@code prazoNs}, o mesmo em que a sonda antiga destruia o {@code curl}) e limita o pedido inteiro, inclusive a
+ * segunda ida do desafio.</p>
+ *
+ * <p>Os motivos que a sonda grava nao mudam: prazo estourado = {@link java.util.concurrent.TimeoutException}
+ * ({@code timeout}); conexao recusada ou resposta fora de 2xx = {@link IOException} exata ({@code falha:IOException},
+ * como o {@code exit} do {@code curl --fail}); corpo que nao e JSON de saude = {@link IllegalArgumentException}.
+ * Interrupcao propaga {@link InterruptedException} e cancela o pedido.</p>
  */
 public final class ConsultaSaudeRest implements FonteDeSaude {
 
-    /** Lanca o processo do curl; o padrao e {@link ProcessBuilder#start()}. */
-    interface LancadorCurl {
-        Process lancar(List<String> comando) throws IOException;
-    }
-
-    static final LancadorCurl PADRAO = comando -> new ProcessBuilder(comando).redirectErrorStream(false).start();
-
     static final String ENDPOINT = "/rest/v2/cache-managers/default/health";
 
-    /** Passo de espera do processo enquanto drena o stdout. */
-    private static final long PASSO_MS = 10;
-
     private final List<String> urls;
-    private final String usuario;
-    private final String senha;
-    private final LancadorCurl lancador;
-    private final AtomicLong lancamentos = new AtomicLong();
+    private final ClienteAdminRest cliente;
+    private final AtomicLong pedidos = new AtomicLong();
 
-    /** Adaptador com o lancador padrao ({@link ProcessBuilder}). */
+    /** Adaptador com um {@link ClienteAdminRest} proprio. */
     public ConsultaSaudeRest(List<String> urls, String usuario, String senha) {
-        this(urls, usuario, senha, PADRAO);
+        this(urls, new ClienteAdminRest(usuario, senha));
     }
 
-    ConsultaSaudeRest(List<String> urls, String usuario, String senha, LancadorCurl lancador) {
+    /** Adaptador sobre um cliente dado (CLI de smoke, testes). */
+    ConsultaSaudeRest(List<String> urls, ClienteAdminRest cliente) {
         if (urls == null || urls.isEmpty()) {
             throw new IllegalArgumentException("lista de URLs vazia");
         }
         this.urls = List.copyOf(urls);
-        this.usuario = Objects.requireNonNull(usuario, "usuario");
-        this.senha = Objects.requireNonNull(senha, "senha");
-        this.lancador = Objects.requireNonNull(lancador, "lancador");
+        this.cliente = Objects.requireNonNull(cliente, "cliente");
     }
 
     /**
@@ -109,56 +97,34 @@ public final class ConsultaSaudeRest implements FonteDeSaude {
 
     @Override
     public LeituraSaude consultar(int indice, long prazoNs) throws Exception {
-        long limite = System.nanoTime() + prazoNs;
-        long maxTimeS = Math.max(1L, (prazoNs + 999_999_999L) / 1_000_000_000L);
-        List<String> comando = List.of("curl", "-s", "--fail", "--digest", "--max-time", Long.toString(maxTimeS),
-                "-K", "-", urls.get(indice) + ENDPOINT);
-        Process p = lancador.lancar(comando);
-        lancamentos.incrementAndGet();
-        boolean terminou = false;
+        URI uri = URI.create(urls.get(indice) + ENDPOINT);
+        pedidos.incrementAndGet();
+        ClienteAdminRest.Resposta r;
         try {
-            try (OutputStream os = p.getOutputStream()) {
-                os.write(HealthRest.configCurl(usuario, senha).getBytes(StandardCharsets.UTF_8));
-            }
-            InputStream in = p.getInputStream();
-            ByteArrayOutputStream corpo = new ByteArrayOutputStream();
-            byte[] buf = new byte[8192];
-            while (true) {
-                drenar(in, corpo, buf);
-                long restanteNs = limite - System.nanoTime();
-                if (restanteNs <= 0) {
-                    throw new TimeoutException("curl excedeu o prazo de " + TimeUnit.NANOSECONDS.toMillis(prazoNs)
-                            + " ms");
-                }
-                long passoNs = Math.min(restanteNs, TimeUnit.MILLISECONDS.toNanos(PASSO_MS));
-                if (p.waitFor(passoNs, TimeUnit.NANOSECONDS)) {
-                    terminou = true;
-                    break;
-                }
-            }
-            corpo.write(in.readAllBytes()); // processo terminou: EOF garantido
-            int exit = p.exitValue();
-            if (exit != 0) {
-                throw new IOException("curl falhou (exit " + exit + ")");
-            }
-            HealthRest.Estado e = HealthRest.interpretar(corpo.toString(StandardCharsets.UTF_8));
-            return new LeituraSaude(e.numeroDeNos(), e.statusPorCache());
-        } finally {
-            if (!terminou) {
-                p.destroyForcibly(); // prazo, interrupcao ou erro de E/S
-            }
+            r = cliente.pedir("GET", uri, prazoNs);
+        } catch (IOException e) {
+            // classe exata IOException: o motivo da sonda continua falha:IOException (P-5 sem mudar a amostra)
+            String m = e.getMessage();
+            throw new IOException("GET " + uri + " falhou: " + e.getClass().getSimpleName() + (m == null ? "" : ": " + m),
+                    e);
         }
+        if (!r.sucesso()) {
+            throw new IOException("GET " + uri + " devolveu HTTP " + r.codigo());
+        }
+        HealthRest.Estado e = HealthRest.interpretar(r.corpo());
+        return new LeituraSaude(e.numeroDeNos(), e.statusPorCache());
     }
 
-    private static void drenar(InputStream in, ByteArrayOutputStream corpo, byte[] buf) throws IOException {
-        int n;
-        while (in.available() > 0 && (n = in.read(buf, 0, Math.min(buf.length, in.available()))) > 0) {
-            corpo.write(buf, 0, n);
-        }
+    /** Pedidos {@code GET} feitos desde a criacao (um por consulta; o desafio Digest nao conta). */
+    public long pedidos() {
+        return pedidos.get();
     }
 
-    /** Processos curl lancados desde a criacao (custo do smoke). */
+    /**
+     * Processos lancados desde a criacao: sempre 0 desde o W-2b (P-5). Mantido porque o campo {@code curl_lancados}
+     * do {@code fim} de {@code observaveis} (contrato 1.2) vem daqui e o esquema nao muda.
+     */
     public long lancamentos() {
-        return lancamentos.get();
+        return 0L;
     }
 }

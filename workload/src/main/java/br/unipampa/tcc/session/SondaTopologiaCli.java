@@ -34,7 +34,8 @@ import java.util.concurrent.atomic.AtomicLong;
  *
  * <p>Saida: uma linha JSON por amostra em stdout, carimbada em epoch-ns no mesmo relogio dos
  * {@code end_ns} ({@link EpochClock}), e no fim uma linha {@code {"resumo":{...}}}. Em stderr, uma linha
- * de custo com o numero de curl lancados e o tempo de CPU da JVM.</p>
+ * de custo com o numero de pedidos HTTP e o tempo de CPU da JVM (W-2b: a consulta e HTTP em memoria pelo
+ * {@link ClienteAdminRest}; ate o W-2b era um {@code curl} por consulta).</p>
  */
 public final class SondaTopologiaCli {
 
@@ -53,6 +54,12 @@ public final class SondaTopologiaCli {
             return "Args[urls=" + urls + ", perfil=" + perfil + ", usuario=" + usuario + ", senha=***, periodoMs="
                     + periodoMs + ", prazoMs=" + prazoMs + ", duracaoS=" + duracaoS + "]";
         }
+    }
+
+    /** Cria o cliente HTTP da sonda (W-2b; injetavel nos testes). */
+    @FunctionalInterface
+    interface FabricaCliente {
+        ClienteAdminRest criar(String usuario, String senha);
     }
 
     private SondaTopologiaCli() { /* utilitario */ }
@@ -138,7 +145,7 @@ public final class SondaTopologiaCli {
     }
 
     static int executar(String[] argv, Map<String, String> env, PrintStream out, PrintStream err,
-                        ConsultaSaudeRest.LancadorCurl lancador) {
+                        FabricaCliente fabrica) {
         Args a;
         try {
             a = parse(argv, env);
@@ -150,7 +157,7 @@ public final class SondaTopologiaCli {
         }
         EpochClock relogio = EpochClock.capturarAgora();
         FonteDeTempo tempo = () -> relogio.paraEpochNanos(System.nanoTime());
-        ConsultaSaudeRest fonte = new ConsultaSaudeRest(a.urls(), a.usuario(), a.senha(), lancador);
+        ConsultaSaudeRest fonte = new ConsultaSaudeRest(a.urls(), fabrica.criar(a.usuario(), a.senha()));
         AtomicLong anomalas = new AtomicLong();
         Object travaSaida = new Object();
         SondaTopologia sonda = new SondaTopologia(fonte, a.perfil().caches(), a.urls().size(),
@@ -181,7 +188,7 @@ public final class SondaTopologiaCli {
             out.flush();
         }
         long cpuMs = ProcessHandle.current().info().totalCpuDuration().map(Duration::toMillis).orElse(-1L);
-        err.println("custo curl_lancados=" + fonte.lancamentos() + " rodadas=" + sonda.rodadas() + " cpu_jvm_ms="
+        err.println("custo pedidos_http=" + fonte.pedidos() + " rodadas=" + sonda.rodadas() + " cpu_jvm_ms="
                 + cpuMs + " erros_ouvinte=" + sonda.errosOuvinte());
         if (interrompida) {
             Thread.currentThread().interrupt();
@@ -191,6 +198,6 @@ public final class SondaTopologiaCli {
 
     public static void main(String[] argv) {
         PrintStream out = new PrintStream(new FileOutputStream(FileDescriptor.out), true, StandardCharsets.UTF_8);
-        System.exit(executar(argv, System.getenv(), out, System.err, ConsultaSaudeRest.PADRAO));
+        System.exit(executar(argv, System.getenv(), out, System.err, ClienteAdminRest::new));
     }
 }

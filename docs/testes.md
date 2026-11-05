@@ -843,3 +843,34 @@ Leitura:
   no I-3b a cura foi 150 s antes do fim.
 - **Encerramento:** fim da carga → fim do controlador em 11,8 e 13,1 ms, com o fechamento das trilhas limitado pelo
   `T_enc` (decisão 5); o disco não travou e nada foi abandonado.
+
+### W-2b, suíte e repetição r2 do *smoke* depois da campanha da VM (05/11, 22:05Z a 22:27Z)
+
+A VM terminou a campanha às 21:56Z; até lá o host ficou sem Maven, testes e Podman (pedido do coordenador). Na ponta
+`9ea2059` (o código é o de `65165ea`; só docs e brutos a mais):
+
+- Surefire `mvn -q -T1 clean test`: **1101/0/0/1 em 152 classes**, 0 falhas (22:05Z a 22:09:50Z).
+- `python -E -P -m unittest discover -s analysis`: **370 OK, 1 *skip*** (68,4 s).
+
+Repetição r2 do *smoke* (sementes 63002 e 63004, mesmo jar `f47870e7…dd3d59`, mesmo roteiro de
+`runs/w2b-smoke/comandos.txt`):
+
+| | `ativo-sem-religar` r1 | `ativo-sem-religar-r2` | `controle-shadow` r1 | `controle-shadow-r2` |
+|---|---|---|---|---|
+| P1 (s depois do corte) | 13,28 | 12,70 | 13,36 | 12,82 |
+| AC-5 | APLICADA, 3,15 s | APLICADA, 3,20 s; lido `12703=parou`, os outros `HEALTHY` | PREVISTA | PREVISTA |
+| stderr (bytes; linhas de pilha) | 24 107; 150 | **17 893**; 93 | 10 585; 24 | **10 577**; 24 |
+| `ISPN004007` contados (inteiras + avisos) | 1 243 (6 + 5) | 1 315 (4 + 4) | 21 (2 + 2) | 35 (2 + 2) |
+| `ISPN004005` contados (inteiras + avisos) | 10 (1 + 1) | 4 (1 + 1) | 556 (2 + 2) | 453 (2 + 2) |
+| observaveis / decisoes: linhas, `fim`, `linhas_perdidas` | 95 / 27, sim, 0 | 96 / 29, sim, 0 | 98 / 29, sim, 0 | 102 / 29, sim, 0 |
+| `curl_lancados`; `linhas_jsonl_perdidas` | 0; 0 | 0; 0 | 0; 0 | 0; 0 |
+| fim da carga → fim do controlador | 11,8 ms | 10,8 ms | 13,1 ms | 13,2 ms |
+| convergência | 24 rodadas inválidas ("topologia com 2 de 3 servidores") | igual | convergiu em 40,1 s | convergiu em 40,1 s |
+| violações; `exit` | 0; 0 | 0; 0 | 0; 0 | 0; 0 |
+
+A r2 repete a r1: o stderr dos dois braços fica entre 10 e 24 KB, o P1 e o AC-5 saem nos mesmos instantes do I-3b
+(12,7 a 13,4 s), as trilhas fecham com `fim` e sem perda, e a convergência pela sonda HTTP grava os mesmos motivos.
+
+Incidente de infraestrutura: às 22:11Z uma primeira tentativa da r2 travou no `podman-compose down`, porque a máquina
+Podman do WSL, recém-ligada, aceitava a conexão ssh mas as sessões ficavam presas; `podman machine stop` e `start`
+resolveram e a tentativa (que não chegou a subir o *cluster*) foi apagada. Nada a ver com o código.

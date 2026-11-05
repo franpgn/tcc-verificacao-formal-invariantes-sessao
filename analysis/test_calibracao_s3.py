@@ -264,7 +264,7 @@ def montar_campanha(base, mud=None):
                                     lag_teto={j: ISN2 for j in range(6, 12)}, conv=("convergiu", 20.0),
                                     previstas=1)),
         "f1b": (6, "ASYNC-F1", dict(marcadores=(30, 60), morto=(ISN2, 30, 60, 45),
-                                    lag_teto=dict({j: ISN2 for j in range(6, 10)}, **{10: ISN3, 15: ISN3}),
+                                    lag_teto={**{j: ISN2 for j in range(6, 10)}, 10: ISN3, 15: ISN3},
                                     conv=("convergiu", 8.0))),
         "f2a": (7, "ASYNC-F2", dict(marcadores=(20, 40), top_anomala=[(20, 46), (80.5, 81)],
                                     violacoes=[(30.0, "I1", ""), (30.5, "I4", ""), (57.0, "I2", "REAL"),
@@ -550,8 +550,8 @@ class Bordas(unittest.TestCase):
 
     def test_f1_com_resposta_conta(self):
         # depois da volta do isn2 (60 s), tres janelas com o isn2 no teto e vista completa: contam
-        P = self.derivar({"f1a": dict(lag_teto=dict({j: ISN2 for j in range(6, 12)},
-                                                    **{j: ISN2 for j in range(13, 16)}))})
+        P = self.derivar({"f1a": dict(lag_teto={**{j: ISN2 for j in range(6, 12)},
+                                               **{j: ISN2 for j in range(13, 16)}})})
         self.assertEqual(4, P["kLag"]["valor"])
         self.assertEqual(3, P["kLag"]["dados"]["maior_persistencia_contada"])
 

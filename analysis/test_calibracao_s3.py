@@ -317,7 +317,8 @@ class CampanhaBase(unittest.TestCase):
         self.assertEqual(11, len(usadas))
         self.assertNotIn("exec-0011-ASYNC-none-A", usadas)
         exc = {e["dir"]: e["veredito"] for e in self.r["execucoes"]["excluidas"]}
-        self.assertEqual({"exec-0011-ASYNC-none-A": "RECUSADA", "exec-0012-ASYNC-F2-A": "DESCARTADA-INFRA"}, exc)
+        self.assertEqual({"exec-0011-ASYNC-none-A": "RECUSADA", "exec-0012-ASYNC-F2-A": "DESCARTADA-INFRA",
+                          "exec-0013-ASYNC-none-A.abortada-20261105T000000Z": "ABORTADA (DT-014)"}, exc)
         pc = self.r["execucoes"]["por_celula"]
         self.assertEqual({"aceitas": 3, "planejadas": 5}, pc["ASYNC-none"])
         self.assertEqual({"aceitas": 1, "planejadas": 3}, pc["SYNC-F2"])

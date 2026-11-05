@@ -1,0 +1,145 @@
+{
+ "execucao": "ativo-sem-religar",
+ "fases": {
+  "inicio": "inicio ativo-sem-religar modo=active religar=nao teto_convergencia_s=120 semente=63001 jar_sha256=46e536af4a66f673222685b82b0e07bda19f70f1d1732d8cee0d03dd94aba91d cfg_sha256=0ff8714b217a50c10b44cf7e3a992650527692662cd4e9ae33554f1946253c8a base=17f2bd4",
+  "origem_ns=1793873891273091450": "origem_ns=1793873891273091450",
+  "corte-inicio": "corte-inicio isn3",
+  "corte-fim": "corte-fim isn3 rc=0",
+  "cura-inicio": "cura-inicio isn3",
+  "cura-fim": "cura-fim isn3 rc=1",
+  "carga": "carga exit=0",
+  "fim": "fim ativo-sem-religar"
+ },
+ "P1": [
+  {
+   "no": "127.0.0.1:12613",
+   "t_decisao_s": 13.256
+  }
+ ],
+ "AC5": [
+  {
+   "operacao": "APLICAR",
+   "executada": true,
+   "resultado": "APLICADA",
+   "alvo": "127.0.0.1:12613",
+   "codigo_http": 204,
+   "lido": "127.0.0.1:12613=parou;127.0.0.1:12611=HEALTHY;127.0.0.1:12612=HEALTHY",
+   "erro": null,
+   "reversao": "orquestrador",
+   "t_pedido_s": 13.257,
+   "t_inicio_s": 13.257,
+   "duracao_s": 3.233,
+   "t_fim_s": 16.49
+  }
+ ],
+ "saude_isn3": {
+  "amostras": 310,
+  "codigos": {
+   "200": 44,
+   "000": 266
+  },
+  "ultimo_200_s": 16.129,
+  "primeiro_sem_200_depois_do_pedido_s": 16.509
+ },
+ "hotrod_isn3": {
+  "eventos": 745,
+  "ultimo_sucesso_s": 16.345,
+  "primeiro_erro_depois_do_pedido_s": 16.256,
+  "codigos_depois_do_pedido": {
+   "OK": 4,
+   "NOT_FOUND": 4,
+   "VALID": 4,
+   "ERROR_TRANSPORT": 471
+  }
+ },
+ "conteiner_isn3": {
+  "status_no_fim": "exited",
+  "exit_code": 0,
+  "finished_at": "2026-11-05T07:19:31.970741133-03:00",
+  "started_at": "2026-11-05T07:17:14.492606424-03:00",
+  "finished_s": 18.586
+ },
+ "instantes_s": {
+  "t_lag": 2.888,
+  "t_P1": 13.256,
+  "t_AC5_pedido": 13.257,
+  "t_AC5_fim": 16.49,
+  "t_saude_isn3_parou": 16.509,
+  "t_vista_maioria": 42.282,
+  "cura-fim": 90.021
+ },
+ "stdout": {
+  "leitura_por_replica": [
+   "Leitura por replica: prazo_sem_resposta_ms=2000 sessoes@127.0.0.1:12611=lida contadores@127.0.0.1:12611=lida sessoes@127.0.0.1:12612=lida contadores@127.0.0.1:12612=lida sessoes@127.0.0.1:12613=nao-lida:sem-resposta contadores@127.0.0.1:12613=nao-lida:sem-resposta"
+  ],
+  "convergencia": [
+   "Convergencia: convergiu=false, persistente=true, rodadas=24, t_convergencia=null ns"
+  ],
+  "controlador": [
+   "Controlador: modo=active janelas=51 transicoes=1 acoes_pedidas=1 acoes_executadas=1 reversoes=0 reversoes_falhas=0 executor_no_prazo=true eventos_antes_da_origem=725 linhas_jsonl_perdidas=0"
+  ],
+  "violacoes": [
+   "Violacoes detectadas: 18"
+  ],
+  "total_operacoes": [
+   "Total de operacoes: 3572"
+  ],
+  "erros_s3": [
+   "S3 acao|Block|ERROR_TRANSPORT = 1",
+   "S3 acao|IncrementFailure|ERROR_TRANSPORT = 30",
+   "S3 acao|Login|ERROR_TRANSPORT = 91",
+   "S3 acao|Logout|ERROR_TRANSPORT = 1",
+   "S3 acao|ResetFailures|ERROR_TRANSPORT = 3",
+   "S3 acao|Validate|ERROR_TRANSPORT = 33"
+  ]
+ },
+ "exit": "exit=0",
+ "convergencia_csv": {
+  "rodadas": 24,
+  "validas": 0,
+  "motivos": {
+   "topologia com 2 de 3 servidores": 24
+  },
+  "primeira_valida_s": null,
+  "ultima_s": 309.517
+ },
+ "convergencia_resumo": {
+  "t_fim_ns": 1793874147087867650,
+  "convergiu": false,
+  "divergencia_persistente": true,
+  "t_convergencia_ns": null,
+  "t_convergencia_abs_ns": null,
+  "rodadas": 24,
+  "rodadas_validas": 0,
+  "t_fim_carga_ns": 1793874147087867650,
+  "t_fim_controle_ns": 1793874147102735550
+ },
+ "arquivos": {
+  "convergencia-rep-001.csv": 1544,
+  "convergencia-resumo-rep-001.json": 301,
+  "decisoes-rep-001.jsonl": 53484,
+  "estado-rep-001.json": 179,
+  "isn3-state.json": 2682,
+  "meta-csv-rep-001.json": 18,
+  "observaveis-rep-001.jsonl": 149247,
+  "rep-001.csv": 364901,
+  "resumo.json": 0,
+  "s3-acoes-rep-001.csv": 426981,
+  "s3-resumo-rep-001.json": 1513,
+  "saude-subida-isn1.json": 464,
+  "saude-subida-isn2.json": 464,
+  "saude-subida-isn3.json": 464,
+  "violacoes-rep-001.csv": 2666
+ },
+ "jsonl_com_fim": {
+  "observaveis": true,
+  "decisoes": true
+ },
+ "violacoes": {
+  "total": 18,
+  "por_invariante": {
+   "I2_JANELA_CASCATA": 8,
+   "I2_CASCATA_INCOMPLETA": 10
+  }
+ }
+}

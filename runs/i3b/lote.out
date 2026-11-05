@@ -1,0 +1,35 @@
+== 2026-11-05T10:17:05.956Z inicio ativo-sem-religar modo=active religar=nao teto_convergencia_s=120 semente=63001 jar_sha256=46e536af4a66f673222685b82b0e07bda19f70f1d1732d8cee0d03dd94aba91d cfg_sha256=0ff8714b217a50c10b44cf7e3a992650527692662cd4e9ae33554f1946253c8a base=17f2bd4
+cluster w4s: 3 nos
+cria-caches canario-async: rc=0
+== 2026-11-05T10:17:28.508Z origem_ns=1793873891273091450
+== 2026-11-05T10:19:11.425Z corte-inicio isn3
+== 2026-11-05T10:19:13.419Z corte-fim isn3 rc=0
+== 2026-11-05T10:20:41.409Z cura-inicio isn3
+== 2026-11-05T10:20:43.440Z cura-fim isn3 rc=1
+== 2026-11-05T10:24:35.252Z carga exit=0
+== 2026-11-05T10:24:46.368Z fim ativo-sem-religar
+== 2026-11-05T10:24:46.670Z inicio ativo-religar modo=active religar=sim teto_convergencia_s=600 semente=63002 jar_sha256=46e536af4a66f673222685b82b0e07bda19f70f1d1732d8cee0d03dd94aba91d cfg_sha256=0ff8714b217a50c10b44cf7e3a992650527692662cd4e9ae33554f1946253c8a base=17f2bd4
+cluster w4s: 3 nos
+cria-caches canario-async: rc=0
+== 2026-11-05T10:25:07.532Z origem_ns=1793874350318867700
+== 2026-11-05T10:26:50.463Z corte-inicio isn3
+== 2026-11-05T10:26:52.335Z corte-fim isn3 rc=0
+== 2026-11-05T10:28:20.629Z cura-inicio isn3
+== 2026-11-05T10:28:22.600Z cura-fim isn3 rc=1
+== 2026-11-05T10:30:08.109Z fim-da-carga-visto (linha Controlador:)
+== 2026-11-05T10:30:38.311Z religar-inicio podman start w4s-isn3
+== 2026-11-05T10:30:39.051Z religar-fim rc=0
+== 2026-11-05T10:30:43.556Z religar-3-nos n=3
+== 2026-11-05T10:30:56.128Z carga exit=0
+== 2026-11-05T10:31:05.630Z fim ativo-religar
+== 2026-11-05T10:31:05.969Z inicio controle-shadow modo=shadow religar=nao teto_convergencia_s=120 semente=63003 jar_sha256=46e536af4a66f673222685b82b0e07bda19f70f1d1732d8cee0d03dd94aba91d cfg_sha256=0ff8714b217a50c10b44cf7e3a992650527692662cd4e9ae33554f1946253c8a base=17f2bd4
+cluster w4s: 3 nos
+cria-caches canario-async: rc=0
+== 2026-11-05T10:31:26.913Z origem_ns=1793874729441336600
+== 2026-11-05T10:33:09.542Z corte-inicio isn3
+== 2026-11-05T10:33:11.660Z corte-fim isn3 rc=0
+== 2026-11-05T10:34:39.570Z cura-inicio isn3
+== 2026-11-05T10:34:41.599Z cura-fim isn3 rc=0
+== 2026-11-05T10:36:38.020Z carga exit=0
+== 2026-11-05T10:36:55.729Z fim controle-shadow
+fim rc=0

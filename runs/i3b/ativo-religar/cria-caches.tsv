@@ -1,0 +1,4 @@
+2026-11-05T10:25:04.417Z	canario-async	POST	http://127.0.0.1:12611/rest/v2/caches/canario-async	200	0.210
+2026-11-05T10:25:04.757Z	canario-async	GET	http://127.0.0.1:12611/rest/v2/caches/canario-async?action=config	200	0.242
+2026-11-05T10:25:04.915Z	canario-async	GET	http://127.0.0.1:12612/rest/v2/caches/canario-async?action=config	200	0.088
+2026-11-05T10:25:05.122Z	canario-async	GET	http://127.0.0.1:12613/rest/v2/caches/canario-async?action=config	200	0.135

@@ -1,0 +1,151 @@
+{
+ "execucao": "ativo-religar",
+ "fases": {
+  "inicio": "inicio ativo-religar modo=active religar=sim teto_convergencia_s=600 semente=63002 jar_sha256=46e536af4a66f673222685b82b0e07bda19f70f1d1732d8cee0d03dd94aba91d cfg_sha256=0ff8714b217a50c10b44cf7e3a992650527692662cd4e9ae33554f1946253c8a base=17f2bd4",
+  "origem_ns=1793874350318867700": "origem_ns=1793874350318867700",
+  "corte-inicio": "corte-inicio isn3",
+  "corte-fim": "corte-fim isn3 rc=0",
+  "cura-inicio": "cura-inicio isn3",
+  "cura-fim": "cura-fim isn3 rc=1",
+  "fim-da-carga-visto": "fim-da-carga-visto (linha Controlador:)",
+  "religar-inicio": "religar-inicio podman start w4s-isn3",
+  "religar-fim": "religar-fim rc=0",
+  "religar-3-nos": "religar-3-nos n=3",
+  "carga": "carga exit=0",
+  "fim": "fim ativo-religar"
+ },
+ "P1": [
+  {
+   "no": "127.0.0.1:12613",
+   "t_decisao_s": 13.402
+  }
+ ],
+ "AC5": [
+  {
+   "operacao": "APLICAR",
+   "executada": true,
+   "resultado": "APLICADA",
+   "alvo": "127.0.0.1:12613",
+   "codigo_http": 204,
+   "lido": "127.0.0.1:12613=parou;127.0.0.1:12611=HEALTHY;127.0.0.1:12612=HEALTHY",
+   "erro": null,
+   "reversao": "orquestrador",
+   "t_pedido_s": 13.402,
+   "t_inicio_s": 13.403,
+   "duracao_s": 13.187,
+   "t_fim_s": 26.59
+  }
+ ],
+ "saude_isn3": {
+  "amostras": 308,
+  "codigos": {
+   "200": 68,
+   "000": 240
+  },
+  "ultimo_200_s": 26.397,
+  "primeiro_sem_200_depois_do_pedido_s": 26.742
+ },
+ "hotrod_isn3": {
+  "eventos": 668,
+  "ultimo_sucesso_s": 26.195,
+  "primeiro_erro_depois_do_pedido_s": 13.813,
+  "codigos_depois_do_pedido": {
+   "VALID": 15,
+   "ERROR_TRANSPORT": 379,
+   "COUNTED": 4,
+   "NONE": 1
+  }
+ },
+ "conteiner_isn3": {
+  "status_no_fim": "running",
+  "exit_code": 0,
+  "finished_at": "2026-11-05T07:27:42.91065818-03:00",
+  "started_at": "2026-11-05T07:30:38.892382091-03:00",
+  "finished_s": 50.623
+ },
+ "instantes_s": {
+  "t_lag": 3.032,
+  "t_P1": 13.402,
+  "t_AC5_pedido": 13.402,
+  "t_AC5_fim": 26.59,
+  "t_saude_isn3_parou": 26.742,
+  "t_vista_maioria": 48.43,
+  "fim-da-carga-visto": 195.776,
+  "religar-inicio": 225.911,
+  "religar-fim": 226.669,
+  "religar-3-nos": 231.221,
+  "cura-fim": 90.277
+ },
+ "stdout": {
+  "leitura_por_replica": [
+   "Leitura por replica: prazo_sem_resposta_ms=2000 sessoes@127.0.0.1:12611=lida contadores@127.0.0.1:12611=lida sessoes@127.0.0.1:12612=lida contadores@127.0.0.1:12612=lida sessoes@127.0.0.1:12613=lida contadores@127.0.0.1:12613=lida"
+  ],
+  "convergencia": [
+   "Convergencia: convergiu=true, persistente=false, rodadas=10, t_convergencia=35311187400 ns"
+  ],
+  "controlador": [
+   "Controlador: modo=active janelas=51 transicoes=1 acoes_pedidas=1 acoes_executadas=1 reversoes=0 reversoes_falhas=0 executor_no_prazo=true eventos_antes_da_origem=636 linhas_jsonl_perdidas=0"
+  ],
+  "violacoes": [
+   "Violacoes detectadas: 0"
+  ],
+  "total_operacoes": [
+   "Total de operacoes: 3420"
+  ],
+  "erros_s3": [
+   "S3 acao|Block|ERROR_TRANSPORT = 1",
+   "S3 acao|IncrementFailure|ERROR_TRANSPORT = 33",
+   "S3 acao|Login|ERROR_TRANSPORT = 87",
+   "S3 acao|Logout|ERROR_TRANSPORT = 4",
+   "S3 acao|ResetFailures|ERROR_TRANSPORT = 2",
+   "S3 acao|Validate|ERROR_TRANSPORT = 4"
+  ]
+ },
+ "exit": "exit=0",
+ "convergencia_csv": {
+  "rodadas": 10,
+  "validas": 3,
+  "motivos": {
+   "topologia com 2 de 3 servidores": 7,
+   "": 3
+  },
+  "primeira_valida_s": 230.184,
+  "ultima_s": 240.483
+ },
+ "convergencia_resumo": {
+  "t_fim_ns": 1793874607160950200,
+  "convergiu": true,
+  "divergencia_persistente": false,
+  "t_convergencia_ns": 35311187400,
+  "t_convergencia_abs_ns": 1793874642472137600,
+  "rodadas": 10,
+  "rodadas_validas": 3,
+  "t_fim_carga_ns": 1793874607160950200,
+  "t_fim_controle_ns": 1793874607174421000
+ },
+ "arquivos": {
+  "convergencia-rep-001.csv": 600,
+  "convergencia-resumo-rep-001.json": 323,
+  "decisoes-rep-001.jsonl": 53410,
+  "estado-rep-001.json": 179,
+  "isn3-state.json": 2427,
+  "meta-csv-rep-001.json": 18,
+  "observaveis-rep-001.jsonl": 149630,
+  "rep-001.csv": 349048,
+  "resumo.json": 0,
+  "s3-acoes-rep-001.csv": 406953,
+  "s3-resumo-rep-001.json": 1511,
+  "saude-subida-isn1.json": 466,
+  "saude-subida-isn2.json": 466,
+  "saude-subida-isn3.json": 466,
+  "violacoes-rep-001.csv": 55
+ },
+ "jsonl_com_fim": {
+  "observaveis": true,
+  "decisoes": true
+ },
+ "violacoes": {
+  "total": 0,
+  "por_invariante": null
+ }
+}

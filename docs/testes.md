@@ -563,3 +563,21 @@ Brutos em `runs/w4-smoke/{A,B,D}/` com `MANIFEST.sha256`.
 | A (ASYNC) | S1 com corte do `isn3` | A10 a A13 ok: 9/9 rodadas com suspeito `isn3` no teto antes da vista; P1 e AC-5 previsto 13,2 s depois do corte (vista em 46,5 s) |
 | A e B | prova REST (A7) | não obtida como especificada: a REST erra o conjunto de donos (diagnóstico D: cliente certo em 3/3, REST errada em 2/3) |
 | B (SYNC) | S2a sem falha, S2 com corte | R3 ocorreu: 8/8 rodadas antes da vista com todos os pares no teto e suspeito `null`; nenhum P1 |
+
+### I-3b: P1 de ponta a ponta na versão integrada `17f2bd4` (2026-11-05)
+
+Condição da V-6 para liberar a calibração. Jar construído numa *worktree* temporária *detached* em `17f2bd4`
+(`feature/controlador-integracao`), sem commit nela; *cluster* local `w4s`, ASYNC, S3, arquivo da calibração (P1 com
+`kLag = 2`, `p2Habilitada = false`), corte do `isn3` por nftables 60 s depois da origem e cura 90 s depois. Uma
+encarnação por execução; sementes diferentes por execução. Brutos em `runs/i3b/` com `MANIFEST.sha256` (111 arquivos);
+instantes contados desde o fim do comando de corte.
+
+| Execução | P1 | AC-5 | `isn3` para de servir | `Leitura por replica` (isn3) | Convergência | Violações |
+|---|---|---|---|---|---|---|
+| `ativo-sem-religar` (active) | 13,26 s | APLICADA, 3,23 s | saúde 16,51 s; Hot Rod último sucesso 16,35 s | `nao-lida:sem-resposta` nos dois *caches* | não convergiu: 24 rodadas, todas inválidas (2 de 3 servidores), rótulo `persistente=true` | 18 (I2, uma chave, 23,2 a 35,9 s) |
+| `ativo-religar` (active, `podman start` 30 s depois do fim da carga) | 13,40 s | APLICADA, 13,19 s | saúde 26,74 s; Hot Rod último sucesso 26,20 s | `lida` (o nó voltou antes da leitura final) | convergiu: primeira rodada válida 3,6 s depois do `podman start`, `t_convergencia` = 35,3 s depois de `t_fim`, 0 chaves divergentes | 0 |
+| `controle-shadow` (shadow) | 13,23 s | PREVISTA (não executada) | não parou | `lida` | convergiu na primeira rodada (20 ms) | 47 (I2, uma chave, 18,6 a 58,3 s) |
+
+Nas três, a sonda apontou o `isn3` no teto nas três rodadas entre o corte e o P1 (a 2,9 a 3,0 s, 7,9 a 8,0 s e 12,9 a
+13,0 s), as três chaves de defasagem com primário no próprio nó, os dois JSONL com a linha `fim`,
+`linhas_jsonl_perdidas = 0` e `exit = 0`.

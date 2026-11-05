@@ -115,6 +115,13 @@ if [[ "${dry}" -eq 1 ]]; then echo "dry-run, configuracao OK (shim ${ctl})"; exi
 rc="$(cat "${ST}/java-exit-${seed}" 2>/dev/null || echo 0)"
 trap 'echo "morto $(vms)" >> "${ST}/java-morto-${seed}"; [[ -f "${ST}/java-ignora-term" ]] || exit 143' TERM
 mkdir -p "${csv}"
+# R3 da V-W6b: ac5-previsto diz aos dubles de F2/F4 que o no vai parar nesta execucao (braco B com ac5-alvo, ou
+# java-para-sem-ac5); com ac5-apos-start eles esperam a parada antes de olhar o alvo, sem depender do relogio
+if [[ -f "${ST}/ac5-apos-start" && ( ( "${ctl}" == active && -f "${ST}/ac5-alvo" ) || -f "${ST}/java-para-sem-ac5" ) ]]; then
+    : > "${ST}/ac5-previsto"
+else
+    rm -f "${ST}/ac5-previsto"
+fi
 sha="$(sha256sum "${cfg}" | cut -d' ' -f1)"
 [[ -f "${ST}/meta-sha" ]] && sha="$(cat "${ST}/meta-sha")"
 atu="por-tipo(AC-2=rest-infinispan,AC-5=rest-infinispan)"; [[ -f "${ST}/meta-atuador" ]] && atu="$(cat "${ST}/meta-atuador")"
@@ -448,6 +455,10 @@ p="$(pid_no "${no}")"
 [[ -f "${ST}/inj-sem-ok" ]] || echo "[$(date -u +%Y-%m-%dT%H:%M:%SZ)] inject-partition.sh: OK: ${no} nao conecta a nenhum par em :7800"
 trap 'rm -f "${ST}/clsact-${p}"; echo "fault=F2 node=${no} event=end t_epoch_ns=$(vms)000000" >> "${marker}"; exit 143' TERM
 dormir "${dur}"
+# R3 da V-W6b: com ac5-previsto, a parada do java cai dentro da janela tambem com o host carregado
+if [[ -f "${ST}/ac5-previsto" ]]; then
+    for ((k = 0; k < 3000; k++)); do [[ "$(cat "${ST}/status-${no}" 2>/dev/null || echo running)" != running ]] && break; dormir 1; done
+fi
 # B1 da V-W6, como o real: no-alvo parado no fim da janela (AC-5) -> o netns sumiu, a soma dos contadores pelo
 # nsenter falha sob set -euo pipefail (inject-partition.sh:495) e o trap sai com 1, gravando o end
 if [[ "$(cat "${ST}/status-${no}" 2>/dev/null || echo running)" != running ]]; then
@@ -480,6 +491,10 @@ pares=""; for n in isn1 isn2 isn3; do [[ "${n}" == "${no}" ]] || pares+="${pares
 # parado durante o ping, sem resumo ou perda fora de 3 sigma: exit 6 e end no fim do ping, nao no fim da janela
 ping_s="$(cat "${ST}/f4-ping-s" 2>/dev/null || echo 40)"
 dormir "${ping_s}"
+# R3 da V-W6b: com ac5-previsto, o ping so acaba depois da parada do java (a parada cai dentro dele com o host carregado)
+if [[ -f "${ST}/ac5-previsto" ]]; then
+    for ((k = 0; k < 3000; k++)); do [[ "$(cat "${ST}/status-${no}" 2>/dev/null || echo running)" != running ]] && break; dormir 1; done
+fi
 if [[ "$(cat "${ST}/status-${no}" 2>/dev/null || echo running)" != running ]]; then
     echo "Erro: a degradacao nao se efetivou ou nao foi mensuravel: sem resumo de ping (duble)" >&2
     rm -f "${ST}"/prio-*
@@ -1122,11 +1137,12 @@ fi
 if quer S22; then
 echo "== S22: B1 da V-W6: injetor de F2/F4 sai com 1/6 porque o AC-5 parou o no da falha -> pendente, nao recusa =="
 # R3 da V-W6b: o duble de java para o no 2 s virtuais depois do start da falha (ac5-apos-start), nao a dur/2 do seu
-# relogio, e so escreve a linha de fim depois do end da falha. F2: janela de 80 s numa carga de 120 s; o duble sai no
-# fim da janela com o alvo parado (1). F4: janela de 120 s numa carga de 160 s; como o real, o duble faz a verificacao
-# por ping (60 s aqui, f4-ping-s, para a parada cair dentro dela mesmo com o host carregado; o real faz 40 s) e sai
-# com 6 no fim dela (N1). Teto de 900 s: sob carga o disparo atrasa e a carga espera o end. R4: no F4 o B1 exige a
-# linha "degradacao aplicada: alvo <no>" e o start; na F2, o start (alem da linha OK).
+# relogio, e so escreve a linha de fim depois do end da falha; os dubles de F2/F4 esperam a parada (ac5-previsto)
+# antes de olhar o alvo, entao ela cai dentro da janela (F2) ou do ping (F4) mesmo com o host carregado. F2: janela de
+# 80 s numa carga de 120 s; o duble sai no fim da janela com o alvo parado (1). F4: janela de 120 s numa carga de 160 s;
+# como o real, o duble faz a verificacao por ping de 40 s e sai com 6 no fim dela (N1). Teto de 900 s: sob carga o
+# disparo atrasa e a carga espera o end. R4: no F4 o B1 exige a linha "degradacao aplicada: alvo <no>" e o start; na
+# F2, o start (alem da linha OK).
 for caso in f2 f4 f2-sem-ok f2-sem-start f4-sem-aplicada f4-sem-start; do
     novo_caso "s22-${caso}"
     F="F2"; DUR=80; CARGA=120; [[ "${caso}" == f4* ]] && { F="F4"; DUR=120; CARGA=160; }
@@ -1134,7 +1150,6 @@ for caso in f2 f4 f2-sem-ok f2-sem-start f4-sem-aplicada f4-sem-start; do
     matriz_aval "ASYNC-${F}:teste:1"
     echo "127.0.0.1:11224" > "${ST}/ac5-alvo"
     echo 2 > "${ST}/ac5-apos-start"
-    echo 60 > "${ST}/f4-ping-s"
     case "${caso}" in
         f2-sem-ok) : > "${ST}/inj-sem-ok" ;;
         *-sem-start) : > "${ST}/inj-sem-start" ;;

@@ -781,6 +781,51 @@ Transmitidas ao Senior pelo coordenador, sobre o parecer de conferência do text
   as ressalvas R1 (episódios dentro do segmento F1 na condição de 3,5/h) e R2 (base de episódios do ensaio sem o
   amostrador).
 
+## DT-019: contagem de episódios da condição da noite 1 (C3 §6), PRÉ-REGISTRO (2026-11-05)
+
+> **Aprovada** pelo coordenador em nome do Gestor em 2026-11-05 (G-2 da leitura X-08v, R1 e R2 da validação W-h4v).
+> Registrada antes do piloto e antes de qualquer amostra do amostrador h4 numa fase do *runner*. Os dados vistos antes
+> desta decisão são os do ensaio do F1 (`wt-ensaio-f1/runs/ensaio-f1-silencioso-2026-11-04/V-ensaio-execucao.md`), que
+> não é fase do *runner* e, por R2 abaixo, não entra na base.
+
+- **Origem:** leitura X-08v do ensaio, seção 5, item 2. O único travamento físico medido no ensaio durou 66 s
+  (03:08:59 a 03:10:05Z, com o disco C: do host 0 % ocioso). Contado pela letra do C3 §6 ("trechos contínuos"), ele
+  vira 3 episódios, e a barreira de 3,5 episódios por hora passaria a medir a forma do evento, não a frequência.
+  Validação W-h4v (`docs/validacao-h4-2026-11-05.md` na branch `feature/h4-amostrador-infra`), ressalvas R1 e R2.
+- **Decisão.** Para a condição da noite 1 do C3 §6, os episódios do piloto são contados assim, nesta ordem:
+  1. **Base (R2):** só o arquivo do amostrador h4 do piloto (`amostras-final.txt` da coleta `piloto-<UTC>`; o espelho
+     só se a cópia final faltar). O ensaio do F1 não entra, porque não teve o amostrador h4. A PSI do coordenador
+     no ensaio (1 evento físico em 20 min) é reportada como contexto, sem entrar na conta. As horas observadas são as
+     `episodios.horas_observadas` do `h4-piloto.json`.
+  2. **Trechos:** os de `episodios.lista` do `h4-piloto.json` (definição do C3 §6, como o `h4.py` já calcula).
+  3. **Fusão:** dois trechos seguidos da lista são um só episódio quando o início do segundo vem **menos de 60 s**
+     depois do fim do primeiro. A fusão é transitiva.
+  4. **Exclusão (R1):** não conta o episódio em que **todos** os trechos são formados só por janelas h4a com amostra
+     final dentro de um segmento F1 de alguma execução do piloto (`seg_f1_ini_utc` a `seg_f1_fim_utc` do
+     `h4-piloto.tsv`) e nenhum tem intervalo ≥ 3 s (`maior_intervalo_s` < 3,0). Um episódio com qualquer parte fora
+     dos segmentos F1, ou com intervalo ≥ 3 s, conta inteiro.
+  5. **Taxa:** episódios contados divididos pelas horas observadas. A barreira continua 3,5 por hora (C3 §6).
+- **Execução da conta:** pelo Senior, no parecer do piloto (X-11), a partir do JSON e do TSV do `h4.py fase`, **sem
+  mudar o código** (a lista `e9c44819…` da adenda da DT-018 fica como está). O parecer traz as três contagens: pela
+  letra (trechos), com fusão, e com fusão e R1. Só a terceira decide.
+- **Não muda:** o veredito h4 de cada execução (h4a, h4b e h4c, inclusive o segmento do F1), a regra de parada do C3
+  §4.3 (que conta execuções, não episódios), o teto de reposições, os limiares e a conferência do 1,1 s do C3 §3.4.
+- **Rejeitado:** contar pela letra, porque um evento físico de 1 min viraria 3 episódios; fundir por evento do host
+  lido no `typeperf`, porque o `typeperf` é diagnóstico e não critério (C3 §2); a coluna diagnóstica de volume escrito
+  (G-4 da X-08v), deixada de fora para não mudar a lista `e9c44819…`.
+
+### Decisões da leitura X-08v (coordenador em nome do Gestor, 2026-11-05)
+
+- **G-1:** a leitura do F-9 do n=4 como artefato do `saude_loop` foi aceita. O ensaio fica com 3 de 4 VALIDAS no
+  resultado formal e 4 de 4 informativas, e não é repetido.
+- **G-2:** esta DT-019.
+- **G-3:** o coordenador amplia o `typeperf` do host (bytes de disco e I/O por processo), como diagnóstico. Habilitar
+  o log `Microsoft-Windows-TaskScheduler/Operational` exige administrador e fica com o Gestor. O estado desse log é
+  **covariável do host** (C3 §7), registrada na abertura e no fim de cada fase.
+- **G-4:** fora.
+- **G-5:** o piloto roda já, com a instrumentação nova do host. Roteiro de comandos em
+  `docs/roteiro-piloto-2026-11-05.md`.
+
 ## Decisões de 2026-11-04 e 2026-11-05 (madrugada), transmitidas pelo coordenador
 
 - **P-3 da V-S7r (critério h4):** aprovado em nome do Gestor; virou o complemento 3 e a DT-018 acima, com os pontos

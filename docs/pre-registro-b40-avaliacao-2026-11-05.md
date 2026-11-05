@@ -277,6 +277,9 @@ O F3 na matriz depende do W-6c (seção 4.3).
   torna a execução DESCARTADA-INFRA (o disco, não o efeito, decide). O orquestrador ainda não lê isso: item do W-6c.
 - h4: C3 por execução; parada do C3 §4.3; **teto de reposições h4 = 25 % das execuções planejadas** (C3 §4.4): **24**.
 - Regra de memória: a da calibração (seção 5 de lá), se o Gestor aprovar a G-3.
+  *Nota de remissão (2026-11-05):* a G-3 foi aprovada (C-10), e o efeito vale pelo complemento 2 da calibração
+  (DT-023): com *swap* ≥ 1 GiB no portão, recriar o *cluster* e rodar a mesma execução com o mesmo i e a mesma
+  semente, sem recusa e sem parar a fase (`--swap-limite-kb 1048576`).
 - DT-014 para execução interrompida.
 - Célula que fechar com menos blocos que o planejado entra com o que tem; o relatório dá k e `2/2^k`.
 

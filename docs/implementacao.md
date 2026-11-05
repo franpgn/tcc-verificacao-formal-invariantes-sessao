@@ -95,6 +95,58 @@ o ProtoStream padrão falha ao serializar e toda escrita vira
 
 ## Decisões técnicas a registrar
 
+### TD-011 — W-2a (B-44.2): atuador REST do *cluster* e política por assinatura (2026-11-05)
+
+Especificação: `docs/acoes-controlador-cluster-2026-11-05.md` (`cc08644`), seções 3, 5, 5.1 e 8, com os ajustes de
+`docs/opcoes-arquitetura-configuracao-2026-11-05.md` (`155aa95`) e as decisões do autor de 05/11 (P0 normal, P1
+isolar o nó suspeito pelo AC-5, P2 adiar o rebalanceamento pelo AC-2 global com teto de 60 s; AC-6 e E-1 fora).
+Branch `feature/b44-2-atuador-cluster` sobre `e869a31`. Testes unitários verdes (961/0/0/1) e tarefa zero feita no
+*cluster* local `w2a` (portas 12501-12503) em 05/11, `runs/b44-2/verificacao/`: a REST aceita **só Digest** (Basic
+dá 403); `POST /rest/v2/server/?action=stop` e a forma sem a barra dão 204 com a autorização padrão (LIFECYCLE
+passou) e o nó para ~3,06 s depois; `rebalancing_enabled` de `GET /rest/v2/caches/{c}` acompanha a forma global nos
+três nós, inclusive nos não coordenadores. O `AtuadorRestInfinispan` real aplicou e reverteu o AC-2 (SYNC e ASYNC,
+18 a 182 ms) e parou o isn3 pelo AC-5 em 3,19 s (prazo 5 s). A integração I-1..I-5 não rodou (P-38).
+
+```mermaid
+%%{init: {'theme':'base','themeVariables':{'background':'#ffffff','primaryColor':'#ffffff','primaryTextColor':'#000000','primaryBorderColor':'#000000','lineColor':'#000000','secondaryColor':'#ffffff','tertiaryColor':'#ffffff','fontFamily':'Arial'}}}%%
+flowchart LR
+    S["SondaTopologia<br/>resumirComNosAte"] -->|"EstadoTopologia.porNo"| L["LacoDeControle"]
+    D["S_lag (W-4)<br/>EstadoDefasagem"] --> L
+    L -->|"Decisao"| P["PoliticaPorAssinatura<br/>P0 / P1 / P2"]
+    P -->|"PlanoDeAcao + linha politica"| L
+    L --> E["ExecutorDeAcoes<br/>pilha LIFO so com AC-2"]
+    E --> T["AtuadorPorTipo"]
+    T -->|"AC-2, AC-5"| R["AtuadorRestInfinispan"]
+    T -.->|"AC-6 (se o B-44.3 aprovar)"| J["adaptador do probe"]
+    R --> C["ClienteAdminRest<br/>HttpClient, Digest/Basic"]
+    C -->|"REST /rest/v2"| N["isn1, isn2, isn3"]
+```
+
+| Peça | O que faz | Onde |
+|---|---|---|
+| `AcaoCluster.Tipo` | cada tipo diz se é reversível, a regra do alvo e o prazo (`T_cham` + acréscimo). `AC_5` novo (não reversível, um nó, `T_cham` + 3 s, `Server.java:208`); `AC_2` só global (P-34). `AC_1`/`AC_3` ficam `@Deprecated` até a lista D-C ser ampliada (P-36) | `controle/AcaoCluster.java` |
+| `ExecutorDeAcoes` | ação não reversível fora da pilha e de `ativas()`, pedida uma vez por execução, nunca desfeita (R4, encerramento, gancho, falha); prazo por tipo; `T_enc` = prazos da pilha + prazo em curso + `T_cham` (com só AC-2, o `(A + 1) x T_cham` de antes) | `controle/ExecutorDeAcoes.java` |
+| `EstadoTopologia.porNo` | por nó, resposta em `TODAS`/`ALGUMA`/`NENHUMA` as amostras e o menor e o maior `number_of_nodes`; `vistaCompleta()`, `noSemResposta()`, `vistasDivergentes()` (faixas disjuntas). Construtor antigo delega; `SondaTopologia.resumirAte` continua sem `porNo` | `controle/EstadoTopologia.java`, `SondaTopologia.java`, `FonteDeTopologia.java` |
+| `PoliticaPorAssinatura` | tabela da seção 5, pura (tempo = `fimNs` da decisão). Parâmetros `k`, `tetoLagMs`, `tRebNs`, `cotaAc5` sem padrão (`ParametrosPolitica`). Grava `P0`/`P1`/`P2` e o motivo numa linha `politica` | `controle/PoliticaPorAssinatura.java`, `ParametrosPolitica.java`, `PlanoDeAcao.java` |
+| `AtuadorPorTipo` | encaminha cada tipo ao seu atuador; a AC-6 entra como mais uma entrada | `controle/AtuadorPorTipo.java` |
+| `ClienteAdminRest` | `java.net.http.HttpClient` HTTP/1.1; responde ao desafio Digest (RFC 7616, MD5/SHA-256, `qop=auth`, *nonce* reaproveitado por `host:porta`) ou Basic; prazo inteiro por pedido | `session/ClienteAdminRest.java` |
+| `AtuadorRestInfinispan` | AC-2: `POST /rest/v2/container?action=disable-rebalancing` (reverter: `enable`) num nó que respondeu na última janela; leitura de volta de `rebalancing_enabled` (container e os caches do modo) nos 3 nós em paralelo; `APLICADA` com ≥ 2 nós e nenhum valor divergente. AC-5: `POST /rest/v2/server/?action=stop` ao próprio alvo, só se ele respondeu; `APLICADA` com 204, saúde do alvo parada e a dos outros dois respondendo | `session/AtuadorRestInfinispan.java` |
+
+Escolhas que a tabela da seção 5 não fixa, a validar: (1) o AC-2 não é aplicado ao nó que a própria política parou
+pelo AC-5 (ele não volta na execução; o AC-2 só estenderia a cópia única até o teto); (2) depois do teto `T_reb`, o
+AC-2 não volta para o mesmo nó até ele responder de novo; (3) a persistência de `k` janelas zera quando a política
+não foi consultada numa janela (R4); (4) "os outros respondendo" do P2 exige resposta em todas as amostras da janela;
+(5) vistas divergentes = faixas de `number_of_nodes` disjuntas entre nós que responderam (a troca 3→2 vista em
+instantes diferentes não conta); (6) o AC-5 conta como "parou" quando a saúde do alvo não responde (conexão recusada
+ou prazo de 1 s).
+
+**Ainda não ligado**: `LigacaoControlador.pecasPadrao` continua com o atuador nulo e a política `nenhuma`. A ligação
+precisa (a) acrescentar `PoliticaPorAssinatura`, `ParametrosPolitica`, `AtuadorPorTipo` à lista do
+`LigacaoControlador` no `ArquiteturaSemAcaoNoClienteTest` (edição não autorizada ainda), (b) definir de onde vêm
+`k`, `tRebNs` e `cotaAc5` (arquivo novo ou campos novos no `controlador-*.json`, que mudam `ParametrosControlador` e
+os testes dele) e `tetoLagMs` (`hotrod_timeout_ms`), e (c) um fornecedor de "nós que responderam na última janela"
+a partir da última amostra da sonda (P-38).
+
 ### TD-010 — W-3 (B-28.2): laço de controle do *cluster* no processo da carga (2026-11-04)
 
 Plano de execução de 2026-11-04, seções 4.1, 4.4.3, 4.5 e 9 (W-3). Com `--controller shadow|active`, uma *thread*

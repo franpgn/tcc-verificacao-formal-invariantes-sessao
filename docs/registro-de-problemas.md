@@ -864,6 +864,47 @@ correspondente adicionado em `Mesclar` (`spec/SessionStore.tla`, commit `b7d8e0a
   (3) Pergunta aberta Q-3: isso é intencional no domínio?
 - **Status:** `ACEITO` (D1); registrado no catálogo `docs/catalogo-operacao-falha-invariante.md`.
 
+## 2026-11-05 — W-2a (B-44.2), atuador REST do *cluster*
+
+> Numeração: P-29..P-35 estão na branch `docs/b44-1-reconfiguracao-infinispan`; estas entradas começam em P-36.
+
+### P-36 — a retirada de `AC_1`/`AC_3` quebra asserções fora da lista D-C autorizada
+
+- **Sintoma:** o item 1 do W-2a manda retirar `AC_1` e `AC_3`. A lista autorizada (D-C) cobre
+  `ExecutorDeAcoesTest.java:31-33`, `:217`, `:413-420` e `WorkloadMainCargaControleTest.java:132`, mas os rótulos
+  `"AC-1"`/`"AC-3"` também estão nas asserções de texto de `ExecutorDeAcoesTest` (linhas 95, 114, 126, 168, 189, 204,
+  228, 251, 275, 295, 323, 364, 399), de `LacoDeControleTest` (197-198, 294, 491) e de `ControleArquivosTest`
+  (138 `"AC-1"`, 141 `"DEGRADED_MODE"`). Trocar só as constantes das linhas 31-33 muda o rótulo e reprova essas
+  asserções; e os testes LIFO precisam de três ações reversíveis distintas, que com o braço B só existem como AC-2
+  com caches diferentes.
+- **Contorno aplicado:** `AC_1` e `AC_3` continuam no enum, `@Deprecated`, reversíveis e sem regra de alvo; nenhum
+  atuador nem a política os usa (`AtuadorRestInfinispan` devolve `FALHOU tipo-fora-do-braco-b`). Feita só a edição
+  autorizada que não depende do rótulo (`WorkloadMainCargaControleTest:132`, AC_1 → AC_2 global).
+- **Status:** `ABERTO`, pede ampliar a D-C (trocar os rótulos nas linhas acima sem retirar asserção) para retirar os
+  dois tipos num *commit* `refactor:`.
+
+### P-37 — campo `reversao` só nas linhas de ação não reversível
+
+- **Sintoma:** o contrato JSONL v1 diz "ausência de valor é `null`, nunca campo omitido", mas
+  `ControleArquivosTest.formatoAcao` (133-135) fixa a lista de campos da linha `acao`. Gravar `reversao` em todas as
+  linhas reprova esse teste.
+- **Contorno aplicado:** o campo vai só nas linhas de AC-5 (`"orquestrador"`), no fim da linha.
+- **Status:** `ABERTO`; com autorização para editar `ControleArquivosTest:133-135`, o campo passa a todas as linhas
+  (`"pilha"` ou `"orquestrador"`) e o esquema sobe para `decisoes-controlador/1.2` (também fixado em
+  `LacoDeControleTest:423`).
+
+### P-38 — o atuador real ainda não está ligado ao `--controller active`
+
+- **Sintoma:** `LigacaoControlador.pecasPadrao` monta o atuador nulo e a política `nenhuma`. Ligar o
+  `AtuadorRestInfinispan` e a `PoliticaPorAssinatura` faz o `LigacaoControlador` usar tipos de `controle` fora da
+  lista dele no `ArquiteturaSemAcaoNoClienteTest` (a D-C autoriza um par a mais, o do atuador, não a mudança da lista
+  do `LigacaoControlador`).
+- **Falta decidir:** de onde vêm `k`, `tRebNs` (60 s) e `cotaAc5` (1): arquivo próprio da política, ou campos novos
+  no `controlador-*.json` (muda `ParametrosControlador.CAMPOS`, os arquivos de parâmetros e os testes dele); e o
+  fornecedor de "nós que responderam na última janela" (última amostra da sonda). Sem isso o item 9 (integração com
+  `--controller active`) não roda.
+- **Status:** `ABERTO`, para o Gestor.
+
 ## Observação de modelagem (não é defeito)
 
 Com 8 *threads* = 8 identidades fixas (`user-<tid>`), `incrementFailure`

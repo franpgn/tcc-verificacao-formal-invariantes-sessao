@@ -154,7 +154,7 @@ se nenhum), `severidade`, `sinais`, `param_sha256`.
 | `operacao` | `APLICAR` ou `REVERTER` |
 | `executada` | houve chamada ao *cluster*. Sempre `false` em shadow e com o atuador nulo |
 | `modo`, `atuador` | `shadow`/`active`; nome do atuador |
-| `acao` | `tipo` (`AC-1`, `AC-2`, `AC-3`), `caches` (lista), `alvo` (nó ou `null` = *cluster*), `valor` |
+| `acao` | `tipo` (`AC-2`, `AC-5`; W-2a. `AC-1`/`AC-3` fora do braço B), `caches` (lista), `alvo` (nó ou `null` = *cluster*; obrigatório no AC-5, proibido no AC-2), `valor` |
 | `origem` | `POLITICA`, `R4` (saída para NORMAL desfaz tudo), `FALHA_NA_APLICACAO` (reversão automática), `ENCERRAMENTO` (fim da carga), `GANCHO_JVM` (desligamento sem encerramento normal) |
 | `regra`, `t_fim_janela_ns` | regra e fim da janela da decisão que pediu; `null` no encerramento |
 | `t_pedido_ns` | instante do pedido |
@@ -164,6 +164,17 @@ se nenhum), `severidade`, `sinais`, `param_sha256`.
 
 Em shadow, a sequência de linhas `acao` é a que active produziria com um atuador que sempre aplica (mesma pilha
 virtual, mesmas reversões em R4 e no encerramento).
+
+**W-2a (B-44.2), pendente de versão do esquema.** (1) Linha `acao` de ação não reversível (AC-5) leva, no fim, o
+campo `reversao` = `"orquestrador"`: a ação não entra na pilha, nunca tem linha `REVERTER` e não é desfeita no R4,
+no encerramento nem pelo gancho. Por enquanto o campo só aparece nessas linhas, contra a regra "nunca campo
+omitido", porque `ControleArquivosTest.formatoAcao` fixa a lista de campos (P-37). (2) Linha nova **`politica`**,
+gravada pelo laço quando a política registra a escolha (só `PoliticaPorAssinatura`): `tipo`, `t_fim_janela_ns`,
+`t_decisao_ns`, `modo`, `perfil`, `regra`, `politica` (`P0`, `P1`, `P2`), `motivo` (`sem-assinatura`,
+`isolar-suspeito`, `cota-p1-esgotada`, `adiar-rebalanceamento`, `ac2-mantida`, `treb-esgotado`,
+`no-parado-pela-politica`, `vistas-divergentes`, `no-voltou`, `teto-treb`), `reverter` e `aplicar` (listas de
+rótulos de tipo). Em NORMAL sem reversão não há linha. O esquema continua `decisoes-controlador/1.1` até a versão
+ser decidida (um teste fixa a cadeia).
 
 **`fim`**: `decisoes`, `transicoes`, `perfil_final`, `erros_politica`, `acoes_pedidas`, `acoes_ignoradas`
 (pedido repetido de ação já ativa, sem linha), `acoes_executadas`, `acoes_falhas`, `reversoes`, `reversoes_falhas`,

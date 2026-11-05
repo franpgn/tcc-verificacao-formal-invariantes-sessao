@@ -347,3 +347,61 @@ Branch `feature/h4-amostrador-infra` sobre `19d45b9`. Suítes novas, todas no ho
 
 Com `-I`, a suíte inteira perde três módulos que importam `numpy` do `site-packages` do usuário. `test_h4.py` roda
 com `-I`.
+
+## W-2a (B-44.2): atuador REST do *cluster* e política por assinatura (2026-11-05)
+
+Branch `feature/b44-2-atuador-cluster` sobre `e869a31`. Código e testes escritos com o host em silêncio (piloto na
+VM); rodados depois da liberação (H2). Vermelho conferido com `mvn -q -o -T1 test-compile` numa worktree temporária:
+`93238be` exit 1 (375 linhas `ERROR`), `28a1409` exit 1 (símbolos do atuador ausentes); `431f4a7` compila.
+
+| Momento | Surefire (testes/falhas/erros/pulados, arquivos) | `unittest` analysis |
+|---|---|---|
+| base `e869a31` | 905/0/0/1, 124 | 235 OK, 1 *skip* |
+| W-2a (`68dc72e`) | 961/0/0/1, 130 | 235 OK, 1 *skip* (`analysis/` não muda) |
+
+961 = 905 + 56 novos, em 6 arquivos (contagem por método `@Test`):
+
+| Arquivo | Testes | O que cobre |
+|---|---|---|
+| `controle/AcaoClusterTiposTest` | 7 | AC-2 global e reversível; AC-5 num nó, não reversível, prazo `T_cham` + 3 s; `reversao` no JSONL; linha `politica`; `PlanoDeAcao`; `AtuadorPorTipo` |
+| `controle/ExecutorNaoReversivelTest` | 7 | AC-5 fora da pilha e de `ativas()`; prazo por tipo; R4 desfaz AC-2 e não AC-5; AC-5 que falha sem reversão e sem repetição; `reverter`/gancho ignoram AC-5; shadow; `T_enc` com AC-5 em curso |
+| `controle/EstadoTopologiaPorNoTest` | 6 | `vistaCompleta`, `noSemResposta`, `vistasDivergentes`; validações; sonda `resumirComNosAte` e `resumirAte` sem `porNo`; padrão da `FonteDeTopologia` |
+| `controle/PoliticaPorAssinaturaTest` | 16 | linhas da tabela 5 (P1, P2, P0, divergentes, volta do nó, teto `T_reb`, NORMAL); AC-5 nunca com vista incompleta, para nó sem resposta, duas vezes, com suspeito trocando, abaixo do teto; persistência quebra no salto; AC-2 nunca com divergência; AC-2 não para o nó parado; parâmetros |
+| `session/AtuadorRestInfinispanTest` | 16 | AC-2 sucesso, só no nó que respondeu, 4xx/5xx, nó lento, POST lento, leitura em 1 nó, divergência com o executor revertendo; Digest e Basic; AC-5 sucesso, alvo que continua, 403, alvo sem resposta, outro nó sem resposta; shadow sem pedido; AC-1/AC-3 recusados |
+| `session/ArquiteturaAtuadorTest` | 4 | R-ARQ-1, R-ARQ-2 (lista fechada `TrilhaJsonl`, `ParametrosControlador`, `ArquivoReferencia`; gancho da JVM aceito), R-ARQ-3, autoteste dos detectores |
+
+`ServidorAdminFalso` é apoio, sem `@Test`. `GoldenS1S2Test` passou na rodada (S1/S2 idênticos).
+
+Testes existentes editados (D-C): `session/ArquiteturaSemAcaoNoClienteTest` (par `AtuadorRestInfinispan` →
+`AcaoCluster`, `AtuadorCluster`, `ResultadoAtuacao`) e `session/WorkloadMainCargaControleTest:132` (`AC_1` com
+`DEGRADED_MODE` → `AC_2` global sem valor; nenhuma asserção retirada). As edições autorizadas de
+`ExecutorDeAcoesTest` (31-33, 217, 413-420) **não** foram feitas: sozinhas reprovam as asserções de rótulo listadas
+no P-36.
+
+Mutantes do item 7, conferidos à mão (`runs/b44-2/mutantes.txt`; os sete morrem). Chamada em shadow travou o
+`prazoEncerramentoComAc5EmCurso` na primeira rodada (o atuador bloqueado passou a ser chamado na thread do laço) e
+foi refeita só contra `shadowSemPedido`, que falhou com os pedidos recebidos. Pilha invertida
+(`ExecutorDeAcoesTest` LIFO, `ExecutorNaoReversivelTest.r4NaoDesfazAc5`); AC-5 empilhada
+(`ExecutorNaoReversivelTest.ac5ForaDaPilha`, `r4NaoDesfazAc5`); teto `T_reb` esquecido
+(`PoliticaPorAssinaturaTest.reversaoNoTeto`); chamada em shadow (`AtuadorRestInfinispanTest.shadowSemPedido`,
+`ExecutorNaoReversivelTest.shadowAc5`); AC-5 mandada a nó sem resposta (`PoliticaPorAssinaturaTest.ac5NuncaParaNoSemResposta`,
+`AtuadorRestInfinispanTest.ac5NoSemResposta`); AC-2 por cache em vez de global (`AtuadorRestInfinispanTest.ac2Sucesso`,
+`semRebalanceamentoPorCache`, `ac2LeituraEmUmNo`); e o AC-5 sem a guarda no atuador (`ac5NoSemResposta`).
+
+Testes de tempo real (servidor falso), medidos: `ac2NoLento` 1,009 s (prazo 1 s, limite 1,5 s), `ac2PostLento`
+1,026 s (2 s), `ac5Sucesso` 0,314 s, `ac5AlvoContinua` 0,816 s (800 ms, limite 1,3 s), `digest` 0,402 s,
+`prazoEncerramentoComAc5EmCurso` 0,215 s.
+
+Tarefa zero no *cluster* local `w2a` (3 nós, imagem 15.0.21.Final, XML sem *caches* + `cria-caches.sh`, portas
+12501-12503, sem VM), brutos em `runs/b44-2/verificacao/`:
+
+| Item | Resultado | Arquivo |
+|---|---|---|
+| (a) Basic × Digest | sem credencial: 401 com um único desafio `Digest realm="default", algorithm=MD5, qop=auth`; Basic: **403**; Digest: 200. Saúde `/rest/v2/container/health/status` anônima: 200 `HEALTHY` | `a-autenticacao.txt` |
+| (b) parada | `POST /rest/v2/server?action=stop` (sem a barra) a isn3: 204 em 13 ms com o usuário `admin` padrão (LIFECYCLE passou); última saúde respondida +3005 ms, primeira recusa +3059 ms; os outros dois `HEALTHY`; contêiner `exited 0`. A recusa chega como desconexão (`RemoteDisconnected`), não como conexão recusada: o encaminhamento de porta do podman aceita o TCP | `b-parada-sem-barra.txt` |
+| (c) `rebalancing_enabled` | depois do `disable-rebalancing` global (204, 14 ms), `GET /rest/v2/container` e `GET /rest/v2/caches/{c}` dos 4 caches leem `false` nos 3 nós (coordenador era isn2); depois do `enable`, `true` | `c-rebalancing-enabled.txt` |
+| (d) atuador real | `AtuadorRestInfinispan` + `ClienteAdminRest` (Digest real): AC-2 aplicar/reaplicar/reverter/reverter em SYNC e ASYNC, todos `APLICADA` 204, 18 a 182 ms (o primeiro inclui o desafio); AC-5 com a barra em isn3: `APLICADA` 204, `isn3=parou`, os outros `HEALTHY`, 3188,6 ms (prazo 5 s); maioria com 2 nós `HEALTHY` logo depois (saída graciosa; sob corte a saída pelo JGroups não chega) | `d-atuador-ac2-*.txt`, `d-atuador-ac5.txt` |
+
+`t_par` (fim dos conectores depois do 204) ≈ 3,06 s no local, quase todo o atraso de 3 s do `Server.java:208`. O
+instante da primeira recusa Hot Rod não foi medido com cliente Hot Rod: o Hot Rod e a REST usam o mesmo conector da
+porta 11222, e a recusa da saúde é a mesma. A integração I-1..I-5 (item 9) não rodou: depende da ligação do P-38.

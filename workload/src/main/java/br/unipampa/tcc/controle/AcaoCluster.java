@@ -50,9 +50,12 @@ public record AcaoCluster(Tipo tipo, List<String> caches, String alvo, String va
          * {@code Server.java:208} {@code SHUTDOWN_DELAY_SECONDS = 3}, sem falar com o coordenador). <b>Nao
          * reversivel</b> dentro da execucao: religar exige reiniciar o conteiner, o que o P-5 tira do caminho do
          * controlador; o orquestrador recria o <i>cluster</i> depois da execucao. Prazo
-         * {@code T_cham + 3 s} (secao 5.1).
+         * {@code T_cham + 15 s} (P-42, decisao do coordenador de 05/11; era {@code T_cham + 3 s} na secao 5.1): sob
+         * corte, o servidor anuncia a parada 3 s depois do pedido, mas a saude do no isolado so deixa de responder
+         * 13,1 s (SYNC) a 13,3 s (ASYNC) depois dele (I-3 do B-44.2, {@code docs/relatorio-b44-2-2026-11-05.md}
+         * secao 7); com 3 s o atuador gravava {@code FALHOU} com o no parando. Sem corte, 3,06 a 3,24 s.
          */
-        AC_5("AC-5", false, RegraAlvo.UM_NO, 3_000_000_000L);
+        AC_5("AC-5", false, RegraAlvo.UM_NO, 15_000_000_000L);
 
         private final String rotulo;
         private final boolean reversivel;

@@ -48,7 +48,7 @@ import java.util.function.Consumer;
  * desfeita (R4, encerramento, gancho, falha na aplicacao) e e pedida no maximo uma vez por executor
  * (repetida, e ignorada); a reversao fica com o orquestrador, entre execucoes. Cada chamada leva o prazo do
  * seu tipo, {@link AcaoCluster.Tipo#prazoNs(long)} sobre {@code T_cham} (AC-2: {@code T_cham}; AC-5:
- * {@code T_cham + 3 s}, {@code Server.java:208}). O prazo do encerramento soma os prazos de reversao da
+ * {@code T_cham + 15 s}, P-42: a parada sob corte do I-3 do B-44.2). O prazo do encerramento soma os prazos de reversao da
  * pilha, o prazo da chamada em curso e um {@code T_cham}: com so acoes de prazo {@code T_cham} na pilha,
  * e o mesmo {@code (A + 1) x T_cham} de antes, e {@code A} so conta a pilha (o AC-5 em curso entra com o
  * prazo dele, nao como mais um elemento da pilha).</p>

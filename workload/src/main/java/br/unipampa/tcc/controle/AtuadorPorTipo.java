@@ -45,7 +45,8 @@ public final class AtuadorPorTipo implements AtuadorCluster {
 
     /**
      * V-W2a R1: pior caso do {@code T_enc} do {@link ExecutorDeAcoes} com o braco B: o AC-2 na pilha, o AC-5 em
-     * curso e um {@code T_cham} (so ha uma chave de AC-2; a cota do AC-5 e 1). Com {@code T_cham} = 2 s, 9 s.
+     * curso e um {@code T_cham} (so ha uma chave de AC-2; a cota do AC-5 e 1). Com {@code T_cham} = 2 s e o AC-5 em
+     * {@code T_cham + 15 s} (P-42), 2 + 17 + 2 = 21 s.
      */
     public static long piorCasoEncerramentoBracoBNs(long tChamNs) {
         return AcaoCluster.Tipo.AC_2.prazoNs(tChamNs) + AcaoCluster.Tipo.AC_5.prazoNs(tChamNs) + tChamNs;

@@ -300,8 +300,8 @@ final class LigacaoControlador implements AutoCloseable, WorkloadMain.ControleDa
 
     /**
      * V-W2a R1: pior caso de {@code T_enc} (contrato 1.2). Sem politica nenhuma acao e pedida: {@code T_cham}. Com a
-     * {@link PoliticaPorAssinatura}: AC-2 na pilha ({@code T_cham}) + AC-5 em curso ({@code T_cham + 3 s}) +
-     * {@code T_cham} = 9 s, porque so ha uma chave de AC-2 e a cota do AC-5 e 1.
+     * {@link PoliticaPorAssinatura}: AC-2 na pilha ({@code T_cham}) + AC-5 em curso ({@code T_cham + 15 s}, P-42) +
+     * {@code T_cham} = 21 s, porque so ha uma chave de AC-2 e a cota do AC-5 e 1.
      */
     static long piorCasoEncerramentoNs(boolean comPolitica) {
         if (!comPolitica) {

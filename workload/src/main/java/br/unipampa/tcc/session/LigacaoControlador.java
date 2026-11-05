@@ -162,6 +162,7 @@ final class LigacaoControlador implements AutoCloseable, WorkloadMain.ControleDa
         ModoAtuacao modo = modoDe(cli.controlador);
         Path par = Path.of(cli.controladorConfig);
         ParametrosControlador p = ParametrosControlador.deJson(par);
+        conferirTetoDaSonda(p, cli);
         Path refPath = null;
         ArquivoReferencia ref = null;
         if (cli.controladorReferencia != null && !cli.controladorReferencia.isBlank()) {
@@ -183,6 +184,26 @@ final class LigacaoControlador implements AutoCloseable, WorkloadMain.ControleDa
             throw new IllegalArgumentException("--controller-admin tem " + urls.size() + " URLs e --servers tem " + nos);
         }
         return new Configuracao(modo, par, p, refPath, ref, urls, nos);
+    }
+
+    /**
+     * V-W2a R7: o "nao viu" do S_lag (W-4) e o prazo de leitura da sonda, o {@code hotrod_timeout_ms} da campanha
+     * (prompt do W-4, item 2), gravado como {@code lagMaxMs}. O P1 so dispara com {@code lagMaxMs >= tetoLagMs}: um
+     * {@code tetoLagMs} maior desliga o P1 sem aviso, e um menor dispara antes de a leitura desistir. Por isso, em S3
+     * com o bloco {@code politica}, os dois tem de ser iguais, e o arquivo e recusado se nao forem.
+     *
+     * @throws IllegalArgumentException {@code tetoLagMs} diferente de {@code --hotrod-timeout-ms}
+     */
+    static void conferirTetoDaSonda(ParametrosControlador p, Cli cli) {
+        if (p.politica() == null || !cli.scenarioS3) {
+            return; // sem politica nao ha P1; fora do S3 nao ha sonda S_lag (ela usa os clientes do S3)
+        }
+        long teto = p.politica().tetoLagMs();
+        if (teto != cli.s3.hotrodTimeoutMs) {
+            throw new IllegalArgumentException("politica.tetoLagMs (" + teto + ") difere de --hotrod-timeout-ms ("
+                    + cli.s3.hotrodTimeoutMs + "): o \"nao viu\" do S_lag e o prazo Hot Rod da sonda e tem de ser o"
+                    + " mesmo valor (V-W2a R7)");
+        }
     }
 
     /** {@code http://h:p} ou {@code h:p}, separados por virgula; devolve sempre {@code http://h:p}. */

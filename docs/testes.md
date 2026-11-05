@@ -693,3 +693,46 @@ Usam os *fixtures* editados sem mudança própria: `ParametrosDefasagemTest` (`B
 **O que os testes não provam (fica para o *smoke* local):** que a interrupção solta o iterador real do cliente Hot Rod
 15.0 preso no nó parado e que o `close` do `RemoteCacheManager` desse nó não trava (P-41); que, sob corte, o AC-5 sai
 `APLICADA` dentro dos 17 s (P-42).
+
+## W-9: derivação da calibração S3 (`analysis/calibracao_s3.py`) (2026-11-05)
+
+Branch `feature/w9-calibracao-s3` (worktree `wt-w9`) sobre `17f2bd4`. Só Python (sem Maven, sem Podman, sem VM).
+Python 3.12.10. A suíte nova usa execuções sintéticas no formato do orquestrador S3 (`exec-NNNN-<célula>-A` com
+`execucao.json`, `checagem.json`, `rep-001.csv`, JSONL 1.2 de observáveis e decisões, violações, ações S3, resumo de
+convergência e marcadores), escritas pelo gerador do próprio teste.
+
+| Suíte (nova) | Testes | O que cobre |
+|---|---|---|
+| `analysis/test_calibracao_s3.py`, `CampanhaBase` | 23 | uma derivação completa: execuções usadas e excluídas, 7.1 a 7.18 com os valores esperados calculados à mão (W = 5 s, θ_lat_in = nextafter(0,03), m = 5, kLag = 2 com N = 88 e 3/N, T_estavel = 34 s, T_hold_viol = 26,5 s, teto 600 s, exec_teto 1010 s, q̂ = 1/2 com Clopper-Pearson), só braço A |
+| `Bordas` | 11 | `kLag` acima do limite (6 com W = 5: AC-5 inviável), `kLag` = 5 no limite, zero ocorrências (`kLag` = 1), nenhuma janela válida (`kLag` nulo, N = 0), F1 sem resposta longa (12 janelas, não conta), F1 com resposta (conta), λ₅ no posto (3 janelas baixas mudam W de 5 para 7), T_hold_viol = W, teto sem execução convergida, célula vazia, regra sem execução das suas células |
+| `Funcoes` | 14 | funções puras de cada regra com as bordas (nenhuma janela válida, sem recaída, sem execução), `resumo_lag` com empate, `calcular_w` (termo de leitura dominante; W = prazo recusado pelo código), viabilidade, `exec_teto` (piso de 1010 s), Clopper-Pearson nos extremos |
+| `Cli` | 5 | saída determinística (duas execuções, mesmos bytes), nunca sobrescreve, referências gravadas com o SHA-256 do JSON, braço B recusado (exit 2), F3 recusada, `teto_ms` diferente do prazo recusado |
+| `Paridade` | 2 | Δ_conv e taxa de violações por mil iguais ao `comparar_bracos.desfechos_execucao`; Clopper-Pearson igual ao `scipy.stats.beta`. Pulados em `-I` (sem numpy) |
+
+| Commit | Momento | `python3 -I -m unittest discover -s analysis -p "test_calibracao_s3.py"` |
+|---|---|---|
+| `d4c6f09` test | vermelho contra o esqueleto | caiu também por um defeito do *fixture* (`dict(**{10: ...})`, `TypeError` no `setUpClass`) |
+| `7678318` test | *fixture* corrigido, vermelho limpo | 53 testes: 17 falhas, 34 erros (`KeyError` dos parâmetros ausentes), 2 pulados |
+| `bd6446d` feat | implementação | 53: 51 OK, 2 pulados; em `python3 -E -P`, 53 OK |
+| `8563ce2` test | regra sem execução das suas células | 55: 2 falhas |
+| `d329e21` fix | correção | **55: 53 OK, 2 pulados** (8,1 s); em `python3 -E -P`, **55 OK** (8,4 s) |
+
+Teste existente editado: `test_esquema_e_execucoes_usadas` passou a esperar também a execução abortada na lista de
+excluídas (decisão da implementação, como o `resumo.json` do orquestrador; registrado no `feat:`). Nenhum módulo
+existente de `analysis/` mudou; a suíte completa de `analysis/` não foi rodada para não pôr carga no *host* com a VM
+medindo (os arquivos novos não são importados por nenhum outro).
+
+**Mutantes** (cada um aplicado ao módulo e desfeito; `python3 -I`): sem o predicado do P1 na 7.13 (9 falhas); θ_in
+igual ao maior mínimo, sem `nextafter` (5); trecho calmo seguido de intermediária contando para m (1); T_estavel sem
+`P_sonda` (2); I2 de qualquer classe na 7.15 (2); persistência que não zera abaixo do teto (9); atraso de início
+ignorado na 7.3 (2): os sete morrem. O `<` → `<=` no limiar de 400 s da 7.10 sobrevive e é equivalente (em 400 s as
+duas leituras dão 600 s).
+
+***Smoke* com brutos reais** (fora do git): os arquivos da execução `controle-shadow` do I-3b
+(`wt-w4/runs/i3b/controle-shadow`, S3 ASYNC em shadow com S_lag) num diretório no formato do orquestrador, como
+ASYNC sem falha. A leitura dos formatos reais passou (CSV com `phase`, JSONL 1.2, violações com mensagem entre aspas,
+resumo sem `convergencia_estado`) e a CLI gravou o JSON e a referência. Os valores não servem para nada além disso:
+a execução teve corte do isn3 e era local.
+
+**O que os testes não provam:** que as leituras adotadas nas ambiguidades A-1 a A-17 são as pretendidas (decisão do
+Senior/Gestor); o comportamento com os volumes reais da campanha (26 execuções de 300 s).

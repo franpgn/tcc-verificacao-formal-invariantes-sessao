@@ -95,6 +95,75 @@ o ProtoStream padrão falha ao serializar e toda escrita vira
 
 ## Decisões técnicas a registrar
 
+### TD-016 — W-9: derivação da calibração S3 por *script* determinístico (2026-11-05)
+
+Branch `feature/w9-calibracao-s3` (worktree `wt-w9`) sobre `17f2bd4` (`feature/controlador-integracao`). Numeração:
+a ponta integrada já tem TD-014 (W-2b) e TD-015 (W-6), então este é o TD-016. Fonte das regras: seção 7 do
+pré-registro da calibração (`docs/pre-registro-calibracao-s3-2026-11-05.md`, DT-020; a seção 7 é a mesma em `a98d597`
+e na ponta `2c8b7b8`), com as decisões do Gestor de 05/11: critério C-8 (zero ocorrências, N e 3/N ao lado de cada
+limiar), 7.13 com o predicado do P1 e a assinatura sem resposta à parte, e nenhuma regra olhando diferença entre
+braços. Relatório: `docs/relatorio-w9-2026-11-05.md`.
+
+- **`analysis/calibracao_s3.py`**, só biblioteca padrão, roda com `python3 -I`. Lê o diretório `--saida` do
+  orquestrador S3 (um `exec-NNNN-<célula>-A` por execução) e o arquivo `campanha-s3/1`; usa só as execuções com
+  veredito ACEITA e lista as outras (inclusive as abortadas do DT-014). Recusa (exit 2) braço B ou `active` em
+  qualquer execução, célula fora da seção 3 (a F3 fica fora, C-1) e `teto_ms`/`teto_lag_ms` diferente de
+  `hotrod_timeout_ms` (R7 da V-W2a).
+- **Reaproveitamento.** `referencia_p99.gerar_referencia` (7.1, mesmos bytes do `gravar_json`) e `percentil` (posto
+  mais próximo, 7.2 e 7.11); `energia_proxy.ler_eventos_inicio` e `ler_acoes_s3`; `fases.fase_de` (7.18). O
+  `comparar_bracos.py` importa numpy e não roda em `-I`: do que ele faz, há cópias curtas (instante do CSV de
+  violações, classe I1 + I4 + I2 REAL, Δ_conv do braço A, taxa por mil ações nas fases), presas por testes de
+  paridade que rodam em `python -E -P`.
+- **Sinais por janela recalculados dos brutos**, com a W da 7.3: eventos pela janela do `end_ns` (regra do
+  `AgregadorDeJanela`), latência e erro indeterminados abaixo de 100 eventos, amostras de topologia e rodadas de
+  defasagem pela regra de consumo do código (`SondaTopologia.resumirComNosAte`, `SondaDefasagem.resumirAte`), S_lag
+  da janela como `SondaDefasagem.resumir` (maior lag de cada nó, suspeito só se o máximo for único). As decisões
+  gravadas pelo braço A (valores provisórios) não entram; as linhas `acao` PREVISTA só aparecem como conferência.
+- **Leituras onde a regra é ambígua (A-1 a A-17), no próprio JSON.** As de maior efeito: θ_in é o menor *double*
+  acima do maior mínimo de k janelas seguidas (A-2); θ_out e `lag_out` saem pela leitura literal ("maior valor"),
+  que é degenerada (banda vazia), com a alternativa "menor valor" ao lado para decisão (A-3); m conta o trecho calmo
+  imediatamente seguido de janela alta (A-5).
+- **7.18** calcula q̂ por célula de teste com Clopper-Pearson (bissecção exata sobre a binomial) e grava as taxas e o
+  comando do `poder.py`, que não roda em `-I` (A-13).
+
+```mermaid
+%%{init: {'theme':'base','themeVariables':{'background':'#ffffff','primaryColor':'#ffffff','primaryTextColor':'#000000','primaryBorderColor':'#000000','lineColor':'#000000','secondaryColor':'#ffffff','tertiaryColor':'#ffffff','fontFamily':'Arial'}}}%%
+flowchart LR
+    C["exec-NNNN-celula-A<br/>(so ACEITA, braco A)"] --> R1["7.1 referencias<br/>(referencia_p99)"]
+    R1 --> L["7.2 lambda5"]
+    C --> AT["atraso de inicio<br/>(linhas defasagem)"]
+    L --> W["7.3 W"]
+    AT --> W
+    W --> J["janelas W por execucao<br/>(eventos, topologia, S_lag, violacoes)"]
+    J --> T["7.7 theta_in<br/>7.11 lag_in"]
+    T --> M["7.8 m, theta_out<br/>7.12 lag_out"]
+    J --> K["7.13 kLag<br/>(predicado do P1)"]
+    K --> V["7.4 viabilidade do AC-5"]
+    W --> V
+    C --> O["7.10, 7.14 a 7.18"]
+    T --> JS["derivacao.json<br/>(valor, regra, dados, N, incerteza)"]
+    M --> JS
+    V --> JS
+    O --> JS
+```
+
+| Regra | Parâmetro no JSON | Células |
+|---|---|---|
+| 7.1 | `referencia_p99_async`, `referencia_p99_sync` | ASYNC sem falha; SYNC sem falha |
+| 7.2, 7.3, 7.4 | `lambda5_por_s`, `W_s`, `viabilidade_ac5` | ASYNC sem falha; atraso de todas |
+| 7.5 | `excedencia_por_janela` | todas (referência do perfil) |
+| 7.6, 7.9 | `k`, `n_err` | fixos |
+| 7.7, 7.8, 7.11, 7.12 | `theta_lat_in`, `theta_err_in`, `m`, `theta_lat_out`, `theta_err_out`, `T_cooldown_s`, `lag_in_ms`, `lag_out_ms` | ASYNC sem falha; m de ASYNC F1/F2/F4 |
+| 7.10, 7.14 | `teto_convergencia_s`, `T_estavel_s` | F1, F2 (ASYNC e SYNC), F4 |
+| 7.13 | `kLag` | ASYNC sem falha e ASYNC F1 |
+| 7.15, 7.16, 7.17 | `T_hold_viol_s`, `n_blocos`, `volume_exec_mb`, `exec_teto_s` | todas |
+| 7.18 | `q_hat`, `curva_de_poder` | ASYNC F2 e F4 |
+
+Uso: `python3 -I analysis/calibracao_s3.py --campanha <saída> --parametros <campanha-s3-1.json> --saida
+<derivacao.json> [--referencias-dir <dir>]`. Saída determinística (chaves ordenadas, sem relógio; os caminhos das
+referências seguem o `referencia_p99`, relativos ao diretório corrente, então rodar da raiz do repositório). Nunca
+sobrescreve.
+
 ### TD-013 — Correções do W-2a depois da integração: P-41, P-42 e D-B (2026-11-05)
 
 Branch `fix/w2a-p41-p42` sobre a ponta integrada (`9b32695`, tag `int/2026-11-05-w5`: W-2a + W-4 + W-5), decisões do

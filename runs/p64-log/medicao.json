@@ -1,0 +1,143 @@
+{
+ "corte-r1": {
+  "isn1": {
+   "log": {
+    "bytes": 101374,
+    "linhas": 427,
+    "ISPN005003": 0,
+    "ISPN000136": 6,
+    "linhas_de_pilha": 48
+   },
+   "sonda": {
+    "OK": 10009,
+    "cache_ignorado": 0,
+    "availability": 0,
+    "outro": 22
+   }
+  },
+  "isn2": {
+   "log": {
+    "bytes": 268291024,
+    "linhas": 2073585,
+    "ISPN005003": 20647,
+    "ISPN000136": 18131,
+    "linhas_de_pilha": 1995141
+   },
+   "sonda": {
+    "OK": 24583,
+    "cache_ignorado": 2515,
+    "availability": 13878,
+    "outro": 52
+   }
+  },
+  "isn3": {
+   "log": {
+    "bytes": 187805,
+    "linhas": 946,
+    "ISPN005003": 0,
+    "ISPN000136": 34,
+    "linhas_de_pilha": 272
+   },
+   "sonda": {
+    "OK": 9963,
+    "cache_ignorado": 0,
+    "availability": 0,
+    "outro": 24
+   }
+  }
+ },
+ "corte-r2": {
+  "isn1": {
+   "log": {
+    "bytes": 103490,
+    "linhas": 442,
+    "ISPN005003": 0,
+    "ISPN000136": 7,
+    "linhas_de_pilha": 57
+   },
+   "sonda": {
+    "OK": 10281,
+    "cache_ignorado": 0,
+    "availability": 0,
+    "outro": 22
+   }
+  },
+  "isn2": {
+   "log": {
+    "bytes": 162966,
+    "linhas": 771,
+    "ISPN005003": 0,
+    "ISPN000136": 16,
+    "linhas_de_pilha": 131
+   },
+   "sonda": {
+    "OK": 9912,
+    "cache_ignorado": 0,
+    "availability": 0,
+    "outro": 27
+   }
+  },
+  "isn3": {
+   "log": {
+    "bytes": 263684572,
+    "linhas": 2038512,
+    "ISPN005003": 20423,
+    "ISPN000136": 17895,
+    "linhas_de_pilha": 1960954
+   },
+   "sonda": {
+    "OK": 24784,
+    "cache_ignorado": 2488,
+    "availability": 13759,
+    "outro": 53
+   }
+  }
+ },
+ "corte-log-r1": {
+  "isn1": {
+   "log": {
+    "bytes": 92579,
+    "linhas": 366,
+    "ISPN005003": 0,
+    "ISPN000136": 0,
+    "linhas_de_pilha": 0
+   },
+   "sonda": {
+    "OK": 10046,
+    "cache_ignorado": 0,
+    "availability": 0,
+    "outro": 2
+   }
+  },
+  "isn2": {
+   "log": {
+    "bytes": 139363,
+    "linhas": 602,
+    "ISPN005003": 0,
+    "ISPN000136": 0,
+    "linhas_de_pilha": 0
+   },
+   "sonda": {
+    "OK": 10302,
+    "cache_ignorado": 0,
+    "availability": 0,
+    "outro": 1
+   }
+  },
+  "isn3": {
+   "log": {
+    "bytes": 94174,
+    "linhas": 385,
+    "ISPN005003": 0,
+    "ISPN000136": 0,
+    "linhas_de_pilha": 21
+   },
+   "sonda": {
+    "OK": 31287,
+    "cache_ignorado": 2868,
+    "availability": 6276,
+    "outro": 58
+   }
+  }
+ }
+}

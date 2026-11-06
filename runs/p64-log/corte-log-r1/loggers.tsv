@@ -1,0 +1,9 @@
+2026-11-06T21:02:18.777Z	org.infinispan.server.hotrod.BaseRequestProcessor	PUT	http://127.0.0.1:13001/rest/v2/logging/loggers/org.infinispan.server.hotrod.BaseRequestProcessor?level=FATAL	204	0.096
+2026-11-06T21:02:19.111Z	org.infinispan.interceptors.impl.InvocationContextInterceptor	PUT	http://127.0.0.1:13001/rest/v2/logging/loggers/org.infinispan.interceptors.impl.InvocationContextInterceptor?level=FATAL	204	0.085
+2026-11-06T21:02:19.280Z	org.infinispan.server.hotrod.BaseRequestProcessor	PUT	http://127.0.0.1:13002/rest/v2/logging/loggers/org.infinispan.server.hotrod.BaseRequestProcessor?level=FATAL	204	0.108
+2026-11-06T21:02:19.448Z	org.infinispan.interceptors.impl.InvocationContextInterceptor	PUT	http://127.0.0.1:13002/rest/v2/logging/loggers/org.infinispan.interceptors.impl.InvocationContextInterceptor?level=FATAL	204	0.110
+2026-11-06T21:02:19.791Z	org.infinispan.server.hotrod.BaseRequestProcessor	PUT	http://127.0.0.1:13003/rest/v2/logging/loggers/org.infinispan.server.hotrod.BaseRequestProcessor?level=FATAL	204	0.285
+2026-11-06T21:02:19.934Z	org.infinispan.interceptors.impl.InvocationContextInterceptor	PUT	http://127.0.0.1:13003/rest/v2/logging/loggers/org.infinispan.interceptors.impl.InvocationContextInterceptor?level=FATAL	204	0.083
+2026-11-06T21:02:20.094Z	-	GET	http://127.0.0.1:13001/rest/v2/logging/loggers	200	0.103
+2026-11-06T21:02:20.447Z	-	GET	http://127.0.0.1:13002/rest/v2/logging/loggers	200	0.079
+2026-11-06T21:02:20.612Z	-	GET	http://127.0.0.1:13003/rest/v2/logging/loggers	200	0.082

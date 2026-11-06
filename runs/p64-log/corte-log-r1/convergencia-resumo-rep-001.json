@@ -1,0 +1,18 @@
+{
+  "t_fim_ns" : 1793999139286682700,
+  "convergiu" : true,
+  "divergencia_persistente" : false,
+  "t_convergencia_ns" : 103397840000,
+  "t_convergencia_abs_ns" : 1793999242684522700,
+  "rodadas" : 3,
+  "rodadas_validas" : 3,
+  "t_fim_carga_ns" : 1793999242665825000,
+  "t_fim_controle_ns" : 1793999242678721300,
+  "convergencia_estado" : "convergiu",
+  "t_sinal_fim_carga_ns" : 1793999242681894600,
+  "religamento_ac5_alvo" : null,
+  "religamento_prazo_ns" : null,
+  "t_religamento_ns" : null,
+  "religamento_esgotado" : false,
+  "religamento_leituras" : 0
+}

@@ -95,6 +95,61 @@ o ProtoStream padrão falha ao serializar e toda escrita vira
 
 ## Decisões técnicas a registrar
 
+### TD-021 — W-5e: análise do fatorial 2×2 (regra de fusão × controlador) no `comparar_bracos.py` (2026-11-06)
+
+Numeração: na base `edfa8b6` o último é o TD-019; o TD-020 já é da A1 (`wt-a1`). Quem for integrado depois renumera
+(regra "depois do que existe").
+
+Branch `feature/w5e-fatorial`, a partir de `edfa8b6`. Especificação: DT-027, complemento 1 do pré-registro do
+*benchmark* refeito (`docs/pre-registro-benchmark-refeito-complemento-1-2026-11-06.md`, `4fa4546`), seções 1, 2 e 5.
+Só Python (`analysis/`).
+
+```mermaid
+%%{init: {'theme':'base','themeVariables':{'background':'#ffffff','primaryColor':'#ffffff','primaryTextColor':'#000000','primaryBorderColor':'#000000','lineColor':'#000000','secondaryColor':'#ffffff','tertiaryColor':'#ffffff','clusterBkg':'#ffffff','clusterBorder':'#000000','edgeLabelBackground':'#ffffff','fontFamily':'Arial'}}}%%
+flowchart TD
+    M["manifesto: braco A/B (2 bracos)<br/>ou PO/PL/AO/AL (fatorial)"] --> Q{"celula fatorial?"}
+    Q -- "nao" --> D2["analise de 2 bracos (sem mudanca)"]
+    Q -- "sim" --> CF["braco conferido no execucao.json:<br/>fusao pnn|a1, controller shadow|active, bloco;<br/>e no modo da trilha"]
+    CF --> VS["varredura com erro em qualquer braco:<br/>V e :sem_forma2 dos quatro sem a varredura;<br/>perda permanente do bloco nao avaliavel"]
+    VS --> CT["contrastes por bloco: A1, A4, interacao<br/>e quatro efeitos simples"]
+    CT --> IU["IU por efeito principal (V, p99, vazao,<br/>rastreabilidade de PL e AL)"]
+    IU --> H["Holm sobre as hipoteses de teste<br/>(celula:A1, celula:A4; m = 2 com uma celula)"]
+    CT --> SEC["secundarios com Holm por efeito,<br/>com perda permanente e exposicao na janela"]
+```
+
+Decisões:
+
+1. **Manifesto.** O cabeçalho não muda. O bloco tem 2 braços (A, B) ou 4 (PO, PL, AO, AL), e a célula não mistura os
+   dois formatos. As células de 2 braços seguem o caminho de antes, sem mudança (goldens da base, sem e com
+   instrumentos).
+2. **Braço pelo `execucao.json`.** Na célula fatorial, cada execução precisa de `execucao.json` com `fusao` (`pnn` ou
+   `a1`) e `controller` (`shadow` ou `active`) iguais aos do rótulo do manifesto, e `bloco`, se houver, igual ao do
+   manifesto; a trilha precisa estar no modo do braço. Divergência: exit 2. **Nome do campo:** o orquestrador fatorial
+   (`wt-fat`, `feature/orquestrador-fatorial`) ainda não tinha o campo em 06/11, então o leitor usa `fusao`
+   (`CAMPO_FUSAO`); se o orquestrador usar outro nome (o complemento chama a coluna da matriz de `regra`), basta trocar
+   a constante. O instante da fusão vem de `t_fusao_ns` no mesmo arquivo (`CAMPO_T_FUSAO`).
+3. **Contrastes.** Por bloco, sobre y na escala da DT-021 (diferença; log para o p99): A1 = ½[(AO − PO) + (AL − PL)],
+   A4 = ½[(PL − PO) + (AL − AO)], interação = (AL − AO) − (PL − PO), e os quatro efeitos simples (AO − PO, AL − PL,
+   PL − PO, AL − AO). Cada contraste tem estimativa, IC t e IC *bootstrap* de blocos; a troca de sinal exata só nos
+   três primeiros e só na célula de teste. O IC hierárquico do p99 da análise de 2 braços não foi estendido ao
+   fatorial. Semente do contraste j do desfecho i: índice 10i + j.
+4. **Regra de sucesso.** Por efeito principal, a `regra_iu` de sempre: H_V pela troca de sinal sobre d_V com média
+   menor que zero; H_L pelo IC t de exp(média d_L) e δ_L; vazão útil não inferior pelo IC t do efeito; rastreabilidade
+   integral dos braços ativos (PL e AL) nos dois efeitos. H_V não avaliável quando os braços de referência do efeito
+   (PO e PL para a A1; PO e AO para a A4) não têm violação em nenhum bloco. A conclusão global faz Holm sobre todas as
+   hipóteses de teste: cada célula de 2 braços conta uma, cada célula fatorial conta duas (`<celula>:A1`,
+   `<celula>:A4`); com só a F2 fatorial, m = 2. A interação fica fora da IU e do Holm.
+5. **Secundários.** Holm dentro da família de cada efeito principal, sobre os secundários com p, incluindo as duas
+   medidas novas. Sensibilidades com p e sem Holm.
+6. **Perda permanente e exposição na janela.** `decompor_i1_pela_fusao`, no `apuracao_v.py` (fonte única), usa só as
+   detecções de I1 que contam em V nas fases pedidas: perda = sids da varredura, do *replay* tardio e do I1 online em
+   ou depois de `t_fusao_ns`; exposição = sids do *replay* imediato e do I1 online antes dele. Contagens de sids, em
+   diferença. Só existem quando o `execucao.json` traz `t_fusao_ns`; `null` (sem fusão) deixa as duas ausentes.
+7. **Varredura com erro nos quatro braços.** O tratamento simétrico do W-5d passa a valer para os braços do bloco,
+   quaisquer que sejam; no bloco afetado a perda permanente fica não avaliável em todos os braços (DT-027, 5.3). O
+   detalhe traz o número de blocos por braço da falha e a sensibilidade descritiva dos três contrastes de V sem esses
+   blocos.
+
 ### TD-019 — W-5c: V com a sonda de *replay* e a varredura no `comparar_bracos.py` (2026-11-06)
 
 Numeração: TD-017 na branch `feature/w5c-v-com-sonda` (o próximo livre na base `daa18a2`). Na integração (06/11) o

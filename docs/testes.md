@@ -1531,3 +1531,27 @@ outra suíte de *shell*, Maven nem injetor; só uma derivação em Python de out
 (6296 s): **498 PASS, 0 FAIL**, exit 0, de primeira, sem caso rodado de novo (`runs/bench-int/suite-s3-completa.out`).
 Os 498 incluem os 338 do subconjunto que rodou antes da tag e os casos que ficaram de fora dele (S2, S3, S5 a S10,
 S12 a S21, S23, S26h e S28).
+
+## W-5e: análise do fatorial 2×2 no `comparar_bracos.py` (2026-11-06)
+
+Branch `feature/w5e-fatorial` (worktree `wt-w5e`), a partir de `edfa8b6`. Só Python, `python -E -P`. TDD em três
+passos: `1c819d6` (`test:`, golden da análise de 2 braços **com** sonda, varredura e varredura com erro, gerado na base
+antes de qualquer mudança), `ed6a364` (`test:`, 29 testes do fatorial, 18 vermelhos; os 11 de identificação do braço
+passavam só porque a base recusava qualquer manifesto de 4 braços) e `bb319f8` (`feat:`).
+
+| Suíte | Resultado |
+|---|---|
+| `python -E -P -m unittest discover -s analysis` | **517 OK, 1 *skip*** (486 da base + 31); `test_calibracao_s3.Paridade` passa com a `decompor_i1_pela_fusao` em `apuracao_v.COPIADAS` |
+
+Arquivo novo `analysis/test_comparar_bracos_fatorial.py`:
+
+| Classe | Testes | O que prende |
+|---|---|---|
+| `NaoRegressao2Bracos` | 2 | célula de teste F2 do W-5d (varredura com erro só em A, só em B e nos dois) e descritiva D do W-5c (forma 2) iguais ao golden `analysis/fixtures/w5e/golden-2bracos-com-instrumentos-edfa8b6.json`; o golden sem instrumentos do W-5c continua em `test_comparar_bracos_w5c` |
+| `Contrastes` | 4 | d por bloco de A1, A4 e interação em V (diferença) e no p99 (log, conferido contra o p99 de cada execução); estimativa, p da troca de sinal; os quatro efeitos simples só com IC; interação com p e sem Holm, fora da conclusão global |
+| `RegraDeSucesso` | 4 | 7 blocos com a A1 zerando V: p_IU = 2/2⁷, Holm m = 2 dá 2 × 2/2⁷, "melhoria"; A4 sem efeito com p_IU = 1; H_V não avaliável sem violação em PO e PL; secundários com Holm por efeito, incluindo perda permanente e exposição; célula fatorial descritiva sem p |
+| `PerdaEExposicao` | 4 | união por sid (online antes e depois da fusão, imediata antes e depois, tardia, varredura, I4 fora, detecção antes do `start` fora); sem `t_fusao_ns` não emite; `null` deixa ausente; varredura com erro deixa a perda ausente e a exposição medida |
+| `VarreduraComErroFatorial` | 3 | erro em 1 e em 2 dos 4 braços: V dos quatro sem a varredura, `y` por braço, perda do bloco fora, detalhe por braço da falha, sensibilidade sem os blocos; bloco sem falha com os mesmos d da célula que nunca teve erro |
+| `IdentificacaoDosBracos` | 11 | válido; `fusao`, `controller` e `bloco` divergentes, campo ou `execucao.json` ausentes, trilha no modo trocado, trilha ausente no teste, instrumentos diferentes entre os quatro, bloco com braços misturados e célula com blocos de 2 e de 4 braços: exit 2 |
+| `NaoRegressaoComFatorial` | 1 | a célula de 2 braços dá o mesmo resultado sozinha e junto de uma célula fatorial no manifesto; a conclusão global passa a m = 3 (F2, FAT:A1, FAT:A4) |
+| `SaidaFatorial` | 2 | tabela Markdown da célula fatorial; CLI com exit 0 e `parametros.fatorial` |

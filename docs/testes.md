@@ -757,3 +757,37 @@ quebra o trecho), ciclo completo, `n_fora`, comando do `poder.py` e as leituras 
 Mutantes (cada um desfeito): W_min com teto, reserva desligada, m contando trecho que começa antes do `end`, `kLag`
 sem pular a janela sem rodada e θ_out pelo maior candidato: os cinco morrem. O *smoke* com os brutos do I-3b roda a
 reserva de W' = 19 a 3 s em 0,3 s.
+
+### W-9b: ajustes da V-W9 (R-1, R-2, R-3, R-5) (2026-11-05)
+
+Parecer `docs/validacao-w9-2026-11-05.md` (`8d6ebfc`), ajustes aprovados pelo coordenador; o Senior escreve o
+complemento 3 (DT-024) com o mesmo conteúdo. Um `test:` vermelho antes de cada `fix:`.
+
+| Par | Vermelho | O quê |
+|---|---|---|
+| `10d4d96` → `bbf1061` | 62 testes: 2 falhas, 1 erro | R-1: `viavel_em` = `max(k, kLag)·W + 13,3 < 39,8` na reserva, no limite da 7.13 e no `k_max_no_limite`; R-5: `viabilidade()` sem uso saiu |
+| `e01de1f` → `690bcc6` | 67 testes: 6 erros | R-2: latência ou erro sem janela determinada → θ_in = 2,0, θ_out = 1, m e `T_cooldown` derivados; `valores_b40_parte2.carga` com o espelho dos guardas do Java (`GUARDAS_JAVA`) |
+| `0f0c7c9` → `05ca007` | 67 testes: 1 falha | R-3: trecho do m que atravessa o `end` cortado no `end`; `trechos_cortados_no_end` |
+| `6786244` (test) | — | o teste que lê os guardas no código Java é pulado quando `analysis/` roda fora da árvore (o *harness* de mutações copia só `analysis/`); no repositório ele roda |
+
+| Comando (ponta `6786244`) | Resultado |
+|---|---|
+| `python3 -I -m unittest discover -s analysis -p "test_calibracao_s3.py"` | **PASS**: 67, 65 OK e 2 pulados (paridade) |
+| `python3 -E -P -m unittest discover -s analysis -p "test_calibracao_s3.py"` | **PASS**: 67 OK |
+
+Testes editados: `test_reserva_w` (kLag = 1 vai a W = 13, não 26; W = 14 inviável), `test_klag_puro` (W = 14 sem
+kLag que caiba), `test_viabilidade` trocado por `test_viavel_em`, `test_reserva_de_w_aplicada` (θ_lat_in e θ_err_in
+"sem cobertura", m e `T_cooldown` derivados no lugar de nulos), `test_m_reentrada` (`NNNNHNH` com o `end` em 2 dá
+m = 3, não 2). Novos: carga dos valores do B-40 na base e na reserva sem cobertura (inclusive tipos inteiros do JSON
+gravado), `test_problemas_de_carga` (17 valores ruins recusados), `test_guardas_lidos_do_codigo_java`,
+`test_nem_sempre_sem_cobertura`. O *smoke* com os brutos do I-3b (sem célula com falha) dá `carga.carrega_no_controlador`
+falso, com os campos que faltam (m e θ_out): a conferência acusa o que não carregaria.
+
+Mutações (cada uma numa cópia de `analysis/` fora do repositório, `python3 -I`). Do validador
+(`scratchpad/vw9/mutar.py`, 18 mutações): 16 aplicáveis, 14 mortas e as 2 equivalentes do parecer vivas (7.13-b, sem
+exigir resposta do suspeito; R-c, limite com `<=`); as duas do m (7.8-a e 7.8-b) não acham mais o trecho, que a R-3
+mudou, e entram com o trecho novo no conjunto do W-9b. Do W-9b (10 mutações): `viavel_em` sem o `max`, reserva e
+limite da 7.13 com `_cabe(kLag, W)`, sem cobertura desligado, θ_out sem cobertura igual ao θ_in, carga sem a
+histerese, carga aceitando inteiro como *float*, m sem o corte no `end`, m com o trecho inteiro e m contando trecho
+que chega ao fim: as dez morrem. Antes do `6786244`, o teste dos guardas Java dava erro na cópia e matava todo
+mutante; a contagem acima é a de depois.

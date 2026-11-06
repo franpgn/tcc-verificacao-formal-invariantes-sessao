@@ -128,7 +128,7 @@ LEITURAS = [
        "conta como calma e quebra o trecho; igualdade com c e calma"),
     _l("A-4", ["7.8"], "resolvida pelo %s, secoes 1 e 3" % C1,
        "m nao usa theta_out; theta_out e lag_out sao calculados depois de m"),
-    _l("A-5", ["7.8"], "emendada pelo %s, secao 3" % C1,
+    _l("A-5", ["7.8"], "emendada pelo %s, secao 3, e pela R-3 da V-W9 (complemento 3, DT-024)" % C1,
        "m = 1 + L, L = maior trecho de janelas sem sinal alto (algumAlto do Controlador) depois do end que termina "
        "imediatamente numa janela alta, nas ASYNC F1, F2 e F4; trechos que chegam ao fim das janelas nao contam; sem "
        "nenhum, m = 1; sem janela depois do end, nao derivado. O trecho que atravessa o end e cortado no end e conta so "

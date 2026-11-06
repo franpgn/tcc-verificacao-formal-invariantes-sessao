@@ -100,8 +100,9 @@ Fora da seção 7: a seção 9 (W-9) diz "regras 7.1 a 7.17" e a tarefa diz "7.1
 2. **W pode sair grande.** No *smoke* com o I-3b local (uma execução, só `Validate` com n ≥ 1000), λ₅ deu 5,4 eventos/s
    e W = 19 s; com W = 19 s, o limite da 7.13 só aceita `kLag` = 1. A vazão da VM com 5 execuções define isso; se λ₅
    ficar abaixo de ~10/s (W ≥ 10 s), `kLag` ≤ 2.
-3. **A-3 muda os valores do B-40 parte 2.** Pela leitura literal, θ_out ≈ θ_in e `lag_out` ≈ `lag_in` (sem
-   histerese). `valores_b40_parte2` usa a literal; a alternativa está em `dados.alternativa_menor_valor`.
+3. **A-3 (superado).** A leitura literal (θ_out ≈ θ_in, sem histerese) saiu: o complemento 1 §2 fixou o menor valor,
+   que é o `valor` de θ_out e `lag_out` desde `a3c34d8`, e `valores_b40_parte2` o usa (seção 8). O campo
+   `alternativa_menor_valor` não existe mais.
 
 ## 7. Pontos que precisam de validação
 
@@ -132,3 +133,23 @@ mutantes das regras novas morrem (`docs/testes.md`).
    `n_lat`. θ_lat_in sai então nulo ("nenhuma janela válida"), e m e T_cooldown, que dependem dele, também. O complemento
    manda declarar a perda de cobertura, mas não diz o que fazer com θ_lat_in quando ela é total. O script declara
    "não derivado", sem preencher valor.
+
+## 9. W-9b: ajustes da V-W9 (R-1, R-2, R-3, R-5)
+
+Parecer `docs/validacao-w9-2026-11-05.md` (`8d6ebfc`); ajustes aprovados pelo coordenador, com o complemento 3
+(DT-024) em redação pelo Senior. Commits: `10d4d96`/`bbf1061` (R-1 e R-5), `e01de1f`/`690bcc6` (R-2), `0f0c7c9`/`05ca007`
+(R-3) e `6786244` (teste dos guardas Java pulado fora da árvore). Testes: `python3 -I` **PASS** (67: 65 OK, 2
+pulados); `python3 -E -P` **PASS** (67 OK). Detalhe em `docs/testes.md`.
+
+- **R-1.** `viavel_em(kLag, W)` = `max(k, kLag)·W + 13,3 < 39,8`, com k = 2. Vale na reserva de W, no
+  `dentro_do_limite` da 7.13 e no `k_max_no_limite`. Com `kLag` = 1, W ≤ 13 s.
+- **R-2.** Sem nenhuma janela determinada nas ASYNC sem falha no W final, θ_in = 2,0 e θ_out = 1 (`dados.sem_cobertura`),
+  e m e `T_cooldown` derivam. Vale para latência e erro. O valor 2,0 é escolha minha (qualquer valor acima de 1 dá o
+  mesmo controlador); se o complemento 3 fixar outro, é uma constante (`THETA_SEM_COBERTURA`). O caso "há janelas
+  determinadas, mas nenhum par seguido" continua "não derivado" (não é cobertura nula). Isto substitui a leitura do
+  §8, item 2.
+- **Carga no controlador.** `valores_b40_parte2.carga` diz se os valores carregam e, se não, por quê, pelo espelho dos
+  guardas de `ParametrosControlador.java:69-94/:174-190/:211`, `ParametrosPolitica.java:59/:145` e
+  `ParametrosDefasagem.java:57-63/:110/:118` (`GUARDAS_JAVA`); um teste procura cada trecho no código Java.
+- **R-3.** O trecho do m que atravessa o `end` é cortado no `end`; `trechos_cortados_no_end` vai ao JSON.
+- **R-5.** O §6, item 3, foi atualizado, e `viabilidade()` saiu do código.

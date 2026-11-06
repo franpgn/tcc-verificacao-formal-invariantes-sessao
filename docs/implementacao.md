@@ -127,6 +127,13 @@ braços. Relatório: `docs/relatorio-w9-2026-11-05.md`.
   trecho máximo sem sinal alto (`algumAlto`) que começa em ou depois do `end` e termina numa janela alta (não usa
   θ_out). θ_out e `lag_out` = o **menor** valor sem trecho intermediário maior que m. As leituras A-1 a A-17 vão no JSON
   com a situação de cada uma no complemento (`leituras`).
+- **W-9b (ajustes da V-W9, `8d6ebfc`, aprovados pelo coordenador; complemento 3, DT-024, em redação).** R-1: viável
+  em W' = `max(k, kLag)·W' + 13,3 < 39,8` com k = 2 (`viavel_em`, na reserva de W e no limite da 7.13; o P1 só age em
+  CONSERVADOR). R-2: latência ou erro sem nenhuma janela determinada nas ASYNC sem falha no W final fica "sem
+  cobertura", com θ_in = 2,0 (acima de 1, inalcançável) e θ_out = 1, e m e `T_cooldown` derivam; os valores do B-40
+  parte 2 trazem `carga`, a conferência contra os guardas de carga do `ParametrosControlador`, `ParametrosPolitica` e
+  `ParametrosDefasagem` (`GUARDAS_JAVA`, cujo texto um teste procura no código Java). R-3: o trecho do m que atravessa
+  o `end` é cortado ali. R-5: `viabilidade()` sem uso saiu.
 - **7.18** calcula q̂ por célula de teste com Clopper-Pearson (bissecção exata sobre a binomial) e grava as taxas e o
   comando do `poder.py` (`python -E -P`, `--semente 20261105 --n-sim 10000 --m-celulas 2 --blocos 12`), que não roda
   em `-I` (A-13).

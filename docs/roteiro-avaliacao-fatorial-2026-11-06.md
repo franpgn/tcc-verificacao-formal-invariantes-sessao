@@ -549,10 +549,12 @@ rede). O vigia do 4.5 continua. Duração: 16 × ~395 s ≈ 1,8 h.
 ## 6. Reposições (depois de `FIM-extra-OK`; uma vez)
 
 Bloco perdido é refeito inteiro (os quatro braços no fatorial, os dois nas descritivas), com o próximo bloco livre e
-semente nova; **teto de reposições h4 = 20** (25 % das 80 execuções, a fração do C3 §4.4; decisão do coordenador de
-06/11; o 24 da nota de `3fcd8df` vinha das 96 execuções do desenho anterior). O `repor` conta **blocos** repostos
-por h4 (a chave é o bloco fora da calibração), não execuções. Uma segunda perda do mesmo bloco reposto pede decisão do
-Gestor.
+semente nova; **teto de reposições h4 = 20 blocos** (decisão do coordenador de 06/11; 25 % das 80 execuções, a fração
+do C3 §4.4; o 24 da nota de `3fcd8df` vinha das 96 execuções do desenho anterior). **A unidade é o bloco**, como o
+`repor` conta (a chave é o bloco fora da calibração): um bloco fatorial reposto conta 1, com os seus quatro braços. O
+teto é uma parada de segurança contra um ambiente doente, não um limite de orçamento: as reposições acontecem uma vez
+só, e pela taxa de h4 esperada, de 5 a 14 % por execução, a previsão é de 5 a 9 blocos repostos, abaixo do teto. Uma
+segunda perda do mesmo bloco reposto pede decisão do Gestor.
 
 ```bash
 # VM
@@ -686,7 +688,7 @@ O que não está aqui segue a seção 9 do roteiro do B-40, trocando `av` por `f
 |---|---|---|
 | G-1 | `--ordem-seed` | **fechado:** as notas [A4] saíram em 20261106 (`3fcd8df`), a mesma data do registro; matriz `406a845c…` |
 | G-2 | Notas [A4] | **fechado** (`3fcd8df`, `e0b03ef`) |
-| G-3 | Taxa de h4a com L+ (13,8 % na recalibração) contra blocos de quatro braços | registrado na seção 8 e na nota da DT-027 (`3fcd8df`); teto h4 de 20 pela decisão do coordenador; regra de repor uma vez sem mudança |
+| G-3 | Taxa de h4a com L+ (13,8 % na recalibração) contra blocos de quatro braços | registrado na seção 8 e na nota da DT-027 (`3fcd8df`); teto h4 de 20 blocos (parada de segurança, seção 6) pela decisão do coordenador; regra de repor uma vez sem mudança |
 | G-4 | `podman-compose` 1.0.6 e o bloco `logging` | 2.6 (a) confere pelo `--dry-run` e pelo `podman inspect`; alternativas sem e com mudança da VM |
 | G-5 | Braço `a1` de teste no 2.6 (c) | troca o `sessions-async` do *cluster* recém-criado antes do GO; a i = 0 recria o *cluster* |
 | G-6 | *Jars* não reprodutíveis | o SHA é o do arquivo do 2.1, levado à VM e à entrega |

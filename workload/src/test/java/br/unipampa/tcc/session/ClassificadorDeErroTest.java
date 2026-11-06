@@ -69,6 +69,21 @@ class ClassificadorDeErroTest {
     }
 
     @Test
+    @DisplayName("P1-IC (G-4, P-A4.4): recusa do cache ignorado (CacheUnavailableException) e indisponibilidade")
+    void cacheIgnoradoEhIndisponivel() {
+        // mensagem real da sonda do A4 (runs/a4-teste/corte-sessoes-r1/sonda-isn3.tsv.gz): o servidor responde com
+        // a classe da excecao como texto, e o cliente Hot Rod 15.0.0 lanca HotRodClientException com ela
+        RuntimeException e = new HotRodClientException("org.infinispan.server.hotrod.CacheUnavailableException");
+        assertTrue(ClassificadorDeErro.indisponivel(e));
+        assertEquals(OpResult.Code.ERROR_UNAVAILABLE, ClassificadorDeErro.classificar(e).code());
+        // envolvida por outra excecao (como no entrySet), continua indisponibilidade
+        assertTrue(ClassificadorDeErro.indisponivel(new RuntimeException("falha", e)));
+        // mas uma falha de transporte que cita o nome nao promove (a regra de transporte vale para toda marca)
+        assertFalse(ClassificadorDeErro.indisponivel(new TransportException(
+                "org.infinispan.server.hotrod.CacheUnavailableException", (java.net.SocketAddress) null)));
+    }
+
+    @Test
     @DisplayName("cadeia de causas ciclica nao entra em laco")
     void causaCiclicaNaoTrava() {
         RuntimeException a = new RuntimeException("a");

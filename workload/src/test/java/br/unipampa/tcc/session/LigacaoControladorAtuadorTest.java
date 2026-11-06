@@ -150,12 +150,13 @@ class LigacaoControladorAtuadorTest {
         Cli c = cli("shadow", true);
         LigacaoControlador.Configuracao cfg = LigacaoControlador.carregar(c);
         LigacaoControlador.Pecas p = LigacaoControlador.pecasPadrao(cfg, c);
-        assertEquals("por-tipo(AC-2=rest-infinispan,AC-5=rest-infinispan)", p.atuador().nome());
+        assertEquals("por-tipo(AC-2=rest-infinispan,AC-5=rest-infinispan,AC-7=rest-ignored-caches)", p.atuador().nome());
         assertEquals("por-assinatura", p.politica().nome());
         String t = LigacaoControlador.textoDryRun(cfg);
-        assertTrue(t.contains("atuador=por-tipo(AC-2=rest-infinispan,AC-5=rest-infinispan) politica=por-assinatura"), t);
+        assertTrue(t.contains("atuador=por-tipo(AC-2=rest-infinispan,AC-5=rest-infinispan,AC-7=rest-ignored-caches) politica=por-assinatura"), t);
         assertTrue(t.contains("politica kLag=2 tetoLagMs=2000 tRebNs=60000000000 cotaAc5=1"), t);
-        // V-W2a R1 e P-42: AC-2 na pilha (2 s) + AC-5 em curso (T_cham + 15 s = 17 s) + T_cham (2 s)
+        assertTrue(t.contains("acaoP1=AC-7"), "P1-IC (G-1): a acao do P1 aparece no dry-run: " + t);
+        // V-W2a R1 e P-42: AC-2 na pilha (2 s) + AC-5 ou AC-7 em curso (T_cham + 15 s = 17 s) + T_cham (2 s)
         assertTrue(t.contains("prazo_encerramento=em_curso+pilha+T_cham pior_caso_ns=21000000000"), t);
         for (String linha : t.split("\\R")) {
             assertTrue(linha.startsWith("dry-run, "), linha);
@@ -236,7 +237,8 @@ class LigacaoControladorAtuadorTest {
         List<JsonNode> dec = LigacaoControladorTest.ler(dir.resolve("decisoes-rep-001.jsonl"));
         JsonNode meta = dec.get(0);
         assertEquals("decisoes-controlador/1.2", meta.get("esquema").asText());
-        assertEquals("por-tipo(AC-2=rest-infinispan,AC-5=rest-infinispan)", meta.get("atuador").asText());
+        assertEquals("por-tipo(AC-2=rest-infinispan,AC-5=rest-infinispan,AC-7=rest-ignored-caches)", meta.get("atuador").asText());
+        assertEquals("AC-7", meta.get("parametros_politica").get("acao_p1").asText());
         assertEquals("por-assinatura", meta.get("politica").asText());
         assertEquals(2, meta.get("parametros_politica").get("k_lag").asInt());
         assertEquals("teste", meta.get("parametros_politica").get("origem").get("tetoLagMs").asText());

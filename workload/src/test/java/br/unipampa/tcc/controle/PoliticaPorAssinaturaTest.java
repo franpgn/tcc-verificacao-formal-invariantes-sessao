@@ -26,6 +26,9 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  * trocando, nunca abaixo do teto; AC-2 nunca com vistas divergentes; reversao do AC-2 na volta do no e no
  * {@code T_reb}). Mutantes que estes testes matam: "teto T_reb esquecido", "AC-5 mandada a no sem resposta".
  * As reversoes no R4 e no encerramento sao do executor ({@link ExecutorNaoReversivelTest#r4NaoDesfazAc5()}).
+ *
+ * <p>P1-IC (06/11): desde o G-1 a acao padrao do P1 e o AC-7 ({@link PoliticaIgnorarCacheTest}); esta suite fixa
+ * {@code acaoP1 = AC-5} nos parametros e continua sendo a regressao da parada, que fica no codigo para comparacao.</p>
  */
 class PoliticaPorAssinaturaTest {
 
@@ -35,7 +38,8 @@ class PoliticaPorAssinaturaTest {
      * k = 2, teto 2000 ms, T_reb = 60 s, cota 1 (W = 5 s nos parametros padrao do nucleo), P2 habilitada: o codigo do
      * AC-2 continua testado para o uso exploratorio (D-B); o modo de avaliacao, sem P2, esta em {@link #p2Desabilitada()}.
      */
-    static final ParametrosPolitica P = new ParametrosPolitica(2, 2000, 60 * S, 1, true);
+    static final ParametrosPolitica P = new ParametrosPolitica(2, 2000, 60 * S, 1, true, java.util.Map.of(),
+            AcaoCluster.Tipo.AC_5);
 
     static Decisao dec(long fimNs, Perfil perfil) {
         Decisao.Sinais s = new Decisao.Sinais(null, null, null, false, false, false, true, 3, 0, 3, 0, 0, 0, 0, 0,
@@ -204,7 +208,8 @@ class PoliticaPorAssinaturaTest {
         for (int i = 0; i < 5; i++) {
             assertEquals("P0:cota-p1-esgotada", resumo(s.c(COMPLETA, TETO_ISN3)));
         }
-        PoliticaPorAssinatura semCota = new PoliticaPorAssinatura(new ParametrosPolitica(1, 2000, 60 * S, 0, true), CACHES);
+        PoliticaPorAssinatura semCota = new PoliticaPorAssinatura(new ParametrosPolitica(1, 2000, 60 * S, 0, true, java.util.Map.of(),
+                AcaoCluster.Tipo.AC_5), CACHES);
         assertEquals("P0:cota-p1-esgotada", resumo(semCota.planejar(dec(5 * S, Perfil.CONSERVADOR), COMPLETA,
                 TETO_ISN3, List.of())));
     }
@@ -313,7 +318,8 @@ class PoliticaPorAssinaturaTest {
     // ------------------------------------------------------------------ D-B: P2/AC-2 fora do braco B
 
     /** Parametros do modo de avaliacao (D-B): os mesmos de {@link #P}, com a P2 desabilitada. */
-    static final ParametrosPolitica AVALIACAO = new ParametrosPolitica(2, 2000, 60 * S, 1, false);
+    static final ParametrosPolitica AVALIACAO = new ParametrosPolitica(2, 2000, 60 * S, 1, false, java.util.Map.of(),
+            AcaoCluster.Tipo.AC_5);
 
     /** Uma janela de 5 s sobre a politica, mantendo as ativas como o executor manteria (como {@link Sim}). */
     static PlanoDeAcao janela(PoliticaPorAssinatura pol, List<AcaoCluster> ativas, long fim, Perfil perfil,

@@ -201,7 +201,7 @@ class LigacaoControladorDefasagemTest {
     }
 
     @Test
-    @DisplayName("ponta a ponta (shadow): no 3 cortado com vista completa -> S_lag alto com noSuspeito canonico -> P1 AC-5 previsto para ele")
+    @DisplayName("ponta a ponta (shadow): no 3 cortado com vista completa -> S_lag alto com noSuspeito canonico -> P1 AC-7 (so o cache de sessoes) previsto para ele")
     void pontaAPontaNoCortado() throws Exception {
         Cli c = cliS3(parametros(true, true, 100));
         LigacaoControlador.Configuracao cfg = LigacaoControlador.carregar(c);
@@ -253,11 +253,16 @@ class LigacaoControladorDefasagemTest {
                 .filter(n -> "P1".equals(n.get("politica").asText())).findFirst().orElseThrow();
         assertEquals("isolar-suspeito", p1.get("motivo").asText());
         assertEquals(suspeito, p1.get("no").asText(), "V-7: no do P1 = noSuspeito canonico");
-        JsonNode ac5 = dec.stream().filter(n -> "acao".equals(n.get("tipo").asText()))
-                .filter(n -> "AC-5".equals(n.get("acao").get("tipo").asText())).findFirst().orElseThrow();
-        assertEquals(suspeito, ac5.get("acao").get("alvo").asText(), "o AC-5 acha o alvo pelo rotulo canonico");
-        assertFalse(ac5.get("executada").asBoolean());
-        assertEquals("PREVISTA", ac5.get("resultado").asText());
+        // P1-IC (G-1): a acao do P1 e o AC-7 (ignorar o cache de sessoes no suspeito), nao mais a parada
+        JsonNode ac7 = dec.stream().filter(n -> "acao".equals(n.get("tipo").asText()))
+                .filter(n -> "AC-7".equals(n.get("acao").get("tipo").asText())).findFirst().orElseThrow();
+        assertEquals(suspeito, ac7.get("acao").get("alvo").asText(), "o AC-7 acha o alvo pelo rotulo canonico");
+        assertEquals("sessions-async", ac7.get("acao").get("caches").get(0).asText());
+        assertEquals(1, ac7.get("acao").get("caches").size(), "R1: um cache so");
+        assertFalse(ac7.get("executada").asBoolean());
+        assertEquals("PREVISTA", ac7.get("resultado").asText());
+        assertTrue(dec.stream().noneMatch(n -> "acao".equals(n.get("tipo").asText())
+                && "AC-5".equals(n.get("acao").get("tipo").asText())), "a parada nao e pedida");
     }
 
     @Test

@@ -264,6 +264,8 @@ class LigacaoControladorTest {
         assertTrue(transicoes.get(1).get("sinais").get("janelas_calmas").asInt() >= 2);
         assertEquals("fim", dec.get(dec.size() - 1).get("tipo").asText());
         assertEquals("fim", obs.get(obs.size() - 1).get("tipo").asText());
+        // P1-IC (G-4): contador do desconto do no sob o AC-7; em shadow nunca desconta
+        assertEquals(0, obs.get(obs.size() - 1).get("eventos_descontados_sob_acao").asLong());
         long fimAnterior = -1;
         for (JsonNode n : dec) {
             if ("decisao".equals(n.get("tipo").asText())) {

@@ -29,6 +29,7 @@ sys.path.insert(0, str(AQUI))
 import calibracao_s3 as cal  # noqa: E402
 
 SCRIPT = AQUI / "calibracao_s3.py"
+JAVA_CONTROLE = AQUI.parent / "workload" / "src" / "main" / "java" / "br" / "unipampa" / "tcc" / "controle"
 T0 = 1_800_000_000_000_000_000          # origem_ns sintetica (inicio da medicao)
 S = 1_000_000_000
 MS = 1_000_000
@@ -884,9 +885,10 @@ class Funcoes(unittest.TestCase):
             x[campo] = v
             self.assertTrue(cal.problemas_de_carga(x, 2000), "%s = %r passou" % (campo, v))
 
+    @unittest.skipUnless(JAVA_CONTROLE.is_dir(), "codigo Java fora desta arvore (copia so de analysis/)")
     def test_guardas_lidos_do_codigo_java(self):
         # cada guarda que problemas_de_carga espelha existe no codigo do controlador (se o Java mudar, isto falha)
-        raiz = AQUI.parent / "workload" / "src" / "main" / "java" / "br" / "unipampa" / "tcc" / "controle"
+        raiz = JAVA_CONTROLE
         self.assertTrue(cal.GUARDAS_JAVA)
         for arquivo, trecho in cal.GUARDAS_JAVA:
             fonte = (raiz / arquivo).read_text(encoding="utf-8")

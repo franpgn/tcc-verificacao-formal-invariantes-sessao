@@ -2,7 +2,7 @@
 #
 # run-campanha-s3.test.sh
 #
-# Testes S1..S31 do scripts/run-campanha-s3.sh (W-6, B-46; W-6c; I-1; W-10; carga S3 parametrizada), no estilo do run-rebaseline.test.sh: sem cluster, sem
+# Testes S1..S32 do scripts/run-campanha-s3.sh (W-6, B-46; W-6c; I-1; W-10; carga S3 parametrizada; D-1), no estilo do run-rebaseline.test.sh: sem cluster, sem
 # rede, sem VM, sem tc real. Shims em PATH para java, podman, podman-compose, sudo, nsenter, tc, ip, iptables, curl,
 # systemd-run, systemctl, flock, pgrep, df, sleep, date e timeout. Relogio acelerado: o shim de sleep dorme s/ESCALA de
 # verdade, o de timeout divide os prazos por ESCALA e o de date devolve T0 + (agora - T0) * ESCALA. O injetor de F1 e
@@ -30,7 +30,7 @@ REAL_SLEEP="$(command -v sleep)"
 REAL_TIMEOUT="$(command -v timeout)"
 TMP="$(mktemp -d)"
 trap '[[ -n "${CS_TESTE_MANTER:-}" ]] && echo "(CS_TESTE_MANTER: ${TMP} mantido)" || rm -rf "${TMP}"' EXIT
-SELECAO=" ${*:-S1 S2 S3 S4 S5 S6 S7 S8 S9 S10 S11 S12 S13 S14 S15 S16 S17 S18 S19 S20 S21 S22 S23 S24 S25 S26 S26h S27 S28 S29 S30 S31} "
+SELECAO=" ${*:-S1 S2 S3 S4 S5 S6 S7 S8 S9 S10 S11 S12 S13 S14 S15 S16 S17 S18 S19 S20 S21 S22 S23 S24 S25 S26 S26h S27 S28 S29 S30 S31 S32} "
 
 PASS=0
 FAIL=0
@@ -1738,6 +1738,53 @@ ok "S31b exit 0, ACEITA" "0 ACEITA" "${RC} $(json "${D}/checagem.json" 'd["vered
 ok "S31b execucao.json: carga_s3 vazio" "{}" "$(json "${D}/execucao.json" 'd["carga_s3"]')"
 ok "S31b nenhuma linha do jar com --s3-" "0" "$(grep -F ' java|-jar|' "${ST}/chamadas.log" | grep -cF -- '|--s3-')"
 contem "S31b bundle com carga_s3:-" "carga_s3:-" "$(cat "${OUT}/calibracao/bundle.sha256")"
+fi
+
+# ============================================================================= S32
+if quer S32; then
+echo "== S32: D-1 da recalibracao: s3_replay_late_max/min_sec/max_sec do --parametros so com --sonda-replay, como --s3-replay-* na linha do jar =="
+novo_caso s32
+matriz_calib "ASYNC-none:calibracao:1"
+dry32() {  # dry32 [args extras do orquestrador]: RC, OUTD e LJAR (a linha do jar no plano)
+    OUTD="$(PATH="${PATH_TESTE}" bash "${ORQ}" --dry-run --matriz "${MAT}" --matriz-sha256 "${MAT_SHA}" --fase calibracao \
+        --parametros "${PARAMS}" --parametros-sha256 "${PARAMS_SHA}" --controlador "${CTRL}" --controlador-sha256 "${CTRL_SHA}" \
+        "${REFS[@]}" --saida "${OUT}" "$@" 2>&1)"; RC=$?
+    LJAR="$(printf '%s\n' "${OUTD}" | grep -F -- ' --scenario S3 ' | head -1)"
+}
+dry32
+L0="${LJAR}"
+for campo in s3_replay_late_max=268 s3_replay_min_sec=2 s3_replay_max_sec=4; do
+    parametros "${campo}"
+    dry32
+    ok "S32 ${campo} sem --sonda-replay: recusado no dry-run (exit 4)" "4" "${RC}"
+    contem "S32 ${campo} sem --sonda-replay: motivo com o nome" "${campo%%=*}" "${OUTD}"
+    contem "S32 ${campo} sem --sonda-replay: motivo cita a opcao" "--sonda-replay" "${OUTD}"
+done
+parametros s3_replay_late_max=268
+dry32 --sonda-replay
+ok "S32 late-max com --sonda-replay: dry-run exit 0" "0" "${RC}"
+ok "S32 late-max com --sonda-replay: linha do jar" "${L0} --s3-replay-late-max 268 --s3-replay-probe --sweep" "${LJAR}"
+contem "S32 dry-run mostra o late-max na carga S3" "DRY-RUN carga S3: --s3-replay-late-max 268" "${OUTD}"
+parametros s3_users=40 s3_replay_late_max=268 s3_replay_min_sec=2 s3_replay_max_sec=4.5
+dry32 --sonda-replay
+ok "S32 carga e os tres da sonda: linha do jar na ordem do conferidor" \
+    "${L0} --s3-users 40 --s3-replay-min-sec 2 --s3-replay-max-sec 4.5 --s3-replay-late-max 268 --s3-replay-probe --sweep" "${LJAR}"
+for ruim in s3_replay_late_max=-1 s3_replay_late_max=2.5 s3_replay_min_sec=0 s3_replay_max_sec=0.5; do
+    parametros "${ruim}"
+    dry32 --sonda-replay
+    ok "S32 ${ruim} com --sonda-replay: recusado (exit 4)" "4" "${RC}"
+    contem "S32 ${ruim}: motivo com o nome" "${ruim%%=*}" "${OUTD}"
+done
+parametros s3_replay_late_max=268
+printf 'go calibracao %s\n' "${HOJE}" > "${CS_TTY_ARQUIVO}"
+rodar calibracao --sonda-replay
+D="$(exec_dir 0)"
+ok "S32 execucao com late-max e --sonda-replay: exit 0, ACEITA" "0 ACEITA" "${RC} $(json "${D}/checagem.json" 'd["veredito"]')"
+ok "S32 a carga e o pre-voo recebem --s3-replay-late-max 268" "$(grep -cF ' java|-jar|' "${ST}/chamadas.log")" \
+    "$(grep -F ' java|-jar|' "${ST}/chamadas.log" | grep -cF -- '|--rejoin-timeout-sec|30|--s3-replay-late-max|268|--s3-replay-probe|--sweep')"
+ok "S32 execucao.json: carga_s3 com o late-max" "{'s3_replay_late_max': 268}" "$(json "${D}/execucao.json" 'd["carga_s3"]')"
+contem "S32 bundle com o late-max" "carga_s3:--s3-replay-late-max 268" "$(cat "${OUT}/calibracao/bundle.sha256")"
+contem "S32 bundle com a sonda nas opcoes" "sonda_replay=sim" "$(cat "${OUT}/calibracao/bundle.sha256")"
 fi
 
 echo

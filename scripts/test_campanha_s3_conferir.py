@@ -647,7 +647,7 @@ class ParametrosCargaS3(unittest.TestCase):
         rc, _, err = self.conferir(obj)
         self.assertEqual(2, rc)
         self.assertIn("s3_users", err)
-        for nome in ("s3_replay_min_sec", "s3_foo", "s3_client_mode"):
+        for nome in ("s3_foo", "s3_client_mode"):
             with self.subTest(nome=nome):
                 rc, _, err = self.conferir(self.com(parametros_validos(), **{nome: 1}))
                 self.assertEqual(2, rc)
@@ -657,6 +657,91 @@ class ParametrosCargaS3(unittest.TestCase):
         v = cc.conferir_parametros(self.com(parametros_v2(), **self.CARGA), 21)
         self.assertEqual(30, v["s3_users"])
         self.assertEqual(0.9, v["s3_logout_prob"])
+
+
+class ParametrosSondaReplay(unittest.TestCase):
+    """D-1 do roteiro da recalibracao (DT-026 secao 8): s3_replay_late_max, s3_replay_min_sec e s3_replay_max_sec sao
+    opcionais, na forma dos s3_* da carga (valor e origem obrigatoria), com a faixa de S3Parametros.validar, e so valem
+    com a sonda de replay (--sonda-replay do orquestrador, que o repassa ao conferidor). Sem ela, o campo presente e
+    recusado com motivo claro, para nao fingir que valeu (o programa so le os --s3-replay-* com --s3-replay-probe)."""
+
+    def conferir(self, obj, sonda=True):
+        with tempfile.TemporaryDirectory() as d:
+            extra = ("--sonda-replay",) if sonda else ()
+            return rodar("parametros", *EXTRA, *extra, "--arquivo", str(escrever(d, "p.json", obj)))
+
+    com = staticmethod(ParametrosCargaS3.com)
+
+    def test_um_campo_por_opcao_replay_com_valor_do_programa(self):
+        fonte = (AQUI.parent / "workload" / "src" / "main" / "java" / "br" / "unipampa" / "tcc" / "session"
+                 / "S3Parametros.java").read_text(encoding="utf-8")
+        import re
+        opcoes = re.findall(r'names = "--(s3-replay-[a-z-]+)"', fonte)
+        # --s3-replay-probe e a chave da sonda (sem valor): fica com o --sonda-replay do orquestrador
+        esperado = {o.replace("-", "_") for o in opcoes if o != "s3-replay-probe"}
+        self.assertEqual({"s3_replay_min_sec", "s3_replay_max_sec", "s3_replay_late_max"}, esperado)
+        self.assertEqual(esperado, set(cc.PARAMETROS_SONDA))
+        self.assertFalse(set(cc.PARAMETROS_SONDA) & set(cc.PARAMETROS_CARGA))
+
+    def test_sem_sonda_recusado_com_motivo(self):
+        for nome, x in (("s3_replay_late_max", 268), ("s3_replay_min_sec", 2), ("s3_replay_max_sec", 4)):
+            with self.subTest(nome=nome):
+                rc, out, err = self.conferir(self.com(parametros_validos(), **{nome: x}), sonda=False)
+                self.assertEqual(2, rc, out)
+                self.assertIn(nome, err)
+                self.assertIn("--sonda-replay", err)
+                self.assertNotIn("desconhecidos", err)
+
+    def test_com_sonda_impressos_depois_da_carga(self):
+        for obj in (parametros_validos(), parametros_v2()):
+            with self.subTest(esquema=obj["esquema"]):
+                rc, out, err = self.conferir(self.com(obj, s3_users=40, s3_replay_late_max=268,
+                                                      s3_replay_min_sec=2, s3_replay_max_sec=4.5))
+                self.assertEqual(0, rc, err)
+                linhas = out.strip().split("\n")
+                s3 = [l for l in linhas if l.startswith("s3_")]
+                self.assertEqual(["s3_users\t40", "s3_replay_min_sec\t2", "s3_replay_max_sec\t4.5",
+                                  "s3_replay_late_max\t268"], s3)
+
+    def test_com_sonda_sem_campos_saida_de_antes(self):
+        rc, out, err = self.conferir(parametros_validos())
+        self.assertEqual(0, rc, err)
+        rc0, out0, err0 = self.conferir(parametros_validos(), sonda=False)
+        self.assertEqual((0, out0), (rc, out))
+
+    def test_faixas_e_tipos(self):
+        bons = [{"s3_replay_late_max": 0}, {"s3_replay_late_max": 268}, {"s3_replay_min_sec": 0.5},
+                {"s3_replay_min_sec": 2, "s3_replay_max_sec": 2}, {"s3_replay_max_sec": 1},
+                {"s3_replay_min_sec": 3}]
+        for c in bons:
+            with self.subTest(c=c):
+                rc, _, err = self.conferir(self.com(parametros_validos(), **c))
+                self.assertEqual(0, rc, err)
+        ruins = [({"s3_replay_late_max": -1}, "s3_replay_late_max"), ({"s3_replay_late_max": 268.0}, "s3_replay_late_max"),
+                 ({"s3_replay_late_max": "268"}, "s3_replay_late_max"), ({"s3_replay_late_max": True}, "s3_replay_late_max"),
+                 ({"s3_replay_min_sec": 0}, "s3_replay_min_sec"), ({"s3_replay_min_sec": -1}, "s3_replay_min_sec"),
+                 ({"s3_replay_max_sec": 0}, "s3_replay_max_sec"), ({"s3_replay_min_sec": float("nan")}, "s3_replay_min_sec"),
+                 # coerencia com o padrao do programa para o ausente (min 1 s, max 3 s)
+                 ({"s3_replay_min_sec": 4}, "s3_replay_max_sec"), ({"s3_replay_max_sec": 0.5}, "s3_replay_max_sec"),
+                 ({"s3_replay_min_sec": 3, "s3_replay_max_sec": 2}, "s3_replay_max_sec")]
+        for c, termo in ruins:
+            with self.subTest(c=c):
+                rc, _, err = self.conferir(self.com(parametros_validos(), **c))
+                self.assertEqual(2, rc, "%r aceito" % (c,))
+                self.assertIn(termo, err)
+
+    def test_sem_origem(self):
+        obj = self.com(parametros_validos(), s3_replay_late_max=268)
+        obj["parametros"]["s3_replay_late_max"]["origem"] = ""
+        rc, _, err = self.conferir(obj)
+        self.assertEqual(2, rc)
+        self.assertIn("s3_replay_late_max", err)
+
+    def test_funcao(self):
+        obj = self.com(parametros_validos(), s3_replay_late_max=268)
+        self.assertEqual(268, cc.conferir_parametros(obj, 21, sonda_replay=True)["s3_replay_late_max"])
+        with self.assertRaises(cc.ErroUso):
+            cc.conferir_parametros(obj, 21)
 
 
 if __name__ == "__main__":

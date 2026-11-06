@@ -1208,6 +1208,26 @@ W-6 são P-47..P-55 aqui. As mensagens de commit da branch ficam com a numeraç�
 Na integração, P-51..P-53 do W-6b deslocaram como os demais números do W-6 (seção 6 da V-W6, +2): são os P-53..P-55
 acima.
 
+## 2026-11-05 — Integração do W-6 em `feature/controlador-integracao`
+
+Merge `49baddc` (W-6 e W-6b sobre a integração `944a36d`, tag `int/2026-11-05-w2b`), com a renumeração acima.
+
+### P-56 (integração; achado I-1 da V-W6) — a `meta` da trilha pode chegar ao disco depois da âncora
+
+- **Sintoma (previsto pela V-W6 §5.2, ainda não observado numa execução):** desde o W-2b a `TrilhaJsonl` grava por
+  uma *thread* com fila, e a `meta` de `decisoes-rep-001.jsonl` deixa de estar no disco quando o construtor do laço
+  volta. O orquestrador do W-6 lê a `meta` assim que vê a âncora. Com o disco lento (o caso h4), o
+  `campanha_s3_conferir.py meta` sairia com 4 (trilha ausente ou primeira linha ilegível), e todo exit diferente de 0
+  parava a fase com 6, como se fosse erro de configuração.
+- **Correção:** `cb13cd5` (test, vermelho: 4 PASS, 10 FAIL), `70996e4` (test: a contagem do `podman kill` casava
+  também a linha do shim de `sudo`) e `fdcf0ae` (fix). Com exit 4, nova leitura a cada 0,2 s até 5 s; lida, a execução
+  segue. Ainda 4: carga parada, `DESCARTADA-INFRA` com o motivo "meta da trilha ausente ou ilegivel", e a fase
+  segue. Exit 5 e 2 continuam parando a fase com 6. Nenhuma falha é disparada numa carga já parada pelo orquestrador.
+- **Teste:** S26 do `scripts/run-campanha-s3.test.sh`: a `meta` aparece 1 s depois da âncora e só depois de uma
+  leitura que saiu com 4 (ACEITA, carga viva); e a `meta` que não chega, com o F1 marcado para +3 s, antes do fim do
+  prazo (`DESCARTADA-INFRA`, sem injeção, e a execução seguinte ACEITA).
+- **Status:** `RESOLVIDO` (05/11, na integração).
+
 ## Observação de modelagem (não é defeito)
 
 Com 8 *threads* = 8 identidades fixas (`user-<tid>`), `incrementFailure`

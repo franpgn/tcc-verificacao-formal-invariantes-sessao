@@ -967,3 +967,83 @@ F4 sai com 6, quando o alvo não está `running` no fim da janela; o de `java` r
 `java-sem-sinal-<controller>` (omite a linha de fim só num braço). Na primeira rodada do S22 com 60 s de carga, o
 atraso do disparo no Git Bash (6 a 20 s virtuais) empurrou a janela da F2 para depois do religamento em duas
 sub-rodadas; com 120 s a margem é de cerca de 30 s virtuais.
+
+## Integração do W-6 e I-1 (2026-11-05)
+
+Branch `feature/controlador-integracao` (worktree `wt-ctrl-integ`), a partir de `944a36d` (tag `int/2026-11-05-w2b`).
+`merge --no-ff` de `feature/w6-orquestrador-s3` (`081e1c4`: W-6, W-6b, V-W6, adenda e V-W6b) em `49baddc`, com a
+renumeração TD-014 → TD-015 e P-45..P-53 → P-47..P-55 (tabela no commit de merge e no registro de problemas). Depois,
+o I-1 da V-W6 §5.2 (P-56) com TDD: `cb13cd5` test (vermelho), `70996e4` test, `fdcf0ae` fix. Surefire com
+`mvn -q -o -T1 clean test` em `workload/` (contado dos `TEST-*.xml`), JDK 22.0.2, Maven 3.9.16; Python 3.12.6. Sem VM.
+
+| Suíte | Comando | Resultado na ponta |
+|---|---|---|
+| Surefire | `mvn -q -o -T1 clean test` (em `workload/`) | **1142/0/0/1 em 160 classes** no merge e na ponta (1101 do W-2b + 41 do W-6; o I-1 não toca `workload/`) |
+| `run-campanha-s3.test.sh` (S1..S26) | `bash scripts/run-campanha-s3.test.sh` | 283 asserções. Rodada completa (5803 s, com suítes de outras sessões no *host*): 266 PASS, 17 FAIL, só em S5 (11) e S22 (6). S5 e S22 de novo, sozinhos: **44 PASS, 0 FAIL** (998 s). Ver abaixo |
+| `test_campanha_s3_conferir`, `_h4`, `_matriz`; `test_rebaseline_matriz` | `python3 -I -m unittest discover -s scripts -p "<nome>.py"` | 30 OK; 11 OK; 15 OK; 8 OK |
+| `analysis` | `python -E -P -m unittest discover -s analysis` | **370 OK, 1 *skip*** (67 s). Com `-I` o Python não carrega o *site* do usuário, onde estão o `numpy` e o `scipy`, e 7 módulos não importam (ambiente, como na base) |
+| `inject-crash.test.sh` | `bash scripts/inject-crash.test.sh` | 141 PASS, 0 FAIL (79 s) |
+| `inject-partition.test.sh` | idem | 125 PASS, 0 FAIL, 2 SKIP (115 s) |
+| `inject-netdegrade.test.sh` | idem | 298 PASS, 0 FAIL, 1 SKIP (605 s) |
+| `inject-jitter.test.sh` | idem | 35 PASS, 0 FAIL (10 s) |
+| `cria-caches.test.sh` | idem | 26 PASS, 0 FAIL |
+| `run-rebaseline.test.sh R7 R13 R14` (runner congelado com o `inject-crash.sh` novo) | idem | 19 PASS, 0 FAIL (356 s) |
+
+**Rodada completa sob carga.** A suíte completa rodou na ponta `fdcf0ae` das 23:28Z às 01:05Z (5803 s, contra 2373 s
+no W-6b) com duas ou três suítes do orquestrador de outras sessões rodando no mesmo *host*
+(`runs/w6-int-smoke/suite-s3-completa-sob-carga.out`). Os 17 FAIL caíram em dois casos que dependem do relógio do
+Git Bash, a fragilidade que a V-W6b registrou como R3 e R8 e que o W-6c vai tirar. No S5, a âncora foi vista 43 s
+virtuais depois do lançamento, o AC-5 do dublê parou o `isn3` antes do disparo da F2, e a guarda de *netns* parou
+a fase com 6. No S22 (f2 e f4), a carga de 120 s do dublê estourou o teto de 300 s virtuais (exit 124), que o shim
+de `timeout` converte em 15 s reais. Nenhum dos dois depende da releitura da `meta`: nos dois o dublê grava a `meta`
+antes de imprimir a âncora. Rodados de novo sozinhos, na mesma ponta (01:05Z a 01:22Z), S5 e S22 deram 44 PASS e 0
+FAIL (`runs/w6-int-smoke/s5-s22-isolado.out`). Os 14 do S26 passaram na rodada completa.
+
+**S26 (I-1).** Vermelho sobre `49baddc`: 4 PASS, 10 FAIL (`runs/w6-int-smoke/i1-s26-vermelho.out`): a fase saía com 6
+nos dois casos, com uma só leitura da `meta`. Com a correção, o primeiro S26 deu 34 PASS e 1 FAIL junto com S6 e S18
+(`runs/w6-int-smoke/i1-s6-s18-s26-depois-do-fix.out`). A falha era da asserção: `conta 'podman|kill'` casava também a
+linha do shim de `sudo` e contava o F1 de i=1 duas vezes. Ela passou a contar `' podman|kill|'`, como o S25 já fazia
+(`70996e4`). O S6 e o S18 (recusa da `meta`, exit 6) continuam verdes.
+
+| Caso | O que prende |
+|---|---|
+| S26 | o dublê de `java` grava a `meta` 1 s depois da âncora e só depois de uma leitura que saiu com 4 (um `python3` do caso anota o exit de cada `campanha_s3_conferir.py meta`); exit 0, ACEITA, primeira leitura 4 e última 0, carga viva, linha de log "meta da trilha lida na leitura N" |
+| S26n | a `meta` não chega na primeira execução (F1 com `inj_offset_s = 3`, antes do fim do prazo de 5 s): carga parada, `DESCARTADA-INFRA` com "meta da trilha ausente ou ilegivel", mais de uma leitura com 4, marcadores vazios (nenhuma falha na carga parada), um só `podman kill` (o F1 de i=1), e a fase segue (exit 0, i=1 ACEITA) |
+
+**Congelados.** SHA-256 na ponta: `run-rebaseline.sh` `d95305fe…`, `inject-netdegrade.sh` `4ebdd8a3…`,
+`inject-partition.sh` `59dd2bee…`, `inject-jitter.sh` `7e68962b…`, `cria-caches.sh` `53de0b39…`,
+`collect-resources.sh` `d1d3581b…`, `analysis/rebaseline.py` `3005f49a…`, `scripts/rebaseline_matriz.py` `3531916a…`,
+`runs/rebaseline/matriz.tsv` `8654900c…`, iguais a `944a36d`; lista do h4 (`amostrador-infra.sh`, `vigia-h4.sh`,
+`analysis/h4.py`) `e9c44819…`. O `inject-crash.sh` passa de `5b4d5719…` a `531a98a1…` (B-25.1, `--marker`, autorizado no
+W-6). O *rebaseline* continua rodando do `rb-20805b0.tar`, e nenhum *bundle* dele pode ser regerado de `int/*` (V-W6 §2).
+
+### Integração do W-6: *smoke* local de criação dos *caches* e `--dry-run` (05/11, 00:02Z a 00:12Z de 06/11)
+
+Harness em `runs/w6-int-smoke/` (no estilo do `runs/w2b-smoke/`), máquina Podman do WSL, sem VM.
+
+**Criação dos *caches*** (`scripts/smoke-caches.sh`, saída em `caches/`, 00:11:05Z a 00:12:32Z, rc 0). *Cluster*
+local `w6i` (portas 12801 a 12803), cópia do `cluster/podman-compose-sem-caches.yml` com nomes e portas próprios, o
+`cluster/infinispan-sem-caches.xml` da ponta (`a7b18f2d…`) e o `jgroups-tcp.xml`. Três nós em 16 s. Antes da
+criação, cada nó lista só os *caches* internos (`___protobuf_metadata`, `___script_cache`). O
+`scripts/cria-caches.sh` da ponta (`53de0b39…`), com os seis JSON e `--conferir` nos três nós, saiu com 0: seis `POST`
+com 200 (0,24 a 0,59 s, abaixo do aviso de 8,0 s) e dezoito leituras de volta iguais byte a byte. Uma releitura
+independente, no formato da camada 3 do orquestrador (`camada3.tsv`), deu 0 divergências em 39 itens:
+`rebalancing_enabled = true` nos três nós e, em cada nó, os seis *caches* `AVAILABLE` e com `?action=config` igual a
+`{"<nome>":<arquivo>}`. Depois da criação, cada nó lista os seis (`canario`, `canario-async`, `counters`,
+`counters-async`, `sessions`, `sessions-async`) mais os dois internos. Os SYNC voltam com `remote-timeout` 17500, os
+ASYNC sem ele, todos com `owners` 2, 64 segmentos e `DENY_READ_WRITES`. Nos *logs* dos servidores não há `ERROR`. Os
+`WARN` são `ISPN012026` (*endpoint* REST de saúde obsoleto), `ISPN000599` e os dois da subida do servidor.
+
+**`--dry-run` do orquestrador** (`dry-run/`, rc 0, 3 s). Matriz de avaliação com um bloco `ASYNC-F2` (`matriz.tsv`,
+`5ee4b770…`, gerada com `--nucleo "ASYNC-F2:teste:1" --ordem-seed 20261105 --s0 400000 --passo-semente 100 --i0 0 --b0 1`):
+i=0 braço B `active` e i=1 braço A `shadow`, os dois com a semente 400100. Parâmetros `campanha-s3/1` com os 19
+valores do pré-registro da calibração §4.1 (branch `docs/pre-registro-calibracao-s3`, `2c8b7b8`), provisórios para
+este teste. Controlador `cluster/controlador/controlador-calibracao-s3.json` (`0ff8714b…`). Referências provisórias:
+`runs/w2b-smoke/config/referencia-S3-async.json` (`05342de4…`, a do *smoke* do W-2b, cópia da do I-3b) e
+`runs/b44-2/integracao/referencia-S3-sync.json` (`ec0f812b…`, da integração do W-2a; o *smoke* do W-2b e o I-3b só
+tinham a ASYNC). As duas são conferidas (SHA-256 e perfil), mesmo com a fase só ASYNC. Saída: controlador conferido
+(`politica` presente, `p2_habilitada = false`, `defasagem`), perfis da fase `async`, duas linhas `PLANO` com
+`inject-partition.sh --minority isn3 --duration 90` a +49 s da âncora e *dead-man* de 180 s, `timeout -k 23s 1010s`,
+`--controller-reference` com a referência ASYNC nas duas, `--rejoin-timeout-sec` presente, senha mascarada e "nada
+executado (sem java, podman, sudo, tty)". O diretório `--saida` não foi criado. Comando em `dry-run/comando.out` e
+SHA-256 das entradas em `dry-run/entradas.sha256`.

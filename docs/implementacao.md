@@ -250,6 +250,15 @@ flowchart TD
 20. **Veredito do O8** (P-55): os desvios de religamento entram nos motivos com o prefixo `infra: `, que é o que o
     veredito `DESCARTADA-INFRA` procura. Antes, um nó religado pelo O8 deixava a execução ACEITA com motivos. O O8 pula
     o nó de um F1 ainda em curso na linha de fim: quem o religa é o `inject-crash.sh`, que grava o `end` (S25).
+21. **Releitura da `meta` da trilha** (P-56, achado I-1 da V-W6 §5.2; na integração, `cb13cd5` test, `70996e4` test,
+    `fdcf0ae` fix). Desde o W-2b a `TrilhaJsonl` grava por uma *thread* com fila, e a `meta` pode chegar ao disco
+    depois da âncora. Com exit 4 do `campanha_s3_conferir.py meta` (trilha ausente ou primeira linha ilegível), o
+    orquestrador lê de novo a cada `META_PERIODO_S` = 0,2 s até `META_PRAZO_S` = 5 s contados da primeira leitura.
+    Lida, a execução segue, e o log diz em que leitura a `meta` apareceu. Ainda 4: a carga é parada, a execução vira
+    `DESCARTADA-INFRA` com o motivo "meta da trilha ausente ou ilegivel" e a fase segue, porque disco lento não é
+    erro de configuração. O exit 6 da fase fica para a recusa (exit 5) e para o erro de uso (2). Numa carga que o
+    orquestrador já parou não se dispara falha (`E_PAROU` na condição do disparo): a releitura bloqueia o laço por
+    até 5 s e, sem `E_INFRA_STOP`, a falha podia sair depois da parada. Caso S26 da suíte.
 
 ### TD-014 — W-2b (P-5): caminho crítico do controlador sem disco e sem processo (2026-11-05)
 

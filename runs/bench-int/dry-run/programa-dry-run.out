@@ -1,0 +1,11 @@
+dry-run, configuracao OK: Cli{scenario=S3, duracao=300s, ops=1000000, rep=1, threads=8, seed=700000, csvDir=C:/Users/FRANCE~1/AppData/Local/Temp/claude/98c9abffb040f610/0786b06c-748d-4829-8e8b-152396a994ac/scratchpad/jdry/csv, warmupMin=30s, dryRun=true}
+dry-run, replicacao=async caches=sessions-async,counters-async
+dry-run, reset_state=on
+dry-run, mix=v2
+dry-run, controller=shadow nos_esperados=3 admin=http://127.0.0.1:11222,http://127.0.0.1:11223,http://127.0.0.1:11224
+dry-run, controller-config=cluster\controlador\controlador-calibracao-s3.json sha256=0ff8714b217a50c10b44cf7e3a992650527692662cd4e9ae33554f1946253c8a versao=provisorio-calibracao-2026-11-05 (nucleo = padrao provisorio-2026-10-22)
+dry-run, parametros wNs=5000000000 nLat=100 nErr=50 thetaLatIn=0.05 thetaLatOut=0.02 thetaErrIn=0.02 thetaErrOut=0.005 k=2 m=6 cooldownNs=30000000000 estavelNs=30000000000 holdViolNs=120000000000
+dry-run, controller-reference=runs\w2b-smoke\config\referencia-S3-async.json sha256=05342de490d817208d4c26625a4718f4969f4d02244b4b24758bdc73a2016d15 operacoes=[Block, IncrementFailure, Login, Logout, ResetFailures, Unblock, Validate]
+dry-run, atuador=por-tipo(AC-2=rest-infinispan,AC-5=rest-infinispan) politica=por-assinatura tick_ns=1000000000 sonda_periodo_ns=2000000000 prazo_chamada_ns=2000000000 prazo_encerramento=em_curso+pilha+T_cham pior_caso_ns=19000000000
+dry-run, politica kLag=2 tetoLagMs=2000 tRebNs=60000000000 cotaAc5=1 p2Habilitada=false origem={kLag=provisorio-calibracao, tetoLagMs=--hotrod-timeout-ms da campanha (2000 ms, padrao de S3Parametros), igual pela R7 do W-2a, tRebNs=state-transfer.timeout do XML (60000 ms), acima da deteccao medida de 46,8 s (local) e 46,4 s (VM), cotaAc5=desenho: uma vez por execucao (owners=2 tolera um no fora), p2Habilitada=D-B do coordenador (05/11): P2/AC-2 fora do braco B, exploratoria (P-39 em 3 de 3 e P-40 do relatorio do B-44.2)}
+dry-run, defasagem lagInMs=2000.0 lagOutMs=1000.0 passoLeituraMs=20 prazo_leitura_ms=2000 periodo_ns=5000000000 origem={lagInMs=provisorio-calibracao, lagOutMs=provisorio-calibracao, passoLeituraMs=wada_consistency_cloud_2011 secao 2 (leitores a 50 leituras por segundo)}

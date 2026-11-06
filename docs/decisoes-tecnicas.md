@@ -1033,6 +1033,16 @@ Transmitidas ao Senior pelo coordenador, sobre o parecer de conferência do text
 > efeitos; contrato `fusao`/`controller`/`bloco`/`t_fusao_ns` no `execucao.json` e PO/PL/AO/AL no manifesto, sem fusão =
 > varredura com erro; sem IC hierárquico do p99. E a decisão do coordenador sobre a I4 com a A1 (TLC `MesclarJoin`,
 > `4abd157`): a definição não muda, e a troca LOGOUT → ADMIN_BLOCK, se ocorrer, conta em V e é relatada como custo da A1.
+>
+> **Nota (2026-11-06, antes de qualquer dado): pontos [A4] fechados** (seção 8 do complemento, versão `3fcd8df`). A4-1: R1 a
+> R8 no código do P1-IC com testes (Surefire 1207/0/1), mais a guarda contínua e a `suspeita-desfeita` (V-1). A4-2: R6
+> exercitada nos *smokes* `corte-r1` e `corte-r2`; R7 como reserva, verificada no teste da A4; sem execuções extras
+> (G-3). A4-3: sem teto de tempo para a R7, regras por evento a cada janela; espera de 1 s pela lista do alvo no caminho
+> da R7 (`esperaOuvinteNs`, origem no `AtuadorIgnorarCache`: ~1,08 s medido no A4); corte assimétrico sem regra válida
+> mantém o AC-7 até o encerramento. A4-4: recusa como indisponibilidade e desconto do nó sob ação no sensor (G-4).
+> A4-5: `counters-async` fora (G-2). Risco de h4 registrado: 13,8 % de h4a na recalibração; a P-64 reduz a principal
+> fonte de escrita; reposição sem mudança (teto de 24, uma vez); reavaliação antes da metade 2 se o piloto embutido
+> mostrar taxa alta. `--ordem-seed` da matriz = 20261106.
 
 - **Desenho:** fatorial 2×2 por bloco na célula ASYNC F2 + L+ com os instrumentos da DT-026 (regra de fusão do
   `sessions-async` atual ou A1 × controlador `shadow` ou `active` com a A4), quatro braços com a mesma semente, 12

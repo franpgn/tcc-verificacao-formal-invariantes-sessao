@@ -183,3 +183,33 @@ sobre marcá-la à parte é da implementação [A4], igual nos quatro braços.
 | A4-3 | teto da R7 para corte assimétrico, com origem | idem |
 | A4-4 | marca da recusa do *cache* ignorado na carga (P-A4.4) | idem |
 | A4-5 | `counters-async` fica fora da A4 (R1; G-2 da A4) | decisão do Gestor; o desenho supõe fora |
+
+## 7. Nota (2026-11-06, antes de qualquer dado da avaliação): escolhas da análise do fatorial e a I4 com a A1
+
+Escolhas da análise aceitas na validação independente do fatorial no `comparar_bracos.py`
+(`wt-w5e/docs/validacao-w5e-2026-11-06.md`, `0583455`, seções 1, 2 e 5). Elas **completam** as seções 2 e 5 acima:
+
+1. **§2.2, perda permanente e exposição na janela usam só detecções que contam em V.** São decomposições de V. A
+   perda permanente soma a varredura (I1 REAL), o *replay* tardio e o I1 *online* com detecção em `t_fusao_ns` ou depois;
+   a exposição soma o *replay* imediato e o I1 *online* antes de `t_fusao_ns`. O ***replay* imediato depois da fusão não
+   entra em nenhuma das duas.** Sem o campo `t_fusao_ns`, as duas não são emitidas; com `t_fusao_ns = null` (a fusão não
+   veio), ficam não avaliáveis; com a varredura com erro, a perda fica não avaliável em todos os braços do bloco, e a
+   exposição, que não depende da varredura, fica.
+2. **§2.1, H_V "não avaliável" por efeito.** É a regra da DT-021 levada a cada efeito: H_V do efeito da A1 é não
+   avaliável quando os braços de referência dele (**PO e PL**) somam zero violação nos blocos usados; o da A4, quando
+   **PO e AO** somam zero. **A rastreabilidade integral de PL e AL vale nos dois efeitos**, porque os dois braços ativos
+   entram nos contrastes de ambos.
+3. **§5, contrato de campos com o orquestrador fatorial.** No `execucao.json` de cada execução: `fusao` (`pnn` ou
+   `a1`), `controller` (`shadow` ou `active`), `bloco` e `t_fusao_ns` (o instante da primeira vista de fusão depois do
+   `end`, ou `null` se ela não veio até o teto). No manifesto de braços, os rótulos **PO, PL, AO e AL**. A matriz pode
+   chamar a coluna de `regra`, desde que o `execucao.json` traga `fusao`. **Sem fusão até o teto, a execução vale como
+   varredura com erro**, com o tratamento simétrico nos quatro braços do bloco (seção 5, item 3).
+4. **Sem IC hierárquico do p99 no fatorial.** A IU usa o IC *t* sobre os contrastes por bloco, como na DT-021; um IC
+   hierárquico seria só descritivo e não é calculado.
+
+**I4 com a A1 (decisão do coordenador, 06/11).** O TLC do `MesclarJoin` (`wt-tla-join/docs/relatorio-tla-mesclar-join-2026-11-06.md`,
+`4abd157`, E-J5) mostra que a fusão por ordem de conteúdo **troca o motivo de LOGOUT para ADMIN_BLOCK** quando o *logout* e
+o bloqueio da mesma sessão acontecem em lados opostos da partição (traço de 5 estados: `Logout`, `Block`, `Particionar`,
+`MesclarJoin`; a sessão segue INVALID). É consequência da própria ordem (ADMIN_BLOCK vence LOGOUT). **A definição da I4 não
+muda.** Se isso acontecer na avaliação, a I4 conta em V como qualquer outra e é **relatada como custo da A1**, à parte,
+nos descritivos da A1 (linhas `A1-FUSAO` em que a escolha trocou o motivo).

@@ -1360,6 +1360,17 @@ parâmetros que sem eles, fora o SHA-256 dos CSV na referência e o volume. A de
 (`derivacao-20261106T050404Z`) refeita com este código dá os mesmos parâmetros e valores do B-40 parte 2; as
 referências mudam só no `gerado_por`, porque o SHA-256 do `referencia_p99.py` mudou com o filtro.
 
+### W-9 com V por pares distintos (regra do W-5c) (2026-11-06)
+
+Par `5d21be3` (test, vermelho: 79 testes, 3 falhas, 1 erro) → `f799c52` (fix). O q̂ e as taxas da 7.18 saem de
+`analysis/apuracao_v.py`, cópia literal sem numpy (extraída por `ast.get_source_segment`) das 13 funções e 26 constantes
+de apuração de V do `comparar_bracos.py` do W-5c em `bc9cfdd` (com a W-5d). Testes: `python3 -I` **PASS** (79: 76 OK, 3
+pulados); `python3 -E -P` **PASS** (79: 78 OK, 1 pulado: a identidade de fonte, que só roda quando o `comparar_bracos`
+desta árvore tiver a apuração do W-5c). Conferência única contra o `comparar_bracos` do `wt-w5c` (`bc9cfdd`, `-E -P`):
+fonte das 13 funções e valor das 26 constantes iguais; pares, linhas e taxa iguais em três execuções com sonda,
+varredura e linhas repetidas. A derivação oficial da calibração refeita dá o mesmo q̂ (0/5 e 0/5), as mesmas taxas e os
+mesmos valores do B-40.
+
 ## Carga S3 parametrizada no orquestrador (2026-11-06)
 
 Na integração (06/11, depois do W-9), o TD-017 desta branch virou TD-018 (o W-9 entrou antes com o TD-017).

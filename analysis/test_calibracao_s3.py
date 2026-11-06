@@ -77,7 +77,8 @@ def parametros_campanha(d, **mud):
 def escrever_execucao(base, i, celula, *, veredito="ACEITA", braco="A", dur=100, ops=("Login", "Validate"),
                       lentas=None, erros=None, lacunas=None, top_anomala=(), morto=None, lag_teto=None,
                       atrasos=None, violacoes=(), marcadores=None, conv=("convergiu", 10.0), t_pre_ms=2000,
-                      t_pos_s=13.0, previstas=0, extra_bytes=0, nome_dir=None, replay=False):
+                      t_pos_s=13.0, previstas=0, extra_bytes=0, nome_dir=None, replay=False, varredura=None,
+                      varredura_erro=False):
     """Grava uma execucao sintetica e devolve o diretorio.
 
     Eventos: a cada 100 ms, uma operacao de cada nome de `ops` (latencia 1 ms; 10/s por operacao) e um Logout a
@@ -89,6 +90,8 @@ def escrever_execucao(base, i, celula, *, veredito="ACEITA", braco="A", dur=100,
     no no teto de 2000 ms}. violacoes = [(t_s, invariante, classificacao[, origem])]; com origem em alguma, o CSV
     ganha a coluna origem (W-10). replay: eventos ReplayValidate da sonda do W-10 (contrato CSV v2 §7) a cada 200 ms,
     lentos (50 ms), com VALID/INVALID/NOT_FOUND/ERROR_TRANSPORT, mais um replay tardio depois do fim da carga.
+    O quinto item de uma violacao e a chave (padrao u-1). varredura = [(invariante, chave, classificacao, detalhe)]
+    grava o varredura-rep-001.csv (VarreduraFinal.escreverAchados); varredura_erro grava o .erro.txt dela.
     """
     lentas, erros, lacunas = dict(lentas or {}), dict(erros or {}), dict(lacunas or {})
     lag_teto, atrasos = dict(lag_teto or {}), dict(atrasos or {})
@@ -203,9 +206,17 @@ def escrever_execucao(base, i, celula, *, veredito="ACEITA", braco="A", dur=100,
     for v in violacoes:
         ts, inv, cl = v[:3]
         tn = T0 + int(round(ts * S))
-        vl.append('%s,%s,u-1,"mensagem, com virgula",%s,%s' % (iso(tn), inv, fase_de(tn), cl)
+        vl.append('%s,%s,%s,"mensagem, com virgula",%s,%s' % (iso(tn), inv, v[4] if len(v) > 4 else "u-1",
+                                                               fase_de(tn), cl)
                   + ("," + (v[3] if len(v) > 3 else "") if com_origem else ""))
     (d / "violacoes-rep-001.csv").write_text("\n".join(vl) + "\n", encoding="utf-8")
+
+    if varredura is not None:
+        (d / "varredura-rep-001.csv").write_text(
+            "invariante,chave,classificacao,detalhe\n" + "".join("%s,%s,%s,%s\n" % x for x in varredura),
+            encoding="utf-8")
+    if varredura_erro:
+        (d / "varredura-rep-001.erro.txt").write_text("falha na varredura\n", encoding="utf-8")
 
     # ---- s3-acoes-rep-001.csv (contrato S3 v2): uma acao a cada 250 ms
     s3 = ["t_ns,ator,operacao,alvo,resultado,tentativas,falha_percebida,nota,t_fim_ns,espera_portao_ns"]
@@ -800,6 +811,67 @@ class SondaReplay(unittest.TestCase):
         self.assertAlmostEqual(60.0, r["parametros"]["T_hold_viol_s"]["valor"])
 
 
+class VPorPares(unittest.TestCase):
+    """7.18 pela regra de V do W-5c (comparar_bracos.apurar_violacoes_execucao, feature/w5c-v-com-sonda, bc9cfdd):
+    pares distintos (chave, classe) por execucao, somando auditor online, sonda (origem = sonda) e varredura REAL."""
+
+    def derivar(self, mud):
+        with tempfile.TemporaryDirectory() as tmp:
+            base = Path(tmp) / "c"
+            base.mkdir()
+            montar_campanha(base, mud)
+            return cal.derivar(base, parametros_campanha(tmp))["parametros"]
+
+    @staticmethod
+    def por_dir(P, cel):
+        return {e["dir"]: e for e in P["q_hat"]["valor"][cel]["execucoes"]}
+
+    def test_q_hat_e_taxa_por_par_distinto(self):
+        # f2a: I1 de u-1 tres vezes (uma pela sonda), I4 e I2 REAL de u-1, e a varredura com I1 REAL de u-1 de novo:
+        # 7 linhas, 3 pares (I1, I4, I2_REAL de u-1); taxa = 3 x 1000 / 320 acoes
+        viol = [(30.0, "I1", ""), (31.0, "I1", ""), (32.0, "I1", "", "sonda"), (30.5, "I4", "", ""),
+                (57.0, "I2", "REAL", ""), (90.0, "I2_JANELA_CASCATA", "", "")]
+        P = self.derivar({"f2a": dict(violacoes=viol, varredura=[("I1", "u-1", "REAL", "confirmada (LOGOUT)")])})
+        x = self.por_dir(P, "ASYNC-F2")["exec-0007-ASYNC-F2-A"]
+        self.assertEqual(3, x["violacoes"])
+        self.assertEqual(6, x["linhas"])
+        self.assertAlmostEqual(3 * 1000 / 320, x["taxa_violacoes_por_1000"])
+        self.assertEqual("presente", x["varredura"])
+        self.assertIn("pares distintos", P["q_hat"]["dados"]["regra_v"])
+
+    def test_chave_diferente_e_outro_par(self):
+        viol = [(30.0, "I1", "", "", "u-1"), (31.0, "I1", "", "", "u-2")]
+        P = self.derivar({"f2a": dict(violacoes=viol)})
+        self.assertEqual(2, self.por_dir(P, "ASYNC-F2")["exec-0007-ASYNC-F2-A"]["violacoes"])
+
+    def test_varredura_real_conta_no_q_hat(self):
+        # F4 sem nenhuma linha no CSV do auditor e uma I1 REAL na varredura (sem Logout da sid no CSV de eventos:
+        # conta sem filtro de fase): q-chapeu 1/1, e nao 0/1 como na contagem por linha
+        P = self.derivar({"f4": dict(varredura=[("I1", "s-9", "REAL", "confirmada (LOGOUT)"),
+                                                ("I1", "s-8", "INCERTA", "x")])})
+        q = P["q_hat"]["valor"]["ASYNC-F4"]
+        self.assertEqual((1, 1), (q["com_violacao"], q["n"]))
+        self.assertEqual(1, self.por_dir(P, "ASYNC-F4")["exec-0010-ASYNC-F4-A"]["varredura_fora_de_v"])
+
+    def test_varredura_com_erro_fica_fora_do_q_hat(self):
+        P = self.derivar({"f2b": dict(varredura_erro=True)})
+        q = P["q_hat"]["valor"]["ASYNC-F2"]
+        self.assertEqual(1, q["n"])                    # so a f2a entra
+        x = self.por_dir(P, "ASYNC-F2")["exec-0008-ASYNC-F2-A"]
+        self.assertIsNone(x["taxa_violacoes_por_1000"])
+        self.assertIn("varredura", x["motivo"])
+        self.assertNotIn(None, P["curva_de_poder"]["valor"]["taxas_a"]["ASYNC-F2"])
+        self.assertEqual(1, len(P["curva_de_poder"]["valor"]["taxas_a"]["ASYNC-F2"]))
+
+    def test_apuracao_v_sem_numpy(self):
+        # a copia da apuracao roda em python3 -I: nada de numpy nem scipy no modulo
+        import apuracao_v
+        fonte = Path(apuracao_v.__file__).read_text(encoding="utf-8")
+        self.assertNotIn("import numpy", fonte)
+        self.assertNotIn("scipy", fonte)
+        self.assertTrue(callable(apuracao_v.apurar_violacoes_execucao))
+
+
 class Funcoes(unittest.TestCase):
     """Funcoes puras de cada regra, com as bordas."""
 
@@ -1119,6 +1191,18 @@ class Paridade(unittest.TestCase):
             for nome in ("f1a", "f2a", "sf2", "f4"):
                 out, _ = cb.desfechos_execucao(dirs[nome], 1, ("durante", "recuperacao"), 191 * S)
                 self.assertAlmostEqual(out["delta_conv_s"]["y"], dc[dirs[nome].name])
+
+    def test_apuracao_v_igual_a_do_comparar_bracos(self):
+        # depois da integracao com o W-5c: o codigo-fonte de cada funcao copiada e o mesmo, e o q-chapeu bate
+        import inspect
+        import apuracao_v
+        import comparar_bracos as cb
+        if not hasattr(cb, "apurar_violacoes_execucao"):
+            self.skipTest("comparar_bracos desta arvore ainda sem a apuracao do W-5c")
+        for nome in apuracao_v.COPIADAS:
+            self.assertEqual(inspect.getsource(getattr(cb, nome)), inspect.getsource(getattr(apuracao_v, nome)), nome)
+        for nome in apuracao_v.CONSTANTES:
+            self.assertEqual(getattr(cb, nome), getattr(apuracao_v, nome), nome)
 
     def test_clopper_pearson_igual_ao_scipy(self):
         from scipy import stats

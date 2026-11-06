@@ -156,8 +156,15 @@ Decisões:
    falhas percebidas e o denominador de V) nunca tiveram a sonda. O leitor novo do `rep-NNN.csv`
    (`ler_eventos_por_chave`) lê os `ReplayValidate` só para casar a leitura e para o custo da sonda (eventos,
    imediatos, tardios, sids no tardio) e o teto do tardio (`sonda_tardia_max` do `s3-resumo`).
-7. **Varredura com erro.** Com `varredura-rep-NNN.erro.txt`, V (e a sensibilidade) ficam ausentes na execução, com
-   motivo: a contagem pré-registrada exige as três origens.
+7. **Varredura com erro (W-5d, V-W5c seção 5, aprovado pelo coordenador).** Com `varredura-rep-NNN.erro.txt`, a
+   execução isolada (`desfechos_execucao`) continua com V e a sensibilidade ausentes. No `comparar`, em toda célula,
+   o bloco em que a varredura falhou em algum braço usa nos **dois** braços os totais sem as detecções da varredura
+   (`total_pares_sem_varredura` e `total_pares_sem_forma2_sem_varredura`, com a forma do par recalculada sem elas), e
+   fica no teste: os dois braços do bloco são medidos com o mesmo instrumento, e excluir o bloco condicionaria a
+   análise a uma variável posterior ao tratamento (o AC-5 pode ter parado o nó que derrubou a varredura). O custo é
+   subestimar V nos dois braços desses blocos. `violacoes.detalhe.varredura_com_erro` traz o número de blocos (só A,
+   só B, nos dois), cada bloco com o braço da falha e os dois V de cada braço, e uma sensibilidade descritiva sem
+   esses blocos (estimativa, IC t e IC bootstrap; sem p e sem Holm; índice de semente `len(nomes) + 4`, livre).
 8. **Instrumentos iguais nos dois braços.** Na célula de teste, um bloco com sonda ou varredura em um braço e não no
    outro é recusado (exit 2; pré-registro 2.1). Nas outras células, os blocos ficam listados em
    `instrumentos_divergentes`.

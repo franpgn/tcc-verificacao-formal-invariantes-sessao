@@ -168,8 +168,9 @@ violação da sonda depois do fim observado da carga) e a varredura, pelo instan
 `Logout` `NONE` da sid; o último `Block` `NONE` da identidade no I2 e no I2-PERDIDO); sem ela no `rep-NNN.csv`, a
 detecção conta sem filtro de fase. Formas de I1: forma 1 com o `Logout` confirmado pelo nó da falha (`node=` do
 marcador e `--servers` do `execucao.json`), forma 2 com o `Logout` por outro nó e a releitura `VALID` servida pelo
-nó da falha entre `start` e `end`. `varredura-rep-NNN.erro.txt` deixa V ausente; na célula de teste, instrumentos
-diferentes entre A e B dão exit 2. Os `ReplayValidate` ficam fora de latência, vazão, taxa de erro e denominador.
+nó da falha entre `start` e `end`. Com `varredura-rep-NNN.erro.txt` em algum braço, o bloco usa V sem a varredura
+nos dois braços e fica no teste (W-5d), com uma sensibilidade descritiva sem esses blocos; na célula de teste,
+instrumentos diferentes entre A e B dão exit 2. Os `ReplayValidate` ficam fora de latência, vazão, taxa de erro e denominador.
 Detalhes: `docs/implementacao.md` (TD-017).
 
 Δ_rec: última operação **iniciada** depois do marcador `end` que terminou em anomalia (`ERROR_TRANSPORT`,

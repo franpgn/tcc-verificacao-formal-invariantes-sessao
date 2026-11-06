@@ -1259,3 +1259,17 @@ fontes: `violacoes-rep-001.csv` `119f1887…f42ef`, `varredura-rep-001.csv` `f92
 Conferência da CLI no *smoke* inteiro (fora da suíte, no *scratchpad*; A = B = a execução do W-10): 258
 `ReplayValidate` (139 imediatos na janela e 119 tardios, os números do relatório do W-10), 4 pares em 8 linhas, forma
 1 = 2, forma 2 = 2, sem a forma 2 = 2, 2 240 ações S3 nas fases `durante` e `recuperacao`.
+
+### W-5d: varredura com erro pelo tratamento simétrico (2026-11-06)
+
+Mesma branch, depois da V-W5c (`aec81b0`). TDD: `3e50735` (`test:`, 10 vermelhos; a guarda de instrumentos já
+passava, porque só prende o comportamento que não muda) e `bc9cfdd` (`feat:`).
+
+| Suíte | Resultado |
+|---|---|
+| `python -E -P -m unittest discover -s analysis` | **407 OK, 1 *skip*** (396 + 11); golden da base intacto |
+
+| Classe | Testes | O que prende |
+|---|---|---|
+| `TotaisSemVarredura` | 3 | totais sem a varredura na execução: pares por classe, pares, linhas; a forma do par recalculada sem a varredura (o par com leitura cruzada e I1 `REAL` da varredura, "outra" com ela, vira forma 2 sem ela); indeterminada sem `execucao.json` |
+| `VarreduraSimetrica` | 8 | célula de 6 blocos com erro só em A (bloco 2), só em B (3) e nos dois (4): V e `:sem_forma2` dos dois braços sem a varredura, `d_b` de cada bloco, os 6 blocos no teste, `co_principal_v` e contagens por invariante trocadas; também na célula descritiva; `varredura_com_erro` com o braço da falha e os dois V; sensibilidade sem os blocos 2 a 4 (média dos blocos 1, 5 e 6, sem p e sem Holm); célula só com os blocos sem falha igual à de antes; linha na tabela Markdown; guarda de instrumentos com `erro` = varredura pedida |

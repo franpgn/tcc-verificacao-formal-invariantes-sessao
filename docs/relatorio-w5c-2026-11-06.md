@@ -163,7 +163,8 @@ Cada item diz o que foi implementado e o que muda se o Gestor decidir diferente.
     bloco sai do teste de V com o motivo visível em `blocos_excluidos`. Há um risco: se a varredura falhar mais no
     braço B (o AC-5 parou um nó e o religamento falhou), os blocos excluídos seriam justamente os em que o
     controlador agiu. A alternativa, contar sem a varredura, subestima V no braço afetado. **Precisa de decisão do
-    Gestor.**
+    Gestor.** *Superado pelo W-5d (V-W5c, seção 5): tratamento simétrico, ver
+    `docs/relatorio-w5d-2026-11-06.md`.*
 11. **Tolerância de casamento de 1 s.** É uma tolerância de alinhamento de relógio, não um limiar estatístico. Ela fica
     duas ordens acima do desvio observado no *smoke* (7,4 ms) e casa o evento mais próximo da mesma sid. Sem leitura
     casada, a detecção não é forma 2.

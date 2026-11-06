@@ -1,6 +1,8 @@
 # W-6 (B-46): igual ao podman-compose.yml, mas cada no monta o infinispan-sem-caches.xml (nenhum cache no XML;
 # os seis caches sao criados pela REST por scripts/cria-caches.sh). ClusterSemCachesXmlTest confere que so o
 # volume do XML muda. Usado por scripts/run-campanha-s3.sh na recriacao do cluster antes de cada execucao.
+# A1 (2026-11-06): os tres nos montam o JAR da extensao do servidor (politica de fusao do sessions-async,
+# extensao-servidor/) em server/lib. Construir antes de subir: mvn -f extensao-servidor/pom.xml package.
 # Cluster Infinispan, 3 nós, para experimentação local.
 # Uso: podman-compose -f podman-compose.yml up -d
 #
@@ -31,6 +33,7 @@ services:
     volumes:
       - ./infinispan-sem-caches.xml:/opt/infinispan/server/conf/infinispan.xml:ro
       - ./jgroups-tcp.xml:/opt/infinispan/server/conf/jgroups-tcp.xml:ro
+      - ../extensao-servidor/target/tcc-extensao-servidor.jar:/opt/infinispan/server/lib/tcc-extensao-servidor.jar:ro
     ports:
       - "11222:11222"
     networks:
@@ -53,6 +56,7 @@ services:
     volumes:
       - ./infinispan-sem-caches.xml:/opt/infinispan/server/conf/infinispan.xml:ro
       - ./jgroups-tcp.xml:/opt/infinispan/server/conf/jgroups-tcp.xml:ro
+      - ../extensao-servidor/target/tcc-extensao-servidor.jar:/opt/infinispan/server/lib/tcc-extensao-servidor.jar:ro
     ports:
       - "11223:11222"
     networks:
@@ -77,6 +81,7 @@ services:
     volumes:
       - ./infinispan-sem-caches.xml:/opt/infinispan/server/conf/infinispan.xml:ro
       - ./jgroups-tcp.xml:/opt/infinispan/server/conf/jgroups-tcp.xml:ro
+      - ../extensao-servidor/target/tcc-extensao-servidor.jar:/opt/infinispan/server/lib/tcc-extensao-servidor.jar:ro
     ports:
       - "11224:11222"
     networks:

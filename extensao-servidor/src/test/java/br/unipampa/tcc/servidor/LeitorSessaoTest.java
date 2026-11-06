@@ -140,6 +140,31 @@ class LeitorSessaoTest {
                 "objeto que nao e String nao vira sid");
     }
 
+    /** {@link java.io.ObjectInputFilter.FilterInfo} de teste. */
+    private static java.io.ObjectInputFilter.FilterInfo info(Class<?> c, long array, long depth, long refs) {
+        return new java.io.ObjectInputFilter.FilterInfo() {
+            @Override public Class<?> serialClass() { return c; }
+            @Override public long arrayLength() { return array; }
+            @Override public long depth() { return depth; }
+            @Override public long references() { return refs; }
+            @Override public long streamBytes() { return 0; }
+        };
+    }
+
+    @Test
+    @DisplayName("filtro: aceita as classes da lista e o Instant do readResolve; recusa outra classe, vetor e excesso")
+    void filtro() {
+        java.io.ObjectInputFilter.Status ok = java.io.ObjectInputFilter.Status.ALLOWED;
+        java.io.ObjectInputFilter.Status nao = java.io.ObjectInputFilter.Status.REJECTED;
+        assertEquals(ok, LeitorSessao.filtrar(info(SessionState.class, -1, 1, 1)));
+        assertEquals(ok, LeitorSessao.filtrar(info(java.time.Instant.class, -1, 2, 4)));
+        assertEquals(ok, LeitorSessao.filtrar(info(null, -1, 1, 1)));
+        assertEquals(nao, LeitorSessao.filtrar(info(java.util.HashMap.class, -1, 1, 1)));
+        assertEquals(nao, LeitorSessao.filtrar(info(byte[].class, 10, 1, 1)));
+        assertEquals(nao, LeitorSessao.filtrar(info(null, -1, LeitorSessao.MAX_PROFUNDIDADE + 1, 1)));
+        assertEquals(nao, LeitorSessao.filtrar(info(null, -1, 1, LeitorSessao.MAX_REFERENCIAS + 1)));
+    }
+
     @Test
     @DisplayName("lista de classes aceitas: so SessionState, os dois enum, java.lang.Enum e java.time.Ser")
     void listaDeClasses() {

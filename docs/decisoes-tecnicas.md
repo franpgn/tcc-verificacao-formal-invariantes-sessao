@@ -1026,6 +1026,13 @@ Transmitidas ao Senior pelo coordenador, sobre o parecer de conferência do text
 > `docs/pre-registro-benchmark-refeito-complemento-1-2026-11-06.md`, versão `4fa4546`. Substitui a seção 5 da DT-026
 > (desenho da avaliação). Os pontos marcados [A4] fecham numa nota a esta entrada, antes dos dados, quando a
 > implementação da A4 for validada.
+>
+> **Nota (2026-11-06, antes de qualquer dado):** a seção 7 do complemento (versão `3a1db1d`) registra as escolhas da análise
+> do fatorial aceitas na V-W5e (`0583455`): perda permanente e exposição só com detecções que contam em V, sem o *replay*
+> imediato depois da fusão; H_V não avaliável por efeito (A1: PO e PL; A4: PO e AO), rastreabilidade de PL e AL nos dois
+> efeitos; contrato `fusao`/`controller`/`bloco`/`t_fusao_ns` no `execucao.json` e PO/PL/AO/AL no manifesto, sem fusão =
+> varredura com erro; sem IC hierárquico do p99. E a decisão do coordenador sobre a I4 com a A1 (TLC `MesclarJoin`,
+> `4abd157`): a definição não muda, e a troca LOGOUT → ADMIN_BLOCK, se ocorrer, conta em V e é relatada como custo da A1.
 
 - **Desenho:** fatorial 2×2 por bloco na célula ASYNC F2 + L+ com os instrumentos da DT-026 (regra de fusão do
   `sessions-async` atual ou A1 × controlador `shadow` ou `active` com a A4), quatro braços com a mesma semente, 12

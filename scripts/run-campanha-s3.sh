@@ -69,6 +69,10 @@
 # W-10: --sonda-replay acrescenta --s3-replay-probe --sweep a linha do jar (sonda de reuso da sessao depois do logout,
 #   docs/relatorio-w10-2026-11-06.md, e a varredura final global). Padrao desligada: sem ela a linha do jar e a de antes.
 #   Entra nas opcoes do bundle (sonda_replay=sim|nao).
+# Carga S3 parametrizada (06/11): os campos s3_* opcionais do --parametros (um por opcao --s3-* do programa, menos as
+#   --s3-replay-*; campanha_s3_conferir.py, PARAMETROS_CARGA) vao a linha do jar como --s3-<...> <valor>, depois de
+#   --rejoin-timeout-sec e na ordem da tabela; o execucao.json traz "carga_s3" ({} sem nenhum) e o bundle uma linha
+#   carga_s3:. Sem nenhum s3_*, a linha do jar e a de antes (o programa usa os proprios padroes).
 #   Acrescimos da V-W6b: o execucao.json de toda falha injetada traz o fim nominal (fim_nominal_desde_ancora_s =
 #   inj_inicio_offset_s + f*_dur_s) e a saida do injetor (injetor_saida_desde_ancora_s), porque o F4 do braco B sai no
 #   fim do ping quando o AC-5 para o alvo e o end adianta (N1); o B1 exige o marcador start da falha no no (F2, F3, F4)
@@ -297,13 +301,23 @@ fi
 
 # ------------------------------------------------------------------ parametros da campanha
 declare -A P
+CARGA_S3=()          # carga S3 parametrizada: "--s3-<...>" "<valor>" dos s3_* do --parametros, na ordem do conferidor
+CARGA_S3_JSON="{}"   # os mesmos, para o execucao.json
 ler_parametros() {
-    local rc=0 out="" k v
+    local rc=0 out="" k v j=""
     # M1 da V-W6: o teto do processo cobre tambem o T_enc, que e constante daqui
     out="$(py "${CONFERIR}" parametros --arquivo "${PARAMS}" --t-enc-pior-s "${T_ENC_PIOR_S}")" || rc=$?
     if [[ "${rc}" -ne 0 ]]; then echo "Erro: parametros da campanha recusados: ${out}" >&2; exit 4; fi
-    while IFS=$'\t' read -r k v; do [[ -n "${k}" ]] && P[${k}]="${v}"; done <<< "${out}"
+    CARGA_S3=()
+    while IFS=$'\t' read -r k v; do
+        [[ -n "${k}" ]] || continue
+        P[${k}]="${v}"
+        # o conferidor so deixa passar s3_* da tabela, com valor numerico conferido (tipo e faixa)
+        if [[ "${k}" == s3_* ]]; then CARGA_S3+=("--${k//_/-}" "${v}"); j+="${j:+, }\"${k}\": ${v}"; fi
+    done <<< "${out}"
+    CARGA_S3_JSON="{${j}}"
 }
+carga_s3_txt() { if [[ ${#CARGA_S3[@]} -eq 0 ]]; then printf -- '-'; else printf '%s' "${CARGA_S3[*]}"; fi; }
 
 # ------------------------------------------------------------------ matriz e plano
 COLS="i fase rodada posicao celula modo falha papel bloco braco controlador seed repoe"
@@ -358,6 +372,8 @@ montar_cmd() {  # montar_cmd <modo> <seed> <csv-dir> <controlador> <marcadores> 
          --controller "$4" --controller-config "${CTRL}" --controller-reference "$(ref_de "$1")"
          --controller-admin "${ADMIN}" --hotrod-timeout-ms "${P[hotrod_timeout_ms]}"
          --rejoin-timeout-sec "${P[religamento_prazo_s]}")
+    # carga S3 parametrizada: so os s3_* presentes no --parametros (sem nenhum, a linha e a de antes)
+    [[ ${#CARGA_S3[@]} -eq 0 ]] || CMD+=("${CARGA_S3[@]}")
     # W-10: sonda de replay e varredura final, so com --sonda-replay (sem ela a linha e a de antes)
     [[ "${SONDA_REPLAY}" -eq 0 ]] || CMD+=(--s3-replay-probe --sweep)
     CMD_MASC=("${CMD[@]}")
@@ -468,6 +484,11 @@ if [[ "${DRY_RUN}" -eq 1 ]]; then
     echo "DRY-RUN controlador conferido: $(tr '\t\n' '= ' <<< "${CTRL_INFO}" | sed 's/ *$//')"
     echo "DRY-RUN perfis da fase:${PERFIS% } (referencia de cada um conferida)"
     echo "DRY-RUN opcoes: ${OPCOES_PROTOCOLO//,/ }"
+    if [[ ${#CARGA_S3[@]} -eq 0 ]]; then
+        echo "DRY-RUN carga S3: padrao do programa (nenhum s3_* no --parametros)"
+    else
+        echo "DRY-RUN carga S3: $(carga_s3_txt) (tipo e faixa conferidos)"
+    fi
     imprimir_plano
     echo "DRY-RUN: nada executado (sem java, podman, sudo, tty)"
     exit 0
@@ -585,6 +606,8 @@ bundle_lista() {  # SHA-256 de tudo o que a fase usa; a retomada recusa se mudar
     done
     # W-6c: as opcoes que mudam o protocolo (swap no portao, trilha completa) tambem
     printf '%s  opcoes:%s\n' "$(printf '%s' "${OPCOES_PROTOCOLO}" | sha256sum | cut -d' ' -f1)" "${OPCOES_PROTOCOLO}"
+    # carga S3 parametrizada: as opcoes --s3-* da linha do jar ("-" sem nenhuma; o --parametros ja esta acima)
+    printf '%s  carga_s3:%s\n' "$(carga_s3_txt | sha256sum | cut -d' ' -f1)" "$(carga_s3_txt)"
 }
 BUNDLE_LISTA="$(bundle_lista)"
 BUNDLE_SHA="$(printf '%s\n' "${BUNDLE_LISTA}" | sha256sum | cut -d' ' -f1)"
@@ -792,6 +815,7 @@ cmd_txt() { local rc=0 o=""; o="$("$@" 2>&1)" || rc=$?; printf '%s' "${o}"; [[ "
     echo "parametros:"; for k in "${!P[@]}"; do echo "  ${k}=${P[${k}]}"; done | sort
     echo "constantes: K1=${K1_JANELA_S}/${K1_PERIODO_S}/${K1_TIMEOUT_S}s volta=${VOLTA_TIMEOUT_S}s recriar=${RECRIAR_TIMEOUT_S}s ancora=${ANCORA_TIMEOUT_S}s dead-man=+${DEADMAN_MARGEM_S}s ${DEADMAN_PRECISAO} T_enc_pior=${T_ENC_PIOR_S}s netem_F3=+$(ms_para_s "${NETEM_EFETIVA_MS}")s do disparo"
     echo "opcoes: ${OPCOES_PROTOCOLO}"
+    echo "carga_s3: $(carga_s3_txt)"
     echo "swap usado no pre-voo: ${SWAP_PRE:-ilegivel} kB (${MEMINFO})"
     echo "h4: unit ${H4_UNIT}, amostras ${H4_AMOSTRAS}"
     echo '```'
@@ -1044,6 +1068,7 @@ gravar_execucao() {
  "seed": ${E_SEED},
  "jar_sha256": $(json_str "${JAR_SHA}"),
  "parametros_sha256": $(json_str "${PARAMS_SHA}"),
+ "carga_s3": ${CARGA_S3_JSON},
  "controlador_sha256": $(json_str "${CTRL_SHA}"),
  "referencia_sha256": $(json_str "$(ref_sha_de "${E_MODO}")"),
  "bundle_sha256": $(json_str "${BUNDLE_SHA}"),

@@ -95,6 +95,55 @@ o ProtoStream padrão falha ao serializar e toda escrita vira
 
 ## Decisões técnicas a registrar
 
+### TD-017 — Carga S3 parametrizada no orquestrador (2026-11-06)
+
+Branch `feature/s3-carga-parametrizada`, a partir de `daa18a2`. Motivo: o *benchmark* refeito precisa mudar a carga S3
+(usuários, tempo de pensar, sessão, *logout*, admin) sem o *wrapper* `java-piloto.sh` do piloto, pelo mesmo caminho
+conferido e registrado dos outros números da campanha.
+
+**Formato.** Nos esquemas `campanha-s3/1` e `campanha-s3/2` (sem esquema novo), o bloco `parametros` aceita, **opcionais**,
+os 22 campos de `PARAMETROS_CARGA` (`scripts/campanha_s3_conferir.py`): um por opção `--s3-*` de `S3Parametros`, menos
+as `--s3-replay-*` da sonda do W-10. O nome é a opção sem `--` e com `_` no lugar de `-`. A forma é a dos outros
+números, com origem obrigatória, por exemplo `"s3_users": {"valor": 30, "origem": "pre-registro do benchmark, secao X"}`.
+
+| Campo | Opção do jar | Tipo e faixa (`S3Parametros.validar`) | Padrão do programa |
+|---|---|---|---|
+| `s3_users` | `--s3-users` | inteiro ≥ 0 | 20 |
+| `s3_limit_accounts` | `--s3-limit-accounts` | inteiro ≥ 0 | 10 |
+| `s3_think_ms` | `--s3-think-ms` | número > 0 | 1000 |
+| `s3_session_median_sec` | `--s3-session-median-sec` | número > 0 | 20 |
+| `s3_session_sigma` | `--s3-session-sigma` | número ≥ 0 | 0,6 |
+| `s3_logout_prob` | `--s3-logout-prob` | número em [0, 1] | 0,7 |
+| `s3_idle_timeout_sec` | `--s3-idle-timeout-sec` | número > 0 | 30 |
+| `s3_back_window_sec` | `--s3-back-window-sec` | número ≥ 0 | 10 |
+| `s3_back_min_sec` | `--s3-back-min-sec` | número > 0 | 1 |
+| `s3_back_max_sec` | `--s3-back-max-sec` | número > 0 e ≥ `s3_back_min_sec` | 3 |
+| `s3_visit_pause_sec` | `--s3-visit-pause-sec` | número > 0 | 5 |
+| `s3_blocked_wait_sec` | `--s3-blocked-wait-sec` | número > 0 | 10 |
+| `s3_admin_mean_sec` | `--s3-admin-mean-sec` | número > 0 | 15 |
+| `s3_admin_hold_min_sec` | `--s3-admin-hold-min-sec` | número ≥ 0 | 20 |
+| `s3_admin_hold_extra_sec` | `--s3-admin-hold-extra-sec` | número ≥ 0 | 10 |
+| `s3_admin_block_retries` | `--s3-admin-block-retries` | inteiro ≥ 0 | 1 |
+| `s3_l_spacing_ms` | `--s3-l-spacing-ms` | número > 0 | 1000 |
+| `s3_l_reset_prob` | `--s3-l-reset-prob` | número em [0, 1] | 0,5 |
+| `s3_l_support_delay_sec` | `--s3-l-support-delay-sec` | número ≥ 0 | 60 |
+| `s3_l_pause_sec` | `--s3-l-pause-sec` | número > 0 | 10 |
+| `s3_app_retries` | `--s3-app-retries` | inteiro ≥ 0 | 2 |
+| `s3_backoff_ms` | `--s3-backoff-ms` | número ≥ 0 | 500 |
+
+"Inteiro" recusa `true`/`false` e real (30.0); "número" aceita inteiro ou real finito (recusa `NaN`, `Infinity`,
+texto e booleano). Coerência, com o padrão do programa no campo ausente: `s3_users + s3_limit_accounts > 0` e
+`s3_back_max_sec >= s3_back_min_sec`. Nome `s3_*` fora da tabela é recusado como desconhecido, como antes.
+
+**Caminho.** O conferidor imprime os presentes depois dos obrigatórios, na ordem da tabela. O `run-campanha-s3.sh`
+(`ler_parametros`) guarda cada um em `P` e no vetor `CARGA_S3`, que vai à linha do jar como `--s3-<...> <valor>`, depois
+de `--rejoin-timeout-sec` e antes das opções da sonda (`--sonda-replay`). Também grava `"carga_s3"` no `execucao.json`
+(`{}` sem nenhum), uma linha `carga_s3:` no *bundle* (`-` sem nenhum; o arquivo de parâmetros já estava no *bundle*),
+`carga_s3:` no `ambiente.md` e `DRY-RUN carga S3:` no `--dry-run`. O pré-voo 4 ainda roda o `--dry-run` do programa
+com a linha completa, e o `S3Parametros.validar` confere de novo. **Sem nenhum `s3_*`, a linha do jar é a de antes**
+(S31: a linha com os campos é a sem eles mais o sufixo). Decisão: sem `campanha-s3/3`, porque os campos são opcionais
+e nenhum arquivo válido de hoje muda de sentido. Se o Gestor preferir um esquema novo, a troca fica no conferidor.
+
 ### TD-016 — W-10: sonda de reuso de sessão depois do *logout* (*replay*) na carga S3 (2026-11-06)
 
 Numeração: o W-10 entrou primeiro na integração (06/11), então fica com o TD-016. A branch do W-9

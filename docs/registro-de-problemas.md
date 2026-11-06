@@ -864,6 +864,29 @@ correspondente adicionado em `Mesclar` (`spec/SessionStore.tla`, commit `b7d8e0a
   (3) Pergunta aberta Q-3: isso é intencional no domínio?
 - **Status:** `ACEITO` (D1); registrado no catálogo `docs/catalogo-operacao-falha-invariante.md`.
 
+## 2026-11-06 — variante `MesclarJoin` (`feature/tla-mesclar-join`, base `0b6f41a`)
+
+### P-61 (número provisório; conferir na integração) — fusão das sessões pelo máximo de conteúdo tira o I1 da fusão, mas troca o motivo (I4) e não protege o bloqueio (I2Fa)
+
+- **Contexto.** Variante `MesclarJoin` (`spec/MCSessionJoin.tla`) da política de fusão A1 proposta para o *cluster*
+  (`docs/alternativas-tratamento-cluster-2026-11-06.md`): sessões fundidas pelo máximo de `<< estado, motivo, ts, identidade >>`
+  sobre todas as cópias; identidades com a fusão atual (cópia de `rf`). Relatório: `docs/relatorio-tla-mesclar-join-2026-11-06.md`.
+- **Resultado (semeado, partição, 3 réplicas, `3/5/2`).** `I1F` e `I1MJ` sem violação até o timebox (600 s, 4 workers: 20.458.469 e
+  10.149.316 distintos) e **fechadas** com 2 réplicas (`MaxCanal=2`, `MaxRelogio=3`: 79.224 distintos); o controle com o `Mesclar`
+  publicado, na mesma revisão, viola as duas em 4 estados, e a ordem invertida (`VALID > INVALID`) também (4 estados).
+  `MesclarPerdeChaveJ` (livre) sem violação; fechada com 2 réplicas (5.210.736 distintos).
+- **O que continua violado.**
+  1. `I4MJ`/`I4MpJ`, **5 estados** (`Logout(r1,s1)`, `Block(r2,u1)`, `Particionar {r1}|{r2,r3}`, `MesclarJoin`): o motivo de `s1` em
+     r1 passa de `LOGOUT` para `ADMIN_BLOCK`; a sessão segue `INVALID`. É consequência da ordem (`ADMIN_BLOCK` vence `LOGOUT`), a
+     mesma do T2 em `EntregaMensagem`. O traço de 4 estados da reversão some. `I4Fp` já era `VIOLADA-POR-CONSTRUCAO` sem falha
+     (catálogo §4.3). **No *cluster* com a A1, um logout e um bloqueio da mesma sessão em lados opostos da partição vão produzir
+     essa troca; o auditor de I4 por réplica vai acusá-la.**
+  2. `I2FaJ`, **4 estados** (`Block(r1,u1)`, `Particionar`, `MesclarJoin` com `rf` sem o `ID_BLOQUEIA`): as sessões de `u1` ficam
+     `INVALID/ADMIN_BLOCK` nas três réplicas (a junção preserva a cascata), mas a identidade volta a `OPEN` em r1. As outras duas
+     ainda recebem o `ID_BLOQUEIA` do canal; r1 não recebe a própria mensagem e fica `OPEN` até um novo `Block`. É o caso do
+     `counters-async` com `PREFERRED_NON_NULL` (decisão D-2 em aberto).
+- **Status:** `REGISTRADO`; leitura de I4 e escopo das identidades vão para validação do Gestor (relatório, seção 7).
+
 ## Observação de modelagem (não é defeito)
 
 Com 8 *threads* = 8 identidades fixas (`user-<tid>`), `incrementFailure`

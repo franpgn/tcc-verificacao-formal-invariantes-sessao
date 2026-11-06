@@ -238,6 +238,21 @@ bash scripts/inject-crash.test.sh         # 113 PASS
 semeado (`SpecSemeada`) ou o modelo livre, isolando falha (`SemFalha`/`SoQueda`/`SoParticao`). Resultados e limites em
 `docs/relatorio-b32-tlc-propriedades-2026-10-09.md`; logs brutos em `runs/tlc/prop-*/`. Requer `tla2tools.jar` (variável `TLA_TOOLS`) e Java 11+.
 
+## Variante `MesclarJoin` no TLC (2026-11-06)
+
+`spec/MCSessionJoin.tla` (fusão das sessões pelo máximo de conteúdo; modelo publicado intacto). Relatório com o desenho, as
+expectativas pré-registradas e os resultados: `docs/relatorio-tla-mesclar-join-2026-11-06.md`.
+
+```bash
+bash spec/test-mcsessionjoin.sh     # T1..T6 estruturais (T6 = SANY, se houver tla2tools.jar): 10 PASS
+spec/run-tlc-join.sh '^(c1|i1|j1)-'  # 1 worker: controle Mesclar, MesclarJoin, ordem invertida
+spec/run-tlc-join.sh '^j-'           # 4 workers, cotas do catalogo, 600 s
+spec/run-tlc-join.sh '^jr-'          # 4 workers, 2 replicas, MaxCanal=2, MaxRelogio=3 (fecham)
+```
+
+Plano em `spec/join-plano.tsv`; brutos em `runs/tlc/join-<grupo>/` (`.cfg`, `.out`, `.meta` com revisão e SHA-256 dos `.tla`,
+`resumo.tsv` com a sequência de ações do traço). O controle negativo (`OrdemFusao = "invertida"`) tem de violar `I1MJ`/`I1F`.
+
 ## Integracao local `feature/etapa-formal-integracao` (2026-10-16)
 
 Contagens medidas apos cada fusao (Git Bash PASS/FAIL/SKIP | WSL Ubuntu com `flock` real). Detalhes em `docs/integracao-etapa-formal-2026-10-16.md`.

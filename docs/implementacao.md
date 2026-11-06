@@ -95,6 +95,17 @@ o ProtoStream padrão falha ao serializar e toda escrita vira
 
 ## Decisões técnicas a registrar
 
+### TD-020 (número provisório; conferir na integração) — Variante `MesclarJoin` do modelo em módulo separado
+
+A política de fusão por ordem de conteúdo (alternativa A1 de `docs/alternativas-tratamento-cluster-2026-11-06.md`) precisa de um
+argumento formal sem mexer no modelo publicado. Adotou-se um módulo novo, `spec/MCSessionJoin.tla`, que estende `MCSession` e
+define `MesclarJoin`, `NextJoin` (os disjuntos de `Next` com `Mesclar` trocado), `SpecJoin`/`SpecSemeadaJoin` e as propriedades de
+fusão sobre a nova ação (sufixo J). Um parâmetro dentro de `SessionStore.tla` foi descartado: mudaria o modelo cujos resultados
+já estão no texto. `NextJoin` repete a lista de `Next`; o risco de as duas divergirem é coberto por `spec/test-mcsessionjoin.sh`
+(T2). Escopo da fusão: sessões pelo máximo de `<< estado, motivo, ts, identidade >>` sobre as cópias de todas as réplicas,
+escrito em todas (como a CR do Infinispan); identidades pela cópia de `rf` (fusão atual); relógio do perdedor =
+`max(próprio, rf)`. `OrdemFusao = "invertida"` é o controle negativo. Resultados em `docs/relatorio-tla-mesclar-join-2026-11-06.md`.
+
 ### TD-008 — F2 (partição de rede) por `clsact` + `u32` + `drop` bidirecional, só no nó isolado
 
 A falha F2 precisa cortar a comunicação entre subconjuntos de nós **sem** derrubar o nó isolado para o cliente (o observável principal é a minoria responder "indisponível" sob `DENY_READ_WRITES`). `netem loss 100%` na raiz foi descartado: age só na saída, descarta também as respostas Hot Rod, produz partição assimétrica e disputa a fila raiz com o `netem` de F3 (o `trap` de `inject-jitter.sh` faz `qdisc del root`). `podman network disconnect` também foi descartado (remove o nó para o cliente e muda IP/interface). Adotou-se `scripts/inject-partition.sh`: dentro do netns do nó isolado (`sudo nsenter -t <pid> -n tc`), `qdisc add dev eth0 clsact` e, para cada IP de par do lado oposto, um filtro `u32` de `ingress` (`match ip src <par>/32`) e um de `egress` (`match ip dst <par>/32`), ambos `action drop`. Os IPs vêm de `podman inspect`; o limite `2·|minoria| < |nós|` garante que o lado isolado é a minoria.

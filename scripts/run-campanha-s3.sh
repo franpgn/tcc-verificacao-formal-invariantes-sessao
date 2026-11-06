@@ -44,6 +44,32 @@
 # a ancora e o fechamento, medidos, entram com folga no pre-registro); B2 (adenda da V-W6, secao 11), uma referencia
 # de p99 por modo de replicacao (--referencia-async, --referencia-sync), escolhida pelo modo da linha da matriz,
 # conferida no pre-voo e no --dry-run, e o --dry-run do programa em cada perfil da fase.
+# W-6c (B-40 secao 4.3 e 9; pedido de 05/11):
+#   - F3 (jitter) pelo inject-jitter.sh real e sem mudanca, com os numeros do campanha-s3/2 (f3_no, f3_delay_ms,
+#     f3_jitter_ms, f3_distribuicao, f3_dur_s; no rebaseline: isn2, 20 ms, 13 ms, normal, 251 s a +49 s da ancora).
+#     O injetor nao grava marcadores: o orquestrador grava "fault=F3 node=<no> event=start|end t_epoch_ns=<n>" (o
+#     formato do F1/F2/F4) no lancamento e na saida dele. Dead-man antes do netem, como no runner do rebaseline
+#     (run-rebaseline.sh:786-790): systemd-run de f3_dur_s + 90 s com nsenter -t <PID> -n tc qdisc del dev eth0 root.
+#     Conferencia do netem na raiz do no a +2 s do lancamento (C5 do rebaseline, +51 = +49 + 2): sem netem, recusa.
+#     Exits que seguem: 0, 1 e 4 (C3/P2, os do rebaseline); 1 e 4 como recusa. B1 no F3: o AC-5 que para o no sob o
+#     netem leva o netns junto e o injetor sai com 0; a pos-checagem confere o AC-5 APLICADA no no e anota o aviso.
+#     Uma falha por execucao: F3 exclui F2 e F4 no no (o cleanup do inject-jitter.sh apaga a raiz que houver), entao
+#     o orquestrador confere a raiz do no do F3 no disparo (o K1 ja viu os tres nos), e o pre-voo, que nao sobrou
+#     netem (nem outra regra) em nenhum no. GO de rede tambem antes da primeira F3;
+#   - swap da VM (SwapTotal - SwapFree de /proc/meminfo) lido no portao de cada execucao, depois do K1, e gravado em
+#     execucao.json (swap_usado_kb_k1). Com --swap-limite-kb N e swap >= N, o cluster e recriado de novo pelo mesmo
+#     caminho (down/up, seis caches, camada 3, K1) e a execucao roda depois, com o mesmo i e a mesma semente, sem
+#     recusa; uma recriacao por portao. Se o swap continuar >= N depois dela, a fase para com 11, sem rodar a execucao
+#     (decisao do coordenador sobre o P-59: nas 4 recriacoes medidas na noite 1 de 05/11 o swap caiu para 39 a 51 MB;
+#     swap alto depois de recriar tem outra causa e nao deve contaminar dados); a retomada roda o mesmo i (DT-014).
+#     Medido na campanha de 05/11: a leitura final por replica sobe ~870 MB em 20 s com os servidores em ~6,4 GB, e a
+#     VM passa de 1 GiB de swap a cada 7 a 10 execucoes;
+#   - trilha de decisoes sem a linha fim ou com linhas_perdidas > 0 marca trilha_incompleta no execucao.json; com
+#     --exigir-trilha-completa, a execucao e DESCARTADA-INFRA (a fase segue). As duas opcoes entram no bundle.
+#   Acrescimos da V-W6b: o execucao.json de toda falha injetada traz o fim nominal (fim_nominal_desde_ancora_s =
+#   inj_inicio_offset_s + f*_dur_s) e a saida do injetor (injetor_saida_desde_ancora_s), porque o F4 do braco B sai no
+#   fim do ping quando o AC-5 para o alvo e o end adianta (N1); o B1 exige o marcador start da falha no no (F2, F3, F4)
+#   e, no F4, a linha "degradacao aplicada: alvo <no>" do injetor (R4).
 # I-1 da V-W6 (secao 5.2, integracao com o W-2b, cuja TrilhaJsonl grava por thread): a meta da trilha e relida a cada
 # 0,2 s por ate 5 s enquanto a conferencia sair com 4 (trilha ausente ou primeira linha ilegivel); se nao chegar, a
 # carga e parada e a execucao vira DESCARTADA-INFRA sem parar a fase. O exit 6 fica so para a recusa (exit 5).
@@ -57,6 +83,7 @@
 #       --saida <dir>
 #       [--jar <jar> --jar-sha256 <hex> --boot-esperado <uuid> --h4-id <id>]
 #       [--servers h:p,h:p,h:p] [--admin http://h:p,...] [--username <u>] [--password <p>] [--dry-run]
+#       [--swap-limite-kb N] [--exigir-trilha-completa]
 #   (--jar, --jar-sha256, --boot-esperado e --h4-id sao obrigatorios fora do --dry-run. A referencia de cada modo de
 #   replicacao presente na fase e obrigatoria: o programa recusa referencia de outro perfil.)
 #   A fase "reposicoes" le <saida>/reposicoes/reposicoes.tsv, escrito antes por campanha_s3_matriz.py repor.
@@ -65,12 +92,15 @@
 # JAVA (padrao java), CS_PASSWORD (senha, se --password nao for dado). So nos testes: CS_MODO_TESTE=1 com
 # CS_SHIM_DIR (marca .cs-shim; PODMAN e PODMAN_COMPOSE tem de ser shims dele), CS_TTY_ARQUIVO (no lugar de
 # /dev/tty), CS_H4_RUN (no lugar de /run/tccdiag), CS_COLETOR (no lugar de scripts/collect-resources.sh) e
-# CS_INJ_PART/CS_INJ_DEGR (duble dos injetores de F2 e F4; o F1 roda o inject-crash.sh real contra os shims).
+# CS_INJ_PART/CS_INJ_DEGR (duble dos injetores de F2 e F4; o F1 roda o inject-crash.sh real contra os shims, e o F3 o
+# inject-jitter.sh real) e CS_NETEM_EFETIVA_MS (no lugar dos 2 s da conferencia do netem). No modo de teste o
+# /proc/meminfo e o arquivo meminfo de CS_SHIM_DIR.
 #
 # Exit codes (os do runner do rebaseline):
 #   0  fase concluida ou parada por PARAR     2  uso      3  dependencia ausente     4  pre-voo recusado
 #   5  GO nao dado    6  erro de infraestrutura (braco B que nao atua, cache nao criado, residuo de rede, injetor
 #   com exit deterministico)    10 parada (K1, no sem volta, h4, disco, cluster que nao volta)
+#   11 parada de memoria (swap >= --swap-limite-kb depois da recriacao do portao; a execucao nao roda; P-59)
 # A ultima linha de <saida>/<fase>/orquestrador.log traz o exit e o motivo. Nunca apaga brutos. NAO faz git push.
 set -euo pipefail
 
@@ -84,6 +114,7 @@ CRIA_CACHES="${SCRIPT_DIR}/cria-caches.sh"
 INJ_CRASH="${SCRIPT_DIR}/inject-crash.sh"
 INJ_PART="${SCRIPT_DIR}/inject-partition.sh"
 INJ_DEGR="${SCRIPT_DIR}/inject-netdegrade.sh"
+INJ_JITTER="${SCRIPT_DIR}/inject-jitter.sh"
 COMPOSE_ARQ="${REPO_DIR}/cluster/podman-compose-sem-caches.yml"
 DIR_CACHES="${REPO_DIR}/cluster/caches"
 ARGS_ORIGINAIS=("$@")
@@ -108,7 +139,9 @@ readonly ANCORA_RE='^Warm-up ate \+([0-9]+)s; medicao a partir de \+([0-9]+)s; t
 readonly SINAL_RE='^Fim da carga: rep=([0-9]+) t_fim_carga_ns=([0-9]+) ac5_alvo=([^ ]+)$'
 readonly EXITS_F1_SEGUEM=" 0 1 4 "      # C3/P2 do Gestor (23/10), como no rebaseline: 1 e 4 sao recusa
 readonly EXITS_REDE_SEGUEM=" 0 1 4 6 "  # idem, mais 6 (a falha nao se efetivou) dos injetores de rede: recusa
-readonly EXITS_PREVISTOS=" 0 2 3 4 5 6 10 130 143 "
+readonly EXITS_F3_SEGUEM=" 0 1 4 "      # C3/P2: INJ_EXITS_SEGUEM do run-rebaseline.sh (inject-jitter.sh); 5 e outros: exit 6
+readonly NETEM_EFETIVA_APOS_S=2         # C5 do rebaseline (NETEM_EFETIVA_S = 51 = +49 + 2); B-40 4.3: sem netem, recusa
+readonly EXITS_PREVISTOS=" 0 2 3 4 5 6 10 11 130 143 "
 
 PODMAN="${PODMAN:-sudo podman}"
 export PODMAN
@@ -116,6 +149,8 @@ PODMAN_COMPOSE="${PODMAN_COMPOSE:-sudo podman-compose}"
 JAVA="${JAVA:-java}"
 read -r -a JAVA_CMD <<< "${JAVA}"
 PYTHON=python3
+MEMINFO=/proc/meminfo                   # W-6c: swap no portao (SwapTotal - SwapFree)
+NETEM_EFETIVA_MS=$(( NETEM_EFETIVA_APOS_S * 1000 ))
 COLETOR="${SCRIPT_DIR}/collect-resources.sh"
 H4_RUN=/run/tccdiag
 LOCK=/var/lock/tcc-vm.lock
@@ -124,11 +159,12 @@ LOCK=/var/lock/tcc-vm.lock
 MATRIZ=""; MATRIZ_SHA=""; FASE=""; PARAMS=""; PARAMS_SHA=""; CTRL=""; CTRL_SHA=""
 REF_ASYNC=""; REF_ASYNC_SHA=""; REF_SYNC=""; REF_SYNC_SHA=""
 JAR=""; JAR_SHA=""; SAIDA=""; BOOT_ESPERADO=""; H4_ID=""; DRY_RUN=0
+SWAP_LIMITE_KB=""; SWAP_LIMITE_DADO=0; EXIGIR_TRILHA=0
 SERVERS="127.0.0.1:11222,127.0.0.1:11223,127.0.0.1:11224"
 ADMIN="http://127.0.0.1:11222,http://127.0.0.1:11223,http://127.0.0.1:11224"
 USERNAME="admin"; PASSWORD="${CS_PASSWORD:-}"
 
-uso() { sed -n '2,60p' "${SELF}" | sed 's/^# \{0,1\}//'; }
+uso() { sed -n '2,/^set -euo pipefail$/p' "${SELF}" | sed '$d' | sed 's/^# \{0,1\}//'; }  # R7 da V-W6b
 erro_uso() { echo "Erro: $*" >&2; exit 2; }
 
 while [[ $# -gt 0 ]]; do
@@ -136,7 +172,7 @@ while [[ $# -gt 0 ]]; do
         --matriz|--matriz-sha256|--fase|--parametros|--parametros-sha256|--controlador|--controlador-sha256|\
 --referencia-async|--referencia-async-sha256|--referencia-sync|--referencia-sync-sha256|\
 --jar|--jar-sha256|--saida|--boot-esperado|--h4-id|--servers|--admin|\
---username|--password)
+--username|--password|--swap-limite-kb)
             [[ $# -ge 2 ]] || erro_uso "$1 exige valor"
             case "$1" in
                 --matriz) MATRIZ="$2" ;; --matriz-sha256) MATRIZ_SHA="$2" ;; --fase) FASE="$2" ;;
@@ -148,9 +184,11 @@ while [[ $# -gt 0 ]]; do
                 --boot-esperado) BOOT_ESPERADO="$2" ;; --h4-id) H4_ID="$2" ;;
                 --servers) SERVERS="$2" ;; --admin) ADMIN="$2" ;;
                 --username) USERNAME="$2" ;; --password) PASSWORD="$2" ;;
+                --swap-limite-kb) SWAP_LIMITE_KB="$2"; SWAP_LIMITE_DADO=1 ;;
             esac
             shift 2 ;;
         --dry-run) DRY_RUN=1; shift ;;
+        --exigir-trilha-completa) EXIGIR_TRILHA=1; shift ;;
         --referencia|--referencia-sha256)
             erro_uso "$1 deu lugar a --referencia-async/--referencia-sync: uma referencia por modo de replicacao (B2 da V-W6)" ;;
         --help|-h) uso; exit 0 ;;
@@ -174,6 +212,11 @@ for perf in async sync; do  # B2: cada referencia vem com o seu SHA-256; qual e 
 done
 [[ -n "${REF_ASYNC}${REF_SYNC}" ]] || erro_uso "--referencia-async e/ou --referencia-sync (uma por modo de replicacao da fase) e obrigatoria"
 [[ -n "${SAIDA}" ]] || erro_uso "--saida e obrigatoria"
+if [[ "${SWAP_LIMITE_DADO}" -eq 1 && ! "${SWAP_LIMITE_KB}" =~ ^[1-9][0-9]*$ ]]; then
+    erro_uso "--swap-limite-kb deve ser inteiro > 0 (kB de swap usado no portao; o pre-registro da o valor)"
+fi
+# opcoes que mudam o protocolo: entram no bundle (retomada com outras e recusada) e no ambiente.md
+OPCOES_PROTOCOLO="swap_limite_kb=${SWAP_LIMITE_KB:--},exigir_trilha_completa=$([[ "${EXIGIR_TRILHA}" -eq 1 ]] && echo sim || echo nao)"
 if [[ "${DRY_RUN}" -eq 0 ]]; then
     [[ -n "${JAR}" ]] || erro_uso "--jar e obrigatorio fora do --dry-run"
     [[ "${JAR_SHA}" =~ ^[0-9a-f]{64}$ ]] || erro_uso "--jar-sha256 deve ter 64 hexadecimais"
@@ -236,10 +279,15 @@ if [[ "${CS_MODO_TESTE:-}" == 1 ]]; then
         [[ -n "${CS_COLETOR:-}" ]] && COLETOR="${CS_COLETOR}"
         [[ -n "${CS_INJ_PART:-}" ]] && INJ_PART="${CS_INJ_PART}"
         [[ -n "${CS_INJ_DEGR:-}" ]] && INJ_DEGR="${CS_INJ_DEGR}"
+        if [[ -n "${CS_NETEM_EFETIVA_MS:-}" ]]; then
+            [[ "${CS_NETEM_EFETIVA_MS}" =~ ^[1-9][0-9]*$ ]] || { echo "Erro: CS_NETEM_EFETIVA_MS invalido" >&2; exit 4; }
+            NETEM_EFETIVA_MS="${CS_NETEM_EFETIVA_MS}"
+        fi
+        MEMINFO="${CS_SHIM_DIR}/meminfo"
         LOCK="${CS_SHIM_DIR}/tcc-vm.lock"
     fi
-elif [[ -n "${CS_TTY_ARQUIVO:-}${CS_H4_RUN:-}${CS_COLETOR:-}${CS_INJ_PART:-}${CS_INJ_DEGR:-}" ]]; then
-    echo "Erro: CS_TTY_ARQUIVO, CS_H4_RUN, CS_COLETOR, CS_INJ_PART e CS_INJ_DEGR so valem com CS_MODO_TESTE=1" >&2; exit 4
+elif [[ -n "${CS_TTY_ARQUIVO:-}${CS_H4_RUN:-}${CS_COLETOR:-}${CS_INJ_PART:-}${CS_INJ_DEGR:-}${CS_NETEM_EFETIVA_MS:-}" ]]; then
+    echo "Erro: CS_TTY_ARQUIVO, CS_H4_RUN, CS_COLETOR, CS_INJ_PART, CS_INJ_DEGR e CS_NETEM_EFETIVA_MS so valem com CS_MODO_TESTE=1" >&2; exit 4
 fi
 
 # ------------------------------------------------------------------ parametros da campanha
@@ -317,6 +365,7 @@ descrever_falha() {  # descrever_falha <falha>
         F1) echo "F1: inject-crash.sh --node ${P[f1_no]} --duration ${P[f1_dur_s]} --marker a +${P[inj_offset_s]} s da ancora; volta pela REST em ate ${VOLTA_TIMEOUT_S} s" ;;
         F2) echo "F2: inject-partition.sh --minority ${P[f2_no]} --duration ${P[f2_dur_s]} --marker a +${P[inj_offset_s]} s da ancora; dead-man $(( P[f2_dur_s] + DEADMAN_MARGEM_S )) s" ;;
         F4) echo "F4: inject-netdegrade.sh --target ${P[f4_no]} --severity ${P[f4_severidade]} --direction ${P[f4_direcao]} --duration ${P[f4_dur_s]} --marker a +${P[inj_offset_s]} s da ancora; dead-man $(( P[f4_dur_s] + DEADMAN_MARGEM_S )) s" ;;
+        F3) echo "F3: inject-jitter.sh --node ${P[f3_no]} --iface ${IFACE} --delay ${P[f3_delay_ms]}ms --jitter ${P[f3_jitter_ms]}ms --distribution ${P[f3_distribuicao]} --duration ${P[f3_dur_s]} a +${P[inj_offset_s]} s da ancora; marcadores pelo orquestrador; netem conferido a +${NETEM_EFETIVA_APOS_S} s do disparo; dead-man $(( P[f3_dur_s] + DEADMAN_MARGEM_S )) s" ;;
         *) echo "sem falha" ;;
     esac
 }
@@ -324,8 +373,10 @@ descrever_falha() {  # descrever_falha <falha>
 imprimir_plano() {
     local t0 k=0 l i cel modo falha papel bloco braco ctl seed por_exec
     t0="$(agora_ms)"
-    # pior caso por execucao: recriacao + portao K1 + teto do processo (estimativa de calendario, nao limiar)
+    # pior caso por execucao: recriacao + portao K1 + teto do processo (estimativa de calendario, nao limiar); com o
+    # --swap-limite-kb, mais uma recriacao e um K1 (W-6c)
     por_exec=$(( RECRIAR_TIMEOUT_S + K1_JANELA_S + P[exec_teto_s] ))
+    [[ -z "${SWAP_LIMITE_KB}" ]] || por_exec=$(( por_exec + RECRIAR_TIMEOUT_S + K1_JANELA_S ))
     for l in "${FILA[@]}"; do
         read -r i cel modo falha papel bloco braco ctl seed <<< "${l}"
         montar_cmd "${modo}" "${seed}" "$(dir_exec "${i}" "${cel}" "${braco}")/.scratch" "${ctl}" \
@@ -337,17 +388,23 @@ imprimir_plano() {
     echo "PLANO execucoes=${#FILA[@]} encerramento: SIGTERM no teto (${P[exec_teto_s]} s) e SIGKILL ${K_ENC} s depois (T_enc pior caso ${T_ENC_PIOR_S} s + folga ${P[encerramento_folga_s]} s) fim_no_pior_caso=$(iso_ms $(( t0 + k * por_exec * 1000 )))"
 }
 
-TEM_B=0; TEM_REDE=0; PERFIS=" "
-marcar_fila() {  # TEM_B (algum braco B na fila), TEM_REDE (alguma F2/F4) e PERFIS (modos de replicacao da fila)
+TEM_B=0; TEM_REDE=0; TEM_F3=0; PERFIS=" "
+marcar_fila() {  # TEM_B (algum braco B na fila), TEM_REDE (alguma F2/F3/F4), TEM_F3 e PERFIS (modos da fila)
     local l _i _c m f _p _b br _ct _s
-    TEM_B=0; TEM_REDE=0; PERFIS=" "
+    TEM_B=0; TEM_REDE=0; TEM_F3=0; PERFIS=" "
     for l in "${FILA[@]}"; do
         read -r _i _c m f _p _b br _ct _s <<< "${l}"
         [[ "${br}" == B ]] && TEM_B=1
-        [[ "${f}" == F2 || "${f}" == F4 ]] && TEM_REDE=1
+        [[ "${f}" == F2 || "${f}" == F3 || "${f}" == F4 ]] && TEM_REDE=1
+        [[ "${f}" == F3 ]] && TEM_F3=1
         [[ "${PERFIS}" == *" ${m} "* ]] || PERFIS+="${m} "
     done
     return 0
+}
+conferir_esquema_f3() {  # W-6c: F3 na fila exige os numeros do F3 (esquema campanha-s3/2)
+    [[ "${TEM_F3}" -eq 0 || -n "${P[f3_no]:-}" ]] && return 0
+    echo "Erro: a fila tem F3 e o --parametros nao e campanha-s3/2 (faltam f3_no, f3_delay_ms, f3_jitter_ms, f3_distribuicao e f3_dur_s; W-6c, B-40 secao 4.3)" >&2
+    exit 4
 }
 conferir_referencias() {  # B2 da V-W6: a referencia de cada perfil da fila existe, tem o SHA-256 dado e e daquele perfil
     local perf f s rc out
@@ -397,11 +454,13 @@ if [[ "${DRY_RUN}" -eq 1 ]]; then
     [[ ! -f "${ARQ_FILA}" ]] || conferir_pareamento "${ARQ_FILA}"
     # S1 da V-W6: a mesma conferencia do pre-voo, para o dry-run do pre-registro pegar o erro sem VM
     marcar_fila
+    conferir_esquema_f3
     conferir_controlador
     conferir_referencias
     echo "DRY-RUN fase=${FASE} matriz=${MATRIZ} (SHA-256 confere) parametros=${PARAMS} ($(grep -c . <<< "$(printf '%s\n' "${!P[@]}")") numeros, todos com origem) controlador=${CTRL}"
     echo "DRY-RUN controlador conferido: $(tr '\t\n' '= ' <<< "${CTRL_INFO}" | sed 's/ *$//')"
     echo "DRY-RUN perfis da fase:${PERFIS% } (referencia de cada um conferida)"
+    echo "DRY-RUN opcoes: ${OPCOES_PROTOCOLO//,/ }"
     imprimir_plano
     echo "DRY-RUN: nada executado (sem java, podman, sudo, tty)"
     exit 0
@@ -438,6 +497,14 @@ ler_boot() { cat /proc/sys/kernel/random/boot_id 2>/dev/null | tr -d '\r\n'; }
 if [[ "${CS_MODO_TESTE:-}" == 1 ]]; then ler_boot() { cat "${CS_SHIM_DIR}/boot_id" | tr -d '\r\n'; }; fi
 BOOT="$(ler_boot)"
 [[ "${BOOT}" == "${BOOT_ESPERADO}" ]] || { echo "Erro: boot_id da VM (${BOOT}) difere de --boot-esperado (${BOOT_ESPERADO})" >&2; exit 4; }
+ler_swap_kb() {  # W-6c: swap usado (SwapTotal - SwapFree, kB) de /proc/meminfo; exit 1 se ilegivel
+    awk '/^SwapTotal:/ {t = $2; a = 1} /^SwapFree:/ {f = $2; b = 1}
+         END {if (a && b && t ~ /^[0-9]+$/ && f ~ /^[0-9]+$/) print t - f; else exit 1}' "${MEMINFO}" 2> /dev/null
+}
+SWAP_PRE=""; SWAP_PRE="$(ler_swap_kb)" || SWAP_PRE=""
+if [[ -n "${SWAP_LIMITE_KB}" && -z "${SWAP_PRE}" ]]; then
+    echo "Erro: ${MEMINFO} sem SwapTotal/SwapFree legiveis, e o --swap-limite-kb exige o swap no portao (W-6c)" >&2; exit 4
+fi
 conferir_cabecalho "${MATRIZ}"
 ler_parametros
 
@@ -458,6 +525,7 @@ fi
 [[ "${#FILA[@]}" -gt 0 ]] || { echo "Erro: nenhuma execucao da fase ${FASE} em ${ARQ_FILA}" >&2; exit 4; }
 conferir_pareamento "${ARQ_FILA}"
 marcar_fila
+conferir_esquema_f3
 conferir_referencias
 
 # ------------------------------------------------------------------ pre-voo 3: controlador, h4, bundle
@@ -468,16 +536,48 @@ h4_unit_ativa() { systemctl is-active --quiet "${H4_UNIT}"; }
 h4_unit_ativa || { echo "Erro: unit ${H4_UNIT} inativa (inicie o amostrador-infra.sh antes; C3 secao 2)" >&2; exit 4; }
 [[ -s "${H4_AMOSTRAS}" ]] || { echo "Erro: ${H4_AMOSTRAS} ausente ou vazio" >&2; exit 4; }
 
+podman_campo() { ${PODMAN} inspect -f "$1" "$2" 2>/dev/null; }
+pid_de() {
+    local p="" rc=0
+    p="$(podman_campo '{{.State.Pid}}' "$1")" || rc=$?
+    [[ "${rc}" -eq 0 && "${p}" =~ ^[0-9]+$ && "${p}" != 0 ]] || return 1
+    echo "${p}"
+}
+RESIDUO=""
+residuo_rede() {  # 0 (verdade) se algum netns tem netem, clsact ou o prio do inject-netdegrade; ou iptables alem das politicas
+    local no p out rc
+    RESIDUO=""
+    for no in ${NOS}; do
+        p="$(pid_de "${no}")" || continue
+        rc=0; out="$(sudo "${NSENTER_BIN}" -t "${p}" -n "${TC_BIN}" qdisc show dev "${IFACE}" 2>&1)" || rc=$?
+        if [[ "${rc}" -ne 0 || "${out}" == *netem* || "${out}" == *clsact* || "${out}" == *"prio 1:"* ]]; then
+            RESIDUO+="${RESIDUO:+,}${no}:tc"
+        fi
+        if command -v iptables > /dev/null 2>&1; then
+            rc=0; out="$(sudo "${NSENTER_BIN}" -t "${p}" -n iptables -S 2>&1)" || rc=$?
+            if [[ "${rc}" -eq 0 ]] && grep -qv '^-P ' <<< "${out}"; then RESIDUO+="${RESIDUO:+,}${no}:iptables"; fi
+        fi
+    done
+    [[ -n "${RESIDUO}" ]]
+}
+# W-6c: nenhum no de pe com netem na raiz (F3 de uma invocacao morta) nem outra regra de rede, antes do GO
+if residuo_rede; then
+    echo "Erro: resto de rede nos nos de pe antes da fase (${RESIDUO}): netem na raiz, clsact, prio do inject-netdegrade ou iptables; confira os tres nos e os timers tcc-heal-cs-* (W-6c)" >&2
+    exit 4
+fi
+
 bundle_lista() {  # SHA-256 de tudo o que a fase usa; a retomada recusa se mudar
     local f refs=()
     [[ -z "${REF_ASYNC}" ]] || refs+=("${REF_ASYNC}")
     [[ -z "${REF_SYNC}" ]] || refs+=("${REF_SYNC}")
     for f in "${SELF}" "${CONFERIR}" "${H4S3}" "${SCRIPT_DIR}/campanha_s3_matriz.py" "${REPO_DIR}/analysis/h4.py" \
-             "${CRIA_CACHES}" "${INJ_CRASH}" "${INJ_PART}" "${INJ_DEGR}" "${COLETOR}" "${COMPOSE_ARQ}" \
+             "${CRIA_CACHES}" "${INJ_CRASH}" "${INJ_PART}" "${INJ_DEGR}" "${INJ_JITTER}" "${COLETOR}" "${COMPOSE_ARQ}" \
              "${REPO_DIR}/cluster/infinispan-sem-caches.xml" "${REPO_DIR}/cluster/jgroups-tcp.xml" \
              "${DIR_CACHES}"/*.json "${JAR}" "${MATRIZ}" "${PARAMS}" "${CTRL}" "${refs[@]}"; do
         printf '%s  %s\n' "$(sha256 "${f}")" "${f##*/}"
     done
+    # W-6c: as opcoes que mudam o protocolo (swap no portao, trilha completa) tambem
+    printf '%s  opcoes:%s\n' "$(printf '%s' "${OPCOES_PROTOCOLO}" | sha256sum | cut -d' ' -f1)" "${OPCOES_PROTOCOLO}"
 }
 BUNDLE_LISTA="$(bundle_lista)"
 BUNDLE_SHA="$(printf '%s\n' "${BUNDLE_LISTA}" | sha256sum | cut -d' ' -f1)"
@@ -502,6 +602,7 @@ done
 
 # ------------------------------------------------------------------ estado e encerramento
 WPID=""; LPID=""; INJ_PID=""; COL_PID=""; EV_FD=""; F1_ATIVA=0; REDE_ATIVA=""; DEADMAN_UNIT=""
+E_DIR=""; F3_MARCA=""; PID_ALVO=""; NETEM_ESTADO=""; NETEM_AMOSTRA_MS=0
 MOTIVO=""; FASE_CRIADA=1
 LOG_ARQ="${FASE_DIR}/orquestrador.log"
 
@@ -526,6 +627,9 @@ curar_rede() {  # curar_rede: --heal do injetor ativo e confere; 0 se nao sobra 
     case "${REDE_ATIVA}" in
         F2) bash "${INJ_PART}" --heal --minority "${P[f2_no]}" > /dev/null 2>&1 || rc=$? ;;
         F4) bash "${INJ_DEGR}" --heal > /dev/null 2>&1 || rc=$? ;;
+        F3) local p  # o inject-jitter.sh nao tem --heal: remove a raiz do no do F3, como o remover_netem do runner
+            p="$(pid_de "${P[f3_no]}")" || p=""
+            [[ -z "${p}" ]] || sudo "${NSENTER_BIN}" -t "${p}" -n "${TC_BIN}" qdisc del dev "${IFACE}" root > /dev/null 2>&1 || rc=$? ;;
         *) return 0 ;;
     esac
     residuo_rede && return 1
@@ -545,7 +649,11 @@ desarmar_deadman() {
 limpar() {
     local rc=$?
     trap - EXIT INT TERM
-    if [[ -n "${INJ_PID}" ]] && kill -0 "${INJ_PID}" 2>/dev/null; then kill -TERM "${INJ_PID}" 2>/dev/null || true; wait "${INJ_PID}" 2>/dev/null || true; fi
+    if [[ -n "${INJ_PID}" ]] && kill -0 "${INJ_PID}" 2>/dev/null; then
+        # o inject-jitter.sh dorme em primeiro plano e so trata o TERM depois do sleep: o filho vai antes (matar do runner)
+        if [[ "${REDE_ATIVA}" == F3 ]] && command -v pkill > /dev/null 2>&1; then pkill -TERM -P "${INJ_PID}" 2>/dev/null || true; fi
+        kill -TERM "${INJ_PID}" 2>/dev/null || true; wait "${INJ_PID}" 2>/dev/null || true
+    fi
     if [[ -n "${REDE_ATIVA}" ]]; then
         if curar_rede; then
             log "trap: ${REDE_ATIVA} curada; desarmando o dead-man ${DEADMAN_UNIT}"
@@ -554,6 +662,7 @@ limpar() {
             log "trap: AVISO: regra de rede continua; dead-man ${DEADMAN_UNIT} MANTIDO armado"
         fi
     fi
+    if [[ "${F3_MARCA}" == start ]]; then marcar_f3 "${E_DIR}" end; fi
     if [[ "${F1_ATIVA}" -eq 1 ]]; then
         local r2=0
         log "trap: F1 em curso; ${PODMAN} start ${P[f1_no]}"
@@ -674,7 +783,9 @@ cmd_txt() { local rc=0 o=""; o="$("$@" 2>&1)" || rc=$?; printf '%s' "${o}"; [[ "
     echo "bundle_sha256: ${BUNDLE_SHA} (lista em ${FASE}/bundle.sha256)"
     echo "controlador: ${CTRL} ${CTRL_INFO//$'\n'/ }"
     echo "parametros:"; for k in "${!P[@]}"; do echo "  ${k}=${P[${k}]}"; done | sort
-    echo "constantes: K1=${K1_JANELA_S}/${K1_PERIODO_S}/${K1_TIMEOUT_S}s volta=${VOLTA_TIMEOUT_S}s recriar=${RECRIAR_TIMEOUT_S}s ancora=${ANCORA_TIMEOUT_S}s dead-man=+${DEADMAN_MARGEM_S}s ${DEADMAN_PRECISAO} T_enc_pior=${T_ENC_PIOR_S}s"
+    echo "constantes: K1=${K1_JANELA_S}/${K1_PERIODO_S}/${K1_TIMEOUT_S}s volta=${VOLTA_TIMEOUT_S}s recriar=${RECRIAR_TIMEOUT_S}s ancora=${ANCORA_TIMEOUT_S}s dead-man=+${DEADMAN_MARGEM_S}s ${DEADMAN_PRECISAO} T_enc_pior=${T_ENC_PIOR_S}s netem_F3=+$(ms_para_s "${NETEM_EFETIVA_MS}")s do disparo"
+    echo "opcoes: ${OPCOES_PROTOCOLO}"
+    echo "swap usado no pre-voo: ${SWAP_PRE:-ilegivel} kB (${MEMINFO})"
     echo "h4: unit ${H4_UNIT}, amostras ${H4_AMOSTRAS}"
     echo '```'
     echo
@@ -737,36 +848,12 @@ rest() {  # rest <metodo> <url> <arquivo-do-corpo>: codigo HTTP em REST_COD (000
     [[ "${rc}" -eq 0 && "${REST_COD}" =~ ^[0-9]{3}$ ]] || REST_COD=000
 }
 TMPC="$(mktemp -d)"
-podman_campo() { ${PODMAN} inspect -f "$1" "$2" 2>/dev/null; }
-pid_de() {
-    local p="" rc=0
-    p="$(podman_campo '{{.State.Pid}}' "$1")" || rc=$?
-    [[ "${rc}" -eq 0 && "${p}" =~ ^[0-9]+$ && "${p}" != 0 ]] || return 1
-    echo "${p}"
-}
 guarda_netns() {  # padrao R4 do inject-netdegrade.sh (copiado do runner)
     local p ns_no="" ns_host="" rc=0
     p="$(pid_de "$1")" || { log "PID de $1 nao resolvido"; return 1; }
     ns_no="$(sudo readlink "/proc/${p}/ns/net" 2>/dev/null)" || rc=$?
     ns_host="$(sudo readlink /proc/1/ns/net 2>/dev/null)" || rc=$?
     [[ "${rc}" -eq 0 && -n "${ns_no}" && -n "${ns_host}" && "${ns_no}" != "${ns_host}" ]]
-}
-RESIDUO=""
-residuo_rede() {  # 0 (verdade) se algum netns tem netem, clsact ou o prio do inject-netdegrade; ou iptables alem das politicas
-    local no p out rc
-    RESIDUO=""
-    for no in ${NOS}; do
-        p="$(pid_de "${no}")" || continue
-        rc=0; out="$(sudo "${NSENTER_BIN}" -t "${p}" -n "${TC_BIN}" qdisc show dev "${IFACE}" 2>&1)" || rc=$?
-        if [[ "${rc}" -ne 0 || "${out}" == *netem* || "${out}" == *clsact* || "${out}" == *"prio 1:"* ]]; then
-            RESIDUO+="${RESIDUO:+,}${no}:tc"
-        fi
-        if command -v iptables > /dev/null 2>&1; then
-            rc=0; out="$(sudo "${NSENTER_BIN}" -t "${p}" -n iptables -S 2>&1)" || rc=$?
-            if [[ "${rc}" -eq 0 ]] && grep -qv '^-P ' <<< "${out}"; then RESIDUO+="${RESIDUO:+,}${no}:iptables"; fi
-        fi
-    done
-    [[ -n "${RESIDUO}" ]]
 }
 AM_OK=0; AM_JSON=""
 amostra_saude() {  # AM_OK=1 se os 3 endpoints dizem HEALTHY com 3 nos
@@ -887,6 +974,51 @@ recriar_cluster() {  # recriar_cluster <dir>: down/up com o XML sem caches, 3 HE
     E_STARTED_PRE="$(started_at)"
 }
 
+preparar_cluster() {  # preparar_cluster <dir> <passo>: recriacao, camada 3 antes e portao K1 (o caminho de toda execucao)
+    local d="$1"
+    gravar_progresso "${E_I}" "$2"
+    log "exec i=${E_I} ${E_CEL} braco=${E_BRACO} bloco=${E_BLOCO} seed=${E_SEED}: recriando o cluster"
+    recriar_cluster "${d}"
+    if ! camada3 pre; then
+        finalizar 6 "infra: camada 3 antes de i=${E_I}: ${CAM3_DIVERGE}"
+    fi
+    E_CAM3_PRE="${CAM3_JSON}"
+    gravar_progresso "${E_I}" "k1"
+    log "exec i=${E_I}: portao K1"
+    portao_k1 "${d}" || finalizar 10 "parada (e): portao K1 nao passou em ${K1_TIMEOUT_S} s antes de i=${E_I}"
+}
+
+portao_swap() {  # W-6c: swap usado no portao; com --swap-limite-kb e swap >= limite, recria uma vez e passa o K1 de novo
+    local d="$1" kb="" f
+    kb="$(ler_swap_kb)" || kb=""
+    E_SWAP_LEIT+="${E_SWAP_LEIT:+,}${kb:-null}"
+    log "exec i=${E_I}: swap usado no portao: ${kb:-ilegivel} kB${SWAP_LIMITE_KB:+ (limite ${SWAP_LIMITE_KB} kB)}"
+    if [[ -n "${kb}" && -n "${SWAP_LIMITE_KB}" && "${kb}" -ge "${SWAP_LIMITE_KB}" ]]; then
+        log "exec i=${E_I}: swap ${kb} kB >= ${SWAP_LIMITE_KB} kB no portao; recriando o cluster antes da execucao (mesmo i, mesma semente; nao e recusa)"
+        mkdir -p "${d}/antes-recriacao-swap"
+        for f in compose-down.log compose-up.log caches.tsv caches.err portao.json; do
+            if [[ -e "${d}/${f}" ]]; then mv -f "${d}/${f}" "${d}/antes-recriacao-swap/"; fi
+        done
+        E_SWAP_RECRIADO=true
+        preparar_cluster "${d}" "recriacao-swap"
+        kb="$(ler_swap_kb)" || kb=""
+        E_SWAP_LEIT+=",${kb:-null}"
+        log "exec i=${E_I}: swap usado depois da recriacao: ${kb:-ilegivel} kB"
+        if [[ -n "${kb}" && "${kb}" -ge "${SWAP_LIMITE_KB}" ]]; then
+            # P-59 (decisao do coordenador, 05/11): swap alto depois de recriar tem outra causa; para a fase sem rodar
+            # a execucao. Sem checagem.json: na retomada o diretorio vira .abortada-<UTC> e o mesmo i roda (DT-014)
+            E_SWAP_KB="${kb}"
+            E_SWAP_PARADA="parada swap: swap continua ${kb} kB >= ${SWAP_LIMITE_KB} kB depois da recriacao, antes de i=${E_I}; a execucao nao roda (P-59: nas recriacoes medidas o swap caiu para 39 a 51 MB)"
+            montar_cmd "${E_MODO}" "${E_SEED}" "${d}/.scratch" "${E_CTL}" "${d}/marcadores.txt"
+            gravar_execucao "${d}"
+            log "exec i=${E_I}: ${E_SWAP_PARADA}"
+            finalizar 11 "${E_SWAP_PARADA}"
+        fi
+    fi
+    [[ -n "${kb}" ]] || E_AVISOS+=("swap ilegivel em ${MEMINFO} no portao")
+    E_SWAP_KB="${kb}"
+}
+
 # ------------------------------------------------------------------ uma execucao
 gravar_execucao() {
     local d="$1" cmdj="" a
@@ -924,6 +1056,8 @@ gravar_execucao() {
  "disparo_ms": $(json_ou_null "${E_DISP_MS}"),
  "inj_inicio_offset_s": $(json_ou_null "${E_OFFSET}"),
  "injetor_exit": $(json_ou_null "${E_IEXIT}"),
+ "fim_nominal_desde_ancora_s": $(json_ou_null "$(fim_nominal_s)"),
+ "injetor_saida_desde_ancora_s": $(json_ou_null "$([[ -n "${E_INJ_SAIDA_MS}" && -n "${E_ANC_MS}" ]] && ms_para_s $(( E_INJ_SAIDA_MS - E_ANC_MS )))"),
  "injetor_alvo_parado": $(json_str_ou_null "${E_INJ_PARADO}"),
  "deadman": ${E_DEADMAN:-null},
  "rede_pos": ${E_REDE_POS:-null},
@@ -933,9 +1067,18 @@ gravar_execucao() {
  "religamento": ${E_RELIG_JSON:-null},
  "fim_utc": $(json_str_ou_null "${E_FIM_UTC}"),
  "workload_exit": $(json_ou_null "${E_WEXIT}"),
- "teto_estourado": ${E_TETO:-false}
+ "teto_estourado": ${E_TETO:-false},
+ "swap_usado_kb_k1": $(json_ou_null "${E_SWAP_KB}"),
+ "swap_portao": {"limite_kb": $(json_ou_null "${SWAP_LIMITE_KB}"), "leituras_kb": [${E_SWAP_LEIT}], "recriado": ${E_SWAP_RECRIADO}, "parada": $(json_str_ou_null "${E_SWAP_PARADA}"), "fonte": $(json_str "${MEMINFO}")},
+ "trilha_incompleta": ${E_TRILHA_INC:-null},
+ "trilha": ${E_TRILHA_JSON:-null}
 }
 EOF
+}
+
+fim_nominal_s() {  # N1 da V-W6b: inj_inicio_offset_s + f*_dur_s (o fim da falha pelo plano, nao pelo end do injetor)
+    [[ -n "${E_DISP_MS}" && -n "${E_ANC_MS}" && "${E_FALHA}" != none ]] || return 0
+    ms_para_s $(( E_DISP_MS - E_ANC_MS + P[${E_FALHA,,}_dur_s] * 1000 ))
 }
 
 gravar_checagem() {  # gravar_checagem <dir> <veredito> : motivos em E_MOTIVOS, avisos em E_AVISOS
@@ -991,14 +1134,73 @@ disparar_injecao() {
                     --duration "${dur}" --marker "${d}/marcadores.txt" > "${d}/injetor.log" 2>&1 &
             fi
             INJ_PID=$! ;;
+        F3) disparar_f3 "${d}" || return 0 ;;
     esac
     INJ_ESTADO=rodando
     log "exec i=${E_I}: ${E_FALHA} disparada a +${E_OFFSET} s da ancora"
 }
 
+marcar_f3() {  # marcar_f3 <dir> <start|end>: o inject-jitter.sh nao grava marcadores; o orquestrador grava, no formato deles
+    local rc=0
+    printf 'fault=F3 node=%s event=%s t_epoch_ns=%s\n' "${P[f3_no]}" "$2" "$(date +%s%N)" >> "$1/marcadores.txt" 2>/dev/null || rc=$?
+    F3_MARCA="$2"
+    if [[ "${rc}" -ne 0 ]]; then
+        E_MOTIVOS+=("infra: marcador F3 event=$2 nao gravado em $1/marcadores.txt (rc=${rc}); sem ele as fases da execucao ficam erradas")
+        log "AVISO: marcador F3 event=$2 nao gravado (rc=${rc})"
+    fi
+}
+
+disparar_f3() {  # disparar_f3 <dir>: dead-man antes do netem (run-rebaseline.sh:786-790), start, inject-jitter.sh real
+    local d="$1" rc=0 no="${P[f3_no]}" dur="${P[f3_dur_s]}" unit="tcc-heal-cs-${E_I}" out=""
+    if ! PID_ALVO="$(pid_de "${no}")"; then
+        E_INFRA_STOP=6; E_MOTIVOS+=("infra: PID de ${no} nao resolvido antes da F3"); parar_carga; INJ_ESTADO=feita; return 1
+    fi
+    # uma falha por execucao: o cleanup do inject-jitter.sh apaga a raiz que houver no no, inclusive a de F2/F4; so o
+    # no do F3 importa aqui (o K1 ja viu os tres), e uma leitura so atrasa o disparo menos que o residuo_rede inteiro
+    out="$(sudo "${NSENTER_BIN}" -t "${PID_ALVO}" -n "${TC_BIN}" qdisc show dev "${IFACE}" 2>&1)" || rc=$?
+    if [[ "${rc}" -ne 0 || "${out}" == *netem* || "${out}" == *clsact* || "${out}" == *"prio 1:"* ]]; then
+        E_INFRA_STOP=6
+        E_MOTIVOS+=("infra: raiz de ${no} ocupada ou ilegivel antes da F3 (tc rc=${rc}: ${out//$'\n'/; }); F3 nao aplicada (F3 exclui F2 e F4 no mesmo no)")
+        parar_carga; INJ_ESTADO=feita; return 1
+    fi
+    rc=0
+    sudo systemd-run --quiet --unit="${unit}" --on-active="$(( dur + DEADMAN_MARGEM_S ))s" \
+        --timer-property="${DEADMAN_PRECISAO}" "${NSENTER_BIN}" -t "${PID_ALVO}" -n "${TC_BIN}" qdisc del dev "${IFACE}" root \
+        > "${d}/deadman.log" 2>&1 || rc=$?
+    if [[ "${rc}" -ne 0 ]]; then
+        E_DEADMAN="{\"unit\":$(json_str "${unit}"),\"armado\":false,\"rc\":${rc}}"
+        E_INFRA_STOP=6; E_MOTIVOS+=("infra: dead-man ${unit} nao armou (systemd-run rc=${rc}); netem nao aplicado")
+        parar_carga; INJ_ESTADO=feita; return 1
+    fi
+    DEADMAN_UNIT="${unit}"; REDE_ATIVA=F3
+    E_DEADMAN="{\"unit\":$(json_str "${unit}"),\"armado\":true,\"on_active_s\":$(( dur + DEADMAN_MARGEM_S )),\"precisao\":$(json_str "${DEADMAN_PRECISAO}"),\"pid\":${PID_ALVO}}"
+    # o disparo do F3 e o lancamento do injetor (E_DISP_MS do runner do rebaseline)
+    E_DISP_MS="$(agora_ms)"; E_OFFSET="$(ms_para_s $(( E_DISP_MS - E_ANC_MS )))"
+    marcar_f3 "${d}" start
+    bash "${INJ_JITTER}" --node "${no}" --iface "${IFACE}" --delay "${P[f3_delay_ms]}ms" --jitter "${P[f3_jitter_ms]}ms" \
+        --distribution "${P[f3_distribuicao]}" --duration "${dur}" > "${d}/injetor.log" 2>&1 &
+    INJ_PID=$!
+    NETEM_AMOSTRA_MS=$(( E_DISP_MS + NETEM_EFETIVA_MS )); NETEM_ESTADO=pendente
+    return 0
+}
+
+amostra_netem_f3() {  # B-40 4.3 (C5 do rebaseline): netem na raiz do no do F3 a +2 s do disparo; sem netem, recusa
+    local rc=0 out="" netem=false agora re='qdisc netem [0-9a-f]+: root'
+    out="$(sudo "${NSENTER_BIN}" -t "${PID_ALVO}" -n "${TC_BIN}" qdisc show dev "${IFACE}" 2>&1)" || rc=$?
+    agora="$(agora_ms)"
+    if [[ "${rc}" -eq 0 && "${out}" =~ ${re} ]]; then netem=true; fi
+    NETEM_ESTADO=feita
+    E_FALHA_EF="{\"netem_efetiva\":{\"apos_disparo_s\":$(( NETEM_EFETIVA_MS / 1000 )),\"desde_disparo_s\":$(ms_para_s $(( agora - E_DISP_MS ))),\"offset_s\":$(ms_para_s $(( agora - E_ANC_MS ))),\"netem\":${netem},\"rc\":${rc},\"saida\":$(json_str "${out}")}}"
+    if [[ "${netem}" != true ]]; then
+        E_RECUSAS+=("F3 sem netem em ${P[f3_no]} a +$(( NETEM_EFETIVA_MS / 1000 )) s do disparo (tc rc=${rc}; recusa, B-40 secao 4.3)")
+        log "exec i=${E_I}: F3 sem netem na raiz de ${P[f3_no]} a +$(ms_para_s $(( agora - E_DISP_MS ))) s do disparo"
+    fi
+}
+
 concluir_injecao() {
     local rc=0 seguem
     wait "${INJ_PID}" || rc=$?
+    E_INJ_SAIDA_MS="$(agora_ms)"   # N1 da V-W6b: no laco, a saida e vista na volta seguinte (passo de POLL_S)
     E_IEXIT="${rc}"; INJ_PID=""; INJ_ESTADO=feita
     log "exec i=${E_I}: injetor saiu com ${rc}"
     if [[ "${E_FALHA}" == F1 ]]; then
@@ -1008,6 +1210,12 @@ concluir_injecao() {
         VOLTA_ESTADO=esperando; VOLTA_T0="$(agora_ms)"; VOLTA_PROX=0
     else
         seguem="${EXITS_REDE_SEGUEM}"
+        if [[ "${E_FALHA}" == F3 ]]; then
+            seguem="${EXITS_F3_SEGUEM}"
+            marcar_f3 "${E_DIR}" end
+            # o injetor saiu antes da conferencia de +2 s: o netem ja saiu com ele
+            if [[ "${NETEM_ESTADO}" == pendente ]]; then amostra_netem_f3; fi
+        fi
         local residual=false extra=false
         if residuo_rede; then
             extra=true
@@ -1025,9 +1233,19 @@ concluir_injecao() {
         fi
     fi
     if [[ "${seguem}" != *" ${E_IEXIT} "* ]]; then
-        E_INFRA_STOP=6; E_MOTIVOS+=("infra: injetor ${E_FALHA} saiu com ${E_IEXIT} (so${seguem}seguem)")
-        parar_carga
-    elif [[ "${E_FALHA}" != F1 && ( "${E_IEXIT}" -eq 1 || "${E_IEXIT}" -eq 6 ) ]] && alvo_rede_parado; then
+        if [[ "${E_FALHA}" == F3 && "${E_IEXIT}" -eq 5 ]] && alvo_rede_parado; then
+            # o no do F3 parou (AC-5) entre a guarda e a sonda do injetor: o netem nao entrou, nao e o kernel
+            E_RECUSAS+=("injetor F3 saiu com 5 com ${ALVO_REDE} parado: o netem nao entrou (recusa)")
+        else
+            E_INFRA_STOP=6; E_MOTIVOS+=("infra: injetor ${E_FALHA} saiu com ${E_IEXIT} (so${seguem}seguem)")
+            parar_carga
+        fi
+    elif [[ "${E_FALHA}" == F3 && "${E_IEXIT}" -eq 0 ]] && alvo_rede_parado; then
+        # B1 no F3: o AC-5 parou o no sob o netem; o netns foi junto e o inject-jitter.sh sai com 0 (a remocao falha
+        # em silencio). A pos-checagem confere o AC-5 APLICADA no no
+        E_INJ_PARADO="${ALVO_REDE}"
+        log "exec i=${E_I}: injetor F3 saiu com 0 com ${E_INJ_PARADO} parado; pendente ate a pos-checagem (AC-5?)"
+    elif [[ ( "${E_FALHA}" == F2 || "${E_FALHA}" == F4 ) && ( "${E_IEXIT}" -eq 1 || "${E_IEXIT}" -eq 6 ) ]] && alvo_rede_parado; then
         # B1 da V-W6: o AC-5 do braco B pode parar o no da falha antes do fim da janela; o injetor real sai com 1
         # (F2: contadores lidos pelo nsenter com o PID morto, sob pipefail) ou 6 (F4: contadores zerados). A decisao
         # fica para a pos-checagem, que confere a linha de fim e a trilha
@@ -1197,6 +1415,9 @@ rodar_carga() {  # lanca o programa, le os eventos e conduz a falha; volta quand
             fi
             [[ "${INJ_ESTADO}" != pendente ]] || disparar_injecao "${d}"
         fi
+        if [[ "${E_FALHA}" == F3 && "${NETEM_ESTADO}" == pendente && "${INJ_ESTADO}" == rodando && "${agora}" -ge "${NETEM_AMOSTRA_MS}" ]]; then
+            amostra_netem_f3
+        fi
         if [[ "${INJ_ESTADO}" == rodando ]] && ! kill -0 "${INJ_PID}" 2>/dev/null; then concluir_injecao; fi
         if [[ "${VOLTA_ESTADO}" == esperando && "${agora}" -ge "${VOLTA_PROX}" ]]; then amostra_volta_f1; fi
         [[ "${fim_stdout}" -eq 1 ]] || dormir "${POLL_S}"
@@ -1274,6 +1495,7 @@ pos_execucao() {  # pos-checagem igual a pre: boot, StartedAt explicado, saude, 
             E_AVISOS+=("camada 3 depois da execucao: ${CAM3_DIVERGE} (o cluster e recriado antes da proxima)")
         fi
     fi
+    local t_fim="" t_lp="" t_inc="" t_mot=""
     if [[ -f "${d}/decisoes-rep-001.jsonl" ]]; then
         rc=0; out="$(py "${CONFERIR}" trilha --decisoes "${d}/decisoes-rep-001.jsonl" \
             --sinal-alvo "${E_SINAL_ALVO:--}")" || rc=$?
@@ -1284,8 +1506,29 @@ pos_execucao() {  # pos-checagem igual a pre: boot, StartedAt explicado, saude, 
             5) E_MOTIVOS+=("infra: trilha e linha de fim da carga discordam sobre o AC-5: ${out//$'\n'/ }") ;;
             *) E_MOTIVOS+=("infra: trilha ilegivel (exit ${rc})") ;;
         esac
+        if [[ "${rc}" -eq 0 || "${rc}" -eq 5 ]]; then
+            t_fim="$(awk -F'\t' '$1 == "fim" {print $2; exit}' <<< "${out}")"
+            t_lp="$(awk -F'\t' '$1 == "linhas_perdidas" {print $2; exit}' <<< "${out}")"
+            t_inc="$(awk -F'\t' '$1 == "trilha_incompleta" {print $2; exit}' <<< "${out}")"
+            t_mot="$(awk -F'\t' '$1 == "trilha_incompleta_motivo" {print $2; exit}' <<< "${out}")"
+            [[ "${t_mot}" != "-" ]] || t_mot=""
+            [[ -n "${t_inc}" ]] || { t_inc=sim; t_mot="a conferencia da trilha nao disse se ela esta completa"; }
+        else
+            t_inc=sim; t_mot="trilha ilegivel (exit ${rc})"
+        fi
     else
         E_RECUSAS+=("sem decisoes-rep-001.jsonl")
+        t_inc=sim; t_mot="sem a trilha de decisoes (decisoes-rep-001.jsonl)"
+    fi
+    # W-6c, B-7 do B-40: trilha sem fim ou com linhas perdidas; com --exigir-trilha-completa, recusa de infraestrutura
+    E_TRILHA_INC=false; [[ "${t_inc}" == nao ]] || E_TRILHA_INC=true
+    E_TRILHA_JSON="{\"fim\":$([[ "${t_fim}" == sim ]] && echo true || echo false),\"linhas_perdidas\":$([[ "${t_lp}" =~ ^[0-9]+$ ]] && echo "${t_lp}" || echo null),\"motivo\":$(json_str_ou_null "${t_mot}"),\"exigir_completa\":$([[ "${EXIGIR_TRILHA}" -eq 1 ]] && echo true || echo false)}"
+    if [[ "${E_TRILHA_INC}" == true ]]; then
+        if [[ "${EXIGIR_TRILHA}" -eq 1 ]]; then
+            E_MOTIVOS+=("infra: trilha de decisoes incompleta (${t_mot}) com --exigir-trilha-completa (B-7 do B-40: o disco, nao o efeito, decide)")
+        else
+            E_AVISOS+=("trilha de decisoes incompleta (${t_mot}); marcada trilha_incompleta no execucao.json")
+        fi
     fi
     [[ -n "${E_SINAL_MS}" ]] || E_RECUSAS+=("sem a linha de fim da carga")
     if [[ -n "${E_INJ_PARADO}" ]]; then resolver_injetor_parado "${d}" "${rc_trilha}"; fi
@@ -1307,10 +1550,19 @@ resolver_injetor_parado() {  # resolver_injetor_parado <dir> <exit da conferenci
     if [[ "${E_FALHA}" == F2 ]] && ! grep -F -e "OK: ${E_INJ_PARADO} nao conecta a nenhum par" "${d}/injetor.log" > /dev/null 2>&1; then
         falta+="${falta:+; }injetor.log sem 'OK: ${E_INJ_PARADO} nao conecta a nenhum par' (corte nao confirmado)"
     fi
-    if [[ -z "${falta}" ]]; then
+    # R4 da V-W6b: a falha comecou no no (start) e, no F4, o injetor aplicou a degradacao nele (inject-netdegrade.sh:748)
+    if ! grep -E -e "^fault=${E_FALHA} node=${E_INJ_PARADO} event=start " "${d}/marcadores.txt" > /dev/null 2>&1; then
+        falta+="${falta:+; }marcadores.txt sem o marcador start de ${E_FALHA} em ${E_INJ_PARADO}"
+    fi
+    if [[ "${E_FALHA}" == F4 ]] && ! grep -F -e "degradacao aplicada: alvo ${E_INJ_PARADO}," "${d}/injetor.log" > /dev/null 2>&1; then
+        falta+="${falta:+; }injetor.log sem 'degradacao aplicada: alvo ${E_INJ_PARADO}' (degradacao nao confirmada)"
+    fi
+    if [[ -z "${falta}" && "${E_FALHA}" == F3 ]]; then
+        E_AVISOS+=("falha efetiva ate a parada do no pelo AC-5; o netem saiu com o netns de ${E_INJ_PARADO} (F3 saiu com ${E_IEXIT}, ${E_INJ_PARADO} parado pelo AC-5 APLICADA; B1 da V-W6 no F3)")
+    elif [[ -z "${falta}" ]]; then
         E_AVISOS+=("falha efetiva ate a parada do no pelo AC-5; contadores do injetor nao lidos (${E_FALHA} saiu com ${E_IEXIT}, ${E_INJ_PARADO} parado pelo AC-5 APLICADA; B1 da V-W6)")
     else
-        E_RECUSAS+=("injetor ${E_FALHA} saiu com ${E_IEXIT} com ${E_INJ_PARADO} parado sem AC-5 APLICADA confirmada nele (${falta}) (recusa, como o K6 do rebaseline)")
+        E_RECUSAS+=("injetor ${E_FALHA} saiu com ${E_IEXIT} com ${E_INJ_PARADO} parado, sem as provas do B1 (${falta}) (recusa, como o K6 do rebaseline)")
     fi
 }
 
@@ -1340,6 +1592,8 @@ rodar_execucao() {  # rodar_execucao "<i> <celula> <modo> <falha> <papel> <bloco
     E_FALHA_EF=""; E_VOLTA_F1=""; E_SINAL_JSON=""; E_SINAL_MS=""; E_SINAL_ALVO=""; E_RELIG_JSON=""; E_RELIG_NO=""
     E_FIM_UTC=""; E_WEXIT=""; E_TETO=false; E_SEM_ANCORA=""; E_INFRA_STOP=""; E_PARADA_H4=""; E_META=""; E_PAROU=""
     E_INJ_PARADO=""; E_RELIG_OUTROS=" "; PARADOS=""
+    E_SWAP_KB=""; E_SWAP_LEIT=""; E_SWAP_RECRIADO=false; E_SWAP_PARADA=""; E_TRILHA_INC=""; E_TRILHA_JSON=""; E_INJ_SAIDA_MS=""
+    F3_MARCA=""; PID_ALVO=""; NETEM_ESTADO=""; NETEM_AMOSTRA_MS=0
     E_MOTIVOS=(); E_RECUSAS=(); E_AVISOS=(); E_INFRAS=()
     if [[ -d "${d}" ]]; then
         if [[ -f "${d}/checagem.json" ]]; then log "exec i=${E_I} ${E_CEL} ${E_BRACO}: ja checada; pulando"; return 0; fi
@@ -1368,23 +1622,15 @@ rodar_execucao() {  # rodar_execucao "<i> <celula> <modo> <falha> <papel> <bloco
             fi
         done
     fi
-    # GO de rede antes da primeira F2/F4 da invocacao, antes do diretorio e do K1 (C2 do runner)
-    if [[ ( "${E_FALHA}" == F2 || "${E_FALHA}" == F4 ) && "${GATE_REDE_DADO}" -eq 0 ]]; then
-        log "GATE rede pedido: primeira F2/F4 (i=${E_I}); aguardando 'go rede ${E_I}' em /dev/tty"
+    # GO de rede antes da primeira F2/F3/F4 da invocacao, antes do diretorio e do K1 (C2 do runner; F3 pelo B-40 4.3)
+    if [[ ( "${E_FALHA}" == F2 || "${E_FALHA}" == F3 || "${E_FALHA}" == F4 ) && "${GATE_REDE_DADO}" -eq 0 ]]; then
+        log "GATE rede pedido: primeira F2/F3/F4 (i=${E_I}); aguardando 'go rede ${E_I}' em /dev/tty"
         ler_gate rede "go rede ${E_I}" "${E_I}"
         GATE_REDE_DADO=1
     fi
     mkdir -p "${d}"
-    gravar_progresso "${E_I}" "recriacao"
-    log "exec i=${E_I} ${E_CEL} braco=${E_BRACO} bloco=${E_BLOCO} seed=${E_SEED}: recriando o cluster"
-    recriar_cluster "${d}"
-    if ! camada3 pre; then
-        finalizar 6 "infra: camada 3 antes de i=${E_I}: ${CAM3_DIVERGE}"
-    fi
-    E_CAM3_PRE="${CAM3_JSON}"
-    gravar_progresso "${E_I}" "k1"
-    log "exec i=${E_I}: portao K1"
-    portao_k1 "${d}" || finalizar 10 "parada (e): portao K1 nao passou em ${K1_TIMEOUT_S} s antes de i=${E_I}"
+    preparar_cluster "${d}" "recriacao"
+    portao_swap "${d}"
     scratch="${d}/.scratch"
     mkdir -p "${scratch}"
     montar_cmd "${E_MODO}" "${E_SEED}" "${scratch}" "${E_CTL}" "${d}/marcadores.txt"

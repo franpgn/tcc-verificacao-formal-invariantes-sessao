@@ -968,12 +968,93 @@ F4 sai com 6, quando o alvo não está `running` no fim da janela; o de `java` r
 atraso do disparo no Git Bash (6 a 20 s virtuais) empurrou a janela da F2 para depois do religamento em duas
 sub-rodadas; com 120 s a margem é de cerca de 30 s virtuais.
 
+### W-6c: F3 na matriz S3, swap no portão e trilha completa (2026-11-05)
+
+Numeração da integração (06/11): P-54..P-57 da branch do W-6c são P-57..P-60, e os números do W-6 citados aqui já
+são os da integração (+2).
+
+Branch `feature/w6c-f3-memoria`, worktree `wt-w6c`, sobre `6f366ac` (ponta de `feature/w6-orquestrador-s3`). Pedido:
+F3 como falha da matriz para a célula ASYNC F3 descritiva do B-40 (seção 4.3), swap da VM no portão de cada execução e
+trilha completa como condição (B-7 do B-40). Commits `test:` vermelhos antes da implementação: `7b43d48` (F3, swap,
+trilha), `d030642` (S26h e ajustes da suíte) e `2b44245` (acréscimos da V-W6b: N1, R3, R4, R7, R8 e B1 no F3) `8fa508b`, `e388c8f`, `6ee7d51` e `16ac98f` (S5, S22, S25 e os casos do F3 sem relógio também com o *host* carregado) e `d2c7241` (P-59: exit 11). Nada em `workload/` mudou: o Surefire do W-6 (1100/0/0/1) vale para a
+árvore Java desta ponta, e não rodei Maven, Podman nem *cluster*.
+
+| Suíte | Antes (W-6b) | Depois | Vermelho conferido |
+|---|---|---|---|
+| `scripts/test_campanha_s3_conferir.py` | 30 OK | **44 OK** (F3: 6; trilha completa: 7; teto de 1010 s do C-6: 1) | 4 falhas e 11 erros antes da implementação; o teste dos 1010 s passa sem mudança de código (o mínimo é 986 s), é conferência pedida |
+| `scripts/test_campanha_s3_matriz.py` | 15 OK | **16 OK** (célula ASYNC F3 nas extras; `F3` saiu da lista de inválidas, `F5`, `F3+F4` e `F2F3` entraram) | 1 falha |
+| `scripts/test_campanha_s3_h4.py` | 11 OK | 11 OK | — |
+| `scripts/run-campanha-s3.test.sh` | 269 PASS (S1..S25) | **suíte completa pendente (interrompida para H0)** na ponta `16ac98f` | S27/S28: 10 PASS e 40 FAIL contra o orquestrador do W-6b; S26h: 1 FAIL contra a primeira versão do W-6c; S1, S22 e S25 da V-W6b: 68 PASS e 16 FAIL (S1: 3; S22: 13; o S25 já passava, a mudança dele é de robustez) contra `f4bcf1f`; S1 e S27 do P-59: 52 PASS e 7 FAIL contra `d2c7241` |
+| `scripts/inject-crash.test.sh` | 141 PASS | **141 PASS, 0 FAIL** (injetor sem mudança; rodado como carga da primeira rodada das mutações) (injetor sem mudança; rodado como carga das mutações) | — |
+
+**Estado dos testes: suíte completa pendente (interrompida para H0).** O coordenador parou o *host* para o X-17 e a
+calibração (06/11, ~01:20Z) com a suíte da ponta `16ac98f` em andamento (S1 a S16 sem falha até ali); o resultado
+parcial foi descartado. A suíte completa roda antes da integração, com o *host* livre. Rodadas por caso que passaram
+antes, em pontas anteriores (não valem como a suíte da ponta): S28 24 PASS e 0 FAIL e S26 + S26h + S27 87 PASS e 0 FAIL
+(implementação de `f4bcf1f`); S1 25 PASS e 0 FAIL (`aea4bdb`). As rodadas completas de `f2dac17`, `e388c8f` e
+`6ee7d51` foram interrompidas ou descartadas: duas por mudança de teste (S22 F4 e S5 ainda dependiam do relógio sob
+carga, `6ee7d51` e `16ac98f`), uma pela parada do limite de uso.
+
+**Mutações da V-W6b §2.1 com a suíte sob carga** (R3/R8: o aceite pede que continuem falhando com outra suíte em
+paralelo). Rodadas as quatro ao mesmo tempo, cada uma numa cópia `git archive` com uma condição desfeita, mais o
+`inject-crash.test.sh` como carga:
+
+| Mutação (V-W6b §2.1) | Casos | Ponta | Em paralelo com | Resultado |
+|---|---|---|---|---|
+| sem o ramo do B1 em `concluir_injecao` | S22 | `6ee7d51` | m2 e a suíte completa | **32 PASS, 21 FAIL**: F2 e F4 positivos RECUSADA sem `injetor_alvo_parado`, braço A PULADA; nos negativos (`sem-ok`, `sem-start`, `sem-aplicada`) e no nó sem AC-5, `injetor_alvo_parado` vazio |
+| sem o prefixo `infra: ` (P-55) | S22, S23 | `6ee7d51` | m1 e a suíte completa | **56 PASS, 3 FAIL**: nó parado sem AC-5 RECUSADA em vez de DESCARTADA-INFRA e sem o motivo `infra:`; S23 com o motivo sem `infra:` |
+| sem o desvio do F1 em curso no O8 (S25) | S25 | `e388c8f` | as outras três e a suíte completa | **2 PASS, 4 FAIL**: DESCARTADA-INFRA, `outros_parados` = `isn2`, dois `podman start`, e o log sem "parado pelo F1 ainda em curso" |
+| sem o religamento do S3 em `pos_execucao` | S23 | `e388c8f` | as outras três e a suíte completa | **1 PASS, 5 FAIL**: a fase sai com 10, `isn3` fica parado, sem `podman start` |
+
+As mesmas duas últimas também falharam com os testes de `aea4bdb` e `8fa508b` nas rodadas anteriores (com até oito
+suítes no *host*). Entre `e388c8f` e a ponta, o S23 e o S25 não mudaram. Uma suíte de controle sem mutação, rodada ao
+lado na segunda rodada, falhou uma vez no N1 do S22 (corrigido em `e388c8f` e `6ee7d51`).
+
+| Caso | O que prende |
+|---|---|
+| S26 | F3 com o `inject-jitter.sh` real (escala 5, amostra a +60 s pelo `CS_NETEM_EFETIVA_MS`, janela de 120 s): bloco A/B ACEITA; marcadores `fault=F3 node=isn2 event=start\|end` gravados pelo orquestrador, `end` depois do `start`; injetor com os números do `campanha-s3/2`; `netem` na raiz na amostra; *dead-man* de `f3_dur_s` + 90 s na unit `tcc-heal-cs-<i>`, com `AccuracySec=1s` e `nsenter -t 1002 -n tc qdisc del dev eth0 root`, armado antes da sonda e do `netem`; GO de rede antes da primeira F3; sem `netem` nem *timer* no fim; `inject-jitter.sh` no *bundle* |
+| S26b | `netem` que não entra: RECUSADA "F3 sem netem em isn2 a +2 s do disparo", com `apos_disparo_s = 2` (o valor do protocolo, sem ajuste) |
+| S26c | `netem` rejeitado (exit 5) com o nó de pé: fase sai com 6, DESCARTADA-INFRA, *dead-man* desarmado |
+| S26d | `netem` que nem o injetor nem o orquestrador tiram: exit 6, `rede_pos` com remoção extra e resíduo, *dead-man* mantido |
+| S26e | B1 no F3: AC-5 do braço B para `isn2` sob o `netem`; o injetor real sai com 0; `injetor_alvo_parado = isn2`, ACEITA com o aviso "falha efetiva ate a parada do no pelo AC-5", religamento de `isn2`; braço A ACEITA sem alvo parado (P-57) |
+| S26f | TERM no orquestrador com o F3 em curso: exit 143, sem `netem`, sem *timer*, marcadores `start` e `end` (P-58) |
+| S26g | pré-voo com `netem` na raiz de `isn1`: exit 4 sem `compose` nem carga; F3 com `campanha-s3/1`: exit 4 no pré-voo e no `--dry-run`; `--dry-run` com os números do *rebaseline* (49/251/300) imprime o plano do F3 com `+2 s` e *dead-man* de 341 s; GO de rede errado antes da primeira F3: exit 5, nenhum `qdisc add` |
+| S26h | raiz de `isn2` ocupada por um `prio` de fora só depois da âncora (o K1 passa): exit 6 com "raiz de isn2 ocupada ou ilegivel antes da F3", sem `qdisc add` nem `systemd-run` |
+| S27 | sem limite: `swap_usado_kb_k1` = SwapTotal − SwapFree, sem recriação a mais. Com `--swap-limite-kb 1048576` e swap = limite no portão: recriação (três `up` para duas execuções), leituras `[1048576, 256]`, `swap_usado_kb_k1` = 256, ACEITA, a semente da execução usada uma vez, brutos da primeira recriação em `antes-recriacao-swap/`, K1 de novo; swap que continua alto depois da recriação (P-59): exit 11, nenhuma carga, dois `up`, motivo `parada swap: …` no fim do log e em `swap_portao.parada`, sem `checagem.json`, e a retomada com o swap baixo guarda o diretório como `.abortada-<UTC>` e roda o mesmo i, ACEITA; `--swap-limite-kb` 0, −5, `abc` ou 1.5: exit 2; `meminfo` sem Swap com o limite: exit 4 no pré-voo; `--dry-run` mostra as opções |
+| S1 (acréscimo) | R7: `--help` imprime o cabeçalho até o `set -euo pipefail`: "Variaveis", "Exit codes" (com o 11 do P-59) e a última linha ("NAO faz git push"), sem código |
+| S22 (refeito) | R3: o dublê de `java` para o nó 2 s virtuais depois do `start` da falha (`ac5-apos-start`) e só escreve a linha de fim depois do `end`; F2 com janela de 80 s numa carga de 120 s, F4 com 300 s numa carga de 340 s e o *ping* de 40 s do dublê, que só termina depois da parada (`ac5-previsto`), teto de 900 s; F2 e F4 positivos ACEITA com aviso; N1: `fim_nominal_desde_ancora_s` = `inj_inicio_offset_s` + a duração, braço A sai depois dele, F2 do braço B também, F4 do braço B sai no fim do *ping*, mais de 20 s antes; R4: F2 sem `start`, F4 sem `start` e F4 sem a linha `degradacao aplicada: alvo isn3` são RECUSADA com o motivo; os negativos de antes (sem a linha OK, exit 1 com o nó de pé, nó parado sem AC-5) |
+| S5 (mudança) | o AC-5 do dublê vem 2 s depois do `start` da F2 (`ac5-apos-start`), teto de 900 s: sob carga, a dur/2 do relógio do `java` caiu antes do disparo e a guarda de *netns* parou a fase com 6 (O1 da V-W6b) |
+| S25 (acréscimo) | R8: `java-espera-parado-isn2` segura a linha de fim até `isn2` sair de `running`; teto de 900 s (com quatro suítes em paralelo o *kill* do F1 passou dos 200 s do teto padrão); confere no log que a linha chegou com o nó do F1 parado |
+| S26e (acréscimo) | AC-5 90 s virtuais depois do `start` do F3 (sem relógio), janela de 180 s; N1 também no F3 |
+| S28 | trilha completa com `--exigir-trilha-completa`: ACEITA, `trilha_incompleta = false`, `linhas_perdidas = 0`; retomada sem a opção: exit 4 (*bundle* mudou); `linhas_perdidas = 2` e trilha sem `fim`, com e sem a opção: `trilha_incompleta = true` com o motivo no `execucao.json`; sem a opção, ACEITA com aviso; com ela, DESCARTADA-INFRA com motivo `infra:`, fase segue |
+
+Dublês e *shims* novos ou alterados: `tc` guarda o `netem` da raiz por PID (`netem-<pid>` no estado), recusa `add` com a
+raiz ocupada, falha no netns de um nó parado (como o `nsenter` real) e tem as *flags* `tc-rejeita-netem`,
+`tc-netem-some`, `tc-del-falha` e `tc-prio-apos-ancora`; `podman start` dá netns novo (apaga o `netem-<pid>`);
+`podman-compose down` conta as recriações e pode trocar o `meminfo` (`meminfo-apos-down-<n>`); o `meminfo` dos *shims*
+é o `/proc/meminfo` do modo de teste; o `fim` da trilha do dublê de `java` traz `linhas_perdidas` (padrão 0,
+`linhas-perdidas`), e `java-sem-fim` o omite. Da V-W6b: o dublê de `java` lê o `--marker` e, com `ac5-apos-start`,
+para o nó N s depois do `start` (ou do arquivo `falha-iniciada` que os dublês de F2/F4 tocam), e com
+`java-espera-parado-<no>` segura a linha de fim; o dublê de F4 escreve a linha `degradacao aplicada: alvo <no>, pares
+…, direcao both` (como `inject-netdegrade.sh:748`), faz a verificação por *ping* (`f4-ping-s`, 40 s por padrão) e sai
+com 6 e o `end` no fim dela se o alvo parou; com `ac5-previsto` (gravado pelo dublê de `java` quando vai parar o nó),
+os dublês de F2 e F4 só olham o alvo depois que ele parou; os dois aceitam `inj-sem-start`, e o de F4,
+`inj-sem-aplicada`.
+
+Na primeira rodada do S26 com a escala 20, a amostra do `netem` (+30 s virtuais) caiu antes do `netem` ou depois do fim
+da janela: pelos *shims*, o injetor real leva ~3,6 s reais para aplicar o `netem` (dezenas de processos bash), mais de
+70 s virtuais. As *flags* `netem-*` do dublê de `tc` eram apagadas pelo `podman-compose down` e contadas no glob
+`netem-*`; foram renomeadas. O S26e também mostrou uma corrida da primeira versão: o resíduo dos três nós, conferido no
+disparo do F3, demorava tanto pelos *shims* que o AC-5 do dublê parava `isn2` no meio; o disparo agora lê só a raiz do
+nó do F3 (o K1 já conferiu os três), e o S26h prende a mensagem nova.
+
 ## Integração do W-6 e I-1 (2026-11-05)
 
 Branch `feature/controlador-integracao` (worktree `wt-ctrl-integ`), a partir de `944a36d` (tag `int/2026-11-05-w2b`).
 `merge --no-ff` de `feature/w6-orquestrador-s3` (`081e1c4`: W-6, W-6b, V-W6, adenda e V-W6b) em `49baddc`, com a
 renumeração TD-014 → TD-015 e P-45..P-53 → P-47..P-55 (tabela no commit de merge e no registro de problemas). Depois,
-o I-1 da V-W6 §5.2 (P-56) com TDD: `cb13cd5` test (vermelho), `70996e4` test, `fdcf0ae` fix. Surefire com
+o I-1 da V-W6 §5.2 (P-56) com TDD: `cb13cd5` test (vermelho), `70996e4` test, `fdcf0ae` fix. O caso do I-1 se
+chamava S26 (e S26n) nesta integração; desde a integração do W-6c, que usa o S26 para o F3, é o S29 (e S29n). Surefire com
 `mvn -q -o -T1 clean test` em `workload/` (contado dos `TEST-*.xml`), JDK 22.0.2, Maven 3.9.16; Python 3.12.6. Sem VM.
 
 | Suíte | Comando | Resultado na ponta |

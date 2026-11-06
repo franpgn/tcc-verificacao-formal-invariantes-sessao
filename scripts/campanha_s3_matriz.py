@@ -9,7 +9,8 @@ Subcomandos:
         --i0 N --b0 N --saida <tsv>
   repor --matriz <tsv> --saida <dir> --ordem-seed N --s0 N --passo-semente N --teto-h4 N [--fase F] [--dry-run]
 
-<spec>: lista separada por virgula de CELULA:PAPEL:N, CELULA = <SYNC|ASYNC>-<none|F1|F2|F4>. Na calibracao o papel
+<spec>: lista separada por virgula de CELULA:PAPEL:N, CELULA = <SYNC|ASYNC>-<none|F1|F2|F3|F4> (F3 desde o W-6c, para
+a celula ASYNC F3 descritiva do B-40; uma falha por execucao: nao ha celula com duas falhas). Na calibracao o papel
 e sempre "calibracao" e N e o numero de execucoes (so braco A, shadow). Na avaliacao o papel e "teste",
 "descritiva" ou "referencia" (tipos de celula do comparar_bracos.py) e N e o numero de blocos A/B.
 
@@ -44,10 +45,10 @@ from pathlib import Path
 COLUNAS = ("i", "fase", "rodada", "posicao", "celula", "modo", "falha", "papel", "bloco", "braco", "controlador",
            "seed", "repoe")
 MODOS = {"SYNC": "sync", "ASYNC": "async"}
-FALHAS = ("none", "F1", "F2", "F4")
+FALHAS = ("none", "F1", "F2", "F3", "F4")
 PAPEIS_AVALIACAO = ("teste", "descritiva", "referencia")
 CONTROLADOR = {"A": "shadow", "B": "active"}
-CELULA_RE = re.compile(r"^(SYNC|ASYNC)-(none|F1|F2|F4)$")
+CELULA_RE = re.compile(r"^(SYNC|ASYNC)-(none|F1|F2|F3|F4)$")
 
 
 class ErroUso(Exception):
@@ -67,7 +68,7 @@ def ler_celulas(spec, modo):
             raise ErroUso("celula deve ser CELULA:PAPEL:N: %r" % parte)
         cel, papel, n = campos
         if not CELULA_RE.match(cel):
-            raise ErroUso("celula invalida: %r (use SYNC|ASYNC-none|F1|F2|F4)" % cel)
+            raise ErroUso("celula invalida: %r (use SYNC|ASYNC-none|F1|F2|F3|F4)" % cel)
         if modo == "calibracao" and papel != "calibracao":
             raise ErroUso("na calibracao o papel e 'calibracao': %r" % parte)
         if modo == "avaliacao" and papel not in PAPEIS_AVALIACAO:

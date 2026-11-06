@@ -2,13 +2,20 @@
 #
 # run-campanha-s3.test.sh
 #
-# Testes S1..S26 do scripts/run-campanha-s3.sh (W-6, B-46), no estilo do run-rebaseline.test.sh: sem cluster, sem
+# Testes S1..S29 do scripts/run-campanha-s3.sh (W-6, B-46; W-6c; I-1), no estilo do run-rebaseline.test.sh: sem cluster, sem
 # rede, sem VM, sem tc real. Shims em PATH para java, podman, podman-compose, sudo, nsenter, tc, ip, iptables, curl,
 # systemd-run, systemctl, flock, pgrep, df, sleep, date e timeout. Relogio acelerado: o shim de sleep dorme s/ESCALA de
 # verdade, o de timeout divide os prazos por ESCALA e o de date devolve T0 + (agora - T0) * ESCALA. O injetor de F1 e
 # o inject-crash.sh REAL; os de F2 e F4 sao dubles (CS_INJ_PART, CS_INJ_DEGR) que gravam os marcadores e deixam ou
 # tiram a regra de rede no estado do shim de tc. O python e o real (campanha_s3_conferir.py, campanha_s3_h4.py sobre
-# analysis/h4.py, campanha_s3_matriz.py e cria-caches.sh rodam de verdade).
+# analysis/h4.py, campanha_s3_matriz.py e cria-caches.sh rodam de verdade). W-6c: o injetor de F3 e o
+# inject-jitter.sh REAL contra os shims de sudo, nsenter e tc (o tc guarda o netem por PID no estado; o no parado nao
+# tem netns, e o podman start da um netns novo, sem netem); /proc/meminfo e o arquivo meminfo dos shims, que o
+# podman-compose down pode trocar (meminfo-apos-down-<n>); a trilha do duble de java traz linhas_perdidas no fim.
+# Acrescimos da V-W6b (W-6c): com ac5-apos-start, o duble de java para o no N s depois do start da falha (marcador ou
+# falha-iniciada dos dubles), e nao num instante do seu relogio (R3); java-espera-parado-<no> segura a linha de fim ate
+# o no sair de running (R8); o duble de F4 faz a verificacao por ping (40 s por padrao, f4-ping-s) e sai com 6 no fim
+# dela se o alvo parou, como o real (N1), e escreve a linha "degradacao aplicada: alvo <no>" (R4).
 #
 # Uso: bash scripts/run-campanha-s3.test.sh [S1 S4 ...]   (sem argumentos: todos). Exit 0 se todos passarem.
 set -uo pipefail
@@ -23,7 +30,7 @@ REAL_SLEEP="$(command -v sleep)"
 REAL_TIMEOUT="$(command -v timeout)"
 TMP="$(mktemp -d)"
 trap '[[ -n "${CS_TESTE_MANTER:-}" ]] && echo "(CS_TESTE_MANTER: ${TMP} mantido)" || rm -rf "${TMP}"' EXIT
-SELECAO=" ${*:-S1 S2 S3 S4 S5 S6 S7 S8 S9 S10 S11 S12 S13 S14 S15 S16 S17 S18 S19 S20 S21 S22 S23 S24 S25 S26} "
+SELECAO=" ${*:-S1 S2 S3 S4 S5 S6 S7 S8 S9 S10 S11 S12 S13 S14 S15 S16 S17 S18 S19 S20 S21 S22 S23 S24 S25 S26 S26h S27 S28 S29} "
 
 PASS=0
 FAIL=0
@@ -53,6 +60,8 @@ criar_shims() {  # criar_shims <dir>
     mkdir -p "${SH}"
     : > "${SH}/.cs-shim"
     echo "0b0b0b0b-1111-2222-3333-444444444444" > "${SH}/boot_id"
+    # W-6c: /proc/meminfo do portao de swap (SwapTotal - SwapFree = 0 kB por padrao)
+    printf 'MemTotal:       24000000 kB\nSwapTotal:       4194300 kB\nSwapFree:        4194300 kB\n' > "${SH}/meminfo"
     cat > "${SH}/_comum.sh" <<'EOF'
 vms() { local r="${EPOCHREALTIME//[.,]/}"; r=$((10#${r:0:13})); echo $(( CS_T0_MS + (r - CS_T0_MS) * CS_ESCALA )); }
 registrar() { local IFS='|'; echo "$(vms) $*" >> "${CS_ESTADO}/chamadas.log"; }
@@ -88,12 +97,12 @@ source "${CS_SHIM_DIR}/_comum.sh"
 registrar java "$@"
 ST="${CS_ESTADO}"
 case "$1" in -version) echo 'openjdk version "21" (shim)' >&2; exit 0 ;; esac
-csv=""; seed=""; ctl=off; dry=0; dur=60; cfg=""; ref=""; repl=""
+csv=""; seed=""; ctl=off; dry=0; dur=60; cfg=""; ref=""; repl=""; marker=""
 while [[ $# -gt 0 ]]; do
     case "$1" in
         --csv-dir) csv="$2" ;; --seed) seed="$2" ;; --controller) ctl="$2" ;; --dry-run) dry=1 ;;
         --duration) dur="$2" ;; --controller-config) cfg="$2" ;; --controller-reference) ref="$2" ;;
-        --replication) repl="$2" ;;
+        --replication) repl="$2" ;; --marker) marker="$2" ;;
     esac; shift
 done
 if [[ -n "${ref}" ]]; then  # como LigacaoControlador.java:204 (B2 da V-W6)
@@ -106,6 +115,13 @@ if [[ "${dry}" -eq 1 ]]; then echo "dry-run, configuracao OK (shim ${ctl})"; exi
 rc="$(cat "${ST}/java-exit-${seed}" 2>/dev/null || echo 0)"
 trap 'echo "morto $(vms)" >> "${ST}/java-morto-${seed}"; [[ -f "${ST}/java-ignora-term" ]] || exit 143' TERM
 mkdir -p "${csv}"
+# R3 da V-W6b: ac5-previsto diz aos dubles de F2/F4 que o no vai parar nesta execucao (braco B com ac5-alvo, ou
+# java-para-sem-ac5); com ac5-apos-start eles esperam a parada antes de olhar o alvo, sem depender do relogio
+if [[ -f "${ST}/ac5-apos-start" && ( ( "${ctl}" == active && -f "${ST}/ac5-alvo" ) || -f "${ST}/java-para-sem-ac5" ) ]]; then
+    : > "${ST}/ac5-previsto"
+else
+    rm -f "${ST}/ac5-previsto"
+fi
 sha="$(sha256sum "${cfg}" | cut -d' ' -f1)"
 [[ -f "${ST}/meta-sha" ]] && sha="$(cat "${ST}/meta-sha")"
 atu="por-tipo(AC-2=rest-infinispan,AC-5=rest-infinispan)"; [[ -f "${ST}/meta-atuador" ]] && atu="$(cat "${ST}/meta-atuador")"
@@ -115,7 +131,7 @@ escrever_meta() {
 printf '{"tipo":"meta","esquema":"decisoes-controlador/1.2","modo":"%s","param_sha256":"%s","atuador":"%s","politica":"%s","parametros_politica":{"k_lag":2,"p2_habilitada":%s}}\n' \
     "${ctl}" "${sha}" "${atu}" "${pol}" "${p2}" > "${csv}/decisoes-rep-001.jsonl"
 }
-# I-1 da V-W6 (S26): no W-2b a TrilhaJsonl grava por uma thread, e a meta pode chegar ao disco depois da ancora.
+# I-1 da V-W6 (S29): no W-2b a TrilhaJsonl grava por uma thread, e a meta pode chegar ao disco depois da ancora.
 # java-meta-atraso (N s virtuais): a meta so sai depois da ancora, passados N s e depois de uma leitura da meta que
 # saiu com 4 (py-meta-rc, gravado pelo python3 do caso). java-meta-nunca: esta carga nao grava a meta (o arquivo e
 # consumido; a carga seguinte grava).
@@ -140,7 +156,18 @@ fi
 # S7: resiste ao SIGTERM ate o SIGKILL do timeout (o timeout manda o TERM ao grupo e mata o sleep; sem o laco, o duble
 # terminaria sozinho antes de K)
 if [[ -f "${ST}/java-ignora-term" ]]; then while :; do dormir 1; done; fi
-dormir "$(( dur / 2 ))"
+t_anc="$(vms)"
+if [[ -f "${ST}/ac5-apos-start" ]]; then
+    # R3 da V-W6b: a parada vem N s depois do start da falha (marcador do injetor ou do orquestrador, ou falha-iniciada
+    # dos dubles), e nao a dur/2 do relogio do java; assim cai dentro da janela com qualquer atraso do disparo
+    for ((k = 0; k < 2 * dur; k++)); do
+        if [[ -f "${ST}/falha-iniciada" ]] || grep -q ' event=start ' "${marker}" 2>/dev/null; then break; fi
+        dormir 1
+    done
+    dormir "$(cat "${ST}/ac5-apos-start")"
+else
+    dormir "$(( dur / 2 ))"
+fi
 alvo="-"
 # B1 da V-W6: no parado sem AC-5 (por exemplo, um AC-5 FALHOU que parou o no); nao entra na trilha nem na linha
 if [[ -f "${ST}/java-para-sem-ac5" ]]; then
@@ -152,9 +179,30 @@ if [[ "${ctl}" == active && -f "${ST}/ac5-alvo" ]]; then
     printf '{"tipo":"acao","operacao":"APLICAR","executada":true,"acao":{"tipo":"AC-5","caches":["sessions-async"],"alvo":"%s","valor":null},"resultado":"APLICADA"}\n' "${alvo}" >> "${csv}/decisoes-rep-001.jsonl"
 fi
 [[ -f "${ST}/sinal-alvo" ]] && alvo="$(cat "${ST}/sinal-alvo")"
-dormir "$(( dur - dur / 2 ))"
+if [[ -f "${ST}/ac5-apos-start" ]]; then
+    resto=$(( dur - ($(vms) - t_anc) / 1000 )); [[ "${resto}" -ge 1 ]] || resto=1
+    dormir "${resto}"
+else
+    dormir "$(( dur - dur / 2 ))"
+fi
+# R3 da V-W6b: com ac5-apos-start, a linha de fim (e o religamento que ela dispara) so sai depois do end da falha; sob
+# carga o disparo atrasava, a janela passava do fim da carga, o no ja estava religado quando o duble olhava e o
+# injetor saia com 0
+if [[ -f "${ST}/ac5-apos-start" ]]; then
+    for ((k = 0; k < 3000; k++)); do grep -q ' event=end ' "${marker}" 2>/dev/null && break; dormir 1; done
+fi
+# R8 da V-W6b: java-espera-parado-<no> segura a linha de fim ate o no sair de running (S25: F1 ainda em curso)
+for f in "${ST}"/java-espera-parado-*; do
+    [[ -e "${f}" ]] || continue
+    no="${f##*-}"
+    for ((k = 0; k < 3000; k++)); do [[ "$(cat "${ST}/status-${no}" 2>/dev/null || echo running)" != running ]] && break; dormir 1; done
+done
 [[ -f "${ST}/java-pendura" ]] && dormir 100000
-echo '{"tipo":"fim"}' >> "${csv}/decisoes-rep-001.jsonl"
+# W-6c: o fim de decisoes traz linhas_perdidas (contrato 1.1+); java-sem-fim: trilha sem a linha fim
+if [[ ! -f "${ST}/java-sem-fim" ]]; then
+    printf '{"tipo":"fim","executor_no_prazo":true,"linhas_perdidas":%s}\n' "$(cat "${ST}/linhas-perdidas" 2>/dev/null || echo 0)" \
+        >> "${csv}/decisoes-rep-001.jsonl"
+fi
 # java-sem-sinal: sem a linha nos dois bracos; java-sem-sinal-<controller>: so naquele braco (S23)
 if [[ "${ctl}" != off && ! -f "${ST}/java-sem-sinal" && ! -f "${ST}/java-sem-sinal-${ctl}" ]]; then
     echo "Fim da carga: rep=1 t_fim_carga_ns=$(vms)000000 ac5_alvo=${alvo}"
@@ -204,7 +252,7 @@ case "${cmd}" in
         [[ -f "${ST}/start-falha-${no}" ]] && { echo "Error: start (shim)" >&2; exit 125; }
         [[ -f "${ST}/start-nao-volta-${no}" ]] && exit 0
         if [[ "$(cat "${ST}/status-${no}" 2>/dev/null || echo running)" != running ]]; then vms > "${ST}/iniciado-ms-${no}"; fi
-        echo running > "${ST}/status-${no}"; rm -f "${ST}/link-$(pid_no "${no}")"; echo "${no}" ;;
+        echo running > "${ST}/status-${no}"; rm -f "${ST}/link-$(pid_no "${no}")" "${ST}/netem-$(pid_no "${no}")"; echo "${no}" ;;
     version) echo "Version: 5.0.0 (shim)" ;;
     *) exit 0 ;;
 esac
@@ -217,7 +265,10 @@ ST="${CS_ESTADO}"
 acao="${@: -1}"; [[ "${acao}" == "-d" ]] && acao=up
 case "${acao}" in
     down) for n in isn1 isn2 isn3; do echo ausente > "${ST}/status-${n}"; done
-          rm -rf "${ST}/caches"; rm -f "${ST}"/netem-* "${ST}"/clsact-* "${ST}"/prio-* "${ST}"/link-* ;;
+          rm -rf "${ST}/caches"; rm -f "${ST}"/netem-* "${ST}"/clsact-* "${ST}"/prio-* "${ST}"/link-*
+          # W-6c: o down solta o swap das JVMs; meminfo-apos-down-<n> vira o /proc/meminfo depois do n-esimo down
+          nd=$(( $(cat "${ST}/downs" 2>/dev/null || echo 0) + 1 )); echo "${nd}" > "${ST}/downs"
+          [[ -f "${ST}/meminfo-apos-down-${nd}" ]] && cp "${ST}/meminfo-apos-down-${nd}" "${CS_SHIM_DIR}/meminfo" ;;
     up) [[ -f "${ST}/compose-up-falha" ]] && exit 1
         t="$(vms)"; [[ -f "${ST}/started-velho" ]] && t=1000
         for n in isn1 isn2 isn3; do echo running > "${ST}/status-${n}"; echo "${t}" > "${ST}/iniciado-ms-${n}"; done ;;
@@ -257,9 +308,30 @@ EOF
 source "${CS_SHIM_DIR}/_comum.sh"
 registrar tc "pid=${CS_NETNS_PID:-?}" "$@"
 ST="${CS_ESTADO}"; p="${CS_NETNS_PID:-0}"
+# W-6c: o netns de um no parado nao existe (o nsenter falha); isn<n> tem o PID 1000 + n nos shims
+k=$(( p - 1000 ))
+if [[ "${k}" -ge 1 && "${k}" -le 3 && "$(cat "${ST}/status-isn${k}" 2>/dev/null || echo running)" != running ]]; then
+    echo "nsenter: cannot open /proc/${p}/ns/net: No such file or directory" >&2; exit 1
+fi
+f="${ST}/netem-${p}"
 case "$*" in
+    "qdisc add dev eth0 root netem"*)
+        if [[ -f "${ST}/tc-rejeita-netem" ]]; then echo "Error: Specified qdisc kind is unknown." >&2; exit 2; fi
+        if [[ -f "${f}" || -f "${ST}/prio-${p}" ]]; then echo "Error: Exclusivity flag on, cannot modify." >&2; exit 2; fi
+        # tc-netem-some: o add de verdade (nao o da sonda, delay 1ms) "passa" sem deixar netem (falha nao efetiva)
+        if [[ -f "${ST}/tc-netem-some" && "$*" != *"delay 1ms"* ]]; then exit 0; fi
+        echo "$*" > "${f}" ;;
+    "qdisc del dev eth0 root")
+        if [[ -f "${ST}/tc-del-falha" && "$(cat "${ST}/tc-del-n" 2>/dev/null || echo 0)" -ge 1 ]]; then exit 0; fi
+        if [[ -f "${f}" ]]; then rm -f "${f}"; echo $(( $(cat "${ST}/tc-del-n" 2>/dev/null || echo 0) + 1 )) > "${ST}/tc-del-n"
+        else echo "Error: Cannot delete qdisc with handle of zero." >&2; exit 2; fi ;;
     "qdisc show dev eth0")
         out="qdisc noqueue 0: root refcnt 2"
+        [[ -f "${f}" ]] && out="qdisc netem 8001: root refcnt 2 limit 1000 delay 20ms  13ms"
+        # S26h: raiz ocupada por um prio de fora no no <pid> so depois da ancora (o K1 passa; o disparo do F3 ve)
+        if [[ -f "${ST}/tc-prio-apos-ancora" && "${p}" == "$(cat "${ST}/tc-prio-apos-ancora")" ]] && compgen -G "${ST}/ancora-*" > /dev/null; then
+            out="qdisc prio 1: root refcnt 2 bands 3"
+        fi
         [[ -f "${ST}/clsact-${p}" ]] && out+=$'\n'"qdisc clsact ffff: parent ffff:fff1"
         [[ -f "${ST}/prio-${p}" ]] && out=$'qdisc prio 1: root refcnt 2 bands 3\nqdisc netem 30: parent 1:3 limit 1000 loss 20%'
         echo "${out}" ;;
@@ -393,12 +465,18 @@ while [[ $# -gt 0 ]]; do
 done
 if [[ "${heal}" -eq 1 ]]; then [[ -f "${ST}/heal-falha" ]] && exit 1; rm -f "${ST}"/clsact-*; exit 0; fi
 p="$(pid_no "${no}")"
-echo "fault=F2 node=${no} event=start t_epoch_ns=$(vms)000000" >> "${marker}"
+# R4: inj-sem-start omite o marcador de inicio (o real nunca omite; e o caso negativo do B1)
+[[ -f "${ST}/inj-sem-start" ]] || echo "fault=F2 node=${no} event=start t_epoch_ns=$(vms)000000" >> "${marker}"
+: > "${ST}/falha-iniciada"
 : > "${ST}/clsact-${p}"
 # a linha que o inject-partition.sh real escreve depois de conferir o corte (inject-partition.sh:470)
 [[ -f "${ST}/inj-sem-ok" ]] || echo "[$(date -u +%Y-%m-%dT%H:%M:%SZ)] inject-partition.sh: OK: ${no} nao conecta a nenhum par em :7800"
 trap 'rm -f "${ST}/clsact-${p}"; echo "fault=F2 node=${no} event=end t_epoch_ns=$(vms)000000" >> "${marker}"; exit 143' TERM
 dormir "${dur}"
+# R3 da V-W6b: com ac5-previsto, a parada do java cai dentro da janela tambem com o host carregado
+if [[ -f "${ST}/ac5-previsto" ]]; then
+    for ((k = 0; k < 3000; k++)); do [[ "$(cat "${ST}/status-${no}" 2>/dev/null || echo running)" != running ]] && break; dormir 1; done
+fi
 # B1 da V-W6, como o real: no-alvo parado no fim da janela (AC-5) -> o netns sumiu, a soma dos contadores pelo
 # nsenter falha sob set -euo pipefail (inject-partition.sh:495) e o trap sai com 1, gravando o end
 if [[ "$(cat "${ST}/status-${no}" 2>/dev/null || echo running)" != running ]]; then
@@ -421,9 +499,27 @@ while [[ $# -gt 0 ]]; do
         --marker) marker="$2"; shift 2 ;; *) shift ;; esac
 done
 if [[ "${heal}" -eq 1 ]]; then [[ -f "${ST}/heal-falha" ]] && exit 1; rm -f "${ST}"/prio-*; exit 0; fi
-echo "fault=F4 node=${no} event=start t_epoch_ns=$(vms)000000" >> "${marker}"
 for n in isn1 isn2 isn3; do : > "${ST}/prio-$(pid_no "${n}")"; done
-dormir "${dur}"
+[[ -f "${ST}/inj-sem-start" ]] || echo "fault=F4 node=${no} event=start t_epoch_ns=$(vms)000000" >> "${marker}"
+: > "${ST}/falha-iniciada"
+pares=""; for n in isn1 isn2 isn3; do [[ "${n}" == "${no}" ]] || pares+="${pares:+ }${n}"; done
+# a linha que o inject-netdegrade.sh real escreve logo depois do start (inject-netdegrade.sh:748)
+[[ -f "${ST}/inj-sem-aplicada" ]] || echo "[$(date -u +%Y-%m-%dT%H:%M:%SZ)] inject-netdegrade.sh: degradacao aplicada: alvo ${no}, pares ${pares}, direcao both"
+# N1 da V-W6b, como o real: verificacao por ping (200 x 0,2 s = 40 s, inject-netdegrade.sh:755-779); com o alvo
+# parado durante o ping, sem resumo ou perda fora de 3 sigma: exit 6 e end no fim do ping, nao no fim da janela
+ping_s="$(cat "${ST}/f4-ping-s" 2>/dev/null || echo 40)"
+dormir "${ping_s}"
+# R3 da V-W6b: com ac5-previsto, o ping so acaba depois da parada do java (a parada cai dentro dele com o host carregado)
+if [[ -f "${ST}/ac5-previsto" ]]; then
+    for ((k = 0; k < 3000; k++)); do [[ "$(cat "${ST}/status-${no}" 2>/dev/null || echo running)" != running ]] && break; dormir 1; done
+fi
+if [[ "$(cat "${ST}/status-${no}" 2>/dev/null || echo running)" != running ]]; then
+    echo "Erro: a degradacao nao se efetivou ou nao foi mensuravel: sem resumo de ping (duble)" >&2
+    rm -f "${ST}"/prio-*
+    echo "fault=F4 node=${no} event=end t_epoch_ns=$(vms)000000" >> "${marker}"
+    exit 6
+fi
+resto=$(( dur - ping_s )); [[ "${resto}" -le 0 ]] || dormir "${resto}"
 # B1 da V-W6, como o real: alvo parado no fim da janela -> contadores zerados, exit 6 (inject-netdegrade.sh:809-821)
 if [[ "$(cat "${ST}/status-${no}" 2>/dev/null || echo running)" != running ]]; then
     rm -f "${ST}"/prio-*
@@ -459,17 +555,22 @@ novo_caso() {  # novo_caso <nome> [escala]
     amostras
 }
 
-parametros() {  # parametros [chave=valor ...]: arquivo campanha-s3/1 com origem "teste" em tudo
+parametros() {  # parametros [f3] [chave=valor ...]: campanha-s3/1 (ou /2 com "f3": W-6c) com origem "teste" em tudo
     "${REAL_PY}" -I - "${CASO}/parametros.json" "$@" <<'PY'
 import json, sys
 v = {"duracao_s": 60, "warmup_min_s": 30, "inj_offset_s": 10, "f1_no": "isn2", "f1_dur_s": 20, "f2_no": "isn3",
      "f2_dur_s": 20, "f4_no": "isn3", "f4_severidade": "N3", "f4_direcao": "both", "f4_dur_s": 20,
      "hotrod_timeout_ms": 2000, "convergencia_teto_s": 60, "convergencia_periodo_s": 5, "w_recovery_s": 30,
      "religamento_prazo_s": 30, "exec_teto_s": 200, "encerramento_folga_s": 2, "volume_exec_mb": 10}
-for kv in sys.argv[2:]:
+esquema = "campanha-s3/1"
+args = sys.argv[2:]
+if args[:1] == ["f3"]:
+    esquema, args = "campanha-s3/2", args[1:]
+    v.update({"f3_no": "isn2", "f3_delay_ms": 20, "f3_jitter_ms": 13, "f3_distribuicao": "normal", "f3_dur_s": 40})
+for kv in args:
     k, x = kv.split("=", 1)
     v[k] = int(x) if x.lstrip("-").isdigit() else x
-obj = {"esquema": "campanha-s3/1", "versao": "teste",
+obj = {"esquema": esquema, "versao": "teste",
        "parametros": {k: {"valor": x, "origem": "teste"} for k, x in v.items()}}
 open(sys.argv[1], "w", encoding="utf-8").write(json.dumps(obj))
 PY
@@ -606,6 +707,14 @@ ok "S1 dry-run: p2Habilitada true na calibracao -> exit 4" "4" "${RC}"
 contem "S1 dry-run: motivo p2Habilitada" "p2Habilitada" "${OUT6}"
 ok "S1 dry-runs recusados nao chamam java/podman/sudo/curl/systemctl" "0" "$(grep -cE ' (java|podman|podman-compose|sudo|curl|systemd-run|systemctl)([|]|$)' "${ST}/chamadas.log")"
 if [[ -n "${CS_TESTE_GUARDAR:-}" ]]; then printf '%s\n' "${OUT1}" > "${CS_TESTE_GUARDAR}/dry-run-calibracao.txt"; printf '%s\n' "${OUT2}" > "${CS_TESTE_GUARDAR}/dry-run-avaliacao.txt"; fi
+# R7 da V-W6b: o --help imprime o cabecalho ate o set -euo pipefail (antes cortava em 60 linhas fixas)
+AJUDA="$(bash "${ORQ}" --help 2>&1)"; RC=$?
+ok "S1 --help exit 0" "0" "${RC}"
+contem "S1 --help mostra as variaveis" "Variaveis: PODMAN" "${AJUDA}"
+contem "S1 --help mostra os exit codes" "Exit codes" "${AJUDA}"
+contem "S1 --help mostra o exit 11 (P-59)" "11 parada de memoria" "${AJUDA}"
+contem "S1 --help vai ate o fim do cabecalho" "NAO faz git push" "${AJUDA}"
+nao_contem "S1 --help nao imprime codigo" "set -euo pipefail" "${AJUDA}"
 fi
 
 # ============================================================================= S2
@@ -713,8 +822,12 @@ fi
 if quer S5; then
 echo "== S5: bloco A/B com F2; AC-5 no braco B: podman start do no parado ao ler a linha de fim da carga =="
 novo_caso s5
+# R3 da V-W6b, tambem aqui: o AC-5 do duble vem 2 s depois do start da F2 (antes, a dur/2 do relogio do java; sob
+# carga caia antes do disparo, e a guarda de netns parava a fase com 6, a O1 da V-W6b)
+parametros exec_teto_s=900
 matriz_aval "ASYNC-F2:teste:1"
 echo "127.0.0.1:11224" > "${ST}/ac5-alvo"
+echo 2 > "${ST}/ac5-apos-start"
 printf 'go nucleo %s\ngo rede 0\n' "${HOJE}" > "${CS_TTY_ARQUIVO}"
 rodar nucleo
 ok "S5 exit 0" "0" "${RC}"
@@ -1056,17 +1169,26 @@ fi
 # ============================================================================= S22
 if quer S22; then
 echo "== S22: B1 da V-W6: injetor de F2/F4 sai com 1/6 porque o AC-5 parou o no da falha -> pendente, nao recusa =="
-# Carga de 120 s: o java do shim para o no do AC-5 a dur/2 = +60 s da ancora; a janela da falha vai de +10 a +50 s
-# mais o atraso do disparo (no Git Bash o laco do orquestrador atrasa o disparo em 6 a 20 s virtuais na escala 20, e o
-# duble leva uns 10 s para gravar o start), entao acaba entre +60 s e +120 s com o alvo parado e o injetor sai como o
-# real (F2: 1; F4: 6). Com 60 s de carga a janela passava do fim e o religamento vinha antes do fim dela.
-for caso in f2 f4 f2-sem-ok; do
+# R3 da V-W6b: o duble de java para o no 2 s virtuais depois do start da falha (ac5-apos-start), nao a dur/2 do seu
+# relogio, e so escreve a linha de fim depois do end da falha; os dubles de F2/F4 esperam a parada (ac5-previsto)
+# antes de olhar o alvo, entao ela cai dentro da janela (F2) ou do ping (F4) mesmo com o host carregado. F2: janela de
+# 80 s numa carga de 120 s; o duble sai no fim da janela com o alvo parado (1). F4: janela de 300 s numa carga de 340 s
+# (sob carga o arranque do duble, do lancamento ao start, comia a folga de 80 s que a janela de 120 s dava ao N1);
+# como o real, o duble faz a verificacao por ping de 40 s e sai com 6 no fim dela (N1). Teto de 900 s: sob carga o
+# disparo atrasa e a carga espera o end. R4: no F4 o B1 exige a linha "degradacao aplicada: alvo <no>" e o start; na
+# F2, o start (alem da linha OK).
+for caso in f2 f4 f2-sem-ok f2-sem-start f4-sem-aplicada f4-sem-start; do
     novo_caso "s22-${caso}"
-    F="F2"; [[ "${caso}" == f4 ]] && F="F4"
-    parametros duracao_s=120 "${F,,}_dur_s=40" exec_teto_s=300
+    F="F2"; DUR=80; CARGA=120; [[ "${caso}" == f4* ]] && { F="F4"; DUR=300; CARGA=340; }
+    parametros duracao_s="${CARGA}" "${F,,}_dur_s=${DUR}" exec_teto_s=900
     matriz_aval "ASYNC-${F}:teste:1"
     echo "127.0.0.1:11224" > "${ST}/ac5-alvo"
-    [[ "${caso}" != f2-sem-ok ]] || : > "${ST}/inj-sem-ok"
+    echo 2 > "${ST}/ac5-apos-start"
+    case "${caso}" in
+        f2-sem-ok) : > "${ST}/inj-sem-ok" ;;
+        *-sem-start) : > "${ST}/inj-sem-start" ;;
+        f4-sem-aplicada) : > "${ST}/inj-sem-aplicada" ;;
+    esac
     printf 'go nucleo %s\ngo rede 0\n' "${HOJE}" > "${CS_TTY_ARQUIVO}"
     rodar nucleo
     ok "S22 ${caso}: exit 0 (a fase segue)" "0" "${RC}"
@@ -1074,17 +1196,31 @@ for caso in f2 f4 f2-sem-ok; do
     EXIT_ESP=1; [[ "${F}" == F4 ]] && EXIT_ESP=6
     ok "S22 ${caso}: o injetor do braco B saiu com ${EXIT_ESP} (duble fiel ao real)" "${EXIT_ESP}" "$(json "${DB}/execucao.json" 'd["injetor_exit"]')"
     ok "S22 ${caso}: alvo parado registrado na execucao" "isn3" "$(json "${DB}/execucao.json" 'd["injetor_alvo_parado"]')"
-    if [[ "${caso}" == f2-sem-ok ]]; then
-        ok "S22 ${caso}: sem a linha OK do corte, a recusa de antes" "RECUSADA" "$(json "${DB}/checagem.json" 'd["veredito"]')"
-        contem "S22 ${caso}: motivo cita a linha OK" "nao conecta a nenhum par" "$(json "${DB}/checagem.json" 'd["motivos"]')"
-    else
-        ok "S22 ${caso}: braco B ACEITA" "ACEITA" "$(json "${DB}/checagem.json" 'd["veredito"]')"
-        contem "S22 ${caso}: aviso da falha efetiva ate o AC-5" "contadores do injetor nao lidos" "$(json "${DB}/checagem.json" 'd["avisos"]')"
-        ok "S22 ${caso}: religamento de isn3 pela linha de fim" "isn3" "$(json "${DB}/execucao.json" 'd["religamento"]["no"]')"
-        DA="$(ls -d "${OUT}"/exec-*-ASYNC-${F}-A)"
-        ok "S22 ${caso}: braco A (no de pe) com injetor 0 e ACEITA" "0 ACEITA" "$(json "${DA}/execucao.json" 'd["injetor_exit"]') $(json "${DA}/checagem.json" 'd["veredito"]')"
-        ok "S22 ${caso}: braco A sem alvo parado" "None" "$(json "${DA}/execucao.json" 'd["injetor_alvo_parado"]')"
-    fi
+    case "${caso}" in
+        f2|f4)
+            ok "S22 ${caso}: braco B ACEITA" "ACEITA" "$(json "${DB}/checagem.json" 'd["veredito"]')"
+            contem "S22 ${caso}: aviso da falha efetiva ate o AC-5" "contadores do injetor nao lidos" "$(json "${DB}/checagem.json" 'd["avisos"]')"
+            ok "S22 ${caso}: religamento de isn3 pela linha de fim" "isn3" "$(json "${DB}/execucao.json" 'd["religamento"]["no"]')"
+            DA="$(ls -d "${OUT}"/exec-*-ASYNC-${F}-A)"
+            ok "S22 ${caso}: braco A (no de pe) com injetor 0 e ACEITA" "0 ACEITA" "$(json "${DA}/execucao.json" 'd["injetor_exit"]') $(json "${DA}/checagem.json" 'd["veredito"]')"
+            ok "S22 ${caso}: braco A sem alvo parado" "None" "$(json "${DA}/execucao.json" 'd["injetor_alvo_parado"]')"
+            # N1: fim nominal (inj_inicio_offset_s + dur) e saida do injetor, relativos a ancora, nos dois bracos
+            ok "S22 ${caso}: fim nominal = disparo + ${DUR} s (B)" "True" "$(json "${DB}/execucao.json" "abs(d['fim_nominal_desde_ancora_s'] - d['inj_inicio_offset_s'] - ${DUR}) < 0.01")"
+            ok "S22 ${caso}: braco A sai depois do fim nominal" "True" "$(json "${DA}/execucao.json" 'd["injetor_saida_desde_ancora_s"] >= d["fim_nominal_desde_ancora_s"]')"
+            if [[ "${F}" == F4 ]]; then
+                ok "S22 f4: N1, braco B sai no fim do ping, bem antes do fim nominal" "True" "$(json "${DB}/execucao.json" 'd["injetor_saida_desde_ancora_s"] < d["fim_nominal_desde_ancora_s"] - 20')"
+            else
+                ok "S22 f2: braco B sai no fim nominal (o end da F2 nao adianta)" "True" "$(json "${DB}/execucao.json" 'd["injetor_saida_desde_ancora_s"] >= d["fim_nominal_desde_ancora_s"]')"
+            fi ;;
+        *)
+            ok "S22 ${caso}: a recusa de antes" "RECUSADA" "$(json "${DB}/checagem.json" 'd["veredito"]')"
+            case "${caso}" in
+                f2-sem-ok) M="nao conecta a nenhum par" ;;
+                f4-sem-aplicada) M="degradacao aplicada: alvo isn3" ;;
+                *) M="sem o marcador start de ${F} em isn3" ;;
+            esac
+            contem "S22 ${caso}: motivo cita o que faltou" "${M}" "$(json "${DB}/checagem.json" 'd["motivos"]')" ;;
+    esac
 done
 novo_caso s22-neg
 matriz_calib "ASYNC-F2:calibracao:1"
@@ -1096,10 +1232,12 @@ D="$(exec_dir 0)"
 ok "S22 negativo: injetor 1 com o no de pe -> RECUSADA" "RECUSADA" "$(json "${D}/checagem.json" 'd["veredito"]')"
 contem "S22 negativo: motivo injetor" "injetor F2 saiu com 1" "$(json "${D}/checagem.json" 'd["motivos"]')"
 ok "S22 negativo: sem alvo parado" "None" "$(json "${D}/execucao.json" 'd["injetor_alvo_parado"]')"
+ok "S22 negativo: N1 tambem na calibracao (fim nominal e saida)" "True" "$(json "${D}/execucao.json" 'd["fim_nominal_desde_ancora_s"] is not None and d["injetor_saida_desde_ancora_s"] is not None')"
 novo_caso s22-sem-ac5
-parametros duracao_s=120 f2_dur_s=40 exec_teto_s=300
+parametros duracao_s=120 f2_dur_s=80 exec_teto_s=900
 matriz_calib "ASYNC-F2:calibracao:1"
 echo isn3 > "${ST}/java-para-sem-ac5"
+echo 2 > "${ST}/ac5-apos-start"
 printf 'go calibracao %s\ngo rede 0\n' "${HOJE}" > "${CS_TTY_ARQUIVO}"
 rodar calibracao
 ok "S22 no parado sem AC-5: exit 0 (a fase segue)" "0" "${RC}"
@@ -1189,8 +1327,12 @@ echo "== S25: F1 ainda em curso na linha de fim da carga: o O8 nao religa o no d
 # sai depois da ancora vista pelo orquestrador). Antes, o O8 religava isn2 por conta propria e, com o prefixo infra do
 # P-55, a execucao virava DESCARTADA-INFRA (achado na suite completa do W-6b, S4 i=1).
 novo_caso s25
-parametros f1_dur_s=50
+parametros f1_dur_s=50 exec_teto_s=900
 matriz_calib "ASYNC-F1:calibracao:1"
+# R8 da V-W6b: a linha de fim espera isn2 parado pelo inject-crash.sh, que so o religa 50 s depois; sem isso, sob
+# carga o kill atrasava, a linha chegava com isn2 de pe e a mutacao do S25 passava. Teto de 900 s: com quatro suites
+# em paralelo o kill chegou depois dos 200 s do teto padrao, e o timeout matava a carga antes da linha de fim
+: > "${ST}/java-espera-parado-isn2"
 printf 'go calibracao %s\n' "${HOJE}" > "${CS_TTY_ARQUIVO}"
 rodar calibracao
 ok "S25 exit 0" "0" "${RC}"
@@ -1199,47 +1341,314 @@ ok "S25 ACEITA" "ACEITA" "$(json "${D}/checagem.json" 'd["veredito"]')"
 ok "S25 linha de fim sem outros parados" "None" "$(json "${D}/execucao.json" 'd["sinal_fim_carga"]["outros_parados"]')"
 ok "S25 so o inject-crash.sh religou isn2 (um podman start)" "1" "$(conta ' podman|start|isn2')"
 ok "S25 marcadores do F1 completos" "start end" "$(sed -n 's/.*fault=F1 node=isn2 event=\([a-z]*\) .*/\1/p' "${D}/marcadores.txt" | paste -sd' ')"
+contem "S25 a linha de fim chegou com isn2 parado pelo F1 (o caminho do S25 foi exercitado)" "parado pelo F1 ainda em curso" "$(log_fase calibracao)"
 fi
 
 # ============================================================================= S26
 if quer S26; then
-echo "== S26: I-1 da V-W6: meta da trilha 1 s depois da ancora (gravadora com fila do W-2b): releitura a cada 0,2 s ate 5 s =="
+echo "== S26: W-6c: F3 com o inject-jitter.sh real: GO de rede, dead-man antes do netem, marcadores do orquestrador, netem a +2 s =="
+# Escala 5 e amostra do netem a +60 s virtuais do disparo (CS_NETEM_EFETIVA_MS, so com CS_MODO_TESTE=1): no Git Bash o
+# injetor real leva cerca de 3,6 s reais para aplicar o netem pelos shims (dezenas de processos bash: sudo, podman,
+# nsenter, sh, tc), e o laco do orquestrador anda em passos de 0,1 a 0,2 s reais. Com a escala 20 isso passava de 70 s
+# virtuais e a amostra caia antes do netem ou depois do fim da janela. O valor do protocolo, +2 s, e conferido no
+# --dry-run (S26g) e no S26b, sem o ajuste.
+novo_caso s26 5
+parametros f3 duracao_s=160 f3_dur_s=120 exec_teto_s=900
+matriz_aval "ASYNC-F3:descritiva:1"
+printf 'go nucleo %s\ngo rede 0\n' "${HOJE}" > "${CS_TTY_ARQUIVO}"
+CS_NETEM_EFETIVA_MS=60000 rodar nucleo
+ok "S26 exit 0" "0" "${RC}"
+DA="$(ls -d "${OUT}"/exec-*-ASYNC-F3-A)"; DB="$(ls -d "${OUT}"/exec-*-ASYNC-F3-B)"
+for D in "${DA}" "${DB}"; do
+    b="${D: -1}"
+    ok "S26 ${b}: ACEITA" "ACEITA" "$(json "${D}/checagem.json" 'd["veredito"]')"
+    ok "S26 ${b}: marcadores start e end do orquestrador" "start end" "$(sed -n 's/^fault=F3 node=isn2 event=\([a-z]*\) t_epoch_ns=[0-9]*$/\1/p' "${D}/marcadores.txt" | paste -sd' ')"
+    ok "S26 ${b}: injetor 0" "0" "$(json "${D}/execucao.json" 'd["injetor_exit"]')"
+    ok "S26 ${b}: netem na raiz de isn2 na amostra depois do disparo" "True" "$(json "${D}/execucao.json" 'd["falha_efetiva"]["netem_efetiva"]["netem"]')"
+    ok "S26 ${b}: dead-man de 120 + 90 s armado" "True 210" "$(json "${D}/execucao.json" 'd["deadman"]["armado"]') $(json "${D}/execucao.json" 'd["deadman"]["on_active_s"]')"
+    ok "S26 ${b}: sem resto de rede depois" "False" "$(json "${D}/execucao.json" 'd["rede_pos"]["residuo"]')"
+    contem "S26 ${b}: injetor com os parametros do campanha-s3/2" "NODE=isn2 IFACE=eth0 DELAY=20ms JITTER=13ms DIST=normal DURACAO=120s" "$(cat "${D}/injetor.log")"
+done
+G="$(json "${OUT}/nucleo/gates.json" '[g["tipo"] for g in d["execucoes_do_orquestrador"][-1]["gates"]]')"
+ok "S26 GO de rede antes da primeira F3" "['fase', 'rede']" "${G}"
+SR="$(linha_de 'systemd-run|')"; ADD="$(linha_de 'qdisc|add|dev|eth0|root|netem')"
+verdade "S26 dead-man armado antes do netem (e da sonda do injetor)" test "${SR}" -gt 0 -a "${SR}" -lt "${ADD}"
+contem "S26 dead-man: nsenter no PID de isn2 e tc qdisc del da raiz, 210 s, AccuracySec=1s" "--on-active=210s|--timer-property=AccuracySec=1s|${SH}/nsenter|-t|1002|-n|${SH}/tc|qdisc|del|dev|eth0|root" "$(grep 'systemd-run|' "${ST}/chamadas.log" | head -1)"
+contem "S26 dead-man na unit tcc-heal-cs-<i>" "--unit=tcc-heal-cs-" "$(grep 'systemd-run|' "${ST}/chamadas.log" | head -1)"
+ok "S26 nenhum netem sobrando" "0" "$(ls "${ST}"/netem-* 2>/dev/null | grep -c .)"
+ok "S26 nenhum timer sobrando" "0" "$(ls "${ST}"/timer-* 2>/dev/null | grep -c .)"
+contem "S26 bundle cobre o inject-jitter.sh" "inject-jitter.sh" "$(cat "${OUT}/nucleo/bundle.sha256")"
+INI="$(sed -n 's/^fault=F3 node=isn2 event=start t_epoch_ns=\([0-9]*\)$/\1/p' "${DA}/marcadores.txt")"
+FIM="$(sed -n 's/^fault=F3 node=isn2 event=end t_epoch_ns=\([0-9]*\)$/\1/p' "${DA}/marcadores.txt")"
+verdade "S26 end depois do start" test "${FIM:-0}" -gt "${INI:-0}"
+
+echo "-- S26b: netem ausente a +2 s do disparo -> RECUSADA (B-40 secao 4.3); +2 s sem ajuste"
+novo_caso s26b
+parametros f3
+matriz_calib "ASYNC-F3:calibracao:1"
+: > "${ST}/tc-netem-some"
+printf 'go calibracao %s\ngo rede 0\n' "${HOJE}" > "${CS_TTY_ARQUIVO}"
+rodar calibracao
+ok "S26b exit 0 (a fase segue)" "0" "${RC}"
+D="$(exec_dir 0)"
+ok "S26b RECUSADA" "RECUSADA" "$(json "${D}/checagem.json" 'd["veredito"]')"
+contem "S26b motivo sem netem" "F3 sem netem em isn2 a +2 s do disparo" "$(json "${D}/checagem.json" 'd["motivos"]')"
+ok "S26b amostra a +2 s, sem netem" "2 False" "$(json "${D}/execucao.json" 'd["falha_efetiva"]["netem_efetiva"]["apos_disparo_s"]') $(json "${D}/execucao.json" 'd["falha_efetiva"]["netem_efetiva"]["netem"]')"
+
+echo "-- S26c: netem rejeitado pelo kernel (exit 5) com o no de pe -> exit 6, sem netem, dead-man desarmado"
+novo_caso s26c
+parametros f3
+matriz_calib "ASYNC-F3:calibracao:1"
+: > "${ST}/tc-rejeita-netem"
+printf 'go calibracao %s\ngo rede 0\n' "${HOJE}" > "${CS_TTY_ARQUIVO}"
+rodar calibracao
+ok "S26c exit 6" "6" "${RC}"
+D="$(exec_dir 0)"
+ok "S26c injetor 5" "5" "$(json "${D}/execucao.json" 'd["injetor_exit"]')"
+ok "S26c DESCARTADA-INFRA" "DESCARTADA-INFRA" "$(json "${D}/checagem.json" 'd["veredito"]')"
+contem "S26c motivo" "injetor F3 saiu com 5" "$(tail -1 "${OUT}/calibracao/orquestrador.log")"
+ok "S26c sem timer" "0" "$(ls "${ST}"/timer-* 2>/dev/null | grep -c .)"
+
+echo "-- S26d: netem que o injetor e o orquestrador nao removem -> exit 6, dead-man mantido"
+novo_caso s26d 5
+parametros f3 duracao_s=160 f3_dur_s=120 exec_teto_s=900
+matriz_calib "ASYNC-F3:calibracao:1"
+: > "${ST}/tc-del-falha"
+printf 'go calibracao %s\ngo rede 0\n' "${HOJE}" > "${CS_TTY_ARQUIVO}"
+CS_NETEM_EFETIVA_MS=60000 rodar calibracao
+ok "S26d exit 6" "6" "${RC}"
+contem "S26d motivo resto de rede" "resto de rede" "$(tail -1 "${OUT}/calibracao/orquestrador.log")"
+ok "S26d dead-man continua armado" "1" "$(ls "${ST}"/timer-* 2>/dev/null | grep -c .)"
+ok "S26d remocao extra registrada" "True True" "$(json "$(exec_dir 0)/execucao.json" 'd["rede_pos"]["heal_extra"]') $(json "$(exec_dir 0)/execucao.json" 'd["rede_pos"]["residuo"]')"
+
+echo "-- S26e: B1 no F3: o AC-5 do braco B para isn2 sob o netem; o injetor sai com 0 -> aviso, ACEITA"
+# escala 5, carga de 220 s: AC-5 do duble 90 s virtuais depois do start do F3 (o marcador do orquestrador; R3 da
+# V-W6b), depois da amostra do netem a +60 s do disparo; netem por 180 s
+novo_caso s26e 5
+parametros f3 duracao_s=220 f3_dur_s=180 exec_teto_s=900
+matriz_aval "ASYNC-F3:descritiva:1"
+echo "127.0.0.1:11223" > "${ST}/ac5-alvo"
+echo 90 > "${ST}/ac5-apos-start"
+printf 'go nucleo %s\ngo rede 0\n' "${HOJE}" > "${CS_TTY_ARQUIVO}"
+CS_NETEM_EFETIVA_MS=60000 rodar nucleo
+ok "S26e exit 0" "0" "${RC}"
+DB="$(ls -d "${OUT}"/exec-*-ASYNC-F3-B)"; DA="$(ls -d "${OUT}"/exec-*-ASYNC-F3-A)"
+ok "S26e B: injetor 0 com isn2 parado" "0 isn2" "$(json "${DB}/execucao.json" 'd["injetor_exit"]') $(json "${DB}/execucao.json" 'd["injetor_alvo_parado"]')"
+ok "S26e B: ACEITA" "ACEITA" "$(json "${DB}/checagem.json" 'd["veredito"]')"
+contem "S26e B: aviso da falha efetiva ate o AC-5" "falha efetiva ate a parada do no pelo AC-5" "$(json "${DB}/checagem.json" 'd["avisos"]')"
+ok "S26e B: religamento de isn2" "isn2" "$(json "${DB}/execucao.json" 'd["religamento"]["no"]')"
+ok "S26e A: injetor 0, sem alvo parado, ACEITA" "0 None ACEITA" "$(json "${DA}/execucao.json" 'd["injetor_exit"]') $(json "${DA}/execucao.json" 'd["injetor_alvo_parado"]') $(json "${DA}/checagem.json" 'd["veredito"]')"
+ok "S26e nenhum netem sobrando" "0" "$(ls "${ST}"/netem-* 2>/dev/null | grep -c .)"
+ok "S26e N1 no F3: fim nominal e saida do injetor registrados" "True" "$(json "${DB}/execucao.json" 'abs(d["fim_nominal_desde_ancora_s"] - d["inj_inicio_offset_s"] - 180) < 0.01 and d["injetor_saida_desde_ancora_s"] is not None')"
+
+
+echo "-- S26f: TERM no orquestrador com o F3 em curso: netem removido, end gravado, dead-man desarmado"
+novo_caso s26f 5
+parametros f3 duracao_s=160 f3_dur_s=120 exec_teto_s=900
+matriz_calib "ASYNC-F3:calibracao:1"
+printf 'go calibracao %s\ngo rede 0\n' "${HOJE}" > "${CS_TTY_ARQUIVO}"
+CS_NETEM_EFETIVA_MS=60000 rodar_fundo calibracao
+verdade "S26f netem aplicado" esperar_por 'qdisc|add|dev|eth0|root|netem|delay|20ms' 120
+kill -TERM "${BG}"; wait "${BG}"; RC=$?
+ok "S26f exit 143" "143" "${RC}"
+ok "S26f sem netem" "0" "$(ls "${ST}"/netem-* 2>/dev/null | grep -c .)"
+ok "S26f sem timer" "0" "$(ls "${ST}"/timer-* 2>/dev/null | grep -c .)"
+ok "S26f marcadores start e end" "start end" "$(sed -n 's/^fault=F3 node=isn2 event=\([a-z]*\) .*/\1/p' "$(exec_dir 0)/marcadores.txt" | paste -sd' ')"
+
+echo "-- S26g: pre-voo: netem sobrando na raiz de um no -> exit 4; F3 sem o campanha-s3/2 -> exit 4; GO de rede errado -> 5"
+novo_caso s26g
+parametros f3
+matriz_calib "ASYNC-F3:calibracao:1"
+: > "${ST}/netem-1001"
+printf 'go calibracao %s\ngo rede 0\n' "${HOJE}" > "${CS_TTY_ARQUIVO}"
+rodar calibracao
+ok "S26g netem na raiz de isn1 no pre-voo -> exit 4" "4" "${RC}"
+contem "S26g motivo cita isn1" "isn1" "${SAIDA_TXT}"
+ok "S26g sem compose nem carga" "0" "$(( $(conta 'podman-compose|') + $(cargas) ))"
+rm -f "${ST}/netem-1001"
+parametros
+rodar calibracao
+ok "S26g F3 com campanha-s3/1 -> exit 4" "4" "${RC}"
+contem "S26g motivo esquema" "campanha-s3/2" "${SAIDA_TXT}"
+OUTD="$(PATH="${PATH_TESTE}" bash "${ORQ}" --dry-run --matriz "${MAT}" --matriz-sha256 "${MAT_SHA}" --fase calibracao \
+    --parametros "${PARAMS}" --parametros-sha256 "${PARAMS_SHA}" --controlador "${CTRL}" --controlador-sha256 "${CTRL_SHA}" \
+    "${REFS[@]}" --saida "${OUT}" 2>&1)"; RC=$?
+ok "S26g F3 com campanha-s3/1 -> exit 4 tambem no --dry-run" "4" "${RC}"
+parametros f3 inj_offset_s=49 f3_dur_s=251 duracao_s=300 exec_teto_s=500
+OUTD="$(PATH="${PATH_TESTE}" bash "${ORQ}" --dry-run --matriz "${MAT}" --matriz-sha256 "${MAT_SHA}" --fase calibracao \
+    --parametros "${PARAMS}" --parametros-sha256 "${PARAMS_SHA}" --controlador "${CTRL}" --controlador-sha256 "${CTRL_SHA}" \
+    "${REFS[@]}" --saida "${OUT}" 2>&1)"; RC=$?
+ok "S26g dry-run com os numeros do rebaseline: exit 0" "0" "${RC}"
+contem "S26g plano do F3 (parametros do rebaseline, PR secao 2 e DT-011)" "F3: inject-jitter.sh --node isn2 --iface eth0 --delay 20ms --jitter 13ms --distribution normal --duration 251 a +49 s da ancora; marcadores pelo orquestrador; netem conferido a +2 s do disparo; dead-man 341 s" "${OUTD}"
+printf 'go calibracao %s\ngo rede 9\n' "${HOJE}" > "${CS_TTY_ARQUIVO}"
+parametros f3
+rodar calibracao
+ok "S26g GO de rede errado antes da primeira F3 -> exit 5" "5" "${RC}"
+ok "S26g nenhum netem sem o GO" "0" "$(grep -c 'tc|.*|qdisc|add' "${ST}/chamadas.log")"
+fi
+
+# ============================================================================= S26h
+if quer S26h; then
+echo "== S26h: W-6c: raiz do no do F3 ocupada no disparo (F2/F4 de fora) -> exit 6, sem netem nem dead-man =="
+novo_caso s26h
+parametros f3
+matriz_calib "ASYNC-F3:calibracao:1"
+echo 1002 > "${ST}/tc-prio-apos-ancora"
+printf 'go calibracao %s\ngo rede 0\n' "${HOJE}" > "${CS_TTY_ARQUIVO}"
+rodar calibracao
+ok "S26h exit 6" "6" "${RC}"
+contem "S26h motivo raiz ocupada" "raiz de isn2 ocupada ou ilegivel antes da F3" "$(tail -1 "${OUT}/calibracao/orquestrador.log")"
+ok "S26h nenhum netem aplicado nem dead-man armado" "0 0" "$(grep -c 'tc|.*|qdisc|add' "${ST}/chamadas.log") $(grep -c ' systemd-run|' "${ST}/chamadas.log")"
+fi
+
+# ============================================================================= S27
+if quer S27; then
+echo "== S27: W-6c: swap no portao: registrado sempre; com --swap-limite-kb e swap >= limite, recria antes (mesmo i e semente) =="
+novo_caso s27
+matriz_calib "ASYNC-none:calibracao:1"
+printf 'MemTotal:       24000000 kB\nSwapTotal:       4194300 kB\nSwapFree:        3145724 kB\n' > "${SH}/meminfo"
+printf 'go calibracao %s\n' "${HOJE}" > "${CS_TTY_ARQUIVO}"
+rodar calibracao
+ok "S27 sem limite: exit 0" "0" "${RC}"
+D="$(exec_dir 0)"
+ok "S27 sem limite: swap_usado_kb_k1 registrado (SwapTotal - SwapFree)" "1048576" "$(json "${D}/execucao.json" 'd["swap_usado_kb_k1"]')"
+ok "S27 sem limite: sem recriacao a mais" "1 None False" "$(grep -c ' podman-compose|.*|up|-d' "${ST}/chamadas.log") $(json "${D}/execucao.json" 'd["swap_portao"]["limite_kb"]') $(json "${D}/execucao.json" 'd["swap_portao"]["recriado"]')"
+
+echo "-- S27b: limite 1048576, swap = limite no portao da primeira -> recria e roda; a segunda ja abaixo"
+novo_caso s27b
+matriz_calib "ASYNC-none:calibracao:2"
+printf 'MemTotal:       24000000 kB\nSwapTotal:       4194300 kB\nSwapFree:        3145724 kB\n' > "${SH}/meminfo"
+printf 'MemTotal:       24000000 kB\nSwapTotal:       4194300 kB\nSwapFree:        4194044 kB\n' > "${ST}/meminfo-apos-down-2"
+printf 'go calibracao %s\n' "${HOJE}" > "${CS_TTY_ARQUIVO}"
+rodar calibracao --swap-limite-kb 1048576
+ok "S27b exit 0" "0" "${RC}"
+D0="$(exec_dir 0)"; D1="$(exec_dir 1)"
+ok "S27b i=0 ACEITA (recriar nao e recusa)" "ACEITA" "$(json "${D0}/checagem.json" 'd["veredito"]')"
+ok "S27b i=0 leituras e recriacao" "[1048576, 256] True 1048576" "$(json "${D0}/execucao.json" 'd["swap_portao"]["leituras_kb"]') $(json "${D0}/execucao.json" 'd["swap_portao"]["recriado"]') $(json "${D0}/execucao.json" 'd["swap_portao"]["limite_kb"]')"
+ok "S27b i=0 swap_usado_kb_k1 = leitura antes do lancamento" "256" "$(json "${D0}/execucao.json" 'd["swap_usado_kb_k1"]')"
+ok "S27b i=1 sem recriacao a mais" "[256] False" "$(json "${D1}/execucao.json" 'd["swap_portao"]["leituras_kb"]') $(json "${D1}/execucao.json" 'd["swap_portao"]["recriado"]')"
+ok "S27b tres ups (duas execucoes e uma recriacao pelo swap)" "3" "$(grep -c ' podman-compose|.*|up|-d' "${ST}/chamadas.log")"
+ok "S27b i=0 roda uma vez com a semente 60000" "1" "$(grep -c ' java|-jar|.*|--seed|60000|' "${ST}/chamadas.log" | head -1)"
+verdade "S27b brutos da primeira recriacao guardados" test -f "${D0}/antes-recriacao-swap/compose-up.log" -a -s "${D0}/antes-recriacao-swap/portao.json" -a -s "${D0}/antes-recriacao-swap/caches.tsv"
+verdade "S27b K1 de novo depois da recriacao" test -s "${D0}/portao.json"
+contem "S27b log da recriacao pelo swap" "swap 1048576 kB >= 1048576 kB" "$(cat "${OUT}/calibracao/orquestrador.log")"
+
+echo "-- S27c: swap continua >= limite depois da recriacao -> a fase para com 11 sem rodar a execucao (P-59); retomada roda o mesmo i"
+novo_caso s27c
+matriz_calib "ASYNC-none:calibracao:1"
+printf 'MemTotal:       24000000 kB\nSwapTotal:       4194300 kB\nSwapFree:        2000000 kB\n' > "${SH}/meminfo"
+printf 'go calibracao %s\n' "${HOJE}" > "${CS_TTY_ARQUIVO}"
+rodar calibracao --swap-limite-kb 1048576
+ok "S27c exit 11 (parada de memoria, decisao do coordenador sobre o P-59)" "11" "${RC}"
+D="$(exec_dir 0)"
+ok "S27c a execucao nao rodou (nenhuma carga)" "0" "$(cargas)"
+ok "S27c dois ups (a recriacao pelo swap aconteceu)" "2" "$(grep -c ' podman-compose|.*|up|-d' "${ST}/chamadas.log")"
+contem "S27c motivo na ultima linha do log" "parada swap: swap continua 2194300 kB >= 1048576 kB depois da recriacao" "$(tail -1 "${OUT}/calibracao/orquestrador.log")"
+contem "S27c motivo no execucao.json" "swap continua 2194300 kB >= 1048576 kB depois da recriacao" "$(json "${D}/execucao.json" 'd["swap_portao"]["parada"]')"
+ok "S27c leituras no execucao.json" "[2194300, 2194300] True 2194300" "$(json "${D}/execucao.json" 'd["swap_portao"]["leituras_kb"]') $(json "${D}/execucao.json" 'd["swap_portao"]["recriado"]') $(json "${D}/execucao.json" 'd["swap_usado_kb_k1"]')"
+verdade "S27c sem checagem.json (nao e veredito da execucao)" test ! -e "${D}/checagem.json"
+# retomada com o swap baixo: o diretorio sem stdout.log vira .abortada-<UTC> (DT-014) e o mesmo i roda
+printf 'MemTotal:       24000000 kB\nSwapTotal:       4194300 kB\nSwapFree:        4194300 kB\n' > "${SH}/meminfo"
+rodar calibracao --swap-limite-kb 1048576
+ok "S27c retomada exit 0" "0" "${RC}"
+verdade "S27c diretorio da parada guardado como abortada" test -s "$(ls -d "${OUT}"/exec-0000-ASYNC-none-A.abortada-* 2>/dev/null | head -1)/execucao.json"
+ok "S27c o mesmo i roda na retomada (semente 60000, uma carga)" "1" "$(grep -c ' java|-jar|.*|--seed|60000|' "${ST}/chamadas.log")"
+ok "S27c ACEITA na retomada" "ACEITA" "$(json "$(exec_dir 0)/checagem.json" 'd["veredito"]')"
+
+echo "-- S27d: --swap-limite-kb invalido -> 2; /proc/meminfo sem Swap com limite -> 4 no pre-voo; dry-run mostra o limite"
+novo_caso s27d
+matriz_calib "ASYNC-none:calibracao:1"
+printf 'go calibracao %s\n' "${HOJE}" > "${CS_TTY_ARQUIVO}"
+for ruim in 0 -5 abc 1.5; do
+    rodar calibracao --swap-limite-kb "${ruim}"
+    ok "S27d --swap-limite-kb ${ruim} -> exit 2" "2" "${RC}"
+done
+printf 'MemTotal:       24000000 kB\n' > "${SH}/meminfo"
+rodar calibracao --swap-limite-kb 1048576
+ok "S27d meminfo sem Swap com limite -> exit 4" "4" "${RC}"
+contem "S27d motivo meminfo" "meminfo" "${SAIDA_TXT}"
+ok "S27d sem compose" "0" "$(conta 'podman-compose|')"
+OUTD="$(PATH="${PATH_TESTE}" bash "${ORQ}" --dry-run --matriz "${MAT}" --matriz-sha256 "${MAT_SHA}" --fase calibracao \
+    --parametros "${PARAMS}" --parametros-sha256 "${PARAMS_SHA}" --controlador "${CTRL}" --controlador-sha256 "${CTRL_SHA}" \
+    "${REFS[@]}" --saida "${OUT}" --swap-limite-kb 1048576 --exigir-trilha-completa 2>&1)"; RC=$?
+ok "S27d dry-run exit 0" "0" "${RC}"
+contem "S27d dry-run mostra as opcoes" "swap_limite_kb=1048576 exigir_trilha_completa=sim" "${OUTD}"
+fi
+
+# ============================================================================= S28
+if quer S28; then
+echo "== S28: W-6c: trilha sem fim ou com linhas_perdidas > 0 -> trilha_incompleta; com --exigir-trilha-completa, DESCARTADA-INFRA =="
+novo_caso s28
+matriz_calib "ASYNC-none:calibracao:1"
+printf 'go calibracao %s\n' "${HOJE}" > "${CS_TTY_ARQUIVO}"
+rodar calibracao --exigir-trilha-completa
+ok "S28 trilha completa: exit 0, ACEITA, trilha_incompleta false" "0 ACEITA False" "${RC} $(json "$(exec_dir 0)/checagem.json" 'd["veredito"]') $(json "$(exec_dir 0)/execucao.json" 'd["trilha_incompleta"]')"
+ok "S28 trilha completa: linhas_perdidas 0 registrado" "True 0" "$(json "$(exec_dir 0)/execucao.json" 'd["trilha"]["fim"]') $(json "$(exec_dir 0)/execucao.json" 'd["trilha"]["linhas_perdidas"]')"
+rodar calibracao
+ok "S28 retomada sem a opcao (bundle de opcoes mudou) -> exit 4" "4" "${RC}"
+contem "S28 motivo bundle" "bundle mudou" "${SAIDA_TXT}"
+for caso in perdidas sem-fim; do
+    for exigir in nao sim; do
+        novo_caso "s28-${caso}-${exigir}"
+        matriz_calib "ASYNC-none:calibracao:1"
+        if [[ "${caso}" == perdidas ]]; then echo 2 > "${ST}/linhas-perdidas"; else : > "${ST}/java-sem-fim"; fi
+        printf 'go calibracao %s\n' "${HOJE}" > "${CS_TTY_ARQUIVO}"
+        if [[ "${exigir}" == sim ]]; then rodar calibracao --exigir-trilha-completa; else rodar calibracao; fi
+        D="$(exec_dir 0)"
+        ok "S28 ${caso} exigir=${exigir}: exit 0 (a fase segue)" "0" "${RC}"
+        ok "S28 ${caso} exigir=${exigir}: trilha_incompleta" "True" "$(json "${D}/execucao.json" 'd["trilha_incompleta"]')"
+        if [[ "${caso}" == perdidas ]]; then M="linhas_perdidas = 2"; else M="sem a linha fim"; fi
+        contem "S28 ${caso} exigir=${exigir}: motivo no execucao.json" "${M}" "$(json "${D}/execucao.json" 'd["trilha"]["motivo"]')"
+        if [[ "${exigir}" == sim ]]; then
+            ok "S28 ${caso}: DESCARTADA-INFRA" "DESCARTADA-INFRA" "$(json "${D}/checagem.json" 'd["veredito"]')"
+            contem "S28 ${caso}: motivo infra" "infra: trilha de decisoes incompleta (${M}" "$(json "${D}/checagem.json" 'd["motivos"]')"
+        else
+            ok "S28 ${caso}: sem a opcao, ACEITA" "ACEITA" "$(json "${D}/checagem.json" 'd["veredito"]')"
+            contem "S28 ${caso}: aviso" "trilha de decisoes incompleta (${M}" "$(json "${D}/checagem.json" 'd["avisos"]')"
+        fi
+    done
+done
+fi
+
+# ============================================================================= S29
+if quer S29; then
+echo "== S29: I-1 da V-W6: meta da trilha 1 s depois da ancora (gravadora com fila do W-2b): releitura a cada 0,2 s ate 5 s =="
 # Escala 4: o prazo de 5 s virtuais e 1,25 s reais, varias leituras do python do Windows. O duble so grava a meta
 # depois de uma leitura que saiu com 4, entao a primeira leitura sempre falha.
-novo_caso s26 4
+novo_caso s29 4
 python_anota_meta
 matriz_calib "ASYNC-none:calibracao:1"
 echo 1 > "${ST}/java-meta-atraso"
 printf 'go calibracao %s\n' "${HOJE}" > "${CS_TTY_ARQUIVO}"
 rodar calibracao
-ok "S26 meta atrasada: exit 0 (a fase nao para)" "0" "${RC}"
+ok "S29 meta atrasada: exit 0 (a fase nao para)" "0" "${RC}"
 D="$(exec_dir 0)"
-ok "S26 meta atrasada: ACEITA" "ACEITA" "$(json "${D}/checagem.json" 'd["veredito"]' 2>/dev/null)"
-ok "S26 primeira leitura da meta saiu com 4 (arquivo ainda ausente)" "4" "$(head -1 "${ST}/py-meta-rc" 2>/dev/null)"
-ok "S26 ultima leitura da meta saiu com 0" "0" "$(tail -1 "${ST}/py-meta-rc" 2>/dev/null)"
-verdade "S26 carga nao foi parada" test -z "$(cat "${ST}"/java-morto-* 2>/dev/null)"
-contem "S26 log da releitura" "meta da trilha lida na leitura" "$(log_fase calibracao)"
+ok "S29 meta atrasada: ACEITA" "ACEITA" "$(json "${D}/checagem.json" 'd["veredito"]' 2>/dev/null)"
+ok "S29 primeira leitura da meta saiu com 4 (arquivo ainda ausente)" "4" "$(head -1 "${ST}/py-meta-rc" 2>/dev/null)"
+ok "S29 ultima leitura da meta saiu com 0" "0" "$(tail -1 "${ST}/py-meta-rc" 2>/dev/null)"
+verdade "S29 carga nao foi parada" test -z "$(cat "${ST}"/java-morto-* 2>/dev/null)"
+contem "S29 log da releitura" "meta da trilha lida na leitura" "$(log_fase calibracao)"
 
-echo "== S26n: meta que nao chega em 5 s: carga parada, DESCARTADA-INFRA sem injecao, e a fase segue (exit 0, nao 6) =="
+echo "== S29n: meta que nao chega em 5 s: carga parada, DESCARTADA-INFRA sem injecao, e a fase segue (exit 0, nao 6) =="
 # inj_offset_s = 3 s, antes do fim do prazo da meta: a falha nao pode ser disparada numa carga ja parada.
-novo_caso s26n 4
+novo_caso s29n 4
 python_anota_meta
 parametros inj_offset_s=3
 matriz_calib "ASYNC-F1:calibracao:2"
 : > "${ST}/java-meta-nunca"
 printf 'go calibracao %s\n' "${HOJE}" > "${CS_TTY_ARQUIVO}"
 rodar calibracao
-ok "S26n exit 0 (disco lento nao e erro de configuracao)" "0" "${RC}"
+ok "S29n exit 0 (disco lento nao e erro de configuracao)" "0" "${RC}"
 D0="$(exec_dir 0)"; D1="$(exec_dir 1)"
-ok "S26n i=0 DESCARTADA-INFRA" "DESCARTADA-INFRA" "$(json "${D0}/checagem.json" 'd["veredito"]' 2>/dev/null)"
-contem "S26n i=0 motivo meta ausente" "meta da trilha ausente ou ilegivel" "$(json "${D0}/checagem.json" 'd["motivos"]' 2>/dev/null)"
-ok "S26n i=1 ACEITA (a fase seguiu)" "ACEITA" "$(json "${D1}/checagem.json" 'd["veredito"]' 2>/dev/null)"
-ok "S26n uma carga parada (a de i=0)" "1" "$(ls "${ST}"/java-morto-* 2>/dev/null | wc -l | tr -d ' ')"
+ok "S29n i=0 DESCARTADA-INFRA" "DESCARTADA-INFRA" "$(json "${D0}/checagem.json" 'd["veredito"]' 2>/dev/null)"
+contem "S29n i=0 motivo meta ausente" "meta da trilha ausente ou ilegivel" "$(json "${D0}/checagem.json" 'd["motivos"]' 2>/dev/null)"
+ok "S29n i=1 ACEITA (a fase seguiu)" "ACEITA" "$(json "${D1}/checagem.json" 'd["veredito"]' 2>/dev/null)"
+ok "S29n uma carga parada (a de i=0)" "1" "$(ls "${ST}"/java-morto-* 2>/dev/null | wc -l | tr -d ' ')"
 N4="$(grep -cx 4 "${ST}/py-meta-rc" 2>/dev/null)"
-verdade "S26n i=0 releu a meta (mais de uma leitura com 4)" test "${N4:-0}" -ge 2
-ok "S26n i=0 sem injecao (marcadores vazios)" "" "$(grep -F 'fault=F1' "${D0}/marcadores.txt" 2>/dev/null)"
+verdade "S29n i=0 releu a meta (mais de uma leitura com 4)" test "${N4:-0}" -ge 2
+ok "S29n i=0 sem injecao (marcadores vazios)" "" "$(grep -F 'fault=F1' "${D0}/marcadores.txt" 2>/dev/null)"
 # ' podman|kill|': so a linha do shim de podman (a do sudo, "sudo|podman|kill|...", contaria a mesma chamada duas vezes)
-ok "S26n um so podman kill (o F1 de i=1)" "1" "$(conta ' podman|kill|')"
+ok "S29n um so podman kill (o F1 de i=1)" "1" "$(conta ' podman|kill|')"
 fi
 
 echo

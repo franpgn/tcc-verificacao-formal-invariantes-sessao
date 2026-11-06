@@ -10,6 +10,10 @@
 - trilha: o alvo do AC-5 APLICADA na trilha (regra de ac5_aplicada do comparar_bracos.py) bate com o da linha de
   fim da carga.
 - referencia (B2 da V-W6): a referencia de p99 de cada modo de replicacao e do cenario S3 e do perfil daquele modo.
+- W-6c: esquema campanha-s3/2 = campanha-s3/1 mais os cinco numeros do F3 (f3_no, f3_delay_ms, f3_jitter_ms,
+  f3_distribuicao, f3_dur_s), cada um com origem; o /1 continua valido (calibracao sem F3). Trilha completa: linha
+  fim presente e linhas_perdidas = 0 (contrato JSONL 1.2, linha fim de decisoes); o orquestrador marca
+  trilha_incompleta e, com --exigir-trilha-completa, descarta como infraestrutura (B-7 do B-40).
 
 Uso: python -I scripts/test_campanha_s3_conferir.py
 """
@@ -45,6 +49,21 @@ def parametros_validos():
             "parametros": {k: {"valor": x, "origem": "teste"} for k, x in v.items()}}
 
 
+F3_REBASELINE = {"f3_no": "isn2", "f3_delay_ms": 20, "f3_jitter_ms": 13, "f3_distribuicao": "normal",
+                 "f3_dur_s": 251}
+
+
+def parametros_v2(**f3):
+    """campanha-s3/2: os de campanha-s3/1 mais os do F3 (W-6c; B-40 secao 4.3, valores do rebaseline, PR secao 2 e
+    DT-011)."""
+    obj = parametros_validos()
+    obj["esquema"] = "campanha-s3/2"
+    v = dict(F3_REBASELINE)
+    v.update(f3)
+    obj["parametros"].update({k: {"valor": x, "origem": "teste"} for k, x in v.items()})
+    return obj
+
+
 def escrever(d, nome, obj):
     p = Path(d) / nome
     p.write_text(obj if isinstance(obj, str) else json.dumps(obj), encoding="utf-8")
@@ -66,8 +85,12 @@ def acao(tipo, resultado, alvo, executada=True, operacao="APLICAR"):
             "resultado": resultado}
 
 
-def trilha(d, *linhas, fim=True):
-    corpo = [meta()] + list(linhas) + ([{"tipo": "fim"}] if fim else [])
+def trilha(d, *linhas, fim=True, perdidas=0):
+    """Trilha de decisoes; o fim traz linhas_perdidas (contrato 1.1+), ou nao traz o campo com perdidas="sem-campo"."""
+    f = {"tipo": "fim"}
+    if perdidas != "sem-campo":
+        f["linhas_perdidas"] = perdidas
+    corpo = [meta()] + list(linhas) + ([f] if fim else [])
     return escrever(d, "decisoes-rep-001.jsonl", "".join(json.dumps(x) + "\n" for x in corpo))
 
 
@@ -167,6 +190,19 @@ class TetoComParcelas(unittest.TestCase):
             self.assertEqual(0, self.teto(d, 1005, *EXTRA, **pr)[0])
             self.assertEqual(0, self.teto(d, 986, *EXTRA, **pr)[0])
             self.assertEqual(2, self.teto(d, 985, *EXTRA, **pr)[0])
+
+    def test_valores_do_pre_registro_aceitam_1010(self):
+        """R2 da V-W6b: com o periodo da convergencia na formula do pre-registro, 300 + 21 + 60 + 600 + 5 +
+        1,5 x (2,4 + 13,5) = 1009,9 -> 1010 s (C-6). O minimo do codigo com esses numeros continua 986 s."""
+        pr = dict(duracao_s=300, religamento_prazo_s=60, convergencia_teto_s=600, convergencia_periodo_s=5,
+                  inj_offset_s=49, f1_dur_s=60, f2_dur_s=90, f4_dur_s=90, w_recovery_s=191)
+        with tempfile.TemporaryDirectory() as d:
+            self.assertEqual(0, self.teto(d, 1010, *EXTRA, **pr)[0])
+            obj = parametros_v2(f3_dur_s=251)
+            for k, x in dict(pr, exec_teto_s=1010).items():
+                obj["parametros"][k]["valor"] = x
+            rc, _, err = rodar("parametros", *EXTRA, "--arquivo", str(escrever(d, "p2.json", obj)))
+            self.assertEqual(0, rc, "o mesmo teto com o esquema /2 do B-40 (F3 de 251 s): " + err)
 
 
 class Referencia(unittest.TestCase):
@@ -379,6 +415,140 @@ class Trilha(unittest.TestCase):
             rc, out, _ = rodar("trilha", "--decisoes", str(p), "--sinal-alvo", "h:1")
             self.assertEqual(0, rc)
             self.assertIn("trilha_completa\tnao", out)
+
+
+class ParametrosF3(unittest.TestCase):
+    """W-6c: F3 na avaliacao (celula ASYNC F3 descritiva do B-40). Esquema campanha-s3/2 com os cinco numeros do F3,
+    cada um com origem; campanha-s3/1 continua aceito (a calibracao nao roda F3, B-2 do B-40)."""
+
+    def test_v2_valido_imprime_os_do_f3(self):
+        with tempfile.TemporaryDirectory() as d:
+            rc, out, err = rodar("parametros", *EXTRA, "--arquivo", str(escrever(d, "p.json", parametros_v2())))
+            self.assertEqual(0, rc, err)
+            linhas = dict(l.split("\t") for l in out.strip().split("\n"))
+            self.assertEqual(("isn2", "20", "13", "normal", "251"),
+                             tuple(linhas[k] for k in ("f3_no", "f3_delay_ms", "f3_jitter_ms", "f3_distribuicao",
+                                                       "f3_dur_s")))
+            self.assertEqual(set(cc.PARAMETROS) | set(cc.PARAMETROS_F3), set(linhas))
+
+    def test_v1_continua_valido_e_sem_f3(self):
+        with tempfile.TemporaryDirectory() as d:
+            rc, out, err = rodar("parametros", *EXTRA, "--arquivo", str(escrever(d, "p.json", parametros_validos())))
+            self.assertEqual(0, rc, err)
+            linhas = dict(l.split("\t") for l in out.strip().split("\n"))
+            self.assertEqual(set(cc.PARAMETROS), set(linhas))
+
+    def test_os_do_rebaseline_acabam_no_fim_da_carga(self):
+        """+49 s da ancora por 251 s = +300 s, o fim da carga de 300 s (DT-011): no limite, aceito."""
+        with tempfile.TemporaryDirectory() as d:
+            self.assertEqual(0, rodar("parametros", *EXTRA, "--arquivo",
+                                      str(escrever(d, "p.json", parametros_v2())))[0])
+            rc, _, err = rodar("parametros", *EXTRA, "--arquivo",
+                               str(escrever(d, "p.json", parametros_v2(f3_dur_s=252))))
+            self.assertEqual(2, rc)
+            self.assertIn("F3 acaba depois do fim da carga", err)
+
+    def test_recusas(self):
+        def v1_com_f3():
+            obj = parametros_validos()
+            obj["parametros"]["f3_dur_s"] = {"valor": 251, "origem": "x"}
+            return obj
+
+        def v2_sem(k):
+            obj = parametros_v2()
+            obj["parametros"].pop(k)
+            return obj
+
+        casos = {"v1 com f3": v1_com_f3,
+                 "v2 sem f3_dur_s": lambda: v2_sem("f3_dur_s"),
+                 "v2 sem f3_no": lambda: v2_sem("f3_no"),
+                 "no invalido": lambda: parametros_v2(f3_no="isn4"),
+                 "distribuicao fora do injetor": lambda: parametros_v2(f3_distribuicao="uniforme"),
+                 "delay zero": lambda: parametros_v2(f3_delay_ms=0),
+                 "jitter negativo": lambda: parametros_v2(f3_jitter_ms=-1),
+                 "delay texto": lambda: parametros_v2(f3_delay_ms="20ms"),
+                 "delay booleano": lambda: parametros_v2(f3_delay_ms=True),
+                 "duracao zero": lambda: parametros_v2(f3_dur_s=0),
+                 "esquema 3": lambda: dict(parametros_v2(), esquema="campanha-s3/3")}
+        for nome, fazer in casos.items():
+            with self.subTest(caso=nome), tempfile.TemporaryDirectory() as d:
+                rc, _, err = rodar("parametros", *EXTRA, "--arquivo", str(escrever(d, "p.json", fazer())))
+                self.assertEqual(2, rc, nome)
+
+    def test_f3_sem_origem_recusa(self):
+        with tempfile.TemporaryDirectory() as d:
+            obj = parametros_v2()
+            obj["parametros"]["f3_jitter_ms"]["origem"] = " "
+            rc, _, err = rodar("parametros", *EXTRA, "--arquivo", str(escrever(d, "p.json", obj)))
+            self.assertEqual(2, rc)
+            self.assertIn("f3_jitter_ms", err)
+
+    def test_jitter_zero_aceito(self):
+        """tc netem aceita 'delay 20ms 0ms'; o injetor aceita '0ms' (TEMPO_RE)."""
+        with tempfile.TemporaryDirectory() as d:
+            self.assertEqual(0, rodar("parametros", *EXTRA, "--arquivo",
+                                      str(escrever(d, "p.json", parametros_v2(f3_jitter_ms=0))))[0])
+
+
+class TrilhaCompleta(unittest.TestCase):
+    """W-6c, item 3 (B-7 do B-40): a trilha de decisoes so e completa com a linha fim e linhas_perdidas = 0 nela
+    (contrato JSONL 1.2: linhas_perdidas no fim de decisoes desde a v1.1; sem fim = execucao interrompida). A
+    conferencia so marca (exit 0); quem decide o veredito e o orquestrador."""
+
+    def saida(self, t, alvo="-"):
+        rc, out, err = rodar("trilha", "--decisoes", str(t), "--sinal-alvo", alvo)
+        return rc, dict(l.split("\t", 1) for l in out.strip().split("\n")), err
+
+    def test_completa(self):
+        with tempfile.TemporaryDirectory() as d:
+            rc, o, err = self.saida(trilha(d))
+            self.assertEqual(0, rc, err)
+            self.assertEqual(("sim", "0", "nao", "-"),
+                             (o["fim"], o["linhas_perdidas"], o["trilha_incompleta"], o["trilha_incompleta_motivo"]))
+
+    def test_linhas_perdidas(self):
+        with tempfile.TemporaryDirectory() as d:
+            rc, o, _ = self.saida(trilha(d, perdidas=3))
+            self.assertEqual(0, rc, "so marca; a decisao e do orquestrador")
+            self.assertEqual(("sim", "3", "sim"), (o["fim"], o["linhas_perdidas"], o["trilha_incompleta"]))
+            self.assertIn("linhas_perdidas = 3", o["trilha_incompleta_motivo"])
+
+    def test_sem_fim(self):
+        with tempfile.TemporaryDirectory() as d:
+            rc, o, _ = self.saida(trilha(d, fim=False))
+            self.assertEqual(0, rc)
+            self.assertEqual(("nao", "-", "sim"), (o["fim"], o["linhas_perdidas"], o["trilha_incompleta"]))
+            self.assertIn("sem a linha fim", o["trilha_incompleta_motivo"])
+
+    def test_ultima_linha_truncada_sem_fim(self):
+        with tempfile.TemporaryDirectory() as d:
+            p = escrever(d, "t.jsonl", json.dumps(meta()) + "\n" + json.dumps(acao("AC-5", "APLICADA", "h:1"))
+                         + "\n{tru")
+            rc, o, _ = self.saida(p, "h:1")
+            self.assertEqual(0, rc)
+            self.assertEqual(("nao", "sim"), (o["fim"], o["trilha_incompleta"]))
+
+    def test_fim_sem_o_campo(self):
+        """Fim sem linhas_perdidas (trilha anterior a v1.1): nao da para afirmar que nada se perdeu."""
+        with tempfile.TemporaryDirectory() as d:
+            rc, o, _ = self.saida(trilha(d, perdidas="sem-campo"))
+            self.assertEqual(0, rc)
+            self.assertEqual(("sim", "-", "sim"), (o["fim"], o["linhas_perdidas"], o["trilha_incompleta"]))
+            self.assertIn("sem linhas_perdidas", o["trilha_incompleta_motivo"])
+
+    def test_campo_invalido(self):
+        for ruim in (None, "0", -1, 1.0, True):
+            with self.subTest(ruim=ruim), tempfile.TemporaryDirectory() as d:
+                rc, o, _ = self.saida(trilha(d, perdidas=ruim))
+                self.assertEqual(0, rc)
+                self.assertEqual("sim", o["trilha_incompleta"], ruim)
+
+    def test_tambem_sai_na_recusa_do_ac5(self):
+        """Com a trilha e a linha de fim discordando (exit 5), as linhas da completude ja foram impressas."""
+        with tempfile.TemporaryDirectory() as d:
+            rc, o, _ = self.saida(trilha(d, acao("AC-5", "APLICADA", "127.0.0.1:11224"), perdidas=2), "-")
+            self.assertEqual(5, rc)
+            self.assertEqual("sim", o["trilha_incompleta"])
 
 
 if __name__ == "__main__":

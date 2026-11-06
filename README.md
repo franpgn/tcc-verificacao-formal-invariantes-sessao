@@ -127,6 +127,14 @@ scripts/run-campanha-s3.sh --dry-run --matriz <tsv> --matriz-sha256 <hex> --fase
 Uma referência de p99 por modo de replicação presente na fase (o programa recusa a de outro perfil). O amostrador h4
 é iniciado com `--id diag-<UTC>` (o `amostrador-infra.sh` não muda enquanto o *rebaseline* não fechar).
 
+W-6c: a célula `ASYNC-F3` (*jitter* pelo `inject-jitter.sh`, sem mudança) exige o arquivo de parâmetros no esquema
+`campanha-s3/2` (`f3_no`, `f3_delay_ms`, `f3_jitter_ms`, `f3_distribuicao`, `f3_dur_s`, com origem); `--swap-limite-kb N`
+recria o *cluster* no portão quando o swap da VM chega a N kB (o `execucao.json` sempre traz `swap_usado_kb_k1`), e
+`--exigir-trilha-completa` descarta como infraestrutura a execução com a trilha de decisões sem `fim` ou com
+`linhas_perdidas` > 0. As duas opções entram no *bundle* da fase. Se o swap continuar ≥ N depois da recriação, a
+fase para com **exit 11** (parada de memória), sem rodar a execução; a retomada roda o mesmo i. Códigos de saída do
+orquestrador: `scripts/run-campanha-s3.sh --help`.
+
 Detalhes e porquês: `docs/implementacao.md` (TD-015); testes: `scripts/run-campanha-s3.test.sh` e `docs/testes.md`.
 
 ## Fluxo de desenvolvimento

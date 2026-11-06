@@ -238,6 +238,11 @@ printf '{\n  "t_fim_carga_ns" : 1,\n  "convergencia_estado" : "%s",\n  "t_religa
 # em +0,1 s): antes de end + obs-fusao-s, isn3 em 1 e os outros em 2; depois, os tres em 3 (obs-sem-fusao: nunca). Sem
 # end, tres amostras com os tres em 3
 if [[ -n "${fteto}" && "${ctl}" != off ]]; then
+    # com a falha iniciada, a trilha so e escrita depois do end (sob carga, o disparo atrasa e o end vem depois do fim
+    # do duble; a trilha real cobre a carga inteira e o controlador fecha depois do end)
+    if grep -q ' event=start ' "${marker}" 2>/dev/null; then
+        for ((k = 0; k < 3000; k++)); do grep -q ' event=end ' "${marker}" 2>/dev/null && break; dormir 1; done
+    fi
     te="$(sed -n 's/.* event=end t_epoch_ns=\([0-9]*\).*/\1/p' "${marker}" 2>/dev/null | head -1)"
     fus="$(cat "${ST}/obs-fusao-s" 2>/dev/null || echo 44)"
     obs_linha() {  # obs_linha <t_ms> <n1> <n2> <n3>
@@ -2060,7 +2065,7 @@ ok "S36 exit 0" "0" "${RC}"
 for b in PO PL AO AL; do
     D="$(ls -d "${OUT}"/exec-*-ASYNC-F2-"${b}")"
     ok "S36 ${b} ACEITA" "ACEITA" "$(json "${D}/checagem.json" 'd["veredito"]')"
-    ok "S36 ${b} fusao pnn" "pnn" "$(json "${D}/checagem.json" 'd["fusao"]')"
+    ok "S36 ${b} fusao do braco na checagem" "$([[ ${b} == A* ]] && echo a1 || echo pnn)" "$(json "${D}/checagem.json" 'd["fusao"]')"
     ok "S36 ${b} vista de fusao (ISPN000093) 20 s depois do end" "20.0" "$(json "${D}/execucao.json" 'd["fusao_vista"]["desde_end_s"]')"
     ok "S36 ${b} os tres nos com a linha" "3" "$(json "${D}/execucao.json" 'sum(1 for v in d["fusao_vista"]["por_no"].values() if v["primeira_apos_end_ms"] is not None)')"
     ok "S36 ${b} fonte da vista" "ISPN000093" "$(json "${D}/execucao.json" 'd["fusao_vista"]["fonte"].split()[0]')"

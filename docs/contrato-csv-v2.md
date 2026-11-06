@@ -126,8 +126,17 @@ descartam na leitura; assim o `comparar_bracos.py` não o leva ao `evento_p99:*`
 CSV de violações por nome de coluna e **conta** a I1 com `origem = sonda` (a decisão de ela entrar ou não em V é do
 Gestor; ver o relatório do W-10).
 
+**W-5c (2026-11-06).** O rascunho do pré-registro do benchmark refeito (seção 2) pôs a sonda e a varredura no método
+de observação, e o `comparar_bracos.py` passou a contar V por par distinto (chave, invariante) somando o auditor
+online (`origem` vazia), a sonda (`origem = sonda`; outro valor é recusado) e a varredura (`varredura-rep-NNN.csv`,
+só `REAL`). O leitor novo `ler_eventos_por_chave` lê do `rep-NNN.csv` os `Logout` e `Block` com `return_code = NONE`
+(instante da invalidação confirmada do *replay* tardio e da varredura) e os `ReplayValidate` (leitura que revelou a
+I1 da sonda, para a forma 2, e o custo da sonda); ele não alimenta nenhum desfecho de desempenho. Detalhes em
+`docs/implementacao.md` (TD-017) e `docs/relatorio-w5c-2026-11-06.md`.
+
 | Teste | O que trava |
 |---|---|
 | `S3SondaDesligadaRegressaoTest` | sonda desligada: ações, eventos, violações, contadores e cabeçalhos iguais aos da base `494ccce` |
 | `SondaReplayTest.replayImediatoVeBackupValid`, `colunaOrigemNoCsv`, `janelaDeMedicaoDosEventos` | o evento `ReplayValidate`, a coluna `origem` e a janela de medição dos dois replays |
 | `analysis/test_referencia_p99.py` (R2b), `test_energia_proxy.py` (EdbInstrumentacao), `test_comparar_bracos.py` (`test_replay_validate_fora_dos_desfechos`) | o descarte do `ReplayValidate` nas análises |
+| `analysis/test_comparar_bracos_w5c.py` (W-5c) | V com a coluna `origem` e a varredura: pares distintos, fases do tardio, formas de I1, `ReplayValidate` fora do denominador e da latência, recorte real do *smoke* do W-10 |

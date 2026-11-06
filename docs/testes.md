@@ -1221,3 +1221,41 @@ Commits: `ce5583f` (`test:`, vermelho por compilação sem `AtualizacaoTopologia
 | A (jar da correção) | a mesma sonda: antes e depois de `AtualizacaoTopologia.atualizar()` | antes, 12,0 a 22,8 % perdidas e 12,3 a 23,2 % acrescentadas; **depois, 0** nos 3 nós e nos 2 *caches*, e a topologia do principal igual à de um cliente novo |
 | B (programa com a correção) | S3 ASYNC 90 s, `--convergence`, F1 do `isn2` no meio da carga | as duas linhas `Topologia do principal` (ids trocados) na primeira rodada; o laço achou 1 chave divergente persistente (I5) em 24 rodadas: `divergente` |
 | C (programa sem a correção, 1f65a02) | o mesmo cenário, com a sonda de divergência ao lado | o laço convergiu; 0 chaves divergentes nos mesmos dados com a topologia velha e com a atualizada (sem divergência nesse sorteio: a leitura velha não fabrica divergência) |
+
+## W-5c: V com a sonda de *replay* e a varredura no `comparar_bracos.py` (2026-11-06)
+
+Branch `feature/w5c-v-com-sonda` (worktree `wt-w5c`), a partir de `daa18a2` (`feature/controlador-integracao`, com
+W-10 e P-48). Só Python (a VM estava medindo: nada de Maven nem Podman). Python 3.12.6, `python -E -P` (numpy e scipy
+no *site* do usuário, decisão G2 de 28/10). TDD em três passos: o golden da base foi gerado e commitado antes de
+qualquer mudança (`9093e6f`); os 20 testes da regra nova foram commitados vermelhos (`eb35290`; 12 erros por falta de
+`violacoes_detalhe` e `DESFECHO_V_SEM_F2`, 8 falhas de asserção); depois o código. Um teste vermelho tinha uma conta
+errada minha (2 achados da varredura fora de V no cenário de sobreposição, não 3) e foi corrigido no commit do código.
+
+| Suíte | Comando | Resultado |
+|---|---|---|
+| `analysis` | `python -E -P -m unittest discover -s analysis` | **396 OK, 1 *skip*** (374 da base + 22) |
+| `test_comparar_bracos*.py` | `python -E -P -m unittest discover -s analysis -p "test_comparar_bracos*.py"` | 60 OK (38 sem mudança + 22) |
+
+Arquivo novo `analysis/test_comparar_bracos_w5c.py`:
+
+| Classe | Testes | O que prende |
+|---|---|---|
+| `NaoRegressaoGolden` | 2 | sem sonda e sem varredura, cada chave do golden da base (`analysis/fixtures/w5c/golden-sem-sonda-daa18a2.json`: célula de teste com 6 blocos e trilha, descritiva com 2, violações de todas as classes com chaves distintas) existe no resultado atual com o mesmo valor; o golden exercita V nos dois braços, k > 0 e a regra IU |
+| `ParesDistintos` | 5 | sobreposição online + sonda imediata + sonda tardia + varredura na mesma sid conta 1 par; 11 linhas de I2 `REAL` na mesma sessão contam 1; 5 pares em 19 linhas; linhas e pares por origem; pares em mais de uma origem; mesma chave com I1 e I4 conta 2; varredura só `REAL`; `contar_violacoes` por par distinto; `origem` desconhecida recusada |
+| `FasesDoTardio` | 4 | tardio e varredura pelo `end_ns` do `Logout` `NONE` da sid (o `Logout` com erro anterior não vale); I2 e I2-PERDIDO pelo último `Block` `NONE` da identidade (o `Block` com erro não vale); I1 com motivo `ADMIN_BLOCK` e sid sem `Logout` no CSV contam sem filtro de fase; o tardio não usa o instante da própria leitura; com `--fases antes` as sem invalidação localizada também contam; a imediata vai pelo instante da detecção |
+| `FormasDeI1` | 4 | forma 1 (`Logout` no nó da falha), forma 2 pela sonda imediata e pela leitura online (`Logout` por outro nó, leitura `VALID` no nó da falha entre `start` e `end`, com o instante da violação 7 ms depois do fim da leitura), outra (leitura depois do `end`; leitura por outro nó; par com detecção forma 2 e varredura); sensibilidade 4 de 6; sem `execucao.json`, formas indeterminadas e sensibilidade ausente; sem marcador, nenhuma forma 2; sem instrumentos, sem o desfecho de sensibilidade |
+| `ReplayValidateFora` | 2 | com `ReplayValidate` (erro, latência de 4 s, tardio), sonda e varredura, o p99 da ação S3 (com e sem espera), a vazão útil, a taxa de erro, as falhas percebidas, o `evento_p99:Validate`, o Δ_rec e o denominador de V são idênticos aos da execução sem eles; custo da sonda; teto do tardio pelo `sonda_tardia_max` do `s3-resumo` |
+| `VarreduraComErro` | 1 | `varredura-rep-NNN.erro.txt` deixa V e a sensibilidade ausentes, com motivo |
+| `ComparacaoComSonda` | 3 | na célula de teste a sensibilidade é família sensibilidade, escala diferença, com p de permutação e sem Holm, fora da contagem de secundários; o co-principal V conta a forma 2; totais por braço; instrumentos diferentes entre A e B recusados; a tabela Markdown traz a regra e as formas |
+| `SmokeW10` | 1 | formato real: recorte do *smoke* F2 do W-10 (`analysis/fixtures/w5c/smoke-w10-f2/`); 4 pares de I1 em 8 linhas (6 da sonda, 2 da varredura), 2 em mais de uma origem; forma 1 nas duas sids do M1 (`Logout` no `isn3`, `127.0.0.1:12903`), forma 2 nas duas com `Logout` no `isn2` relidas `VALID` pelo `isn3`; atribuição 4 pela detecção e 4 pela invalidação; o `I2` `INCERTA` da varredura fora |
+
+Fixture `smoke-w10-f2`: cópia de `marcadores.txt`, `violacoes-rep-001.csv`, `varredura-rep-001.csv`, dos resumos e do
+meta de `runs/w10-smoke/f2-sonda/` do worktree `wt-w10` (os CSV estão fora do Git em `runs/`); `rep-001.csv` com as
+linhas das sids da sonda e da varredura, da identidade `s3-u-002` e as 3 últimas da carga; `s3-acoes-rep-001.csv` com
+as 2 primeiras e as 3 últimas ações; `execucao.json` sintetizado do `comando.txt` (só o `--servers`). SHA-256 das
+fontes: `violacoes-rep-001.csv` `119f1887…f42ef`, `varredura-rep-001.csv` `f9290904…64d71`, `rep-001.csv`
+`70516510…9cbb`, `s3-acoes-rep-001.csv` `b51bce59…bb60`, `marcadores.txt` `6fac85c4…9136`.
+
+Conferência da CLI no *smoke* inteiro (fora da suíte, no *scratchpad*; A = B = a execução do W-10): 258
+`ReplayValidate` (139 imediatos na janela e 119 tardios, os números do relatório do W-10), 4 pares em 8 linhas, forma
+1 = 2, forma 2 = 2, sem a forma 2 = 2, 2 240 ações S3 nas fases `durante` e `recuperacao`.

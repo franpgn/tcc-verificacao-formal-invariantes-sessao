@@ -214,6 +214,20 @@ public final class Cli {
     )
     public boolean varredura;
 
+    /**
+     * Complemento 1 do benchmark refeito (DT-027, secao 5, item 3): teto, em segundos contados do marcador {@code end},
+     * da espera pela fusao antes da varredura final ({@link EsperaFusao}). Sem valor padrao (regra do autor): ausente,
+     * a varredura roda como antes, sem espera. Exige {@code --sweep} e {@code --controller-admin} (as URLs REST dos
+     * nos, uma por servidor). Fica fora de {@link #toString()}.
+     */
+    @Option(
+        names = {"--sweep-merge-timeout-sec"},
+        description = "Antes da varredura final, espera os nos de --controller-admin mostrarem a mesma vista com todos "
+            + "os membros (saude REST), ate o marcador end mais este teto (s); sem fusao, a varredura nao roda e "
+            + "varredura-rep-NNN.erro.txt traz o motivo. Sem padrao; exige --sweep e --controller-admin."
+    )
+    public Long varreduraFusaoTetoSeg;
+
     @Option(
         names = {"--rest-url"},
         description = "Base do REST do Infinispan para a saude do cluster no laco de convergencia. Padrao ${DEFAULT-VALUE}.",
@@ -465,6 +479,7 @@ public final class Cli {
         if (paraNoFimDaFalha && (marcadores == null || marcadores.isBlank())) {
             throw new IllegalArgumentException("--stop-at-fault-end exige --marker");
         }
+        validarFusaoAntesDaVarredura();
         if (scenarioS3) {
             s3.validar();
         }
@@ -518,6 +533,31 @@ public final class Cli {
         if (admin != servidoresN) {
             throw new IllegalArgumentException("--controller-admin tem " + admin + " URLs e --servers tem "
                     + servidoresN + " servidores (H6: nos esperados = itens de --servers, um no REST por servidor)");
+        }
+    }
+
+    /** DT-027 (secao 5, item 3): regras de {@code --sweep-merge-timeout-sec} (exit 2 em {@code main}). */
+    private void validarFusaoAntesDaVarredura() {
+        if (varreduraFusaoTetoSeg == null) {
+            return;
+        }
+        if (varreduraFusaoTetoSeg <= 0) {
+            throw new IllegalArgumentException("--sweep-merge-timeout-sec deve ser > 0");
+        }
+        if (!varredura) {
+            throw new IllegalArgumentException("--sweep-merge-timeout-sec exige --sweep (a checagem de fusao antecede "
+                    + "a varredura final)");
+        }
+        if (vazio(controladorAdmin)) {
+            throw new IllegalArgumentException("--sweep-merge-timeout-sec exige --controller-admin (URLs REST dos nos, "
+                    + "para ler a vista de cada um)");
+        }
+        int admin = controladorAdmin.split(",", -1).length;
+        int servidoresN = servidores.split(",", -1).length;
+        if (admin != servidoresN) {
+            throw new IllegalArgumentException("--controller-admin tem " + admin + " URLs e --servers tem "
+                    + servidoresN + " servidores (--sweep-merge-timeout-sec: a vista de cada no, um no REST por "
+                    + "servidor)");
         }
     }
 

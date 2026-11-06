@@ -135,6 +135,23 @@ recria o *cluster* no portão quando o swap da VM chega a N kB (o `execucao.json
 fase para com **exit 11** (parada de memória), sem rodar a execução; a retomada roda o mesmo i. Códigos de saída do
 orquestrador: `scripts/run-campanha-s3.sh --help`.
 
+Avaliação fatorial 2×2 (DT-027: regra de fusão do `sessions-async` × controlador). A matriz tem a coluna `fusao` no fim;
+na célula de teste cada bloco tem os braços PO, PL, AO e AL (P = `PREFERRED_NON_NULL`, A = A1; O = `shadow`,
+L = `active`), e nas descritivas A e B com a regra atual:
+
+```bash
+python3 -I scripts/campanha_s3_matriz.py gerar --modo fatorial \
+  --nucleo "ASYNC-F2:teste:12,ASYNC-none:descritiva:4,ASYNC-F3:descritiva:4" \
+  --extras "ASYNC-F1:descritiva:4,ASYNC-F4:descritiva:4" \
+  --ordem-seed <N> --s0 800000 --passo-semente 100 --i0 0 --b0 0 --saida runs/campanha-s3-fatorial/matriz.tsv
+python3 -I scripts/campanha_s3_conferir.py pareamento --matriz runs/campanha-s3-fatorial/matriz.tsv
+```
+
+Com essa matriz o orquestrador exige `--sonda-replay`, o `fusao_teto_s` no arquivo de parâmetros (teto da espera pela
+fusão antes da varredura; vai ao programa como `--sweep-merge-timeout-sec`), o `cluster/caches/sessions-async-a1.json` e,
+com o JAR da extensão montado no *compose*, `--extensao-sha256 <hex>` (o JAR é construído antes, com
+`mvn -f extensao-servidor/pom.xml package`). Detalhes: `docs/implementacao.md` (TD-023).
+
 Detalhes e porquês: `docs/implementacao.md` (TD-015); testes: `scripts/run-campanha-s3.test.sh` e `docs/testes.md`.
 
 ## Fluxo de desenvolvimento

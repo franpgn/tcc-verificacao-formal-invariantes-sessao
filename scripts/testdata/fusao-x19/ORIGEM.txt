@@ -1,0 +1,15 @@
+Fixture da regra do instante da fusao pela trilha de observaveis (P-61), extraida de
+dados-vm/cs3-2026-11/rc-20261106T144744Z/campanha-s3-recalibracao (recalibracao X-19, 06/11) por
+runs/orquestrador-fatorial/scripts/extrair_fixture_x19.py: marcadores.txt inteiro; do
+observaveis-rep-001.jsonl, a linha meta e as linhas topologia de end - 6 s a end + 56 s.
+
+execucao	sha256 observaveis-rep-001.jsonl (original)	sha256 marcadores.txt	linhas extraidas
+exec-0001-SYNC-F2-A	da9c17cb13c229ff03f469164e3a4652967ca633fff2eb491252700a7630954b	55b2b6fcceddf96480c5f4ae499238d9fc353b9d8a2164db8cfdedabd2b8edb4	32
+exec-0004-ASYNC-F2-A	96b1ffd2fa7e5986af7e8b7999344685ac017905f8692a8fb5ceea6d1cc16167	5c8fc9b7c23db03aab44b74db9a0eab1604d19e30cfdba8b5a7492c9d2313159	32
+exec-0008-SYNC-F2-A	b11191639f0d2a32243a6a8f29b20d335afbb1d79a2a9176e08d911eaeaf9edf	d4e9242c603e287080b4dc424bd08c0fe21c8178500486be546a77ec2a38fc57	32
+exec-0010-ASYNC-F2-A	257040ac8d7da91928236048deb4822b1e1431b9e2f47473c98e03261c15c5c4	71842bd48be8e70f2b71111bb55d337c1a84fc38ee7d3e43f974b9da97ff6911	32
+exec-0013-ASYNC-F2-A	468c2b9168d24ace94fb1f217be5a8325c56412a3664ff404c550d697e135785	a3c40cf0a24949cf82bd643587c5a9ad6d59bf27ec1fb6e906fca6f58de05ded	32
+exec-0016-SYNC-F2-A	cfcc45b71b306b2afed04d1327fbda553688c90ebbf435b2e2c9f0ae287d45a3	4ee5dc2d815abe98d2a5b288c9f61acaf4f861013115abfd02f25fc2edd2a39b	32
+exec-0018-ASYNC-F2-A	f9570f4d6b8281a942b31aa3eb55515dfc059fd928cfc635ed4f24f82cb70c1a	2cc70b197c23870b81d46e744f010b6296da35f9bdbbd4d26c5c4cbd9f5015e3	32
+exec-0022-ASYNC-F2-A	bd69ebbba904c52d64ffef9b707578c6d445be27c0617dd997794b0854b85b31	bdd339283fa05a595ecd391e48ea203c4df1356d8a35764bb08db3b5b7049149	32
+exec-0027-ASYNC-F2-A	89b970902f7eb613dbcf65a288ea0f20d1db465fd23f32522c8d0953c5e1d59e	c404e002d487c891af97e26819da302dcab235b51b28618e6dc1047d670179e8	32

@@ -1,0 +1,15 @@
+[ERROR] COMPILATION ERROR : 
+[ERROR] /C:/Users/Francesco/Development/tcc/wt-fat/workload/src/test/java/br/unipampa/tcc/session/EsperaFusaoTest.java:[62,31] package EsperaFusao does not exist
+[ERROR] /C:/Users/Francesco/Development/tcc/wt-fat/workload/src/test/java/br/unipampa/tcc/session/EsperaFusaoTest.java:[66,36] package EsperaFusao does not exist
+[ERROR] /C:/Users/Francesco/Development/tcc/wt-fat/workload/src/test/java/br/unipampa/tcc/session/EsperaFusaoTest.java:[70,36] package EsperaFusao does not exist
+[ERROR] /C:/Users/Francesco/Development/tcc/wt-fat/workload/src/test/java/br/unipampa/tcc/session/EsperaFusaoTest.java:[76,95] package EsperaFusao does not exist
+[ERROR] /C:/Users/Francesco/Development/tcc/wt-fat/workload/src/test/java/br/unipampa/tcc/session/EsperaFusaoTest.java:[76,31] package EsperaFusao does not exist
+[ERROR] /C:/Users/Francesco/Development/tcc/wt-fat/workload/src/test/java/br/unipampa/tcc/session/EsperaFusaoTest.java:[63,31] package EsperaFusao does not exist
+[ERROR] /C:/Users/Francesco/Development/tcc/wt-fat/workload/src/test/java/br/unipampa/tcc/session/EsperaFusaoTest.java:[91,20] package EsperaFusao does not exist
+[ERROR] /C:/Users/Francesco/Development/tcc/wt-fat/workload/src/test/java/br/unipampa/tcc/session/EsperaFusaoTest.java:[91,31] cannot find symbol
+[ERROR] /C:/Users/Francesco/Development/tcc/wt-fat/workload/src/test/java/br/unipampa/tcc/session/EsperaFusaoTest.java:[101,20] package EsperaFusao does not exist
+[ERROR] /C:/Users/Francesco/Development/tcc/wt-fat/workload/src/test/java/br/unipampa/tcc/session/EsperaFusaoTest.java:[101,31] cannot find symbol
+[ERROR] /C:/Users/Francesco/Development/tcc/wt-fat/workload/src/test/java/br/unipampa/tcc/session/EsperaFusaoTest.java:[104,20] package EsperaFusao does not exist
+[ERROR] /C:/Users/Francesco/Development/tcc/wt-fat/workload/src/test/java/br/unipampa/tcc/session/EsperaFusaoTest.java:[104,31] cannot find symbol
+[ERROR] /C:/Users/Francesco/Development/tcc/wt-fat/workload/src/test/java/br/unipampa/tcc/session/EsperaFusaoTest.java:[112,20] cannot find symbol
+[ERROR] /C:/Users/Francesco/Development/tcc/wt-fat/workload/src/test/java/br/unipampa/tcc/session/EsperaFusaoTest.java:[113,21] cannot find symbol

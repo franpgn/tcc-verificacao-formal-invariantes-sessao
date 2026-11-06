@@ -1,0 +1,77 @@
+== S34: DT-027: bloco 2x2 executado: JSON do braco criado e lido de volta, politica e A1-POLITICA nos tres nos, manifesto fatorial ==
+PASS: S34 exit 0
+PASS: S34 PO ACEITA
+PASS: S34 PO checagem com a fusao
+PASS: S34 PO execucao.json: fusao (nome combinado com o W-5e)
+PASS: S34 PO execucao.json: controller e bloco
+PASS: S34 PO execucao.json: arquivo da variante
+PASS: S34 PO SHA-256 do arquivo da variante
+PASS: S34 PO politica lida de volta nos tres nos
+PASS: S34 PO counters-async PREFERRED_NON_NULL nos tres (TD-020 da A1)
+PASS: S34 PO A1-POLITICA carregada por no
+PASS: S34 PO fusao_config ok
+PASS: S34 PO t_fusao_ns = o instante da checagem de fusao do programa (fusao-rep-001.json)
+PASS: S34 PO t_fusao_ns inteiro
+PASS: S34 PO sessions-async criado com o JSON do braco
+PASS: S34 PO extensao_sha256
+PASS: S34 PO camada 3 antes sem divergencia (contra o JSON do braco)
+PASS: S34 PO linha do programa com --sweep-merge-timeout-sec 20
+PASS: S34 PL ACEITA
+PASS: S34 PL checagem com a fusao
+PASS: S34 PL execucao.json: fusao (nome combinado com o W-5e)
+PASS: S34 PL execucao.json: controller e bloco
+PASS: S34 PL execucao.json: arquivo da variante
+PASS: S34 PL SHA-256 do arquivo da variante
+PASS: S34 PL politica lida de volta nos tres nos
+PASS: S34 PL counters-async PREFERRED_NON_NULL nos tres (TD-020 da A1)
+PASS: S34 PL A1-POLITICA carregada por no
+PASS: S34 PL fusao_config ok
+PASS: S34 PL t_fusao_ns = o instante da checagem de fusao do programa (fusao-rep-001.json)
+PASS: S34 PL t_fusao_ns inteiro
+PASS: S34 PL sessions-async criado com o JSON do braco
+PASS: S34 PL extensao_sha256
+PASS: S34 PL camada 3 antes sem divergencia (contra o JSON do braco)
+PASS: S34 PL linha do programa com --sweep-merge-timeout-sec 20
+PASS: S34 AO ACEITA
+PASS: S34 AO checagem com a fusao
+PASS: S34 AO execucao.json: fusao (nome combinado com o W-5e)
+PASS: S34 AO execucao.json: controller e bloco
+PASS: S34 AO execucao.json: arquivo da variante
+PASS: S34 AO SHA-256 do arquivo da variante
+PASS: S34 AO politica lida de volta nos tres nos
+PASS: S34 AO counters-async PREFERRED_NON_NULL nos tres (TD-020 da A1)
+PASS: S34 AO A1-POLITICA carregada por no
+PASS: S34 AO fusao_config ok
+PASS: S34 AO t_fusao_ns = o instante da checagem de fusao do programa (fusao-rep-001.json)
+PASS: S34 AO t_fusao_ns inteiro
+PASS: S34 AO sessions-async criado com o JSON do braco
+PASS: S34 AO extensao_sha256
+PASS: S34 AO camada 3 antes sem divergencia (contra o JSON do braco)
+PASS: S34 AO linha do programa com --sweep-merge-timeout-sec 20
+PASS: S34 AL ACEITA
+PASS: S34 AL checagem com a fusao
+PASS: S34 AL execucao.json: fusao (nome combinado com o W-5e)
+PASS: S34 AL execucao.json: controller e bloco
+PASS: S34 AL execucao.json: arquivo da variante
+PASS: S34 AL SHA-256 do arquivo da variante
+PASS: S34 AL politica lida de volta nos tres nos
+PASS: S34 AL counters-async PREFERRED_NON_NULL nos tres (TD-020 da A1)
+PASS: S34 AL A1-POLITICA carregada por no
+PASS: S34 AL fusao_config ok
+PASS: S34 AL t_fusao_ns = o instante da checagem de fusao do programa (fusao-rep-001.json)
+PASS: S34 AL t_fusao_ns inteiro
+PASS: S34 AL sessions-async criado com o JSON do braco
+PASS: S34 AL extensao_sha256
+PASS: S34 AL camada 3 antes sem divergencia (contra o JSON do braco)
+PASS: S34 AL linha do programa com --sweep-merge-timeout-sec 20
+PASS: S34 mesma semente nos quatro bracos
+PASS: S34 manifesto-bracos.tsv: o cabecalho de sempre (comparar_bracos.py)
+PASS: S34 manifesto-bracos.tsv: os quatro bracos do bloco 0 (PO, PL, AO, AL)
+PASS: S34 manifesto-bracos.tsv: cada braco aponta o seu diretorio
+PASS: S34 bundle com o sessions-async-a1.json
+PASS: S34 bundle com o JAR da extensao
+PASS: S34 ambiente.md com o JAR da extensao
+PASS: S34 sem --extensao-sha256 fora do --dry-run (JAR montado) -> exit 2
+PASS: S34 motivo --extensao-sha256
+
+==== RESULTADO: 74 PASS, 0 FAIL ====

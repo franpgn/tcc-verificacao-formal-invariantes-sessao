@@ -1,0 +1,47 @@
+== S33: DT-027: --dry-run da matriz fatorial: fusao no plano, os dois JSON e o JAR conferidos, teto da fusao na linha ==
+usage: campanha_s3_matriz.py gerar [-h] --modo {calibracao,avaliacao}
+                                   [--celulas CELULAS] [--nucleo NUCLEO]
+                                   [--extras EXTRAS] --ordem-seed ORDEM_SEED
+                                   --s0 S0 --passo-semente PASSO_SEMENTE --i0
+                                   I0 [--b0 B0] --saida SAIDA
+campanha_s3_matriz.py gerar: error: argument --modo: invalid choice: 'fatorial' (choose from calibracao, avaliacao)
+sha256sum: /tmp/tmp.pf2zT1etCv/s33/matriz.tsv: No such file or directory
+FAIL: S33 dry-run fatorial: exit 0 (esperado='0' obtido='2')
+FAIL: S33 seis execucoes no plano (4 + 2) (esperado='6' obtido='0')
+FAIL: S33 fusao no plano: 4 pnn (PO, PL, A, B) e 2 a1 (AO, AL) (esperado='4 2' obtido='0 0')
+FAIL: S33 braco PO: controller=shadow fusao=pnn (esperado='1' obtido='0')
+FAIL: S33 braco PL: controller=active fusao=pnn (esperado='1' obtido='0')
+FAIL: S33 braco AO: controller=shadow fusao=a1 (esperado='1' obtido='0')
+FAIL: S33 braco AL: controller=active fusao=a1 (esperado='1' obtido='0')
+FAIL: S33 braco A: controller=shadow fusao=pnn (esperado='1' obtido='0')
+FAIL: S33 braco B: controller=active fusao=pnn (esperado='1' obtido='0')
+FAIL: S33 linha do programa com o teto da fusao depois do --sweep (nao encontrou '--s3-replay-probe --sweep --sweep-merge-timeout-sec 20')
+FAIL: S33 os dois JSON da regra de fusao conferidos (nao encontrou 'DRY-RUN fusao: pnn=sessions-async.json PREFERRED_NON_NULL')
+FAIL: S33 o JSON da A1 com a classe (nao encontrou 'a1=sessions-async-a1.json br.unipampa.tcc.servidor.PoliticaFusaoSessoes')
+FAIL: S33 teto da fusao antes da varredura (nao encontrou 'DRY-RUN fusao antes da varredura: fusao_teto_s=20')
+FAIL: S33 JAR da extensao montado nos tres nos, SHA-256 conferido (nao encontrou 'DRY-RUN extensao: /tmp/tmp.pf2zT1etCv/s33/extensao-servidor/target/tcc-extensao-servidor.jar montado nos 3 nos (SHA-256 confere)')
+FAIL: S33 matriz fatorial sem --sonda-replay -> exit 4 (esperado='4' obtido='2')
+FAIL: S33 motivo: instrumentos da DT-026 (nao encontrou '--sonda-replay')
+FAIL: S33 matriz fatorial sem fusao_teto_s -> exit 4 (esperado='4' obtido='2')
+FAIL: S33 motivo: fusao_teto_s (nao encontrou 'fusao_teto_s')
+FAIL: S33 fusao_teto_s que passa do fim da carga (10 + 20 + 31 > 60) -> exit 4 (esperado='4' obtido='2')
+FAIL: S33 SHA-256 do JAR da extensao errado -> exit 4 (esperado='4' obtido='2')
+PASS: S33 motivo: JAR da extensao
+FAIL: S33 sem o sessions-async-a1.json -> exit 4 (esperado='4' obtido='2')
+FAIL: S33 motivo cita o arquivo (nao encontrou 'sessions-async-a1.json')
+FAIL: S33 sessions-async-a1.json com PREFERRED_NON_NULL -> exit 4 (esperado='4' obtido='2')
+FAIL: S33 motivo: politica do arquivo (nao encontrou 'PoliticaFusaoSessoes')
+FAIL: S33 compose sem-jar com braco A1 -> exit 4 (esperado='4' obtido='2')
+PASS: S33 compose sem-jar: motivo extensao
+FAIL: S33 compose dois-nos com braco A1 -> exit 4 (esperado='4' obtido='2')
+PASS: S33 compose dois-nos: motivo extensao
+FAIL: S33 compose sem-arquivo com braco A1 -> exit 4 (esperado='4' obtido='2')
+PASS: S33 compose sem-arquivo: motivo extensao
+awk: fatal: cannot open file `/tmp/tmp.pf2zT1etCv/s33/matriz.tsv' for reading: No such file or directory
+FAIL: S33 bloco fatorial sem o AL -> exit 4 (esperado='4' obtido='2')
+FAIL: S33 motivo pareamento (nao encontrou 'pareamento')
+PASS: S33 dry-runs nao chamam java/podman/sudo/curl
+PASS: S33 matriz de 13 colunas sem o JAR nem o JSON da A1: como antes (exit 0)
+PASS: S33 matriz de 13 colunas: sem fusao= no plano
+
+==== RESULTADO: 7 PASS, 29 FAIL ====

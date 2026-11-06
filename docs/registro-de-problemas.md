@@ -1409,6 +1409,34 @@ como transporte) fica resolvido aqui pela G-4, e o P-A4.1 e o P-A4.3 viram regra
   harness usa `k8s-file` (G-5); na VM, o destino do log do Podman decide se isso apaga linhas de outros contêineres.
 - **Status:** `ABERTO` (conferir o *log driver* na VM antes da campanha).
 
+## 2026-11-06 — Orquestrador da avaliação fatorial 2×2 (DT-027)
+
+Branch `feature/orquestrador-fatorial` (base `edfa8b6`). Na integração (06/11), depois do P1-IC (P-61 a P-64), o
+P-61 provisório da branch passou a P-65.
+
+### P-65 (orquestrador fatorial; P-61 provisório na branch, renumerado na integração) — `t_fusao_ns` da checagem antes da varredura não é o instante da fusão
+
+- **Contexto:** a DT-027 §2.2 separa a perda permanente da exposição na janela pelo instante da fusão, "a primeira
+  vista de fusão (`ISPN000093`) depois do `end`". O coordenador fixou (06/11, alinhamento com o W-5e) que `t_fusao_ns`
+  no `execucao.json` é o instante em que a checagem antes da varredura (`EsperaFusao`) viu os três nós com a mesma
+  vista de 3 membros.
+- **Achado:** na VM, a fusão vem 42,2 a 47,8 s depois do `end` da F2 (18 execuções F2 do X-18 e do X-19, sonda de
+  topologia), e a varredura (logo, a checagem) começa 153,9 a 154,1 s depois do `end` (fim da carga e convergência nas
+  nove F2 do X-19). `t_fusao_ns` fica ~110 s depois da fusão real. Se o W-5e usar esse campo para separar as duas
+  medidas, as I1 online detectadas entre a fusão e a varredura contam como exposição na janela, e não como perda.
+- **O que o orquestrador grava:** `t_fusao_ns` como pedido; e, só como registro, as linhas `ISPN000093` de cada nó
+  (`fusao-ispn000093.txt`) com a primeira depois do `end` em `fusao_vista.primeira_apos_end_ns`, mais o *driver* de log
+  dos contêineres. Com o `journald`, as recusas Hot Rod podem suprimir linhas (P-A4.2 da A4); o campo fica nulo, com o
+  motivo, quando não há linha.
+- **Decisão do coordenador (06/11):** `t_fusao_ns` é o instante real da fusão, pela trilha de observaveis do
+  controlador: a primeira amostra da sonda de topologia (~2 s, *shadow* e *active*) depois do `end` com os três nós em
+  3. A `ISPN000093` fica como conferência cruzada, com a diferença gravada, e o instante da checagem vai para
+  `t_vista_checagem_ns`, só como registro. Sem fusão na trilha, `t_fusao_ns` fica ausente.
+- **Correção:** `campanha_s3_conferir.py fusao-trilha` e o orquestrador (`fusao_trilha`, `t_fusao_ns`,
+  `t_vista_checagem_ns`, `fusao_trilha.dif_ispn000093_s`). Nos brutos do X-19, a regra dá +42,2 a +46,2 s nas nove F2
+  (mediana das seis ASYNC, 44,2 s); teste com a fixture `scripts/testdata/fusao-x19/` e caso S36 do orquestrador.
+- **Status:** `RESOLVIDO` na mesma branch (TD-023).
+
 ## Observação de modelagem (não é defeito)
 
 Com 8 *threads* = 8 identidades fixas (`user-<tid>`), `incrementFailure`

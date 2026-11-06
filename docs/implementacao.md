@@ -104,6 +104,89 @@ o ProtoStream padrão falha ao serializar e toda escrita vira
 
 ## Decisões técnicas a registrar
 
+### TD-023 — Orquestrador da avaliação fatorial 2×2 (DT-027): variante da regra de fusão por braço, JAR da extensão e checagem de fusão antes da varredura (2026-11-06)
+
+Numeração: TD-022 provisório na branch; na integração (06/11) a A1 (TD-020), o W-5e (TD-021) e o P1-IC (TD-022)
+entraram antes, e este é o TD-023; o P-61 da branch é o P-65 do registro. Branch `feature/orquestrador-fatorial` (`wt-fat`), a partir de
+`edfa8b6`. Especificação: complemento 1 do pré-registro do *benchmark* refeito (DT-027, `4fa4546`/`f6965ae`), seções 1,
+3 e 5. Nomes combinados com a análise (W-5e, `d1bb887`, `CAMPO_FUSAO`/`CAMPO_T_FUSAO`): `fusao`, `controller`, `bloco` e
+`t_fusao_ns` no `execucao.json`; PO, PL, AO e AL no `manifesto-bracos.tsv`.
+
+**Matriz** (`campanha_s3_matriz.py gerar --modo fatorial`). Mesmos argumentos da avaliação (`--nucleo`, `--extras`,
+`--ordem-seed`, `--s0`, `--passo-semente`, `--i0`, `--b0`). O TSV tem uma coluna a mais **no fim**, `fusao` (`pnn` =
+`PREFERRED_NON_NULL`, `a1` = `PoliticaFusaoSessoes`); as 13 posições antigas não mudam. A DT-027 §5 chama a coluna de
+`regra`; o nome `fusao` segue o pedido do coordenador e o W-5e. Na célula de papel `teste`, cada bloco tem quatro braços
+com a mesma semente, em ordem `random.Random(ordem_seed * 1000000 + bloco).shuffle(["PO", "PL", "AO", "AL"])`; nas de
+papel `descritiva`/`referencia`, A e B com `pnn`, com o mesmo sorteio de antes. As matrizes de calibração e de avaliação
+continuam com 13 colunas, byte a byte (a da recalibração X-19 sai com o mesmo `3f20219d…`); a leitura aceita os dois
+formatos, e a de 13 vale como `pnn`. O `repor` refaz o bloco fatorial perdido com os quatro braços.
+
+| Braço | `fusao` | `controller` | JSON do `sessions-async` |
+|---|---|---|---|
+| PO | `pnn` | `shadow` | `cluster/caches/sessions-async.json` |
+| PL | `pnn` | `active` | idem |
+| AO | `a1` | `shadow` | `cluster/caches/sessions-async-a1.json` (do integrador, com a A1) |
+| AL | `a1` | `active` | idem |
+| A, B (descritivas) | `pnn` | `shadow`, `active` | `sessions-async.json` |
+
+**Pareamento** (`campanha_s3_conferir.py pareamento --matriz`), no lugar do `awk` do orquestrador: bloco A/B ou
+PO/PL/AO/AL, cada braço uma vez, mesma célula, papel e semente; controlador e fusão coerentes com o braço; braço do
+fatorial só na matriz de 14 colunas; sem bloco, só o A da calibração. Recusa (exit 5; o orquestrador sai com 4).
+
+**Orquestrador** (`run-campanha-s3.sh`). Tudo abaixo só com a matriz de 14 colunas; com a de 13, nada muda.
+
+1. *Variante por braço.* Os seis JSON da execução vão a `<exec>/caches/`, com o `sessions-async.json` trocado pelo da
+   variante; o `cria-caches.sh` (congelado) recebe esse diretório, e a camada 3 compara com ele. O `counters-async` fica
+   `PREFERRED_NON_NULL` nos quatro. O pré-voo e o `--dry-run` conferem o arquivo de cada variante da fila (existe, uma
+   linha, a `merge-policy` esperada) e o `counters-async.json`.
+2. *Confirmação no cluster.* Depois do K1, o `?action=config` do `sessions-async` e do `counters-async` nos três nós e a
+   contagem de `A1-POLITICA carregada` em `podman logs` de cada nó (≥ 1 no braço `a1`, 0 no `pnn`, como no *smoke* da A1).
+   Se algo não bate, ou se o `cria-caches.sh` falhou no `sessions-async` (criação recusada ou leitura de volta
+   divergente), a execução vira `DESCARTADA-INFRA` **sem carga** e a fase segue; os braços seguintes do bloco viram
+   `PULADA`, e o `repor` refaz o bloco. Falha de outro *cache* continua parando a fase com 6, como antes. **Três falhas
+   seguidas da política da mesma variante** (sem execução boa dela no meio) param a fase com 6 (decisão do coordenador,
+   06/11). A contagem é por variante porque, com o JAR quebrado, só o `a1` falha e os braços `pnn` do bloco passariam
+   no meio, zerando uma contagem única; ela vale na invocação (a retomada recomeça do zero).
+3. *JAR da extensão.* Lido do volume do *compose* em `/opt/infinispan/server/lib/tcc-extensao-servidor.jar` (a A1 o
+   acrescenta, `04719ee`): três montagens da mesma fonte, ou nenhuma. Com `fusao=a1` na fila, obrigatório. Montado,
+   `--extensao-sha256` é obrigatório fora do `--dry-run` (exit 2), o SHA-256 é conferido (exit 4), e o JAR entra no
+   *bundle* e no `execucao.json` (`extensao_sha256`). O orquestrador não constrói o JAR: o roteiro do *bundle* o faz.
+4. *Fusão antes da varredura.* A matriz fatorial exige `--sonda-replay` e o `fusao_teto_s` do `--parametros`, que vai ao
+   programa como `--sweep-merge-timeout-sec` depois do `--sweep`. Depois da carga, o orquestrador copia o
+   `fusao-rep-001.json` do programa para `fusao_checagem` e, se a vista de 3 veio, `t_vista_ns` para
+   `t_vista_checagem_ns` (só registro; nulo sem fusão no teto, quando o programa já gravou `varredura-rep-001.erro.txt`).
+5. *Instante da fusão (P-65, decisão do coordenador de 06/11).* **`t_fusao_ns`** é a primeira amostra da sonda de
+   topologia do controlador (`observaveis-rep-001.jsonl`, `tipo` = `topologia`, ~2 s, nos modos *shadow* e *active*)
+   em ou depois do marcador `end` com os três nós respondendo e `numero_de_nos` = 3 em todos
+   (`campanha_s3_conferir.py fusao-trilha`). A trilha não traz `node_names`: num *cluster* de 3, cada nó ver 3 é a mesma
+   vista de 3 membros. Resolução: o período da sonda (`periodo_amostras_s`, 2,0 s nos brutos). Sem `end`, sem amostra
+   ou sem fusão até o fim da trilha (o controlador fecha no fim da carga), o campo fica **ausente**, e o motivo vai em
+   `fusao_trilha`. Conferência cruzada: as linhas `ISPN000093` de cada nó (`fusao-ispn000093.txt`), a primeira depois do
+   `end` em `fusao_vista` (DT-027 §2.2, com o *driver* de log), e a diferença `fusao_trilha.dif_ispn000093_s`. Nos
+   brutos do X-19, a regra dá +42,2 a +46,2 s nas nove F2 (mediana das seis ASYNC, 44,2 s), e no X-18, +44,1 a +47,8 s
+   (`runs/orquestrador-fatorial/fusao-trilha-brutos.out`); os brutos não têm o log do servidor, então a diferença para a
+   `ISPN000093` só aparece nas execuções novas.
+6. `manifesto-bracos.tsv`: o bloco fatorial com os quatro `ACEITA` entra com PO, PL, AO e AL (cabeçalho de sempre).
+
+**Teto da fusão: 72 s, contados do `end`.** Origem: o maior tempo de fusão medido depois do `end` da F2 na VM, 47,8 s
+(+42,2 a +47,8 s nas 18 execuções F2 do X-18 e do X-19, primeira leitura da sonda de topologia do controlador com os
+três nós em 3, resolução de 2 s; o coordenador citou +44 a +48 s), arredondado a 48 s, vezes 1,5, a folga que o
+`exec_teto_s` dá aos tempos medidos (pré-registro da calibração §4.1). O conferidor exige `inj_offset_s + f2_dur_s +
+fusao_teto_s <= duracao_s` (49 + 90 + 72 = 211 ≤ 300): o prazo vence antes do fim da carga. Como a varredura começa
+~154 s depois do `end` (fim da carga e convergência nas nove F2 do X-19), o prazo já passou nela, e a espera custa uma
+leitura (três GET em paralelo, até 5 s): o `exec_teto_s` não muda.
+
+**Programa** (`EsperaFusao`, `--sweep-merge-timeout-sec`). Exige `--sweep` e `--controller-admin` com um nó por
+servidor. Antes da varredura, lê `GET /rest/v2/cache-managers/default/health` dos nós de `--controller-admin` em paralelo
+(`ClienteAdminRest`, prazo de 5 s do `HealthRest`), a cada 2 s (período da sonda de topologia), até todos responderem
+com `number_of_nodes` = 3 e o mesmo conjunto `node_names` de 3, ou até o `end` + teto (sem `end`, uma leitura); ao
+menos uma leitura. Grava `fusao-rep-NNN.json` e a linha `Fusao antes da varredura:`; sem fusão, não varre e grava
+`varredura-rep-NNN.erro.txt` com o motivo (a última leitura de cada nó). Sem a opção, nada muda. Só GET de saúde.
+
+**Por que `t_fusao_ns` não é o instante da checagem (P-65).** A checagem antes da varredura vê a vista de fusão ~154 s
+depois do `end`, e a fusão vem ~44 s depois dele. Com o instante da checagem, as I1 online entre a fusão e a varredura
+iriam para a exposição na janela. Por isso a checagem fica em `t_vista_checagem_ns`, e `t_fusao_ns` sai da trilha.
+
 ### TD-022 — P1-IC: o P1 manda o nó suspeito ignorar o cache de sessões (AC-7) (2026-11-06)
 
 Numeração: TD-021 provisório na branch; na integração (06/11) a A1 (TD-020) e o W-5e (TD-021) entraram antes, e este

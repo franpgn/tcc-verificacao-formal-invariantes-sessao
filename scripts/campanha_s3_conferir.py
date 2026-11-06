@@ -34,8 +34,13 @@ So biblioteca padrao; roda com python3 -I. Cada subcomando imprime linhas "nome<
       para o ausente, 1 s e 3 s; late_max inteiro >= 0), e so valem com --sonda-replay (o orquestrador o repassa
       quando roda com a sonda). Sem ele, o campo presente e recusado (2): o programa so le os --s3-replay-* com
       --s3-replay-probe, e o arquivo nao pode registrar um valor que nao valeu.
+      Complemento 1 do benchmark refeito (DT-027, secao 5, item 3): fusao_teto_s (PARAMETROS_VARREDURA) e o teto da
+      espera pela fusao antes da varredura final, contado do marcador end; vai ao programa como
+      --sweep-merge-timeout-sec. Opcional, so com --sonda-replay (a varredura so roda com ela), inteiro > 0 com origem,
+      e a espera vence antes do fim da carga: inj_offset_s + f2_dur_s + fusao_teto_s <= duracao_s. Com isso, quando a
+      varredura comeca o prazo ja passou (ou falta pouco), e a espera nao soma ao exec_teto_s mais que uma leitura.
       Imprime "nome<TAB>valor" de cada parametro (os de carga presentes depois dos obrigatorios, na ordem de
-      PARAMETROS_CARGA, e os da sonda depois deles, na ordem de PARAMETROS_SONDA).
+      PARAMETROS_CARGA, os da sonda depois deles, na ordem de PARAMETROS_SONDA, e o fusao_teto_s por ultimo).
 
   controlador --arquivo <controlador-*.json> --hotrod-timeout-ms N [--exigir-politica] [--exigir-p2-desabilitada]
       Le o --controller-config. Com --exigir-politica (braco B na avaliacao), recusa (5) sem o bloco "politica"
@@ -59,6 +64,32 @@ So biblioteca padrao; roda com python3 -I. Cada subcomando imprime linhas "nome<
       decisoes, contrato 1.1+, ou "-"), trilha_incompleta (sim se faltar o fim ou se linhas_perdidas nao for 0) e
       trilha_incompleta_motivo. So marca: o exit nao muda; o veredito e do orquestrador (--exigir-trilha-completa).
 
+  pareamento --matriz <tsv>
+      Complemento 1 do benchmark refeito (DT-027, secao 5, item 4; plano de execucao 5.2): pareamento da matriz ou do
+      reposicoes.tsv. Aceita o cabecalho de 13 colunas (calibracao, avaliacao do B-40; regra de fusao atual implicita)
+      e o de 14 (coluna fusao no fim: pnn ou a1). Cada bloco tem os bracos A e B (shadow x active, regra atual) ou PO,
+      PL, AO e AL (fatorial 2x2: P = pnn, A = a1; O = shadow, L = active), cada um uma vez, com a mesma celula, o mesmo
+      papel e a mesma semente; o controlador e a fusao de cada linha sao os do braco; os quatro bracos so na matriz de
+      14 colunas; linha sem bloco so como braco A (calibracao). Recusa (5) com a lista do que quebrou. Imprime formato,
+      linhas, blocos_ab, blocos_fatorial, sem_bloco e fusao (variantes presentes, na ordem pnn, a1).
+
+  fusao-trilha --observaveis <observaveis-rep-NNN.jsonl> --marcadores <marcadores.txt>
+      P-65 (decisao do coordenador, 06/11): o instante da fusao (t_fusao_ns do execucao.json) e a primeira amostra
+      "topologia" da trilha de observaveis do controlador (sonda de topologia, ~2 s, nos dois modos) em ou depois do
+      marcador end em que os nos esperados (meta.nos_esperados, 3) respondem todos com numero_de_nos = 3. A trilha nao
+      traz node_names; num cluster de 3, cada no ver 3 e a mesma vista de 3 membros. Resolucao = periodo da sonda
+      (periodo_amostras_s, mediana). Sem end, sem amostra ou sem fusao ate o fim da trilha, t_fusao_ns e nulo e o
+      motivo diz por que. Imprime um objeto JSON numa linha. So registra: exit 0.
+
+  fusao-vista --logs <arquivo> --marcadores <marcadores.txt> [--log-driver <driver>]
+      DT-027 secao 2.2: instante da fusao = primeira vista de fusao (ISPN000093) depois do marcador end, em qualquer no.
+      --logs tem uma linha por linha de log do servidor, "<isnN><TAB><linha>" (o orquestrador grava as ISPN000093 de
+      podman logs de cada no); o carimbo e o do servidor ("AAAA-MM-DD HH:MM:SS,mmm", UTC, como no gate G-1 da TB), com o
+      codigo de cor do log removido. Imprime um objeto JSON numa linha (fonte, log_driver, end_ns,
+      primeira_apos_end_ms, primeira_apos_end_ns, desde_end_s, no, por_no {isnN: linhas, primeira_apos_end_ms} e
+      motivo, nulo quando ha o instante). Sem end ou sem linha depois dele, o instante e nulo e o motivo diz por que
+      (com o driver de log: no journald do Podman as recusas Hot Rod suprimem linhas, P-A4.2). So registra: exit 0.
+
   referencia --arquivo <referencia.json> --perfil sync|async
       Referencia de p99 do controlador (esquema referencia-p99/1, controle/ArquivoReferencia.java). B2 da V-W6: o
       programa recusa referencia de outro perfil (LigacaoControlador.java:204), entao o orquestrador recebe uma por
@@ -66,6 +97,7 @@ So biblioteca padrao; roda com python3 -I. Cada subcomando imprime linhas "nome<
       --perfil; 2 se o esquema nao for referencia-p99/1 ou faltar p99_ns. Imprime sha256, cenario e perfil.
 """
 import argparse
+import datetime
 import hashlib
 import json
 import math
@@ -150,6 +182,25 @@ PARAMETROS_SONDA = {
     "s3_replay_late_max": INT_NAO_NEG_CARGA,
 }
 PADROES_SONDA_PROGRAMA = {"s3_replay_min_sec": 1, "s3_replay_max_sec": 3}
+# DT-027 secao 5, item 3: teto da espera pela fusao antes da varredura (s, contado do end); so com --sonda-replay
+INT_POS_OPC = ("int", 1, False, None)
+PARAMETROS_VARREDURA = {"fusao_teto_s": INT_POS_OPC}
+# DT-027 secoes 1 e 5: bracos, controlador e variante da regra de fusao do sessions-async
+COLUNAS_MATRIZ = ("i", "fase", "rodada", "posicao", "celula", "modo", "falha", "papel", "bloco", "braco",
+                  "controlador", "seed", "repoe")
+COLUNAS_MATRIZ_FATORIAL = COLUNAS_MATRIZ + ("fusao",)
+CONTROLADOR_DO_BRACO = {"A": "shadow", "B": "active", "PO": "shadow", "PL": "active", "AO": "shadow",
+                        "AL": "active"}
+FUSAO_DO_BRACO = {"A": "pnn", "B": "pnn", "PO": "pnn", "PL": "pnn", "AO": "a1", "AL": "a1"}
+VARIANTES_FUSAO = ("pnn", "a1")
+BRACOS_AB = ("A", "B")
+BRACOS_FATORIAL = ("PO", "PL", "AO", "AL")
+# DT-027 secao 2.2: a vista de fusao no log do servidor (carimbo UTC com ms; codigo de cor removido)
+LOG_FUSAO = "ISPN000093"
+NOS = ("isn1", "isn2", "isn3")
+COR_RE = re.compile(r"\x1b\[[0-9;]*m")
+CARIMBO_RE = re.compile(r"(\d{4}-\d{2}-\d{2}) (\d{2}):(\d{2}):(\d{2}),(\d{3})")
+END_RE = re.compile(r"^fault=\S+ node=\S+ event=end t_epoch_ns=(\d+)\s*$")
 ESQUEMA_DECISOES = "decisoes-controlador/1.2"
 ESQUEMA_REFERENCIA = "referencia-p99/1"   # controle/ArquivoReferencia.java (ESQUEMA)
 ATUADOR_NULO = "nulo"
@@ -200,7 +251,8 @@ def conferir_parametros(obj, t_enc_pior_s, sonda_replay=False):
     if not isinstance(ps, dict):
         raise ErroUso("bloco parametros ausente")
     faltam = sorted(set(nomes) - set(ps))
-    sobram = sorted(set(ps) - set(nomes) - set(PARAMETROS_CARGA) - set(PARAMETROS_SONDA))
+    sobram = sorted(set(ps) - set(nomes) - set(PARAMETROS_CARGA) - set(PARAMETROS_SONDA)
+                    - set(PARAMETROS_VARREDURA))
     if faltam:
         raise ErroUso("parametros ausentes (obrigatorios, sem padrao): %s" % ", ".join(faltam))
     if sobram:
@@ -226,6 +278,7 @@ def conferir_parametros(obj, t_enc_pior_s, sonda_replay=False):
         v[nome] = x
     v.update(conferir_carga(ps))
     v.update(conferir_sonda(ps, sonda_replay))
+    v.update(conferir_varredura(ps, sonda_replay, v))
     for f in ("f1", "f2", "f3", "f4"):
         if f + "_dur_s" not in v:
             continue
@@ -299,6 +352,21 @@ def conferir_sonda(ps, sonda_replay):
         raise ErroUso("s3_replay_max_sec (%s) < s3_replay_min_sec (%s) (o ausente vale o padrao do programa: 3 s e "
                       "1 s)" % (ef["s3_replay_max_sec"], ef["s3_replay_min_sec"]))
     return v
+
+
+def conferir_varredura(ps, sonda_replay, v):
+    """{fusao_teto_s: n} se presente (DT-027 secao 5, item 3); so com a sonda; a espera vence antes do fim da carga."""
+    if "fusao_teto_s" in ps and not sonda_replay:
+        raise ErroUso("fusao_teto_s so vale com a sonda de replay (--sonda-replay do orquestrador): a varredura, que a "
+                      "espera pela fusao antecede, so roda com ela")
+    out = conferir_opcionais(ps, PARAMETROS_VARREDURA)
+    if out:
+        fim = v["inj_offset_s"] + v["f2_dur_s"] + out["fusao_teto_s"]
+        if fim > v["duracao_s"]:
+            raise ErroUso("fusao_teto_s: inj_offset_s + f2_dur_s + fusao_teto_s = %d > duracao_s = %d (a espera pela "
+                          "fusao tem de vencer antes do fim da carga, para nao somar ao exec_teto_s)"
+                          % (fim, v["duracao_s"]))
+    return out
 
 
 def cmd_parametros(a):
@@ -443,6 +511,200 @@ def cmd_trilha(a):
         raise Recusa("AC-5 APLICADA na trilha = %s, na linha de fim da carga = %s" % (aplicada or "-", a.sinal_alvo))
 
 
+def ler_matriz(p):
+    """(colunas, linhas) de uma matriz de campanha_s3_matriz.py, de 13 ou 14 colunas; ErroUso/ErroArquivo."""
+    p = Path(p)
+    if not p.is_file():
+        raise ErroArquivo("matriz ausente: %s" % p)
+    try:
+        txt = p.read_bytes().decode("ascii")
+    except (OSError, UnicodeDecodeError) as e:
+        raise ErroUso("matriz ilegivel %s: %s" % (p, e))
+    linhas = txt.replace("\r", "").split("\n")
+    cab = tuple(linhas[0].split("\t"))
+    if cab not in (COLUNAS_MATRIZ, COLUNAS_MATRIZ_FATORIAL):
+        raise ErroUso("cabecalho de %s nao e o de campanha_s3_matriz.py (13 colunas, ou 14 com fusao no fim)" % p)
+    out = []
+    for n, l in enumerate(linhas[1:], start=2):
+        if not l:
+            continue
+        campos = l.split("\t")
+        if len(campos) != len(cab):
+            raise ErroUso("%s:%d com %d campos (esperado %d)" % (p, n, len(campos), len(cab)))
+        x = dict(zip(cab, campos))
+        x["_linha"] = n
+        out.append(x)
+    return cab, out
+
+
+def problemas_de_pareamento(cab, linhas):
+    """Lista de problemas da matriz (vazia = pareamento ok) e o resumo {nome: valor}."""
+    fatorial = cab == COLUNAS_MATRIZ_FATORIAL
+    prob, blocos = [], {}
+    for x in linhas:
+        br, n = x["braco"], x["_linha"]
+        fus = x.get("fusao", "pnn")
+        if br not in CONTROLADOR_DO_BRACO:
+            prob.append("linha %d: braco %s desconhecido (A, B; no fatorial, PO, PL, AO, AL)" % (n, br))
+            continue
+        if br in BRACOS_FATORIAL and not fatorial:
+            prob.append("linha %d: braco %s so na matriz fatorial (14 colunas, com fusao)" % (n, br))
+        if fus not in VARIANTES_FUSAO:
+            prob.append("linha %d: fusao %s desconhecida (pnn ou a1)" % (n, fus))
+        elif fus != FUSAO_DO_BRACO[br]:
+            prob.append("linha %d: fusao %s no braco %s (esperado %s)" % (n, fus, br, FUSAO_DO_BRACO[br]))
+        if x["controlador"] != CONTROLADOR_DO_BRACO[br]:
+            prob.append("linha %d: controlador %s no braco %s (esperado %s)"
+                        % (n, x["controlador"], br, CONTROLADOR_DO_BRACO[br]))
+        if x["bloco"] == "-":
+            if br != "A":
+                prob.append("linha %d: braco %s sem bloco (so o A da calibracao vem sem bloco)" % (n, br))
+            continue
+        blocos.setdefault(x["bloco"], []).append(x)
+    n_ab = n_fat = 0
+    for b, xs in sorted(blocos.items(), key=lambda kv: kv[0]):
+        bracos = sorted(x["braco"] for x in xs)
+        if bracos == sorted(BRACOS_AB):
+            n_ab += 1
+        elif bracos == sorted(BRACOS_FATORIAL):
+            n_fat += 1
+        else:
+            prob.append("bloco %s: bracos %s (esperado A e B, ou PO, PL, AO e AL, cada um uma vez)"
+                        % (b, ",".join(x["braco"] for x in xs)))
+        for campo, nome in (("celula", "celula"), ("papel", "papel"), ("seed", "semente")):
+            vals = sorted({x[campo] for x in xs})
+            if len(vals) > 1:
+                prob.append("bloco %s: %s diferente entre os bracos (%s)" % (b, nome, ", ".join(vals)))
+    presentes = {x.get("fusao", "pnn") for x in linhas}
+    resumo = {"formato": "fatorial (14 colunas)" if fatorial else "campanha-s3 (13 colunas)",
+              "linhas": len(linhas), "blocos_ab": n_ab, "blocos_fatorial": n_fat,
+              "sem_bloco": sum(1 for x in linhas if x["bloco"] == "-"),
+              "fusao": ",".join(v for v in VARIANTES_FUSAO if v in presentes) or "-"}
+    return prob, resumo
+
+
+def cmd_pareamento(a):
+    cab, linhas = ler_matriz(a.matriz)
+    prob, resumo = problemas_de_pareamento(cab, linhas)
+    for k, v in resumo.items():
+        print("%s\t%s" % (k, v))
+    if prob:
+        raise Recusa("pareamento quebrado em %s (plano 5.2; DT-027 secoes 1 e 5): %s" % (a.matriz, "; ".join(prob)))
+
+
+def carimbo_ms(linha):
+    """Epoch ms do carimbo do servidor ("AAAA-MM-DD HH:MM:SS,mmm", UTC) na linha, ou None."""
+    m = CARIMBO_RE.search(COR_RE.sub("", linha))
+    if not m:
+        return None
+    d = datetime.datetime.strptime("%s %s:%s:%s" % m.group(1, 2, 3, 4), "%Y-%m-%d %H:%M:%S")
+    return int(d.replace(tzinfo=datetime.timezone.utc).timestamp()) * 1000 + int(m.group(5))
+
+
+def ler_end_ns(p):
+    p = Path(p)
+    if not p.is_file():
+        return None
+    for l in p.read_text(encoding="utf-8", errors="replace").splitlines():
+        m = END_RE.match(l.strip())
+        if m:
+            return int(m.group(1))
+    return None
+
+
+def vista_de_fusao(linhas_log, end_ns, log_driver=None):
+    """DT-027 secao 2.2: primeira vista de fusao depois do end em qualquer no. linhas_log: [(no, linha)]."""
+    por_no = {n: {"linhas": 0, "primeira_apos_end_ms": None} for n in NOS}
+    for no, l in linhas_log:
+        if LOG_FUSAO not in l:
+            continue
+        pn = por_no.setdefault(no, {"linhas": 0, "primeira_apos_end_ms": None})
+        pn["linhas"] += 1
+        t = carimbo_ms(l)
+        if end_ns is None or t is None or t * 10**6 < end_ns:
+            continue
+        if pn["primeira_apos_end_ms"] is None or t < pn["primeira_apos_end_ms"]:
+            pn["primeira_apos_end_ms"] = t
+    cand = [(v["primeira_apos_end_ms"], n) for n, v in sorted(por_no.items()) if v["primeira_apos_end_ms"] is not None]
+    out = {"fonte": "%s (log do servidor por podman logs; carimbo UTC com ms; DT-027 secao 2.2)" % LOG_FUSAO,
+           "log_driver": log_driver, "end_ns": end_ns, "primeira_apos_end_ms": None, "primeira_apos_end_ns": None,
+           "desde_end_s": None, "no": None, "por_no": por_no, "motivo": None}
+    if end_ns is None:
+        out["motivo"] = "sem marcador end (sem falha, ou falha sem o fim): nada a separar"
+    elif not cand:
+        out["motivo"] = ("nenhuma linha %s depois do end em nenhum no (log do Podman: %s; com o journald, as recusas "
+                         "Hot Rod podem suprimir linhas, P-A4.2)" % (LOG_FUSAO, log_driver or "desconhecido"))
+    else:
+        t, no = min(cand)
+        out.update({"primeira_apos_end_ms": t, "primeira_apos_end_ns": t * 10**6,
+                    "desde_end_s": round((t * 10**6 - end_ns) / 1e9, 3), "no": no})
+    return out
+
+
+def fusao_pela_trilha(linhas_obs, end_ns):
+    """P-65 (decisao do coordenador, 06/11): t_fusao_ns = primeira amostra "topologia" da trilha de observaveis do
+    controlador em ou depois do end em que todos os nos esperados respondem com numero_de_nos = nos esperados (a
+    trilha nao traz node_names: num cluster de 3, cada no ver 3 e a mesma vista de 3 membros). linhas_obs: as linhas
+    do observaveis-rep-NNN.jsonl (a ultima, truncada, e as que nao sao JSON ficam fora)."""
+    esperados, amostras = 3, []
+    for l in linhas_obs:
+        try:
+            o = json.loads(l)
+        except ValueError:
+            continue
+        if not isinstance(o, dict):
+            continue
+        if o.get("tipo") == "meta" and isinstance(o.get("nos_esperados"), int) and o["nos_esperados"] > 0:
+            esperados = o["nos_esperados"]
+        elif o.get("tipo") == "topologia" and isinstance(o.get("t_ns"), int) and isinstance(o.get("por_no"), list):
+            amostras.append(o)
+    amostras.sort(key=lambda o: o["t_ns"])
+    passos = sorted((b["t_ns"] - a["t_ns"]) / 1e9 for a, b in zip(amostras, amostras[1:]))
+    out = {"fonte": "observaveis-rep-NNN.jsonl (sonda de topologia do controlador, shadow e active; P-65)",
+           "criterio": "primeira amostra em ou depois do end com os %d nos respondendo e numero_de_nos = %d em todos "
+                       "(a trilha nao traz node_names)" % (esperados, esperados),
+           "nos_esperados": esperados, "end_ns": end_ns, "t_fusao_ns": None, "desde_end_s": None,
+           "amostras_apos_end": 0, "periodo_amostras_s": round(passos[len(passos) // 2], 3) if passos else None,
+           "motivo": None}
+    if end_ns is None:
+        out["motivo"] = "sem marcador end (sem falha, ou falha sem o fim): sem instante da fusao"
+        return out
+    if not amostras:
+        out["motivo"] = "trilha de observaveis sem amostra de topologia (arquivo ausente ou vazio)"
+        return out
+    for o in amostras:
+        if o["t_ns"] < end_ns:
+            continue
+        out["amostras_apos_end"] += 1
+        pn = o["por_no"]
+        if len(pn) == esperados and all(isinstance(x, dict) and x.get("respondeu") is True
+                                         and x.get("numero_de_nos") == esperados for x in pn):
+            out["t_fusao_ns"] = o["t_ns"]
+            out["desde_end_s"] = round((o["t_ns"] - end_ns) / 1e9, 3)
+            return out
+    out["motivo"] = ("nenhuma amostra depois do end com os %d nos em %d ate o fim da trilha (%d amostra(s) depois do "
+                     "end)" % (esperados, esperados, out["amostras_apos_end"]))
+    return out
+
+
+def cmd_fusao_trilha(a):
+    p = Path(a.observaveis)
+    linhas = p.read_bytes().decode("utf-8", errors="replace").splitlines() if p.is_file() else []
+    print(json.dumps(fusao_pela_trilha(linhas, ler_end_ns(a.marcadores)), ensure_ascii=True))
+
+
+def cmd_fusao_vista(a):
+    linhas = []
+    p = Path(a.logs)
+    if p.is_file():
+        for l in p.read_bytes().decode("utf-8", errors="replace").splitlines():
+            if "\t" in l:
+                no, resto = l.split("\t", 1)
+                linhas.append((no.strip(), resto))
+    print(json.dumps(vista_de_fusao(linhas, ler_end_ns(a.marcadores), a.log_driver), ensure_ascii=True,
+                     sort_keys=False))
+
+
 def cmd_referencia(a):
     obj = ler_json(a.arquivo)
     if not isinstance(obj, dict) or obj.get("esquema") != ESQUEMA_REFERENCIA:
@@ -483,12 +745,22 @@ def main(argv):
     r = sub.add_parser("referencia")
     r.add_argument("--arquivo", required=True)
     r.add_argument("--perfil", required=True, choices=("sync", "async"))
+    pa = sub.add_parser("pareamento")
+    pa.add_argument("--matriz", required=True)
+    ft = sub.add_parser("fusao-trilha")
+    ft.add_argument("--observaveis", required=True)
+    ft.add_argument("--marcadores", required=True)
+    fv = sub.add_parser("fusao-vista")
+    fv.add_argument("--logs", required=True)
+    fv.add_argument("--marcadores", required=True)
+    fv.add_argument("--log-driver")
     try:
         a = ap.parse_args(argv)
     except SystemExit as e:
         return 2 if e.code else 0
     cmds = {"parametros": cmd_parametros, "controlador": cmd_controlador, "meta": cmd_meta, "trilha": cmd_trilha,
-            "referencia": cmd_referencia}
+            "referencia": cmd_referencia, "pareamento": cmd_pareamento, "fusao-vista": cmd_fusao_vista,
+            "fusao-trilha": cmd_fusao_trilha}
     if a.cmd not in cmds:
         ap.print_usage(sys.stderr)
         return 2

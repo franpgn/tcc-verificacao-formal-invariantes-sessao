@@ -2,7 +2,7 @@
 #
 # run-campanha-s3.test.sh
 #
-# Testes S1..S29 do scripts/run-campanha-s3.sh (W-6, B-46; W-6c; I-1), no estilo do run-rebaseline.test.sh: sem cluster, sem
+# Testes S1..S30 do scripts/run-campanha-s3.sh (W-6, B-46; W-6c; I-1; W-10), no estilo do run-rebaseline.test.sh: sem cluster, sem
 # rede, sem VM, sem tc real. Shims em PATH para java, podman, podman-compose, sudo, nsenter, tc, ip, iptables, curl,
 # systemd-run, systemctl, flock, pgrep, df, sleep, date e timeout. Relogio acelerado: o shim de sleep dorme s/ESCALA de
 # verdade, o de timeout divide os prazos por ESCALA e o de date devolve T0 + (agora - T0) * ESCALA. O injetor de F1 e
@@ -30,7 +30,7 @@ REAL_SLEEP="$(command -v sleep)"
 REAL_TIMEOUT="$(command -v timeout)"
 TMP="$(mktemp -d)"
 trap '[[ -n "${CS_TESTE_MANTER:-}" ]] && echo "(CS_TESTE_MANTER: ${TMP} mantido)" || rm -rf "${TMP}"' EXIT
-SELECAO=" ${*:-S1 S2 S3 S4 S5 S6 S7 S8 S9 S10 S11 S12 S13 S14 S15 S16 S17 S18 S19 S20 S21 S22 S23 S24 S25 S26 S26h S27 S28 S29} "
+SELECAO=" ${*:-S1 S2 S3 S4 S5 S6 S7 S8 S9 S10 S11 S12 S13 S14 S15 S16 S17 S18 S19 S20 S21 S22 S23 S24 S25 S26 S26h S27 S28 S29 S30} "
 
 PASS=0
 FAIL=0
@@ -1649,6 +1649,30 @@ verdade "S29n i=0 releu a meta (mais de uma leitura com 4)" test "${N4:-0}" -ge 
 ok "S29n i=0 sem injecao (marcadores vazios)" "" "$(grep -F 'fault=F1' "${D0}/marcadores.txt" 2>/dev/null)"
 # ' podman|kill|': so a linha do shim de podman (a do sudo, "sudo|podman|kill|...", contaria a mesma chamada duas vezes)
 ok "S29n um so podman kill (o F1 de i=1)" "1" "$(conta ' podman|kill|')"
+fi
+
+# ============================================================================= S30
+if quer S30; then
+echo "== S30: W-10: --sonda-replay acrescenta --s3-replay-probe --sweep a linha do jar; sem ela a linha e a de antes =="
+novo_caso s30
+matriz_calib "ASYNC-none:calibracao:1"
+OUTD="$(PATH="${PATH_TESTE}" bash "${ORQ}" --dry-run --matriz "${MAT}" --matriz-sha256 "${MAT_SHA}" --fase calibracao     --parametros "${PARAMS}" --parametros-sha256 "${PARAMS_SHA}" --controlador "${CTRL}" --controlador-sha256 "${CTRL_SHA}"     "${REFS[@]}" --saida "${OUT}" 2>&1)"; RC=$?
+ok "S30 dry-run sem a opcao: exit 0" "0" "${RC}"
+contem "S30 sem a opcao: sonda_replay=nao nas opcoes" "exigir_trilha_completa=nao sonda_replay=nao" "${OUTD}"
+nao_contem "S30 sem a opcao: plano sem --s3-replay-probe" "--s3-replay-probe" "${OUTD}"
+nao_contem "S30 sem a opcao: plano sem --sweep" "--sweep" "${OUTD}"
+OUTD="$(PATH="${PATH_TESTE}" bash "${ORQ}" --dry-run --matriz "${MAT}" --matriz-sha256 "${MAT_SHA}" --fase calibracao     --parametros "${PARAMS}" --parametros-sha256 "${PARAMS_SHA}" --controlador "${CTRL}" --controlador-sha256 "${CTRL_SHA}"     "${REFS[@]}" --saida "${OUT}" --sonda-replay 2>&1)"; RC=$?
+ok "S30 dry-run com a opcao: exit 0" "0" "${RC}"
+contem "S30 com a opcao: sonda_replay=sim nas opcoes" "sonda_replay=sim" "${OUTD}"
+contem "S30 com a opcao: plano com --s3-replay-probe --sweep no fim" "--rejoin-timeout-sec 30 --s3-replay-probe --sweep" "${OUTD}"
+printf 'go calibracao %s
+' "${HOJE}" > "${CS_TTY_ARQUIVO}"
+rodar calibracao --sonda-replay
+ok "S30 execucao com a opcao: exit 0, ACEITA" "0 ACEITA" "${RC} $(json "$(exec_dir 0)/checagem.json" 'd["veredito"]')"
+ok "S30 a carga e o pre-voo recebem --s3-replay-probe e --sweep" "$(grep -cF ' java|-jar|' "${ST}/chamadas.log")"     "$(grep -F ' java|-jar|' "${ST}/chamadas.log" | grep -cF -- '|--s3-replay-probe|--sweep')"
+contem "S30 execucao.json com a linha do jar da sonda" "--s3-replay-probe" "$(json "$(exec_dir 0)/execucao.json" 'd["comando"]')"
+rodar calibracao
+ok "S30 retomada sem a opcao (bundle de opcoes mudou) -> exit 4" "4" "${RC}"
 fi
 
 echo

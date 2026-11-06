@@ -1049,3 +1049,24 @@ Transmitidas ao Senior pelo coordenador, sobre o parecer de conferência do text
 - **Orquestrador antes de rodar:** `sessions-async.json` por braço, JAR da extensão no *bundle* em todos os braços,
   checagem de fusão antes da varredura (sem fusão = varredura com erro, tratamento simétrico nos quatro braços),
   matriz de quatro braços, controlador com a A4 [A4], análise 2×2 no `comparar_bracos.py`.
+
+## DT-028: B-40 parte 2 revisada, valores da recalibração para a avaliação fatorial, PRÉ-REGISTRO (2026-11-06)
+
+> Registrada antes de qualquer dado da avaliação fatorial (DT-027). Texto vinculante:
+> `docs/pre-registro-benchmark-refeito-parte2-2026-11-06.md`, versão `8eadca7`. **Substitui a DT-025 no benchmark
+> refeito**; a DT-025 não é editada.
+
+- **Derivação:** `dados-vm/cs3-2026-11/derivacao-recal-20261106T145106Z/calibracao-s3-derivacao.json` (`b183527a…`),
+  referências ASYNC `dec07fb7…` e SYNC `32bb1c60…`. **Conferência:** `wt-w9/docs/validacao-derivacao-recalibracao-2026-11-06.md`
+  (`ddc7700`), valores confirmados.
+- **Valores:** W 4 s; `kLag` 1; θ_lat_in 0,05780346820809249 e θ_lat_out 0; θ_err_in 5 × 10⁻³²⁴ e θ_err_out 0;
+  `lag_in` 6,881289 ms e `lag_out` 0,939831 ms; m 35; `T_cooldown` 140 s; `T_estavel` 2 s; `T_hold_viol` 69,5 s;
+  teto da convergência 600 s; período 4 s; `exec_teto_s` 1019 s; k 2; `n_lat` = `n_err` = 100.
+- **Guarda de disco:** `volume_exec_mb` 14 (maior medido), não os 3 MiB derivados.
+- **Novos:** `s3_replay_late_max` 306 (305 candidatas na recalibração + 1; as 5 F4 bateram no teto de 268);
+  `fusao_teto_s` 72 (48 s, a maior fusão medida no X-18 e no X-19, × 1,5); `acaoP1` = AC-7 explícito (G-1, V-3).
+- **Declarações:** R-4 aplicada (W < 5 s, subestimação de ~1,25 vez); a saída R4 praticamente não ocorre; P1 a +9,9 a
+  +10,1 s do corte na reprodução.
+- **Ambiente (P-64):** log em `k8s-file` e os *loggers* `BaseRequestProcessor` e `InvocationContextInterceptor` em
+  FATAL pela REST, iguais nos quatro braços; desvio de ambiente em relação à recalibração (journald), sem mudança de
+  semântica; 268 MB → 0,09 MB no alvo do AC-7.

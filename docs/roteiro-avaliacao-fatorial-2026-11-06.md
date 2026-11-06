@@ -67,7 +67,7 @@ flowchart TD
     PI -->|VER COM O SENIOR| S["parar; Senior decide"]
     PI -->|PROTOCOLO OK| N2["4.4 retomada do nucleo ate o fim; vigia por execucao"]
     N2 --> X["5. metade 2: fase extra (F1 e F4)"]
-    X --> RP["6. reposicoes (blocos inteiros, teto h4 = 24), uma vez"]
+    X --> RP["6. reposicoes (blocos inteiros, teto h4 = 20), uma vez"]
     RP --> F["7. MANIFEST, copia com sha256sum -c, entrega a analise (comparar_bracos, PO/PL/AO/AL)"]
 ```
 
@@ -92,9 +92,9 @@ vm() { sed 's/\r$//' | ssh "${SSHO[@]}" "server1@$VMIP" 'bash -s'; }
 | P-1 | Nenhuma fase em curso na VM (`pgrep -af 'run-campanha-s3|run-rebaseline'` vazio; *lock* livre; 0 *timers* `tcc-heal*`; 0 *units* `tcc-amostrador-*`) | tudo |
 | P-2 | T = tag `int/2026-11-06-aval`, com as suítes do integrador registradas e as funções conferidas no 2.1: matriz fatorial e `--extensao-sha256` (orquestrador fatorial), `sessions-async-a1.json` e `extensao-servidor/` (A1), `--exigir-acao-p1` (P-63/AC-7), `ajusta-log.sh` e `loggers-avaliacao.tsv` (P-64), `--sweep-merge-timeout-sec` no programa | tudo |
 | P-3 | DT-028 registrada (`8eadca7`, `9ee94a6`): feito | 2.2 |
-| P-4 | Notas [A4] da DT-027 (seção 6: A4-1 a A4-4) fechadas antes dos dados | GO |
+| P-4 | Notas [A4] da DT-027 (seção 6: A4-1 a A4-5) fechadas antes dos dados: **feito** (`3fcd8df`, nota na DT em `e0b03ef`, 20261106) | GO |
 | P-5 | *Host* em H0 há ≥ 5 min antes do GO, `WSearch` parado | GO da metade 1 |
-| P-6 | Disco da VM: livre ≥ 1,5 × (80 + 4 × 24) × 14 MiB ≈ 3,7 GiB para as execuções e reposições, mais 1,5 GiB para o log `k8s-file` dos três nós (teto de 512 MB cada) ≈ **5,2 GiB** | 2.5 |
+| P-6 | Disco da VM: livre ≥ 1,5 × (80 + 4 × 20) × 14 MiB ≈ 3,3 GiB para as execuções e reposições (teto h4 de 20 blocos, até 4 execuções cada), mais 1,5 GiB para o log `k8s-file` dos três nós (teto de 512 MB cada) ≈ **4,8 GiB** | 2.5 |
 
 ## 2. Bundle, entradas e *cluster*
 
@@ -334,7 +334,7 @@ for n in isn1 isn2 isn3; do sudo podman inspect $n > $A/inspect-$n.json 2>&1; su
 sha256sum $A/* > $A.sha256
 flock -n /var/lock/tcc-vm.lock bash ~/fat-infra/recriar-cs3.sh $CS3 ~/fat-infra/recriacao-$TS > /dev/null 2>&1; echo "recriar rc=$?"
 grep -vE 'AVAILABLE$|rebalancing_enabled true|ISPN000094' ~/fat-infra/recriacao-$TS/conferencia.txt
-free -m | tail -2; df -Pm $CS3/runs | tail -1                       # livre >= 5,2 GiB (P-6)
+free -m | tail -2; df -Pm $CS3/runs | tail -1                       # livre >= 4,8 GiB (P-6)
 ```
 
 Esperado: `RECRIAR-CS3 OK` e *swap* perto de 40 MB. O `recriar-cs3.sh` cria os seis *caches* pela regra atual
@@ -395,7 +395,7 @@ Sem `k8s-file` confirmado, não dar o GO: a DT-028 §5 declara o log em `k8s-fil
 | `campanha-s3-avaliacao.json` (`campanha-s3/2`, 31 números) | `5959a3495ca8398667135f60d968f992c382354c7ce4b79829d720ee078c1e8d` | gerador 11.4 sobre a derivação e a recalibração `1ca5877f…` |
 | `referencia-S3-async.json`, `referencia-S3-sync.json` | `dec07fb76352e85ea014def9f8c52f5b0b416663ddda4f3c60f4676c660fd396`, `32bb1c60d13611eed70b4ffae3a276e0e318dbee9f3d2393a3545a653e6ad741` | DT-028, cabeçalho |
 | matriz fatorial (`--ordem-seed 20261106`) | `406a845cd785cb291a097afd7d3341d3116517d42e0e4af368cf76c789b5d726` | 2.4; reproduzida duas vezes no *host* com `9cf777a` |
-| `--ordem-seed` | **20261106** | data do commit do registro (DT-028, `9ee94a6`), pela instrução do coordenador. A DT-027 §3 diz "a data do commit que fechar as notas [A4]"; se essa nota sair em outra data, o coordenador decide antes do GO qual vale, e a matriz muda |
+| `--ordem-seed` | **20261106** | DT-027 §3: a data do commit que fechou as notas [A4] (`3fcd8df`, 20261106); é também a do registro da DT-028 (`9ee94a6`). Confirmada pelo coordenador |
 | W, `kLag`, θ, `lag_in`, `lag_out`, m, `T_cooldown`, `T_estavel`, `T_hold_viol`, k, `n_lat`, `n_err` | 4 s, 1, os da DT-028 §1, 35, 140 s, 2 s, 69,500485632 s, 2, 100, 100 | DT-028 §1 (no controlador) |
 | `convergencia_teto_s`, `convergencia_periodo_s`, `exec_teto_s` | 600 s, 4 s, 1019 s | DT-028 §1 |
 | `volume_exec_mb` | 14 | DT-028 §2 |
@@ -543,17 +543,20 @@ rede). O vigia do 4.5 continua. Duração: 16 × ~395 s ≈ 1,8 h.
 ## 6. Reposições (depois de `FIM-extra-OK`; uma vez)
 
 Bloco perdido é refeito inteiro (os quatro braços no fatorial, os dois nas descritivas), com o próximo bloco livre e
-semente nova; teto de reposições h4 = 24; uma segunda perda do mesmo bloco reposto pede decisão do Gestor.
+semente nova; **teto de reposições h4 = 20** (25 % das 80 execuções, a fração do C3 §4.4; decisão do coordenador de
+06/11; o 24 da nota de `3fcd8df` vinha das 96 execuções do desenho anterior). O `repor` conta **blocos** repostos
+por h4 (a chave é o bloco fora da calibração), não execuções. Uma segunda perda do mesmo bloco reposto pede decisão do
+Gestor.
 
 ```bash
 # VM
 source ~/fat-infra/vars.sh; cd $CS3
 python3 -I ~/fat-infra/fat-conferir.py execucoes $SFAT --tsv ~/fat-infra/execucoes-antes-reposicoes.tsv | grep '^BLOCOS'
 python3 -I scripts/campanha_s3_matriz.py repor --matriz $MFAT --saida $SFAT --ordem-seed $ORDEM --s0 800000 \
-  --passo-semente 100 --teto-h4 24 --dry-run
+  --passo-semente 100 --teto-h4 20 --dry-run
 # se listar reposicoes (senao, ir ao 7):
 python3 -I scripts/campanha_s3_matriz.py repor --matriz $MFAT --saida $SFAT --ordem-seed $ORDEM --s0 800000 \
-  --passo-semente 100 --teto-h4 24 | tee ~/fat-infra/repor.txt
+  --passo-semente 100 --teto-h4 20 | tee ~/fat-infra/repor.txt
 python3 -I scripts/campanha_s3_conferir.py pareamento --matriz $SFAT/reposicoes/reposicoes.tsv
 lancar_fat reposicoes $SFAT/reposicoes/reposicoes.tsv ~/fat-infra/cmd-fat-reposicoes.sh supr1
 ```
@@ -675,9 +678,9 @@ O que não está aqui segue a seção 9 do roteiro do B-40, trocando `av` por `f
 
 | # | Ponto | O que o roteiro faz |
 |---|---|---|
-| G-1 | `--ordem-seed`: a DT-027 §3 manda a data do commit que fechar as notas [A4]; a instrução do coordenador é a data do registro (DT-028, 20261106) | usa 20261106 e registra a matriz `406a845c…`; se as notas [A4] saírem com outra data, o coordenador escolhe antes do GO |
-| G-2 | Notas [A4] (A4-1 a A4-4) | P-4: precisam estar fechadas antes do GO |
-| G-3 | Taxa de h4a com L+ (13,8 % na recalibração) contra blocos de quatro braços | registrado na seção 8, sem mudar regra; decidir antes do GO se o orçamento e o teto h4 de 24 bastam |
+| G-1 | `--ordem-seed` | **fechado:** as notas [A4] saíram em 20261106 (`3fcd8df`), a mesma data do registro; matriz `406a845c…` |
+| G-2 | Notas [A4] | **fechado** (`3fcd8df`, `e0b03ef`) |
+| G-3 | Taxa de h4a com L+ (13,8 % na recalibração) contra blocos de quatro braços | registrado na seção 8 e na nota da DT-027 (`3fcd8df`); teto h4 de 20 pela decisão do coordenador; regra de repor uma vez sem mudança |
 | G-4 | `podman-compose` 1.0.6 e o bloco `logging` | 2.6 (a) confere pelo `--dry-run` e pelo `podman inspect`; alternativas sem e com mudança da VM |
 | G-5 | Braço `a1` de teste no 2.6 (c) | troca o `sessions-async` do *cluster* recém-criado antes do GO; a i = 0 recria o *cluster* |
 | G-6 | *Jars* não reprodutíveis | o SHA é o do arquivo do 2.1, levado à VM e à entrega |
@@ -1384,7 +1387,7 @@ Nenhuma de código. Roteiro em `docs/plano-implementacao-controlador`.
 2.4 (dry-run com as linhas esperadas), 2.6 (três conferências), 4.4 (piloto), 7.1 e 7.2 (MANIFEST nos dois lados).
 
 ### Pontos que precisam de validação do gestor
-G-1 a G-6 (seção 10), em especial G-1 (data da semente de ordem) e G-3 (h4 com blocos de quatro braços).
+G-3 a G-6 (seção 10), em especial G-3 (h4 com blocos de quatro braços e teto de 20). G-1 e G-2 fechados.
 
 ### Próxima tarefa sugerida para o Worker
 Integrador: fechar a tag `int/2026-11-06-aval` com as duas linhas (`9cf777a` e `e672051`) e registrar o `--dry-run`

@@ -1,0 +1,11 @@
+id	d-inv1-full-I5
+rev	a2ce4c9 (DEPOIS)
+modulo	MCSession
+spec	Spec
+workers	1
+timeout	600
+java	/c/Program Files/Java/jdk-17.0.2/bin/java.exe
+inicio	2026-11-05T02:34:47
+a1b6d433ed8c5071a15e90d122d1c70cb80f1018d8b46eb572ad4a8d49c5a9d4 *./MCFifo.tla
+6555517911f228c1421a89a29f0ade6cf74980a4cd8482062a04fcb6c409c620 *./MCSession.tla
+0d574db8183c10787b64585be53d80bb3dbc874730c3cc723f325d00657992a4 *./SessionStore.tla

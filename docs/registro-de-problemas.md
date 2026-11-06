@@ -1168,6 +1168,70 @@ correspondente adicionado em `Mesclar` (`spec/SessionStore.tla`, commit `b7d8e0a
 
 Na integração, P-51..P-53 deslocam como os demais números do W-6 (seção 6 da V-W6: hoje +2, P-53..P-55).
 
+### P-54 (W-6c) — com o AC-5 parando o nó sob o `netem`, o `inject-jitter.sh` sai com 0 e o `injetor.log` diz "OK"
+
+- **Sintoma (leitura do injetor congelado ao escrever o F3 do S3):** o rascunho do B-40 (seção 4.3) supõe que o AC-5
+  que para o `isn2` durante o `netem` "faz o injetor falhar na remoção". Não faz: o `tc qdisc del` final é
+  `|| true`, e a conferência `nstc qdisc show | grep -q netem`, com o netns sumido, cai no ramo `else` e escreve
+  `OK: F3 (jitter) injetada por <n>s e removida; sem netem residual`. O *trap* de saída também é `|| true`. O injetor
+  sai com **0**, e o `injetor.log` não mostra que o nó parou. Se o orquestrador tratasse o F3 como o F2/F4 do B1
+  (exit 1 ou 6), a execução passaria como F3 completa sem aviso.
+- **Correção (orquestrador; o injetor não muda):** com F3, exit 0 e o nó-alvo fora de `running` (ou já religado
+  pela linha de fim), a execução fica pendente (`injetor_alvo_parado`), e a pós-checagem confere a linha de fim e a
+  trilha como no B1: AC-5 APLICADA nesse nó vira o aviso "falha efetiva ate a parada do no pelo AC-5; o netem saiu com
+  o netns de <no>", o resto vira recusa. Exit 5 com o nó já parado (o AC-5 entre a guarda e a sonda do injetor) é
+  recusa, não parada da fase. Caso S26e; o dublê de `tc` falha no netns de um nó parado, como o `nsenter` real.
+- **Para o Senior:** a frase do B-40 §4.3 sobre o B1 no F3 deve dizer "o injetor sai com 0 e não acusa a parada".
+- **Status:** `RESOLVIDO` (05/11, W-6c); a confirmar na VM se houver AC-5 numa F3 (o B-40 espera zero).
+
+### P-55 (W-6c) — o `inject-jitter.sh` só trata o TERM depois do `sleep` da janela
+
+- **Sintoma:** o injetor dorme a janela em primeiro plano (`sleep "${DURACAO}"`), e o bash só roda o *trap* quando o
+  comando em primeiro plano termina. O `limpar` do orquestrador mandava TERM ao injetor e esperava: com o F3 em curso
+  na VM, até 251 s com o `netem` aplicado antes de o orquestrador sair. O runner do *rebaseline* já contornava com o
+  `matar` (`pkill -TERM -P` antes do `kill`).
+- **Correção:** no `limpar`, com o F3 ativo, `pkill -TERM -P <injetor>` antes do `kill -TERM`, como o `matar`; o
+  injetor então sai pelo `set -e` e o *trap* remove o `netem`. Depois, o orquestrador tira o resto da raiz, desarma o
+  *dead-man* e grava o `end`. Sem `pkill` (o Git Bash dos testes), a espera é a do `sleep`, curta na escala da suíte.
+  Caso S26f.
+- **Status:** `RESOLVIDO` (05/11, W-6c).
+
+### P-56 (W-6c) — no S3 o cluster já é recriado antes de toda execução: o que fazer com swap alto depois da recriação
+
+- **Fato:** o orquestrador do S3 faz `down`/`up` antes de cada execução (TD-014, escolha 1). O `down` mata as JVMs dos
+  servidores e solta o swap delas. A leitura do portão (depois do K1) mede então o swap do que sobrevive à recriação
+  (outros processos da VM) mais o que as JVMs novas empurraram no arranque e nos 60 s do K1. Os números de 05/11
+  (+1 GiB a cada 7 a 10 execuções) vêm da campanha em curso, cujo runner não recria o *cluster* entre execuções.
+- **Consequência:** a recriação extra pedida pelo W-6c só reduz o swap se ele for das JVMs dos servidores; se for de
+  outro processo, a segunda leitura repete a primeira e a execução roda com o aviso "swap continua …". O que de fato
+  esvazia o swap com RAM livre é `swapoff -a && swapon -a`, que não está no pedido.
+- **Decisão (coordenador, sob autorização do Gestor, 05/11):** parar a fase. Nas 4 recriações medidas na noite 1 de
+  05/11 o swap caiu para 39 a 51 MB; swap alto depois de recriar indica outra causa, desconhecida, e não deve
+  contaminar dados.
+- **Correção:** com o swap ainda ≥ `--swap-limite-kb` depois da recriação do portão, o orquestrador grava o
+  `execucao.json` (com `swap_portao.parada`) e sai com **exit 11**, "parada swap: …" na última linha do log, sem rodar
+  a execução e sem `checagem.json`; na retomada, a DT-014 guarda o diretório como `.abortada-<UTC>` e o mesmo i roda.
+  Exit 11 no `--help` e no README. Caso S27c (vermelho em `d2c7241`, implementação em `f2dac17`).
+- **Status:** `RESOLVIDO` (05/11, W-6c).
+
+### P-57 (W-6c; ressalvas N1, R3, R4, R7 e R8 da V-W6b) — dublês e evidências do B1 mais fracos que os injetores reais
+
+- **Sintoma (V-W6b, seções 2.1, 3 e 8):** (N1) o dublê de F4 saía sempre no fim da janela, mas o `inject-netdegrade.sh`
+  real sai no fim do *ping* (~40 s depois do `start`) quando o AC-5 para o alvo durante a verificação, e o `end` do
+  braço B adianta ~50 s, o que desloca o Δ_rec só nesse braço; o `execucao.json` não guardava o fim nominal nem a saída
+  do injetor. (R3/R8) o S22 e o S25 dependiam do relógio do Git Bash: sob carga, o AC-5 do dublê caía antes do disparo
+  ou depois da janela, e a mutação do S25 passava. (R4) no F4, o B1 aceitava sem prova de que a degradação foi
+  aplicada. (R7) o `--help` cortava o cabeçalho em 60 linhas e não mostrava "Variaveis" nem "Exit codes".
+- **Correção:** N1 e R4 no orquestrador (TD-014 item 24); dublê de F4 com o *ping* de 40 s, a linha `degradacao
+  aplicada` e a saída 6 no fim do *ping*; o dublê de `java` para o nó depois do `start` da falha (`ac5-apos-start`) e
+  segura a linha de fim até o nó do F1 parar (`java-espera-parado-<no>`); `uso()` até o `set -euo pipefail`. As
+  quatro mutações da V-W6b §2.1 foram rodadas de novo em paralelo, com carga (`docs/testes.md`, W-6c).
+- **Status:** `RESOLVIDO` no W-6c, exceto a regra da análise do N1 (fim nominal ou `end` do injetor nas execuções com o
+  aviso do B1), que é decisão do Gestor no B-40 §9 e uso no W-5b.
+
+Na integração: o integrador usou o P-56 para o I-1, e o P-56 deste registro (swap) passa a P-57 (aviso do
+coordenador, 06/11); o destino de P-54, P-55 e P-57 fica com o integrador.
+
 ## Observação de modelagem (não é defeito)
 
 Com 8 *threads* = 8 identidades fixas (`user-<tid>`), `incrementFailure`

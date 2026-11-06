@@ -112,20 +112,22 @@ no programa de carga, `session/Religamento.java`, a opção `--rejoin-timeout-se
 ```mermaid
 %%{init: {'theme':'base','themeVariables':{'background':'#ffffff','primaryColor':'#ffffff','primaryTextColor':'#000000','primaryBorderColor':'#000000','lineColor':'#000000','secondaryColor':'#ffffff','tertiaryColor':'#ffffff','clusterBkg':'#ffffff','clusterBorder':'#000000','edgeLabelBackground':'#ffffff','fontFamily':'Arial'}}}%%
 flowchart TD
-    PV["pre-voo: flock, SHA-256 (matriz, parametros, controlador, jar),<br/>referencia de cada perfil da fila (cenario S3, perfil certo), boot_id,<br/>parametros com origem, bloco politica (braco B), timers tcc-heal-cs-* sobrando,<br/>unit do amostrador h4, bundle x progresso.json,<br/>--dry-run do programa em cada perfil e controller da fase"] --> GO["GO por tty: go &lt;fase&gt; &lt;data&gt;"]
+    PV["pre-voo: flock, SHA-256 (matriz, parametros, controlador, jar),<br/>referencia de cada perfil da fila (cenario S3, perfil certo), boot_id,<br/>parametros com origem (F3 exige campanha-s3/2), bloco politica (braco B), timers tcc-heal-cs-* sobrando,<br/>meminfo legivel (com --swap-limite-kb), nenhum netem ou regra de rede nos nos de pe,<br/>unit do amostrador h4, bundle (com as opcoes) x progresso.json,<br/>--dry-run do programa em cada perfil e controller da fase"] --> GO["GO por tty: go &lt;fase&gt; &lt;data&gt;"]
     GO --> LAC{"para cada execucao da fase"}
     LAC --> CHK["PARAR? boot_id? unit h4 ativa? disco &gt;= 1,5 x volume?"]
     CHK --> DT["DT-014: ja checada, abortada ou interrompida;<br/>bloco ja perdido: PULADA"]
-    DT --> GR["primeira F2/F4: go rede &lt;i&gt;"]
+    DT --> GR["primeira F2/F3/F4: go rede &lt;i&gt;"]
     GR --> REC["podman-compose down/up (XML sem caches);<br/>3 HEALTHY; StartedAt &gt;= recriacao; cria-caches.sh (6 caches,<br/>leitura de volta nos 3 nos)"]
     REC --> C3A["camada 3 antes: rebalancing_enabled, AVAILABLE e config = JSON nos 3 nos"]
     C3A --> K1["portao K1: 60 s de 3 HEALTHY sem tc/iptables residual"]
-    K1 --> CAR["timeout -k (21 s + folga) teto java ... --controller shadow|active<br/>--controller-reference do perfil da linha<br/>stdout por FIFO: leitor em memoria, log por outro processo"]
+    K1 --> SW{"W-6c: swap usado (meminfo) &gt;= --swap-limite-kb?"}
+    SW -- "sim, 1a vez" --> REC
+    SW -- "nao (ou ja recriado: aviso)" --> CAR["timeout -k (21 s + folga) teto java ... --controller shadow|active<br/>--controller-reference do perfil da linha<br/>stdout por FIFO: leitor em memoria, log por outro processo"]
     CAR -- "Warm-up ate +" --> META["janela h4 da linha; meta da trilha (braco certo; B atua)"]
-    META --> INJ["+inj_offset: F1 inject-crash --marker | F2 dead-man + inject-partition | F4 dead-man + inject-netdegrade"]
-    INJ --> VOL["F1: volta pela REST (P-35); F2/F4: resto de rede, --heal, desarme;<br/>exit 1/6 com o alvo parado: pendente (B1)"]
+    META --> INJ["+inj_offset: F1 inject-crash --marker | F2 dead-man + inject-partition | F4 dead-man + inject-netdegrade<br/>| F3 (W-6c): sem regra de rede, dead-man (tc del root), start, inject-jitter.sh; netem a +2 s"]
+    INJ --> VOL["F1: volta pela REST (P-35); F2/F3/F4: resto de rede, --heal (F3: tc del root), desarme;<br/>exit 1/6 (F2/F4) ou 0 (F3) com o alvo parado: pendente (B1); F3: end"]
     CAR -- "Fim da carga: ac5_alvo=X" --> REL["podman start X (no parado pelo AC-5);<br/>o programa espera a topologia e grava t_religamento_ns"]
-    REL --> POS["pos: sem linha de fim, religa os nos parados (S3);<br/>StartedAt explicado, 3 HEALTHY, sem resto, camada 3 depois,<br/>trilha x linha de fim (AC-5), pendente do B1, h4 (campanha_s3_h4.py)"]
+    REL --> POS["pos: sem linha de fim, religa os nos parados (S3);<br/>StartedAt explicado, 3 HEALTHY, sem resto, camada 3 depois,<br/>trilha x linha de fim (AC-5), trilha completa (W-6c), pendente do B1, h4 (campanha_s3_h4.py)"]
     VOL --> POS
     POS --> CHG["execucao.json, checagem.json (ACEITA, RECUSADA, DESCARTADA-INFRA, PULADA), MANIFEST"]
     CHG --> LAC
@@ -247,6 +249,61 @@ flowchart TD
 20. **Veredito do O8** (P-53): os desvios de religamento entram nos motivos com o prefixo `infra: `, que é o que o
     veredito `DESCARTADA-INFRA` procura. Antes, um nó religado pelo O8 deixava a execução ACEITA com motivos. O O8 pula
     o nó de um F1 ainda em curso na linha de fim: quem o religa é o `inject-crash.sh`, que grava o `end` (S25).
+
+21. **W-6c, F3 na matriz** (B-40 seção 4.3; célula ASYNC F3 descritiva de 4 blocos). `campanha_s3_matriz.py` aceita
+    `F3` (uma falha por linha, como antes). Os números vêm do esquema `campanha-s3/2` (o `/1` mais `f3_no`,
+    `f3_delay_ms`, `f3_jitter_ms`, `f3_distribuicao`, `f3_dur_s`, cada um com origem); o `/1` continua aceito, porque a
+    calibração não roda F3 (B-2 do B-40), e F3 na fila sem o `/2` sai com 4 no pré-voo e no `--dry-run`. O injetor é o
+    `inject-jitter.sh` **real e sem mudança**, chamado como no *rebaseline* (`--node --iface eth0 --delay <n>ms
+    --jitter <n>ms --distribution --duration`, `PODMAN` exportado). Como ele não grava marcadores, o orquestrador grava
+    `fault=F3 node=<no> event=start|end t_epoch_ns=<date +%s%N>` (o formato do F1/F2/F4, que o `Marcadores.parse` lê)
+    logo antes de lançá-lo e logo depois que ele sai; a janela marcada fica mais larga que a do `netem` pela sonda e
+    pelas chamadas do injetor (menos de 1 s na VM: no *rebaseline*, PID, sonda e `add` no mesmo segundo do
+    `injetor.log`). Antes do disparo: PID do nó, raiz do nó livre (sem `netem`, `clsact` nem o `prio 1:` do
+    `inject-netdegrade.sh`; o *cleanup* do injetor apaga a raiz que houver, então F3 exclui F2 e F4 no nó; o K1 já
+    conferiu os três nós, e uma leitura só do nó do F3 atrasa menos o disparo) e *dead-man* armado **antes** do `netem` (`systemd-run` de
+    `f3_dur_s` + 90 s, `AccuracySec=1s`, `nsenter -t <PID> -n tc qdisc del dev eth0 root`, como
+    `run-rebaseline.sh:786-790`). A +2 s do disparo, `tc qdisc show` no netns do nó: sem `netem` na raiz, RECUSADA
+    (C5 do *rebaseline*, que ali era só relatório; o B-40 o torna recusa; as 9 F3 do *rebaseline* tinham `netem` a
+    +2 s). Na saída: `end`, resto de rede (o `--heal` do F3 é o `tc qdisc del dev eth0 root` no PID atual), desarme.
+    Exits que seguem: 0, 1 e 4 (C3/P2, os do *rebaseline*), 1 e 4 como recusa; 5 (netem rejeitado) e outros param a
+    fase com 6, salvo o 5 com o nó já parado (recusa). B1 no F3: o AC-5 que para o nó sob o `netem` leva o netns
+    junto e o injetor sai com **0** (a remoção falha em silêncio, `|| true`, e a conferência final cai no ramo "OK");
+    com o nó parado ou religado, a execução fica pendente e a pós-checagem confere a linha de fim e a trilha, como no
+    B1: AC-5 APLICADA no nó vira aviso "falha efetiva até a parada do nó pelo AC-5", e o resto, recusa (P-54). No
+    *trap*, o filho do injetor (o `sleep` em primeiro plano) recebe o TERM antes dele, como o `matar` do runner
+    (P-55). O GO de rede vale também para a primeira F3. O pré-voo recusa (exit 4) resto de rede nos nós de pé,
+    inclusive `netem` na raiz.
+22. **W-6c, swap no portão.** Depois do K1 de cada execução, `SwapTotal − SwapFree` de `/proc/meminfo` vai ao
+    `execucao.json` como `swap_usado_kb_k1`, com `swap_portao` (`limite_kb`, `leituras_kb`, `recriado`, fonte). Com
+    `--swap-limite-kb N` (sem padrão; o pré-registro dá 1048576) e swap ≥ N, o orquestrador guarda os brutos da
+    primeira recriação em `antes-recriacao-swap/`, recria pelo mesmo caminho (`preparar_cluster`: `down`/`up`, seis
+    *caches*, camada 3, K1) e lança a execução com o mesmo i e a mesma semente, sem recusa. Uma recriação por portão:
+    se o swap continuar ≥ N depois dela, a fase para com **exit 11** (parada de memória) sem rodar a execução, com o
+    motivo `parada swap: …` no fim do log e em `swap_portao.parada` do `execucao.json`; sem `checagem.json`, a retomada
+    guarda o diretório como `.abortada-<UTC>` e roda o mesmo i (DT-014). Decisão do coordenador sobre o P-56, sob
+    autorização do Gestor: nas 4 recriações medidas na noite 1 de 05/11 o swap caiu para 39 a 51 MB, então swap alto
+    depois de recriar tem outra causa e não deve contaminar dados. Com o limite, o pré-voo exige o `/proc/meminfo` legível
+    (exit 4). Motivo (medido em 05/11 na campanha em curso): a leitura final por réplica do programa sobe ~870 MB em
+    20 s com os três servidores já em ~6,4 GB, a VM passa de 1 GiB de swap a cada 7 a 10 execuções, e foi esse estado
+    que fez o `clear()` estourar o prazo numa execução da noite.
+23. **W-6c, trilha completa** (B-7 do B-40). `campanha_s3_conferir.py trilha` imprime também `fim`,
+    `linhas_perdidas` (o campo da linha `fim` de `decisoes`, contrato 1.1+), `trilha_incompleta` e o motivo: sem a
+    linha `fim` no final (regra geral 2 do contrato), `fim` sem o campo, valor inválido ou maior que 0. O exit não
+    muda. O orquestrador grava `trilha_incompleta` e `trilha` no `execucao.json`; sem opção, aviso; com
+    `--exigir-trilha-completa`, motivo `infra: trilha de decisoes incompleta (…)`, `DESCARTADA-INFRA`, e a fase segue.
+    Execução sem `decisoes-rep-001.jsonl` ou com a trilha ilegível conta como incompleta. As duas opções novas entram
+    no *bundle* (linha `opcoes:` do `bundle.sha256`): retomar a fase com outras é recusado como *bundle* mudado.
+24. **W-6c, acréscimos da V-W6b** (`docs/validacao-w6b-2026-11-05.md`, branch do W-6, `081e1c4`).
+    *N1*: o `execucao.json` de toda falha injetada traz `fim_nominal_desde_ancora_s` (`inj_inicio_offset_s` +
+    `f*_dur_s`) e `injetor_saida_desde_ancora_s` (o instante em que o orquestrador viu o injetor sair, no passo do laço,
+    0,2 s). No F4 do braço B aceito pelo B1, o `inject-netdegrade.sh` sai no fim do *ping* (~40 s depois do `start`) e
+    o `end` adianta ~50 s; o orquestrador não escreve `end` sintético (o arquivo é do injetor) e a regra da análise fica
+    para o B-40 §9 e o W-5b. *R4*: o B1 só aceita com o marcador `start` da falha no nó (F2, F3, F4) e, no F4, com a
+    linha `degradacao aplicada: alvo <no>` do injetor (`inject-netdegrade.sh:748`), além do que já exigia (linha de fim
+    e trilha com o AC-5 APLICADA no nó; na F2, a linha OK do corte). *B1 no F3*: item 21. *R7*: `uso()` imprime o
+    cabeçalho até a linha `set -euo pipefail`. *C-6*: o mínimo do teto com os números do pré-registro continua 986 s, e
+    1010 s passa (teste). R3 e R8 são da suíte (`docs/testes.md`).
 
 ### TD-013 — Correções do W-2a depois da integração: P-41, P-42 e D-B (2026-11-05)
 

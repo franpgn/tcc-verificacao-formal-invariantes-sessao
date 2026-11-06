@@ -88,8 +88,9 @@ def acoes_lat(fator=1.0, n=2100, ini=T0 + 8 * S, passo=20 * MS):
     return [(ini + i * passo, ini + i * passo + int((2 * MS + (i % 97) * 13_000) * fator), False) for i in range(n)]
 
 
-def escrever_execucao_json(d, celula, bloco, braco, fusao=None, controller=None, t_fusao=T_FUSAO, sem=()):
+def escrever_execucao_json(d, celula, bloco, braco, fusao=None, controller=None, t_fusao=T_FUSAO, sem=(), seed=None):
     j = {"i": 1, "celula": celula, "bloco": str(bloco), "braco": braco,
+         "seed": 800000 + 100 * int(bloco) if seed is None else seed,
          "controller": CTL.get(braco) if controller is None else controller,
          "fusao": FUSAO.get(braco) if fusao is None else fusao,
          "comando": ["java", "-jar", "w.jar", "--servers", ",".join(w5c.SRV), "--sweep", "--s3-replay-probe"]}
@@ -501,6 +502,123 @@ class SaidaFatorial(BaseF):
         r = json.loads(saida.read_text(encoding="utf-8"))
         self.assertTrue(r["celulas"]["FAT"]["fatorial"])
         self.assertIn("fatorial", r["parametros"])
+
+
+# ============================================================================= W-5f (V-W5e, secao 3)
+
+class SemFusaoComoVarreduraComErro(BaseF):
+    """DT-027, 5.3: sem fusao registrada (t_fusao_ns ausente ou nulo) numa execucao do fatorial com varredura e sem
+    varredura-rep-NNN.erro.txt, a varredura conta como com erro, com o tratamento simetrico no bloco."""
+
+    BRACO = VarreduraComErroFatorial.BRACO
+
+    def espec(self, mut):
+        out = {b: {br: dict(self.BRACO[br]) for br in ARMS} for b in (1, 2, 3, 4)}
+        for (b, br), kw in mut.items():
+            out[b][br].update(kw)
+        return out
+
+    def conferir_bloco_2(self, c, braco):
+        self.assertEqual({"1": -0.5, "2": -0.75, "3": -0.5, "4": -0.5}, c["desfechos"][V]["efeitos"]["A1"]["d_b"])
+        vc = c["violacoes"]["detalhe"]["varredura_com_erro"]
+        self.assertEqual(1, vc["blocos"])
+        self.assertEqual({br: int(br == braco) for br in ARMS}, vc["por_braco"])
+        self.assertEqual({br: int(br == braco) for br in ARMS}, vc["sem_fusao_por_braco"])
+        self.assertEqual([braco], vc["lista"][0]["sem_fusao"])
+        self.assertEqual(["2"], [x["bloco"] for x in c["desfechos"][PERDA]["blocos_excluidos"]])
+
+    def test_t_fusao_nulo(self):
+        man = gerar_fatorial(self.d, "FAT", self.espec({(2, "AL"): {"t_fusao": None}}))
+        self.conferir_bloco_2(comparar(man, {"FAT": "teste"})["celulas"]["FAT"], "AL")
+
+    def test_t_fusao_ausente(self):
+        man = gerar_fatorial(self.d, "FAT", self.espec({(2, "PO"): {"t_fusao": AUSENTE}}))
+        self.conferir_bloco_2(comparar(man, {"FAT": "teste"})["celulas"]["FAT"], "PO")
+
+    def test_igual_ao_erro_do_arquivo(self):
+        m1 = gerar_fatorial(self.d / "nulo", "FAT", self.espec({(2, "AL"): {"t_fusao": None}}))
+        m2 = gerar_fatorial(self.d / "arq", "FAT", self.espec({(2, "AL"): {"erro": True}}))
+        c1 = comparar(m1, {"FAT": "teste"})["celulas"]["FAT"]
+        c2 = comparar(m2, {"FAT": "teste"})["celulas"]["FAT"]
+        for nome in (V, "taxa_violacoes_por_1000:sem_forma2"):
+            for ef in ("A1", "A4", "interacao"):
+                self.assertEqual(c2["desfechos"][nome]["efeitos"][ef]["d_b"], c1["desfechos"][nome]["efeitos"][ef]["d_b"])
+        self.assertEqual(c2["efeitos_principais"]["A1"]["co_principal_v"]["contagem"],
+                         c1["efeitos_principais"]["A1"]["co_principal_v"]["contagem"])
+        self.assertEqual([], c2["violacoes"]["detalhe"]["varredura_com_erro"]["lista"][0]["sem_fusao"])
+
+    def test_sem_varredura_nao_converte(self):
+        # sem --sweep em nenhum braco nao ha varredura a invalidar
+        espec = {b: {br: {"exp": 1, "erro": False} for br in ARMS} for b in (1, 2)}
+        espec[2]["AL"]["t_fusao"] = None
+        man = gerar_fatorial(self.d, "FAT", espec)
+        for b in (1, 2):
+            for br in ARMS:
+                (self.d / "FAT" / ("b%02d%s" % (b, br)) / "varredura-rep-001.csv").unlink()
+        c = comparar(man, {"FAT": "teste"})["celulas"]["FAT"]
+        self.assertEqual(0, c["violacoes"]["detalhe"]["varredura_com_erro"]["blocos"])
+        self.assertEqual({"1": 0.0, "2": 0.0}, c["desfechos"][V]["efeitos"]["A1"]["d_b"])
+
+    def test_execucao_isolada(self):
+        escrever_braco(self.d, "FAT", 1, "AL", exp=1, perda=1, t_fusao=None)
+        out, info = cb.desfechos_execucao(self.d, 1, w5c.FASES, 60 * S, w_analise_ns=5 * S, fusao_obrigatoria=True)
+        self.assertIsNone(out[V]["y"])
+        self.assertIn("fusao", out[V]["motivo"])
+        self.assertEqual("erro", info["violacoes_detalhe"]["varredura"])
+        self.assertEqual("sem_fusao", info["violacoes_detalhe"]["varredura_erro_origem"])
+        out2, info2 = cb.desfechos_execucao(self.d, 1, w5c.FASES, 60 * S, w_analise_ns=5 * S)
+        self.assertEqual(1.0, out2[V]["y"])                 # sem a regra (fora do fatorial): V com a varredura
+        self.assertEqual("presente", info2["violacoes_detalhe"]["varredura"])
+
+    def test_celula_de_2_bracos_nao_converte(self):
+        # sem falha, F3, F1 e F4 nao tem fusao: t_fusao_ns nulo e o normal e a varredura vale
+        man = w5c.gerar_celula_varr(self.d, "D2", {1: {"A": (1, 1, 0, False), "B": (1, 1, 0, False)}})
+        for br in "AB":
+            p = self.d / "D2" / ("b01%s" % br) / "execucao.json"
+            j = json.loads(p.read_text(encoding="utf-8")) if p.exists() else {"i": 1}
+            j["t_fusao_ns"] = None
+            p.write_text(json.dumps(j), encoding="utf-8")
+        c = comparar(man, {"D2": "descritiva"})["celulas"]["D2"]
+        self.assertEqual(0, c["violacoes"]["detalhe"]["varredura_com_erro"]["blocos"])
+        self.assertEqual({"1": 0.0}, c["desfechos"][V]["d_b"])
+        self.assertEqual(2, c["co_principal_v"]["contagem"]["A"])
+
+
+class MesmaSemente(BaseF):
+    """DT-027, 1 (e DT-021): os bracos de um bloco tem a mesma semente; divergente da exit 2."""
+
+    def base(self, **mut):
+        espec = {1: {br: {"exp": 1} for br in ARMS}, 2: {br: {"exp": 1} for br in ARMS}}
+        for br, kw in mut.items():
+            espec[2][br].update(kw)
+        return gerar_fatorial(self.d, "FAT", espec)
+
+    def test_mesma_semente_passa(self):
+        comparar(self.base(), {"FAT": "descritiva"})
+
+    def test_semente_divergente_no_fatorial(self):
+        with self.assertRaises(cb.ErroUso):
+            comparar(self.base(AO={"seed": 999}), {"FAT": "descritiva"})
+
+    def test_semente_ausente_no_fatorial(self):
+        with self.assertRaises(cb.ErroUso):
+            comparar(self.base(PL={"sem": ("seed",)}), {"FAT": "descritiva"})
+
+    def test_semente_divergente_em_2_bracos(self):
+        man = w5c.gerar_celula_inst(self.d, "D", 2, forma2_a=[0, 0], outras_a=[1, 1], outras_b=[0, 0])
+        for b, sb in ((1, 800100), (2, 800999)):
+            for br, sd in (("A", 800000 + 100 * b), ("B", sb)):
+                p = self.d / "D" / ("b%02d%s" % (b, br)) / "execucao.json"
+                j = json.loads(p.read_text(encoding="utf-8"))
+                j["seed"] = sd
+                p.write_text(json.dumps(j), encoding="utf-8")
+        with self.assertRaises(cb.ErroUso):
+            comparar(man, {"D": "descritiva"})
+
+    def test_2_bracos_sem_semente_nao_confere(self):
+        # o golden e os execucao.json antigos nao tem seed: nada a conferir
+        man = w5c.gerar_celula_inst(self.d, "D", 1, forma2_a=[0], outras_a=[1], outras_b=[0])
+        comparar(man, {"D": "descritiva"})
 
 
 if __name__ == "__main__":

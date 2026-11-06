@@ -914,3 +914,22 @@ Transmitidas ao Senior pelo coordenador, sobre o parecer de conferência do text
 > com o mesmo i e a mesma semente na retomada. Origem: as quatro recriações da noite 1 baixaram o *swap* para 39 a 51 MB
 > (`prep-seg2-20261105T114805Z.log` e `supervisor-n1s2b.log`). O item "a fase não para por *swap*" acima fica superado
 > só nesse caso; a primeira leitura alta continua levando à recriação.
+
+## DT-024: complemento 3 da DT-020, viabilidade do AC-5, latência sem cobertura e cortes no `end`, PRÉ-REGISTRO (2026-11-06)
+
+> Registrado em 2026-11-06, ~00:05Z, **antes de qualquer dado da calibração**. Texto vinculante:
+> `docs/pre-registro-calibracao-s3-complemento-3-2026-11-06.md`. Origem: R-1 a R-4 da V-W9
+> (`wt-w9/docs/validacao-w9-2026-11-05.md`, `8d6ebfc`), aprovados pelo coordenador pela regra permanente do Gestor.
+> DT-020, DT-022 e DT-023 não são editadas; onde divergirem, vale esta.
+
+- **R-1:** "viável em W'" ⟺ `max(k, kLag_min(W'))·W' + 13,3 < 39,8`, k = 2 (o P1 só age em CONSERVADOR,
+  `PoliticaPorAssinatura.java:152`, e o núcleo só entra depois de k janelas de lag ALTA). Vale na 7.4, na 7.13 e na
+  reserva do complemento 1. Dá W' ≤ 13 s com `kLag` ≤ 2; com `kLag_min` ≥ 9, inviável. A fase do corte dentro da
+  janela continua fora da conta, declarada.
+- **R-2:** sem janela determinada para a latência nas ASYNC sem falha na W final, θ_lat_in = o menor *double* acima de 1
+  (inalcançável) e θ_lat_out = 1; m e `T_cooldown` derivados pela 7.8 com esses valores; o mesmo para θ_err. O B-40 declara
+  que S_lat não atua e o CONSERVADOR vem só de defasagem, topologia ou violação.
+- **R-3:** no m, o trecho que atravessa o `end` é cortado no `end` (como a 7.14).
+- **R-4:** com W final < 5 s, pular janelas sem rodada subestima `kLag` e m em ~5/W (corrige o complemento 1 §4.1);
+  declarado. Ocorre com a 7.3 já abaixo de 5 s, ou na reserva só com `kLag_min` > 5.
+

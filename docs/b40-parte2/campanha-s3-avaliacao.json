@@ -1,0 +1,102 @@
+{
+ "esquema": "campanha-s3/2",
+ "versao": "avaliacao-s3 (B-40; campanha-s3/2; derivacao e904b0149a779ae0)",
+ "parametros": {
+  "duracao_s": {
+   "valor": 300,
+   "origem": "PR do rebaseline secao 2 (run-rebaseline.sh:48); pre-registro da calibracao 4.1"
+  },
+  "warmup_min_s": {
+   "valor": 30,
+   "origem": "PR do rebaseline secao 2; pre-registro da calibracao 4.1"
+  },
+  "inj_offset_s": {
+   "valor": 49,
+   "origem": "DT-011 (+49 s da ancora); pre-registro da calibracao 4.1"
+  },
+  "f1_no": {
+   "valor": "isn2",
+   "origem": "PR do rebaseline secao 2 (T17); pre-registro da calibracao 4.1"
+  },
+  "f1_dur_s": {
+   "valor": 60,
+   "origem": "PR do rebaseline secao 2 (T17); pre-registro da calibracao 4.1"
+  },
+  "f2_no": {
+   "valor": "isn3",
+   "origem": "plano de execucao 04/11 secao 5.2; pre-registro da calibracao 4.1"
+  },
+  "f2_dur_s": {
+   "valor": 90,
+   "origem": "plano 5.2; padrao do inject-partition.sh (B-29); pre-registro da calibracao 4.1"
+  },
+  "f4_no": {
+   "valor": "isn3",
+   "origem": "alvo do S5 validado (wt-gate-v4/runs/gate-netdegrade/l1.sh:7); C-3 da DT-020"
+  },
+  "f4_severidade": {
+   "valor": "N3",
+   "origem": "plano 5.2; S5 com --loss 20 (inject-netdegrade.sh:291); pre-registro da calibracao 4.1"
+  },
+  "f4_direcao": {
+   "valor": "out",
+   "origem": "direcao do S5 validado (04-l1.log); C-3 da DT-020"
+  },
+  "f4_dur_s": {
+   "valor": 90,
+   "origem": "igual a f2_dur_s (plano 5.2); C-3 da DT-020"
+  },
+  "hotrod_timeout_ms": {
+   "valor": 2000,
+   "origem": "S3Parametros.java:117; igual a tetoLagMs (R7 da V-W2a); pre-registro da calibracao 4.1"
+  },
+  "convergencia_teto_s": {
+   "valor": 600,
+   "origem": "B-40 parte 2, regra 7.10 da calibracao (derivacao e904b0149a779ae0)"
+  },
+  "convergencia_periodo_s": {
+   "valor": 12,
+   "origem": "= W da parte 2 do B-40 (fechamento do DT-020) (derivacao e904b0149a779ae0)"
+  },
+  "w_recovery_s": {
+   "valor": 191,
+   "origem": "300 - 49 - 60, acima da janela de fusao de ~96 s (opcoes-arquitetura 9.5); C-4 da DT-020"
+  },
+  "religamento_prazo_s": {
+   "valor": 60,
+   "origem": "T_reb (acoes-controlador-cluster 5.1); pre-registro da calibracao 4.1"
+  },
+  "exec_teto_s": {
+   "valor": 1014,
+   "origem": "B-40 parte 2, regra 7.17 da calibracao (nunca abaixo de 1010 s) (derivacao e904b0149a779ae0)"
+  },
+  "encerramento_folga_s": {
+   "valor": 2,
+   "origem": "T_cham = 2 s (B-26.2; acoes-controlador-cluster 5.1); C-5 da DT-020"
+  },
+  "volume_exec_mb": {
+   "valor": 14,
+   "origem": "B-40 parte 2: maior volume medido, I-3b ativo-religar (braco B, stderr descomprimido) 13,6 MB, para cima; ressalva 3 da conferencia da derivacao (0c6b7c0), aceita pelo coordenador; a calibracao, so braco A, deu 1,24 MiB"
+  },
+  "f3_no": {
+   "valor": "isn2",
+   "origem": "B-40 secao 4.3; PR do rebaseline secao 2"
+  },
+  "f3_delay_ms": {
+   "valor": 20,
+   "origem": "B-40 secao 4.3; PR do rebaseline secao 2 (20 ms)"
+  },
+  "f3_jitter_ms": {
+   "valor": 13,
+   "origem": "B-40 secao 4.3; PR do rebaseline secao 2 (13 ms)"
+  },
+  "f3_distribuicao": {
+   "valor": "normal",
+   "origem": "B-40 secao 4.3; PR do rebaseline secao 2"
+  },
+  "f3_dur_s": {
+   "valor": 251,
+   "origem": "B-40 secao 4.3; DT-011 (+49 s ate o fim da carga, 300 - 49)"
+  }
+ }
+}

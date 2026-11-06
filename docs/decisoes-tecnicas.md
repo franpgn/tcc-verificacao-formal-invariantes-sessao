@@ -964,3 +964,27 @@ Transmitidas ao Senior pelo coordenador, sobre o parecer de conferência do text
   qualquer dado): a R-2 vale sempre que a 7.7 tiver N = 0 (nenhuma posição de k janelas determinadas seguidas), o que
   inclui o caso sem janela determinada; θ_in "sem cobertura" = o menor *double* acima de 1, como no texto.
 
+
+## DT-025: avaliação do controlador na campanha S3 (B-40), parte 2, valores calibrados, PRÉ-REGISTRO (2026-11-06)
+
+> **Aprovado** pelo coordenador em nome do Gestor (regra permanente, valores com origem rastreável), depois da calibração
+> e **antes da N4**, sem nenhuma comparação entre braços. Texto vinculante:
+> `docs/pre-registro-b40-avaliacao-parte2-2026-11-06.md`, com os arquivos de entrada em `docs/b40-parte2/`
+> (`SHA256SUMS`). Completa a seção 11 da DT-021.
+
+- **Derivação:** `dados-vm/cs3-2026-11/derivacao-20261106T050404Z/calibracao-s3-derivacao.json`
+  (`e904b0149a779ae01cbb4506e05f5789935229d4cec0ab344cbf10ddc79f8eed`), regras da DT-020 com os complementos 1
+  (DT-022), 3 (DT-024) e 3a. **Conferência:** `wt-w9/docs/validacao-derivacao-calibracao-2026-11-06.md` (`0c6b7c0`),
+  valores confirmados.
+- **Valores:** W 12 s; `kLag` 1 (viável: 37,3 s < 39,8 s); θ_lat_in 0,030769230769230774 e θ_lat_out 0; θ_err_in
+  5 × 10⁻³²⁴ e θ_err_out 0; `lag_in` 6,932448 ms e `lag_out` 3,424438 ms; m 7; `T_cooldown` 84 s; `T_estavel` 2 s;
+  `T_hold_viol` 12 s; teto da convergência 600 s; período da convergência 12 s; `exec_teto_s` 1014 s; n_lat = n_err = 100;
+  k = 2. Cada limiar com N e 3/N no documento.
+- **Guarda de disco:** `volume_exec_mb` = 14 (maior medido, I-3b braço B, 13,6 MB), no lugar dos 2 MiB da 7.17, pela
+  ressalva 3 da conferência, aceita pelo coordenador.
+- **Declarações:** a saída R4 praticamente não ocorre (uma vez em CONSERVADOR, fica até o fim; oscilação, reentrada,
+  `T_cooldown` e `T_estavel` descritivos); q̂ = 0/5 nas duas células de teste, poder 0 (Clopper-Pearson até 0,52), e, se
+  a avaliação repetir isso, a redução de V é "não avaliável" pela regra da DT-021. **Ressalva:** *smoke* do P-48 antes
+  da N4.
+- **Entradas (SHA-256):** controlador `2f0d46c8…f9f63`; `campanha-s3/2` `1bb3879f…bc46`; referência ASYNC
+  `c5ad8687…85cb`; SYNC `5ced3dc5…dea9`; matriz com `--ordem-seed 20261106` `813159a1…06ab`.

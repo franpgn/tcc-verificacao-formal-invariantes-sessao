@@ -21,6 +21,10 @@
 > (`docs/pre-registro-calibracao-s3-complemento-2-2026-11-05.md`, DT-023): recriar e rodar com o mesmo i e a mesma
 > semente; se o *swap* continuar ≥ 1 GiB depois da recriação, a fase para com código próprio (P-56).
 
+> **Nota de remissão (2026-11-06):** o **complemento 3** (`docs/pre-registro-calibracao-s3-complemento-3-2026-11-06.md`,
+> DT-024) corrige a viabilidade do AC-5 da 7.4 e da 7.13 para `max(k, kLag_min)·W + 13,3 < 39,8`, com k = 2, e fixa a
+> latência "sem cobertura" (θ_lat_in acima de 1, θ_lat_out = 1).
+
 ## Siglas
 
 | Sigla | Significado |

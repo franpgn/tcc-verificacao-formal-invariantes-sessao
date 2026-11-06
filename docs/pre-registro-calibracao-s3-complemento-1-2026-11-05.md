@@ -12,6 +12,12 @@
 > `lagOutMs`, senão INTERMEDIARIA), `SondaDefasagem.java:559` (`atraso ≤ período − teto`) e a validação do W-2a que
 > exige `hotrod_timeout_ms` < W.
 
+> **Nota de remissão (2026-11-06, antes de qualquer dado):** o **complemento 3**
+> (`docs/pre-registro-calibracao-s3-complemento-3-2026-11-06.md`, DT-024) corrige a viabilidade da §4.3 para
+> `max(k, kLag_min)·W' + 13,3 < 39,8` (R-1), fixa a latência "sem cobertura" (R-2), corta no `end` o trecho do m da §3
+> (R-3) e corrige a §4.1: com W < 5 s, pular janelas sem rodada **subestima** `kLag` e m (R-4). O texto abaixo não foi
+> editado.
+
 ## 1. Ordem de cálculo
 
 A ordem resolve o ciclo entre m e θ_out (A-4) e deixa W antes de tudo:

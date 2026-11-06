@@ -10,6 +10,9 @@
 # pulado. Execucoes curtas: sem -recover; uma execucao interrompida recomeca do zero (o log anterior vira
 # .out.parcial-N). Pausa: `touch runs/tlc/join-PAUSAR` encerra a execucao corrente (PAUSADO) e o roteiro sai.
 #
+# Coluna propriedade: uma ou varias separadas por virgula (ex.: I1F,I1MJ), checadas na MESMA exploracao do TLC
+# (o grafo de estados nao depende da propriedade; o TLC para na primeira violacao).
+#
 # Uso (de qualquer diretorio):  spec/run-tlc-join.sh [FILTRO_REGEX]
 # Variaveis: REV (default HEAD), TLA_TOOLS (jar), JAVA (default jdk-17.0.2), XMX (default 3g).
 # Restricao de host (Gestor): no maximo 4 workers; linhas com mais sao recusadas.
@@ -107,7 +110,8 @@ CONSTRAINT
     LimiteEventosFalha
 $RESTRLINE
 PROPERTY
-    $PROP
+$(tr ',' '
+' <<<"$PROP" | sed 's/^/    /')
 CFGEOF
   if [[ -f "$LOG" ]]; then n=1; while [[ -f "$LOG.parcial-$n" ]]; do n=$((n+1)); done; mv "$LOG" "$LOG.parcial-$n"; fi
   rm -rf "$META" "$JTMP"; mkdir -p "$META" "$JTMP"

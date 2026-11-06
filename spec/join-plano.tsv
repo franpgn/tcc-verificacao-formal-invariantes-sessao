@@ -26,3 +26,7 @@ jr-particao-r2c2r3-I1MJ	join-red	MCSessionJoin	SpecSemeadaJoin	r2	2	2	3	2	SoPart
 jr-particao-r2c2r3-I1F	join-red	MCSessionJoin	SpecSemeadaJoin	r2	2	2	3	2	SoParticao	I1F	conteudo	S	4	1200	-
 jr-livre-particao-r2c2r3-MesclarPerdeChaveJ	join-red	MCSessionJoin	SpecJoin	r2	2	2	3	2	SoParticao	MesclarPerdeChaveJ	conteudo	S	4	1200	1
 jr-particao-r2c2r3-I1MJ-inv	join-red	MCSessionJoin	SpecSemeadaJoin	r2	2	2	3	2	SoParticao	I1MJ	invertida	S	1	600	-
+# Acrescentadas em 06/11 ~14:35, depois da primeira passada (jr- com 2 replicas fechou em segundos). Mesma expectativa
+# (E-J2, E-J3: sem violacao). I1F e I1MJ na mesma exploracao.
+jx-particao-r2-I1F-I1MJ	join-red	MCSessionJoin	SpecSemeadaJoin	r2	2	3	5	2	SoParticao	I1F,I1MJ	conteudo	S	4	1200	1
+jx-particao-r3c2r3-I1F-I1MJ	join-red	MCSessionJoin	SpecSemeadaJoin	r3	2	2	3	2	SoParticao	I1F,I1MJ	conteudo	S	4	2700	5

@@ -21,7 +21,15 @@ So biblioteca padrao; roda com python3 -I. Cada subcomando imprime linhas "nome<
       f3_jitter_ms, f3_distribuicao, f3_dur_s; B-40 secao 4.3, valores do rebaseline: isn2, 20, 13, normal, 251), com
       a mesma regra (todos obrigatorios, com origem) e a mesma coerencia (inj_offset_s + f3_dur_s <= duracao_s). O /1
       continua aceito (a calibracao nao roda F3); o orquestrador recusa F3 na fila sem o /2.
-      Imprime "nome<TAB>valor" de cada parametro.
+      Carga S3 parametrizada (06/11): nos dois esquemas, os campos de PARAMETROS_CARGA sao OPCIONAIS, um por opcao
+      --s3-* do programa (S3Parametros; nome = a opcao sem "--" e com "_" no lugar de "-", p.ex. s3_users ->
+      --s3-users), menos os --s3-replay-* da sonda do W-10. Presente, o campo segue a mesma forma ({"valor", "origem"},
+      origem obrigatoria) e o tipo e a faixa de S3Parametros.validar (inteiro ou numero finito; > 0, >= 0 ou em
+      [0, 1]); a coerencia s3_users + s3_limit_accounts > 0 e s3_back_max_sec >= s3_back_min_sec usa o padrao do
+      programa para o campo ausente (20, 10, 3 s e 1 s). O orquestrador passa cada um como --<opcao> <valor>.
+      Ausente, o programa usa o proprio padrao e a linha do jar e a de antes.
+      Imprime "nome<TAB>valor" de cada parametro (os de carga presentes depois dos obrigatorios, na ordem de
+      PARAMETROS_CARGA).
 
   controlador --arquivo <controlador-*.json> --hotrod-timeout-ms N [--exigir-politica] [--exigir-p2-desabilitada]
       Le o --controller-config. Com --exigir-politica (braco B na avaliacao), recusa (5) sem o bloco "politica"
@@ -54,6 +62,7 @@ So biblioteca padrao; roda com python3 -I. Cada subcomando imprime linhas "nome<
 import argparse
 import hashlib
 import json
+import math
 import re
 import sys
 from pathlib import Path
@@ -94,6 +103,39 @@ PARAMETROS_F3 = {
     "f3_distribuicao": ("enum", DISTRIBUICOES_NETEM),
     "f3_dur_s": INT_POS,
 }
+# Carga S3 parametrizada (06/11): opcionais, um por opcao --s3-* de S3Parametros (menos --s3-replay-*, da sonda do
+# W-10). nome -> (tipo, minimo, minimo_exclusivo, maximo): "int" = inteiro; "num" = inteiro ou real finito. As faixas
+# sao as de S3Parametros.validar.
+NUM_POS = ("num", 0, True, None)          # > 0
+NUM_NAO_NEG = ("num", 0, False, None)     # >= 0
+NUM_PROB = ("num", 0, False, 1)           # em [0, 1]
+INT_NAO_NEG_CARGA = ("int", 0, False, None)
+PARAMETROS_CARGA = {
+    "s3_users": INT_NAO_NEG_CARGA,
+    "s3_limit_accounts": INT_NAO_NEG_CARGA,
+    "s3_think_ms": NUM_POS,
+    "s3_session_median_sec": NUM_POS,
+    "s3_session_sigma": NUM_NAO_NEG,
+    "s3_logout_prob": NUM_PROB,
+    "s3_idle_timeout_sec": NUM_POS,
+    "s3_back_window_sec": NUM_NAO_NEG,
+    "s3_back_min_sec": NUM_POS,
+    "s3_back_max_sec": NUM_POS,
+    "s3_visit_pause_sec": NUM_POS,
+    "s3_blocked_wait_sec": NUM_POS,
+    "s3_admin_mean_sec": NUM_POS,
+    "s3_admin_hold_min_sec": NUM_NAO_NEG,
+    "s3_admin_hold_extra_sec": NUM_NAO_NEG,
+    "s3_admin_block_retries": INT_NAO_NEG_CARGA,
+    "s3_l_spacing_ms": NUM_POS,
+    "s3_l_reset_prob": NUM_PROB,
+    "s3_l_support_delay_sec": NUM_NAO_NEG,
+    "s3_l_pause_sec": NUM_POS,
+    "s3_app_retries": INT_NAO_NEG_CARGA,
+    "s3_backoff_ms": NUM_NAO_NEG,
+}
+# padroes do programa (S3Parametros), so para a coerencia quando um dos dois campos falta
+PADROES_CARGA_PROGRAMA = {"s3_users": 20, "s3_limit_accounts": 10, "s3_back_min_sec": 1, "s3_back_max_sec": 3}
 ESQUEMA_DECISOES = "decisoes-controlador/1.2"
 ESQUEMA_REFERENCIA = "referencia-p99/1"   # controle/ArquivoReferencia.java (ESQUEMA)
 ATUADOR_NULO = "nulo"
@@ -144,7 +186,7 @@ def conferir_parametros(obj, t_enc_pior_s):
     if not isinstance(ps, dict):
         raise ErroUso("bloco parametros ausente")
     faltam = sorted(set(nomes) - set(ps))
-    sobram = sorted(set(ps) - set(nomes))
+    sobram = sorted(set(ps) - set(nomes) - set(PARAMETROS_CARGA))
     if faltam:
         raise ErroUso("parametros ausentes (obrigatorios, sem padrao): %s" % ", ".join(faltam))
     if sobram:
@@ -168,6 +210,7 @@ def conferir_parametros(obj, t_enc_pior_s):
             if not isinstance(x, str) or not NO_RE.match(x):
                 raise ErroUso("%s deve ser isn1, isn2 ou isn3: %r" % (nome, x))
         v[nome] = x
+    v.update(conferir_carga(ps))
     for f in ("f1", "f2", "f3", "f4"):
         if f + "_dur_s" not in v:
             continue
@@ -182,6 +225,43 @@ def conferir_parametros(obj, t_enc_pior_s):
                       "ate a ancora e o fechamento, com folga)"
                       % (v["exec_teto_s"], v["duracao_s"], t_enc_pior_s, v["religamento_prazo_s"],
                          v["convergencia_teto_s"], v["convergencia_periodo_s"], minimo))
+    return v
+
+
+def conferir_carga(ps):
+    """{nome: valor} dos campos de PARAMETROS_CARGA presentes em ps (na ordem da tabela) ou ErroUso."""
+    v = {}
+    for nome, (tipo, minimo, exclusivo, maximo) in PARAMETROS_CARGA.items():
+        if nome not in ps:
+            continue
+        p = ps[nome]
+        if not isinstance(p, dict) or set(p) != {"valor", "origem"}:
+            raise ErroUso("%s: use {\"valor\": ..., \"origem\": \"...\"}" % nome)
+        origem = p["origem"]
+        if not isinstance(origem, str) or not origem.strip():
+            raise ErroUso("%s sem origem (regra do autor: numero sem origem nao entra)" % nome)
+        x = p["valor"]
+        if tipo == "int":
+            ok = not isinstance(x, bool) and isinstance(x, int)
+            desc = "inteiro"
+        else:
+            ok = not isinstance(x, bool) and isinstance(x, (int, float)) and math.isfinite(x)
+            desc = "numero"
+        if ok:
+            ok = (x > minimo if exclusivo else x >= minimo) and (maximo is None or x <= maximo)
+        if not ok:
+            faixa = ("> %s" if exclusivo else ">= %s") % minimo
+            if maximo is not None:
+                faixa = "em [%s, %s]" % (minimo, maximo)
+            raise ErroUso("%s deve ser %s %s (S3Parametros.validar): %r" % (nome, desc, faixa, x))
+        v[nome] = x
+    ef = dict(PADROES_CARGA_PROGRAMA, **{k: x for k, x in v.items() if k in PADROES_CARGA_PROGRAMA})
+    if ef["s3_users"] + ef["s3_limit_accounts"] <= 0:
+        raise ErroUso("s3_users + s3_limit_accounts = 0 (S3 sem nenhuma identidade; o ausente vale o padrao do "
+                      "programa: s3_users 20, s3_limit_accounts 10)")
+    if ef["s3_back_max_sec"] < ef["s3_back_min_sec"]:
+        raise ErroUso("s3_back_max_sec (%s) < s3_back_min_sec (%s) (o ausente vale o padrao do programa: 3 s e 1 s)"
+                      % (ef["s3_back_max_sec"], ef["s3_back_min_sec"]))
     return v
 
 

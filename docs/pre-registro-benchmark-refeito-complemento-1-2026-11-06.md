@@ -236,3 +236,9 @@ avaliação. **As regras de reposição não mudam:** teto de 24 reposições h4
 por execução perdida. *Observação para o coordenador:* a fração de 25 % do C3 §4.4 daria 20 para as 80 execuções da
 DT-027; o 24 vem das 96 execuções do desenho anterior. Se o piloto embutido (os 3 primeiros blocos) mostrar taxa de h4
 alta, o coordenador reavalia antes da metade 2.
+
+**Nota (2026-11-06, decisão do coordenador, antes de qualquer dado): teto de reposições h4 = 20 blocos.** Substitui o
+"teto de 24" da seção 8. O 24 vinha do desenho de 96 execuções; na avaliação fatorial vale **20 blocos**, na unidade que
+o `campanha_s3_matriz.py repor` usa (bloco inteiro). O teto é uma parada de segurança contra ambiente doente, não um
+limite de orçamento; a previsão do coordenador é de 5 a 9 blocos repostos. A reposição continua uma vez só por bloco
+perdido.

@@ -126,8 +126,8 @@ from referencia_p99 import percentil  # noqa: E402  (posto mais proximo, copia d
 import apuracao_v  # noqa: E402,F401
 # W-5c: apuracao de V por pares distintos (chave, invariante), das origens online, sonda de replay (W-10) e
 # varredura final (so REAL), pelo pre-registro do benchmark refeito (rascunho a5ddac9, 2.3 a 2.5). Fonte unica em
-# apuracao_v.py, que roda em python3 -I sem numpy para o calibracao_s3 do W-9: daqui saem as 13 funcoes, as 26
-# constantes e o ErroUso (o mesmo objeto, para que o erro de contrato dos leitores de violacoes e de varredura
+# apuracao_v.py, que roda em python3 -I sem numpy para o calibracao_s3 do W-9: daqui saem as funcoes de
+# apuracao_v.COPIADAS (14, com a decompor_i1_pela_fusao do W-5e), as 26 constantes e o ErroUso (o mesmo objeto, para que o erro de contrato dos leitores de violacoes e de varredura
 # continue saindo com exit 2 por ERROS_USO). As origens de V e a tolerancia de casamento estao comentadas la.
 from apuracao_v import (  # noqa: E402
     ErroUso,
@@ -136,7 +136,7 @@ from apuracao_v import (  # noqa: E402
     apurar_violacoes_execucao, INVARIANTES_VIOL, ORIGEM_ONLINE, ORIGEM_SONDA, ORIGEM_VARREDURA, ORIGENS, TIPO_ONLINE,
     TIPO_IMEDIATA, TIPO_TARDIA, TIPO_VARREDURA, ATRIB_DETECCAO, ATRIB_INVALIDACAO, ATRIB_SEM, ATRIBUICOES, FORMA_1,
     FORMA_2, FORMA_OUTRA, FORMA_INDET, FORMAS_I1, OP_REPLAY, RC_CONFIRMADO, COLUNAS_VARREDURA, TOL_CASAMENTO_NS,
-    REGRA_V, _RX_INSTANTE, _RX_MOTIVO, _RX_IDENTIDADE)
+    REGRA_V, _RX_INSTANTE, _RX_MOTIVO, _RX_IDENTIDADE, decompor_i1_pela_fusao)
 
 ESQUEMA = "comparar-bracos/2"
 CABECALHO_MANIFESTO = ("bloco", "celula", "braco", "execucao")
@@ -195,6 +195,43 @@ DESFECHO_V_SEM_F2 = DESFECHO_V + ":sem_forma2"
 # a sensibilidade sem a forma 2 vai em diferenca, como V; fica fora de ESCALA_DIFERENCA para que o
 # parametros.escala_diferenca das execucoes sem sonda e sem varredura continue o da base (nao regressao)
 ESCALA_DIFERENCA_SENS_V = frozenset((DESFECHO_V_SEM_F2,))
+# W-5e: fatorial 2x2 por bloco na celula de teste (DT-027, complemento 1 do pre-registro do benchmark refeito,
+# 4fa4546): regra de fusao do sessions-async (P = PREFERRED_NON_NULL, A = A1) x controlador (O = shadow, L = active
+# com a A4). O braco sai do execucao.json do orquestrador: CAMPO_FUSAO (pnn|a1; o nome fica combinado com o
+# orquestrador fatorial, wt-fat; ainda nao existia em 06/11, entao o leitor usa "fusao"), "controller" (shadow|active,
+# o campo de sempre) e "bloco". O instante da fusao (primeira vista de fusao, ISPN000093, depois do end; DT-027 2.2 e
+# 5.3) vem de CAMPO_T_FUSAO no mesmo arquivo: ausente = medida nao emitida; null = sem fusao (medida ausente).
+BRACOS_FATORIAL = ("PO", "PL", "AO", "AL")
+CAMPO_FUSAO = "fusao"
+CAMPO_CONTROLLER = "controller"
+CAMPO_T_FUSAO = "t_fusao_ns"
+FUSAO_DO_BRACO = {"PO": "pnn", "PL": "pnn", "AO": "a1", "AL": "a1"}
+MODO_FATORIAL = {"PO": "shadow", "PL": "active", "AO": "shadow", "AL": "active"}
+BRACOS_ATIVOS_FATORIAL = ("PL", "AL")          # rastreabilidade integral exigida na IU dos dois efeitos
+EFEITOS = ("A1", "A4", "interacao")
+EFEITOS_PRINCIPAIS = ("A1", "A4")
+# efeito simples: (braco, braco de referencia), y = y_braco - y_referencia (DT-027, secao 1: so IC, sem teste)
+EFEITOS_SIMPLES = {"A1_controlador_desligado": ("AO", "PO"), "A1_controlador_ligado": ("AL", "PL"),
+                   "A4_regra_atual": ("PL", "PO"), "A4_regra_a1": ("AL", "AO")}
+# H_V nao avaliavel quando os bracos de referencia do efeito nao tem violacao em nenhum bloco (DT-021, por efeito)
+REFERENCIA_EFEITO = {"A1": ("PO", "PL"), "A4": ("PO", "AO")}
+DESFECHO_PERDA = "perda_permanente_sids"
+DESFECHO_EXPOSICAO = "exposicao_janela_sids"
+ESCALA_DIFERENCA_W5E = frozenset((DESFECHO_PERDA, DESFECHO_EXPOSICAO))
+REGRA_FATORIAL = ("fatorial 2x2 por bloco (DT-027): bracos PO, PL, AO, AL com a mesma semente; contrastes por bloco "
+                  "d_A1 = 1/2[(y_AO - y_PO) + (y_AL - y_PL)], d_A4 = 1/2[(y_PL - y_PO) + (y_AL - y_AO)], d_int = "
+                  "(y_AL - y_AO) - (y_PL - y_PO), em diferenca (V e taxas) ou no log (p99); troca de sinal exata por "
+                  "contraste; IU por efeito principal (H_V: V; H_L: p99 com delta_L; vazao util nao inferior; "
+                  "rastreabilidade dos bracos PL e AL); Holm sobre as hipoteses de teste (os dois efeitos de cada "
+                  "celula fatorial, m = 2 com uma celula); interacao com IC e p, sem Holm e fora da IU; efeitos "
+                  "simples so com IC; secundarios com Holm por efeito; varredura com erro em qualquer braco: V e "
+                  ":sem_forma2 dos quatro sem a varredura e perda permanente do bloco nao avaliavel; t_fusao_ns "
+                  "ausente ou nulo com varredura conta como varredura com erro (DT-027, 5.3); mesma semente (seed do "
+                  "execucao.json) nos quatro bracos do bloco")
+REGRA_PERDA_EXPOSICAO = ("perda_permanente_sids: sids distintas com I1 que conta em V vista pela varredura (REAL), "
+                         "pelo replay tardio ou pelo auditor online em ou depois de t_fusao_ns; exposicao_janela_sids: "
+                         "sids distintas com I1 que conta em V vista pelo replay imediato ou pelo auditor online antes "
+                         "de t_fusao_ns (DT-027, 2.2)")
 REGRA_VARREDURA_ERRO = ("varredura com erro (varredura-rep-NNN.erro.txt) em qualquer braco do bloco: V e "
                         ":sem_forma2 dos dois bracos sem as deteccoes da varredura (online e sonda), bloco no teste; "
                         "subestima V nos dois bracos desses blocos; sensibilidade descritiva sem esses blocos, sem p e "
@@ -213,7 +250,10 @@ def _chave_bloco(b):
 
 
 def ler_manifesto(caminho):
-    """{celula: {bloco: {"A": Path, "B": Path}}}; ErroUso com bloco incompleto, duplicado ou repetido."""
+    """{celula: {bloco: {braco: Path}}}; ErroUso com bloco incompleto, duplicado ou repetido.
+
+    Bloco de 2 bracos (A, B) ou do fatorial 2x2 (PO, PL, AO, AL; W-5e); uma celula nao mistura os dois.
+    """
     p = Path(caminho)
     if not p.is_file():
         raise ErroUso("manifesto ausente: %s" % p)
@@ -227,8 +267,9 @@ def ler_manifesto(caminho):
         if len(campos) != 4 or any(not c.strip() for c in campos):
             raise ErroUso("linha %d do manifesto com campos invalidos: %r" % (i, linha))
         bloco, celula, braco, execucao = (c.strip() for c in campos)
-        if braco not in BRACOS:
-            raise ErroUso("braco invalido na linha %d: %r (use A ou B)" % (i, braco))
+        if braco not in BRACOS and braco not in BRACOS_FATORIAL:
+            raise ErroUso("braco invalido na linha %d: %r (use A ou B; no fatorial 2x2, PO, PL, AO ou AL)"
+                          % (i, braco))
         ex = Path(execucao)
         if not ex.is_absolute():
             ex = p.parent / ex
@@ -242,9 +283,12 @@ def ler_manifesto(caminho):
         par[braco] = ex
     out = {}
     for (celula, bloco), par in pares.items():
-        if set(par) != set(BRACOS):
+        if set(par) != set(BRACOS) and set(par) != set(BRACOS_FATORIAL):
             raise ErroUso("bloco %s da celula %s incompleto (bracos: %s)" % (bloco, celula, ",".join(sorted(par))))
         out.setdefault(celula, {})[bloco] = par
+    for celula, bs in out.items():
+        if len({len(par) for par in bs.values()}) > 1:
+            raise ErroUso("celula %s mistura blocos de 2 bracos (A, B) e do fatorial 2x2 (PO, PL, AO, AL)" % celula)
     return {c: dict(sorted(bs.items(), key=lambda kv: _chave_bloco(kv[0]))) for c, bs in sorted(out.items())}
 
 
@@ -924,13 +968,29 @@ def _desfechos_energia(en, en_path, rot, n_uteis, energia):
     return out
 
 
+def ler_execucao_json(execucao):
+    """Dicionario do execucao.json do orquestrador (W-6) ou None se ausente; ilegivel ou nao objeto: ErroUso."""
+    p = Path(execucao) / "execucao.json"
+    if not p.exists():
+        return None
+    try:
+        j = json.loads(p.read_text(encoding="utf-8"))
+    except ValueError:
+        raise ErroUso("execucao.json ilegivel: %s" % p) from None
+    if not isinstance(j, dict):
+        raise ErroUso("execucao.json nao e objeto: %s" % p)
+    return j
+
+
 def desfechos_execucao(execucao, rep, fases_sel, w_recovery_ns, marcadores_nome="marcadores.txt", *,
-                       w_analise_ns=None, referencia_erro=None, energia=None):
+                       w_analise_ns=None, referencia_erro=None, energia=None, fusao_obrigatoria=False):
     """({desfecho: {"y","n","motivo","eventos"}}, info) de uma execucao, nas fases pedidas.
 
     w_analise_ns: W_c e janela do Delta_rec de sensibilidade (None: Delta_rec ausente, com motivo; a CLI
     exige o valor). referencia_erro: dicionario de referencia_erro.ler (None: Delta_rec de sensibilidade
-    ausente). energia: {"p_max_w", "razao_central"} (None: energia estimada nao entra).
+    ausente). energia: {"p_max_w", "razao_central"} (None: energia estimada nao entra). fusao_obrigatoria (W-5f,
+    celula do fatorial; DT-027, 5.3): com varredura e sem t_fusao_ns (ausente ou nulo) no execucao.json, a varredura
+    pode ter rodado antes da fusao e conta como com erro (varredura_erro_origem = "sem_fusao").
     """
     d = Path(execucao)
     if not d.is_dir():
@@ -1009,11 +1069,20 @@ def desfechos_execucao(execucao, rep, fases_sel, w_recovery_ns, marcadores_nome=
     # W-5c (pre-registro do benchmark refeito, 2.3 a 2.6): pares distintos das tres origens; os ReplayValidate
     # ficam fora do denominador (acoes S3), da latencia, da vazao e da taxa de erro (ler_eventos_inicio os descarta)
     apur = apurar_violacoes_execucao(d, nnn, ev_path, t1 - 1, dentro, args, marcadores_nome)
+    ej = ler_execucao_json(d)
+    if (fusao_obrigatoria and apur is not None and apur["varredura"] == "presente"
+            and (ej or {}).get(CAMPO_T_FUSAO) is None):
+        # W-5f (DT-027, 5.3): sem fusao registrada, a varredura e tratada como com erro, sem depender do orquestrador
+        apur["varredura"] = "erro"
+        apur["varredura_erro_origem"] = "sem_fusao"
     varredura_erro = apur is not None and apur["varredura"] == "erro"
     viol = None if apur is None or varredura_erro else apur["pares"]
     if acoes is not None:
         if apur is None:
             out[DESFECHO_V] = dict(_ausente("sem violacoes-rep (contagem desconhecida)", n_acoes), contagem=None)
+        elif varredura_erro and apur.get("varredura_erro_origem") == "sem_fusao":
+            out[DESFECHO_V] = dict(_ausente("sem fusao registrada (%s ausente ou nulo): varredura tratada como com "
+                                            "erro (DT-027, 5.3)" % CAMPO_T_FUSAO, n_acoes), contagem=None)
         elif varredura_erro:
             out[DESFECHO_V] = dict(_ausente("varredura com erro (varredura-rep-%s.erro.txt): contagem incompleta"
                                             % nnn, n_acoes), contagem=None)
@@ -1028,6 +1097,31 @@ def desfechos_execucao(execucao, rep, fases_sel, w_recovery_ns, marcadores_nome=
             else:
                 c2 = apur["total_pares_sem_forma2"]
                 out[DESFECHO_V_SEM_F2] = dict(_taxa(c2, n_acoes, 1000.0), contagem=c2)
+
+    # W-5e (DT-027, 2.2): perda permanente e exposicao na janela, so quando o execucao.json traz t_fusao_ns
+    fusao = None
+    if ej is not None and CAMPO_T_FUSAO in ej:
+        bruto = ej[CAMPO_T_FUSAO]
+        t_fus = _int_ou_none(bruto)
+        if bruto is not None and t_fus is None:
+            raise ErroUso("%s invalido no execucao.json de %s: %r" % (CAMPO_T_FUSAO, d, bruto))
+        n_px = n_acoes if n_acoes is not None else 0
+        if apur is None:
+            for nome in (DESFECHO_PERDA, DESFECHO_EXPOSICAO):
+                out[nome] = dict(_ausente("sem violacoes-rep (contagem desconhecida)", n_px), contagem=None)
+        elif t_fus is None:
+            for nome in (DESFECHO_PERDA, DESFECHO_EXPOSICAO):
+                out[nome] = dict(_ausente("sem instante da fusao (%s nulo: a fusao nao veio)" % CAMPO_T_FUSAO, n_px),
+                                 contagem=None)
+        else:
+            perda, expo = decompor_i1_pela_fusao(apur, t_fus)
+            fusao = {"t_fusao_ns": t_fus, "sids_perda": perda, "sids_exposicao": expo}
+            out[DESFECHO_EXPOSICAO] = {"y": float(len(expo)), "n": n_px, "motivo": None, "eventos": None,
+                                       "contagem": len(expo)}
+            out[DESFECHO_PERDA] = (dict(_ausente("varredura com erro: perda permanente nao avaliavel", n_px),
+                                        contagem=None) if varredura_erro else
+                                   {"y": float(len(perda)), "n": n_px, "motivo": None, "eventos": None,
+                                    "contagem": len(perda)})
 
     # P-4 da V-W5 (G3 de 28/10): as taxas com zeros vao em diferenca; a razao com exclusao e sensibilidade
     for nome in (DESFECHO_ERRO, DESFECHO_FALHAS):
@@ -1104,6 +1198,7 @@ def desfechos_execucao(execucao, rep, fases_sel, w_recovery_ns, marcadores_nome=
             "fim_medicao_ns": fim_med, "fim_medicao_origem": origem_fim,
             "t_inicio_falha_ns": mk["inicio"], "t_fim_falha_ns": mk["fim"],
             "ac5_aplicada": com_ac5, "delta_conv_origem": origem_conv,
+            "execucao_json": ej, "fusao": fusao,
             "controlador": None if trilha is None else descrever_controlador(trilha, mk["inicio"], fim_med),
             "rastreabilidade": None if trilha is None else conferir_rastreabilidade(trilha)}
     return out, info
@@ -1125,6 +1220,14 @@ def _f(x):
     if isinstance(x, (np.integer,)):
         return int(x)
     return x
+
+
+def _escala(nome):
+    """Escala de d_b do desfecho: diferenca (taxas com zeros, V, Delta_rec, Delta_conv, divergencia, a sensibilidade
+    de V e as contagens de sids do W-5e) ou log da razao."""
+    if nome in ESCALA_DIFERENCA or nome in ESCALA_DIFERENCA_SENS_V or nome in ESCALA_DIFERENCA_W5E:
+        return ESCALA_DIF
+    return ESCALA_LOG
 
 
 def familia_de(nome, razao_central=None):
@@ -1194,24 +1297,24 @@ def _instrumentos(det):
     return bool(det["sonda"]), det["varredura"] != "ausente"
 
 
-def _instrumentos_divergentes(blocos, infos):
-    """Blocos em que A e B tem instrumentos de observacao diferentes (pre-registro do benchmark refeito, 2.1)."""
+def _instrumentos_divergentes(blocos, infos, bracos=BRACOS):
+    """Blocos em que os bracos tem instrumentos de observacao diferentes (pre-registro do benchmark refeito, 2.1)."""
     out = []
     for b in blocos:
-        ia, ib = (_instrumentos(infos[b][br]["violacoes_detalhe"]) for br in BRACOS)
-        if ia is not None and ib is not None and ia != ib:
+        vals = [x for x in (_instrumentos(infos[b][br]["violacoes_detalhe"]) for br in bracos) if x is not None]
+        if len(set(vals)) > 1:
             out.append(b)
     return out
 
 
-def _detalhe_v_celula(blocos, infos, divergentes, afetados=(), sens_varredura=None):
+def _detalhe_v_celula(blocos, infos, divergentes, afetados=(), sens_varredura=None, bracos=BRACOS):
     """Descritivas de V por braco (W-5c): linhas, pares por origem, atribuicao, formas de I1, custo da sonda.
 
     Sem teste: a contagem de V (pares distintos) ja entra no desfecho e no co_principal_v; aqui ficam as somas por
     braco e o detalhe de cada execucao (por_execucao, com a lista dos pares).
     """
     totais = {}
-    for br in BRACOS:
+    for br in bracos:
         ds = [infos[b][br]["violacoes_detalhe"] for b in blocos if infos[b][br]["violacoes_detalhe"] is not None]
         if not ds:
             totais[br] = None
@@ -1236,29 +1339,38 @@ def _detalhe_v_celula(blocos, infos, divergentes, afetados=(), sens_varredura=No
              "replay_validate": {k: sum(x["replay_validate"][k] for x in ds)
                                  for k in ("eventos", "imediatos", "tardios", "sids_tardios")}}
         totais[br] = t
-    por_exec = {b: {br: infos[b][br]["violacoes_detalhe"] for br in BRACOS} for b in blocos}
+    por_exec = {b: {br: infos[b][br]["violacoes_detalhe"] for br in bracos} for b in blocos}
     vc = {"regra": REGRA_VARREDURA_ERRO, "blocos": len(afetados),
-          "so_A": sum(1 for x in afetados if x["bracos_com_erro"] == ["A"]),
-          "so_B": sum(1 for x in afetados if x["bracos_com_erro"] == ["B"]),
-          "nos_dois": sum(1 for x in afetados if len(x["bracos_com_erro"]) == 2),
           "lista": list(afetados), "sensibilidade_blocos_excluidos": sens_varredura}
+    if tuple(bracos) == BRACOS:
+        vc.update({"so_A": sum(1 for x in afetados if x["bracos_com_erro"] == ["A"]),
+                   "so_B": sum(1 for x in afetados if x["bracos_com_erro"] == ["B"]),
+                   "nos_dois": sum(1 for x in afetados if len(x["bracos_com_erro"]) == 2)})
+    else:
+        vc["por_braco"] = {br: sum(1 for x in afetados if br in x["bracos_com_erro"]) for br in bracos}
+        vc["sem_fusao_por_braco"] = {br: sum(1 for x in afetados if br in x.get("sem_fusao", ())) for br in bracos}
     return {"regra": REGRA_V, "totais": totais, "instrumentos_divergentes": list(divergentes),
             "varredura_com_erro": vc, "por_execucao": por_exec}
 
 
-def _aplicar_varredura_simetrica(blocos, res, infos):
+def _aplicar_varredura_simetrica(blocos, res, infos, bracos=BRACOS):
     """W-5d (V-W5c, secao 5): no bloco em que a varredura falhou em algum braco, V e :sem_forma2 dos DOIS bracos
     passam aos totais sem a varredura (online e sonda); o bloco fica no teste. Troca tambem as contagens por
     invariante (info["violacoes"]). Devolve a lista dos blocos afetados, com o braco da falha e os dois V de cada
-    braco (com a varredura, None no braco em que ela falhou; sem ela)."""
+    braco (com a varredura, None no braco em que ela falhou; sem ela). W-5e: vale para os quatro bracos do bloco do
+    fatorial, e a perda permanente do bloco fica nao avaliavel em todos os bracos (DT-027, 5.3)."""
     afetados = []
     for b in blocos:
-        dets = {br: infos[b][br]["violacoes_detalhe"] for br in BRACOS}
-        erro = [br for br in BRACOS if dets[br] is not None and dets[br]["varredura"] == "erro"]
+        dets = {br: infos[b][br]["violacoes_detalhe"] for br in bracos}
+        erro = [br for br in bracos if dets[br] is not None and dets[br]["varredura"] == "erro"]
         if not erro:
             continue
         v = {}
-        for br in BRACOS:
+        for br in bracos:
+            if DESFECHO_PERDA in res[b][br]:
+                res[b][br][DESFECHO_PERDA] = dict(_ausente("varredura com erro no bloco (bracos %s): perda permanente "
+                                                           "nao avaliavel" % ",".join(erro),
+                                                           res[b][br][DESFECHO_PERDA]["n"]), contagem=None)
             det, r, n = dets[br], res[b][br].get(DESFECHO_V), infos[b][br]["n_acoes"]
             com, sem = (None if r is None else r["y"]), None
             if det is not None and r is not None and n is not None:
@@ -1271,7 +1383,11 @@ def _aplicar_varredura_simetrica(blocos, res, infos):
                                                      if c2 is None else dict(_taxa(c2, n, 1000.0), contagem=c2))
                 infos[b][br]["violacoes"] = dict(det["pares_sem_varredura"])
             v[br] = {"com_varredura": com, "sem_varredura": sem}
-        afetados.append({"bloco": b, "bracos_com_erro": erro, "v": v})
+        entrada = {"bloco": b, "bracos_com_erro": erro, "v": v}
+        sem_fusao = [br for br in erro if dets[br].get("varredura_erro_origem") == "sem_fusao"]
+        if tuple(bracos) != BRACOS or sem_fusao:
+            entrada["sem_fusao"] = sem_fusao
+        afetados.append(entrada)
     return afetados
 
 
@@ -1362,11 +1478,11 @@ def _co_principal_v(ent, res, usados, semente, indice, n_boot, teste):
     return out
 
 
-def _resumo_controlador(blocos, infos):
+def _resumo_controlador(blocos, infos, bracos=BRACOS):
     """Descritivos do controlador por bloco e somas por braco (sem teste)."""
-    por_bloco = {b: {br: infos[b][br]["controlador"] for br in BRACOS} for b in blocos}
+    por_bloco = {b: {br: infos[b][br]["controlador"] for br in bracos} for b in blocos}
     totais = {}
-    for br in BRACOS:
+    for br in bracos:
         ds = [por_bloco[b][br] for b in blocos if por_bloco[b][br] is not None]
         if not ds:
             totais[br] = None
@@ -1402,9 +1518,9 @@ def _resumo_controlador(blocos, infos):
     return {"por_bloco": por_bloco, "totais": totais}
 
 
-def _rastreabilidade_celula(blocos, infos):
+def _rastreabilidade_celula(blocos, infos, bracos=BRACOS):
     out = {}
-    for br in BRACOS:
+    for br in bracos:
         sem = [b for b in blocos if infos[b][br]["rastreabilidade"] is None]
         probs = {b: infos[b][br]["rastreabilidade"]["problemas"] for b in blocos
                  if infos[b][br]["rastreabilidade"] is not None and not infos[b][br]["rastreabilidade"]["integral"]}
@@ -1429,6 +1545,259 @@ def _conferir_trilhas_do_teste(celula, blocos, infos):
         if not sha_a or sha_a != sha_b:
             raise ErroUso("celula de teste %s, bloco %s: param_sha256 diferente entre A (%r) e B (%r)"
                           % (celula, b, sha_a, sha_b))
+
+
+# ============================================================================= fatorial 2x2 (W-5e)
+
+def _contraste(y, efeito):
+    """Contraste por bloco da DT-027, secao 1, sobre {braco: y} (y ja no log para o p99)."""
+    if efeito == "A1":
+        return 0.5 * ((y["AO"] - y["PO"]) + (y["AL"] - y["PL"]))
+    if efeito == "A4":
+        return 0.5 * ((y["PL"] - y["PO"]) + (y["AL"] - y["AO"]))
+    if efeito == "interacao":
+        return (y["AL"] - y["AO"]) - (y["PL"] - y["PO"])
+    x, ref = EFEITOS_SIMPLES[efeito]
+    return y[x] - y[ref]
+
+
+def _analisar_contraste(d, semente, indice, n_boot, log, permutar):
+    """Estimativa (media de d; exp no log), IC t, IC bootstrap de blocos e p da troca de sinal de um contraste."""
+    n = len(d)
+    media = sum(d) / n if n else None
+    k = k_nao_nulos(d)
+    return {"n_blocos": n, "indice_semente": indice,
+            "estimativa": None if media is None else (math.exp(media) if log else media),
+            "ic_t": ic_t(d, exp=log), "ic_boot_blocos": ic_boot_blocos(d, semente, indice, n_boot, exp=log),
+            "p_permutacao": permutacao_exata(d) if (permutar and n) else None, "p_holm": None,
+            "k_nao_nulos": k, "p_minimo_atingivel": p_minimo_atingivel(k) if n else None}
+
+
+def _conferir_sementes(celula, blocos, infos, bracos, obrigatoria):
+    """W-5f (DT-027, 1; DT-021): os bracos de um bloco tem a mesma semente (seed do execucao.json, gravado pelo
+    orquestrador). obrigatoria (fatorial): seed em todos os bracos; senao, so confere quando todos a tem."""
+    for b in blocos:
+        sementes = {br: (infos[b][br]["execucao_json"] or {}).get("seed") for br in bracos}
+        faltam = [br for br, v in sementes.items() if v is None]
+        if faltam and obrigatoria:
+            raise ErroUso("celula %s, bloco %s: sem seed no execucao.json do(s) braco(s) %s (mesma semente nos bracos "
+                          "do bloco)" % (celula, b, ",".join(faltam)))
+        if not faltam and len({str(v) for v in sementes.values()}) > 1:
+            raise ErroUso("celula %s, bloco %s: semente diferente entre os bracos: %r" % (celula, b, sementes))
+
+
+def _conferir_braco_fatorial(celula, b, br, execucao, info):
+    """O braco do manifesto tem de ser o do execucao.json (fusao e controller; bloco, se houver) e o da trilha."""
+    ej = info["execucao_json"]
+    onde = "celula fatorial %s, bloco %s, braco %s (%s)" % (celula, b, br, execucao)
+    if ej is None:
+        raise ErroUso("%s: sem execucao.json (o braco sai dos campos %s e %s)" % (onde, CAMPO_FUSAO, CAMPO_CONTROLLER))
+    fus, ctl = ej.get(CAMPO_FUSAO), ej.get(CAMPO_CONTROLLER)
+    if fus != FUSAO_DO_BRACO[br]:
+        raise ErroUso("%s: %s = %r no execucao.json (esperado %r)" % (onde, CAMPO_FUSAO, fus, FUSAO_DO_BRACO[br]))
+    if ctl != MODO_FATORIAL[br]:
+        raise ErroUso("%s: %s = %r no execucao.json (esperado %r)" % (onde, CAMPO_CONTROLLER, ctl, MODO_FATORIAL[br]))
+    if ej.get("bloco") is not None and str(ej.get("bloco")) != str(b):
+        raise ErroUso("%s: bloco %r no execucao.json" % (onde, ej.get("bloco")))
+    tr = info["controlador"]
+    if tr is not None and tr["modo"] != MODO_FATORIAL[br]:
+        raise ErroUso("%s: trilha em modo %r (esperado %s)" % (onde, tr["modo"], MODO_FATORIAL[br]))
+
+
+def _conferir_trilhas_do_teste_fatorial(celula, blocos, infos):
+    """A-3 da V-W5 nos quatro bracos: trilha em todos; PL e AL atuam de fato; o mesmo param_sha256 nos quatro."""
+    for b in blocos:
+        ctl = {br: infos[b][br]["controlador"] for br in BRACOS_FATORIAL}
+        for br in BRACOS_FATORIAL:
+            if ctl[br] is None:
+                raise ErroUso("celula de teste %s, bloco %s, braco %s sem decisoes-rep (trilha obrigatoria nos "
+                              "quatro bracos; execucao interrompida e refeita pela DT-014)" % (celula, b, br))
+        for br in BRACOS_ATIVOS_FATORIAL:
+            atuador, politica = ctl[br]["atuador"], ctl[br]["politica"]
+            if not atuador or atuador == ATUADOR_NULO or not politica or politica == POLITICA_NENHUMA:
+                raise ErroUso("celula de teste %s, bloco %s: braco %s com atuador %r e politica %r nao atua"
+                              % (celula, b, br, atuador, politica))
+        shas = {br: ctl[br]["param_sha256"] for br in BRACOS_FATORIAL}
+        if not shas["PO"] or len(set(shas.values())) != 1:
+            raise ErroUso("celula de teste %s, bloco %s: param_sha256 diferente entre os bracos: %r" % (celula, b, shas))
+
+
+def _co_principal_v_fatorial(efeito, ent, res, usados):
+    """Bloco co_principal_v de um efeito principal: contagens por braco, avaliabilidade pelos bracos de
+    referencia (sem violacao em nenhum bloco: H_V nao avaliavel), regra de tres, k e p minimo."""
+    ref = REFERENCIA_EFEITO[efeito]
+    out = {"desfecho": DESFECHO_V, "efeito": efeito, "bracos_de_referencia": list(ref), "n_blocos": len(usados)}
+    if not usados:
+        out.update({"avaliavel": False, "motivo": "nenhum bloco com a taxa nos quatro bracos"})
+        return out
+    c = {br: int(sum(res[b][br][DESFECHO_V]["contagem"] for b in usados)) for br in BRACOS_FATORIAL}
+    n = {br: int(sum(res[b][br][DESFECHO_V]["n"] for b in usados)) for br in BRACOS_FATORIAL}
+    out.update({"contagem": c, "n_acoes": n, "k_nao_nulos": ent["k_nao_nulos"],
+                "p_minimo_atingivel": ent["p_minimo_atingivel"],
+                "binomial_wilson_por_1000": {br: _wilson_por_1000(c[br], n[br]) for br in BRACOS_FATORIAL},
+                "nota_independencia": "uma fusao produz varias violacoes de uma vez; a unidade e a execucao"})
+    if sum(c[br] for br in ref) == 0:
+        out["avaliavel"] = False
+        out["motivo"] = ("bracos de referencia (%s) sem violacao em nenhum bloco: H_V nao avaliavel (nao e 'sem "
+                         "efeito')" % ", ".join(ref))
+    else:
+        out["avaliavel"], out["motivo"] = True, None
+    out["regra_de_tres"] = {}
+    for br in BRACOS_FATORIAL:
+        if c[br] == 0:
+            lim, rot = regra_de_tres(n[br])
+            out["regra_de_tres"][br] = {"limite_superior_95": lim, "rotulo": rot,
+                                        "texto": "nao observado em %d acoes" % n[br]}
+    return out
+
+
+def _sensibilidade_fatorial_sem_blocos_varredura_erro(afetados, ent_v, semente, indice_base, n_boot):
+    """Contrastes de V sem os blocos com varredura com erro (descritivos: sem p e sem Holm); None sem bloco afetado."""
+    if not afetados or ent_v is None:
+        return None
+    excl = [x["bloco"] for x in afetados]
+    bl = [b for b in ent_v["y_por_bloco"] if b not in excl]
+    efeitos = {}
+    for j, ef in enumerate(EFEITOS):
+        d = [_contraste(ent_v["y_por_bloco"][b], ef) for b in bl]
+        an = _analisar_contraste(d, semente, indice_base + j, n_boot, False, False)
+        an["d_b"] = dict(zip(bl, d))
+        efeitos[ef] = an
+    return {"desfecho": DESFECHO_V, "familia": FAMILIA_SENS, "escala": ESCALA_DIF, "blocos": bl,
+            "blocos_excluidos": excl, "efeitos": efeitos, "nota": "descritiva: sem p e sem Holm"}
+
+
+def _comparar_celula_fatorial(celula, blocos, tipo, *, semente, rep, fases_sel, w_ns, w_an_ns, marcadores_nome, ref,
+                              energia, delta_latencia, delta, n_boot, razao_c):
+    """(celula, {"<celula>:A1": regra_iu, "<celula>:A4": regra_iu}) do fatorial 2x2 da DT-027.
+
+    Le as quatro execucoes de cada bloco, confere o braco pelo execucao.json e pela trilha, aplica o tratamento
+    simetrico da varredura com erro aos quatro bracos e analisa cada desfecho pelos contrastes da secao 1 (efeitos
+    A1 e A4, interacao e os quatro efeitos simples). Indice de semente do contraste j do desfecho i: 10 i + j (A1,
+    A4, interacao, depois os simples); a sensibilidade sem os blocos com varredura com erro usa 10 x (numero de
+    desfechos) + j. Celula de teste: p da troca de sinal nos tres contrastes, Holm dos secundarios por efeito, IU
+    por efeito principal; descritiva ou de referencia: so IC.
+    """
+    teste = tipo == "teste"
+    res, infos = {}, {}
+    for b, grupo in blocos.items():
+        res[b], infos[b] = {}, {}
+        for br in BRACOS_FATORIAL:
+            res[b][br], infos[b][br] = desfechos_execucao(grupo[br], rep, fases_sel, w_ns, marcadores_nome,
+                                                          w_analise_ns=w_an_ns, referencia_erro=ref, energia=energia,
+                                                          fusao_obrigatoria=True)
+    if all(infos[b][br]["n_eventos"] == 0 and not infos[b][br]["n_acoes"] for b in blocos for br in BRACOS_FATORIAL):
+        raise ErroUso("celula %s sem nenhum evento nem acao nas fases pedidas (%s); celula sem falha: chamada "
+                      "propria com --fases antes (A-2 da V-W5)" % (celula, ",".join(fases_sel)))
+    for b, grupo in blocos.items():
+        for br in BRACOS_FATORIAL:
+            _conferir_braco_fatorial(celula, b, br, grupo[br], infos[b][br])
+    _conferir_sementes(celula, blocos, infos, BRACOS_FATORIAL, obrigatoria=True)
+    if teste:
+        _conferir_trilhas_do_teste_fatorial(celula, blocos, infos)
+    divergentes = _instrumentos_divergentes(blocos, infos, BRACOS_FATORIAL)
+    if teste and divergentes:
+        raise ErroUso("celula de teste %s, bloco(s) %s: instrumentos de observacao diferentes entre os quatro bracos "
+                      "(sonda de replay ou varredura; pre-registro do benchmark refeito, 2.1)"
+                      % (celula, ",".join(divergentes)))
+    afetados = _aplicar_varredura_simetrica(list(blocos), res, infos, BRACOS_FATORIAL)
+    nomes = sorted({n for b in blocos for br in BRACOS_FATORIAL for n in res[b][br]})
+    desf = {}
+    for i, nome in enumerate(nomes):
+        escala = _escala(nome)
+        log = escala == ESCALA_LOG
+        excl, ys = [], {}
+        for b in blocos:
+            motivo = None
+            if nome == DESFECHO_CPU or nome.startswith(PREFIXO_ENERGIA):
+                st = [infos[b][br]["steal_excluida"] for br in BRACOS_FATORIAL]
+                motivo = "steal>5%" if True in st else ("steal-indisponivel" if None in st else None)
+            if motivo is None:
+                for br in BRACOS_FATORIAL:
+                    r = res[b][br].get(nome)
+                    if r is None:
+                        motivo = "%s: desfecho ausente" % br
+                    elif r["y"] is None:
+                        motivo = "%s: %s" % (br, r["motivo"])
+                    elif log and r["y"] <= 0:
+                        motivo = "%s: valor zero (log indefinido)" % br
+                    if motivo:
+                        break
+            if motivo:
+                excl.append({"bloco": b, "motivo": motivo})
+                continue
+            ys[b] = {br: res[b][br][nome]["y"] for br in BRACOS_FATORIAL}
+        usados = list(ys)
+        efeitos, simples = {}, {}
+        for j, ef in enumerate(list(EFEITOS) + list(EFEITOS_SIMPLES)):
+            d = [_contraste({br: (math.log(v) if log else v) for br, v in ys[b].items()}, ef) for b in usados]
+            an = _analisar_contraste(d, semente, 10 * i + j, n_boot, log, teste and ef in EFEITOS)
+            an["d_b"] = dict(zip(usados, d))
+            (efeitos if ef in EFEITOS else simples)[ef] = an
+        if nome == DESFECHO_L:
+            lim = math.log(1.0 + float(delta_latencia))
+            for ef in EFEITOS_PRINCIPAIS:
+                e = efeitos[ef]
+                e["nao_inferioridade"] = {"delta": float(delta_latencia), "limite": 1.0 + float(delta_latencia),
+                                          "limite_superior_ic_t": e["ic_t"][1] if e["ic_t"] else None,
+                                          "p": p_nao_inferioridade(list(e["d_b"].values()), lim) if teste else None}
+        if nome == DESFECHO_NI:
+            for ef in EFEITOS_PRINCIPAIS:
+                e = efeitos[ef]
+                e["nao_inferioridade"] = {"delta": delta, "limite": 1.0 - delta,
+                                          "limite_inferior_ic_t": e["ic_t"][0] if e["ic_t"] else None,
+                                          "resultado": nao_inferioridade(e, delta)}
+        ent = {"familia": familia_de(nome, razao_c), "escala": escala, "indice_semente": i, "n_blocos": len(usados),
+               "blocos_excluidos": excl, "y_por_bloco": ys, "efeitos": efeitos, "efeitos_simples": simples}
+        if nome in (DESFECHO_DREC, DESFECHO_DREC_MET):
+            ent["censuradas"] = {br: sum(1 for b in blocos if (res[b][br].get(nome) or {}).get("censurada") is True)
+                                 for br in BRACOS_FATORIAL}
+        desf[nome] = ent
+    rast = _rastreabilidade_celula(list(blocos), infos, BRACOS_FATORIAL)
+    efp, regras = {}, {}
+    for ef in EFEITOS_PRINCIPAIS:
+        sec = ([n for n in nomes if desf[n]["familia"] == FAMILIA_SEC and desf[n]["efeitos"][ef]["p_permutacao"]
+                is not None] if teste else [])
+        for n, ph in zip(sec, holm([desf[n]["efeitos"][ef]["p_permutacao"] for n in sec])):
+            desf[n]["efeitos"][ef]["p_holm"] = ph
+        ev, el = desf.get(DESFECHO_V), desf.get(DESFECHO_L)
+        cpv = (_co_principal_v_fatorial(ef, ev["efeitos"][ef], res, list(ev["y_por_bloco"])) if ev else
+               {"desfecho": DESFECHO_V, "efeito": ef, "avaliavel": False, "motivo": "sem acoes S3"})
+        efp[ef] = {"n_secundarios_holm": len(sec), "co_principal_v": cpv}
+        if teste:
+            evf = ev["efeitos"][ef] if ev else None
+            elf = el["efeitos"][ef] if el else None
+            vz = (desf.get(DESFECHO_NI, {}).get("efeitos", {}).get(ef, {}).get("nao_inferioridade", {})
+                  .get("resultado", "inconclusivo"))
+            rg = regra_iu(evf["p_permutacao"] if evf else None, evf["estimativa"] if evf else None,
+                          cpv.get("avaliavel", False), elf["ic_t"] if elf else None,
+                          elf["nao_inferioridade"]["p"] if elf else None, delta_latencia, vz,
+                          all(rast[br]["integral"] for br in BRACOS_ATIVOS_FATORIAL))
+            rg["bracos_rastreabilidade"] = list(BRACOS_ATIVOS_FATORIAL)
+            efp[ef]["regra_iu"] = rg
+            regras["%s:%s" % (celula, ef)] = rg
+    sens = _sensibilidade_fatorial_sem_blocos_varredura_erro(afetados, desf.get(DESFECHO_V), semente,
+                                                             10 * len(nomes), n_boot)
+    excl_steal = sorted({b for b in blocos if True in [infos[b][br]["steal_excluida"] for br in BRACOS_FATORIAL]},
+                        key=_chave_bloco)
+    c = {"tipo": tipo, "teste": teste, "fatorial": True, "bracos": list(BRACOS_FATORIAL), "blocos": list(blocos),
+         "regra": REGRA_FATORIAL,
+         "execucoes": {b: {br: _rel(blocos[b][br]) for br in BRACOS_FATORIAL} for b in blocos},
+         "blocos_excluidos_por_steal": excl_steal,
+         "desfechos": desf,
+         "efeitos_principais": efp,
+         "violacoes": {"detalhe": _detalhe_v_celula(list(blocos), infos, divergentes, afetados, sens,
+                                                    BRACOS_FATORIAL)},
+         "fusao": {b: {br: infos[b][br]["fusao"] for br in BRACOS_FATORIAL} for b in blocos},
+         "controlador": _resumo_controlador(list(blocos), infos, BRACOS_FATORIAL),
+         "rastreabilidade": rast,
+         "recuperacao": {"fim_medicao_origem": {b: {br: infos[b][br]["fim_medicao_origem"] for br in BRACOS_FATORIAL}
+                                                for b in blocos},
+                         "delta_conv_origem": {b: {br: infos[b][br]["delta_conv_origem"] for br in BRACOS_FATORIAL}
+                                               for b in blocos},
+                         "ac5_aplicada": {b: {br: infos[b][br]["ac5_aplicada"] for br in BRACOS_FATORIAL}
+                                          for b in blocos}}}
+    return c, regras
 
 
 def comparar(manifesto, semente, *, delta_latencia, w_analise_s, w_recovery_s, tipos_celula, fases=FASES_PADRAO,
@@ -1487,6 +1856,13 @@ def comparar(manifesto, semente, *, delta_latencia, w_analise_s, w_recovery_s, t
     for celula, blocos in man.items():
         tipo = tipos[celula]
         teste = tipo == "teste"
+        if set(next(iter(blocos.values()))) == set(BRACOS_FATORIAL):
+            celulas[celula], rg = _comparar_celula_fatorial(
+                celula, blocos, tipo, semente=semente, rep=rep, fases_sel=fases_sel, w_ns=w_ns, w_an_ns=w_an_ns,
+                marcadores_nome=marcadores_nome, ref=refs.get(celula), energia=energia,
+                delta_latencia=delta_latencia, delta=delta, n_boot=n_boot, razao_c=razao_c)
+            regras.update(rg)
+            continue
         res, infos = {}, {}
         # le a celula inteira antes das guardas, para que o erro de contrato de uma execucao apareca como tal
         for b, par in blocos.items():
@@ -1504,6 +1880,7 @@ def comparar(manifesto, semente, *, delta_latencia, w_analise_s, w_recovery_s, t
                 if ctl is not None and ctl["modo"] != MODO_ESPERADO[br]:
                     raise ErroUso("braco %s do bloco %s da celula %s com trilha em modo %r (esperado %s): %s"
                                   % (br, b, celula, ctl["modo"], MODO_ESPERADO[br], par[br]))
+        _conferir_sementes(celula, blocos, infos, BRACOS, obrigatoria=False)
         if teste:
             _conferir_trilhas_do_teste(celula, blocos, infos)
         divergentes = _instrumentos_divergentes(blocos, infos)
@@ -1514,7 +1891,7 @@ def comparar(manifesto, semente, *, delta_latencia, w_analise_s, w_recovery_s, t
         nomes = sorted({n for b in blocos for br in BRACOS for n in res[b][br]})
         desf, usados_por = {}, {}
         for indice, nome in enumerate(nomes):
-            escala = ESCALA_DIF if (nome in ESCALA_DIFERENCA or nome in ESCALA_DIFERENCA_SENS_V) else ESCALA_LOG
+            escala = _escala(nome)
             y_a, y_b, pares, excl, ns, usados = [], [], [], [], {}, []
             for b in blocos:
                 ra, rb = res[b]["A"].get(nome), res[b]["B"].get(nome)
@@ -1624,6 +2001,11 @@ def comparar(manifesto, semente, *, delta_latencia, w_analise_s, w_recovery_s, t
                               "co_principal_v": DESFECHO_V, "co_principal_l": DESFECHO_L,
                               "regra_v": REGRA_V, "v_sem_forma2": REGRA_V_SEM_F2,
                               "varredura_com_erro": REGRA_VARREDURA_ERRO,
+                              "fatorial": {"regra": REGRA_FATORIAL, "bracos": list(BRACOS_FATORIAL),
+                                           "fusao_do_braco": FUSAO_DO_BRACO, "controller_do_braco": MODO_FATORIAL,
+                                           "campos_execucao_json": [CAMPO_FUSAO, CAMPO_CONTROLLER, "bloco",
+                                                                    CAMPO_T_FUSAO],
+                                           "perda_e_exposicao": REGRA_PERDA_EXPOSICAO},
                               "tipos_celula": dict(sorted(tipos.items())),
                               "referencias_erro": refs,
                               "energia": (energia if energia is None else
@@ -1662,6 +2044,58 @@ def _fmt_ic(ic):
     return "—" if not ic else "[%s; %s]" % (_fmt(ic[0]), _fmt(ic[1]))
 
 
+def _markdown_fatorial(celula, c):
+    """Linhas da tabela Markdown de uma celula do fatorial 2x2 (W-5e)."""
+    linhas = ["## Celula %s (%s, fatorial 2x2, %d blocos)" % (celula, c["tipo"], len(c["blocos"])), "",
+              "| Desfecho | Familia | Escala | Efeito | n blocos | Estimativa | IC t 95 % | IC boot blocos "
+              "| p (permutacao) | p Holm | k != 0 | p minimo | Excluidos |",
+              "|---|---|---|---|---|---|---|---|---|---|---|---|---|"]
+    for nome, e in c["desfechos"].items():
+        for ef in EFEITOS:
+            x = e["efeitos"][ef]
+            linhas.append("| `%s` | %s | %s | %s | %d | %s | %s | %s | %s | %s | %d | %s | %d |" % (
+                nome, e["familia"], e["escala"], ef, x["n_blocos"], _fmt(x["estimativa"]), _fmt_ic(x["ic_t"]),
+                _fmt_ic(x["ic_boot_blocos"]), _fmt(x["p_permutacao"]), _fmt(x["p_holm"]), x["k_nao_nulos"],
+                _fmt(x["p_minimo_atingivel"]), len(e["blocos_excluidos"])))
+    linhas += ["", "Contrastes por bloco (DT-027, secao 1): A1 = 1/2[(AO - PO) + (AL - PL)], A4 = 1/2[(PL - PO) + "
+               "(AL - AO)], interacao = (AL - AO) - (PL - PO); estimativa em razao (exp) na escala log-razao. A "
+               "interacao vai com IC e p, sem Holm e fora da intersecao-uniao."]
+    if not c["teste"]:
+        linhas.append("Celula %s (sem teste): IC descritivo, sem correcao de multiplicidade." % c["tipo"])
+    for ef in EFEITOS_PRINCIPAIS:
+        ep = c["efeitos_principais"][ef]
+        r = ep.get("regra_iu")
+        if r:
+            linhas.append("- Efeito %s, intersecao-uniao: H_V %s (p = %s), H_L %s (limite superior do IC t = %s), "
+                          "vazao %s, rastreabilidade de PL e AL %s -> p_IU = %s, **%s**%s." % (
+                              ef, {True: "rejeitada", False: "nao rejeitada", None: "nao avaliavel"}[r["h_v"]["rejeitada"]],
+                              _fmt(r["h_v"]["p"]),
+                              {True: "rejeitada", False: "nao rejeitada", None: "nao avaliavel"}[r["h_l"]["rejeitada"]],
+                              _fmt(r["h_l"]["limite_superior_ic_t"]), r["vazao"],
+                              "integral" if r["rastreabilidade_integral"] else "incompleta", _fmt(r["p_iu"]),
+                              r["resultado"], (" (" + "; ".join(r["motivos"]) + ")") if r["motivos"] else ""))
+        cpv = ep["co_principal_v"]
+        if cpv.get("avaliavel") is False and cpv.get("motivo"):
+            linhas.append("- Efeito %s, taxa de violacoes: %s." % (ef, cpv["motivo"]))
+        linhas.append("- Efeito %s: %d secundarios com Holm." % (ef, ep["n_secundarios_holm"]))
+    for nome in (DESFECHO_V, DESFECHO_L):
+        e = c["desfechos"].get(nome)
+        if e:
+            linhas.append("- `%s`, efeitos simples (so IC, sem teste): %s." % (nome, "; ".join(
+                "%s %s %s" % (ef, _fmt(x["estimativa"]), _fmt_ic(x["ic_t"])) for ef, x in e["efeitos_simples"].items())))
+    vc = c["violacoes"]["detalhe"]["varredura_com_erro"]
+    txt = ("- Blocos com varredura com erro: %d bloco(s) (por braco da falha: %s; desses, sem fusao registrada: %s); "
+           "V e :sem_forma2 dos quatro bracos sem a varredura, perda permanente do bloco nao avaliavel" % (
+               vc["blocos"], ", ".join("%s %d" % kv for kv in vc["por_braco"].items()),
+               ", ".join("%s %d" % kv for kv in vc["sem_fusao_por_braco"].items())))
+    sv = vc.get("sensibilidade_blocos_excluidos")
+    if sv:
+        txt += "; sem esses blocos (descritiva): %s" % "; ".join(
+            "%s %s" % (ef, _fmt(x["estimativa"])) for ef, x in sv["efeitos"].items())
+    linhas += [txt + ".", ""]
+    return linhas
+
+
 def tabela_markdown(resultado):
     par = resultado["parametros"]
     linhas = ["# Comparacao pareada A (shadow) x B (active), %s" % resultado["esquema"], "",
@@ -1672,7 +2106,9 @@ def tabela_markdown(resultado):
                                  par["ic_primario"], par["semente_boot"], par["n_boot"], par["n_hier"]), ""]
     g = resultado["conclusao_global"]
     if g["celulas"]:
-        linhas += ["## Conclusao global (Holm entre celulas de teste, m = %d)" % g["m"], "",
+        cab = ("Holm entre as hipoteses de teste: celulas de 2 bracos e efeitos principais do fatorial"
+               if any(":" in k for k in g["celulas"]) else "Holm entre celulas de teste")
+        linhas += ["## Conclusao global (%s, m = %d)" % (cab, g["m"]), "",
                    "| Celula | Resultado da celula | p_IU | p_IU Holm | Melhoria (FWER %s) |" % _fmt(g["alfa"], 2),
                    "|---|---|---|---|---|"]
         for c, x in g["celulas"].items():
@@ -1680,6 +2116,9 @@ def tabela_markdown(resultado):
                                                          _fmt(x["p_iu_holm"]), "sim" if x["melhoria"] else "nao"))
         linhas.append("")
     for celula, c in resultado["celulas"].items():
+        if c.get("fatorial"):
+            linhas += _markdown_fatorial(celula, c)
+            continue
         linhas += ["## Celula %s (%s, %d blocos)" % (celula, c["tipo"], len(c["blocos"])), "",
                    "| Desfecho | Familia | Escala | n blocos | Estimativa | IC t 95 % | IC boot blocos | IC hierarquico "
                    "| p (permutacao) | p Holm | k != 0 | p minimo | Excluidos |",

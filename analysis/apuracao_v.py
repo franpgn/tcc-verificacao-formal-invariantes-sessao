@@ -11,6 +11,9 @@ Fonte unica desde a integracao (06/11, feature/controlador-integracao): o compar
 COPIADAS, os nomes de CONSTANTES e o ErroUso, e nao tem mais copia. test_calibracao_s3.Paridade confere que cada nome
 e o mesmo objeto nos dois modulos e que o comparar_bracos nao os define. Os nomes COPIADAS e CONSTANTES ficam como a
 lista do que o comparar_bracos importa.
+
+W-5e (DT-027, complemento 1 do benchmark refeito, 4fa4546, 2.2): decompor_i1_pela_fusao separa os pares de I1 que
+contam em V em perda permanente (depois da fusao) e exposicao na janela (antes dela).
 """
 import calendar
 import csv
@@ -27,7 +30,7 @@ import fases as _fases  # noqa: E402
 COPIADAS = (
     '_int_ou_none', 'instante_ns', '_classe_v', 'ler_violacoes', 'ler_varredura', 'ler_eventos_por_chave',
     'no_da_falha', 'servidores_da_execucao', 'replica_do_no', '_instante_invalidacao', '_leitura_da_deteccao',
-    '_forma_do_par', 'apurar_violacoes_execucao')
+    '_forma_do_par', 'apurar_violacoes_execucao', 'decompor_i1_pela_fusao')
 CONSTANTES = (
     'INVARIANTES_VIOL', 'ORIGEM_ONLINE', 'ORIGEM_SONDA', 'ORIGEM_VARREDURA', 'ORIGENS', 'TIPO_ONLINE',
     'TIPO_IMEDIATA', 'TIPO_TARDIA', 'TIPO_VARREDURA', 'ATRIB_DETECCAO', 'ATRIB_INVALIDACAO', 'ATRIB_SEM',
@@ -435,3 +438,28 @@ def apurar_violacoes_execucao(d, nnn, ev_path, t_fim_carga_obs_ns, dentro, args_
             "varredura_fora_de_v": fora, "replay_validate": custo, "sonda_tardia_max": teto,
             "sonda_tardia_no_teto": None if teto is None else custo["sids_tardios"] >= teto,
             "t_fim_carga_obs_ns": t_fim_carga_obs_ns, "pares_lista": lista}
+
+
+def decompor_i1_pela_fusao(apur, t_fusao_ns):
+    """(sids da perda permanente, sids da exposicao na janela), listas ordenadas, de uma apuracao de V (W-5e).
+
+    DT-027 (complemento 1 do benchmark refeito, 4fa4546), 2.2, so com as deteccoes de I1 que contam em V (fases
+    selecionadas, a mesma atribuicao do W-5c), para as duas medidas serem decomposicoes de V no tempo:
+    - perda permanente: uniao por sid da varredura (I1 REAL), do replay tardio e do I1 online com deteccao em ou
+      depois do instante da fusao (t_fusao_ns, a primeira vista de fusao depois do marcador end);
+    - exposicao na janela: uniao por sid do replay imediato e do I1 online com deteccao antes do instante da fusao.
+    O replay imediato depois da fusao nao entra em nenhuma das duas (a 2.2 nao o lista). Uma sid pode estar nas duas.
+    """
+    perda, expo = set(), set()
+    for p in apur["pares_lista"]:
+        if p["classe"] != "I1":
+            continue
+        for x in p["deteccoes"]:
+            if not x["conta"]:
+                continue
+            tipo, t = x["tipo"], x["t_ns"]
+            if tipo in (TIPO_VARREDURA, TIPO_TARDIA) or (tipo == TIPO_ONLINE and t >= t_fusao_ns):
+                perda.add(p["chave"])
+            if tipo in (TIPO_IMEDIATA, TIPO_ONLINE) and t < t_fusao_ns:
+                expo.add(p["chave"])
+    return sorted(perda), sorted(expo)

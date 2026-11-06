@@ -1611,3 +1611,41 @@ injetores, a lista do h4, `cria-caches.sh`, `collect-resources.sh` e os arquivos
 
 **Pendente:** o orquestrador e o `cria-caches.sh` ainda criam o `sessions-async` a partir de `sessions-async.json`, e a
 camada 3 compara com esse arquivo; rodar a célula A1 pede a escolha do arquivo por linha da matriz ou por fase (TD-020).
+
+## W-5e: análise do fatorial 2×2 no `comparar_bracos.py` (2026-11-06)
+
+Branch `feature/w5e-fatorial` (worktree `wt-w5e`), a partir de `edfa8b6`. Só Python, `python -E -P`. TDD em três
+passos: `1c819d6` (`test:`, golden da análise de 2 braços **com** sonda, varredura e varredura com erro, gerado na base
+antes de qualquer mudança), `ed6a364` (`test:`, 29 testes do fatorial, 18 vermelhos; os 11 de identificação do braço
+passavam só porque a base recusava qualquer manifesto de 4 braços) e `bb319f8` (`feat:`).
+
+| Suíte | Resultado |
+|---|---|
+| `python -E -P -m unittest discover -s analysis` | **517 OK, 1 *skip*** (486 da base + 31); `test_calibracao_s3.Paridade` passa com a `decompor_i1_pela_fusao` em `apuracao_v.COPIADAS` |
+
+Arquivo novo `analysis/test_comparar_bracos_fatorial.py`:
+
+| Classe | Testes | O que prende |
+|---|---|---|
+| `NaoRegressao2Bracos` | 2 | célula de teste F2 do W-5d (varredura com erro só em A, só em B e nos dois) e descritiva D do W-5c (forma 2) iguais ao golden `analysis/fixtures/w5e/golden-2bracos-com-instrumentos-edfa8b6.json`; o golden sem instrumentos do W-5c continua em `test_comparar_bracos_w5c` |
+| `Contrastes` | 4 | d por bloco de A1, A4 e interação em V (diferença) e no p99 (log, conferido contra o p99 de cada execução); estimativa, p da troca de sinal; os quatro efeitos simples só com IC; interação com p e sem Holm, fora da conclusão global |
+| `RegraDeSucesso` | 4 | 7 blocos com a A1 zerando V: p_IU = 2/2⁷, Holm m = 2 dá 2 × 2/2⁷, "melhoria"; A4 sem efeito com p_IU = 1; H_V não avaliável sem violação em PO e PL; secundários com Holm por efeito, incluindo perda permanente e exposição; célula fatorial descritiva sem p |
+| `PerdaEExposicao` | 4 | união por sid (online antes e depois da fusão, imediata antes e depois, tardia, varredura, I4 fora, detecção antes do `start` fora); sem `t_fusao_ns` não emite; `null` deixa ausente; varredura com erro deixa a perda ausente e a exposição medida |
+| `VarreduraComErroFatorial` | 3 | erro em 1 e em 2 dos 4 braços: V dos quatro sem a varredura, `y` por braço, perda do bloco fora, detalhe por braço da falha, sensibilidade sem os blocos; bloco sem falha com os mesmos d da célula que nunca teve erro |
+| `IdentificacaoDosBracos` | 11 | válido; `fusao`, `controller` e `bloco` divergentes, campo ou `execucao.json` ausentes, trilha no modo trocado, trilha ausente no teste, instrumentos diferentes entre os quatro, bloco com braços misturados e célula com blocos de 2 e de 4 braços: exit 2 |
+| `NaoRegressaoComFatorial` | 1 | a célula de 2 braços dá o mesmo resultado sozinha e junto de uma célula fatorial no manifesto; a conclusão global passa a m = 3 (F2, FAT:A1, FAT:A4) |
+| `SaidaFatorial` | 2 | tabela Markdown da célula fatorial; CLI com exit 0 e `parametros.fatorial` |
+
+### W-5f: sem fusão como varredura com erro e mesma semente nos braços (2026-11-06)
+
+Mesma branch, depois da V-W5e (`0583455`). TDD: `e8adfbd` (`test:`, 7 vermelhos; 4 prendem o que não muda) e `9065994`
+(`feat:`).
+
+| Suíte | Resultado |
+|---|---|
+| `python -E -P -m unittest discover -s analysis` | **528 OK, 1 *skip*** (517 + 11); goldens da base intactos |
+
+| Classe | Testes | O que prende |
+|---|---|---|
+| `SemFusaoComoVarreduraComErro` | 6 | no fatorial, `t_fusao_ns` nulo ou ausente com varredura e sem `.erro.txt` dá o tratamento simétrico do bloco, com os mesmos d e as mesmas contagens do `.erro.txt` no mesmo braço; `sem_fusao` por bloco e por braço; sem varredura não converte; célula de 2 braços não converte; na execução isolada, só com `fusao_obrigatoria` |
+| `MesmaSemente` | 5 | mesma `seed` passa; divergente ou ausente no fatorial: exit 2; divergente em 2 braços: exit 2; 2 braços sem `seed`: sem conferência |

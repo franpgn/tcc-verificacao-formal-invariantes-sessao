@@ -27,6 +27,10 @@
 #   - P2 fora do braco B (D-B do coordenador, 05/11): toda fase deste orquestrador e de calibracao ou avaliacao, entao
 #     o --controller-config tem de ter politica.p2Habilitada = false (pre-voo) e a meta de cada execucao, nos dois
 #     bracos, parametros_politica.p2_habilitada = false (senao a carga e parada, exit 6);
+#   - P1-IC (V-2 a V-4 do coordenador, 06/11; P-63): trilha decisoes-controlador/1.3; com braco B na fila, o
+#     --controller-config tem de trazer politica.acaoP1 = "AC-7" explicito, com origem (pre-voo), e a meta de cada
+#     execucao, nos dois bracos, parametros_politica.acao_p1 = "AC-7" (senao a carga e parada, exit 6); AC-7 que
+#     termina ativo (ac7_ativa_no_fim na trilha-ac5.txt) e aviso: a analise tira Delta_conv e divergencia;
 #   - volta do no depois do F1 conferida pela REST, nao pelo exit do inject-crash.sh (P-35; requisito 5);
 #   - criterio h4 do C3 e da DT-019 pelo scripts/campanha_s3_h4.py (sobre analysis/h4.py) depois de cada execucao,
 #     com a parada do C3 secao 4.3 e a unit do amostrador conferida antes e depois (requisito 6);
@@ -453,9 +457,10 @@ conferir_referencias() {  # B2 da V-W6: a referencia de cada perfil da fila exis
 }
 CTRL_INFO=""
 conferir_controlador() {  # politica obrigatoria com braco B; p2Habilitada = false e tetoLagMs = hotrod_timeout_ms (D-B, R7)
+    # P1-IC (V-3, 06/11): com braco B (avaliacao), acaoP1 = AC-7 explicito no arquivo, com origem
     local rc=0 out=""
     out="$(py "${CONFERIR}" controlador --arquivo "${CTRL}" --hotrod-timeout-ms "${P[hotrod_timeout_ms]}" \
-        --exigir-p2-desabilitada $([[ "${TEM_B}" -eq 1 ]] && echo --exigir-politica))" || rc=$?
+        --exigir-p2-desabilitada $([[ "${TEM_B}" -eq 1 ]] && echo --exigir-politica --exigir-acao-p1 AC-7))" || rc=$?
     [[ "${rc}" -eq 0 ]] || { echo "Erro: --controlador recusado: ${out}" >&2; exit 4; }
     CTRL_INFO="${out}"
 }
@@ -1385,7 +1390,7 @@ conferir_meta() {  # conferir_meta <decisoes>: braco certo e, no B, que ele atua
     t0="$(agora_ms)"
     while :; do
         rc=0; out=""; leituras=$(( leituras + 1 ))
-        out="$(py "${CONFERIR}" meta --decisoes "$1" --braco "${E_BRACO}" --param-sha256 "${CTRL_SHA}" --exigir-p2-desabilitada)" || rc=$?
+        out="$(py "${CONFERIR}" meta --decisoes "$1" --braco "${E_BRACO}" --param-sha256 "${CTRL_SHA}" --exigir-p2-desabilitada $([[ "${TEM_B}" -eq 1 ]] && echo --exigir-acao-p1 AC-7))" || rc=$?
         [[ "${rc}" -eq 4 && $(( $(agora_ms) - t0 )) -lt $(( META_PRAZO_S * 1000 )) ]] || break
         dormir "${META_PERIODO_S}"
     done
@@ -1544,6 +1549,12 @@ pos_execucao() {  # pos-checagem igual a pre: boot, StartedAt explicado, saude, 
             5) E_MOTIVOS+=("infra: trilha e linha de fim da carga discordam sobre o AC-5: ${out//$'\n'/ }") ;;
             *) E_MOTIVOS+=("infra: trilha ilegivel (exit ${rc})") ;;
         esac
+        # P1-IC (V-4, 06/11): AC-7 que termina ativo (reversao que falhou) e aviso, nao descarte: a trilha o explica,
+        # o cluster e recriado antes da proxima execucao e a analise tira Delta_conv e divergencia desta execucao
+        # (comparar_bracos.py, resumo_ac7); descartar tiraria do braco ativo justamente as falhas do controlador
+        if [[ "${out}" == *$'ac7_ativa_no_fim\tsim'* ]]; then
+            E_AVISOS+=("AC-7 ativo no fim (sem reversao executada com sucesso; $(grep -E '^(trilha_ac7|ac7_desfazer)' <<< "${out}" | tr '\t\n' '= ' | sed 's/ *$//')): Delta_conv e divergencia nao avaliaveis na analise")
+        fi
         if [[ "${rc}" -eq 0 || "${rc}" -eq 5 ]]; then
             t_fim="$(awk -F'\t' '$1 == "fim" {print $2; exit}' <<< "${out}")"
             t_lp="$(awk -F'\t' '$1 == "linhas_perdidas" {print $2; exit}' <<< "${out}")"

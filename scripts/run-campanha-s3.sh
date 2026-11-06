@@ -93,17 +93,21 @@
 #   - confirmacao da politica no cluster (itens 1 e 2): depois do K1, o ?action=config do sessions-async e do
 #     counters-async nos tres nos e a linha "A1-POLITICA carregada" no log de cada no (>= 1 no braco a1; 0 no pnn,
 #     smoke da A1). Se a politica nao ficou (ou a criacao do sessions-async falhou no cria-caches.sh), a execucao vira
-#     DESCARTADA-INFRA sem carga e a fase segue; o bloco perdido e refeito inteiro (repor);
+#     DESCARTADA-INFRA sem carga e a fase segue; o bloco perdido e refeito inteiro (repor). Depois de 3 falhas seguidas
+#     da politica da mesma variante (sem uma execucao boa dela no meio), a fase para com 6 (decisao do coordenador,
+#     06/11): a falha que se repete e de infraestrutura (o JAR, a classe), e nao do acaso;
 #   - JAR da extensao (item 2): lido do volume do compose em /opt/infinispan/server/lib/tcc-extensao-servidor.jar,
 #     montado nos tres nos ou em nenhum; com fusao=a1 na fila, obrigatorio. Montado: --extensao-sha256 obrigatorio
 #     fora do --dry-run, SHA-256 conferido, no bundle e no execucao.json (extensao_sha256);
 #   - checagem de fusao antes da varredura (item 3): a matriz fatorial exige --sonda-replay e o fusao_teto_s do
 #     --parametros (conferido pelo campanha_s3_conferir.py: so com a sonda, e inj_offset_s + f2_dur_s + fusao_teto_s
 #     <= duracao_s), que vai ao programa como --sweep-merge-timeout-sec depois do --sweep. O programa grava
-#     fusao-rep-001.json; o orquestrador copia para o execucao.json o registro (fusao_checagem) e, se a vista de 3
-#     veio, t_fusao_ns (sem fusao no teto, o campo fica ausente e o programa grava varredura-rep-001.erro.txt). A
-#     primeira vista de fusao ISPN000093 depois do end (DT-027 secao 2.2) e o driver de log dos conteineres vao em
-#     fusao_vista, so como registro (campanha_s3_conferir.py fusao-vista);
+#     fusao-rep-001.json (sem fusao no teto, nao varre e grava varredura-rep-001.erro.txt); o orquestrador copia o
+#     registro (fusao_checagem) e o instante em que a checagem viu a vista de 3 (t_vista_checagem_ns, so registro);
+#   - instante da fusao (P-61, decisao do coordenador de 06/11): t_fusao_ns e a primeira amostra da sonda de topologia
+#     do controlador (observaveis-rep-001.jsonl, ~2 s, shadow e active) em ou depois do end com os tres nos em 3
+#     (campanha_s3_conferir.py fusao-trilha); sem fusao na trilha, o campo fica ausente. A conferencia cruzada e a
+#     primeira ISPN000093 depois do end (fusao_vista, com o driver de log); a diferenca vai em fusao_trilha;
 #   - matriz com quatro bracos por bloco na celula de teste e dois nas descritivas (item 4): pareamento pelo
 #     campanha_s3_conferir.py pareamento (os dois formatos), bloco perdido refeito inteiro, controlador pelo braco.
 # I-1 da V-W6 (secao 5.2, integracao com o W-2b, cuja TrilhaJsonl grava por thread): a meta da trilha e relida a cada
@@ -187,6 +191,8 @@ readonly POLITICA_A1=br.unipampa.tcc.servidor.PoliticaFusaoSessoes       # A1 (T
 readonly A1_CARREGADA="A1-POLITICA carregada"                            # construtor da PoliticaFusaoSessoes; smoke da A1 4.1
 readonly EXTENSAO_DESTINO=/opt/infinispan/server/lib/tcc-extensao-servidor.jar   # volume do compose (A1, 04719ee)
 readonly LOG_FUSAO=ISPN000093                                            # DT-027 secao 2.2: vista de fusao no log
+readonly FUSAO_FALHAS_PARADA=3                                           # decisao do coordenador (06/11): falhas seguidas
+declare -A FUSAO_FALHAS=([pnn]=0 [a1]=0)                                 # da politica, por variante, nesta invocacao
 fusao_arquivo() { case "$1" in pnn) echo sessions-async.json ;; a1) echo sessions-async-a1.json ;; *) return 1 ;; esac; }
 fusao_politica() { case "$1" in pnn) echo "${POLITICA_PNN}" ;; a1) echo "${POLITICA_A1}" ;; *) return 1 ;; esac; }
 
@@ -1246,9 +1252,9 @@ descartar_sem_carga() {  # DT-027: DESCARTADA-INFRA sem carga; a fase segue (o c
     log "exec i=${E_I}: DESCARTADA-INFRA sem carga (${E_MOTIVOS[*]})"
     gravar_progresso "" "entre-execucoes"
 }
-registrar_fusao() {  # DT-027 secoes 2.2 e 5.3, depois da carga: checagem do programa (t_fusao_ns) e vista ISPN000093
+registrar_fusao() {  # depois da carga: checagem do programa, vista ISPN000093 e instante da fusao pela trilha (P-61)
     local d="$1" n rc out drv="" l
-    E_T_FUSAO=""; E_FUSAO_CHEC_JSON=""; E_FUSAO_VISTA_JSON=""
+    E_T_FUSAO=""; E_T_VISTA_CHEC=""; E_FUSAO_CHEC_JSON=""; E_FUSAO_VISTA_JSON=""; E_FUSAO_TRILHA_JSON=""
     if [[ -f "${d}/fusao-rep-001.json" ]]; then
         rc=0; out="$(py -c 'import json, sys
 j = json.load(open(sys.argv[1], encoding="utf-8"))
@@ -1257,14 +1263,13 @@ print(json.dumps(j, ensure_ascii=True, separators=(",", ":")))
 print(t if j.get("fundiu") is True and isinstance(t, int) and not isinstance(t, bool) else "-")' "${d}/fusao-rep-001.json")" || rc=$?
         if [[ "${rc}" -eq 0 ]]; then
             E_FUSAO_CHEC_JSON="$(head -1 <<< "${out}")"; l="$(sed -n 2p <<< "${out}")"
-            [[ "${l}" == "-" ]] || E_T_FUSAO="${l}"
+            [[ "${l}" == "-" ]] || E_T_VISTA_CHEC="${l}"
         else
-            E_AVISOS+=("fusao-rep-001.json ilegivel: t_fusao_ns ausente (${out//$'\n'/ })")
+            E_AVISOS+=("fusao-rep-001.json ilegivel (${out//$'\n'/ })")
         fi
     else
-        E_AVISOS+=("sem fusao-rep-001.json (a checagem de fusao do programa nao gravou): t_fusao_ns ausente")
+        E_AVISOS+=("sem fusao-rep-001.json (a checagem de fusao do programa nao gravou)")
     fi
-    [[ -z "${E_T_FUSAO}" ]] || log "exec i=${E_I}: checagem de fusao do programa: t_fusao_ns=${E_T_FUSAO}"
     : > "${d}/fusao-${LOG_FUSAO,,}.txt"
     for n in ${NOS}; do
         rc=0; ${PODMAN} logs "${n}" 2>&1 | grep -F -e "${LOG_FUSAO}" | sed "s/^/${n}\t/" >> "${d}/fusao-${LOG_FUSAO,,}.txt" || rc=$?
@@ -1273,6 +1278,20 @@ print(t if j.get("fundiu") is True and isinstance(t, int) and not isinstance(t, 
     rc=0; out="$(py "${CONFERIR}" fusao-vista --logs "${d}/fusao-${LOG_FUSAO,,}.txt" --marcadores "${d}/marcadores.txt" \
         ${drv:+--log-driver "${drv}"})" || rc=$?
     if [[ "${rc}" -eq 0 ]]; then E_FUSAO_VISTA_JSON="${out}"; else E_AVISOS+=("fusao-vista saiu com ${rc}: ${out//$'\n'/ }"); fi
+    # P-61: o instante da fusao pela trilha de observaveis, com a diferenca para a primeira ISPN000093 depois do end
+    rc=0; out="$(py "${CONFERIR}" fusao-trilha --observaveis "${d}/observaveis-rep-001.jsonl" --marcadores "${d}/marcadores.txt")" || rc=$?
+    if [[ "${rc}" -ne 0 ]]; then E_AVISOS+=("fusao-trilha saiu com ${rc}: ${out//$'\n'/ }; t_fusao_ns ausente"); return 0; fi
+    rc=0; out="$(py -c 'import json, sys
+t = json.loads(sys.argv[1])
+v = json.loads(sys.argv[2]) if sys.argv[2] else {}
+a, b = t.get("t_fusao_ns"), v.get("primeira_apos_end_ns")
+t["dif_ispn000093_s"] = round((a - b) / 1e9, 3) if isinstance(a, int) and isinstance(b, int) else None
+print(json.dumps(t, ensure_ascii=True))
+print(a if isinstance(a, int) and not isinstance(a, bool) else "-")' "${out}" "${E_FUSAO_VISTA_JSON}")" || rc=$?
+    if [[ "${rc}" -ne 0 ]]; then E_AVISOS+=("instante da fusao ilegivel (${out//$'\n'/ }); t_fusao_ns ausente"); return 0; fi
+    E_FUSAO_TRILHA_JSON="$(head -1 <<< "${out}")"; l="$(sed -n 2p <<< "${out}")"
+    [[ "${l}" == "-" ]] || E_T_FUSAO="${l}"
+    log "exec i=${E_I}: instante da fusao pela trilha: t_fusao_ns=${E_T_FUSAO:-ausente}; checagem do programa: ${E_T_VISTA_CHEC:-sem fusao}"
 }
 
 # ------------------------------------------------------------------ uma execucao
@@ -1342,9 +1361,11 @@ montar_json_fatorial() {  # DT-027: campos do execucao.json da matriz fatorial (
  \"fusao_config\": ${E_FUSAO_CONFIG_JSON:-null},
  \"fusao_teto_s\": $(json_ou_null "${P[fusao_teto_s]:-}"),
  \"fusao_checagem\": ${E_FUSAO_CHEC_JSON:-null},
+ \"t_vista_checagem_ns\": $(json_ou_null "${E_T_VISTA_CHEC}"),
  \"fusao_vista\": ${E_FUSAO_VISTA_JSON:-null},
+ \"fusao_trilha\": ${E_FUSAO_TRILHA_JSON:-null},
  \"extensao_sha256\": $(json_str_ou_null "${EXT_SHA_LIDO}")"
-    # sem fusao no teto da checagem do programa, t_fusao_ns fica ausente (o W-5e nao emite perda nem exposicao)
+    # P-61: o instante da fusao pela trilha; sem fusao na trilha (ou sem end), t_fusao_ns fica ausente
     [[ -z "${E_T_FUSAO}" ]] || E_FAT_JSON+=",
  \"t_fusao_ns\": ${E_T_FUSAO}"
 }
@@ -1871,7 +1892,7 @@ rodar_execucao() {  # rodar_execucao "<i> <celula> <modo> <falha> <papel> <bloco
     E_SWAP_KB=""; E_SWAP_LEIT=""; E_SWAP_RECRIADO=false; E_SWAP_PARADA=""; E_TRILHA_INC=""; E_TRILHA_JSON=""; E_INJ_SAIDA_MS=""
     F3_MARCA=""; PID_ALVO=""; NETEM_ESTADO=""; NETEM_AMOSTRA_MS=0
     E_DIR_CACHES="${DIR_CACHES}"; E_FUSAO_FALHA=""; E_FUSAO_OK=""; E_FUSAO_CONFIG_JSON=""; E_FUSAO_CHEC_JSON=""
-    E_FUSAO_VISTA_JSON=""; E_T_FUSAO=""; E_FAT_JSON=""
+    E_FUSAO_VISTA_JSON=""; E_T_FUSAO=""; E_FAT_JSON=""; E_T_VISTA_CHEC=""; E_FUSAO_TRILHA_JSON=""
     E_MOTIVOS=(); E_RECUSAS=(); E_AVISOS=(); E_INFRAS=()
     if [[ -d "${d}" ]]; then
         if [[ -f "${d}/checagem.json" ]]; then log "exec i=${E_I} ${E_CEL} ${E_BRACO}: ja checada; pulando"; return 0; fi
@@ -1913,7 +1934,15 @@ rodar_execucao() {  # rodar_execucao "<i> <celula> <modo> <falha> <papel> <bloco
     [[ -n "${E_FUSAO_FALHA}" ]] || portao_swap "${d}"
     if [[ "${FATORIAL}" -eq 1 ]]; then
         conferir_fusao_cluster "${d}"
-        if [[ "${E_FUSAO_OK}" != true ]]; then descartar_sem_carga "${d}"; return 0; fi
+        if [[ "${E_FUSAO_OK}" != true ]]; then
+            FUSAO_FALHAS[${E_FUSAO}]=$(( FUSAO_FALHAS[${E_FUSAO}] + 1 ))
+            descartar_sem_carga "${d}"
+            if [[ "${FUSAO_FALHAS[${E_FUSAO}]}" -ge "${FUSAO_FALHAS_PARADA}" ]]; then
+                finalizar 6 "infra: ${FUSAO_FALHAS_PARADA} falhas seguidas da politica de fusao (fusao=${E_FUSAO}), a ultima em i=${E_I}: ${E_MOTIVOS[*]}"
+            fi
+            return 0
+        fi
+        FUSAO_FALHAS[${E_FUSAO}]=0
     fi
     scratch="${d}/.scratch"
     mkdir -p "${scratch}"

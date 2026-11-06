@@ -73,6 +73,14 @@ So biblioteca padrao; roda com python3 -I. Cada subcomando imprime linhas "nome<
       14 colunas; linha sem bloco so como braco A (calibracao). Recusa (5) com a lista do que quebrou. Imprime formato,
       linhas, blocos_ab, blocos_fatorial, sem_bloco e fusao (variantes presentes, na ordem pnn, a1).
 
+  fusao-trilha --observaveis <observaveis-rep-NNN.jsonl> --marcadores <marcadores.txt>
+      P-61 (decisao do coordenador, 06/11): o instante da fusao (t_fusao_ns do execucao.json) e a primeira amostra
+      "topologia" da trilha de observaveis do controlador (sonda de topologia, ~2 s, nos dois modos) em ou depois do
+      marcador end em que os nos esperados (meta.nos_esperados, 3) respondem todos com numero_de_nos = 3. A trilha nao
+      traz node_names; num cluster de 3, cada no ver 3 e a mesma vista de 3 membros. Resolucao = periodo da sonda
+      (periodo_amostras_s, mediana). Sem end, sem amostra ou sem fusao ate o fim da trilha, t_fusao_ns e nulo e o
+      motivo diz por que. Imprime um objeto JSON numa linha. So registra: exit 0.
+
   fusao-vista --logs <arquivo> --marcadores <marcadores.txt> [--log-driver <driver>]
       DT-027 secao 2.2: instante da fusao = primeira vista de fusao (ISPN000093) depois do marcador end, em qualquer no.
       --logs tem uma linha por linha de log do servidor, "<isnN><TAB><linha>" (o orquestrador grava as ISPN000093 de
@@ -633,6 +641,58 @@ def vista_de_fusao(linhas_log, end_ns, log_driver=None):
     return out
 
 
+def fusao_pela_trilha(linhas_obs, end_ns):
+    """P-61 (decisao do coordenador, 06/11): t_fusao_ns = primeira amostra "topologia" da trilha de observaveis do
+    controlador em ou depois do end em que todos os nos esperados respondem com numero_de_nos = nos esperados (a
+    trilha nao traz node_names: num cluster de 3, cada no ver 3 e a mesma vista de 3 membros). linhas_obs: as linhas
+    do observaveis-rep-NNN.jsonl (a ultima, truncada, e as que nao sao JSON ficam fora)."""
+    esperados, amostras = 3, []
+    for l in linhas_obs:
+        try:
+            o = json.loads(l)
+        except ValueError:
+            continue
+        if not isinstance(o, dict):
+            continue
+        if o.get("tipo") == "meta" and isinstance(o.get("nos_esperados"), int) and o["nos_esperados"] > 0:
+            esperados = o["nos_esperados"]
+        elif o.get("tipo") == "topologia" and isinstance(o.get("t_ns"), int) and isinstance(o.get("por_no"), list):
+            amostras.append(o)
+    amostras.sort(key=lambda o: o["t_ns"])
+    passos = sorted((b["t_ns"] - a["t_ns"]) / 1e9 for a, b in zip(amostras, amostras[1:]))
+    out = {"fonte": "observaveis-rep-NNN.jsonl (sonda de topologia do controlador, shadow e active; P-61)",
+           "criterio": "primeira amostra em ou depois do end com os %d nos respondendo e numero_de_nos = %d em todos "
+                       "(a trilha nao traz node_names)" % (esperados, esperados),
+           "nos_esperados": esperados, "end_ns": end_ns, "t_fusao_ns": None, "desde_end_s": None,
+           "amostras_apos_end": 0, "periodo_amostras_s": round(passos[len(passos) // 2], 3) if passos else None,
+           "motivo": None}
+    if end_ns is None:
+        out["motivo"] = "sem marcador end (sem falha, ou falha sem o fim): sem instante da fusao"
+        return out
+    if not amostras:
+        out["motivo"] = "trilha de observaveis sem amostra de topologia (arquivo ausente ou vazio)"
+        return out
+    for o in amostras:
+        if o["t_ns"] < end_ns:
+            continue
+        out["amostras_apos_end"] += 1
+        pn = o["por_no"]
+        if len(pn) == esperados and all(isinstance(x, dict) and x.get("respondeu") is True
+                                         and x.get("numero_de_nos") == esperados for x in pn):
+            out["t_fusao_ns"] = o["t_ns"]
+            out["desde_end_s"] = round((o["t_ns"] - end_ns) / 1e9, 3)
+            return out
+    out["motivo"] = ("nenhuma amostra depois do end com os %d nos em %d ate o fim da trilha (%d amostra(s) depois do "
+                     "end)" % (esperados, esperados, out["amostras_apos_end"]))
+    return out
+
+
+def cmd_fusao_trilha(a):
+    p = Path(a.observaveis)
+    linhas = p.read_bytes().decode("utf-8", errors="replace").splitlines() if p.is_file() else []
+    print(json.dumps(fusao_pela_trilha(linhas, ler_end_ns(a.marcadores)), ensure_ascii=True))
+
+
 def cmd_fusao_vista(a):
     linhas = []
     p = Path(a.logs)
@@ -687,6 +747,9 @@ def main(argv):
     r.add_argument("--perfil", required=True, choices=("sync", "async"))
     pa = sub.add_parser("pareamento")
     pa.add_argument("--matriz", required=True)
+    ft = sub.add_parser("fusao-trilha")
+    ft.add_argument("--observaveis", required=True)
+    ft.add_argument("--marcadores", required=True)
     fv = sub.add_parser("fusao-vista")
     fv.add_argument("--logs", required=True)
     fv.add_argument("--marcadores", required=True)
@@ -696,7 +759,8 @@ def main(argv):
     except SystemExit as e:
         return 2 if e.code else 0
     cmds = {"parametros": cmd_parametros, "controlador": cmd_controlador, "meta": cmd_meta, "trilha": cmd_trilha,
-            "referencia": cmd_referencia, "pareamento": cmd_pareamento, "fusao-vista": cmd_fusao_vista}
+            "referencia": cmd_referencia, "pareamento": cmd_pareamento, "fusao-vista": cmd_fusao_vista,
+            "fusao-trilha": cmd_fusao_trilha}
     if a.cmd not in cmds:
         ap.print_usage(sys.stderr)
         return 2

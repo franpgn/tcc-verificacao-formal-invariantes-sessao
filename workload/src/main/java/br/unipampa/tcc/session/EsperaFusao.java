@@ -39,8 +39,10 @@ import java.util.concurrent.TimeUnit;
  * <p><b>Saidas.</b> {@code fusao-rep-NNN.json} (o registro: fundiu, {@code t_vista_ns}, leituras, prazo e a ultima
  * leitura de cada no) e a linha {@code Fusao antes da varredura:} no stdout. Sem fusao no prazo, a varredura nao
  * roda e {@code varredura-rep-NNN.erro.txt} traz o motivo (o tratamento simetrico do W-5d cobre a varredura com erro).
- * O orquestrador copia {@code t_vista_ns} para o {@code execucao.json} como {@code t_fusao_ns}. Sem a opcao, nada disso
- * acontece e a varredura roda como antes. So GET de saude: nenhuma acao no cluster, nenhum processo.</p>
+ * O orquestrador copia {@code t_vista_ns} para o {@code execucao.json} como {@code t_vista_checagem_ns}, so como
+ * registro: e o instante em que esta checagem <i>viu</i> a vista de fusao (na VM, ~154 s depois do {@code end}), e nao o
+ * da fusao; o {@code t_fusao_ns} sai da trilha de observaveis do controlador (P-61). Sem a opcao, nada disso acontece e
+ * a varredura roda como antes. So GET de saude: nenhuma acao no cluster, nenhum processo.</p>
  */
 final class EsperaFusao {
 

@@ -288,24 +288,19 @@ def _cabe(k, w_s):
     return k * Fraction(w_s) + T_PARADA < T_DET_MIN
 
 
-def viabilidade(w_s, klag_valor):
-    """Conferencia de um par (W, kLag): 7.4 (W >= 26,5 s) e o limite da 7.13 (kLag*W + 13,3 >= 39,8)."""
-    if w_s is None:
-        return {"viavel": None, "motivos": ["W indeterminado (7.3): viabilidade nao avaliavel"]}
-    motivos = []
-    if Fraction(w_s) >= T_DET_MIN - T_PARADA:
-        motivos.append("7.4: W = %s s >= 26,5 s (kLag = 1 ja nao cabe em 39,8 - 13,3)" % w_s)
-    if klag_valor is not None and not _cabe(klag_valor, w_s):
-        motivos.append("7.13: kLag*W + 13,3 = %s s >= 39,8 s (kLag = %d, W = %s s)"
-                       % (float(klag_valor * Fraction(w_s) + T_PARADA), klag_valor, w_s))
-    return {"viavel": not motivos, "motivos": motivos}
+def viavel_em(klag_valor, w_s):
+    """R-1 da V-W9 (aprovada pelo coordenador; complemento 3, DT-024): o P1 so age em CONSERVADOR
+    (PoliticaPorAssinatura.java:152), e no cenario do P1 o perfil so chega la depois de k = 2 janelas de lag ALTA (R2
+    do Controlador). O AC-5 age no fim da janela max(k, kLag): viavel = max(K_NUCLEO, kLag) W + 13,3 < 39,8."""
+    return _cabe(max(K_NUCLEO, klag_valor), w_s)
 
 
 def reserva_w(w_s, w_min_s, klag_min):
     """Regra de reserva de W (complemento 1 §4.3).
 
     klag_min(W') = menor k >= 1 com zero ocorrencias da 7.13 na grade W' (None se nao derivavel). Viavel em W' =
-    klag_min(W') W' + 13,3 < 39,8. Tenta W, W - 1, ..., W_min e para no primeiro viavel (o maior); sem nenhum, o AC-5
+    max(k, klag_min(W')) W' + 13,3 < 39,8 (viavel_em, R-1 da V-W9). Tenta W, W - 1, ..., W_min e para no primeiro
+    viavel (o maior); sem nenhum, o AC-5
     e inviavel e W e kLag ficam os da 7.3. Devolve W_s, kLag, viavel (None se kLag nao derivavel em W),
     reserva_aplicada, candidatos e motivos.
     """
@@ -317,16 +312,17 @@ def reserva_w(w_s, w_min_s, klag_min):
                 "motivos": ["kLag nao derivado em W = %s s (7.13): viabilidade nao avaliavel" % w_s]}
     for w in range(w_s, w_min_s - 1, -1):
         k = k0 if w == w_s else klag_min(w)
-        ok = k is not None and _cabe(k, w)
+        ok = k is not None and viavel_em(k, w)
         cands.append({"W_s": w, "kLag_min": k, "viavel": ok})
         if ok:
             motivos = [] if w == w_s else [
-                "reserva de W (complemento 1 §4.3): kLag_min(%d) = %d nao cabe (%s s >= 39,8 s); W = %d, kLag = %d"
-                % (w_s, k0, float(k0 * Fraction(w_s) + T_PARADA), w, k)]
+                "reserva de W (complemento 1 §4.3, R-1 da V-W9): max(k, kLag) = %d em W = %d nao cabe (%s s >= 39,8 s); "
+                "W = %d, kLag = %d" % (max(K_NUCLEO, k0), w_s, float(max(K_NUCLEO, k0) * Fraction(w_s) + T_PARADA), w, k)]
             return {"W_s": w, "kLag": k, "viavel": True, "reserva_aplicada": w != w_s, "candidatos": cands,
                     "motivos": motivos}
     return {"W_s": w_s, "kLag": k0, "viavel": False, "reserva_aplicada": False, "candidatos": cands,
-            "motivos": ["7.4 (complemento 1 §4.3): nenhum W' em [%d, %d] com kLag_min(W') W' + 13,3 < 39,8: AC-5 "
+            "motivos": ["7.4 (complemento 1 §4.3, R-1 da V-W9): nenhum W' em [%d, %d] com max(k, kLag_min(W')) W' + "
+                        "13,3 < 39,8: AC-5 "
                         "inviavel antes da avaliacao (%s)"
                         % (w_min_s, w_s, "; ".join("W'=%d kLag=%s" % (c["W_s"], c["kLag_min"]) for c in cands))]}
 
@@ -444,9 +440,9 @@ def resumo_lag(rodadas):
 
 
 def k_max_no_limite(w_s):
-    """Maior k >= 0 com k*W + 13,3 < 39,8."""
+    """Maior kLag >= 0 com max(k, kLag) W + 13,3 < 39,8 (0 se nem kLag = 1 cabe)."""
     k = 0
-    while _cabe(k + 1, w_s):
+    while viavel_em(k + 1, w_s):
         k += 1
     return k
 
@@ -517,7 +513,7 @@ def klag(execucoes, teto_ms, w_s):
         return dict(base, valor=None, dentro_do_limite=None,
                     motivo="nenhuma janela valida (nenhuma janela com vista completa nas execucoes da regra)")
     valor = maior_c + 1
-    dentro = None if w_s is None else _cabe(valor, w_s)
+    dentro = None if w_s is None else viavel_em(valor, w_s)
     return dict(base, valor=valor, dentro_do_limite=dentro, motivo=None)
 
 
@@ -1141,7 +1137,8 @@ def derivar(campanha, parametros):
     P["kLag"] = _entrada(
         "7.13", rk["valor"], "menor k >= 1 com zero ocorrencias (C-8) do predicado do P1 (vistaCompleta && suspeito "
         "!= null && persistencia >= k && respondeuEmTodas(suspeito), PoliticaPorAssinatura.java:158), nas execucoes "
-        "sem particao, na grade do W final; kLag W + 13,3 < 39,8 com a reserva de W", execs=fk, celulas=CEL_KLAG,
+        "sem particao, na grade do W final; max(k, kLag) W + 13,3 < 39,8 (R-1 da V-W9) com a reserva de W",
+        execs=fk, celulas=CEL_KLAG,
         dados={"maior_persistencia_contada": rk["maior_persistencia_contada"],
                "ocorrencias_contadas_por_k": rk["ocorrencias_contadas_por_k"], "sem_resposta": rk["sem_resposta"],
                "dentro_do_limite": rk["dentro_do_limite"], "k_max_no_limite": rk["k_max_no_limite"],
@@ -1163,7 +1160,8 @@ def derivar(campanha, parametros):
         vb = {"viavel": rw["viavel"], "motivos": rw["motivos"], "reserva_aplicada": rw["reserva_aplicada"],
               "candidatos": rw["candidatos"]}
     P["viabilidade_ac5"] = _entrada(
-        "7.4", vb, "AC-5 viavel em W' se kLag_min(W') W' + 13,3 < 39,8; se nao for viavel no W da 7.3, W passa ao "
+        "7.4", vb, "AC-5 viavel em W' se max(k, kLag_min(W')) W' + 13,3 < 39,8 (R-1 da V-W9); se nao for viavel no "
+        "W da 7.3, W passa ao "
         "maior W' viavel entre W_min e W - 1; sem nenhum, o AC-5 e declarado inviavel antes da avaliacao "
         "(complemento 1 §4.3)", execs=fk, celulas=CEL_KLAG,
         dados={"W_s": w_s, "w_formula_s": w_formula, "w_min_s": cw["w_min_s"], "kLag": rk["valor"],

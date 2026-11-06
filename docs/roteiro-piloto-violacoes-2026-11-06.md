@@ -390,27 +390,35 @@ Regra de escolha, para a passagem 2 e para a proposta ao Gestor:
 
 ### 7.1 Pré-condições e *jar*
 
-- O *jar* sai da *branch* do Worker depois da validação do Senior (V-sonda), com o SHA do commit validado
-  registrado. Ele precisa aceitar a mesma linha que o orquestrador monta (o pré-voo roda o `--dry-run` do programa).
-- A opção que liga a sonda vem do relatório do Worker: trocar `OPCOES_DA_SONDA` abaixo pelo texto exato (por exemplo,
-  a opção e o seu valor). Se a sonda for ligada por padrão no S3, deixar vazio.
+- *Jar* da sonda (W-10, `wt-w10`, ponta `7c94cfb`; coordenador, 06/11):
+  `wt-w10/workload/target/session-workload-0.1.0-SNAPSHOT.jar`, SHA-256
+  `19f30b45fdac51ba03c91c4527d76c33e06b0bf9db06d010e78229102446b39f`. Opção: `--s3-replay-probe` (padrões
+  `--s3-replay-min-sec 1 --s3-replay-max-sec 3 --s3-replay-late-max 200`): *replay* imediato pelo nó k+1 de 1 a 3 s
+  depois de cada logout e *replay* tardio no fim da carga. As violações que ela revela saem com `origem=sonda` (coluna
+  nova do `violacoes-rep-001.csv`), e o resumo (9.3) conta essas à parte, como V-sonda, com as chaves distintas.
+- O *jar* entra pelo `--jar` do orquestrador (`JAR2`), conferido pelo SHA-256; o `java-piloto.sh` só acrescenta as
+  opções. O pré-voo da fase roda o `--dry-run` do programa com elas.
 
 ```bash
-# host (H2). Trocar SHA_DA_SONDA pelo commit validado.
-TCC=/c/Users/Francesco/Development/tcc; T2=SHA_DA_SONDA
-git -C $TCC/wt-ctrl-integ worktree add --detach "$TCC/wt-sonda-$(git -C $TCC/wt-ctrl-integ rev-parse --short=7 $T2)" "$T2"
-cd "$TCC/wt-sonda-$(git -C $TCC/wt-ctrl-integ rev-parse --short=7 $T2)/workload" && mvn -o -q -T1 -DskipTests package
-cp target/session-workload-0.1.0-SNAPSHOT.jar $TCC/dados-vm/piloto-2026-11-06/session-workload-sonda.jar
-(cd $TCC/dados-vm/piloto-2026-11-06 && sha256sum session-workload-sonda.jar | sed 's/ \*/  /' | tee jar2.sha256)
-scp "${SSHO[@]}" $TCC/dados-vm/piloto-2026-11-06/session-workload-sonda.jar $TCC/dados-vm/piloto-2026-11-06/jar2.sha256 "server1@$VMIP:piloto/"
+# host (H2)
+TCC=/c/Users/Francesco/Development/tcc; J=$TCC/wt-w10/workload/target/session-workload-0.1.0-SNAPSHOT.jar
+sha256sum "$J" | cut -c1-64      # 19f30b45fdac51ba03c91c4527d76c33e06b0bf9db06d010e78229102446b39f
+ssh "${SSHO[@]}" "server1@$VMIP" 'mkdir -p ~/piloto/jar-w10'
+scp "${SSHO[@]}" "$J" "server1@$VMIP:piloto/jar-w10/"
 ```
 
 ```bash
-# VM. Trocar OPCOES_DA_SONDA pelo texto do relatorio do Worker (ou deixar vazio).
-cd ~/piloto && sha256sum -c jar2.sha256                                   # 1 OK
-printf 'JAR2=%s\nJAR2_SHA=%s\nSONDA="%s"\n' "$HOME/piloto/session-workload-sonda.jar" "$(cut -c1-64 jar2.sha256)" "OPCOES_DA_SONDA" >> ~/piloto/estado.sh
+# VM
+cd ~/piloto/jar-w10 && echo "19f30b45fdac51ba03c91c4527d76c33e06b0bf9db06d010e78229102446b39f  session-workload-0.1.0-SNAPSHOT.jar" | sha256sum -c
+printf 'JAR2=%s\nJAR2_SHA=%s\nSONDA="%s"\n' "$HOME/piloto/jar-w10/session-workload-0.1.0-SNAPSHOT.jar" \
+  19f30b45fdac51ba03c91c4527d76c33e06b0bf9db06d010e78229102446b39f "--s3-replay-probe" >> ~/piloto/estado.sh
 cat ~/piloto/estado.sh
 ```
+
+O resumo da 9.3 foi revisto no mesmo dia para a coluna `origem` (V-sonda); a versão nova substitui a anterior em
+`~/piloto/piloto-resumo.py` antes da passagem 2 (o SHA-256 da tabela 9 é o da versão nova). O teste manual do
+coordenador (F2 com `--sweep`, semente 310200, `dados-vm/piloto-violacoes-2026-11-06/manual/f2-sweep-2/`) entra no
+relatório como evidência ("manual-f2"), fora da contagem do piloto.
 
 ### 7.2 Execuções
 
@@ -480,7 +488,7 @@ Extraídos do *blob* deste roteiro pelo 5.1. SHA-256 esperados (LF, sem CR):
 |---|---|
 | `inject-pausa.sh` | `9ebef670255f138fa27efb2256ee6cad262a70e695a14ac4d66ab8c462ad1e21` |
 | `java-piloto.sh` | `15f737abc862c7ccc1fa9ae7655410e16c6e265ee520df89923ff3b8dae53831` |
-| `piloto-resumo.py` | `1c1d72dfff195ba756d732732065c096bc55bcee25e88a74a400cd345ff9b20c` |
+| `piloto-resumo.py` | `4e60b2b3700c6f88f2135af31818fe9e6e842a9194611276d39efe2b2ee13c3b` |
 | `piloto-param.py` | `16fe668f56aa2e57de2d4aa732f027218e2ed4e26f8b6030faee79bec1535a4e` |
 | `piloto-vars.sh` | `e7cd3671464f334c04c225471293bc08bab062d8ba635a91a4972163e163fb4e` |
 
@@ -608,10 +616,12 @@ exec java "$@"
 #!/usr/bin/env python3
 """piloto-resumo.py <saida> [<saida> ...]: violacoes por execucao e por classe no piloto de 06/11
 (roteiro-piloto-violacoes-2026-11-06.md, secao 9.3). Uma linha TSV por execucao e um agregado por saida.
+<saida> e uma pasta com exec-*/ (saida do orquestrador) ou a pasta de uma execucao so (com violacoes-rep-001.csv).
 
-V online (DT-002): I1 e I4 de violacoes-rep-001.csv (qualquer classificacao) + I2 com classificacao REAL.
+V online (DT-002): I1 e I4 de violacoes-rep-001.csv (qualquer classificacao) + I2 com classificacao REAL, sem origem.
+V sonda (W-10, coluna origem = sonda): as mesmas classes reveladas pela sonda de replay, contadas a parte.
 V varredura (--sweep, VarreduraFinal): achados REAL de varredura-rep-001.csv por invariante (I1, I4, I2,
-I2-PERDIDO); se entram em V e decisao do Gestor (relatorio diag-v, ponto 1). Fora de V, so contexto:
+I2-PERDIDO); contados a parte como V-latente (decisao G-1 do coordenador, 06/11). Fora de V, so contexto:
 I2_CASCATA_INCOMPLETA, I2_JANELA_CASCATA, I2 de outra classe, I5 e I6. 'chaves' = chaves distintas."""
 import csv, glob, json, os, sys
 from collections import Counter
@@ -622,15 +632,21 @@ def ler_csv(p):
     with open(p, newline="", encoding="utf-8") as f:
         return list(csv.DictReader(f))
 
+def ehv(r):
+    inv, cl = r.get("invariante", ""), r.get("classificacao", "")
+    return inv in ("I1", "I4") or (inv == "I2" and cl == "REAL")
+
 def uma(d):
     on = ler_csv(os.path.join(d, "violacoes-rep-001.csv")) or []
-    v_on, ch_on, fora = Counter(), set(), Counter()
+    v_on, ch_on, v_so, ch_so, fora = Counter(), set(), Counter(), set(), Counter()
     for r in on:
-        inv, cl = r.get("invariante", ""), r.get("classificacao", "")
-        if inv in ("I1", "I4") or (inv == "I2" and cl == "REAL"):
+        inv, cl, org = r.get("invariante", ""), r.get("classificacao", ""), r.get("origem", "")
+        if ehv(r) and org == "sonda":
+            v_so[inv] += 1; ch_so.add(r.get("chave", ""))
+        elif ehv(r):
             v_on[inv] += 1; ch_on.add(r.get("chave", ""))
         else:
-            fora[inv + (":" + cl if cl else "")] += 1
+            fora[inv + (":" + cl if cl else "") + (":" + org if org else "")] += 1
     va = ler_csv(os.path.join(d, "varredura-rep-001.csv"))
     if va is None:
         st = "ERRO" if os.path.isfile(os.path.join(d, "varredura-rep-001.erro.txt")) else "AUSENTE"
@@ -654,6 +670,7 @@ def uma(d):
         pass
     return dict(exec=os.path.basename(d.rstrip("/")), veredito=ver, convergencia=conv,
                 v_online=sum(v_on.values()), chaves_online=len(ch_on), classes_online=dict(v_on),
+                v_sonda=sum(v_so.values()), chaves_sonda=len(ch_so), classes_sonda=dict(v_so),
                 varredura=st, v_varredura=sum(v_va.values()), chaves_varredura=len(ch_va),
                 classes_varredura=dict(v_va), varredura_outros=dict(outros), fora_de_v=dict(fora))
 
@@ -661,31 +678,43 @@ def fmt(c):
     return ",".join("%s=%d" % kv for kv in sorted(c.items())) or "-"
 
 def main(saidas):
-    cab = ["saida", "exec", "veredito", "convergencia", "V_online", "chaves", "classes_online", "varredura",
-           "V_varredura", "chaves_varr", "classes_varredura", "varredura_outros", "fora_de_V"]
+    cab = ["saida", "exec", "veredito", "convergencia", "V_online", "chaves", "classes_online", "V_sonda",
+           "chaves_sonda", "classes_sonda", "varredura", "V_varredura", "chaves_varr", "classes_varredura",
+           "varredura_outros", "fora_de_V"]
     print("\t".join(cab))
     agreg = []
     for s in saidas:
-        ds = sorted(x for x in glob.glob(os.path.join(s, "exec-*")) if os.path.isdir(x) and ".abortada" not in x)
-        tot = dict(n=0, on=0, va=0, run_on=0, run_va=0, run_qq=0, c_on=Counter(), c_va=Counter())
+        nome = os.path.basename(s.rstrip("/"))
+        if os.path.isfile(os.path.join(s, "violacoes-rep-001.csv")):
+            ds = [s]
+        else:
+            ds = sorted(x for x in glob.glob(os.path.join(s, "exec-*")) if os.path.isdir(x) and ".abortada" not in x)
+        tot = dict(n=0, on=0, so=0, va=0, run_on=0, run_so=0, run_va=0, run_qq=0, k_on=0, k_so=0, k_va=0,
+                   c_on=Counter(), c_so=Counter(), c_va=Counter())
         for d in ds:
             if not os.path.isfile(os.path.join(d, "violacoes-rep-001.csv")):
-                print("\t".join([os.path.basename(s), os.path.basename(d), "SEM-CSV"] + ["-"] * 10)); continue
+                print("\t".join([nome, os.path.basename(d), "SEM-CSV"] + ["-"] * 13)); continue
             r = uma(d)
-            print("\t".join(str(x) for x in [os.path.basename(s.rstrip("/")), r["exec"], r["veredito"], r["convergencia"],
-                  r["v_online"], r["chaves_online"], fmt(r["classes_online"]), r["varredura"], r["v_varredura"],
-                  r["chaves_varredura"], fmt(r["classes_varredura"]), fmt(r["varredura_outros"]), fmt(r["fora_de_v"])]))
-            tot["n"] += 1; tot["on"] += r["v_online"]; tot["va"] += r["v_varredura"]
-            tot["run_on"] += r["v_online"] > 0; tot["run_va"] += r["v_varredura"] > 0
-            tot["run_qq"] += (r["v_online"] + r["v_varredura"]) > 0
-            tot["c_on"].update(r["classes_online"]); tot["c_va"].update(r["classes_varredura"])
-        agreg.append((os.path.basename(s.rstrip("/")), tot))
+            print("\t".join(str(x) for x in [nome, r["exec"], r["veredito"], r["convergencia"],
+                  r["v_online"], r["chaves_online"], fmt(r["classes_online"]), r["v_sonda"], r["chaves_sonda"],
+                  fmt(r["classes_sonda"]), r["varredura"], r["v_varredura"], r["chaves_varredura"],
+                  fmt(r["classes_varredura"]), fmt(r["varredura_outros"]), fmt(r["fora_de_v"])]))
+            tot["n"] += 1; tot["on"] += r["v_online"]; tot["so"] += r["v_sonda"]; tot["va"] += r["v_varredura"]
+            tot["k_on"] += r["chaves_online"]; tot["k_so"] += r["chaves_sonda"]; tot["k_va"] += r["chaves_varredura"]
+            tot["run_on"] += r["v_online"] > 0; tot["run_so"] += r["v_sonda"] > 0; tot["run_va"] += r["v_varredura"] > 0
+            tot["run_qq"] += (r["v_online"] + r["v_sonda"] + r["v_varredura"]) > 0
+            tot["c_on"].update(r["classes_online"]); tot["c_so"].update(r["classes_sonda"])
+            tot["c_va"].update(r["classes_varredura"])
+        agreg.append((nome, tot))
     print()
-    print("saida\texecucoes\tV_online_por_exec\texecs_com_V_online\tV_varr_por_exec\texecs_com_V_varr\texecs_com_algum_V\tclasses_online\tclasses_varredura")
+    print("saida\texecucoes\tV_online/exec\tchaves_online\texecs_V_online\tV_sonda/exec\tchaves_sonda\texecs_V_sonda"
+          "\tV_varr/exec\tchaves_varr\texecs_V_varr\texecs_algum\tclasses_online\tclasses_sonda\tclasses_varredura")
     for nome, t in agreg:
         n = max(t["n"], 1)
-        print("%s\t%d\t%.2f\t%d/%d\t%.2f\t%d/%d\t%d/%d\t%s\t%s" % (nome, t["n"], t["on"] / n, t["run_on"], t["n"],
-              t["va"] / n, t["run_va"], t["n"], t["run_qq"], t["n"], fmt(t["c_on"]), fmt(t["c_va"])))
+        print("%s\t%d\t%.2f\t%d\t%d/%d\t%.2f\t%d\t%d/%d\t%.2f\t%d\t%d/%d\t%d/%d\t%s\t%s\t%s" % (
+              nome, t["n"], t["on"] / n, t["k_on"], t["run_on"], t["n"], t["so"] / n, t["k_so"], t["run_so"], t["n"],
+              t["va"] / n, t["k_va"], t["run_va"], t["n"], t["run_qq"], t["n"], fmt(t["c_on"]), fmt(t["c_so"]),
+              fmt(t["c_va"])))
 
 if __name__ == "__main__":
     if len(sys.argv) < 2:

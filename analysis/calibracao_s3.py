@@ -89,6 +89,11 @@ CONFIANCA_Q = 0.95             # secao 6: q-chapeu com intervalo de Clopper-Pear
 FASES_Q = ("durante", "recuperacao")   # secao 6: violacoes das fases durante + recuperacao
 M_CELULAS_TESTE = 2            # 7.18: m das celulas de teste do B-40 (ASYNC F2 e F4)
 SEMENTE_PODER = 20261105       # complemento 1 §5 (A-13): a mesma regra da --ordem-seed
+# R-2 da V-W9 (aprovada pelo coordenador; complemento 3, DT-024): sinal de latencia (ou erro) sem nenhuma janela
+# determinada nas ASYNC sem falha no W final fica "sem cobertura": theta_in acima de 1 (inalcancavel: a taxa e <= 1) e
+# theta_out = 1. O valor exato acima de 1 nao muda nada no controlador; 2,0 e o escolhido aqui
+THETA_SEM_COBERTURA = 2.0
+THETA_OUT_SEM_COBERTURA = 1.0
 N_SIM_PODER = 10000            # complemento 1 §5 (A-13): as 10 000 reamostragens da analise do rebaseline (DT-009)
 
 # secao 3: celulas e tamanhos planejados (26 execucoes)
@@ -161,6 +166,18 @@ LEITURAS = [
     _l("A-17", ["7.3"], "corrigida pelo %s, secao 4.2" % C1,
        "W = max(ceil(n_lat/lambda5), W_min), W_min = floor(tetoLag + atraso_max) + 1 (estrito: prazo < W e "
        "atraso <= W - teto)"),
+]
+
+# Ajustes da V-W9 (docs/validacao-w9-2026-11-05.md, 8d6ebfc), aprovados pelo coordenador (W-9b); o Senior escreve o
+# complemento 3 (DT-024) com o mesmo conteudo
+EMENDAS_VW9 = [
+    {"id": "R-1", "regras": ["7.4", "7.13", "C1 §4.3"], "situacao": "aprovada pelo coordenador (W-9b); complemento 3",
+     "leitura": "viavel em W' = max(k, kLag_min(W')) W' + 13,3 < 39,8, k = 2 (o P1 so age em CONSERVADOR, que pede k "
+                "janelas de lag ALTA)"},
+    {"id": "R-2", "regras": ["7.7", "7.8", "C1 §4.3"], "situacao": "aprovada pelo coordenador (W-9b); complemento 3",
+     "leitura": "sinal de latencia (ou erro) sem nenhuma janela determinada nas ASYNC sem falha no W final: theta_in = "
+                "%s (acima de 1, inalcancavel) e theta_out = %s; m e T_cooldown derivam com eles"
+                % (THETA_SEM_COBERTURA, THETA_OUT_SEM_COBERTURA)},
 ]
 
 
@@ -515,6 +532,89 @@ def klag(execucoes, teto_ms, w_s):
     valor = maior_c + 1
     dentro = None if w_s is None else viavel_em(valor, w_s)
     return dict(base, valor=valor, dentro_do_limite=dentro, motivo=None)
+
+
+# Guardas que o controlador aplica ao carregar o --controller-config (codigo em 17f2bd4, igual na integracao fdcf0ae):
+# ParametrosControlador.java:69-94 (construtor), :174/:182/:190 (inteiro longo, inteiro, numero no deJson) e :211
+# (limiar finito e nao negativo); ParametrosPolitica.java:59 e :145; ParametrosDefasagem.java:57-63, :110 e :118
+# (validarContra com o prazo de leitura). O teste test_guardas_lidos_do_codigo_java confere que cada trecho existe.
+GUARDAS_JAVA = [
+    ("ParametrosControlador.java", "if (wNs <= 0) {"),
+    ("ParametrosControlador.java", 'naoNegativo("nLat", nLat);'),
+    ("ParametrosControlador.java", 'naoNegativo("nErr", nErr);'),
+    ("ParametrosControlador.java", "if (!Double.isFinite(v) || v < 0) {"),
+    ("ParametrosControlador.java", "if (thetaLatOut >= thetaLatIn) {"),
+    ("ParametrosControlador.java", "if (thetaErrOut >= thetaErrIn) {"),
+    ("ParametrosControlador.java", "if (k < 1) {"),
+    ("ParametrosControlador.java", "if (m < 1) {"),
+    ("ParametrosControlador.java", 'naoNegativo("cooldownNs", cooldownNs);'),
+    ("ParametrosControlador.java", 'naoNegativo("estavelNs", estavelNs);'),
+    ("ParametrosControlador.java", 'naoNegativo("holdViolNs", holdViolNs);'),
+    ("ParametrosControlador.java", "if (!n.isIntegralNumber() || !n.canConvertToLong()) {"),
+    ("ParametrosControlador.java", "if (!n.isIntegralNumber() || !n.canConvertToInt()) {"),
+    ("ParametrosControlador.java", "if (!n.isNumber()) {"),
+    ("ParametrosPolitica.java", "if (kLag < 1) {"),
+    ("ParametrosPolitica.java", "if (!n.isIntegralNumber() || (cabeEmInt ? !n.canConvertToInt() : !n.canConvertToLong())) {"),
+    ("ParametrosDefasagem.java", "if (!Double.isFinite(lagInMs) || lagInMs <= 0) {"),
+    ("ParametrosDefasagem.java", "if (!Double.isFinite(lagOutMs) || lagOutMs < 0) {"),
+    ("ParametrosDefasagem.java", "if (lagOutMs >= lagInMs) {"),
+    ("ParametrosDefasagem.java", "prazoLeituraMs * MS >= wNs"),
+    ("ParametrosDefasagem.java", "if (lagInMs > prazoLeituraMs) {"),
+]
+_INT_MAX = 2 ** 31 - 1
+_LONG_MAX = 2 ** 63 - 1
+
+
+def problemas_de_carga(v, teto_ms):
+    """Lista do que impediria o controlador de carregar os valores (vazia = carrega). Espelho de GUARDAS_JAVA.
+
+    v: os valores do B-40 parte 2 (chaves do --controller-config; politica.kLag e defasagem.lagInMs/lagOutMs pelo
+    nome com ponto). teto_ms: o --hotrod-timeout-ms (= tetoLagMs, R7), contra o qual a sonda confere W e lagInMs.
+    """
+    out = []
+
+    def inteiro(campo, maximo, minimo, texto):
+        x = v.get(campo)
+        if isinstance(x, bool) or not isinstance(x, int) or not -maximo - 1 <= x <= maximo:
+            out.append("%s = %r: inteiro exigido (isIntegralNumber)" % (campo, x))
+            return None
+        if x < minimo:
+            out.append("%s = %r: %s" % (campo, x, texto))
+        return x
+
+    def real(campo):
+        x = v.get(campo)
+        if isinstance(x, bool) or not isinstance(x, (int, float)) or not math.isfinite(x) or x < 0:
+            out.append("%s = %r: limiar finito e nao negativo exigido" % (campo, x))
+            return None
+        return float(x)
+
+    w = inteiro("wNs", _LONG_MAX, 1, "wNs deve ser positivo")
+    inteiro("nLat", _INT_MAX, 0, "negativo")
+    inteiro("nErr", _INT_MAX, 0, "negativo")
+    for a, b in (("thetaLatIn", "thetaLatOut"), ("thetaErrIn", "thetaErrOut")):
+        ti, to = real(a), real(b)
+        if ti is not None and to is not None and to >= ti:
+            out.append("%s = %r >= %s = %r: histerese exige out < in" % (b, to, a, ti))
+    inteiro("k", _INT_MAX, 1, "k deve ser >= 1")
+    inteiro("m", _INT_MAX, 1, "m deve ser >= 1")
+    for c in ("cooldownNs", "estavelNs", "holdViolNs"):
+        inteiro(c, _LONG_MAX, 0, "negativo")
+    inteiro("politica.kLag", _INT_MAX, 1, "kLag deve ser >= 1")
+    li, lo = v.get("defasagem.lagInMs"), v.get("defasagem.lagOutMs")
+    ok_li = not isinstance(li, bool) and isinstance(li, (int, float)) and math.isfinite(li) and li > 0
+    ok_lo = not isinstance(lo, bool) and isinstance(lo, (int, float)) and math.isfinite(lo) and lo >= 0
+    if not ok_li:
+        out.append("defasagem.lagInMs = %r: finito e > 0 exigido" % (li,))
+    if not ok_lo:
+        out.append("defasagem.lagOutMs = %r: finito e >= 0 exigido" % (lo,))
+    if ok_li and ok_lo and lo >= li:
+        out.append("defasagem.lagOutMs = %r >= lagInMs = %r: histerese exige out < in" % (lo, li))
+    if ok_li and li > teto_ms:
+        out.append("defasagem.lagInMs = %r acima do prazo de leitura %d ms" % (li, teto_ms))
+    if w is not None and teto_ms * MS >= w:
+        out.append("prazo de leitura %d ms nao cabe em wNs = %d" % (teto_ms, w))
+    return out
 
 
 def ciclo_completo(registros):
@@ -1186,16 +1286,26 @@ def derivar(campanha, parametros):
     def serie(execs, campo):
         return [[x[campo] for x in jan[e.nome]] for e in execs] if w_ns is not None else []
 
-    lim = {}
+    lim, sem_cob = {}, {}
     for nome, campo in (("theta_lat_in", "taxa_lat"), ("theta_err_in", "taxa_err")):
-        r = limiar_entrada(serie(sf, campo), K_NUCLEO) if w_ns is not None else \
-            {"valor": None, "maximo_dos_minimos": None, "N": 0, "ocorrencias": None, "motivo": sem_w}
+        ser = serie(sf, campo)
+        n_tot = sum(len(x) for x in ser)
+        n_det = sum(1 for x in ser for t in x if t is not None)
+        sem_cob[nome] = w_ns is not None and n_tot > 0 and n_det == 0      # R-2 da V-W9: cobertura nula
+        if sem_cob[nome]:
+            r = {"valor": THETA_SEM_COBERTURA, "maximo_dos_minimos": None, "N": 0, "ocorrencias": 0, "motivo": None}
+        elif w_ns is not None:
+            r = limiar_entrada(ser, K_NUCLEO)
+        else:
+            r = {"valor": None, "maximo_dos_minimos": None, "N": 0, "ocorrencias": None, "motivo": sem_w}
         lim[nome] = r["valor"]
         P[nome] = _entrada(
             "7.7", r["valor"], "menor valor tal que 'k janelas seguidas >= theta_in' tem zero ocorrencias nas janelas "
-            "das execucoes ASYNC sem falha (C-8)", execs=sf, celulas=CEL_SEM_FALHA_ASYNC,
+            "das execucoes ASYNC sem falha (C-8); sem nenhuma janela determinada, o sinal fica sem cobertura e "
+            "theta_in = %s, acima de qualquer taxa (R-2 da V-W9)" % THETA_SEM_COBERTURA,
+            execs=sf, celulas=CEL_SEM_FALHA_ASYNC,
             dados={"maximo_dos_minimos": r["maximo_dos_minimos"], "ocorrencias": r["ocorrencias"], "k": K_NUCLEO,
-                   "n_janelas_total": sum(len(s) for s in serie(sf, campo))},
+                   "n_janelas_total": n_tot, "janelas_determinadas": n_det, "sem_cobertura": sem_cob[nome]},
             incerteza=incerteza_zero(r["N"], w_s), motivo=r["motivo"], leituras=["A-2", "A-7", "A-8"])
 
     # ---- 7.11 lag_in
@@ -1255,11 +1365,17 @@ def derivar(campanha, parametros):
             lin = lag_in
         else:
             ser, lin = serie(sf, campo), lim[nome_in]
-        r = limiar_saida(ser, lin, m)
+        if campo is not None and sem_cob[nome_in]:
+            r = {"valor": THETA_OUT_SEM_COBERTURA, "N": sum(len(x) for x in ser), "maior_trecho_na_banda": 0,
+                 "candidatos": None, "motivo": None}
+        else:
+            r = limiar_saida(ser, lin, m)
         dados = {"m": m, "limiar_de_entrada": lin, "maior_trecho_na_banda": r["maior_trecho_na_banda"],
                  "candidatos": r["candidatos"]}
         if campo is None:
             dados["janelas_sem_rodada_puladas"] = puladas
+        else:
+            dados["sem_cobertura"] = sem_cob[nome_in]
         P[nome_out] = _entrada(
             regra, r["valor"], texto, execs=sf, celulas=CEL_SEM_FALHA_ASYNC, unidade="ms" if campo is None else None,
             dados=dados, incerteza=incerteza_zero(r["N"], w_s), motivo=r["motivo"],
@@ -1393,6 +1509,10 @@ def derivar(campanha, parametros):
            "convergencia_periodo_s": w_s, "exec_teto_s": v["exec_teto_s"], "volume_exec_mb": v["volume_exec_mb"],
            "referencia_async_sha256": (v["referencia_p99_async"] or {}).get("sha256"),
            "referencia_sync_sha256": (v["referencia_p99_sync"] or {}).get("sha256")}
+    pc = problemas_de_carga(b40, teto_ms)
+    b40["carga"] = {"carrega_no_controlador": not pc, "problemas": pc,
+                    "guardas": "ParametrosControlador.java:69-94/:174-190/:211, ParametrosPolitica.java:59/:145, "
+                               "ParametrosDefasagem.java:57-63/:110/:118 (GUARDAS_JAVA)"}
     regras = {}
     for nome, x in P.items():
         regras.setdefault(x["regra"], []).append(nome)
@@ -1410,7 +1530,7 @@ def derivar(campanha, parametros):
                            "t_enc_s": T_ENC_S, "exec_teto_min_s": EXEC_TETO_MIN_S, "n_blocos": N_BLOCOS,
                            "semente_poder": SEMENTE_PODER, "n_sim_poder": N_SIM_PODER},
             "parametros": P, "regras": {k: sorted(x) for k, x in sorted(regras.items())},
-            "valores_b40_parte2": b40, "leituras": LEITURAS,
+            "valores_b40_parte2": b40, "leituras": LEITURAS, "emendas_vw9": EMENDAS_VW9,
             "_referencias_bytes": {k: b for k, (_v, b) in refs.items()},
             "gerado_por": {"script": "analysis/calibracao_s3.py", "sha256": _sha256(script)}}
 

@@ -110,6 +110,10 @@ CEL_TESTE = ("ASYNC-F2", "ASYNC-F4")                           # 7.18: ASYNC F2 
 ERROS = ("ERROR_TRANSPORT", "ERROR_UNAVAILABLE")    # EventoOperacao.erro() (os mesmos de comparar_bracos)
 ESQ_OBS = "observaveis-controlador/1.2"
 ESQ_DEC = "decisoes-controlador/"
+# W-10 (contrato CSV v2 §7): origem da violacao revelada pela sonda de replay (InvariantAuditor.ORIGEM_SONDA). O laco de
+# controle nao a recebe (InvariantAuditor.registrarViolacao com origem), entao ela fica fora dos sinais recalculados
+# (janela de violacao, m, T_hold_viol); o q-chapeu descritivo segue o comparar_bracos.contar_violacoes, que a conta
+ORIGEM_SONDA = "sonda"
 
 
 def _l(i, regras, situacao, leitura):
@@ -147,7 +151,9 @@ LEITURAS = [
        "duracao do trecho saudavel = da primeira a ultima amostra saudavel depois do end, quando a seguinte e anomala; "
        "mais P_sonda"),
     _l("A-10", ["7.15"], "confirmada pelo %s, secao 5" % C1,
-       "I1 + I4 + I2 REAL, todas as do violacoes-rep-001.csv da execucao"),
+       "I1 + I4 + I2 REAL, todas as do violacoes-rep-001.csv da execucao, menos as de origem = sonda (W-10: a "
+       "violacao revelada pela sonda de replay nao vai ao laco de controle) na janela de violacao, no m e no "
+       "T_hold_viol; o q-chapeu (7.18) as conta, como o comparar_bracos"),
     _l("A-11", ["7.17"], "confirmada pelo %s, secao 5" % C1,
        "periodo = W final; t_pre = ancora_ms - lancamento_ms; t_pos = fim_utc - t_convergencia_abs_ns, so nas que "
        "convergiram (superestima); T_enc = 21 s; volume em MiB arredondado para cima; teto arredondado para cima"),
@@ -784,8 +790,12 @@ def ler_jsonl(p, prefixo_esquema):
     return out
 
 
-def ler_violacoes_seguranca(p):
-    """Instantes (ns) das violacoes I1, I4 e I2 REAL (regra de comparar_bracos.contar_violacoes, :804-832)."""
+def ler_violacoes_seguranca(p, sem_origem=None):
+    """Instantes (ns) das violacoes I1, I4 e I2 REAL (regra de comparar_bracos.contar_violacoes, :804-832).
+
+    sem_origem: pula as linhas com essa coluna origem (W-10: ORIGEM_SONDA, a violacao revelada pela sonda de replay,
+    que o InvariantAuditor grava no CSV mas nao entrega ao laco de controle). CSV sem a coluna: nada e pulado.
+    """
     p = Path(p)
     if not p.exists():
         raise ErroUso("violacoes ausente: %s" % p)
@@ -794,6 +804,8 @@ def ler_violacoes_seguranca(p):
         for x in csv.DictReader(fh):
             inv = (x.get("invariante") or "").strip()
             cl = (x.get("classificacao") or "").strip()
+            if sem_origem is not None and (x.get("origem") or "").strip() == sem_origem:
+                continue
             if inv in ("I1", "I4") or (inv == "I2" and cl == "REAL"):
                 out.append(instante_ns(x.get("instante") or ""))
     return out
@@ -877,6 +889,11 @@ class Execucao:
     @property
     def viol(self):
         return self._cache("vi", lambda: ler_violacoes_seguranca(self.arq("violacoes-rep-001.csv")))
+
+    @property
+    def viol_controle(self):
+        """As violacoes que o laco de controle ve: sem as de origem = sonda (W-10)."""
+        return self._cache("vic", lambda: ler_violacoes_seguranca(self.arq("violacoes-rep-001.csv"), ORIGEM_SONDA))
 
     @property
     def origem(self):
@@ -1011,7 +1028,7 @@ def janelas_execucao(e, w_ns, p99, com_eventos=True):
             x["elegiveis"] += 1
             if en - st > p99[op]:
                 x["excedencias"] += 1
-    for t in e.viol:
+    for t in e.viol_controle:                              # sem as da sonda de replay (W-10)
         if origem <= t < origem + n_jan * w_ns:
             jan[(t - origem) // w_ns]["violacoes"] += 1
     for a in e.obs["topologia"]:
@@ -1455,7 +1472,7 @@ def derivar(campanha, parametros):
         leituras=["A-6", "A-9", "A-15"])
 
     # ---- 7.15 T_hold_viol
-    th = t_hold_viol([(e.nome, e.viol) for e in usadas], w_s)
+    th = t_hold_viol([(e.nome, e.viol_controle) for e in usadas], w_s)     # sem as da sonda de replay (W-10)
     P["T_hold_viol_s"] = _entrada(
         "7.15", th["valor"], "maior intervalo entre duas violacoes seguidas na mesma execucao; sem execucao com duas "
         "violacoes, W", execs=usadas, celulas=sorted({e.celula for e in usadas}), unidade="s",

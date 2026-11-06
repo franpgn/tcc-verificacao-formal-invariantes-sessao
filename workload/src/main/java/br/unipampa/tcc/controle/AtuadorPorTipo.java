@@ -44,6 +44,8 @@ public final class AtuadorPorTipo implements AtuadorCluster {
     }
 
     /**
+     * P1-IC: o AC-7 tem o mesmo prazo do AC-5 ({@code T_cham + 15 s}), na pilha ou em curso, e a cota do P1 e 1, entao
+     * a conta abaixo vale com qualquer das duas acoes de P1.
      * V-W2a R1: pior caso do {@code T_enc} do {@link ExecutorDeAcoes} com o braco B: o AC-2 na pilha, o AC-5 em
      * curso e um {@code T_cham} (so ha uma chave de AC-2; a cota do AC-5 e 1). Com {@code T_cham} = 2 s e o AC-5 em
      * {@code T_cham + 15 s} (P-42), 2 + 17 + 2 = 21 s. Sem a P2 (D-B, modo de avaliacao), o AC-2 nunca entra na
@@ -54,6 +56,24 @@ public final class AtuadorPorTipo implements AtuadorCluster {
     public static long piorCasoEncerramentoBracoBNs(long tChamNs, boolean p2Habilitada) {
         return (p2Habilitada ? AcaoCluster.Tipo.AC_2.prazoNs(tChamNs) : 0L) + AcaoCluster.Tipo.AC_5.prazoNs(tChamNs)
                 + tChamNs;
+    }
+
+    /**
+     * P1-IC (06/11, G-1): braco B com o AC-7 (ignorar o cache de sessoes no suspeito) no seu adaptador
+     * ({@code session.AtuadorIgnorarCache}); AC-2 e AC-5 continuam no REST (o AC-5 so e pedido com
+     * {@code acaoP1 = AC-5}, para comparacao).
+     */
+    public static AtuadorPorTipo bracoB(AtuadorCluster rest, AtuadorCluster ignorarCache) {
+        Map<AcaoCluster.Tipo, AtuadorCluster> m = new EnumMap<>(AcaoCluster.Tipo.class);
+        m.put(AcaoCluster.Tipo.AC_2, rest);
+        m.put(AcaoCluster.Tipo.AC_5, rest);
+        m.put(AcaoCluster.Tipo.AC_7, ignorarCache);
+        return new AtuadorPorTipo(m);
+    }
+
+    /** Nome de {@link #bracoB(AtuadorCluster, AtuadorCluster)} sem criar os adaptadores (o {@code --dry-run}). */
+    public static String nomeBracoB(String nomeRest, String nomeIgnorarCache) {
+        return "por-tipo(AC-2=" + nomeRest + ",AC-5=" + nomeRest + ",AC-7=" + nomeIgnorarCache + ")";
     }
 
     /** Nome de {@link #bracoB} para um adaptador com este nome (o {@code --dry-run} usa sem criar o adaptador). */

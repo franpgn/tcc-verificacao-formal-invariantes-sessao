@@ -18,7 +18,8 @@ import java.util.Objects;
  * constante a mais e um adaptador a mais ({@link AtuadorPorTipo}), sem mudar o executor.</p>
  *
  * @param tipo   tipo da acao
- * @param caches caches do modo ativo (nao vazio); no AC-2 e no AC-5 servem so a leitura de volta e ao registro
+ * @param caches caches do modo ativo (nao vazio); no AC-2 e no AC-5 servem so a leitura de volta e ao registro; no
+ *               AC-7, exatamente um (o cache a ignorar, R1 do A4)
  * @param alvo   rotulo do no de destino, ou {@code null} quando a acao vale para o <i>cluster</i>; a regra
  *               de cada tipo esta em {@link Tipo#alvo()}
  * @param valor  valor a aplicar, ou {@code null} (nenhum tipo do braco B usa valor)
@@ -55,7 +56,18 @@ public record AcaoCluster(Tipo tipo, List<String> caches, String alvo, String va
          * 13,1 s (SYNC) a 13,3 s (ASYNC) depois dele (I-3 do B-44.2, {@code docs/relatorio-b44-2-2026-11-05.md}
          * secao 7); com 3 s o atuador gravava {@code FALHOU} com o no parando. Sem corte, 3,06 a 3,24 s.
          */
-        AC_5("AC-5", false, RegraAlvo.UM_NO, 15_000_000_000L);
+        AC_5("AC-5", false, RegraAlvo.UM_NO, 15_000_000_000L),
+        /**
+         * P1-IC (06/11, G-1 e G-2 do coordenador sobre o A4, {@code docs/relatorio-a4-2026-11-06.md}): o no suspeito
+         * passa a ignorar o cache de sessoes, {@code POST /rest/v2/server/ignored-caches/{cache}} mandado a REST dele.
+         * O conjunto em memoria do no muda antes da gravacao replicada, e o Hot Rod dele recusa o cache em dezenas de
+         * milissegundos (16 a 70 ms no A4, contra 13,1 s da parada sob o mesmo corte). Um no e <b>um cache</b> (R1:
+         * a lista de ignorados e uma chave so, gravada inteira). <b>Reversivel</b> ({@code DELETE} no mesmo caminho):
+         * entra na pilha, e o R4, o encerramento e o gancho a desfazem. Prazo {@code T_cham + 15 s}: a reversao espera
+         * a resposta do POST anterior (R2, um pedido por vez), que sob corte so vem com o 500 do {@code remote-timeout}
+         * de 15 s do cache de estado; com esse prazo o pior caso do {@code T_enc} do braco B nao muda.
+         */
+        AC_7("AC-7", true, RegraAlvo.UM_NO, 15_000_000_000L);
 
         private final String rotulo;
         private final boolean reversivel;
@@ -108,6 +120,9 @@ public record AcaoCluster(Tipo tipo, List<String> caches, String alvo, String va
             }
         }
         caches = List.copyOf(caches);
+        if (tipo == Tipo.AC_7 && caches.size() != 1) {
+            throw new IllegalArgumentException("AC-7 ignora exatamente um cache (R1 do A4): " + caches);
+        }
         switch (tipo.alvo()) {
             case PROIBIDO -> {
                 if (alvo != null) {

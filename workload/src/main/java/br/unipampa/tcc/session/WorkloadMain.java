@@ -562,9 +562,10 @@ public final class WorkloadMain {
             // B-43.9: contadores do auditor na janela de medicao, em todas as instancias do S3.
             for (SessionOps o : clientes.instancias()) {
                 o.definirPoliticaAuditor(politica);
-                // W-3: eventos dos servidores de aplicacao e do admin vao ao laco de controle.
+                // W-3: eventos dos servidores de aplicacao e do admin vao ao laco de controle. P1-IC (G-4): com o
+                // rotulo do servidor, para o sensor descontar os erros do no sob o AC-7.
                 if (controle != null) {
-                    o.definirOuvinteDeEvento(controle.ouvinteDeEvento());
+                    o.definirOuvinteDeEvento(controle.ouvinteDeEvento(o.replica()));
                 }
             }
             S3Simulacao sim = new S3Simulacao(ctx, clientes.servidoresApp(), clientes.admin(), inicioNs);

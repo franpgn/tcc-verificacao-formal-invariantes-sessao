@@ -82,6 +82,7 @@ public final class FormatoJsonl {
                 q.put("t_reb_ns", pp.tRebNs());
                 q.put("cota_ac5", pp.cotaAc5());
                 q.put("p2_habilitada", pp.p2Habilitada()); // D-B (aditivo na 1.2, antes de dado de campanha)
+                q.put("acao_p1", pp.acaoP1().rotulo()); // P1-IC (aditivo na 1.2): AC-7 (G-1) ou AC-5 (comparacao)
                 ObjectNode org = q.putObject("origem");
                 pp.origem().forEach(org::put);
             }
@@ -299,6 +300,8 @@ public final class FormatoJsonl {
         p.reverter().forEach(x -> rev.add(x.tipo().rotulo()));
         ArrayNode apl = o.putArray("aplicar");
         p.aplicar().forEach(x -> apl.add(x.tipo().rotulo()));
+        // P1-IC (aditivo na 1.2): acoes de P1 ja pedidas depois desta janela (a cota fica em parametros_politica)
+        o.put("usadas_p1", p.usadasP1());
         return o;
     }
 }

@@ -1,5 +1,6 @@
 package br.unipampa.tcc.session;
 
+import br.unipampa.tcc.controle.AcaoCluster;
 import br.unipampa.tcc.controle.AgregadorDeJanela;
 import br.unipampa.tcc.controle.ArquivoReferencia;
 import br.unipampa.tcc.controle.AtuadorCluster;
@@ -33,6 +34,7 @@ import br.unipampa.tcc.controle.ViolacaoObservada;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -75,6 +77,12 @@ import java.util.function.Supplier;
  * origem das janelas; o laco le o S_lag
  * dela, cada rodada vai a uma linha {@code defasagem} de {@code observaveis} e o custo vai aos contadores
  * {@code defasagem_*} do {@code fim}. Sem o bloco: S_lag indeterminado, como no W-3.</p>
+ *
+ * <p><b>P1-IC (06/11, G-1 e G-4 do coordenador).</b> Com o bloco {@code politica}, o braco B ganha o adaptador do
+ * AC-7 ({@link AtuadorIgnorarCache}, ignorar o cache de sessoes no suspeito), que passa a ser a acao do P1 (salvo
+ * {@code acaoP1 = AC-5} no bloco, para comparacao). O sensor desconta os erros vindos do no sob o AC-7
+ * ({@link DescontoSobAcao}, so em active): o rotulo do alvo e o da REST e o da carga e o do Hot Rod, ligados pela
+ * posicao em {@code --controller-admin} e {@code --servers} ({@link #servidorPorAdmin}).</p>
  *
  * <p><b>W-2b (P-5).</b> Os dois JSONL gravam por uma thread propria ({@link TrilhaJsonl}), com fila de
  * {@link TrilhaJsonl#capacidadePara 4 x} as linhas esperadas na execucao de {@code --duration}
@@ -186,7 +194,7 @@ final class LigacaoControlador implements AutoCloseable, WorkloadMain.ControleDa
      */
     record Configuracao(ModoAtuacao modo, Path arquivoParametros, ParametrosControlador parametros,
                         Path arquivoReferencia, ArquivoReferencia referencia, List<String> urlsAdmin,
-                        int nosEsperados, long prazoHotRodMs) {
+                        int nosEsperados, long prazoHotRodMs, String servidores) {
     }
 
     /**
@@ -238,6 +246,8 @@ final class LigacaoControlador implements AutoCloseable, WorkloadMain.ControleDa
     private final ExecutorDeAcoes executor;
     private final ConcurrentLinkedQueue<Bruta> violacoes = new ConcurrentLinkedQueue<>();
     private final AtomicLong eventosForaDoContrato = new AtomicLong();
+    /** P1-IC (G-4): erros do no sob o AC-7 fora do sensor (so em active). */
+    private final DescontoSobAcao desconto;
     private volatile boolean fechada;
     private LacoDeControle.Resumo resumo;
 
@@ -256,6 +266,72 @@ final class LigacaoControlador implements AutoCloseable, WorkloadMain.ControleDa
         this.defasagem = defasagem;
         this.canario = canario;
         this.executor = executor;
+        this.desconto = new DescontoSobAcao(cfg.modo(), servidorPorAdmin(cfg.urlsAdmin(), servidoresDe(cfg)),
+                executor::ativas);
+    }
+
+    /** {@code --servers} guardado na configuracao (os nos esperados vem dele). */
+    private static String servidoresDe(Configuracao c) {
+        return c.servidores();
+    }
+
+    /**
+     * P1-IC (G-4): rotulo do Hot Rod ({@code --servers}) de cada rotulo da REST ({@code --controller-admin}), pela
+     * posicao. O {@code carregar} ja exige o mesmo numero de itens nas duas opcoes.
+     *
+     * @throws IllegalArgumentException numeros de itens diferentes
+     */
+    static Map<String, String> servidorPorAdmin(List<String> urlsAdmin, String servidores) {
+        String[] s = servidores.split(",");
+        if (s.length != urlsAdmin.size()) {
+            throw new IllegalArgumentException("--controller-admin tem " + urlsAdmin.size() + " URLs e --servers tem "
+                    + s.length);
+        }
+        Map<String, String> m = new LinkedHashMap<>();
+        for (int i = 0; i < s.length; i++) {
+            m.put(AtuadorRestInfinispan.rotulo(urlsAdmin.get(i)), s[i].trim());
+        }
+        return Map.copyOf(m);
+    }
+
+    /**
+     * P1-IC (G-4 do coordenador, 06/11; P-A4.4): o sensor desconta os erros vindos do no sob o AC-7. Com o cache de
+     * sessoes ignorado, o servidor de aplicacao fixado no alvo erra quase toda operacao (A4: 147 de 147 do pedido a
+     * deteccao), e isso e efeito da propria acao, nao sinal do <i>cluster</i>. "Sob acao" = um AC-7 em
+     * {@code ExecutorDeAcoes#ativas()} com esse alvo (do pedido ate o pedido de reversao). So em active: em shadow
+     * nada e aplicado, e o braco A fica igual ao de antes. Os sucessos do alvo continuam contando.
+     */
+    static final class DescontoSobAcao {
+        private final ModoAtuacao modo;
+        private final Map<String, String> servidorPorAdmin;
+        private final Supplier<List<AcaoCluster>> ativas;
+        private final AtomicLong descontados = new AtomicLong();
+
+        DescontoSobAcao(ModoAtuacao modo, Map<String, String> servidorPorAdmin, Supplier<List<AcaoCluster>> ativas) {
+            this.modo = Objects.requireNonNull(modo, "modo");
+            this.servidorPorAdmin = Map.copyOf(servidorPorAdmin);
+            this.ativas = Objects.requireNonNull(ativas, "ativas");
+        }
+
+        /** {@code true}: o evento e erro do servidor de um no sob o AC-7 e nao vai ao laco (e contado). */
+        boolean descontar(String replica, String codigoRetorno) {
+            if (modo != ModoAtuacao.ACTIVE || replica == null
+                    || !(EventoOperacao.ERROR_TRANSPORT.equals(codigoRetorno)
+                    || EventoOperacao.ERROR_UNAVAILABLE.equals(codigoRetorno))) {
+                return false;
+            }
+            for (AcaoCluster a : ativas.get()) {
+                if (a.tipo() == AcaoCluster.Tipo.AC_7 && replica.equals(servidorPorAdmin.get(a.alvo()))) {
+                    descontados.incrementAndGet();
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        long descontados() {
+            return descontados.get();
+        }
     }
 
     // ------------------------------------------------------------------ configuracao
@@ -300,7 +376,7 @@ final class LigacaoControlador implements AutoCloseable, WorkloadMain.ControleDa
             throw new IllegalArgumentException("--controller-admin tem " + urls.size() + " URLs e --servers tem " + nos);
         }
         conferirSondaDefasagem(p, cli, urls);
-        return new Configuracao(modo, par, p, refPath, ref, urls, nos, cli.s3.hotrodTimeoutMs);
+        return new Configuracao(modo, par, p, refPath, ref, urls, nos, cli.s3.hotrodTimeoutMs, cli.servidores);
     }
 
     /**
@@ -380,7 +456,7 @@ final class LigacaoControlador implements AutoCloseable, WorkloadMain.ControleDa
                         : c.arquivoReferencia() + " sha256=" + c.referencia().sha256()
                         + " operacoes=" + c.referencia().referencia().p99PorOperacao().keySet()) + n
                 + "dry-run, atuador=" + (p.politica() == null ? new AtuadorNulo().nome()
-                        : AtuadorPorTipo.nomeBracoB(AtuadorRestInfinispan.NOME))
+                        : AtuadorPorTipo.nomeBracoB(AtuadorRestInfinispan.NOME, AtuadorIgnorarCache.NOME))
                 + " politica=" + (p.politica() == null ? PoliticaDeAcao.NENHUMA.nome() : "por-assinatura")
                 + " tick_ns=" + periodoTick(p.wNs(), PERIODO_SONDA_NS) + " sonda_periodo_ns=" + PERIODO_SONDA_NS
                 + " prazo_chamada_ns=" + PRAZO_CHAMADA_NS + " prazo_encerramento=em_curso+pilha+T_cham pior_caso_ns="
@@ -407,7 +483,8 @@ final class LigacaoControlador implements AutoCloseable, WorkloadMain.ControleDa
     /** Parametros da politica (W-2a), com a origem declarada de cada um. */
     static String textoPolitica(ParametrosPolitica q) {
         return "politica kLag=" + q.kLag() + " tetoLagMs=" + q.tetoLagMs() + " tRebNs=" + q.tRebNs()
-                + " cotaAc5=" + q.cotaAc5() + " p2Habilitada=" + q.p2Habilitada() + " origem=" + q.origem();
+                + " cotaAc5=" + q.cotaAc5() + " p2Habilitada=" + q.p2Habilitada() + " acaoP1=" + q.acaoP1().rotulo()
+                + " origem=" + q.origem();
     }
 
     /**
@@ -470,7 +547,12 @@ final class LigacaoControlador implements AutoCloseable, WorkloadMain.ControleDa
             AtomicReference<Supplier<Set<String>>> respondidos = new AtomicReference<>(Set::of);
             AtuadorRestInfinispan rest = new AtuadorRestInfinispan(c.urlsAdmin(),
                     new ClienteAdminRest(cli.usuario, cli.senha), () -> respondidos.get().get(), PASSO_SAUDE_AC5_NS);
-            p = new Pecas(saude, AtuadorPorTipo.bracoB(rest), new PoliticaPorAssinatura(q, cli.replicacao.caches()),
+            // P1-IC: o AC-7 tem o seu cliente (desafio Digest proprio) e os mesmos "nos que responderam"
+            AtuadorIgnorarCache ignorar = new AtuadorIgnorarCache(c.urlsAdmin(),
+                    new ClienteAdminRest(cli.usuario, cli.senha), () -> respondidos.get().get(),
+                    AtuadorIgnorarCache.Parametros.PADRAO);
+            p = new Pecas(saude, AtuadorPorTipo.bracoB(rest, ignorar),
+                    new PoliticaPorAssinatura(q, cli.replicacao.caches(), cli.replicacao.cacheSessoes()),
                     gancho, tickNs, periodoSondaNs, prazoSondaNs, respondidos);
         }
         return canario == null ? p : comCanario(p, canario);
@@ -574,10 +656,22 @@ final class LigacaoControlador implements AutoCloseable, WorkloadMain.ControleDa
 
     // ------------------------------------------------------------------ ganchos
 
-    /** Para {@link SessionOps#definirOuvinteDeEvento}; depois do {@link #close()}, ignora. */
+    /** Para {@link SessionOps#definirOuvinteDeEvento}; depois do {@link #close()}, ignora. Sem rotulo de servidor. */
     SessionOps.OuvinteDeEvento ouvinteDeEvento() {
+        return ouvinteDeEvento(null);
+    }
+
+    /**
+     * P1-IC (G-4): ouvinte de um servidor de aplicacao ({@code replica} = rotulo {@code host:porta} de
+     * {@code --servers}, a coluna {@code replica} do CSV); os erros dele enquanto o no estiver sob o AC-7 nao vao ao
+     * laco ({@link DescontoSobAcao}).
+     */
+    SessionOps.OuvinteDeEvento ouvinteDeEvento(String replica) {
         return (op, ini, fim, rc) -> {
             if (fechada) {
+                return;
+            }
+            if (desconto.descontar(replica, rc)) {
                 return;
             }
             try {
@@ -639,6 +733,8 @@ final class LigacaoControlador implements AutoCloseable, WorkloadMain.ControleDa
         }
         resumo = laco.encerrar(o -> {
             o.put("eventos_fora_do_contrato", eventosForaDoContrato.get());
+            // P1-IC (G-4, aditivo no observaveis 1.2): erros do no sob o AC-7 descontados do sensor
+            o.put("eventos_descontados_sob_acao", desconto.descontados());
             o.put("sonda_rodadas", sonda == null ? null : sonda.rodadas());
             o.put("sonda_rodadas_puladas", sonda == null ? null : sonda.rodadasPuladas());
             o.put("sonda_amostras_atrasadas", sonda == null ? null : sonda.amostrasAtrasadas());

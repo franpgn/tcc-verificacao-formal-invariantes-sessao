@@ -58,6 +58,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))   # referencia_p99, ene
 import energia_proxy  # noqa: E402
 import fases as _fases  # noqa: E402
 import referencia_p99  # noqa: E402
+import apuracao_v  # noqa: E402  (V por pares distintos, copia sem numpy da apuracao do comparar_bracos do W-5c)
 from referencia_p99 import percentil  # noqa: E402  (posto mais proximo; copia de rebaseline.py:75-83)
 
 ESQUEMA = "calibracao-s3/1"
@@ -1115,7 +1116,14 @@ def delta_conv(resumo):
 
 
 def violacoes_por_mil(e, w_recovery_ns):
-    """(contagem I1 + I4 + I2 REAL, acoes S3, taxa por mil) nas fases durante + recuperacao (como o comparar_bracos)."""
+    """Apuracao de V nas fases durante + recuperacao pela regra do comparar_bracos do W-5c (apuracao_v): pares
+    distintos (chave, classe) da execucao, somando auditor online, sonda (origem = sonda) e varredura REAL.
+
+    Mesmos argumentos do comparar_bracos.desfechos_execucao: fases por (inicio, split, fim, W_recovery, convergencia,
+    divergencia) e fim observado da carga = t1 - 1 = maior end_ns das acoes S3 e dos eventos da carga (sem o
+    ReplayValidate, que o energia_proxy descarta). Devolve (apuracao, acoes S3 nas fases, taxa por mil, motivo); com a
+    varredura em erro, taxa None e o motivo (V incompleta, como no comparar_bracos).
+    """
     mk = e.marcadores
     res = e.resumo
     t_c = res.get("t_convergencia_abs_ns")
@@ -1127,9 +1135,19 @@ def violacoes_por_mil(e, w_recovery_ns):
     def dentro(t):
         return _fases.fase_de(t, *args) in sel
 
-    c = sum(1 for t in e.viol if dentro(t))
     n = sum(1 for a in e.acoes if dentro(a[0]))
-    return c, n, (1000.0 * c / n if n > 0 else None)
+    fins = [x[1] for x in e.eventos] + [x[1] for x in e.acoes]
+    try:
+        apur = apuracao_v.apurar_violacoes_execucao(e.dir, "001", e.arq("rep-001.csv"), max(fins) if fins else None,
+                                                    dentro, args, "marcadores.txt")
+    except apuracao_v.ErroUso as x:
+        raise ErroUso("%s: %s" % (e.nome, x)) from None
+    if apur is None:
+        raise ErroUso("%s sem violacoes-rep-001.csv" % e.nome)
+    if apur["varredura"] == "erro":
+        return apur, n, None, "varredura com erro (varredura-rep-001.erro.txt): V incompleta, fora do q-chapeu"
+    c = apur["total_pares"]
+    return apur, n, (1000.0 * c / n if n > 0 else None), None
 
 
 # ============================================================================= derivacao
@@ -1528,20 +1546,28 @@ def derivar(campanha, parametros):
         ex = _de(ft, (cel,))
         lst = []
         for e in ex:
-            c, n, tx = violacoes_por_mil(e, wr)
-            lst.append({"dir": e.nome, "violacoes": c, "acoes_s3": n, "taxa_violacoes_por_1000": tx})
-        if not ex:
-            qh[cel] = {"n": 0, "com_violacao": 0, "q_hat": None, "clopper_pearson_95": None, "execucoes": []}
+            apur, n, tx, mot = violacoes_por_mil(e, wr)
+            lst.append({"dir": e.nome, "violacoes": None if mot else apur["total_pares"],
+                        "linhas": apur["total_linhas"], "acoes_s3": n, "taxa_violacoes_por_1000": tx,
+                        "por_origem": apur["por_origem"], "varredura": apur["varredura"],
+                        "varredura_fora_de_v": apur["varredura_fora_de_v"], "motivo": mot})
+        aval = [x for x in lst if x["violacoes"] is not None]
+        if not aval:
+            qh[cel] = {"n": 0, "com_violacao": 0, "q_hat": None, "clopper_pearson_95": None, "execucoes": lst}
+            taxas_cmd[cel] = []
             continue
-        k = sum(1 for x in lst if x["violacoes"] > 0)
-        qh[cel] = {"n": len(ex), "com_violacao": k, "q_hat": k / len(ex),
-                   "clopper_pearson_95": list(clopper_pearson(k, len(ex))), "execucoes": lst}
+        k = sum(1 for x in aval if x["violacoes"] > 0)
+        qh[cel] = {"n": len(aval), "com_violacao": k, "q_hat": k / len(aval),
+                   "clopper_pearson_95": list(clopper_pearson(k, len(aval))), "execucoes": lst}
         taxas_cmd[cel] = [x["taxa_violacoes_por_1000"] for x in lst if x["taxa_violacoes_por_1000"] is not None]
     P["q_hat"] = _entrada(
-        "7.18", qh, "q-chapeu = fracao de execucoes aceitas com ao menos uma violacao (I1 + I4 + I2 REAL, fases "
-        "durante + recuperacao), com Clopper-Pearson de 95 % (secao 6)", execs=ft, celulas=CEL_TESTE,
-        dados={"fases": list(FASES_Q), "w_recovery_s": par["w_recovery_s"]}, incerteza={"metodo": "Clopper-Pearson "
-                                                                                                 "bilateral 95 %"},
+        "7.18", qh, "q-chapeu = fracao de execucoes aceitas com ao menos um par de V (I1 + I4 + I2 REAL, fases "
+        "durante + recuperacao), com Clopper-Pearson de 95 % (secao 6); V pela regra do comparar_bracos do W-5c "
+        "(pares distintos (chave, classe) das origens online, sonda e varredura REAL); execucao com a varredura em "
+        "erro fica fora", execs=ft, celulas=CEL_TESTE,
+        dados={"fases": list(FASES_Q), "w_recovery_s": par["w_recovery_s"], "regra_v": apuracao_v.REGRA_V,
+               "fonte_v": "analysis/apuracao_v.py (copia literal da apuracao do comparar_bracos.py do W-5c, bc9cfdd)"},
+        incerteza={"metodo": "Clopper-Pearson bilateral 95 %"},
         leituras=["A-13"])
     P["curva_de_poder"] = _entrada(
         "7.18", {"executado": False,

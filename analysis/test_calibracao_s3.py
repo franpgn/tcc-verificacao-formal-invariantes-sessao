@@ -812,7 +812,7 @@ class SondaReplay(unittest.TestCase):
 
 
 class VPorPares(unittest.TestCase):
-    """7.18 pela regra de V do W-5c (comparar_bracos.apurar_violacoes_execucao, feature/w5c-v-com-sonda, 2ce2cc8):
+    """7.18 pela regra de V do W-5c (comparar_bracos.apurar_violacoes_execucao, feature/w5c-v-com-sonda, bc9cfdd):
     pares distintos (chave, classe) por execucao, somando auditor online, sonda (origem = sonda) e varredura REAL."""
 
     def derivar(self, mud):

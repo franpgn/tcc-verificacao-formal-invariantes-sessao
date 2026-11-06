@@ -2,7 +2,7 @@
 #
 # run-campanha-s3.test.sh
 #
-# Testes S1..S30 do scripts/run-campanha-s3.sh (W-6, B-46; W-6c; I-1; W-10), no estilo do run-rebaseline.test.sh: sem cluster, sem
+# Testes S1..S31 do scripts/run-campanha-s3.sh (W-6, B-46; W-6c; I-1; W-10; carga S3 parametrizada), no estilo do run-rebaseline.test.sh: sem cluster, sem
 # rede, sem VM, sem tc real. Shims em PATH para java, podman, podman-compose, sudo, nsenter, tc, ip, iptables, curl,
 # systemd-run, systemctl, flock, pgrep, df, sleep, date e timeout. Relogio acelerado: o shim de sleep dorme s/ESCALA de
 # verdade, o de timeout divide os prazos por ESCALA e o de date devolve T0 + (agora - T0) * ESCALA. O injetor de F1 e
@@ -30,7 +30,7 @@ REAL_SLEEP="$(command -v sleep)"
 REAL_TIMEOUT="$(command -v timeout)"
 TMP="$(mktemp -d)"
 trap '[[ -n "${CS_TESTE_MANTER:-}" ]] && echo "(CS_TESTE_MANTER: ${TMP} mantido)" || rm -rf "${TMP}"' EXIT
-SELECAO=" ${*:-S1 S2 S3 S4 S5 S6 S7 S8 S9 S10 S11 S12 S13 S14 S15 S16 S17 S18 S19 S20 S21 S22 S23 S24 S25 S26 S26h S27 S28 S29 S30} "
+SELECAO=" ${*:-S1 S2 S3 S4 S5 S6 S7 S8 S9 S10 S11 S12 S13 S14 S15 S16 S17 S18 S19 S20 S21 S22 S23 S24 S25 S26 S26h S27 S28 S29 S30 S31} "
 
 PASS=0
 FAIL=0
@@ -569,7 +569,14 @@ if args[:1] == ["f3"]:
     v.update({"f3_no": "isn2", "f3_delay_ms": 20, "f3_jitter_ms": 13, "f3_distribuicao": "normal", "f3_dur_s": 40})
 for kv in args:
     k, x = kv.split("=", 1)
-    v[k] = int(x) if x.lstrip("-").isdigit() else x
+    if x.lstrip("-").isdigit():
+        x = int(x)
+    else:
+        try:
+            x = float(x)   # carga S3 parametrizada: s3_logout_prob=0.9
+        except ValueError:
+            pass
+    v[k] = x
 obj = {"esquema": esquema, "versao": "teste",
        "parametros": {k: {"valor": x, "origem": "teste"} for k, x in v.items()}}
 open(sys.argv[1], "w", encoding="utf-8").write(json.dumps(obj))
@@ -1673,6 +1680,64 @@ ok "S30 a carga e o pre-voo recebem --s3-replay-probe e --sweep" "$(grep -cF ' j
 contem "S30 execucao.json com a linha do jar da sonda" "--s3-replay-probe" "$(json "$(exec_dir 0)/execucao.json" 'd["comando"]')"
 rodar calibracao
 ok "S30 retomada sem a opcao (bundle de opcoes mudou) -> exit 4" "4" "${RC}"
+fi
+
+# ============================================================================= S31
+if quer S31; then
+echo "== S31: carga S3 parametrizada: os s3_* do --parametros viram --s3-* na linha do jar; ausentes, a linha e a de antes =="
+novo_caso s31
+matriz_calib "ASYNC-none:calibracao:1"
+dry31() {  # dry31 [args extras do orquestrador]: RC, OUTD e LJAR (a linha do jar no plano)
+    OUTD="$(PATH="${PATH_TESTE}" bash "${ORQ}" --dry-run --matriz "${MAT}" --matriz-sha256 "${MAT_SHA}" --fase calibracao         --parametros "${PARAMS}" --parametros-sha256 "${PARAMS_SHA}" --controlador "${CTRL}" --controlador-sha256 "${CTRL_SHA}"         "${REFS[@]}" --saida "${OUT}" "$@" 2>&1)"; RC=$?
+    LJAR="$(printf '%s
+' "${OUTD}" | grep -F -- ' --scenario S3 ' | head -1)"
+}
+dry31
+ok "S31 sem s3_*: dry-run exit 0" "0" "${RC}"
+L0="${LJAR}"
+ok "S31 sem s3_*: a linha do jar termina como antes (--rejoin-timeout-sec 30)" "--rejoin-timeout-sec 30" "${L0: -23}"
+nao_contem "S31 sem s3_*: nenhuma opcao --s3-" "--s3-" "${L0}"
+contem "S31 sem s3_*: dry-run diz que a carga e a padrao do programa" "DRY-RUN carga S3: padrao do programa" "${OUTD}"
+parametros s3_users=30 s3_think_ms=500 s3_logout_prob=0.9
+dry31
+ok "S31 com s3_*: dry-run exit 0" "0" "${RC}"
+ok "S31 com s3_*: linha do jar = a de antes + as opcoes, na ordem da tabela"     "${L0} --s3-users 30 --s3-think-ms 500 --s3-logout-prob 0.9" "${LJAR}"
+contem "S31 com s3_*: dry-run mostra a carga" "DRY-RUN carga S3: --s3-users 30 --s3-think-ms 500 --s3-logout-prob 0.9" "${OUTD}"
+dry31 --sonda-replay
+ok "S31 com s3_* e --sonda-replay: carga antes da sonda"     "${L0} --s3-users 30 --s3-think-ms 500 --s3-logout-prob 0.9 --s3-replay-probe --sweep" "${LJAR}"
+for ruim in s3_logout_prob=1.5 s3_users=-1 s3_think_ms=0 s3_users=2.5 s3_foo=1; do
+    parametros "${ruim}"
+    dry31
+    ok "S31 ${ruim}: dry-run recusa (exit 4)" "4" "${RC}"
+    contem "S31 ${ruim}: motivo com o nome" "${ruim%%=*}" "${OUTD}"
+done
+parametros s3_users=30 s3_think_ms=500 s3_logout_prob=0.9
+printf 'go calibracao %s
+' "${HOJE}" > "${CS_TTY_ARQUIVO}"
+rodar calibracao
+D="$(exec_dir 0)"
+ok "S31 execucao com s3_*: exit 0, ACEITA" "0 ACEITA" "${RC} $(json "${D}/checagem.json" 'd["veredito"]')"
+ok "S31 a carga e o pre-voo recebem as opcoes" "$(grep -cF ' java|-jar|' "${ST}/chamadas.log")"     "$(grep -F ' java|-jar|' "${ST}/chamadas.log" | grep -cF -- '|--rejoin-timeout-sec|30|--s3-users|30|--s3-think-ms|500|--s3-logout-prob|0.9')"
+ok "S31 execucao.json: carga_s3" "{'s3_users': 30, 's3_think_ms': 500, 's3_logout_prob': 0.9}" "$(json "${D}/execucao.json" 'd["carga_s3"]')"
+contem "S31 execucao.json: comando com as opcoes" "'--s3-logout-prob', '0.9'" "$(json "${D}/execucao.json" 'd["comando"]')"
+contem "S31 bundle com a carga" "carga_s3:--s3-users 30 --s3-think-ms 500 --s3-logout-prob 0.9" "$(cat "${OUT}/calibracao/bundle.sha256")"
+contem "S31 ambiente.md com os parametros de carga" "s3_logout_prob=0.9" "$(cat "${OUT}/calibracao/ambiente.md")"
+parametros s3_users=31 s3_think_ms=500 s3_logout_prob=0.9
+rodar calibracao
+ok "S31 retomada com outra carga (bundle mudou) -> exit 4" "4" "${RC}"
+contem "S31 motivo bundle" "bundle mudou" "${SAIDA_TXT}"
+
+echo "-- S31b: execucao sem s3_*: carga_s3 vazio, linha do jar sem --s3-, bundle com carga_s3:-"
+novo_caso s31b
+matriz_calib "ASYNC-none:calibracao:1"
+printf 'go calibracao %s
+' "${HOJE}" > "${CS_TTY_ARQUIVO}"
+rodar calibracao
+D="$(exec_dir 0)"
+ok "S31b exit 0, ACEITA" "0 ACEITA" "${RC} $(json "${D}/checagem.json" 'd["veredito"]')"
+ok "S31b execucao.json: carga_s3 vazio" "{}" "$(json "${D}/execucao.json" 'd["carga_s3"]')"
+ok "S31b nenhuma linha do jar com --s3-" "0" "$(grep -F ' java|-jar|' "${ST}/chamadas.log" | grep -cF -- '|--s3-')"
+contem "S31b bundle com carga_s3:-" "carga_s3:-" "$(cat "${OUT}/calibracao/bundle.sha256")"
 fi
 
 echo

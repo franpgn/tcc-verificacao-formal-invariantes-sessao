@@ -1,0 +1,46 @@
+== S31: carga S3 parametrizada: os s3_* do --parametros viram --s3-* na linha do jar; ausentes, a linha e a de antes ==
+PASS: S31 sem s3_*: dry-run exit 0
+PASS: S31 sem s3_*: a linha do jar termina como antes (--rejoin-timeout-sec 30)
+PASS: S31 sem s3_*: nenhuma opcao --s3-
+FAIL: S31 sem s3_*: dry-run diz que a carga e a padrao do programa (nao encontrou 'DRY-RUN carga S3: padrao do programa')
+PASS: S31 com s3_*: dry-run exit 0
+FAIL: S31 com s3_*: linha do jar = a de antes + as opcoes, na ordem da tabela (esperado='      timeout -k 23s 200s java -jar <jar> --scenario S3 --replication async --reset-state on --duration 60 --warmup-min-sec 30 --rep 1 --seed 60000 --servers 127.0.0.1:11222,127.0.0.1:11223,127.0.0.1:11224 --username admin --password *** --csv-dir /tmp/tmp.qNTLfydULX/s31/saida/exec-0000-ASYNC-none-A/.scratch --rest-url http://127.0.0.1:11222 --marker /tmp/tmp.qNTLfydULX/s31/saida/exec-0000-ASYNC-none-A/marcadores.txt --w-recovery-sec 30 --convergence --convergence-timeout-sec 60 --convergence-period-sec 5 --controller shadow --controller-config /tmp/tmp.qNTLfydULX/s31/controlador.json --controller-reference /tmp/tmp.qNTLfydULX/s31/referencia-async.json --controller-admin http://127.0.0.1:11222,http://127.0.0.1:11223,http://127.0.0.1:11224 --hotrod-timeout-ms 2000 --rejoin-timeout-sec 30 --s3-users 30 --s3-think-ms 500 --s3-logout-prob 0.9' obtido='      timeout -k 23s 200s java -jar <jar> --scenario S3 --replication async --reset-state on --duration 60 --warmup-min-sec 30 --rep 1 --seed 60000 --servers 127.0.0.1:11222,127.0.0.1:11223,127.0.0.1:11224 --username admin --password *** --csv-dir /tmp/tmp.qNTLfydULX/s31/saida/exec-0000-ASYNC-none-A/.scratch --rest-url http://127.0.0.1:11222 --marker /tmp/tmp.qNTLfydULX/s31/saida/exec-0000-ASYNC-none-A/marcadores.txt --w-recovery-sec 30 --convergence --convergence-timeout-sec 60 --convergence-period-sec 5 --controller shadow --controller-config /tmp/tmp.qNTLfydULX/s31/controlador.json --controller-reference /tmp/tmp.qNTLfydULX/s31/referencia-async.json --controller-admin http://127.0.0.1:11222,http://127.0.0.1:11223,http://127.0.0.1:11224 --hotrod-timeout-ms 2000 --rejoin-timeout-sec 30')
+FAIL: S31 com s3_*: dry-run mostra a carga (nao encontrou 'DRY-RUN carga S3: --s3-users 30 --s3-think-ms 500 --s3-logout-prob 0.9')
+FAIL: S31 com s3_* e --sonda-replay: carga antes da sonda (esperado='      timeout -k 23s 200s java -jar <jar> --scenario S3 --replication async --reset-state on --duration 60 --warmup-min-sec 30 --rep 1 --seed 60000 --servers 127.0.0.1:11222,127.0.0.1:11223,127.0.0.1:11224 --username admin --password *** --csv-dir /tmp/tmp.qNTLfydULX/s31/saida/exec-0000-ASYNC-none-A/.scratch --rest-url http://127.0.0.1:11222 --marker /tmp/tmp.qNTLfydULX/s31/saida/exec-0000-ASYNC-none-A/marcadores.txt --w-recovery-sec 30 --convergence --convergence-timeout-sec 60 --convergence-period-sec 5 --controller shadow --controller-config /tmp/tmp.qNTLfydULX/s31/controlador.json --controller-reference /tmp/tmp.qNTLfydULX/s31/referencia-async.json --controller-admin http://127.0.0.1:11222,http://127.0.0.1:11223,http://127.0.0.1:11224 --hotrod-timeout-ms 2000 --rejoin-timeout-sec 30 --s3-users 30 --s3-think-ms 500 --s3-logout-prob 0.9 --s3-replay-probe --sweep' obtido='      timeout -k 23s 200s java -jar <jar> --scenario S3 --replication async --reset-state on --duration 60 --warmup-min-sec 30 --rep 1 --seed 60000 --servers 127.0.0.1:11222,127.0.0.1:11223,127.0.0.1:11224 --username admin --password *** --csv-dir /tmp/tmp.qNTLfydULX/s31/saida/exec-0000-ASYNC-none-A/.scratch --rest-url http://127.0.0.1:11222 --marker /tmp/tmp.qNTLfydULX/s31/saida/exec-0000-ASYNC-none-A/marcadores.txt --w-recovery-sec 30 --convergence --convergence-timeout-sec 60 --convergence-period-sec 5 --controller shadow --controller-config /tmp/tmp.qNTLfydULX/s31/controlador.json --controller-reference /tmp/tmp.qNTLfydULX/s31/referencia-async.json --controller-admin http://127.0.0.1:11222,http://127.0.0.1:11223,http://127.0.0.1:11224 --hotrod-timeout-ms 2000 --rejoin-timeout-sec 30 --s3-replay-probe --sweep')
+PASS: S31 s3_logout_prob=1.5: dry-run recusa (exit 4)
+PASS: S31 s3_logout_prob=1.5: motivo com o nome
+PASS: S31 s3_users=-1: dry-run recusa (exit 4)
+PASS: S31 s3_users=-1: motivo com o nome
+PASS: S31 s3_think_ms=0: dry-run recusa (exit 4)
+PASS: S31 s3_think_ms=0: motivo com o nome
+PASS: S31 s3_users=2.5: dry-run recusa (exit 4)
+PASS: S31 s3_users=2.5: motivo com o nome
+PASS: S31 s3_foo=1: dry-run recusa (exit 4)
+PASS: S31 s3_foo=1: motivo com o nome
+PASS: S31 execucao com s3_*: exit 0, ACEITA
+FAIL: S31 a carga e o pre-voo recebem as opcoes (esperado='2' obtido='0')
+Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+  File "<string>", line 1, in <module>
+KeyError: 'carga_s3'
+FAIL: S31 execucao.json: carga_s3 (esperado='{'s3_users': 30, 's3_think_ms': 500, 's3_logout_prob': 0.9}' obtido='')
+FAIL: S31 execucao.json: comando com as opcoes (nao encontrou ''--s3-logout-prob', '0.9'')
+FAIL: S31 bundle com a carga (nao encontrou 'carga_s3:--s3-users 30 --s3-think-ms 500 --s3-logout-prob 0.9')
+PASS: S31 ambiente.md com os parametros de carga
+PASS: S31 retomada com outra carga (bundle mudou) -> exit 4
+PASS: S31 motivo bundle
+-- S31b: execucao sem s3_*: carga_s3 vazio, linha do jar sem --s3-, bundle com carga_s3:-
+PASS: S31b exit 0, ACEITA
+Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+  File "<string>", line 1, in <module>
+KeyError: 'carga_s3'
+FAIL: S31b execucao.json: carga_s3 vazio (esperado='{}' obtido='')
+PASS: S31b nenhuma linha do jar com --s3-
+FAIL: S31b bundle com carga_s3:- (nao encontrou 'carga_s3:-')
+
+==== RESULTADO: 20 PASS, 10 FAIL ====
+
+real	2m42.946s
+user	0m42.526s
+sys	1m39.436s

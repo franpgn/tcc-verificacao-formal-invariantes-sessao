@@ -1,0 +1,399 @@
+{
+ "execucao": "semcorte-ignorar-r1",
+ "caso": "semcorte-ignorar",
+ "alvo": "isn3",
+ "instantes_rel_pedido_s": {
+  "corte": null,
+  "pedido": 0.0,
+  "cura": null,
+  "fusao_vista_harness": null,
+  "desfazer": 19.233
+ },
+ "acoes": [
+  {
+   "rotulo": "ignorar",
+   "metodo": "POST",
+   "url": "v2/server/ignored-caches/sessions-async",
+   "ini_s": 0.0,
+   "duracao_s": 0.018,
+   "status": "204",
+   "corpo": ""
+  },
+  {
+   "rotulo": "ignorar",
+   "metodo": "POST",
+   "url": "v2/server/ignored-caches/counters-async",
+   "ini_s": 0.0,
+   "duracao_s": 0.02,
+   "status": "204",
+   "corpo": ""
+  },
+  {
+   "rotulo": "desfazer",
+   "metodo": "DELETE",
+   "url": "v2/server/ignored-caches/sessions-async",
+   "ini_s": 19.233,
+   "duracao_s": 0.008,
+   "status": "204",
+   "corpo": ""
+  },
+  {
+   "rotulo": "desfazer",
+   "metodo": "DELETE",
+   "url": "v2/server/ignored-caches/counters-async",
+   "ini_s": 19.233,
+   "duracao_s": 0.009,
+   "status": "204",
+   "corpo": ""
+  }
+ ],
+ "sondas": {
+  "isn1/sessions-async": {
+   "ops_antes_do_pedido": 596,
+   "recusas_nos_30s_antes": 0,
+   "primeira_cache_indisponivel": null,
+   "primeiro_put_recusado": null,
+   "puts_confirmados_iniciados_apos_pedido": 174,
+   "ultimo_put_confirmado_iniciado_apos_pedido_fim_s": 19.181,
+   "ultima_op_servida_iniciada_apos_pedido_fim_s": 19.214,
+   "resultados_pedido_ate_fim_da_janela": {
+    "get:OK": 174,
+    "put:OK": 174
+   },
+   "mensagens_de_recusa": {},
+   "desfazer_primeiro_put_servido_fim_s_rel_desfazer": 0.06,
+   "desfazer_primeira_op_servida_fim_s_rel_desfazer": 0.06,
+   "desfazer_ultima_recusa_fim_s_rel_desfazer": null,
+   "resultados_apos_desfazer": {
+    "get:OK": 177,
+    "put:OK": 178
+   }
+  },
+  "isn1/counters-async": {
+   "ops_antes_do_pedido": 597,
+   "recusas_nos_30s_antes": 0,
+   "primeira_cache_indisponivel": {
+    "fim_s": 0.033,
+    "ini_s": 0.029,
+    "op": "get"
+   },
+   "primeiro_put_recusado": {
+    "fim_s": 0.046,
+    "ini_s": 0.044,
+    "resultado": "HotRodClientException",
+    "mensagem": "org.infinispan.server.hotrod.CacheUnavailableException"
+   },
+   "puts_confirmados_iniciados_apos_pedido": 0,
+   "ultimo_put_confirmado_iniciado_apos_pedido_fim_s": null,
+   "ultima_op_servida_iniciada_apos_pedido_fim_s": null,
+   "resultados_pedido_ate_fim_da_janela": {
+    "get:CacheUnavailable": 166,
+    "put:CacheUnavailable": 165
+   },
+   "mensagens_de_recusa": {
+    "HotRodClientException: org.infinispan.server.hotrod.CacheUnavailableException": 331
+   },
+   "desfazer_primeiro_put_servido_fim_s_rel_desfazer": 0.06,
+   "desfazer_primeira_op_servida_fim_s_rel_desfazer": 0.06,
+   "desfazer_ultima_recusa_fim_s_rel_desfazer": null,
+   "resultados_apos_desfazer": {
+    "get:OK": 177,
+    "put:OK": 178
+   }
+  },
+  "isn2/sessions-async": {
+   "ops_antes_do_pedido": 595,
+   "recusas_nos_30s_antes": 0,
+   "primeira_cache_indisponivel": null,
+   "primeiro_put_recusado": null,
+   "puts_confirmados_iniciados_apos_pedido": 167,
+   "ultimo_put_confirmado_iniciado_apos_pedido_fim_s": 19.229,
+   "ultima_op_servida_iniciada_apos_pedido_fim_s": 19.229,
+   "resultados_pedido_ate_fim_da_janela": {
+    "get:OK": 167,
+    "put:OK": 167
+   },
+   "mensagens_de_recusa": {},
+   "desfazer_primeiro_put_servido_fim_s_rel_desfazer": 0.107,
+   "desfazer_primeira_op_servida_fim_s_rel_desfazer": 0.092,
+   "desfazer_ultima_recusa_fim_s_rel_desfazer": null,
+   "resultados_apos_desfazer": {
+    "get:OK": 177,
+    "put:OK": 177
+   }
+  },
+  "isn2/counters-async": {
+   "ops_antes_do_pedido": 597,
+   "recusas_nos_30s_antes": 0,
+   "primeira_cache_indisponivel": {
+    "fim_s": 0.033,
+    "ini_s": 0.029,
+    "op": "get"
+   },
+   "primeiro_put_recusado": {
+    "fim_s": 0.061,
+    "ini_s": 0.06,
+    "resultado": "HotRodClientException",
+    "mensagem": "org.infinispan.server.hotrod.CacheUnavailableException"
+   },
+   "puts_confirmados_iniciados_apos_pedido": 0,
+   "ultimo_put_confirmado_iniciado_apos_pedido_fim_s": null,
+   "ultima_op_servida_iniciada_apos_pedido_fim_s": null,
+   "resultados_pedido_ate_fim_da_janela": {
+    "get:CacheUnavailable": 167,
+    "put:CacheUnavailable": 167
+   },
+   "mensagens_de_recusa": {
+    "HotRodClientException: org.infinispan.server.hotrod.CacheUnavailableException": 334
+   },
+   "desfazer_primeiro_put_servido_fim_s_rel_desfazer": 0.107,
+   "desfazer_primeira_op_servida_fim_s_rel_desfazer": 0.092,
+   "desfazer_ultima_recusa_fim_s_rel_desfazer": null,
+   "resultados_apos_desfazer": {
+    "get:OK": 177,
+    "put:OK": 178
+   }
+  },
+  "isn3/sessions-async": {
+   "ops_antes_do_pedido": 2437,
+   "recusas_nos_30s_antes": 0,
+   "primeira_cache_indisponivel": null,
+   "primeiro_put_recusado": null,
+   "puts_confirmados_iniciados_apos_pedido": 689,
+   "ultimo_put_confirmado_iniciado_apos_pedido_fim_s": 19.206,
+   "ultima_op_servida_iniciada_apos_pedido_fim_s": 19.214,
+   "resultados_pedido_ate_fim_da_janela": {
+    "get:OK": 689,
+    "put:OK": 689
+   },
+   "mensagens_de_recusa": {},
+   "desfazer_primeiro_put_servido_fim_s_rel_desfazer": 0.0,
+   "desfazer_primeira_op_servida_fim_s_rel_desfazer": 0.0,
+   "desfazer_ultima_recusa_fim_s_rel_desfazer": null,
+   "resultados_apos_desfazer": {
+    "get:OK": 740,
+    "put:OK": 743
+   }
+  },
+  "isn3/counters-async": {
+   "ops_antes_do_pedido": 2445,
+   "recusas_nos_30s_antes": 0,
+   "primeira_cache_indisponivel": {
+    "fim_s": 0.029,
+    "ini_s": 0.026,
+    "op": "get"
+   },
+   "primeiro_put_recusado": {
+    "fim_s": 0.029,
+    "ini_s": 0.026,
+    "resultado": "HotRodClientException",
+    "mensagem": "org.infinispan.server.hotrod.CacheUnavailableException"
+   },
+   "puts_confirmados_iniciados_apos_pedido": 1,
+   "ultimo_put_confirmado_iniciado_apos_pedido_fim_s": 0.0,
+   "ultima_op_servida_iniciada_apos_pedido_fim_s": 0.0,
+   "resultados_pedido_ate_fim_da_janela": {
+    "get:CacheUnavailable": 683,
+    "get:OK": 1,
+    "put:CacheUnavailable": 683,
+    "put:OK": 1
+   },
+   "mensagens_de_recusa": {
+    "HotRodClientException: org.infinispan.server.hotrod.CacheUnavailableException": 1366
+   },
+   "desfazer_primeiro_put_servido_fim_s_rel_desfazer": 0.008,
+   "desfazer_primeira_op_servida_fim_s_rel_desfazer": 0.008,
+   "desfazer_ultima_recusa_fim_s_rel_desfazer": 0.002,
+   "resultados_apos_desfazer": {
+    "get:CacheUnavailable": 1,
+    "get:OK": 741,
+    "put:OK": 743
+   }
+  }
+ },
+ "ignorados_transicoes": [
+  {
+   "no": "isn3",
+   "ini_s": -37.569,
+   "fim_s": -37.554,
+   "ignorados": "-"
+  },
+  {
+   "no": "isn1",
+   "ini_s": -37.615,
+   "fim_s": -37.55,
+   "ignorados": "-"
+  },
+  {
+   "no": "isn2",
+   "ini_s": -37.595,
+   "fim_s": -37.548,
+   "ignorados": "-"
+  },
+  {
+   "no": "isn2",
+   "ini_s": 0.036,
+   "fim_s": 0.038,
+   "ignorados": "counters-async"
+  },
+  {
+   "no": "isn1",
+   "ini_s": 0.067,
+   "fim_s": 0.071,
+   "ignorados": "counters-async"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 0.067,
+   "fim_s": 0.109,
+   "ignorados": "counters-async"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 19.308,
+   "fim_s": 19.313,
+   "ignorados": "-"
+  },
+  {
+   "no": "isn1",
+   "ini_s": 19.333,
+   "fim_s": 19.337,
+   "ignorados": "-"
+  },
+  {
+   "no": "isn2",
+   "ini_s": 19.333,
+   "fim_s": 19.359,
+   "ignorados": "-"
+  }
+ ],
+ "cluster_transicoes": [
+  {
+   "no": "isn3",
+   "ini_s": -37.569,
+   "estado": "size=3 coord=False sessions-async=AVAILABLE counters-async=AVAILABLE"
+  },
+  {
+   "no": "isn2",
+   "ini_s": -37.595,
+   "estado": "size=3 coord=False sessions-async=AVAILABLE counters-async=AVAILABLE"
+  },
+  {
+   "no": "isn1",
+   "ini_s": -37.595,
+   "estado": "size=3 coord=True sessions-async=AVAILABLE counters-async=AVAILABLE"
+  }
+ ],
+ "carga_por_janela": {
+  "30s_antes_do_pedido": {
+   "isn2": {
+    "VALID": 53,
+    "INVALID": 14,
+    "OK": 3,
+    "NONE": 2
+   },
+   "isn1": {
+    "VALID": 31,
+    "INVALID": 12,
+    "COUNTED": 6,
+    "NONE": 2,
+    "BLOCKED": 1,
+    "OK": 2
+   },
+   "isn3": {
+    "COUNTED": 6,
+    "INVALID": 9,
+    "VALID": 36,
+    "NONE": 1,
+    "OK": 3,
+    "BLOCKED": 1
+   }
+  },
+  "pedido_ao_desfazer": {
+   "isn1": {
+    "ERROR_TRANSPORT": 69,
+    "NONE": 2
+   },
+   "isn3": {
+    "ERROR_TRANSPORT": 82,
+    "NONE": 1
+   },
+   "isn2": {
+    "ERROR_TRANSPORT": 72
+   }
+  },
+  "30s_apos_desfazer": {
+   "isn2": {
+    "VALID": 88,
+    "OK": 5,
+    "NONE": 3,
+    "INVALID": 11,
+    "BLOCKED": 5,
+    "COUNTED": 7
+   },
+   "isn3": {
+    "INVALID": 3,
+    "VALID": 100,
+    "OK": 5,
+    "COUNTED": 5,
+    "BLOCKED": 1,
+    "NONE": 1
+   },
+   "isn1": {
+    "INVALID": 21,
+    "OK": 7,
+    "VALID": 105,
+    "NONE": 13,
+    "COUNTED": 6,
+    "BLOCKED": 1
+   }
+  },
+  "pedido_ao_fim": {
+   "isn1": {
+    "ERROR_TRANSPORT": 69,
+    "NONE": 23,
+    "INVALID": 25,
+    "OK": 11,
+    "VALID": 228,
+    "COUNTED": 18,
+    "BLOCKED": 2
+   },
+   "isn3": {
+    "ERROR_TRANSPORT": 82,
+    "NONE": 8,
+    "INVALID": 23,
+    "VALID": 160,
+    "OK": 8,
+    "COUNTED": 8,
+    "BLOCKED": 1
+   },
+   "isn2": {
+    "ERROR_TRANSPORT": 72,
+    "VALID": 148,
+    "OK": 8,
+    "NONE": 9,
+    "INVALID": 23,
+    "BLOCKED": 9,
+    "COUNTED": 17
+   }
+  }
+ },
+ "carga_stdout": [
+  "S3 acao|IncrementFailure|ERROR_TRANSPORT = 5",
+  "S3 acao|Login|ERROR_TRANSPORT = 13",
+  "S3 acao|Validate|ERROR_TRANSPORT = 54",
+  "Total de operacoes: 1359",
+  "Violacoes detectadas: 1",
+  "Hot Rod ISPN004007: total=0 inteiras=0 contidas=0 chaves=0",
+  "Hot Rod ISPN004005: total=223 inteiras=1 contidas=222 chaves=1 | no=desconhecido motivo=CacheUnavailableException n=223 t_primeira_ns=1793983437153693200 t_ulti"
+ ],
+ "carga_exit": "exit=0",
+ "vistas": [],
+ "servidor_ISPN005003_por_no": {
+  "isn1": 215,
+  "isn2": 220,
+  "isn3": 772
+ },
+ "servidor_ISPN000136_por_no": {},
+ "servidor_mensagens": []
+}

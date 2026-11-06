@@ -1,0 +1,21 @@
+2026-11-06T16:53:04Z antes de corte-ignorar-r2: conteineres=[a1-isn1 a1-isn2 a1-isn3 ] mem_usada_mb=2302 disponivel_mb=13588
+2026-11-06T16:59:12Z corte-ignorar-r2 pronto (fim corte-ignorar-r2)
+2026-11-06T16:59:12Z antes de semcorte-sessoes-r1: conteineres=[a1-isn1 a1-isn2 a1-isn3 ] mem_usada_mb=2148 disponivel_mb=13741
+2026-11-06T17:01:54Z semcorte-sessoes-r1 pronto (fim semcorte-sessoes-r1)
+2026-11-06T17:01:54Z antes de corte-sessoes-r1: conteineres=[a1-isn1 a1-isn2 a1-isn3 ] mem_usada_mb=2383 disponivel_mb=13507
+2026-11-06T17:07:44Z corte-sessoes-r1 pronto (fim corte-sessoes-r1)
+2026-11-06T17:07:44Z antes de corte-parar-r1: conteineres=[] mem_usada_mb=932 disponivel_mb=14957
+2026-11-06T17:11:11Z corte-parar-r1 pronto (fim corte-parar-r1)
+2026-11-06T17:11:11Z antes de semcorte-sessoes-r2: conteineres=[a1-isn1 a1-isn2 a1-isn3 ] mem_usada_mb=2356 disponivel_mb=13534
+2026-11-06T17:13:54Z semcorte-sessoes-r2 pronto (fim semcorte-sessoes-r2)
+2026-11-06T17:13:54Z antes de corte-sessoes-r2: conteineres=[a1-isn1 a1-isn2 a1-isn3 ] mem_usada_mb=2389 disponivel_mb=13500
+2026-11-06T17:19:19Z corte-sessoes-r2 pronto (fim corte-sessoes-r2)
+2026-11-06T17:19:19Z antes de corte-parar-r2: conteineres=[a1-isn1 a1-isn2 a1-isn3 ] mem_usada_mb=2169 disponivel_mb=13721
+2026-11-06T17:23:00Z corte-parar-r2 pronto (fim corte-parar-r2)
+2026-11-06T17:23:00Z antes de corte-sequencial-r1: conteineres=[a1-isn1 a1-isn2 a1-isn3 ] mem_usada_mb=1920 disponivel_mb=13969
+2026-11-06T17:28:35Z corte-sequencial-r1 pronto (fim corte-sequencial-r1)
+2026-11-06T17:28:35Z antes de corte-sessoes-r3: conteineres=[a1-isn1 a1-isn2 a1-isn3 ] mem_usada_mb=2486 disponivel_mb=13404
+2026-11-06T17:34:02Z corte-sessoes-r3 pronto (fim corte-sessoes-r3)
+2026-11-06T17:34:02Z antes de corte-controle-r1: conteineres=[a1-isn1 a1-isn2 a1-isn3 ] mem_usada_mb=2309 disponivel_mb=13580
+2026-11-06T17:40:11Z corte-controle-r1 pronto (fim corte-controle-r1)
+lote pronto

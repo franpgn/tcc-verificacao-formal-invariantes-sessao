@@ -1,0 +1,3 @@
+rotulo	metodo	url	t_ini_epoch_ns	t_fim_epoch_ns	status	corpo
+ignorar	POST	http://127.0.0.1:12903/rest/v2/server/ignored-caches/sessions-async	1793984422930772700	1793984422950876600	204	
+desfazer	DELETE	http://127.0.0.1:12903/rest/v2/server/ignored-caches/sessions-async	1793984442670590200	1793984442680599500	204	

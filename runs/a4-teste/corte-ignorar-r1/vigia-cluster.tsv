@@ -1,0 +1,44 @@
+t_ini_ns	t_fim_ns	no	estado
+1793983072745353600	1793983072795639200	isn2	size=3 coord=False sessions-async=AVAILABLE counters-async=AVAILABLE
+1793983072724096400	1793983072809385300	isn1	size=3 coord=False sessions-async=AVAILABLE counters-async=AVAILABLE
+1793983072745353600	1793983072819456400	isn3	size=3 coord=True sessions-async=AVAILABLE counters-async=AVAILABLE
+1793983107942803100	1793983109993404200	isn2	erro:TimeoutError sessions-async=AVAILABLE counters-async=erro:TimeoutError
+1793983110494503600	1793983111558711800	isn2	erro:TimeoutError sessions-async=AVAILABLE counters-async=AVAILABLE
+1793983115165837300	1793983117227490100	isn2	erro:TimeoutError sessions-async=erro:TimeoutError counters-async=AVAILABLE
+1793983117728587400	1793983118752125600	isn2	erro:TimeoutError sessions-async=AVAILABLE counters-async=AVAILABLE
+1793983120779275700	1793983122854270800	isn2	erro:TimeoutError sessions-async=erro:TimeoutError counters-async=AVAILABLE
+1793983123355591600	1793983124414351500	isn2	erro:TimeoutError sessions-async=AVAILABLE counters-async=AVAILABLE
+1793983124915040400	1793983127965519000	isn2	erro:TimeoutError sessions-async=erro:TimeoutError counters-async=erro:TimeoutError
+1793983128466399000	1793983130554576600	isn2	erro:TimeoutError sessions-async=erro:TimeoutError counters-async=AVAILABLE
+1793983131055356700	1793983133104602800	isn2	erro:TimeoutError sessions-async=AVAILABLE counters-async=erro:TimeoutError
+1793983133605506600	1793983135678051300	isn2	erro:TimeoutError sessions-async=erro:TimeoutError counters-async=AVAILABLE
+1793983138733219300	1793983141772121400	isn2	erro:TimeoutError sessions-async=erro:TimeoutError counters-async=erro:TimeoutError
+1793983142273512800	1793983143328131300	isn2	erro:TimeoutError sessions-async=AVAILABLE counters-async=AVAILABLE
+1793983140477997100	1793983143541257000	isn1	erro:TimeoutError sessions-async=erro:TimeoutError counters-async=erro:TimeoutError
+1793983144042303800	1793983145114504300	isn1	erro:TimeoutError sessions-async=AVAILABLE counters-async=AVAILABLE
+1793983143829167200	1793983145893449900	isn2	erro:TimeoutError sessions-async=erro:TimeoutError counters-async=AVAILABLE
+1793983147206065400	1793983149285397400	isn1	erro:TimeoutError sessions-async=erro:TimeoutError counters-async=AVAILABLE
+1793983146394465700	1793983149455258300	isn2	erro:TimeoutError sessions-async=erro:TimeoutError counters-async=erro:TimeoutError
+1793983149786699400	1793983150820084400	isn1	erro:TimeoutError sessions-async=AVAILABLE counters-async=AVAILABLE
+1793983149956576800	1793983150997476800	isn2	erro:TimeoutError sessions-async=AVAILABLE counters-async=AVAILABLE
+1793983151321647400	1793983153387021000	isn1	erro:TimeoutError sessions-async=erro:TimeoutError counters-async=AVAILABLE
+1793983151498874200	1793983154567777100	isn2	erro:TimeoutError sessions-async=erro:TimeoutError counters-async=erro:TimeoutError
+1793983153887895400	1793983154977352400	isn1	erro:TimeoutError sessions-async=AVAILABLE counters-async=AVAILABLE
+1793983155520598200	1793983155543270900	isn3	size=2 coord=True sessions-async=AVAILABLE counters-async=AVAILABLE
+1793983155068536900	1793983156493569800	isn2	erro:TimeoutError sessions-async=AVAILABLE counters-async=DEGRADED_MODE
+1793983156994849000	1793983157028357300	isn2	size=1 coord=True sessions-async=DEGRADED_MODE counters-async=DEGRADED_MODE
+1793983155478352900	1793983157527812800	isn1	erro:TimeoutError sessions-async=AVAILABLE counters-async=erro:TimeoutError
+1793983158029140400	1793983158761991800	isn1	size=2 coord=False sessions-async=AVAILABLE counters-async=AVAILABLE
+1793983251477549100	1793983251502153600	isn2	size=3 coord=False sessions-async=AVAILABLE counters-async=AVAILABLE
+1793983251495963700	1793983251529236300	isn3	size=3 coord=True sessions-async=AVAILABLE counters-async=AVAILABLE
+1793983251597887900	1793983251624916600	isn1	size=3 coord=False sessions-async=AVAILABLE counters-async=AVAILABLE
+1793983259510027000	1793983262544905000	isn2	erro:TimeoutError sessions-async=erro:TimeoutError counters-async=erro:TimeoutError
+1793983259633513900	1793983262687694600	isn3	erro:TimeoutError sessions-async=erro:TimeoutError counters-async=erro:TimeoutError
+1793983259734713900	1793983262781087900	isn1	erro:TimeoutError sessions-async=erro:TimeoutError counters-async=erro:TimeoutError
+1793983263045647600	1793983264228395600	isn2	erro:TimeoutError sessions-async=AVAILABLE counters-async=AVAILABLE
+1793983263188143700	1793983264228395600	isn3	erro:TimeoutError sessions-async=AVAILABLE counters-async=AVAILABLE
+1793983263281877400	1793983264230905800	isn1	size=3 coord=False sessions-async=AVAILABLE counters-async=AVAILABLE
+1793983264954906100	1793983265979551600	isn2	size=3 coord=False sessions-async=AVAILABLE counters-async=AVAILABLE
+1793983264954906100	1793983265980558500	isn3	size=3 coord=True sessions-async=AVAILABLE counters-async=AVAILABLE
+1793983282828770700	1793983284930889100	isn1	size=3 coord=False sessions-async=erro:TimeoutError counters-async=erro:TimeoutError
+1793983285431809500	1793983286046936100	isn1	size=3 coord=False sessions-async=AVAILABLE counters-async=AVAILABLE

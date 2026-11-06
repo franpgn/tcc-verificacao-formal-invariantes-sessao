@@ -1,0 +1,19 @@
+== 2026-11-06T17:28:37.022Z inicio corte-sessoes-r3 caso=corte-sessoes semente=76003 duracao_carga=270 base=cc2b71c jar_sha256=1bf157dd89c8e680d99c30e76b8ad481d84874ca689acfec52644155010631a8 xml_sha256=a7b18f2dac46095e468c43ae97c4cc51e411cbb54875606e898a20b6a7227c85 compose_sha256=f7f790fa5a4b3d11c0acabec5ba09a02da2af3527820d9f0a0877ce2d8240347 sonda_sha256=e86cf485da264cc51ec5e02e217aed32fabf34f1eccc4f3f6dd05c0c4a82bb95
+cluster a4: 3 nos
+cria-caches: rc=0
+== 2026-11-06T17:29:03.733Z parametros alvo=isn3 outros=isn1 isn2  coordenador_isn1=False
+== 2026-11-06T17:29:06.311Z origem linha S3 o_ns=1793986146213023700
+== 2026-11-06T17:29:36.620Z corte-inicio isn3
+== 2026-11-06T17:29:38.894Z corte-fim rc=0
+== 2026-11-06T17:29:41.357Z ignorar-pedido isn3 caches=sessions-async
+== 2026-11-06T17:29:44.706Z despejo-threads-inicio
+== 2026-11-06T17:29:44.932Z despejo-threads-fim
+== 2026-11-06T17:31:06.920Z cura-inicio isn3
+== 2026-11-06T17:31:09.271Z cura-fim rc=0
+== 2026-11-06T17:31:58.237Z fusao vista (tamanho 3 no isn3 e no isn1)
+== 2026-11-06T17:32:14.545Z pos-fusao +15 s
+== 2026-11-06T17:32:14.856Z desfazer-pedido isn3
+== 2026-11-06T17:32:15.362Z desfazer-retorno
+== 2026-11-06T17:32:37.131Z fim-sondas
+== 2026-11-06T17:33:37.782Z carga exit=0
+== 2026-11-06T17:34:00.407Z fim corte-sessoes-r3

@@ -1,0 +1,2 @@
+rotulo	metodo	url	t_ini_epoch_ns	t_fim_epoch_ns	status	corpo
+parar	POST	http://127.0.0.1:12903/rest/v2/server?action=stop	1793984938911570000	1793984938919576700	204	

@@ -1,0 +1,11 @@
+== 2026-11-06T17:11:13.078Z inicio semcorte-sessoes-r2 caso=semcorte-sessoes semente=75002 duracao_carga=110 base=cc2b71c jar_sha256=1bf157dd89c8e680d99c30e76b8ad481d84874ca689acfec52644155010631a8 xml_sha256=a7b18f2dac46095e468c43ae97c4cc51e411cbb54875606e898a20b6a7227c85 compose_sha256=f7f790fa5a4b3d11c0acabec5ba09a02da2af3527820d9f0a0877ce2d8240347 sonda_sha256=e86cf485da264cc51ec5e02e217aed32fabf34f1eccc4f3f6dd05c0c4a82bb95
+cluster a4: 3 nos
+cria-caches: rc=0
+== 2026-11-06T17:11:41.586Z parametros alvo=isn3 outros=isn1 isn2  coordenador_isn1=True
+== 2026-11-06T17:11:44.747Z origem linha S3 o_ns=1793985104632702000
+== 2026-11-06T17:12:19.998Z ignorar-pedido isn3 caches=sessions-async
+== 2026-11-06T17:12:39.993Z desfazer-pedido isn3
+== 2026-11-06T17:12:40.435Z desfazer-retorno
+== 2026-11-06T17:12:59.775Z fim-sondas
+== 2026-11-06T17:13:38.836Z carga exit=0
+== 2026-11-06T17:13:53.823Z fim semcorte-sessoes-r2

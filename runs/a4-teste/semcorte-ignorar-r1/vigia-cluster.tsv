@@ -1,0 +1,4 @@
+t_ini_ns	t_fim_ns	no	estado
+1793983399286232300	1793983399352765100	isn3	size=3 coord=False sessions-async=AVAILABLE counters-async=AVAILABLE
+1793983399260230400	1793983399362763900	isn2	size=3 coord=False sessions-async=AVAILABLE counters-async=AVAILABLE
+1793983399260230400	1793983399366764200	isn1	size=3 coord=True sessions-async=AVAILABLE counters-async=AVAILABLE

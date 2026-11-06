@@ -1,0 +1,2 @@
+# Brutos do A4: sem conversao de fim de linha, para o MANIFEST.sha256 continuar valendo depois do checkout.
+* -text

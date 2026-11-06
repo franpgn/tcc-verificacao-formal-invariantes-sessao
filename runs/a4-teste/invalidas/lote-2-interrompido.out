@@ -1,0 +1,7 @@
+2026-11-06T16:47:27Z antes de corte-ignorar-r2: conteineres=[] mem_usada_mb=850 disponivel_mb=15039
+2026-11-06T16:48:29Z corte-ignorar-r2 pronto (corte-fim rc=0)
+2026-11-06T16:48:29Z antes de semcorte-sessoes-r1: conteineres=[a4-isn1 a4-isn2 a4-isn3 ] mem_usada_mb=2303 disponivel_mb=13586
+2026-11-06T16:49:55Z semcorte-sessoes-r1 pronto (falha: cria-caches)
+2026-11-06T16:49:55Z antes de corte-sessoes-r1: conteineres=[a1-isn1 a1-isn2 a1-isn3 ] mem_usada_mb=2056 disponivel_mb=13833
+2026-11-06T16:51:01Z corte-sessoes-r1 pronto (corte-fim rc=0)
+2026-11-06T16:51:01Z antes de corte-parar-r1: conteineres=[a1-isn1 a1-isn2 a1-isn3 a4-isn1 a4-isn2 a4-isn3 ] mem_usada_mb=3686 disponivel_mb=12203

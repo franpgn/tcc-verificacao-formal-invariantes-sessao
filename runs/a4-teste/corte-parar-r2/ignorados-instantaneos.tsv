@@ -1,0 +1,6 @@
+2026-11-06T17:19:48.735Z	antes	isn1	[]
+2026-11-06T17:19:48.828Z	antes	isn2	[]
+2026-11-06T17:19:49.113Z	antes	isn3	[]
+2026-11-06T17:20:31.422Z	pos-acao	isn1	[]
+2026-11-06T17:20:32.276Z	pos-acao	isn2	[]
+2026-11-06T17:20:33.080Z	pos-acao	isn3	Task java.util.concurrent.ScheduledThreadPoolExecutor$ScheduledFutureTask@3e22ad3b[Not completed, task = java.util.concurrent.Executors$RunnableAdapter@2349f1d9[Wrapped task = org.wildfly.security.http.digest.NonceManager$$Lambda/0x00007f400873d400@2e81d1ce]] rejected from java.util.concurrent.ScheduledThreadPoolExecutor@651caa2e[Terminated, pool size = 0, active threads = 0, queued tasks = 0, completed tasks = 0]

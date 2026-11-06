@@ -1139,13 +1139,14 @@ echo "== S22: B1 da V-W6: injetor de F2/F4 sai com 1/6 porque o AC-5 parou o no 
 # R3 da V-W6b: o duble de java para o no 2 s virtuais depois do start da falha (ac5-apos-start), nao a dur/2 do seu
 # relogio, e so escreve a linha de fim depois do end da falha; os dubles de F2/F4 esperam a parada (ac5-previsto)
 # antes de olhar o alvo, entao ela cai dentro da janela (F2) ou do ping (F4) mesmo com o host carregado. F2: janela de
-# 80 s numa carga de 120 s; o duble sai no fim da janela com o alvo parado (1). F4: janela de 120 s numa carga de 160 s;
+# 80 s numa carga de 120 s; o duble sai no fim da janela com o alvo parado (1). F4: janela de 300 s numa carga de 340 s
+# (sob carga o arranque do duble, do lancamento ao start, comia a folga de 80 s que a janela de 120 s dava ao N1);
 # como o real, o duble faz a verificacao por ping de 40 s e sai com 6 no fim dela (N1). Teto de 900 s: sob carga o
 # disparo atrasa e a carga espera o end. R4: no F4 o B1 exige a linha "degradacao aplicada: alvo <no>" e o start; na
 # F2, o start (alem da linha OK).
 for caso in f2 f4 f2-sem-ok f2-sem-start f4-sem-aplicada f4-sem-start; do
     novo_caso "s22-${caso}"
-    F="F2"; DUR=80; CARGA=120; [[ "${caso}" == f4* ]] && { F="F4"; DUR=120; CARGA=160; }
+    F="F2"; DUR=80; CARGA=120; [[ "${caso}" == f4* ]] && { F="F4"; DUR=300; CARGA=340; }
     parametros duracao_s="${CARGA}" "${F,,}_dur_s=${DUR}" exec_teto_s=900
     matriz_aval "ASYNC-${F}:teste:1"
     echo "127.0.0.1:11224" > "${ST}/ac5-alvo"

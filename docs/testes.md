@@ -1128,3 +1128,37 @@ tinham a ASYNC). As duas são conferidas (SHA-256 e perfil), mesmo com a fase s�
 `--controller-reference` com a referência ASYNC nas duas, `--rejoin-timeout-sec` presente, senha mascarada e "nada
 executado (sem java, podman, sudo, tty)". O diretório `--saida` não foi criado. Comando em `dry-run/comando.out` e
 SHA-256 das entradas em `dry-run/entradas.sha256`.
+
+## W-10: sonda de reuso de sessão depois do *logout* (*replay*) na carga S3 (2026-11-06)
+
+Branch `feature/s3-sonda-replay` (worktree `wt-w10`), a partir de `494ccce` (merge do W-6c em
+`feature/controlador-integracao`). TDD: o golden da base foi gerado e commitado antes de qualquer mudança
+(`c96981c`); os testes da sonda foram escritos antes do código (falha de compilação sem `SondaReplay`). JDK 22.0.2,
+Maven 3.9.16, Python 3.12.6, no *host*; o *smoke* na máquina Podman do WSL, sem VM.
+
+| Suíte | Comando | Resultado |
+|---|---|---|
+| Surefire | `mvn -o test` (em `workload/`) | **1165/0/0/1 em 165 classes** (base: 1142 em 160; +23 em 5 classes novas). O *skip* é o de sempre (`SanidadeRegressaoJunhoTest`) |
+| `analysis` | `python -E -P -m unittest discover -s analysis` | **374 OK, 1 *skip*** (370 da base + 4) |
+| `test_campanha_s3_*` | `python -I -m unittest discover -s scripts -p "test_campanha_s3_*.py"` | 71 OK (sem mudança) |
+| `run-campanha-s3.test.sh` S1, S27, S30 | `bash scripts/run-campanha-s3.test.sh S30 S27 S1` | **70 PASS, 0 FAIL** (870 s, com a suíte de outra sessão rodando no *host*; `runs/w10-smoke/orquestrador-s1-s27-s30.out`). O S30 foi escrito junto com a opção e não foi visto vermelho |
+
+Classes novas:
+
+| Classe | Testes | O que prende |
+|---|---|---|
+| `S3SondaDesligadaRegressaoTest` | 1 | sonda desligada: ações S3 (instantes do relógio falso), eventos (operação, réplica, código, chave), violações, contadores e cabeçalhos dos CSV iguais ao golden `golden-w10-494ccce/s3-sem-sonda-semente7.txt`, gerado com as classes da base (240 s, nó 2 fora do ar de 100 a 160 s) |
+| `SondaReplayTest` | 10 | replay imediato no nó `k+1` com atraso em [1, 3) s vê o backup `VALID` da maioria (dublê `MundoS3Particao`) e registra I1 com `origem = sonda` e a mensagem de sempre; um evento `ReplayValidate` e nenhum `Validate`; alvo `(k+1) mod 3`; atraso do gerador dado e dentro de [min, max); nada ao controlador (eventos e violações), à latência, às ações S3 nem ao mapa de confirmações; coluna `origem` no CSV; replay tardio depois da fusão vê a perda; só *logouts* das fases `durante*`/`recuperacao`, amostra semeada acima do limite, nada sem marcador `start`; nó indisponível pulado (nunca o `k`); imediatos pendentes descartados e contados; janela de medição (imediato respeita, tardio entra sempre) |
+| `S3SondaSimulacaoTest` | 6 | desligada não cria ator; ligada cria um por nó, depois dos da carga; ligada não muda a sequência das ações nem os eventos da carga (mesma semente); um replay imediato por *logout* confirmado, no nó `k+1`, entre 1 e 3 s; determinismo da sequência da sonda com partição (mesma semente igual, outra semente diferente); na partição a sonda vê as duas formas de I1 (*logout* do isolado perdido na fusão; cópia velha no isolado) e mais sids que a carga sozinha |
+| `WorkloadMainSondaFonteTest` | 2 | na fonte: replay tardio depois de `rodarEmThreads`, antes do CSV de ações e ainda dentro do *try* dos clientes S3; coluna `origem` só com `--scenario S3` e `--s3-replay-probe` (escrito depois do código) |
+| `CliSondaReplayTest` | 4 | padrões (desligada, 1 s, 3 s, 200), opções, validação (mínimo > 0, máximo ≥ mínimo, limite ≥ 0, só `pinned`), semente `mix64(sementeAtor("U", i) ^ "SONDAREP")` e o gerador do usuário inalterado |
+
+Dublê novo: `MundoS3Particao` (três servidores de aplicação sobre um *grid* com cópia da maioria e da minoria na
+janela de partição; o nó isolado lê e escreve só a dele; na fusão a maioria vence nas chaves comuns e as só da minoria
+entram, como `PREFERRED_NON_NULL` com a maioria preferida).
+
+Python: `test_referencia_p99.R2bInstrumentacao` (2), `test_energia_proxy.EdbInstrumentacao` (1) e
+`test_comparar_bracos.ExclusoesERegistro.test_replay_validate_fora_dos_desfechos` (1). Orquestrador: caso S30 do
+`run-campanha-s3.test.sh`.
+
+*Smoke* local: ver o relatório (`docs/relatorio-w10-2026-11-06.md`, seção 5) e `runs/w10-smoke/`.

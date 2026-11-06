@@ -103,3 +103,31 @@ flowchart LR
 | `analysis/test_contrato_csv.py` (sem edição) | todo literal de `returnCode()` é sucesso ou erro conhecido |
 | `analysis/test_contrato_csv_v2.py` (R4) | `SUCESSOS`, regressão do contrato 1 e `versao_contrato_csv` |
 | `GoldenS1S2Test` (sem edição) | o formato do `EventCsvWriter` (os códigos são literais no teste) |
+
+## 7. W-10: tipo `ReplayValidate` e coluna `origem` (só com `--s3-replay-probe`, 2026-11-06)
+
+A sonda de reuso de sessão depois do *logout* (W-10, `docs/relatorio-w10-2026-11-06.md`) não muda o contrato 2:
+as colunas, a ordem, a tabela de `return_code` e o `meta-csv-rep-NNN.json` (`contrato_csv = 2`) continuam os
+mesmos. Com a sonda **desligada** (o padrão) os três arquivos são byte a byte os de antes
+(`S3SondaDesligadaRegressaoTest`, golden da base `494ccce`). Com `--s3-replay-probe`:
+
+| Arquivo | O que aparece |
+|---|---|
+| `rep-NNN.csv` | linhas com `operation = ReplayValidate` (`SessionOps.OP_REPLAY_VALIDATE`): `replica` é o servidor de aplicação que fez a leitura (o nó `k+1`, ou `k+2` no tardio), `key` é a sid, `return_code` segue a tabela da seção 1 (`VALID`, `INVALID`, `NOT_FOUND`, `ERROR_*`). O replay imediato obedece à janela de medição, como a carga; o tardio roda depois do fim da carga e entra mesmo fora dela (`phase` diz onde caiu) |
+| `violacoes-rep-NNN.csv` | uma coluna nova, `origem`, depois de `classificacao` (ou de `fase`/`mensagem` se as outras não existirem): `sonda` na violação revelada por uma leitura da sonda, vazia nas demais. A mensagem da I1/I4 da sonda é a mesma do caminho de sempre |
+| `s3-acoes-rep-NNN.csv` | nada (a sonda não é ação S3) |
+| `s3-resumo-rep-NNN.json` | `parametros.sonda_replay`, `sonda_min_sec`, `sonda_max_sec`, `sonda_tardia_max` e os contadores `sonda|imediata|<desfecho>`, `sonda|tardia|<desfecho>`, `sonda|imediata|agendada`, `sonda|imediata|descartada-fim`, `sonda|tardia|sem-no` |
+
+O `ReplayValidate` é instrumentação e fica fora da mistura e do verificador de sanidade (que só lê S1/S2). Nas
+análises, `analysis/referencia_p99.py` (`OPERACOES_INSTRUMENTACAO`) e `analysis/energia_proxy.ler_eventos_inicio` o
+descartam na leitura; assim o `comparar_bracos.py` não o leva ao `evento_p99:*`, à `taxa_erro` nem às fronteiras
+`t0`/`t1` da execução (a vazão útil não muda com o replay tardio, que roda depois da carga). Leitor novo do
+`rep-NNN.csv` que agregue todas as operações deve fazer o mesmo. O `contar_violacoes` do `comparar_bracos.py` lê o
+CSV de violações por nome de coluna e **conta** a I1 com `origem = sonda` (a decisão de ela entrar ou não em V é do
+Gestor; ver o relatório do W-10).
+
+| Teste | O que trava |
+|---|---|
+| `S3SondaDesligadaRegressaoTest` | sonda desligada: ações, eventos, violações, contadores e cabeçalhos iguais aos da base `494ccce` |
+| `SondaReplayTest.replayImediatoVeBackupValid`, `colunaOrigemNoCsv`, `janelaDeMedicaoDosEventos` | o evento `ReplayValidate`, a coluna `origem` e a janela de medição dos dois replays |
+| `analysis/test_referencia_p99.py` (R2b), `test_energia_proxy.py` (EdbInstrumentacao), `test_comparar_bracos.py` (`test_replay_validate_fora_dos_desfechos`) | o descarte do `ReplayValidate` nas análises |

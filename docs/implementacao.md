@@ -95,6 +95,65 @@ o ProtoStream padrão falha ao serializar e toda escrita vira
 
 ## Decisões técnicas a registrar
 
+### TD-016 — W-10: sonda de reuso de sessão depois do *logout* (*replay*) na carga S3 (2026-11-06)
+
+Branch `feature/s3-sonda-replay`, a partir de `494ccce` (`feature/controlador-integracao`, merge do W-6c). Motivo: o
+diagnóstico de 06/11 da calibração S3 (sem violação de V) mostrou que, na F2, o *logout* confirmado pelo nó isolado
+antes da detecção (mecanismo M1) provavelmente se perde na fusão e vira I1 latente, e que a carga nunca o observa: o
+"botão voltar" revalida a sid só por 10 s e sempre no mesmo servidor de aplicação, enquanto o backup `VALID` fica na
+maioria. A sonda mede essa exposição, o ataque de reuso do *token* depois do *logout* que a I1 existe para impedir.
+
+**Arquivos.** `session/SondaReplay.java` (novo); `S3Parametros` (opções), `ContextoS3` (sementes), `UsuarioVirtual`
+(gancho no *logout* confirmado), `S3Simulacao` (atores da sonda), `SessionOps.validarSonda` e `OP_REPLAY_VALIDATE`,
+`InvariantAuditor` (origem da violação), `EventCsvWriter` (registro fora da janela), `WorkloadMain.executarS3` (replay
+tardio e linhas do *stdout*), `analysis/referencia_p99.py` e `analysis/energia_proxy.py` (descarte na leitura),
+`scripts/run-campanha-s3.sh --sonda-replay`.
+
+```mermaid
+%%{init: {'theme':'base','themeVariables':{'background':'#ffffff','primaryColor':'#ffffff','primaryTextColor':'#000000','primaryBorderColor':'#000000','lineColor':'#000000','secondaryColor':'#ffffff','tertiaryColor':'#ffffff','clusterBkg':'#ffffff','clusterBorder':'#000000','edgeLabelBackground':'#ffffff','fontFamily':'Arial'}}}%%
+flowchart TD
+    LO["UsuarioVirtual: Logout sem erro no servidor de aplicacao do no k"] --> AG["SondaReplay.logoutConfirmado:<br/>atraso U(1, 3) s do gerador da sonda do usuario;<br/>replay no no (k+1) mod n; guarda o logout"]
+    AG --> AT["AtorSonda do no alvo (um por no, depois dos atores da carga)"]
+    AT --> VS["SessionOps.validarSonda(sid): get da sessao;<br/>confirmacao anterior + VALID = I1 (origem sonda);<br/>evento ReplayValidate na janela de medicao"]
+    FIM["fim da carga (atores parados, clientes abertos)"] --> TD["SondaReplay.replayTardio: descarta imediatos pendentes;<br/>sids com logout nas fases durante* ou recuperacao;<br/>no k+1, ou k+2 se k+1 der erro; amostra acima do limite"]
+    TD --> VT["validarSonda(sid, fora da janela): evento ReplayValidate mesmo depois da janela"]
+    VS --> SAI["violacoes-rep-NNN.csv com a coluna origem;<br/>linhas 'Sonda replay:' e 'Sonda violacoes:' no stdout;<br/>contadores sonda|... no s3-resumo"]
+    VT --> SAI
+```
+
+Decisões:
+
+1. **Padrão desligada.** Sem `--s3-replay-probe` nenhum ator, gerador ou coluna novos são criados, e a saída é igual
+   à da base (golden `golden-w10-494ccce/`, gerado com as classes da base antes de qualquer mudança).
+2. **Semente.** O atraso de cada usuário `i` vem de `new Random(mix64(sementeAtor("U", i) ^ SAL_SONDA))`, com
+   `SAL_SONDA = "SONDAREP"` em ASCII e o finalizador do SplitMix64, o esquema de `MisturaV3.sementeToken` e
+   `WorkloadMain.sementeMistura` (Metodologia, seção da carga). `sementeAtor` é a fórmula de sempre de
+   `ContextoS3.rng`, só extraída; o gerador do usuário não é consumido pela sonda. A amostra do tardio usa
+   `mix64(semente ^ SAL_SONDA_TARDIA)` (`"SONDATAR"`), consumido só quando há mais candidatas que o limite.
+3. **Um ator por nó alvo.** Um nó fora do ar (cada leitura esperando o *timeout* do cliente) só atrasa os replays
+   dele. O ator acorda no máximo a cada 50 ms para ver um replay novo com prazo mais cedo. No laço sequencial dos
+   testes, os atores da sonda vêm depois dos da carga e, sem custo de tempo no *grid*, não mudam a sequência dos
+   outros (`S3SondaSimulacaoTest.ligadaNaoMudaAsSequenciasExistentes`).
+4. **Só instrumenta.** `validarSonda` não lê a identidade (sem I2), não chama o ouvinte de eventos nem o de violações
+   (o controlador não vê a sonda), não registra latência nem desfecho de Validate, não escreve no mapa de
+   invalidações confirmadas (uma leitura `INVALID` sem confirmação anterior não vira confirmação) e não conta
+   corrida do observador. A I1/I4 sai pelo mesmo ramo de `verificarI1I4` (`verificarContraConfirmado`), com a mesma
+   mensagem e `origem = sonda`.
+5. **Replay tardio no fim da carga.** Roda dentro de `executarS3`, com os atores parados e os clientes pinados ainda
+   abertos, antes do sinal de fim da carga e do laço de convergência. Na campanha (300 s, F2 de +49 a +145 s, fusão
+   por volta de +189 s) isso fica cerca de 110 s depois da fusão. Candidatas: *logouts* confirmados nas fases
+   `durante*` e `recuperacao` dos marcadores (do `start` até `end + W_recovery`), porque o nó isolado continua sem
+   fundir depois do `end` (44 s no F2 da calibração; 40 s de "zumbi" na pausa). Sem marcador `start`, não há tardio.
+   O alvo é `k+1`; se der erro, `k+2` (nunca `k`), e o nó que deu erro é pulado no resto do tardio, o que limita a
+   espera a um *timeout* por nó parado (o AC-5 pode ter parado um nó).
+6. **Eventos.** Tipo `ReplayValidate` no `rep-NNN.csv` (contrato 2 sem mudança de colunas; ver
+   `docs/contrato-csv-v2.md` seção 7). O imediato obedece à janela de medição; o tardio entra mesmo fora dela.
+7. **Orquestrador.** `--sonda-replay` acrescenta `--s3-replay-probe --sweep` à linha do jar e `sonda_replay=sim|nao` às
+   opções do *bundle*.
+
+Limites conhecidos (no relatório): a mesma sid pode render I1 no imediato e no tardio (contagem por leitura, como a
+carga); com `--stop-at-fault-end` o tardio cai no fim da falha, antes da fusão; no modo `topology` a sonda é recusada.
+
 ### TD-015 — W-6 (B-46): orquestrador das campanhas S3 e religamento depois do AC-5 (2026-11-05)
 
 Numeração: TD-014 na branch do W-6, renumerado para TD-015 na integração (merge em `feature/controlador-integracao`,

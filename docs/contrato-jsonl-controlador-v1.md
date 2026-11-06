@@ -33,7 +33,9 @@ ação novo `AC-7` (ignorar só o cache de sessões no nó suspeito; um nó, **u
 já pedidas na execução depois da janela, ou `null`) no fim de toda linha `politica`; motivos novos da linha `politica`
 `desfazer-alvo-sozinho`, `desfazer-apos-fusao` e `suspeita-desfeita` (P0 com `reverter` = `["AC-7"]`);
 `eventos_descontados_sob_acao` no `fim` do `observaveis` (erros do servidor de aplicação do nó sob o AC-7 que não
-foram ao laço; 0 em shadow). O `lido` da linha `acao` do AC-7 segue o formato de `session.AtuadorIgnorarCache`
+foram ao laço; 0 em shadow); `guarda_ac7_desfazeres` no mesmo `fim` (desfazeres pedidos pela guarda contínua do AC-7;
+`null` sem ela, isto é, em shadow ou com `acaoP1 = AC-5`); origem nova `GUARDA` na linha `acao` (reversão pedida pela
+guarda contínua). O `lido` da linha `acao` do AC-7 segue o formato de `session.AtuadorIgnorarCache`
 (`efeito_ms`, `guarda`, `post`, `anterior`, `rota` e as listas por nó). O bloco `politica` aceita o campo opcional
 `acaoP1` (com a origem dele); sem o campo, a ação do P1 é o `AC-7`.
 

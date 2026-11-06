@@ -1522,3 +1522,29 @@ com a origem da DT-026; `--swap-limite-kb 1048576`):
 - a linha do programa do plano, com o jar construído da ponta e `--dry-run` do próprio programa, sai com 0
   (`programa-dry-run.out`): o picocli e o `S3Parametros.validar` aceitam `--s3-replay-late-max 268` com
   `--s3-replay-probe` e `--sweep`.
+
+## P1-IC: o P1 ignora o cache de sessões no suspeito (AC-7) (2026-11-06)
+
+Branch `feature/p1-ignorar-cache` (base `int/2026-11-06-bench`, `cc2b71c`). TDD: os testes foram escritos antes e
+commitados vermelhos (`4f9edae`: não compilam sem `AcaoCluster.Tipo.AC_7`, `AtuadorIgnorarCache`,
+`ParametrosPolitica.acaoP1`, `PlanoDeAcao.usadasP1` e `LigacaoControlador.DescontoSobAcao`; `83e5496`: sem
+`GuardaContinuaIgnorados`). Surefire na ponta: **1207 testes, 0 falhas, 1 ignorado** (o mesmo ignorado da base),
+172 classes; no `ae07fad` (antes da guarda contínua), 1205 testes, 171 classes.
+
+| Classe de teste | O que fixa |
+|---|---|
+| `controle.AcaoIgnorarCacheTest` | AC-7: um nó, um cache (R1), reversível, `T_cham + 15 s`; JSONL com `reversao` = `null`; braço B com o adaptador novo e o mesmo pior caso de `T_enc` (21/19 s); executor: pilha, R4, FALHOU revertida na hora; `acaoP1` opcional (ausente = AC-7; `"AC-5"`; outro valor, tipo errado ou origem faltando são recusados) |
+| `controle.PoliticaIgnorarCacheTest` | mesma condição de disparo do P1 com AC-7 e só o cache de sessões; a ação fica até a detecção; `desfazer-alvo-sozinho` (R6), em CONSERVADOR e fora dele; `desfazer-apos-fusao` (R7); `suspeita-desfeita` só com S_lag determinado abaixo do teto por `kLag` janelas; nada sem AC-7 ativo; AC-5 para comparação; `usadas_p1` no fim da linha `politica` |
+| `controle.PoliticaPorAssinaturaTest` | a suíte do W-2a, agora com `acaoP1 = AC-5` fixado: regressão da parada |
+| `session.AtuadorIgnorarCacheTest` | servidores falsos com lista por nó e partição simulada: corte (POST só ao alvo, efeito em ms, guarda limpa, POST pendente, sem esperar o 500); R2 (o DELETE espera o POST pendente; nenhum pedido que muda lista sobreposto a outro); R6 (alvo `DEGRADED_MODE` → DELETE no próprio alvo); R7 (depois da fusão, um DELETE à maioria zera a lista do alvo; sob corte não detectado, DELETE no alvo em sequência); R4 (sem corte, a lista da maioria mostra o cache → desfaz na hora, FALHOU `falso-alarme-desfeito`, reverter seguinte sem pedido); R5 (nenhum `/rest/v2/container`); recusas sem pedido; efeito não confirmado; tempo real do POST pendente no `lido` |
+| `session.GuardaContinuaIgnoradosTest` | guarda contínua: lista de outro nó com o cache depois da carência → um desfazer por ação; nunca lê o alvo; só a lista; carência e ausência de AC-7 sem efeito |
+| `session.LigacaoControladorDescontoTest` | o sensor desconta os erros do servidor do nó sob o AC-7, só em active; sucessos e outros nós contam; mapa REST → Hot Rod pela posição |
+| `session.ClassificadorDeErroTest`, `ClassificadorMensagemRealTest`, `CapturasReais` | `CacheUnavailableException` → `ERROR_UNAVAILABLE`, com a captura real do A4 como fonte da marca |
+| `session.LigacaoControlador*Test`, `Arquitetura*Test` | nome novo do atuador, `acao_p1` na meta, P1 com AC-7 previsto em shadow (ponta a ponta com canal falso), `eventos_descontados_sob_acao` e `guarda_ac7_desfazeres` no `fim`; o adaptador e a guarda nas listas de arquitetura (R-C1, R-ARQ-1) |
+
+**Braço shadow (não regressão):** em shadow o atuador nunca é chamado (testes do W-3/W-2a sem mudança), o desconto
+não age (`LigacaoControladorDescontoTest.shadowEOutrosTipos`, `eventos_descontados_sob_acao` = 0 no ponta a ponta
+shadow) e a guarda contínua não é criada (`guarda_ac7_desfazeres` = `null`). A política é a mesma nos dois braços;
+o que muda no shadow é só a linha `acao` prevista (AC-7 em vez de AC-5).
+
+**Smoke local** (`runs/p1ic-smoke/`, `comandos.md`): ver `docs/relatorio-p1-ignorar-cache-2026-11-06.md`.

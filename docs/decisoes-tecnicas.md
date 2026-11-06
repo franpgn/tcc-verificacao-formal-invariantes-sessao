@@ -1018,3 +1018,27 @@ Transmitidas ao Senior pelo coordenador, sobre o parecer de conferência do text
   referência; 80 execuções, todas com L+ e os instrumentos; sementes a partir de 800000.
 - **Riscos registrados, sem previsão de efeito:** o AC-5 só corta o trecho final da janela; das 11 perdas da forma 1
   medidas no piloto, um nó parado em +2, +5, +10 e +20 s teria evitado 11, 7, 3 e 1, e na detecção, 0.
+
+## DT-027: complemento 1 da DT-026, avaliação da regra de fusão A1 e do controlador com a ação A4, PRÉ-REGISTRO (2026-11-06)
+
+> Registrado em 2026-11-06, **antes de qualquer dado da avaliação**, por decisão do Gestor (comparar a regra de fusão
+> atual × A1 e o controlador desligado × ligado com a A4). Texto vinculante:
+> `docs/pre-registro-benchmark-refeito-complemento-1-2026-11-06.md`, versão `4fa4546`. Substitui a seção 5 da DT-026
+> (desenho da avaliação). Os pontos marcados [A4] fecham numa nota a esta entrada, antes dos dados, quando a
+> implementação da A4 for validada.
+
+- **Desenho:** fatorial 2×2 por bloco na célula ASYNC F2 + L+ com os instrumentos da DT-026 (regra de fusão do
+  `sessions-async` atual ou A1 × controlador `shadow` ou `active` com a A4), quatro braços com a mesma semente, 12
+  blocos (48 execuções). Contrastes por bloco: efeito da A1, efeito da A4 e interação, pela troca de sinal.
+- **Regra de sucesso:** V (DT-026) e p99 co-principais, IU por efeito principal, Holm sobre os dois efeitos (m = 2);
+  interação reportada sem Holm. **Secundárias novas:** perda permanente (união por sid, depois da fusão, de varredura
+  REAL, I1 *online* pós-fusão e sonda tardia) e exposição na janela (sonda imediata e I1 *online* antes da fusão).
+- **Descritivas da A4** (regra atual, controlador desligado × ligado, 4 blocos cada): sem falha e F3 no núcleo; F1 e F4
+  nas extras. Total de 80 execuções, ~8,8 h a ~395 s cada, ~11,0 h com a margem h4.
+- **Registro do risco da A4:** o falso alarme tira o `sessions-async` do ar no *cluster* inteiro até o desfazer; a
+  guarda R4 desfaz ao ver a lista replicada; desfazer pela R6 (no alvo, em `DEGRADED_MODE`) e pela R7 (reserva, pela
+  maioria, depois da fusão). Tempo de indisponibilidade e erros medidos por execução.
+- **Recalibração válida** (`b183527a…`): a A1 não muda sinais, a A4 só troca a ação.
+- **Orquestrador antes de rodar:** `sessions-async.json` por braço, JAR da extensão no *bundle* em todos os braços,
+  checagem de fusão antes da varredura (sem fusão = varredura com erro, tratamento simétrico nos quatro braços),
+  matriz de quatro braços, controlador com a A4 [A4], análise 2×2 no `comparar_bracos.py`.

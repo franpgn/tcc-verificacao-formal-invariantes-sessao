@@ -1,0 +1,7 @@
+# --dry-run do run-campanha-s3.sh na ponta 494ccce, 2026-11-06T05:05:47Z
+ac9a745ec1d1c44e66d20163ce7adc56bfe9ca176fd61a81e37dfd2286397d1c  runs/w6c-int-smoke/dry-run/matriz.tsv
+dee90d6ccc8d9cc41e6115b233c09a62b8faf65de8b71eddc0a9fda8d6064987  runs/w6c-int-smoke/dry-run/parametros-campanha-s3-2.json
+0ff8714b217a50c10b44cf7e3a992650527692662cd4e9ae33554f1946253c8a  cluster/controlador/controlador-calibracao-s3.json
+05342de490d817208d4c26625a4718f4969f4d02244b4b24758bdc73a2016d15  runs/w2b-smoke/config/referencia-S3-async.json
+ec0f812b05c8c4a63befe2345371757b1555069347ba949ea218a4189accfc44  runs/b44-2/integracao/referencia-S3-sync.json
+d060c3a43a82592fabe03a9bd49c092eca195dc6f26b7dc6ab7b5563b514e038  scripts/run-campanha-s3.sh

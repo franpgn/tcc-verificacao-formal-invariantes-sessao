@@ -61,6 +61,11 @@ caso fica provável: no *smoke* acima, W' ≤ 13 s daria cerca de 70 eventos ele
 alcançado só por defasagem, topologia ou violação (`Controlador.java:117-123`). O P1 não depende da latência: no cenário
 do P1 o lag está ALTA desde a primeira janela com rodada no teto, porque `lag_in` ≤ teto (V-W9 §3(b)).
 
+> **Nota de remissão (2026-11-06, antes de qualquer dado):** a condição desta seção vale sempre que a 7.7 tiver
+> N = 0 (nenhuma posição de k janelas determinadas seguidas), o que inclui o caso sem janela determinada; o valor
+> de θ_in é o menor *double* acima de 1, como acima. Ver o complemento 3a
+> (`docs/pre-registro-calibracao-s3-complemento-3a-2026-11-06.md`). O texto acima não foi editado.
+
 ## 3. R-3: o trecho do m que atravessa o `end` é cortado no `end`
 
 Na 7.8 (complemento 1 §3), os trechos de janelas sem sinal alto são tomados **dentro das janelas que começam em ou depois

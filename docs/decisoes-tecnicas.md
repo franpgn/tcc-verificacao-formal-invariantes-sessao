@@ -932,4 +932,7 @@ Transmitidas ao Senior pelo coordenador, sobre o parecer de conferência do text
 - **R-3:** no m, o trecho que atravessa o `end` é cortado no `end` (como a 7.14).
 - **R-4:** com W final < 5 s, pular janelas sem rodada subestima `kLag` e m em ~5/W (corrige o complemento 1 §4.1);
   declarado. Ocorre com a 7.3 já abaixo de 5 s, ou na reserva só com `kLag_min` > 5.
+- **Complemento 3a** (`docs/pre-registro-calibracao-s3-complemento-3a-2026-11-06.md`, 2026-11-06, antes de
+  qualquer dado): a R-2 vale sempre que a 7.7 tiver N = 0 (nenhuma posição de k janelas determinadas seguidas), o que
+  inclui o caso sem janela determinada; θ_in "sem cobertura" = o menor *double* acima de 1, como no texto.
 

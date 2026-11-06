@@ -736,6 +736,15 @@ class Funcoes(unittest.TestCase):
         r = cal.klag(ex, 2000, 9)        # 3 x 9 + 13,3 = 40,3 >= 39,8
         self.assertFalse(r["dentro_do_limite"])
         self.assertEqual(2, r["k_max_no_limite"])
+        # R-1: kLag = 1 em W = 14 conta como max(k, kLag) = 2: 41,3 s, fora; nenhum kLag cabe
+        um = [("e", [J(2000.0, "a"), J(1.0, "b")])]
+        r = cal.klag(um, 2000, 14)
+        self.assertEqual(2, r["valor"])
+        self.assertFalse(r["dentro_do_limite"])
+        self.assertEqual(0, r["k_max_no_limite"])
+        r = cal.klag([("e", [J(1.0, "b")])], 2000, 14)     # kLag = 1
+        self.assertFalse(r["dentro_do_limite"])
+        self.assertTrue(cal.klag([("e", [J(1.0, "b")])], 2000, 13)["dentro_do_limite"])
 
     def test_klag_pula_janela_sem_rodada(self):
         J = lambda lag, sus: {"lag_max": lag, "suspeito": sus, "vista_completa": True, "lag_rodadas": 1,
@@ -795,8 +804,12 @@ class Funcoes(unittest.TestCase):
         r = cal.reserva_w(5, 3, {5: 11, 4: 11, 3: 11}.get)
         self.assertEqual((5, 11, False, False), (r["W_s"], r["kLag"], r["viavel"], r["reserva_aplicada"]))
         self.assertEqual(3, len(r["candidatos"]))
-        r = cal.reserva_w(30, 3, lambda w: 1)                     # 1 x 26 + 13,3 = 39,3 < 39,8
-        self.assertEqual((26, 1, True), (r["W_s"], r["kLag"], r["reserva_aplicada"]))
+        # R-1 da V-W9: o P1 so age depois de max(k, kLag) janelas; com k = 2, kLag = 1 conta como 2
+        r = cal.reserva_w(30, 3, lambda w: 1)                     # 2 x 13 + 13,3 = 39,3 < 39,8; 2 x 14 = 41,3
+        self.assertEqual((13, 1, True), (r["W_s"], r["kLag"], r["reserva_aplicada"]))
+        r = cal.reserva_w(14, 3, lambda w: 1)
+        self.assertEqual([(14, False), (13, True)], [(c["W_s"], c["viavel"]) for c in r["candidatos"]])
+        self.assertIn("max(k, kLag)", r["motivos"][0])
         r = cal.reserva_w(5, 3, lambda w: None)                   # kLag nao derivado: nao avaliavel
         self.assertIsNone(r["viavel"])
         self.assertEqual(5, r["W_s"])
@@ -809,13 +822,15 @@ class Funcoes(unittest.TestCase):
         self.assertEqual(540.0, r["maximo_s"])
         self.assertEqual(510.0, r["mediana_s"])
 
-    def test_viabilidade(self):
-        self.assertTrue(cal.viabilidade(26, 1)["viavel"])
-        r = cal.viabilidade(27, 1)
-        self.assertFalse(r["viavel"])
-        self.assertTrue(any("7.4" in m for m in r["motivos"]))
-        self.assertFalse(cal.viabilidade(5, 6)["viavel"])
-        self.assertTrue(cal.viabilidade(5, 5)["viavel"])
+    def test_viavel_em(self):
+        # R-1 da V-W9: max(K_NUCLEO, kLag) W + 13,3 < 39,8, com K_NUCLEO = 2 (a persistencia do nucleo)
+        self.assertEqual(2, cal.K_NUCLEO)
+        self.assertTrue(cal.viavel_em(1, 13))       # 2 x 13 + 13,3 = 39,3
+        self.assertFalse(cal.viavel_em(1, 14))      # 2 x 14 + 13,3 = 41,3 (antes da R-1, 1 x 14 cabia)
+        self.assertTrue(cal.viavel_em(2, 13))
+        self.assertTrue(cal.viavel_em(5, 5))        # 38,3
+        self.assertFalse(cal.viavel_em(6, 5))       # 43,3
+        self.assertFalse(hasattr(cal, "viabilidade"))   # R-5: a funcao sem uso saiu
 
     def test_exec_teto(self):
         r = cal.exec_teto(300, 60, 600, 5, 2.4, 13.5)

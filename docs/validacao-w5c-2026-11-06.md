@@ -120,3 +120,53 @@ a do `comparar_bracos`. Com o W-5c, o `comparar_bracos` passa a contar pares. A 
 sintéticos atuais (as três violações da `f2a` têm invariantes diferentes). Mas, na recalibração do benchmark refeito,
 as taxas que o W-9 passa ao `poder.py` precisam seguir a regra nova (pares, três origens), senão o poder sai de outra
 métrica. Isso fica como item do W-9 na §8 do pré-registro, não deste item.
+
+## 7. Adendo: W-5d e a regra de V no W-9 (2026-11-06)
+
+### 7.1 W-5d (`aec81b0..e1a188b`, `wt-w5c`)
+
+**Suíte:** `python -E -P -m unittest discover -s analysis` deu 407 testes, OK, 1 pulado.
+
+| Ponto da seção 5 | Situação |
+|---|---|
+| troca nos dois braços do bloco em que a varredura falhou em algum braço | confere: `_aplicar_varredura_simetrica` roda antes da lista de desfechos e troca V e `:sem_forma2` dos dois braços pelos totais sem a varredura (pares e linhas). Troca também as contagens por invariante (`info["violacoes"]`), que alimentam o `co_principal_v` e `violacoes` da célula |
+| o bloco fica no teste, em toda célula | confere (teste, descritiva e referência) |
+| totais sem a varredura | confere: pares com alguma detecção contada fora da varredura, e forma 2 do par recalculada só com essas detecções (`_forma_do_par`, extraída sem mudança de comportamento) |
+| detalhe e tabela | confere: `violacoes.detalhe.varredura_com_erro` com o número de blocos (só A, só B, nos dois) e, por bloco, o braço da falha e V com e sem a varredura; uma linha na tabela Markdown |
+| guarda de instrumentos | confere: `erro` continua contando como varredura pedida |
+| sensibilidade sem os blocos afetados | confere: família sensibilidade, escala diferença, sem p (`permutar=False`) e sem Holm, fora de `desfechos`. O índice de semente (`len(nomes) + 4`) fica depois dos usados pelas contagens por invariante |
+
+**Mutações**, as quatro pegas:
+- troca só no braço que falhou (4 testes);
+- bloco excluído, como no W-5c (5 falhas e 1 erro);
+- sensibilidade com p de permutação publicado e marcado como Holm (1);
+- sensibilidade na família secundário (1).
+
+### 7.2 W-9 com V por pares (`b42741a..6d154c6`, `wt-w9`)
+
+- **A cópia é literal.** Comparei por `ast`, com código meu, `analysis/apuracao_v.py` contra o `comparar_bracos.py` na
+  ponta `e1a188b` (que inclui a W-5d e não muda o arquivo em relação a `bc9cfdd`):
+  - as 13 funções de `COPIADAS` têm código-fonte idêntico;
+  - os 26 nomes de `CONSTANTES` têm enunciado idêntico;
+  - não há função nem constante a mais;
+  - todos os nomes que as funções usam estão copiados, exceto o `ErroUso` próprio, que o W-9 converte;
+  - o `fases.py` das duas árvores é igual.
+- **Identidade depois da integração.** Simulei a integração: árvore do W-9 com o `comparar_bracos.py` de `e1a188b`.
+  `test_apuracao_v_igual_a_do_comparar_bracos` deixa de ser pulado e passa, e a paridade de taxa e Δ_conv com o
+  `comparar_bracos` também passa. Suíte do W-9: `-I` deu 79 testes, OK, 3 pulados; `-E -P` deu 79, OK, 1 pulado.
+- **Fim da carga.** O W-9 passa `max(fins)` dos eventos (sem `ReplayValidate`) e das ações S3, que é o `t1 − 1` do
+  `comparar_bracos`. As fases usam os mesmos argumentos.
+- **Varredura com erro fica fora do q̂.** A execução sai do `n` e das taxas do `poder.py`, com o motivo na lista. Na
+  calibração não há blocos, então é o análogo do V ausente na execução isolada do `comparar_bracos`. A mutação que a
+  mantém no q̂ é pega por `test_varredura_com_erro_fica_fora_do_q_hat`.
+- **A derivação oficial refeita não muda.** Rodei o script de `6d154c6` sobre os brutos do X-18. q̂ (0/5 e 0/5), `n`,
+  taxas, `taxas_a` e todos os `valores_b40_parte2` são iguais. As diferenças são só estas:
+  - campos novos por execução no q̂ (`linhas`, `por_origem`, `varredura`, `varredura_fora_de_v`, `motivo`);
+  - o texto do q̂, com `regra_v` e `fonte_v`;
+  - o `gerado_por`;
+  - os SHA-256 das referências, que já mudavam desde o adendo 3 da V-W9, pelo `gerado_por` do `referencia_p99.py`.
+  
+  A calibração não tem varredura nem sonda, então a regra nova dá o mesmo número.
+
+**Veredito: os dois diffs estão aprovados.** Na integração, o `comparar_bracos` pode importar do `apuracao_v`, o que
+elimina a cópia. Até lá, o teste de identidade de fonte é a garantia, e ele precisa rodar na árvore integrada.

@@ -368,6 +368,7 @@ class CampanhaBase(unittest.TestCase):
         self.assertEqual(5, x["dados"]["termo_vazao_s"])
         self.assertEqual(3, x["dados"]["w_min_s"])          # floor(2 + 0,04) + 1
         self.assertFalse(x["dados"]["reserva_aplicada"])
+        self.assertIsNone(x["dados"]["subestimacao_w_menor_que_5_s"])     # W = 5: sem a R-4
         self.assertEqual(40 * MS, x["dados"]["atraso_max_ns"])
         self.assertEqual(11, x["dados"]["n_execucoes"])
 
@@ -547,6 +548,7 @@ class Bordas(unittest.TestCase):
         self.assertEqual(4, P["W_s"]["valor"])
         self.assertEqual(5, P["W_s"]["dados"]["w_formula_s"])
         self.assertTrue(P["W_s"]["dados"]["reserva_aplicada"])
+        self.assertEqual("reserva", P["W_s"]["dados"]["subestimacao_w_menor_que_5_s"]["caso"])
         x = P["kLag"]
         self.assertEqual(6, x["valor"])
         self.assertTrue(x["dados"]["dentro_do_limite"])
@@ -634,6 +636,12 @@ class Bordas(unittest.TestCase):
         self.assertFalse(P["W_s"]["dados"]["reserva_aplicada"])
         self.assertEqual(3, P["kLag"]["valor"])
         self.assertGreater(P["kLag"]["dados"]["janelas_sem_rodada"], 0)
+        # R-4 (complemento 3 §4): W final < 5 s subestima kLag, m e o trecho do lag_out em ~5/W; declarado no JSON
+        d = P["W_s"]["dados"]["subestimacao_w_menor_que_5_s"]
+        self.assertEqual(1.25, d["fator"])
+        self.assertEqual("7.3", d["caso"])
+        self.assertEqual(["kLag", "m", "lag_out"], d["afeta"])
+        self.assertIn("subestima", d["declaracao"])
 
     def test_klag_cinco_ainda_cabe(self):
         P = self.derivar({"n0": dict(lag_teto={j: ISN3 for j in range(4, 8)})})   # persistencia 4

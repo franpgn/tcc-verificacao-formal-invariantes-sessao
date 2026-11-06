@@ -1579,7 +1579,33 @@ Casos novos do orquestrador:
   do programa guardado.
 
 **Conferência com o W-5e** (`runs/orquestrador-fatorial/scripts/conferir_w5e.py`, saída em
-`runs/orquestrador-fatorial/conferencia-w5e.out`): a saída do S34 (guardada com `CS_TESTE_GUARDAR`), com os dados de
+`runs/orquestrador-fatorial/conferencia-w5e.out`): na primeira rodada, a saída do S34; depois do P-61, a do S36 (bloco
+2×2 com F2 e `t_fusao_ns` pela trilha; guardada com `CS_TESTE_GUARDAR`), com os dados de
 carga sintéticos dos geradores do W-5c/W-5e e o manifesto e os `execucao.json` do orquestrador, passou na CLI do
 `comparar_bracos.py` de `wt-w5e` (`d1bb887`): exit 0, braços PO/PL/AO/AL, contrastes A1, A4 e interação, perda e
 exposição por `t_fusao_ns`. Com `fusao` trocada no PO, ou `t_fusao_ns` inválido, exit 2.
+
+### P-61: `t_fusao_ns` pela trilha de observáveis e parada depois de 3 falhas de política (06/11)
+
+Decisões do coordenador depois do primeiro relatório (TD-022 itens 2 e 5; P-61 `RESOLVIDO`).
+
+| Suíte | Comando | Resultado |
+|---|---|---|
+| conferidor do fatorial | `python -I scripts/test_campanha_s3_conferir_fatorial.py` | vermelho (`14dc336`): 34 testes, 6 falhas, todas da classe nova `FusaoTrilha` (`runs/orquestrador-fatorial/p61-python-vermelho.out`); verde: **34 OK** |
+| conferidor, matriz fatorial (afetados) | `python -I scripts/test_campanha_s3_conferir.py`, `..._matriz_fatorial.py` | **59 OK, 12 OK** (`p61-python-verde.out`) |
+| JUnit (javadoc do `EsperaFusao`) | `mvn -o -Dtest='EsperaFusaoTest,ArquiteturaSondaSaudeTest,CliInstrumentacaoTest' test` | **13, 5 e 5 OK** |
+| orquestrador S33..S37 | `bash scripts/run-campanha-s3.test.sh S33 S34 S35 S36 S37` | primeira rodada: **214 PASS, 8 FAIL**, os 8 no S36 (AO e AL), por defeito do teste (`p61-s33-s37-primeira.out`): o dublê de `java` escrevia a trilha antes do `end` quando o disparo da F2 atrasava sob carga, e uma asserção do S36 antigo (bloco A/B, "fusao pnn") ficou; S33, S34, S35 e S37 verdes |
+| orquestrador S36, depois da correção do dublê | `bash scripts/run-campanha-s3.test.sh S36` | **59 PASS, 0 FAIL** (`p61-s36-verde.out`) |
+
+- `FusaoTrilha`: primeira amostra com os três nós em 3 depois do `end`; nó sem resposta ou com 2 não é fusão; sem fusão,
+  sem `end`, sem trilha e linha truncada; **brutos do X-19** pela fixture `scripts/testdata/fusao-x19/` (nove F2, SHA-256
+  dos originais em `ORIGEM.txt`, iguais aos do MANIFEST): 44,1, 42,2, 44,2, 44,2, 44,3, 46,2, 44,2, 44,2 e 46,1 s depois
+  do `end`, mediana das seis ASYNC 44,2 s, período 2,0 s. Nos brutos completos (X-19 e X-18):
+  `runs/orquestrador-fatorial/fusao-trilha-brutos.out`.
+- S34 (sem falha): `t_fusao_ns` ausente, `fusao_trilha.motivo` com o `end`, `t_vista_checagem_ns` igual ao do programa.
+- S36 (bloco 2×2 com F2; dublês com a fusão a +20 s): `t_fusao_ns` = `end` + 20,1 s nos quatro braços, `ISPN000093` a
+  +20,0 s, `dif_ispn000093_s` = 0,1, `t_vista_checagem_ns` à parte; S36b: sem fusão na trilha, `t_fusao_ns` ausente.
+- S37: com a criação do `sessions-async` do braço `a1` sempre recusada, três blocos; a terceira falha do `a1` grava
+  `DESCARTADA-INFRA` e a fase sai com 6 ("3 falhas seguidas da politica de fusao (fusao=a1)"), sem execução depois; só os
+  braços `pnn` antes do primeiro `a1` de cada bloco rodam carga.
+- Conferência com o W-5e de novo sobre a saída do S36: exit 0, e exit 2 com `fusao` ou `t_fusao_ns` adulterados.

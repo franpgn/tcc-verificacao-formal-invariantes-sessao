@@ -1,0 +1,12 @@
+== test_campanha_s3_conferir_fatorial
+Ran 34 tests in 6.165s
+
+OK
+== test_campanha_s3_conferir
+Ran 59 tests in 21.765s
+
+OK
+== test_campanha_s3_matriz_fatorial
+Ran 12 tests in 2.046s
+
+OK

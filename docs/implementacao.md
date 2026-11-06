@@ -134,18 +134,30 @@ fatorial só na matriz de 14 colunas; sem bloco, só o A da calibração. Recusa
    contagem de `A1-POLITICA carregada` em `podman logs` de cada nó (≥ 1 no braço `a1`, 0 no `pnn`, como no *smoke* da A1).
    Se algo não bate, ou se o `cria-caches.sh` falhou no `sessions-async` (criação recusada ou leitura de volta
    divergente), a execução vira `DESCARTADA-INFRA` **sem carga** e a fase segue; os braços seguintes do bloco viram
-   `PULADA`, e o `repor` refaz o bloco. Falha de outro *cache* continua parando a fase com 6, como antes.
+   `PULADA`, e o `repor` refaz o bloco. Falha de outro *cache* continua parando a fase com 6, como antes. **Três falhas
+   seguidas da política da mesma variante** (sem execução boa dela no meio) param a fase com 6 (decisão do coordenador,
+   06/11). A contagem é por variante porque, com o JAR quebrado, só o `a1` falha e os braços `pnn` do bloco passariam
+   no meio, zerando uma contagem única; ela vale na invocação (a retomada recomeça do zero).
 3. *JAR da extensão.* Lido do volume do *compose* em `/opt/infinispan/server/lib/tcc-extensao-servidor.jar` (a A1 o
    acrescenta, `04719ee`): três montagens da mesma fonte, ou nenhuma. Com `fusao=a1` na fila, obrigatório. Montado,
    `--extensao-sha256` é obrigatório fora do `--dry-run` (exit 2), o SHA-256 é conferido (exit 4), e o JAR entra no
    *bundle* e no `execucao.json` (`extensao_sha256`). O orquestrador não constrói o JAR: o roteiro do *bundle* o faz.
 4. *Fusão antes da varredura.* A matriz fatorial exige `--sonda-replay` e o `fusao_teto_s` do `--parametros`, que vai ao
    programa como `--sweep-merge-timeout-sec` depois do `--sweep`. Depois da carga, o orquestrador copia o
-   `fusao-rep-001.json` do programa para `fusao_checagem` e, se a vista de 3 veio, `t_vista_ns` para **`t_fusao_ns`**; sem
-   fusão no teto, o campo fica **ausente** (pedido do coordenador; o W-5e não emite perda nem exposição) e o programa já
-   gravou `varredura-rep-001.erro.txt`. Também guarda as linhas `ISPN000093` de cada nó (`fusao-ispn000093.txt`) e a
-   primeira depois do `end` em `fusao_vista` (DT-027 §2.2), com o *driver* de log, só como registro.
-5. `manifesto-bracos.tsv`: o bloco fatorial com os quatro `ACEITA` entra com PO, PL, AO e AL (cabeçalho de sempre).
+   `fusao-rep-001.json` do programa para `fusao_checagem` e, se a vista de 3 veio, `t_vista_ns` para
+   `t_vista_checagem_ns` (só registro; nulo sem fusão no teto, quando o programa já gravou `varredura-rep-001.erro.txt`).
+5. *Instante da fusão (P-61, decisão do coordenador de 06/11).* **`t_fusao_ns`** é a primeira amostra da sonda de
+   topologia do controlador (`observaveis-rep-001.jsonl`, `tipo` = `topologia`, ~2 s, nos modos *shadow* e *active*)
+   em ou depois do marcador `end` com os três nós respondendo e `numero_de_nos` = 3 em todos
+   (`campanha_s3_conferir.py fusao-trilha`). A trilha não traz `node_names`: num *cluster* de 3, cada nó ver 3 é a mesma
+   vista de 3 membros. Resolução: o período da sonda (`periodo_amostras_s`, 2,0 s nos brutos). Sem `end`, sem amostra
+   ou sem fusão até o fim da trilha (o controlador fecha no fim da carga), o campo fica **ausente**, e o motivo vai em
+   `fusao_trilha`. Conferência cruzada: as linhas `ISPN000093` de cada nó (`fusao-ispn000093.txt`), a primeira depois do
+   `end` em `fusao_vista` (DT-027 §2.2, com o *driver* de log), e a diferença `fusao_trilha.dif_ispn000093_s`. Nos
+   brutos do X-19, a regra dá +42,2 a +46,2 s nas nove F2 (mediana das seis ASYNC, 44,2 s), e no X-18, +44,1 a +47,8 s
+   (`runs/orquestrador-fatorial/fusao-trilha-brutos.out`); os brutos não têm o log do servidor, então a diferença para a
+   `ISPN000093` só aparece nas execuções novas.
+6. `manifesto-bracos.tsv`: o bloco fatorial com os quatro `ACEITA` entra com PO, PL, AO e AL (cabeçalho de sempre).
 
 **Teto da fusão: 72 s, contados do `end`.** Origem: o maior tempo de fusão medido depois do `end` da F2 na VM, 47,8 s
 (+42,2 a +47,8 s nas 18 execuções F2 do X-18 e do X-19, primeira leitura da sonda de topologia do controlador com os
@@ -162,11 +174,9 @@ com `number_of_nodes` = 3 e o mesmo conjunto `node_names` de 3, ou até o `end` 
 menos uma leitura. Grava `fusao-rep-NNN.json` e a linha `Fusao antes da varredura:`; sem fusão, não varre e grava
 `varredura-rep-NNN.erro.txt` com o motivo (a última leitura de cada nó). Sem a opção, nada muda. Só GET de saúde.
 
-**Ressalva sobre `t_fusao_ns`.** É o instante em que a checagem **viu** a vista de fusão, na VM ~154 s depois do `end`,
-e não o instante da fusão (~44 s depois do `end`). Se o W-5e separar exposição e perda permanente por ele, as I1 online
-entre a fusão e a varredura vão para a exposição. A DT-027 §2.2 define o instante pela `ISPN000093`, que fica em
-`fusao_vista.primeira_apos_end_ns` (sujeita à perda de linhas do `journald`, P-A4.2). Ponto levado ao Gestor no
-relatório `docs/relatorio-orquestrador-fatorial-2026-11-06.md`.
+**Por que `t_fusao_ns` não é o instante da checagem (P-61).** A checagem antes da varredura vê a vista de fusão ~154 s
+depois do `end`, e a fusão vem ~44 s depois dele. Com o instante da checagem, as I1 online entre a fusão e a varredura
+iriam para a exposição na janela. Por isso a checagem fica em `t_vista_checagem_ns`, e `t_fusao_ns` sai da trilha.
 
 ### TD-019 — W-5c: V com a sonda de *replay* e a varredura no `comparar_bracos.py` (2026-11-06)
 

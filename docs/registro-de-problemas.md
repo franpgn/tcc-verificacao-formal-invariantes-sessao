@@ -1385,10 +1385,14 @@ branch) foram trocadas pelos da integração (+2). As mensagens de commit da bra
   (`fusao-ispn000093.txt`) com a primeira depois do `end` em `fusao_vista.primeira_apos_end_ns`, mais o *driver* de log
   dos contêineres. Com o `journald`, as recusas Hot Rod podem suprimir linhas (P-A4.2 da A4); o campo fica nulo, com o
   motivo, quando não há linha.
-- **Status:** `ABERTO`, decisão do Gestor: (a) manter `t_fusao_ns` como está, sabendo do deslocamento; (b) o W-5e usar
-  `fusao_vista.primeira_apos_end_ns` (e o *compose* passar a `logging: driver: k8s-file`, que é mudança de
-  infraestrutura); (c) a checagem do programa passar a acompanhar a vista desde o `end` (uma *thread* a cada 2 s até a
-  fusão), o que dá o instante com 2 s de resolução, mas é mudança de desenho fora deste pedido.
+- **Decisão do coordenador (06/11):** `t_fusao_ns` é o instante real da fusão, pela trilha de observaveis do
+  controlador: a primeira amostra da sonda de topologia (~2 s, *shadow* e *active*) depois do `end` com os três nós em
+  3. A `ISPN000093` fica como conferência cruzada, com a diferença gravada, e o instante da checagem vai para
+  `t_vista_checagem_ns`, só como registro. Sem fusão na trilha, `t_fusao_ns` fica ausente.
+- **Correção:** `campanha_s3_conferir.py fusao-trilha` e o orquestrador (`fusao_trilha`, `t_fusao_ns`,
+  `t_vista_checagem_ns`, `fusao_trilha.dif_ispn000093_s`). Nos brutos do X-19, a regra dá +42,2 a +46,2 s nas nove F2
+  (mediana das seis ASYNC, 44,2 s); teste com a fixture `scripts/testdata/fusao-x19/` e caso S36 do orquestrador.
+- **Status:** `RESOLVIDO` na mesma branch (TD-022).
 
 ## Observação de modelagem (não é defeito)
 

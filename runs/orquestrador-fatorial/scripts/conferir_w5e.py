@@ -3,8 +3,9 @@
 Uso (de qualquer diretorio):
   python -E -P runs/orquestrador-fatorial/scripts/conferir_w5e.py <saida do orquestrador> <wt-w5e>/analysis <trabalho>
 
-<saida do orquestrador> e uma saida de scripts/run-campanha-s3.sh com a matriz fatorial (por exemplo a do caso S34 de
-scripts/run-campanha-s3.test.sh, guardada com CS_TESTE_GUARDAR). Ela e copiada para <trabalho>/saida; o que vem do
+<saida do orquestrador> e uma saida de scripts/run-campanha-s3.sh com a matriz fatorial (o caso S36 de
+scripts/run-campanha-s3.test.sh, bloco 2x2 com F2 e t_fusao_ns pela trilha, guardado com CS_TESTE_GUARDAR; o S34, sem
+falha, nao tem t_fusao_ns). Ela e copiada para <trabalho>/saida; o que vem do
 orquestrador e mantido: o manifesto-bracos.tsv (bracos PO, PL, AO e AL) e o execucao.json de cada braco (fusao,
 controller, bloco, t_fusao_ns, comando). Os arquivos de dados de cada execucao (eventos, acoes S3, violacoes,
 varredura, convergencia, marcadores e trilha) sao trocados pelos dados sinteticos dos geradores de teste do W-5c/W-5e

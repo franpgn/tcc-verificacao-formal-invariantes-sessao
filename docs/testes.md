@@ -1128,3 +1128,42 @@ tinham a ASYNC). As duas são conferidas (SHA-256 e perfil), mesmo com a fase s�
 `--controller-reference` com a referência ASYNC nas duas, `--rejoin-timeout-sec` presente, senha mascarada e "nada
 executado (sem java, podman, sudo, tty)". O diretório `--saida` não foi criado. Comando em `dry-run/comando.out` e
 SHA-256 das entradas em `dry-run/entradas.sha256`.
+
+## Integração do W-6c (2026-11-06)
+
+Branch `feature/controlador-integracao` (worktree `wt-ctrl-integ`), a partir de `1f65a02` (tag `int/2026-11-05-w6`).
+`merge --no-ff` de `feature/w6c-f3-memoria` (`66cfca6`, base `6f366ac`) em `494ccce`, com a renumeração P-54..P-57 →
+P-57..P-60, itens 21 a 24 do TD-014 → itens 22 a 25 do TD-015, números do W-6 citados pelo W-6c +2, e o caso do I-1
+de S26 para S29 (o W-6c usa S26/S26h, S27 e S28). Tabela no commit de merge. Suítes rodadas depois que o *host* saiu do
+silêncio (05:00:43Z, fim da calibração na VM), na ponta `494ccce`, uma vez cada. A suíte do orquestrador rodou sem
+outra suíte em paralelo. JDK 22.0.2, Maven 3.9.16, Python 3.12.6. Sem VM.
+
+| Suíte | Comando | Resultado |
+|---|---|---|
+| Surefire | `mvn -q -o -T1 clean test` (em `workload/`) | **1142/0/0/1 em 160 classes** (05:03Z a 05:04Z; o W-6c não toca `workload/`) |
+| `run-campanha-s3.test.sh` (S1..S29) | `bash scripts/run-campanha-s3.test.sh` | **431 PASS, 0 FAIL** (05:12:42Z a 06:55:08Z, 6146 s; `runs/w6c-int-smoke/suite-s3.out`), sem nova rodada isolada. S5, S22 e S25, que o W-6c tirou do relógio, passaram de primeira |
+| `test_campanha_s3_conferir`, `_h4`, `_matriz`; `test_rebaseline_matriz` | `python3 -I -m unittest discover -s scripts -p "<nome>.py"` | 44 OK; 11 OK; 16 OK; 8 OK |
+| `analysis` | `python -E -P -m unittest discover -s analysis` | **370 OK, 1 *skip*** (54 s) |
+| `inject-crash.test.sh` | `bash scripts/inject-crash.test.sh` | 141 PASS, 0 FAIL (46 s) |
+| `inject-partition.test.sh` | idem | 125 PASS, 0 FAIL, 2 SKIP (105 s) |
+| `inject-netdegrade.test.sh` | idem | 298 PASS, 0 FAIL, 1 SKIP (255 s) |
+| `inject-jitter.test.sh` | idem | 35 PASS, 0 FAIL (2 s) |
+
+**Congelados**, iguais a `1f65a02` e a `66cfca6`: `run-rebaseline.sh` `d95305fe…`, `inject-netdegrade.sh` `4ebdd8a3…`,
+`inject-partition.sh` `59dd2bee…`, `inject-crash.sh` `531a98a1…`, `inject-jitter.sh` `7e68962b…`, lista do h4
+(`amostrador-infra.sh` `e4cc5c79…`, `vigia-h4.sh` `1e7462f4…`, `analysis/h4.py` `53d7e7cb…`), `cria-caches.sh`,
+`collect-resources.sh`, `analysis/rebaseline.py`, `scripts/rebaseline_matriz.py` e `runs/rebaseline/matriz.tsv`.
+
+**`--dry-run` com F3 e F4 no braço B** (`runs/w6c-int-smoke/dry-run/`, rc 0, 2 s). Matriz de avaliação gerada com
+`--nucleo "ASYNC-none:descritiva:1" --extras "ASYNC-F4:teste:1,ASYNC-F3:descritiva:1" --ordem-seed 20261106 --s0 400000
+--passo-semente 100 --i0 0 --b0 1` (`ac9a745e…`). A fase `extra` tem quatro linhas, porque o pareamento exige A e B
+por bloco: F4 A e B (semente 400200) e F3 A e B (semente 400300). Parâmetros no esquema `campanha-s3/2`, com 24
+números: os 19 do pré-registro da calibração §4.1 e os cinco do F3 do B-40 §4.3 (`isn2`, 20 ms, 13 ms, `normal`,
+251 s), todos provisórios para este teste. Controlador `controlador-calibracao-s3.json`. Referências provisórias, as
+mesmas do *dry-run* da integração do W-6 (`runs/w2b-smoke/config/referencia-S3-async.json` e
+`runs/b44-2/integracao/referencia-S3-sync.json`). Com `--swap-limite-kb 1048576`, a saída traz
+`opcoes: swap_limite_kb=1048576 exigir_trilha_completa=nao`. As linhas `PLANO` do F4 têm
+`inject-netdegrade.sh --target isn3 --severity N3 --direction out --duration 90` e *dead-man* de 180 s. As do F3 têm
+`inject-jitter.sh --node isn2 --iface eth0 --delay 20ms --jitter 13ms --distribution normal --duration 251` a +49 s,
+marcadores gravados pelo orquestrador, `netem` conferido a +2 s e *dead-man* de 341 s. Todas têm `timeout -k 23s 1010s`.
+A saída termina com "nada executado (sem java, podman, sudo, tty)", e o diretório `--saida` não foi criado.

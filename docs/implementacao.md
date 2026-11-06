@@ -140,6 +140,8 @@ braços. Relatório: `docs/relatorio-w9-2026-11-05.md`.
 - **Sonda de replay do W-10.** Os leitores reaproveitados descartam o `ReplayValidate` (filtro do W-10, `6307230`,
   trazido igual); a violação com `origem = sonda` fica fora da janela de violação e do T_hold_viol (`viol_controle`),
   porque o laço de controle não a recebe; o q̂ a conta, como o `comparar_bracos`.
+- **V por pares distintos (W-5c).** O q̂ e as taxas da 7.18 vêm de `analysis/apuracao_v.py`, cópia literal sem
+  numpy da apuração do `comparar_bracos` do W-5c (`bc9cfdd`), com teste de identidade de fonte depois da integração.
 - **7.18** calcula q̂ por célula de teste com Clopper-Pearson (bissecção exata sobre a binomial) e grava as taxas e o
   comando do `poder.py` (`python -E -P`, `--semente 20261105 --n-sim 10000 --m-celulas 2 --blocos 12`), que não roda
   em `-I` (A-13).

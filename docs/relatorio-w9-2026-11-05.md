@@ -184,3 +184,13 @@ pulados); `python3 -E -P` **PASS** (73 OK); `test_referencia_p99.py` e `test_ene
   sobre a I1 da sonda em V é do Gestor (relatório do W-10).
 - A derivação oficial (`derivacao-20261106T050404Z`), refeita com este código, dá os mesmos parâmetros e valores do
   B-40 parte 2. As referências mudam só no `gerado_por`, porque o SHA-256 do `referencia_p99.py` mudou.
+
+## 12. V por pares distintos no q̂ (regra do W-5c) (2026-11-06)
+
+O q̂ e as taxas que vão ao `poder.py` (7.18) seguem a regra de V do `comparar_bracos` do W-5c: pares distintos (chave,
+classe) por execução, somando o auditor online, a sonda (`origem = sonda`) e a varredura REAL. A execução com a varredura
+em erro fica fora do q̂ e das taxas, como o V ausente na execução isolada do `comparar_bracos`. Importar a função não
+dá: o `comparar_bracos` importa numpy (o W-9 roda em `-I`) e nesta branch ainda é o antigo. Por isso o
+`analysis/apuracao_v.py` copia o texto exato da apuração (`bc9cfdd`), e um teste confere a identidade de fonte depois
+da integração. Na integração, o `comparar_bracos` pode importar do `apuracao_v`, o que elimina a cópia. Commits
+`5d21be3` (test) e `f799c52` (fix). A derivação oficial não muda.

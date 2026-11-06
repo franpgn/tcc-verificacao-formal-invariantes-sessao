@@ -473,7 +473,11 @@ public final class WorkloadMain {
                 System.out.println(linhaLeituraPorReplica(cli.s3.hotrodTimeoutMs, leitores.comPrazo()));
             }
             if (cli.varredura) {
-                executarVarredura(cli, rcm, invalidacoes, rastro, rep);
+                // DT-027 (secao 5, item 3): com --sweep-merge-timeout-sec, a varredura so roda depois da vista de fusao
+                // nos tres nos (EsperaFusao); sem fusao no prazo, varredura-rep-NNN.erro.txt. Sem a opcao, como antes.
+                if (EsperaFusao.antesDaVarredura(cli, rep, marcadores == null ? null : marcadores.fimNs(), relogio)) {
+                    executarVarredura(cli, rcm, invalidacoes, rastro, rep);
+                }
             }
 
             System.out.printf("Total de operacoes: %d%n", totalOps.get());

@@ -1,0 +1,17 @@
+instante,invariante,chave,mensagem,fase,classificacao,origem
+2026-11-06T06:11:14.130062900Z,I1,4a17f363-fba2-4f6d-9d4f-cc6d76d20fb4,invalidacao confirmada (LOGOUT) revertida para VALID,durante,,sonda
+2026-11-06T06:11:14.735130500Z,I1,783c69c6-2178-4897-ad69-35b81ce862f0,invalidacao confirmada (LOGOUT) revertida para VALID,durante,,sonda
+2026-11-06T06:11:22.450146400Z,I1,b08692ed-4c9c-4a6d-a944-2f066502691f,invalidacao confirmada (LOGOUT) revertida para VALID,durante,,sonda
+2026-11-06T06:11:25.402797100Z,I1,f487fb15-123f-4113-b014-44c782b93863,invalidacao confirmada (LOGOUT) revertida para VALID,durante,,sonda
+2026-11-06T06:11:33.271836700Z,I2_JANELA_CASCATA,74c731ae-55b0-4230-b928-fa657ff23c12,"valida sob bloqueio, dentro da janela da cascata",durante,,
+2026-11-06T06:11:34.730933500Z,I2_JANELA_CASCATA,74c731ae-55b0-4230-b928-fa657ff23c12,"valida sob bloqueio, dentro da janela da cascata",durante,,
+2026-11-06T06:11:36.330961800Z,I2_JANELA_CASCATA,74c731ae-55b0-4230-b928-fa657ff23c12,"valida sob bloqueio, dentro da janela da cascata",durante,,
+2026-11-06T06:11:39.581046600Z,I2_CASCATA_INCOMPLETA,74c731ae-55b0-4230-b928-fa657ff23c12,"valida sob bloqueio, cascata do block em erro",durante,,
+2026-11-06T06:11:40.104751100Z,I2_CASCATA_INCOMPLETA,74c731ae-55b0-4230-b928-fa657ff23c12,"valida sob bloqueio, cascata do block em erro",durante,,
+2026-11-06T06:11:40.406010600Z,I2_CASCATA_INCOMPLETA,74c731ae-55b0-4230-b928-fa657ff23c12,"valida sob bloqueio, cascata do block em erro",durante,,
+2026-11-06T06:11:40.532655300Z,I2_CASCATA_INCOMPLETA,74c731ae-55b0-4230-b928-fa657ff23c12,"valida sob bloqueio, cascata do block em erro",durante,,
+2026-11-06T06:11:41.660044800Z,I2_CASCATA_INCOMPLETA,74c731ae-55b0-4230-b928-fa657ff23c12,"valida sob bloqueio, cascata do block em erro",durante,,
+2026-11-06T06:11:41.912067500Z,I2_CASCATA_INCOMPLETA,74c731ae-55b0-4230-b928-fa657ff23c12,"valida sob bloqueio, cascata do block em erro",durante,,
+2026-11-06T06:11:42.386700700Z,I2_CASCATA_INCOMPLETA,74c731ae-55b0-4230-b928-fa657ff23c12,"valida sob bloqueio, cascata do block em erro",durante,,
+2026-11-06T06:13:30.009390Z,I1,4a17f363-fba2-4f6d-9d4f-cc6d76d20fb4,invalidacao confirmada (LOGOUT) revertida para VALID,recuperacao,,sonda
+2026-11-06T06:13:30.009390Z,I1,f487fb15-123f-4113-b014-44c782b93863,invalidacao confirmada (LOGOUT) revertida para VALID,recuperacao,,sonda

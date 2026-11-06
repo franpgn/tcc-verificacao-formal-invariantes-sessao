@@ -95,6 +95,80 @@ o ProtoStream padrão falha ao serializar e toda escrita vira
 
 ## Decisões técnicas a registrar
 
+### TD-019 — W-5c: V com a sonda de *replay* e a varredura no `comparar_bracos.py` (2026-11-06)
+
+Numeração: TD-017 na branch `feature/w5c-v-com-sonda` (o próximo livre na base `daa18a2`). Na integração (06/11) o
+W-9 (TD-017) e a carga S3 parametrizada (TD-018) entraram antes, e este passou a TD-019 (regra "depois do que existe").
+
+Branch `feature/w5c-v-com-sonda`, a partir de `daa18a2` (`feature/controlador-integracao`, com W-10 e P-48). Motivo:
+o rascunho do pré-registro do benchmark refeito (`docs/pre-registro-benchmark-refeito-2026-11-06.md`, branch
+`docs/pre-registro-benchmark-refeito`, `a5ddac9`, seção 2) torna a sonda de *replay* do W-10 e a varredura final
+parte do método de observação. V continua sendo (I1 + I4 + I2 `REAL`) por mil ações S3, agora com três origens e
+contada por par distinto (chave, invariante). Só Python; o programa de carga, os injetores, o h4 e o *runner* não
+mudam.
+
+```mermaid
+%%{init: {'theme':'base','themeVariables':{'background':'#ffffff','primaryColor':'#ffffff','primaryTextColor':'#000000','primaryBorderColor':'#000000','lineColor':'#000000','secondaryColor':'#ffffff','tertiaryColor':'#ffffff','clusterBkg':'#ffffff','clusterBorder':'#000000','edgeLabelBackground':'#ffffff','fontFamily':'Arial'}}}%%
+flowchart TD
+    VI["violacoes-rep-NNN.csv<br/>origem vazia = online; sonda = W-10"] --> D["deteccoes de V<br/>(I1, I4, I2 REAL)"]
+    VA["varredura-rep-NNN.csv<br/>so REAL: I1, I4, I2, I2-PERDIDO"] --> D
+    D --> T{"tipo"}
+    T -- "online; sonda ate o fim<br/>observado da carga (imediata)" --> AD["fase pelo instante da deteccao"]
+    T -- "sonda depois do fim<br/>observado (tardia); varredura" --> AI["fase pelo instante da invalidacao confirmada<br/>(Logout NONE da sid; I2: ultimo Block NONE da identidade)"]
+    AI -- "nao achada no rep-NNN.csv" --> SF["conta sem filtro de fase"]
+    AD --> P["pares distintos (chave, classe)<br/>com ao menos uma deteccao nas fases"]
+    AI --> P
+    SF --> P
+    P --> V["taxa_violacoes_por_1000 = pares x 1000 / acoes S3"]
+    P --> F["formas de I1: replica do Logout e da leitura<br/>contra a replica do no da falha<br/>(marcador node= e --servers do execucao.json)"]
+    F --> S["taxa_violacoes_por_1000:sem_forma2<br/>(sensibilidade)"]
+```
+
+Decisões:
+
+1. **Pares distintos.** O numerador é o número de pares (chave, classe) com ao menos uma detecção nas fases
+   selecionadas, somando as três origens. As linhas, as linhas e os pares por origem e os pares vistos por mais de
+   uma origem vão como descritivos (`violacoes_detalhe` por execução, `violacoes.detalhe` por célula). A classe da
+   varredura segue a 2.2: I1 e I4 `REAL` pela sid; I2 `REAL` (administrativo) pela sid e I2-PERDIDO `REAL` pela
+   identidade, os dois na classe `I2_REAL`; `INCERTA`, `ESPERADA-POR-DESENHO` e `INEXPLICADA` ficam fora e são
+   contados. O `contar_violacoes` também passou a contar pares distintos.
+2. **Imediata ou tardia.** A violação da sonda depois do fim observado da carga (a maior `end_ns` das ações S3 e dos
+   eventos da carga, sem `ReplayValidate`) é do *replay* tardio; as outras são do imediato. O tardio roda depois de
+   `rodarEmThreads`, com os atores parados (TD-016, decisão 5).
+3. **Instante da invalidação confirmada.** I1 e I4: o `Logout` com `return_code = NONE` mais antigo da sid, desde que
+   o motivo confirmado lido da mensagem seja `LOGOUT` ou ilegível; com `ADMIN_BLOCK` (cascata) não há evento com a
+   chave da sid, e a detecção conta sem filtro de fase. I2 e I2-PERDIDO: o último `Block` `NONE` da identidade (a do
+   detalhe "de identidade X BLOCKED", ou a própria chave). Usa-se o `end_ns`, o instante em que o cliente recebeu a
+   confirmação, como no corte de candidatas do *replay* tardio.
+4. **Formas de I1.** O nó da falha sai do `node=` do marcador `start`; a réplica dele, do `--servers` gravado no
+   `execucao.json` pelo orquestrador (ordem `isn1`, `isn2`, `isn3`). Forma 1: o `Logout` da sid foi confirmado pela
+   réplica do nó da falha. Forma 2: o `Logout` foi confirmado por outra réplica e a leitura que revelou a I1 (o
+   `Validate`/`Logout` online ou o `ReplayValidate` imediato, casado ao instante da violação com tolerância de 1 s) foi
+   servida pela réplica do nó da falha entre o `start` e o `end`. Outra: o resto. Sem marcador `start`, tudo é outra;
+   com `start` e sem a réplica do nó, indeterminada. Um par é forma 2 só se todas as suas detecções contadas forem
+   forma 2.
+5. **Sensibilidade sem a forma 2.** `taxa_violacoes_por_1000:sem_forma2`, família sensibilidade, escala diferença,
+   sem Holm. Só existe quando a execução tem a sonda (coluna `origem`) ou a varredura, para que as execuções sem os
+   instrumentos deem exatamente o resultado da base (golden `analysis/fixtures/w5c/golden-sem-sonda-daa18a2.json`).
+   Com formas indeterminadas e algum par de I1, fica ausente com motivo.
+6. **`ReplayValidate`.** O `comparar_bracos.py` já herdava a exclusão do W-10 (`energia_proxy.ler_eventos_inicio`):
+   fora do `evento_p99:*`, da `taxa_erro`, do Δ_rec e das fronteiras da execução; as ações S3 (latência, vazão útil,
+   falhas percebidas e o denominador de V) nunca tiveram a sonda. O leitor novo do `rep-NNN.csv`
+   (`ler_eventos_por_chave`) lê os `ReplayValidate` só para casar a leitura e para o custo da sonda (eventos,
+   imediatos, tardios, sids no tardio) e o teto do tardio (`sonda_tardia_max` do `s3-resumo`).
+7. **Varredura com erro (W-5d, V-W5c seção 5, aprovado pelo coordenador).** Com `varredura-rep-NNN.erro.txt`, a
+   execução isolada (`desfechos_execucao`) continua com V e a sensibilidade ausentes. No `comparar`, em toda célula,
+   o bloco em que a varredura falhou em algum braço usa nos **dois** braços os totais sem as detecções da varredura
+   (`total_pares_sem_varredura` e `total_pares_sem_forma2_sem_varredura`, com a forma do par recalculada sem elas), e
+   fica no teste: os dois braços do bloco são medidos com o mesmo instrumento, e excluir o bloco condicionaria a
+   análise a uma variável posterior ao tratamento (o AC-5 pode ter parado o nó que derrubou a varredura). O custo é
+   subestimar V nos dois braços desses blocos. `violacoes.detalhe.varredura_com_erro` traz o número de blocos (só A,
+   só B, nos dois), cada bloco com o braço da falha e os dois V de cada braço, e uma sensibilidade descritiva sem
+   esses blocos (estimativa, IC t e IC bootstrap; sem p e sem Holm; índice de semente `len(nomes) + 4`, livre).
+8. **Instrumentos iguais nos dois braços.** Na célula de teste, um bloco com sonda ou varredura em um braço e não no
+   outro é recusado (exit 2; pré-registro 2.1). Nas outras células, os blocos ficam listados em
+   `instrumentos_divergentes`.
+
 ### TD-018 — Carga S3 parametrizada no orquestrador (2026-11-06)
 
 Numeração: TD-017 na branch `feature/s3-carga-parametrizada`; na integração (06/11) o W-9 entrou antes com o TD-017,

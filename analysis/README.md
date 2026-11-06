@@ -108,6 +108,8 @@ flowchart LR
         MK["marcadores.txt"]
         CV["convergencia-resumo-rep-NNN.json"]
         VI["violacoes-rep-NNN.csv"]
+        VA["varredura-rep-NNN.csv"]
+        EJ["execucao.json"]
         EN["energia-rep-NNN.json"]
         DE["decisoes-rep-NNN.jsonl"]
     end
@@ -142,7 +144,8 @@ python -E -P analysis/poder.py --taxas-a taxas-braco-a.txt --semente S --n-sim 1
 
 | Desfecho | Família | Escala de d_b |
 |---|---|---|
-| `taxa_violacoes_por_1000` (I1 + I4 + I2 `REAL`) | co-principal-V | y_B − y_A |
+| `taxa_violacoes_por_1000` (I1 + I4 + I2 `REAL`, pares distintos das três origens; W-5c) | co-principal-V | y_B − y_A |
+| `taxa_violacoes_por_1000:sem_forma2` (só com sonda ou varredura) | sensibilidade (sem Holm) | y_B − y_A |
 | `acao_s3_p99_com_espera` | co-principal-L | ln(y_B/y_A) |
 | `vazao_util` | não inferioridade (δ = 10 %) | ln |
 | `delta_rec_s`, `delta_conv_s`, `divergencia_persistente`, `taxa_erro`, `falhas_percebidas_por_1000` | secundário | y_B − y_A |
@@ -156,6 +159,19 @@ trilha do braço B íntegra; p_IU = max(p_V, p_L); Holm entre as células de tes
 referência não tem p, Holm nem IU (o IC é descritivo). Célula de teste: no máximo 16 blocos, trilha nos dois braços,
 braço B com `atuador` ≠ `nulo` e `politica` ≠ `nenhuma`, mesmo `param_sha256` em A e B (exit 2 se não). Célula sem
 nenhum evento nas fases pedidas: exit 2.
+
+V (W-5c, rascunho do pré-registro do benchmark refeito, seção 2): numerador = pares distintos (chave, invariante)
+com ao menos uma detecção nas fases, somando o auditor online (`origem` vazia), a sonda de *replay* do W-10
+(`origem = sonda`) e a varredura final (`varredura-rep-NNN.csv`, só `REAL`, I2-PERDIDO na classe I2); linhas e
+contagem por origem são só descritivas. O *replay* imediato e o online vão pelo instante da detecção; o tardio (a
+violação da sonda depois do fim observado da carga) e a varredura, pelo instante da invalidação confirmada (o
+`Logout` `NONE` da sid; o último `Block` `NONE` da identidade no I2 e no I2-PERDIDO); sem ela no `rep-NNN.csv`, a
+detecção conta sem filtro de fase. Formas de I1: forma 1 com o `Logout` confirmado pelo nó da falha (`node=` do
+marcador e `--servers` do `execucao.json`), forma 2 com o `Logout` por outro nó e a releitura `VALID` servida pelo
+nó da falha entre `start` e `end`. Com `varredura-rep-NNN.erro.txt` em algum braço, o bloco usa V sem a varredura
+nos dois braços e fica no teste (W-5d), com uma sensibilidade descritiva sem esses blocos; na célula de teste,
+instrumentos diferentes entre A e B dão exit 2. Os `ReplayValidate` ficam fora de latência, vazão, taxa de erro e denominador.
+Detalhes: `docs/implementacao.md` (TD-019; TD-017 na branch do W-5c).
 
 Δ_rec: última operação **iniciada** depois do marcador `end` que terminou em anomalia (`ERROR_TRANSPORT`,
 `ERROR_UNAVAILABLE` ou falha percebida), censurada nos últimos W_c = `--w-analise-s` antes de `t_fim_carga_ns`; sem

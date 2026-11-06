@@ -1,0 +1,23 @@
+{
+ "nota": "sintetizado para a fixture do W-5c a partir do comando.txt do smoke do W-10 (o smoke nao usou o orquestrador e nao tem execucao.json); so o --servers importa, na ordem isn1, isn2, isn3",
+ "comando": [
+  "java",
+  "-jar",
+  "w10-19f30b45.jar",
+  "--scenario",
+  "S3",
+  "--replication",
+  "async",
+  "--servers",
+  "127.0.0.1:12901,127.0.0.1:12902,127.0.0.1:12903",
+  "--marker",
+  "marcadores.txt",
+  "--w-recovery-sec",
+  "60",
+  "--convergence",
+  "--controller",
+  "off",
+  "--s3-replay-probe",
+  "--sweep"
+ ]
+}

@@ -1193,16 +1193,26 @@ class Paridade(unittest.TestCase):
                 self.assertAlmostEqual(out["delta_conv_s"]["y"], dc[dirs[nome].name])
 
     def test_apuracao_v_igual_a_do_comparar_bracos(self):
-        # depois da integracao com o W-5c: o codigo-fonte de cada funcao copiada e o mesmo, e o q-chapeu bate
-        import inspect
+        # Fonte unica desde a integracao (06/11): o comparar_bracos importa do apuracao_v as 13 funcoes, as 26
+        # constantes e o ErroUso, e nao define nenhum deles (nada de copia que possa divergir). Sem pulo: o
+        # comparar_bracos desta arvore tem a apuracao do W-5c.
+        import ast
         import apuracao_v
         import comparar_bracos as cb
-        if not hasattr(cb, "apurar_violacoes_execucao"):
-            self.skipTest("comparar_bracos desta arvore ainda sem a apuracao do W-5c")
-        for nome in apuracao_v.COPIADAS:
-            self.assertEqual(inspect.getsource(getattr(cb, nome)), inspect.getsource(getattr(apuracao_v, nome)), nome)
-        for nome in apuracao_v.CONSTANTES:
-            self.assertEqual(getattr(cb, nome), getattr(apuracao_v, nome), nome)
+        for nome in apuracao_v.COPIADAS + apuracao_v.CONSTANTES + ("ErroUso",):
+            self.assertIs(getattr(cb, nome), getattr(apuracao_v, nome), nome)
+        fonte = ast.parse(Path(cb.__file__).read_text(encoding="utf-8"))
+        definidos = set()
+        for n in fonte.body:
+            if isinstance(n, (ast.FunctionDef, ast.ClassDef)):
+                definidos.add(n.name)
+            elif isinstance(n, ast.Assign):
+                for alvo in n.targets:
+                    for no in ast.walk(alvo):
+                        if isinstance(no, ast.Name):
+                            definidos.add(no.id)
+        copias = definidos & set(apuracao_v.COPIADAS + apuracao_v.CONSTANTES + ("ErroUso",))
+        self.assertEqual(set(), copias, "o comparar_bracos ainda define: %s" % sorted(copias))
 
     def test_clopper_pearson_igual_ao_scipy(self):
         from scipy import stats

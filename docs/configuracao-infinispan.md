@@ -173,7 +173,53 @@ A leitura de volta `?action=config` dos quatro *caches* da carga criados pela RE
 servidor real (só a dos `canario*` está prevista no *smoke* do W-4): a primeira subida local ou a validação X-17 mostra
 se ela volta byte a byte igual ao JSON, como o `cria-caches.sh` exige.
 
-## Como verificar conectividade dos nós
+### Destino do log dos contêineres (P-64) — proposta, **não aplicada**
+
+Proposta para o *cluster* da avaliação (06/11, P-P1IC.4 = P-64; nada mudou no compose nem na VM). Hoje o
+`podman-compose-sem-caches.yml` não declara `logging`, e o Podman da VM (4.9.3, rootful, `podman-compose` 1.0.6) usa o
+padrão `journald`; pelas notas do vigia da calibração (X-18), o que vai ao journald também é copiado pelo rsyslog.
+
+**Mudança proposta** (nos três serviços do `podman-compose-sem-caches.yml`, que é o mesmo arquivo para os quatro
+braços, porque o orquestrador recria o *cluster* com ele antes de cada execução):
+
+```yaml
+    logging:
+      driver: k8s-file
+      options:
+        max-size: "512mb"
+```
+
+- **Volume medido** (`runs/p1ic-smoke/*/servidores/*.log.gz`, texto de `podman logs -t`): o alvo do AC-7 sob corte
+  escreveu 2,07 milhões de linhas e 268 MB numa execução (`corte-r1`; 264 MB no `corte-r2`), ~100 linhas de pilha por
+  recusa `ISPN005003` (20 647 recusas) mais 72 mil linhas do `PartitionHandlingManagerImpl`; os outros nós, 0,1 a
+  0,2 MB. No `k8s-file`, com o prefixo de cada linha, isso dá ~0,3 GB no arquivo do alvo. O teto de 512 MB cobre o pior
+  caso medido com folga.
+- **O que melhora:** uma escrita de texto por linha, num arquivo do contêiner, no lugar de uma entrada do journald
+  (com metadados e índice; o vigia estimou ~40 a 70 MB para ~55 a 65 mil entradas, ~1 KB por entrada) mais a cópia do
+  rsyslog. Sai também o limite de taxa do journald, que no A4 descartou linhas de **todos** os contêineres (P-A4.2):
+  `podman logs` passa a devolver tudo, o que importa para a checagem de fusão do orquestrador fatorial, que lê o
+  `podman logs` de cada nó.
+- **O que não muda:** o volume que o servidor produz (só o destino); o `server/log/server.log` que o servidor grava
+  dentro do contêiner (configuração de log da imagem, que a proposta não toca); os arquivos de caches e de JGroups.
+- **Teto:** ao passar do `max-size`, o `conmon` recomeça o arquivo do zero (sem cópias antigas): perde-se o começo do
+  log, não o fim. O teto limita o espaço ocupado, não os bytes escritos. O arquivo some com o contêiner no
+  `podman-compose down` da recriação seguinte: o espaço não se acumula entre execuções, e o log de uma execução só existe
+  até a próxima começar (se o Gestor quiser guardá-lo, o orquestrador pode gravar `podman logs` comprimido no diretório
+  da execução: ~3 MB por alvo no pior caso medido).
+- **Custo no repositório:** o bloco acima nos três serviços; o `ClusterSemCachesXmlTest.composeSoTrocaOXml` passa a
+  aceitar exatamente esse bloco nos três serviços do compose sem *caches* (o `podman-compose.yml` do *rebaseline* fica
+  como está); o orquestrador confere no pré-voo de cada execução que `{{.HostConfig.LogConfig.Type}}` é `k8s-file` nos
+  três nós (motivo de infraestrutura se não for), com caso no `run-campanha-s3.test.sh`. Um *bundle* novo para a VM, que
+  já é necessário pelo AC-7.
+- **Antes de aplicar, na VM, só leitura:** `podman-compose --dry-run -f podman-compose-sem-caches.yml up -d` deve
+  mostrar `--log-driver=k8s-file --log-opt=max-size=512mb` nos três `podman create` (suporte do 1.0.6 a `logging`,
+  que não conferi na VM), e `podman inspect` do *cluster* atual confirma o `journald` de hoje.
+- **Em relação à recalibração:** a recalibração rodou com `journald`, e a avaliação rodaria com `k8s-file`. Os quatro
+  braços continuam iguais entre si (o pareamento por bloco não muda). O que pode mudar: menos escrita em disco nas F2 e
+  F4, então menos travamentos h4a (a estimativa de reposições da calibração fica conservadora), e menos chance de a JVM
+  esperar o `stdout` quando o journald trava, o que pode baixar a latência do servidor nas falhas em relação à
+  referência de p99 calibrada. É um desvio declarado do ambiente entre a calibração e a avaliação, a registrar no
+  pré-registro, ou a medir antes com poucas execuções de uma célula da calibração em `k8s-file`.
 
 ```bash
 for port in 11222 11223 11224; do

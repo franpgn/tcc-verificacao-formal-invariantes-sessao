@@ -7,6 +7,8 @@ Subcomandos:
   gerar --modo calibracao --celulas <spec> --ordem-seed N --s0 N --passo-semente N --i0 N --saida <tsv>
   gerar --modo avaliacao --nucleo <spec> [--extras <spec>] --ordem-seed N --s0 N --passo-semente N
         --i0 N --b0 N --saida <tsv>
+  gerar --modo fatorial --nucleo <spec> [--extras <spec>] --ordem-seed N --s0 N --passo-semente N
+        --i0 N --b0 N --saida <tsv>
   repor --matriz <tsv> --saida <dir> --ordem-seed N --s0 N --passo-semente N --teto-h4 N [--fase F] [--dry-run]
 
 <spec>: lista separada por virgula de CELULA:PAPEL:N, CELULA = <SYNC|ASYNC>-<none|F1|F2|F3|F4> (F3 desde o W-6c, para
@@ -28,6 +30,16 @@ pre-registro (regra do autor). Desenho, com as fontes:
     checagem.json com veredito diferente de ACEITA (RECUSADA ou DESCARTADA-INFRA, inclusive h4 e DT-014 depois
     do lancamento). O teto de reposicoes h4 (C3 secao 4.4 no rebaseline) e argumento obrigatorio.
 
+Avaliacao fatorial 2x2 (complemento 1 do benchmark refeito, DT-027): --modo fatorial gera o TSV com uma coluna a mais
+no fim, "fusao" (pnn = PREFERRED_NON_NULL, a regra atual do sessions-async; a1 = PoliticaFusaoSessoes, a regra nova;
+DT-027 secao 5, item 1). Na celula de papel "teste" cada bloco tem quatro bracos com a mesma semente (DT-027 secao 1):
+PO (pnn, shadow), PL (pnn, active), AO (a1, shadow) e AL (a1, active), em ordem sorteada por
+random.Random(ordem_seed * 1000000 + bloco).shuffle(["PO", "PL", "AO", "AL"]); nas de papel "descritiva" ou
+"referencia", dois (A shadow, B active), com a regra atual (DT-027 secao 3) e o mesmo sorteio de antes. Rodadas,
+nucleo antes das extras e semente s0 + passo * bloco como na avaliacao. Os modos calibracao e avaliacao continuam no
+formato de 13 colunas, byte a byte; a leitura (repor) aceita os dois, e a de 13 colunas vale como regra atual. O repor
+de um bloco fatorial perdido refaz os quatro bracos, com o proximo bloco livre.
+
 Saida de gerar: o TSV (cabecalho + linhas na ordem de execucao) e o SHA-256 na saida padrao.
 Saida de repor: <saida>/reposicoes/reposicoes.tsv (mesmas colunas, fase "reposicoes", repoe = i ou bloco de
 origem), acrescentado por troca atomica, e o SHA-256.
@@ -44,10 +56,16 @@ from pathlib import Path
 
 COLUNAS = ("i", "fase", "rodada", "posicao", "celula", "modo", "falha", "papel", "bloco", "braco", "controlador",
            "seed", "repoe")
+# DT-027 secao 5, item 1: a variante da regra de fusao do sessions-async, no fim (as posicoes antigas nao mudam)
+COLUNAS_FATORIAL = COLUNAS + ("fusao",)
 MODOS = {"SYNC": "sync", "ASYNC": "async"}
 FALHAS = ("none", "F1", "F2", "F3", "F4")
 PAPEIS_AVALIACAO = ("teste", "descritiva", "referencia")
-CONTROLADOR = {"A": "shadow", "B": "active"}
+CONTROLADOR = {"A": "shadow", "B": "active", "PO": "shadow", "PL": "active", "AO": "shadow", "AL": "active"}
+# DT-027 secao 1: P = PREFERRED_NON_NULL (pnn), A = A1 (a1); O = controlador desligado (shadow), L = ligado (active)
+FUSAO = {"A": "pnn", "B": "pnn", "PO": "pnn", "PL": "pnn", "AO": "a1", "AL": "a1"}
+BRACOS_AB = ("A", "B")
+BRACOS_FATORIAL = ("PO", "PL", "AO", "AL")
 CELULA_RE = re.compile(r"^(SYNC|ASYNC)-(none|F1|F2|F3|F4)$")
 
 
@@ -90,17 +108,22 @@ def ordem_rodada(ordem_seed, r, celulas):
     return lista
 
 
-def ordem_bracos(ordem_seed, bloco):
-    b = ["A", "B"]
+def ordem_bracos(ordem_seed, bloco, bracos=BRACOS_AB):
+    b = list(bracos)
     random.Random(ordem_seed * 1000000 + bloco).shuffle(b)
     return b
+
+
+def bracos_do_bloco(papel, fatorial):
+    """DT-027: quatro bracos so na celula de teste da matriz fatorial; nas outras (e na avaliacao do B-40), A e B."""
+    return BRACOS_FATORIAL if fatorial and papel == "teste" else BRACOS_AB
 
 
 def linha(i, fase, rodada, posicao, cel, papel, bloco, braco, seed, repoe="-"):
     modo, falha = cel.split("-")
     return {"i": i, "fase": fase, "rodada": rodada, "posicao": posicao, "celula": cel, "modo": MODOS[modo],
             "falha": falha, "papel": papel, "bloco": bloco, "braco": braco, "controlador": CONTROLADOR[braco],
-            "seed": seed, "repoe": repoe}
+            "seed": seed, "repoe": repoe, "fusao": FUSAO[braco]}
 
 
 def gerar_calibracao(celulas, ordem_seed, s0, passo, i0):
@@ -114,7 +137,7 @@ def gerar_calibracao(celulas, ordem_seed, s0, passo, i0):
     return out
 
 
-def gerar_avaliacao(nucleo, extras, ordem_seed, s0, passo, i0, b0):
+def gerar_avaliacao(nucleo, extras, ordem_seed, s0, passo, i0, b0, fatorial=False):
     out, i, b, r = [], i0, b0, 0
     for fase, celulas in (("nucleo", nucleo), ("extra", extras)):
         if not celulas:
@@ -123,17 +146,17 @@ def gerar_avaliacao(nucleo, extras, ordem_seed, s0, passo, i0, b0):
             r += 1
             vivas = [(c, p) for c, p, n in celulas if n >= k]
             for pos, (c, p) in enumerate(ordem_rodada(ordem_seed, r, vivas)):
-                for j, braco in enumerate(ordem_bracos(ordem_seed, b)):
+                for j, braco in enumerate(ordem_bracos(ordem_seed, b, bracos_do_bloco(p, fatorial))):
                     out.append(linha(i, fase, r, "%d.%d" % (pos, j), c, p, b, braco, s0 + passo * b))
                     i += 1
                 b += 1
     return out
 
 
-def para_tsv(registros):
-    txt = "\t".join(COLUNAS) + "\n"
+def para_tsv(registros, colunas=COLUNAS):
+    txt = "\t".join(colunas) + "\n"
     for x in registros:
-        txt += "\t".join(str(x[c]) for c in COLUNAS) + "\n"
+        txt += "\t".join(str(x[c]) for c in colunas) + "\n"
     return txt
 
 
@@ -145,21 +168,32 @@ def gravar_atomico(p, dados):
     return hashlib.sha256(dados).hexdigest()
 
 
-def ler_tsv(p):
+def colunas_de(p):
+    """COLUNAS ou COLUNAS_FATORIAL, pelo cabecalho; ErroUso com outro."""
     p = Path(p)
     if not p.is_file():
         raise ErroUso("TSV ausente: %s" % p)
-    linhas = p.read_text(encoding="ascii").split("\n")
-    if not linhas or tuple(linhas[0].split("\t")) != COLUNAS:
-        raise ErroUso("cabecalho inesperado em %s (esperado %s)" % (p, "\t".join(COLUNAS)))
+    cab = tuple(p.read_text(encoding="ascii").split("\n", 1)[0].split("\t"))
+    if cab not in (COLUNAS, COLUNAS_FATORIAL):
+        raise ErroUso("cabecalho inesperado em %s (esperado %s, ou com a coluna fusao no fim)"
+                      % (p, "\t".join(COLUNAS)))
+    return cab
+
+
+def ler_tsv(p):
+    """Linhas da matriz como dicionarios; na de 13 colunas, fusao = pnn (a regra atual, DT-027 secao 3)."""
+    colunas = colunas_de(p)
+    linhas = Path(p).read_text(encoding="ascii").split("\n")
     out = []
     for n, l in enumerate(linhas[1:], start=2):
         if not l:
             continue
         campos = l.split("\t")
-        if len(campos) != len(COLUNAS):
+        if len(campos) != len(colunas):
             raise ErroUso("%s:%d com %d campos" % (p, n, len(campos)))
-        out.append(dict(zip(COLUNAS, campos)))
+        x = dict(zip(colunas, campos))
+        x.setdefault("fusao", "pnn")
+        out.append(x)
     return out
 
 
@@ -183,6 +217,7 @@ def e_h4(ch):
 
 def repor(matriz, saida, ordem_seed, s0, passo, teto_h4, fase=None, dry_run=False):
     linhas = ler_tsv(matriz)
+    colunas = colunas_de(matriz)
     calib = all(x["braco"] == "A" and x["bloco"] == "-" for x in linhas)
     for x in linhas:
         esperado = s0 + passo * int(x["i"] if calib else x["bloco"])
@@ -249,7 +284,8 @@ def repor(matriz, saida, ordem_seed, s0, passo, teto_h4, fase=None, dry_run=Fals
             seed = s0 + passo * prox_b
             if str(seed) in usadas:
                 raise Recusa("semente %d ja usada" % seed)
-            for j, braco in enumerate(ordem_bracos(ordem_seed, prox_b)):
+            bracos = BRACOS_FATORIAL if x["braco"] in BRACOS_FATORIAL else BRACOS_AB
+            for j, braco in enumerate(ordem_bracos(ordem_seed, prox_b, bracos)):
                 novas.append(linha(prox_i, "reposicoes", "-", "%d.%d" % (pos, j), x["celula"], x["papel"], prox_b,
                                    braco, seed, repoe=k_orig))
                 prox_i += 1
@@ -263,7 +299,7 @@ def repor(matriz, saida, ordem_seed, s0, passo, teto_h4, fase=None, dry_run=Fals
         print("repor: %d linha(s) nova(s)%s" % (len(novas), " (dry-run, nada gravado)" if dry_run and novas else ""))
         return None
     rep_tsv.parent.mkdir(parents=True, exist_ok=True)
-    dados = para_tsv(reps + novas).encode("ascii")
+    dados = para_tsv(reps + novas, colunas).encode("ascii")
     sha = gravar_atomico(rep_tsv, dados)
     print("%s  %s" % (sha, rep_tsv))
     return sha
@@ -273,7 +309,7 @@ def main(argv):
     ap = argparse.ArgumentParser(prog="campanha_s3_matriz.py")
     sub = ap.add_subparsers(dest="cmd")
     g = sub.add_parser("gerar")
-    g.add_argument("--modo", required=True, choices=("calibracao", "avaliacao"))
+    g.add_argument("--modo", required=True, choices=("calibracao", "avaliacao", "fatorial"))
     g.add_argument("--celulas")
     g.add_argument("--nucleo")
     g.add_argument("--extras")
@@ -307,14 +343,15 @@ def main(argv):
                                        a.i0)
             else:
                 if not a.nucleo or a.celulas or a.b0 is None or a.b0 < 0:
-                    raise ErroUso("avaliacao: --nucleo e --b0 >= 0 obrigatorios (sem --celulas)")
+                    raise ErroUso("%s: --nucleo e --b0 >= 0 obrigatorios (sem --celulas)" % a.modo)
                 nuc = ler_celulas(a.nucleo, "avaliacao")
                 ext = ler_celulas(a.extras, "avaliacao") if a.extras else []
                 comuns = {c for c, _p, _n in nuc} & {c for c, _p, _n in ext}
                 if comuns:
                     raise ErroUso("celula no nucleo e nas extras: %s" % ", ".join(sorted(comuns)))
-                reg = gerar_avaliacao(nuc, ext, a.ordem_seed, a.s0, a.passo_semente, a.i0, a.b0)
-            dados = para_tsv(reg).encode("ascii")
+                reg = gerar_avaliacao(nuc, ext, a.ordem_seed, a.s0, a.passo_semente, a.i0, a.b0,
+                                      fatorial=a.modo == "fatorial")
+            dados = para_tsv(reg, COLUNAS_FATORIAL if a.modo == "fatorial" else COLUNAS).encode("ascii")
             sha = gravar_atomico(a.saida, dados)
             print("%s  %s" % (sha, a.saida))
             return 0

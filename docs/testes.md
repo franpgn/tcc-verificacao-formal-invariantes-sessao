@@ -1678,3 +1678,20 @@ shadow) e a guarda contínua não é criada (`guarda_ac7_desfazeres` = `null`). 
 o que muda no shadow é só a linha `acao` prevista (AC-7 em vez de AC-5).
 
 **Smoke local** (`runs/p1ic-smoke/`, `comandos.md`): ver `docs/relatorio-p1-ignorar-cache-2026-11-06.md`.
+
+## Integração do W-5e/W-5f e do P1-IC (2026-11-06)
+
+Branch `feature/controlador-integracao`, a partir de `fbf8882` (tag `int/2026-11-06-a1`). `merge --no-ff` de
+`feature/w5e-fatorial` (`cb79822`) em `ce41a25`, que fica com o TD-021, e de `feature/p1-ignorar-cache` (`6e7a13c`) em
+`7051409`. No P1-IC, o TD-021 provisório virou TD-022 e os P-P1IC.1 a P-P1IC.4 viraram os P-61 a P-64 (tabela no commit de
+merge). Sem tag: ela sai depois do orquestrador fatorial e da adaptação do conferidor e da análise ao AC-7 (P-63).
+
+| Suíte | Comando | Resultado na ponta `7051409` |
+|---|---|---|
+| Surefire do `workload` | `mvn -q -o -T1 clean test` (em `workload/`) | **1209/0/0/1 em 173 classes** (1177 da A1 + 32 do P1-IC, com 5 classes novas; o W-5e não toca `workload/`) |
+| `analysis` | `python -E -P -m unittest discover -s analysis` | **528 OK, 1 *skip*** (129 s); o teste de identidade do `apuracao_v` roda e passa |
+| `analysis/test_calibracao_s3.py` em `-I` | `python3 -I -m unittest discover -s analysis -p "test_calibracao_s3.py"` | 79 testes, OK, 3 pulados (paridade, com numpy) |
+| `test_campanha_s3_conferir`, `_h4`, `_matriz`; `test_rebaseline_matriz` | `python3 -I -m unittest discover -s scripts -p "<nome>.py"` | 59, 11, 16 e 8 OK |
+
+Os dois merges não mudam `scripts/` nem os congelados (iguais a `fbf8882`). O esquema da trilha continua
+`decisoes-controlador/1.2`: o P1-IC acrescenta `acao_p1` e `usadas_p1` como campos aditivos.

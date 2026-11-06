@@ -1860,9 +1860,12 @@ fi
 # ============================================================================= S-P64
 if quer SP64; then
 echo "== S-P64: log das pilhas reduzido na origem pela REST (ajusta-log.sh) nos tres nos, depois dos caches, conferido na camada 3 e reposto no no do F1 =="
+dry64() {  # o dry() do S1 so existe quando o S1 roda
+    PATH="${PATH_TESTE}" bash "${ORQ}" --dry-run --matriz "${MAT}" --matriz-sha256 "${MAT_SHA}" --fase "$1"         --parametros "${PARAMS}" --parametros-sha256 "${PARAMS_SHA}" --controlador "${CTRL}" --controlador-sha256 "${CTRL_SHA}"         "${REFS[@]}" --saida "${OUT}" 2>&1
+}
 novo_caso sp64
 matriz_calib "ASYNC-F1:calibracao:1"
-OUTD="$(dry calibracao)"; RC=$?
+OUTD="$(dry64 calibracao)"; RC=$?
 ok "S-P64 dry-run exit 0" "0" "${RC}"
 contem "S-P64 dry-run mostra as categorias" "DRY-RUN loggers: org.infinispan.server.hotrod.BaseRequestProcessor=FATAL org.infinispan.interceptors.impl.InvocationContextInterceptor=FATAL" "${OUTD}"
 printf 'go calibracao %s\n' "${HOJE}" > "${CS_TTY_ARQUIVO}"
@@ -1897,9 +1900,9 @@ contem "S-P64 motivo com o no" "http://127.0.0.1:11224" "$(tail -1 "${OUT}/calib
 novo_caso sp64d
 matriz_calib "ASYNC-none:calibracao:1"
 printf 'org.x.Y\tSILENT\to\n' > "${CASO}/loggers-ruim.tsv"
-OUTD="$(CS_LOGGERS_ARQ="${CASO}/loggers-ruim.tsv" dry calibracao)"; RC=$?
+OUTD="$(CS_LOGGERS_ARQ="${CASO}/loggers-ruim.tsv" dry64 calibracao)"; RC=$?
 ok "S-P64 arquivo de categorias invalido -> exit 4 no dry-run" "4" "${RC}"
-contem "S-P64 motivo do arquivo" "loggers" "${OUTD}"
+contem "S-P64 motivo do arquivo" "arquivo de loggers recusado" "${OUTD}"
 fi
 
 echo

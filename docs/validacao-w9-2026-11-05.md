@@ -203,3 +203,28 @@ W-9b, e as cinco foram pegas: viabilidade sem `max(k, kLag)`, trecho cortado con
 **Veredito final: liberado para o X-18.** As regras estão fixadas por escrito antes de qualquer dado (complementos 3 e
 3a). Os quatro ajustes do W-9c não tocam a coleta, só o que o script faz depois dela. O W-9c tem de estar commitado e
 conferido por mim antes de a derivação rodar, e ninguém abre os brutos da calibração antes disso.
+
+## 9. Adendo: conferência do W-9c (2026-11-06)
+
+> Diff `330c321..4e2c2c8` (quatro pares `test:`/`fix:` e um `docs:`), contra o §8 acima e o complemento 3a (`639966c`).
+
+**Testes.** `python3 -I`: 70 testes, OK, 2 pulados. `python3 -E -P`: 70, OK. Fiz quatro mutações, e as quatro foram
+pegas: a condição voltou a "nenhuma janela determinada", o `sem_cob` desligado no `derivar`, o θ "sem cobertura" = 2,0
+e a R-4 com `<=`.
+
+| Item do §8 | Situação |
+|---|---|
+| 1. θ "sem cobertura" | confere: `math.nextafter(1.0, math.inf)`, como o complemento 3 §2 e o 3a §3 |
+| 2. condição N = 0 | confere: `limiar_entrada_com_cobertura` marca "sem cobertura" quando há janelas e a 7.7 tem N = 0, com ou sem janela determinada; sem nenhuma janela, não deriva. `janelas_determinadas`, `n_janelas_total` e `fracao_determinada` vão ao JSON; θ_out = 1 e m seguem pelo mesmo `sem_cob` |
+| 3. R-4 | confere: `W_s.dados.subestimacao_w_menor_que_5_s` com o fator período/W, o caso (7.3 ou reserva), os parâmetros afetados e a declaração, só quando o W final fica abaixo do período da sonda |
+| 4. texto do m e `EMENDAS_VW9` | confere: leitura cortada no `end` no `texto`; R-4 e 3a listadas; `PRE_REGISTRO` cita os complementos 3 e 3a |
+
+**Falta de teste de ponta a ponta para "N = 0 com janelas determinadas": basta.** Os dois casos de N = 0 só diferem
+dentro de `limiar_entrada_com_cobertura`. Os testes da função pura cobrem os quatro casos, e a mutação que devolve a
+condição antiga é pega. Do `derivar` em diante, o caminho é o mesmo para os dois: `sem_cob`, θ_out = 1, m,
+`T_cooldown` e a carga. Esse caminho já tem teste de ponta a ponta com o caso sem janela determinada, e a mutação que
+desliga o `sem_cob` é pega. O único ponto sem teste de ponta a ponta é a `fracao_determinada` maior que zero no JSON,
+que é só registro.
+
+**Veredito: liberado para a derivação.** O script na ponta `4e2c2c8` implementa a §7 com os complementos 1, 3 e 3a.
+Quando a derivação rodar, confiro a saída contra os brutos, como manda a §7, antes de os valores irem ao B-40 parte 2.

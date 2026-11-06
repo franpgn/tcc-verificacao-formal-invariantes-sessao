@@ -988,3 +988,33 @@ Transmitidas ao Senior pelo coordenador, sobre o parecer de conferência do text
   da N4.
 - **Entradas (SHA-256):** controlador `2f0d46c8…f9f63`; `campanha-s3/2` `1bb3879f…bc46`; referência ASYNC
   `c5ad8687…85cb`; SYNC `5ced3dc5…dea9`; matriz com `--ordem-seed 20261106` `813159a1…06ab`.
+
+## DT-026: benchmark refeito (recalibração e avaliação do controlador na S3 com observação de violações), PRÉ-REGISTRO (2026-11-06)
+
+> **Aprovado** pelo coordenador sob a autorização do Gestor para seguir o plano durante a noite (o Gestor revisa ao
+> acordar), depois do piloto de violações e **antes de qualquer dado da recalibração**. Texto vinculante:
+> `docs/pre-registro-benchmark-refeito-2026-11-06.md`, versão `37a1099` (rascunho em `a5ddac9`). Substitui, para o
+> benchmark refeito, os valores da DT-025 (calibração cega) e as partes da DT-021 listadas na seção 5 do documento; as
+> DT-020 a DT-025 não são editadas.
+
+- **Motivo:** a calibração X-18 não tinha `--sweep` nem releitura da sessão por outro nó depois do logout; o q̂ = 0/5 da
+  DT-025 é um zero de observação. O piloto (`dados-vm/piloto-2026-11-06/p-20261106T081543Z/piloto/`, tar
+  `80a79265…`) é a etapa de seleção do ponto de operação, relatada com todos os números.
+- **Método (sonda e varredura são instrumentação, não desfecho):** `--sweep --s3-replay-probe --s3-replay-min-sec 1
+  --s3-replay-max-sec 3 --s3-replay-late-max 268` em todas as execuções das duas campanhas e dos dois braços. V =
+  I1 + I4 + I2 REAL por mil ações S3, **por par distinto (chave, invariante)** somando auditor *online*, sonda e
+  varredura, com a forma 2 de I1 contando e a sensibilidade `:sem_forma2`; `ReplayValidate` fora de latência, vazão,
+  erro e denominador; leituras da V-W5c §4 (1, 3 a 8, 10 e a nota da 14); varredura com erro pelo tratamento simétrico
+  nos dois braços do bloco, com sensibilidade sem esses blocos, sem Holm.
+- **Ponto de operação (P-1):** p2-d, F2 `isn3` DENY 90 s com carga L+ (`--s3-users 40 --s3-think-ms 500
+  --s3-session-median-sec 10 --s3-logout-prob 0.9 --s3-admin-mean-sec 5`), pela regra 6.5 do piloto; b1 (ARW) não
+  adotada, porque muda a configuração do *cluster*. **P-2:** pausa fora. **P-3:** late-max 268 (maior número de
+  logouts confirmados por execução no piloto, 267, mais 1). **P-4:** a V *online* da d, execução 2, é I1 REAL legítima
+  (leitura defasada na troca de vista). **P-5:** a regra de V acima.
+- **Recalibração:** as regras da DT-020 com os complementos 1, 2, 3 e 3a; as mesmas 26 células da X-18 com L+ e os
+  instrumentos; sementes a partir de 700000; `--ordem-seed` = data deste commit. Nova parte 2 com conferência
+  independente antes da avaliação.
+- **Avaliação:** ASYNC F2 teste com 12 blocos (Holm sobre 1); F4, F1, F3 e sem falha descritivas; SYNC F2 e F4 de
+  referência; 80 execuções, todas com L+ e os instrumentos; sementes a partir de 800000.
+- **Riscos registrados, sem previsão de efeito:** o AC-5 só corta o trecho final da janela; das 11 perdas da forma 1
+  medidas no piloto, um nó parado em +2, +5, +10 e +20 s teria evitado 11, 7, 3 e 1, e na detecção, 0.

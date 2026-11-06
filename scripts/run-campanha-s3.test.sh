@@ -30,7 +30,7 @@ REAL_SLEEP="$(command -v sleep)"
 REAL_TIMEOUT="$(command -v timeout)"
 TMP="$(mktemp -d)"
 trap '[[ -n "${CS_TESTE_MANTER:-}" ]] && echo "(CS_TESTE_MANTER: ${TMP} mantido)" || rm -rf "${TMP}"' EXIT
-SELECAO=" ${*:-S1 S2 S3 S4 S5 S6 S7 S8 S9 S10 S11 S12 S13 S14 S15 S16 S17 S18 S19 S20 S21 S22 S23 S24 S25 S26 S26h S27 S28 S29 S30 S31 S32 SP1IC} "
+SELECAO=" ${*:-S1 S2 S3 S4 S5 S6 S7 S8 S9 S10 S11 S12 S13 S14 S15 S16 S17 S18 S19 S20 S21 S22 S23 S24 S25 S26 S26h S27 S28 S29 S30 S31 S32 SP1IC SP64} "
 
 PASS=0
 FAIL=0
@@ -262,7 +262,8 @@ case "${cmd}" in
         [[ -f "${ST}/start-falha-${no}" ]] && { echo "Error: start (shim)" >&2; exit 125; }
         [[ -f "${ST}/start-nao-volta-${no}" ]] && exit 0
         if [[ "$(cat "${ST}/status-${no}" 2>/dev/null || echo running)" != running ]]; then vms > "${ST}/iniciado-ms-${no}"; fi
-        echo running > "${ST}/status-${no}"; rm -f "${ST}/link-$(pid_no "${no}")" "${ST}/netem-$(pid_no "${no}")"; echo "${no}" ;;
+        echo running > "${ST}/status-${no}"; rm -f "${ST}/link-$(pid_no "${no}")" "${ST}/netem-$(pid_no "${no}")"; echo "${no}"
+        rm -f "${ST}/loggers-${no}" ;;  # P-64: o nivel posto pela REST nao sobrevive ao reinicio (medido no p1ic)
     version) echo "Version: 5.0.0 (shim)" ;;
     *) exit 0 ;;
 esac
@@ -275,7 +276,7 @@ ST="${CS_ESTADO}"
 acao="${@: -1}"; [[ "${acao}" == "-d" ]] && acao=up
 case "${acao}" in
     down) for n in isn1 isn2 isn3; do echo ausente > "${ST}/status-${n}"; done
-          rm -rf "${ST}/caches"; rm -f "${ST}"/netem-* "${ST}"/clsact-* "${ST}"/prio-* "${ST}"/link-*
+          rm -rf "${ST}/caches"; rm -f "${ST}"/netem-* "${ST}"/clsact-* "${ST}"/prio-* "${ST}"/link-* "${ST}"/loggers-*
           # W-6c: o down solta o swap das JVMs; meminfo-apos-down-<n> vira o /proc/meminfo depois do n-esimo down
           nd=$(( $(cat "${ST}/downs" 2>/dev/null || echo 0) + 1 )); echo "${nd}" > "${ST}/downs"
           [[ -f "${ST}/meminfo-apos-down-${nd}" ]] && cp "${ST}/meminfo-apos-down-${nd}" "${CS_SHIM_DIR}/meminfo" ;;
@@ -407,6 +408,22 @@ case "${caminho}" in
         b="$(cat "${ST}/caches/${c}.json")"
         [[ -f "${ST}/config-diverge-${c}" ]] && b="${b/17500/15000}"
         corpo "{\"${c}\":${b}}"; codigo 200 ;;
+    rest/v2/logging/loggers/*)
+        # P-64: PUT .../loggers/<categoria>?level=<nivel> por no; logger-put-falha -> 400
+        cat="${caminho#rest/v2/logging/loggers/}"; nivel="${cat#*\?level=}"; cat="${cat%%\?*}"
+        if [[ -f "${ST}/logger-put-falha" ]]; then corpo "ISPN080036: Invalid level"; codigo 400; exit 0; fi
+        f="${ST}/loggers-${alvo}"; touch "${f}"; grep -v "^${cat} " "${f}" > "${f}.n"; echo "${cat} ${nivel}" >> "${f}.n"; mv "${f}.n" "${f}"
+        corpo ""; codigo 204 ;;
+    rest/v2/logging/loggers)
+        # formato do 15.0.21 (lido no p1ic); logger-diverge-<no>: ERROR no lugar do nivel guardado
+        b='[{"name":"","level":"INFO","appenders":["STDOUT","FILE"]}'
+        if [[ -f "${ST}/loggers-${alvo}" ]]; then
+            while read -r c n; do
+                [[ -f "${ST}/logger-diverge-${alvo}" ]] && n=ERROR
+                b+=",{\"name\":\"${c}\",\"level\":\"${n}\",\"appenders\":[]}"
+            done < "${ST}/loggers-${alvo}"
+        fi
+        corpo "${b}]"; codigo 200 ;;
     rest/v2/caches/*)
         c="${caminho#rest/v2/caches/}"
         if [[ "${metodo}" == POST ]]; then
@@ -1838,6 +1855,51 @@ DB="$(ls -d "${OUT}"/exec-*-ASYNC-F2-B)"
 ok "S-P1IC AC-7 ativo no fim -> B ACEITA com aviso" "ACEITA" "$(json "${DB}/checagem.json" 'd["veredito"]')"
 contem "S-P1IC aviso AC-7 ativo" "AC-7 ativo no fim" "$(json "${DB}/checagem.json" 'd["avisos"]')"
 contem "S-P1IC aviso com o alvo" "trilha_ac7=127.0.0.1:11224" "$(json "${DB}/checagem.json" 'd["avisos"]')"
+fi
+
+# ============================================================================= S-P64
+if quer SP64; then
+echo "== S-P64: log das pilhas reduzido na origem pela REST (ajusta-log.sh) nos tres nos, depois dos caches, conferido na camada 3 e reposto no no do F1 =="
+novo_caso sp64
+matriz_calib "ASYNC-F1:calibracao:1"
+OUTD="$(dry calibracao)"; RC=$?
+ok "S-P64 dry-run exit 0" "0" "${RC}"
+contem "S-P64 dry-run mostra as categorias" "DRY-RUN loggers: org.infinispan.server.hotrod.BaseRequestProcessor=FATAL org.infinispan.interceptors.impl.InvocationContextInterceptor=FATAL" "${OUTD}"
+printf 'go calibracao %s\n' "${HOJE}" > "${CS_TTY_ARQUIVO}"
+rodar calibracao
+ok "S-P64 exit 0" "0" "${RC}"
+D="$(exec_dir 0)"
+ok "S-P64 ACEITA" "ACEITA" "$(json "${D}/checagem.json" 'd["veredito"]')"
+ok "S-P64 loggers.tsv: dois PUT 204 por no" "6" "$(awk -F'\t' '$3 == "PUT" && $5 == 204' "${D}/loggers.tsv" | wc -l | tr -d ' ')"
+ok "S-P64 loggers.tsv: leitura de volta nos tres nos" "3" "$(awk -F'\t' '$3 == "GET" && $5 == 200' "${D}/loggers.tsv" | wc -l | tr -d ' ')"
+L_CACHE="$(linha_de 'rest/v2/caches/canario-async')"; L_LOG="$(linha_de 'rest/v2/logging/loggers/')"
+verdade "S-P64 os niveis depois dos seis caches" test "${L_LOG:-0}" -gt "${L_CACHE:-0}"
+ok "S-P64 camada 3 antes sem divergencia" "None" "$(json "${D}/execucao.json" 'd["camada3_pre"]["divergencias"]')"
+ok "S-P64 no do F1 recebe os niveis de novo depois da volta (2 + 2 PUT no isn2)" "4" "$(grep -c 'curl|PUT|http://127.0.0.1:11223/rest/v2/logging/loggers/' "${ST}/chamadas.log")"
+ok "S-P64 reposicao registrada" "2" "$(awk -F'\t' '$3 == "PUT" && $5 == 204' "${D}/loggers-volta-f1.tsv" | wc -l | tr -d ' ')"
+ok "S-P64 camada 3 depois sem divergencia (o isn2 religado tem os niveis)" "None" "$(json "${D}/execucao.json" 'd["camada3_pos"]["divergencias"]')"
+contem "S-P64 bundle com o ajusta-log.sh e o arquivo das categorias" "loggers-avaliacao.tsv" "$(cat "${OUT}/calibracao/bundle.sha256")"
+novo_caso sp64b
+matriz_calib "ASYNC-none:calibracao:1"
+: > "${ST}/logger-put-falha"
+printf 'go calibracao %s\n' "${HOJE}" > "${CS_TTY_ARQUIVO}"
+rodar calibracao
+ok "S-P64 PUT recusado -> exit 6 antes da carga" "6" "${RC}"
+contem "S-P64 motivo ajusta-log.sh" "ajusta-log.sh saiu com 3" "$(tail -1 "${OUT}/calibracao/orquestrador.log")"
+ok "S-P64 sem carga" "0" "$(cargas)"
+novo_caso sp64c
+matriz_calib "ASYNC-none:calibracao:1"
+: > "${ST}/logger-diverge-isn3"
+printf 'go calibracao %s\n' "${HOJE}" > "${CS_TTY_ARQUIVO}"
+rodar calibracao
+ok "S-P64 leitura de volta divergente -> exit 6" "6" "${RC}"
+contem "S-P64 motivo com o no" "http://127.0.0.1:11224" "$(tail -1 "${OUT}/calibracao/orquestrador.log")"
+novo_caso sp64d
+matriz_calib "ASYNC-none:calibracao:1"
+printf 'org.x.Y\tSILENT\to\n' > "${CASO}/loggers-ruim.tsv"
+OUTD="$(CS_LOGGERS_ARQ="${CASO}/loggers-ruim.tsv" dry calibracao)"; RC=$?
+ok "S-P64 arquivo de categorias invalido -> exit 4 no dry-run" "4" "${RC}"
+contem "S-P64 motivo do arquivo" "loggers" "${OUTD}"
 fi
 
 echo

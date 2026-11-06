@@ -120,6 +120,29 @@ public final class S3Parametros {
             description = "S3: max_retries do cliente Hot Rod. Padrao ${DEFAULT-VALUE}.")
     public int hotrodRetentativas = 1;
 
+    // ---- W-10: sonda de reuso de sessao depois do logout (replay). Desligada por padrao. ----
+
+    @Option(names = "--s3-replay-probe",
+            description = "S3 (W-10): liga a sonda de replay: cada Logout confirmado ao cliente ganha um Validate da "
+                    + "sid antiga pelo servidor de aplicacao do no (k+1) mod n, entre --s3-replay-min-sec e "
+                    + "--s3-replay-max-sec depois; no fim da carga, um replay tardio das sids com Logout confirmado "
+                    + "na falha ou na recuperacao (por um no diferente do que confirmou). Eventos ReplayValidate; "
+                    + "violacoes com origem sonda. Exige --client-mode pinned. Padrao desligada.")
+    public boolean sondaReplay;
+
+    @Option(names = "--s3-replay-min-sec", defaultValue = "1",
+            description = "S3 (W-10): atraso minimo do replay imediato depois do Logout, s. Padrao ${DEFAULT-VALUE}.")
+    public double sondaMinSeg = 1;
+
+    @Option(names = "--s3-replay-max-sec", defaultValue = "3",
+            description = "S3 (W-10): atraso maximo do replay imediato depois do Logout, s. Padrao ${DEFAULT-VALUE}.")
+    public double sondaMaxSeg = 3;
+
+    @Option(names = "--s3-replay-late-max", defaultValue = "200",
+            description = "S3 (W-10): maximo de sids no replay tardio; acima disso, amostra semeada sem reposicao. "
+                    + "Padrao ${DEFAULT-VALUE}.")
+    public int sondaTardiaMax = 200;
+
     public static long segundosParaNs(double seg) {
         return (long) (seg * 1_000_000_000.0);
     }
@@ -150,6 +173,14 @@ public final class S3Parametros {
         exigir(backoffMs >= 0, "--s3-backoff-ms deve ser >= 0");
         exigir(hotrodTimeoutMs > 0, "--hotrod-timeout-ms deve ser > 0");
         exigir(noAdmin != null && !noAdmin.isBlank(), "--admin-node nao pode ser vazio");
+        if (sondaReplay) {
+            exigir(sondaMinSeg > 0 && sondaMaxSeg >= sondaMinSeg,
+                    "--s3-replay-min-sec deve ser > 0 e --s3-replay-max-sec >= --s3-replay-min-sec");
+            exigir(sondaTardiaMax >= 0, "--s3-replay-late-max deve ser >= 0");
+            exigir(modoCliente == ModoCliente.pinned,
+                    "--s3-replay-probe exige --client-mode pinned (o replay e feito por outro servidor de aplicacao, "
+                            + "um por no; no modo topology o cliente escolhe o no)");
+        }
     }
 
     private static void exigir(boolean ok, String msg) {

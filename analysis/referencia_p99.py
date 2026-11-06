@@ -38,6 +38,11 @@ CABECALHO = ("op_id", "operation", "start_ns", "end_ns", "replica", "return_code
 VALIDOS = {"Login": ("OK",), "Validate": ("VALID", "INVALID"), "Logout": ("NONE",),
            "IncrementFailure": ("COUNTED",), "ResetFailures": ("NONE",)}
 
+# W-10: operacoes de instrumentacao no rep-NNN.csv (sonda de replay do S3, --s3-replay-probe; ver
+# docs/contrato-csv-v2.md). Nao sao carga: ficam fora da referencia de p99 e, pelo energia_proxy, dos
+# percentis por operacao, da taxa de erro, das fronteiras da execucao e da vazao util do comparar_bracos.
+OPERACOES_INSTRUMENTACAO = ("ReplayValidate",)
+
 
 class ErroUso(Exception):
     """Uso invalido, contrato violado ou guarda: exit 2."""
@@ -82,7 +87,8 @@ def ler_eventos(csv_path, exigir_contrato2=True, exigir_antes=True):
     """(latencias por operation, numero de linhas de dados) de um rep-NNN.csv.
 
     Cabecalho exato op_id,operation,start_ns,end_ns,replica,return_code,key[,phase]. Com exigir_antes,
-    qualquer phase diferente de "antes" e recusada (execucao com falha nao serve de referencia).
+    qualquer phase diferente de "antes" e recusada (execucao com falha nao serve de referencia). As
+    operacoes de OPERACOES_INSTRUMENTACAO (W-10) sao puladas e nao contam nas linhas.
     Cada valor e a tupla (latencia_ns, return_code); latencia = end_ns - start_ns.
     """
     p = Path(csv_path)
@@ -103,6 +109,8 @@ def ler_eventos(csv_path, exigir_contrato2=True, exigir_antes=True):
                 continue
             if len(x) != len(cab):
                 raise ErroUso("linha com %d colunas em %s (esperado %d)" % (len(x), p, len(cab)))
+            if x[1] in OPERACOES_INSTRUMENTACAO:
+                continue  # W-10: sonda de replay, fora da referencia
             if exigir_antes and com_fase and x[7] != "antes":
                 raise ErroUso("phase %r em %s: execucao com falha nao serve de referencia" % (x[7], p))
             try:

@@ -494,6 +494,23 @@ class ExclusoesERegistro(Base):
         self.assertEqual(1200, info2["n_acoes"])
 
 
+    def test_replay_validate_fora_dos_desfechos(self):
+        # W-10: os eventos da sonda de replay (ReplayValidate) nao entram no p99 por operacao, na taxa de
+        # erro nem nas fronteiras da execucao (a vazao util nao muda com o replay tardio depois da carga)
+        rng = np.random.default_rng(7)
+        ac = acoes_sinteticas(rng, 1200, math.log(2e6), passo=10_000_000)
+        ev = [("Validate", "VALID", T0 + i * 10_000_000, T0 + i * 10_000_000 + 2_000_000) for i in range(1200)]
+        escrever_exec(self.d / "sem", acoes=ac, eventos=ev, marcadores=(T0 + 2 * S, T0 + 6 * S))
+        sonda = [("ReplayValidate", "ERROR_TRANSPORT", T0 + 3 * S, T0 + 7 * S),
+                 ("ReplayValidate", "VALID", T0 + 60 * S, T0 + 61 * S)]
+        escrever_exec(self.d / "com", acoes=ac, eventos=ev + sonda, marcadores=(T0 + 2 * S, T0 + 6 * S))
+        o1, _ = cb.desfechos_execucao(self.d / "sem", 1, ["durante", "recuperacao"], 60 * S)
+        o2, _ = cb.desfechos_execucao(self.d / "com", 1, ["durante", "recuperacao"], 60 * S)
+        self.assertNotIn("evento_p99:ReplayValidate", o2)
+        self.assertEqual(o1["taxa_erro"]["y"], o2["taxa_erro"]["y"])
+        self.assertEqual(o1["vazao_util"]["y"], o2["vazao_util"]["y"])
+
+
 # ============================================================================= violacoes (Y16)
 
 class Violacoes(unittest.TestCase):

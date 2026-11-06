@@ -31,12 +31,29 @@ public final class UsuarioVirtual implements AtorS3 {
     private long fimSessaoNs;
     private String sidLogout;
     private long fimVoltarNs;
+    /** W-10: sonda de replay ({@code null} = desligada, o comportamento de antes). */
+    private final SondaReplay sonda;
+    /** W-10: indice do no do servidor de aplicacao deste usuario (o {@code k} do replay em k+1). */
+    private final int no;
+    /** W-10: gerador proprio do atraso do replay (so com a sonda ligada); o {@link #rng} nao e consumido. */
+    private final Random rngSonda;
 
     public UsuarioVirtual(int indice, SessionOps ops, ContextoS3 ctx, long inicioNs) {
+        this(indice, ops, ctx, inicioNs, null, 0);
+    }
+
+    /**
+     * W-10: como o anterior, com a sonda de replay e o indice {@code no} do servidor de aplicacao do usuario.
+     * Com {@code sonda} nula e identico ao construtor sem sonda.
+     */
+    UsuarioVirtual(int indice, SessionOps ops, ContextoS3 ctx, long inicioNs, SondaReplay sonda, int no) {
         this.identidade = ContextoS3.identidadeU(indice);
         this.id = identidade;
         this.ops = ops;
         this.ctx = ctx;
+        this.sonda = sonda;
+        this.no = no;
+        this.rngSonda = sonda != null ? ctx.rngSonda(indice) : null;
         this.rng = ctx.rng("U", indice);
         // chegadas escalonadas: nem todos os usuarios entram no mesmo instante
         this.proximo = inicioNs + (long) (rng.nextDouble() * S3Parametros.segundosParaNs(ctx.p.pausaVisitaSeg));
@@ -137,6 +154,10 @@ public final class UsuarioVirtual implements AtorS3 {
                 () -> ops.logout(s));
         long t = ctx.relogio.agoraNs();
         if (!AplicacaoS3.ehErro(r)) {
+            if (sonda != null) {
+                // W-10: logout confirmado ao cliente; o replay da sid antiga vai a outro no
+                sonda.logoutConfirmado(s, no, t, rngSonda);
+            }
             ctx.online.remove(identidade);
             sidLogout = s;
             sid = null;

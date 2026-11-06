@@ -1,0 +1,25 @@
+marcadores: start=1793945465461857000 end=1793945553132950000 (end-start=87.7 s)
+eventos: 2972; ReplayValidate: 258; Logout sem erro: 135
+ReplayValidate por fase e codigo:
+  antes                INVALID            20
+  durante              ERROR_TRANSPORT    4
+  durante              ERROR_UNAVAILABLE  15
+  durante              INVALID            33
+  durante              NOT_FOUND          9
+  durante              VALID              4
+  recuperacao          ERROR_UNAVAILABLE  4
+  recuperacao          INVALID            167
+  recuperacao          VALID              2
+I1 da sonda (6):
+  sid      logout_no  logout_t_s   replay_no  replays (t_s:codigo)       fase_viol
+  4a17f363 isn3       6.20         isn1       7.92:VALID 144.54:VALID    durante
+  783c69c6 isn2       7.64         isn3       9.26:VALID 144.54:INVALID  durante
+  b08692ed isn2       15.38        isn3       16.97:VALID 144.55:INVALID durante
+  f487fb15 isn3       16.41        isn1       19.19:VALID 144.55:VALID   durante
+  4a17f363 isn3       6.20         isn1       7.92:VALID 144.54:VALID    recuperacao
+  f487fb15 isn3       16.41        isn1       19.19:VALID 144.55:VALID   recuperacao
+varredura (3 achados):
+  invariante=I1, chave=4a17f363, classificacao=REAL, detalhe=invalidacao confirmada (LOGOUT) e a sessao esta VALID
+  invariante=I1, chave=f487fb15, classificacao=REAL, detalhe=invalidacao confirmada (LOGOUT) e a sessao esta VALID
+  invariante=I2, chave=60adc53a, classificacao=INCERTA, detalhe=sessao VALID de identidade s3-u-002 BLOCKED (BLOQUEIO-INCERTO)
+sids distintas com I1 da sonda: 4

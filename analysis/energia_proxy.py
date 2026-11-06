@@ -37,7 +37,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))   # fases e referencia_p99 (python -I)
 
 import fases  # noqa: E402
-from referencia_p99 import VALIDOS, caminho_meta  # noqa: E402,F401  (VALIDOS = copia de rebaseline)
+from referencia_p99 import VALIDOS, OPERACOES_INSTRUMENTACAO, caminho_meta  # noqa: E402,F401  (VALIDOS = copia de rebaseline)
 
 ESQUEMA = "energia-proxy/1"
 CABECALHO_RECURSOS = "t_epoch_ns,fonte,cpu_usec_acum,mem_bytes,steal_usec_acum,estado"
@@ -248,7 +248,10 @@ def ler_acoes_s3(caminho):
 
 
 def ler_eventos_inicio(csv_path):
-    """[(start_ns, end_ns, operation, return_code)] de um rep-NNN.csv do contrato 2."""
+    """[(start_ns, end_ns, operation, return_code)] de um rep-NNN.csv do contrato 2.
+
+    W-10: as operacoes de instrumentacao (OPERACOES_INSTRUMENTACAO, a sonda de replay do S3) ficam de fora: nao
+    entram nos percentis por operacao, na taxa de erro, nas fronteiras t0/t1 nem na vazao util."""
     p = Path(csv_path)
     if not p.is_file():
         raise ErroUso("CSV de eventos ausente: %s" % p)
@@ -267,6 +270,8 @@ def ler_eventos_inicio(csv_path):
             raise ErroUso("cabecalho de eventos inesperado em %s: %s" % (p, cab))
         for x in r:
             if not x:
+                continue
+            if len(x) > 1 and x[1] in OPERACOES_INSTRUMENTACAO:
                 continue
             try:
                 out.append((int(x[2]), int(x[3]), x[1], x[5]))

@@ -66,6 +66,9 @@
 #     VM passa de 1 GiB de swap a cada 7 a 10 execucoes;
 #   - trilha de decisoes sem a linha fim ou com linhas_perdidas > 0 marca trilha_incompleta no execucao.json; com
 #     --exigir-trilha-completa, a execucao e DESCARTADA-INFRA (a fase segue). As duas opcoes entram no bundle.
+# W-10: --sonda-replay acrescenta --s3-replay-probe --sweep a linha do jar (sonda de reuso da sessao depois do logout,
+#   docs/relatorio-w10-2026-11-06.md, e a varredura final global). Padrao desligada: sem ela a linha do jar e a de antes.
+#   Entra nas opcoes do bundle (sonda_replay=sim|nao).
 #   Acrescimos da V-W6b: o execucao.json de toda falha injetada traz o fim nominal (fim_nominal_desde_ancora_s =
 #   inj_inicio_offset_s + f*_dur_s) e a saida do injetor (injetor_saida_desde_ancora_s), porque o F4 do braco B sai no
 #   fim do ping quando o AC-5 para o alvo e o end adianta (N1); o B1 exige o marcador start da falha no no (F2, F3, F4)
@@ -83,7 +86,7 @@
 #       --saida <dir>
 #       [--jar <jar> --jar-sha256 <hex> --boot-esperado <uuid> --h4-id <id>]
 #       [--servers h:p,h:p,h:p] [--admin http://h:p,...] [--username <u>] [--password <p>] [--dry-run]
-#       [--swap-limite-kb N] [--exigir-trilha-completa]
+#       [--swap-limite-kb N] [--exigir-trilha-completa] [--sonda-replay]
 #   (--jar, --jar-sha256, --boot-esperado e --h4-id sao obrigatorios fora do --dry-run. A referencia de cada modo de
 #   replicacao presente na fase e obrigatoria: o programa recusa referencia de outro perfil.)
 #   A fase "reposicoes" le <saida>/reposicoes/reposicoes.tsv, escrito antes por campanha_s3_matriz.py repor.
@@ -159,7 +162,7 @@ LOCK=/var/lock/tcc-vm.lock
 MATRIZ=""; MATRIZ_SHA=""; FASE=""; PARAMS=""; PARAMS_SHA=""; CTRL=""; CTRL_SHA=""
 REF_ASYNC=""; REF_ASYNC_SHA=""; REF_SYNC=""; REF_SYNC_SHA=""
 JAR=""; JAR_SHA=""; SAIDA=""; BOOT_ESPERADO=""; H4_ID=""; DRY_RUN=0
-SWAP_LIMITE_KB=""; SWAP_LIMITE_DADO=0; EXIGIR_TRILHA=0
+SWAP_LIMITE_KB=""; SWAP_LIMITE_DADO=0; EXIGIR_TRILHA=0; SONDA_REPLAY=0
 SERVERS="127.0.0.1:11222,127.0.0.1:11223,127.0.0.1:11224"
 ADMIN="http://127.0.0.1:11222,http://127.0.0.1:11223,http://127.0.0.1:11224"
 USERNAME="admin"; PASSWORD="${CS_PASSWORD:-}"
@@ -189,6 +192,7 @@ while [[ $# -gt 0 ]]; do
             shift 2 ;;
         --dry-run) DRY_RUN=1; shift ;;
         --exigir-trilha-completa) EXIGIR_TRILHA=1; shift ;;
+        --sonda-replay) SONDA_REPLAY=1; shift ;;
         --referencia|--referencia-sha256)
             erro_uso "$1 deu lugar a --referencia-async/--referencia-sync: uma referencia por modo de replicacao (B2 da V-W6)" ;;
         --help|-h) uso; exit 0 ;;
@@ -217,6 +221,7 @@ if [[ "${SWAP_LIMITE_DADO}" -eq 1 && ! "${SWAP_LIMITE_KB}" =~ ^[1-9][0-9]*$ ]]; 
 fi
 # opcoes que mudam o protocolo: entram no bundle (retomada com outras e recusada) e no ambiente.md
 OPCOES_PROTOCOLO="swap_limite_kb=${SWAP_LIMITE_KB:--},exigir_trilha_completa=$([[ "${EXIGIR_TRILHA}" -eq 1 ]] && echo sim || echo nao)"
+OPCOES_PROTOCOLO+=",sonda_replay=$([[ "${SONDA_REPLAY}" -eq 1 ]] && echo sim || echo nao)"   # W-10
 if [[ "${DRY_RUN}" -eq 0 ]]; then
     [[ -n "${JAR}" ]] || erro_uso "--jar e obrigatorio fora do --dry-run"
     [[ "${JAR_SHA}" =~ ^[0-9a-f]{64}$ ]] || erro_uso "--jar-sha256 deve ter 64 hexadecimais"
@@ -353,6 +358,8 @@ montar_cmd() {  # montar_cmd <modo> <seed> <csv-dir> <controlador> <marcadores> 
          --controller "$4" --controller-config "${CTRL}" --controller-reference "$(ref_de "$1")"
          --controller-admin "${ADMIN}" --hotrod-timeout-ms "${P[hotrod_timeout_ms]}"
          --rejoin-timeout-sec "${P[religamento_prazo_s]}")
+    # W-10: sonda de replay e varredura final, so com --sonda-replay (sem ela a linha e a de antes)
+    [[ "${SONDA_REPLAY}" -eq 0 ]] || CMD+=(--s3-replay-probe --sweep)
     CMD_MASC=("${CMD[@]}")
     local k
     for k in "${!CMD_MASC[@]}"; do

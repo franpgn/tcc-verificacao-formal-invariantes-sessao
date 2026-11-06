@@ -154,7 +154,8 @@ B-44.1b). Os arquivos:
 | Arquivo | O que é | Teste |
 |---|---|---|
 | `cluster/infinispan-sem-caches.xml` | o `infinispan-cluster.xml` sem os `distributed-cache` (promovido de `wt-b44-1/runs/b44-1b/cluster/`) | `ClusterSemCachesXmlTest`: nenhum elemento de *cache*; fora dos *caches*, igual ao XML versionado nó a nó |
-| `cluster/podman-compose-sem-caches.yml` | o `podman-compose.yml` com o volume do XML trocado; sem `restart:` (o AC-5 depende disso) | `ClusterSemCachesXmlTest`: só o volume muda |
+| `cluster/podman-compose-sem-caches.yml` | o `podman-compose.yml` com o volume do XML trocado, o JAR do A1 e o log em `k8s-file` com teto (P-64); sem `restart:` (o AC-5 depende disso) | `ClusterSemCachesXmlTest`: só isso muda |
+| `cluster/log/loggers-avaliacao.tsv` | categorias de log postas em `FATAL` pela REST depois dos caches (P-64) | `ajusta-log.test.sh` (L7) |
 | `cluster/caches/{sessions,counters,sessions-async,counters-async}.json` | os quatro da carga, compactos, sem o envoltório do nome; `remote-timeout` 17500 explícito nos SYNC | `CachesCargaJsonTest`: iguais ao *cache* de mesmo nome do XML, salvo `remote-timeout`; o diretório tem exatamente os seis JSON |
 
 O `infinispan-cluster.xml` com *caches* continua o do *rebaseline* e dos testes de irmãos (`ClusterXmlIrmaosTest`);
@@ -173,53 +174,79 @@ A leitura de volta `?action=config` dos quatro *caches* da carga criados pela RE
 servidor real (só a dos `canario*` está prevista no *smoke* do W-4): a primeira subida local ou a validação X-17 mostra
 se ela volta byte a byte igual ao JSON, como o `cria-caches.sh` exige.
 
-### Destino do log dos contêineres (P-64) — proposta, **não aplicada**
+### Log dos contêineres na avaliação (P-64)
 
-Proposta para o *cluster* da avaliação (06/11, P-P1IC.4 = P-64; nada mudou no compose nem na VM). Hoje o
-`podman-compose-sem-caches.yml` não declara `logging`, e o Podman da VM (4.9.3, rootful, `podman-compose` 1.0.6) usa o
-padrão `journald`; pelas notas do vigia da calibração (X-18), o que vai ao journald também é copiado pelo rsyslog.
+Decisão do coordenador de 06/11 sobre a P-64, aplicada em `feature/p1ic-conferidor-analise`. O problema não era só o
+journald: o alvo do AC-7 sob corte gravava ~268 MB de log numa execução, e os outros nós ~0,2 MB. Como o AC-7 só age
+nos braços com o controlador ativo (PL e AL), isso era uma carga de disco **assimétrica entre os braços**, capaz de
+mexer no p99 e de provocar travamentos h4 só neles. Duas mudanças, iguais nos quatro braços:
 
-**Mudança proposta** (nos três serviços do `podman-compose-sem-caches.yml`, que é o mesmo arquivo para os quatro
-braços, porque o orquestrador recria o *cluster* com ele antes de cada execução):
+1. **Destino do log** (`cluster/podman-compose-sem-caches.yml`, os três serviços):
 
-```yaml
-    logging:
-      driver: k8s-file
-      options:
-        max-size: "512mb"
-```
+   ```yaml
+       logging:
+         driver: k8s-file
+         options:
+           max-size: "512mb"
+   ```
 
-- **Volume medido** (`runs/p1ic-smoke/*/servidores/*.log.gz`, texto de `podman logs -t`): o alvo do AC-7 sob corte
-  escreveu 2,07 milhões de linhas e 268 MB numa execução (`corte-r1`; 264 MB no `corte-r2`), ~100 linhas de pilha por
-  recusa `ISPN005003` (20 647 recusas) mais 72 mil linhas do `PartitionHandlingManagerImpl`; os outros nós, 0,1 a
-  0,2 MB. No `k8s-file`, com o prefixo de cada linha, isso dá ~0,3 GB no arquivo do alvo. O teto de 512 MB cobre o pior
-  caso medido com folga.
-- **O que melhora:** uma escrita de texto por linha, num arquivo do contêiner, no lugar de uma entrada do journald
-  (com metadados e índice; o vigia estimou ~40 a 70 MB para ~55 a 65 mil entradas, ~1 KB por entrada) mais a cópia do
-  rsyslog. Sai também o limite de taxa do journald, que no A4 descartou linhas de **todos** os contêineres (P-A4.2):
-  `podman logs` passa a devolver tudo, o que importa para a checagem de fusão do orquestrador fatorial, que lê o
-  `podman logs` de cada nó.
-- **O que não muda:** o volume que o servidor produz (só o destino); o `server/log/server.log` que o servidor grava
-  dentro do contêiner (configuração de log da imagem, que a proposta não toca); os arquivos de caches e de JGroups.
-- **Teto:** ao passar do `max-size`, o `conmon` recomeça o arquivo do zero (sem cópias antigas): perde-se o começo do
-  log, não o fim. O teto limita o espaço ocupado, não os bytes escritos. O arquivo some com o contêiner no
-  `podman-compose down` da recriação seguinte: o espaço não se acumula entre execuções, e o log de uma execução só existe
-  até a próxima começar (se o Gestor quiser guardá-lo, o orquestrador pode gravar `podman logs` comprimido no diretório
-  da execução: ~3 MB por alvo no pior caso medido).
-- **Custo no repositório:** o bloco acima nos três serviços; o `ClusterSemCachesXmlTest.composeSoTrocaOXml` passa a
-  aceitar exatamente esse bloco nos três serviços do compose sem *caches* (o `podman-compose.yml` do *rebaseline* fica
-  como está); o orquestrador confere no pré-voo de cada execução que `{{.HostConfig.LogConfig.Type}}` é `k8s-file` nos
-  três nós (motivo de infraestrutura se não for), com caso no `run-campanha-s3.test.sh`. Um *bundle* novo para a VM, que
-  já é necessário pelo AC-7.
-- **Antes de aplicar, na VM, só leitura:** `podman-compose --dry-run -f podman-compose-sem-caches.yml up -d` deve
-  mostrar `--log-driver=k8s-file --log-opt=max-size=512mb` nos três `podman create` (suporte do 1.0.6 a `logging`,
-  que não conferi na VM), e `podman inspect` do *cluster* atual confirma o `journald` de hoje.
-- **Em relação à recalibração:** a recalibração rodou com `journald`, e a avaliação rodaria com `k8s-file`. Os quatro
-  braços continuam iguais entre si (o pareamento por bloco não muda). O que pode mudar: menos escrita em disco nas F2 e
-  F4, então menos travamentos h4a (a estimativa de reposições da calibração fica conservadora), e menos chance de a JVM
-  esperar o `stdout` quando o journald trava, o que pode baixar a latência do servidor nas falhas em relação à
-  referência de p99 calibrada. É um desvio declarado do ambiente entre a calibração e a avaliação, a registrar no
-  pré-registro, ou a medir antes com poucas execuções de uma célula da calibração em `k8s-file`.
+   O log de cada nó vai para um arquivo do contêiner, sem passar pelo journald (nem pela cópia do rsyslog). Ao passar
+   do teto, o `conmon` recomeça o arquivo (perde o começo, não o fim); o arquivo some com o contêiner no `down` da
+   recriação seguinte. O `podman-compose.yml` do *rebaseline* fica como está (`ClusterSemCachesXmlTest`).
+2. **Redução na origem**, pela REST de logging do Infinispan 15.0.21: depois de criar os seis caches, o orquestrador
+   roda `scripts/ajusta-log.sh`, que põe em cada nó o nível das categorias de `cluster/log/loggers-avaliacao.tsv`
+   (`PUT /rest/v2/logging/loggers/<categoria>?level=FATAL`, 204) e lê de volta (`GET /rest/v2/logging/loggers`):
+
+   | Categoria | O que deixa de ir ao log | Onde aparece |
+   |---|---|---|
+   | `org.infinispan.server.hotrod.BaseRequestProcessor` | `ERROR ISPN005003` com ~50 linhas de pilha, uma por pedido ao cache ignorado (`CacheUnavailableException`) | alvo do AC-7: só PL e AL |
+   | `org.infinispan.interceptors.impl.InvocationContextInterceptor` | `ERROR ISPN000136` com ~54 linhas de pilha (`AvailabilityException`, pela `PartitionHandlingManagerImpl`), uma por comando no nó em `DEGRADED_MODE` | nó isolado na F2: os quatro braços |
+
+   Lido no cluster local (06/11): o nível vale **só no nó que recebe o pedido** (por isso um pedido por nó) e **não
+   sobrevive ao reinício** do nó. A camada 3 confere os níveis nos três nós antes e depois de cada execução, e o nó do
+   F1 os recebe de novo quando volta (`loggers-volta-f1.tsv` na execução). Um nó religado no fim da carga (AC-5 ou
+   O8, fora da avaliação com o AC-7) fica sem eles até a recriação, e a camada 3 depois da execução o registra.
+   O arquivo de categorias e o script entram no *bundle* da fase; o `--dry-run` mostra as categorias.
+
+**O que não muda.** O servidor continua recusando e respondendo igual: o erro chega ao cliente e entra no CSV da carga
+(`ERROR_UNAVAILABLE`, G-4), e a política de partição e a de fusão são as mesmas. Só a linha do log some. As mesmas
+categorias também deixam de ir ao `server/log/server.log` dentro do contêiner (a raiz grava em `STDOUT` e `FILE`).
+Nenhuma ferramenta do repositório lê `ISPN005003` ou `ISPN000136` (a checagem de fusão lê `ISPN000093`, do
+`CLUSTER`, que fica como está).
+
+**Medida** (`runs/p64-log/`, caso `corte` do smoke do P1-IC, mesma sonda de 25 ms no alvo, n = 1 depois contra os dois
+de antes):
+
+| Execução | Log do alvo | `ISPN005003` | `ISPN000136` | Sonda no alvo: cache ignorado / AvailabilityException |
+|---|---|---|---|---|
+| `corte-r1`, `corte-r2` (antes, sem o ajuste) | 268,3 e 263,7 MB | 20 647 e 20 423 | 18 131 e 17 895 | 2 515 / 13 878 e 2 488 / 13 759 |
+| `corte-log-r1` (depois) | **0,09 MB** | 0 | 0 | 2 868 / 6 276 |
+
+O controlador fez o mesmo (P1 em +14,5 s, efeito do AC-7 em 35 ms, desfazer quando o alvo se viu sozinho). Os outros
+dois nós ficaram em 0,09 e 0,14 MB. O `podman-compose` 1.5.0 passou o `max-size` ao Podman (`k8s-file 512MB` no
+`podman inspect`). Parte das recusas no alvo vem da sonda de 25 ms do *harness* (77 % das `ISPN000136` e 12 % das
+`ISPN005003` no `corte-r1`), que a avaliação não tem; o volume sem o ajuste, na avaliação, seria menor que 268 MB, mas
+continuaria só nos braços ativos.
+
+**Na VM (não mexido):** Podman 4.9.3 e `podman-compose` 1.0.6. Antes da campanha, só leitura:
+`podman-compose --dry-run -f podman-compose-sem-caches.yml up -d` deve mostrar `--log-driver=k8s-file
+--log-opt=max-size=512mb` (não conferi se o 1.0.6 lê `logging.options`; o *smoke* local usou o 1.5.0).
+
+#### Nota para o pré-registro (texto proposto)
+
+> **Desvio de ambiente entre a recalibração e a avaliação (P-64).** A recalibração rodou com o log dos contêineres
+> no journald (copiado pelo rsyslog) e com o nível de log padrão do servidor. Na avaliação, o log dos três nós vai
+> para um arquivo do contêiner (`k8s-file`, teto de 512 MB) e, depois de criar os caches, o orquestrador põe em
+> `FATAL`, pela REST de logging, as duas categorias que gravam uma pilha por pedido recusado: a da recusa do cache
+> ignorado (`ISPN005003`, só no alvo do AC-7, isto é, só nos braços ativos) e a do nó em modo degradado
+> (`ISPN000136`, nos quatro braços durante a F2). Num corte com o AC-7, o log do alvo caiu de ~266 MB para 0,09 MB
+> por execução no *cluster* local. A mudança é igual nos quatro braços e não muda a semântica do *cluster*: o
+> servidor recusa e responde do mesmo jeito, e o erro continua chegando ao cliente e ao CSV da carga; só deixa de ser
+> escrito no log. Em relação à recalibração, o efeito esperado é menos escrita em disco nas falhas, logo menos
+> travamentos h4a e, possivelmente, menos latência no servidor nas F2; a referência de p99 e os limiares calibrados
+> foram medidos com o log antigo.
+
+## Como verificar conectividade dos nós
 
 ```bash
 for port in 11222 11223 11224; do

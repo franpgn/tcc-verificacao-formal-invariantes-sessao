@@ -1718,3 +1718,15 @@ decisão, nove trilhas quebradas (cada uma com o problema esperado), Δ_conv e d
 que falhou e Δ_conv do fim da carga com o AC-7 desfeito, trilha 1.2 sem AC-7 ainda integral.
 `test_campanha_s3_conferir_ac7.py`: constante 1.3, meta 1.2 recusada, `--exigir-acao-p1` no `controlador` (campo,
 valor, origem) e na `meta` (dois braços), e os campos `ac7_*` da `trilha`.
+
+### P-64: log do *cluster* da avaliação (06/11)
+
+TDD: vermelho em `f367b7e`. A suíte inteira S1..S32 do orquestrador não foi rodada nesta branch.
+
+| Suíte | Comando | Resultado |
+|---|---|---|
+| `ClusterSemCachesXmlTest` | `mvn -o -q test -Dtest=ClusterSemCachesXmlTest` (em `workload/`) | 4/0 (`logK8sFileComTeto` novo; `composeSoTrocaOXml` com o bloco `logging`) |
+| `ajusta-log.sh` | `bash scripts/ajusta-log.test.sh` | **36/0** (aplicar e ler nos três nós, senha só pela entrada padrão, `--so-conferir`, PUT recusado = 3, leitura divergente = 4 com o nó, `--validar` sem rede, arquivo inválido = 2, uso = 1, arquivo da avaliação) |
+| orquestrador | `bash scripts/run-campanha-s3.test.sh SP64` | **19/0** (dry-run com as categorias; níveis depois dos seis caches; camada 3 antes e depois limpa; reposição no nó do F1; PUT recusado e leitura divergente = exit 6; arquivo inválido = exit 4) |
+| orquestrador | `bash scripts/run-campanha-s3.test.sh S1 S4 SP64` | 102/1 antes da correção do gancho `CS_LOGGERS_ARQ` no `--dry-run` (o único FAIL era o do arquivo inválido); S1 e S4 sem falha |
+| medida local | `runs/p64-log/` (`comandos.md`) | log do alvo do AC-7 sob corte: 268,3 e 263,7 MB antes, **0,09 MB** depois (n = 1) |

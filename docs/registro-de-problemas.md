@@ -1421,8 +1421,23 @@ como transporte) fica resolvido aqui pela G-4, e o P-A4.1 e o P-A4.3 viram regra
   `podman-compose@cluster.service` (rótulos dos contêineres nos eventos de `dados-vm/cs3-2026-11/x18-*/cs3-infra/x18-fim-*.txt`).
   O *driver* `journald` e a cópia no rsyslog vêm das notas do vigia da calibração (X-18: ~55 a 65 mil entradas, ~40 a
   70 MB de journald e ~15 MB de rsyslog por F2 no isn3), não de um `podman inspect` que eu tenha lido. Proposta do
-  `k8s-file` com teto por contêiner: `docs/configuracao-infinispan.md`, seção "Destino do log dos contêineres (P-64)".
-- **Status:** `ABERTO` (proposta para o Gestor; nada mudou na VM nem no compose).
+  `k8s-file` com teto por contêiner: `docs/configuracao-infinispan.md`, seção "Log dos contêineres na avaliação (P-64)".
+- **Leitura do coordenador (06/11):** o problema é maior que o journald: a carga de disco do alvo só existe nos braços
+  ativos (PL, AL) e pode enviesar o p99 e provocar h4 só neles. Decisão: `k8s-file` com teto e redução na origem,
+  iguais nos quatro braços.
+- **Causa no log:** duas categorias gravam uma pilha por pedido: `BaseRequestProcessor` (`ISPN005003`, recusa do cache
+  ignorado, ~50 linhas) e `InvocationContextInterceptor` (`ISPN000136`, `AvailabilityException` do nó em modo
+  degradado, ~54 linhas). No `corte-r1` foram 20 647 e 18 131 entradas e 1 995 141 linhas de pilha.
+- **Correção** (`feature/p1ic-conferidor-analise`): `k8s-file` com `max-size: "512mb"` no compose sem caches;
+  `scripts/ajusta-log.sh` põe as duas categorias em `FATAL` pela REST de logging nos três nós depois dos caches, com
+  leitura de volta; a camada 3 confere antes e depois; o nó do F1 recebe os níveis de novo quando volta (a REST vale
+  por nó e não sobrevive ao reinício, lido no cluster local).
+- **Medida** (`runs/p64-log/`, n = 1): no mesmo corte com o AC-7, o log do alvo caiu de 268,3 e 263,7 MB para
+  **0,09 MB**, com o servidor recusando igual (a sonda viu 2 868 recusas do cache ignorado e 6 276
+  `AvailabilityException` no alvo) e o controlador agindo igual.
+- **Status:** `RESOLVIDO` no código; desvio de ambiente em relação à recalibração, a declarar no pré-registro (texto
+  proposto em `docs/configuracao-infinispan.md`). Na VM, conferir só por leitura que o `podman-compose` 1.0.6 passa o
+  `max-size` (`--dry-run`) antes da campanha.
 
 ## Observação de modelagem (não é defeito)
 

@@ -154,6 +154,26 @@ análise continua lendo trilhas 1.2 (calibração e dados anteriores) e só exig
 `GUARDA`. (4) Não há arquivo de controlador da avaliação no repositório: ele sai da calibração; o orquestrador recusa o
 braço B sem `"acaoP1": "AC-7"` com origem, e o arquivo da calibração fica como está (mesmo SHA-256).
 
+#### Complemento do TD-022 (06/11): log do *cluster* da avaliação (P-64)
+
+Decisão do coordenador (06/11): o log das pilhas do alvo do AC-7 (~268 MB por execução, só nos braços ativos) sai do
+journald e é reduzido na origem, igual nos quatro braços. Detalhes, medida e nota para o pré-registro em
+`docs/configuracao-infinispan.md`, seção "Log dos contêineres na avaliação (P-64)".
+
+| Peça | O que faz | Onde |
+|---|---|---|
+| `logging: k8s-file, max-size 512mb` | log de cada nó num arquivo do contêiner, com teto; o compose do *rebaseline* sem mudança | `cluster/podman-compose-sem-caches.yml` |
+| `loggers-avaliacao.tsv` | `BaseRequestProcessor` (`ISPN005003`) e `InvocationContextInterceptor` (`ISPN000136`) em `FATAL`, com a origem de cada uma | `cluster/log/` |
+| `ajusta-log.sh` | `PUT /rest/v2/logging/loggers/<categoria>?level=` em cada nó e leitura de volta; `--so-conferir`, `--validar`; exits como o `cria-caches.sh` | `scripts/` |
+| orquestrador | aplica depois dos caches (falha = infra, exit 6); camada 3 confere antes e depois; repõe no nó do F1 quando ele volta (aviso se falhar); arquivo e script no *bundle*; `--dry-run` e pré-voo validam o arquivo (exit 4) | `scripts/run-campanha-s3.sh` |
+
+**Escolhas:** (1) REST e não arquivo de log montado: a REST serviu (nível por nó, leitura de volta, sem mexer na
+imagem nem no XML); o custo é repor no nó que reinicia, o que o orquestrador faz no F1. Um nó religado no fim da carga
+(AC-5 ou O8) fica sem os níveis até a recriação, e a camada 3 depois o registra. (2) `FATAL`, não `OFF`: tira os
+`ERROR` dessas duas categorias e deixa um eventual `FATAL`. (3) Some também o resto do que essas duas categorias
+gravam em `ERROR` (por exemplo as 122 `ISPN000136` de `TimeoutException` do `corte-r1`); o cliente continua vendo
+esses erros.
+
 ### TD-021 — W-5e: análise do fatorial 2×2 (regra de fusão × controlador) no `comparar_bracos.py` (2026-11-06)
 
 Numeração: na base `edfa8b6` o último é o TD-019; o TD-020 já é da A1 (`wt-a1`). Na integração (06/11) a A1 entrou

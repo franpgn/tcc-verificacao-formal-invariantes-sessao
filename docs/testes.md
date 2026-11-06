@@ -1221,3 +1221,141 @@ Commits: `ce5583f` (`test:`, vermelho por compilação sem `AtualizacaoTopologia
 | A (jar da correção) | a mesma sonda: antes e depois de `AtualizacaoTopologia.atualizar()` | antes, 12,0 a 22,8 % perdidas e 12,3 a 23,2 % acrescentadas; **depois, 0** nos 3 nós e nos 2 *caches*, e a topologia do principal igual à de um cliente novo |
 | B (programa com a correção) | S3 ASYNC 90 s, `--convergence`, F1 do `isn2` no meio da carga | as duas linhas `Topologia do principal` (ids trocados) na primeira rodada; o laço achou 1 chave divergente persistente (I5) em 24 rodadas: `divergente` |
 | C (programa sem a correção, 1f65a02) | o mesmo cenário, com a sonda de divergência ao lado | o laço convergiu; 0 chaves divergentes nos mesmos dados com a topologia velha e com a atualizada (sem divergência nesse sorteio: a leitura velha não fabrica divergência) |
+
+## W-9: derivação da calibração S3 (`analysis/calibracao_s3.py`) (2026-11-05)
+
+Na integração (06/11, depois do W-10 e do P-48), o TD-016 do W-9 virou TD-017 (o W-10 entrou antes com o TD-016).
+
+Branch `feature/w9-calibracao-s3` (worktree `wt-w9`) sobre `17f2bd4`. Só Python (sem Maven, sem Podman, sem VM).
+Python 3.12.10. A suíte nova usa execuções sintéticas no formato do orquestrador S3 (`exec-NNNN-<célula>-A` com
+`execucao.json`, `checagem.json`, `rep-001.csv`, JSONL 1.2 de observáveis e decisões, violações, ações S3, resumo de
+convergência e marcadores), escritas pelo gerador do próprio teste.
+
+| Suíte (nova) | Testes | O que cobre |
+|---|---|---|
+| `analysis/test_calibracao_s3.py`, `CampanhaBase` | 23 | uma derivação completa: execuções usadas e excluídas, 7.1 a 7.18 com os valores esperados calculados à mão (W = 5 s, θ_lat_in = nextafter(0,03), m = 5, kLag = 2 com N = 88 e 3/N, T_estavel = 34 s, T_hold_viol = 26,5 s, teto 600 s, exec_teto 1010 s, q̂ = 1/2 com Clopper-Pearson), só braço A |
+| `Bordas` | 11 | `kLag` acima do limite (6 com W = 5: AC-5 inviável), `kLag` = 5 no limite, zero ocorrências (`kLag` = 1), nenhuma janela válida (`kLag` nulo, N = 0), F1 sem resposta longa (12 janelas, não conta), F1 com resposta (conta), λ₅ no posto (3 janelas baixas mudam W de 5 para 7), T_hold_viol = W, teto sem execução convergida, célula vazia, regra sem execução das suas células |
+| `Funcoes` | 14 | funções puras de cada regra com as bordas (nenhuma janela válida, sem recaída, sem execução), `resumo_lag` com empate, `calcular_w` (termo de leitura dominante; W = prazo recusado pelo código), viabilidade, `exec_teto` (piso de 1010 s), Clopper-Pearson nos extremos |
+| `Cli` | 5 | saída determinística (duas execuções, mesmos bytes), nunca sobrescreve, referências gravadas com o SHA-256 do JSON, braço B recusado (exit 2), F3 recusada, `teto_ms` diferente do prazo recusado |
+| `Paridade` | 2 | Δ_conv e taxa de violações por mil iguais ao `comparar_bracos.desfechos_execucao`; Clopper-Pearson igual ao `scipy.stats.beta`. Pulados em `-I` (sem numpy) |
+
+| Commit | Momento | `python3 -I -m unittest discover -s analysis -p "test_calibracao_s3.py"` |
+|---|---|---|
+| `d4c6f09` test | vermelho contra o esqueleto | caiu também por um defeito do *fixture* (`dict(**{10: ...})`, `TypeError` no `setUpClass`) |
+| `7678318` test | *fixture* corrigido, vermelho limpo | 53 testes: 17 falhas, 34 erros (`KeyError` dos parâmetros ausentes), 2 pulados |
+| `bd6446d` feat | implementação | 53: 51 OK, 2 pulados; em `python3 -E -P`, 53 OK |
+| `8563ce2` test | regra sem execução das suas células | 55: 2 falhas |
+| `d329e21` fix | correção | **55: 53 OK, 2 pulados** (8,1 s); em `python3 -E -P`, **55 OK** (8,4 s) |
+
+Teste existente editado: `test_esquema_e_execucoes_usadas` passou a esperar também a execução abortada na lista de
+excluídas (decisão da implementação, como o `resumo.json` do orquestrador; registrado no `feat:`). Nenhum módulo
+existente de `analysis/` mudou; a suíte completa de `analysis/` não foi rodada para não pôr carga no *host* com a VM
+medindo (os arquivos novos não são importados por nenhum outro).
+
+**Mutantes** (cada um aplicado ao módulo e desfeito; `python3 -I`): sem o predicado do P1 na 7.13 (9 falhas); θ_in
+igual ao maior mínimo, sem `nextafter` (5); trecho calmo seguido de intermediária contando para m (1); T_estavel sem
+`P_sonda` (2); I2 de qualquer classe na 7.15 (2); persistência que não zera abaixo do teto (9); atraso de início
+ignorado na 7.3 (2): os sete morrem. O `<` → `<=` no limiar de 400 s da 7.10 sobrevive e é equivalente (em 400 s as
+duas leituras dão 600 s).
+
+***Smoke* com brutos reais** (fora do git): os arquivos da execução `controle-shadow` do I-3b
+(`wt-w4/runs/i3b/controle-shadow`, S3 ASYNC em shadow com S_lag) num diretório no formato do orquestrador, como
+ASYNC sem falha. A leitura dos formatos reais passou (CSV com `phase`, JSONL 1.2, violações com mensagem entre aspas,
+resumo sem `convergencia_estado`) e a CLI gravou o JSON e a referência. Os valores não servem para nada além disso:
+a execução teve corte do isn3 e era local.
+
+**O que os testes não provam:** que as leituras adotadas nas ambiguidades A-1 a A-17 são as pretendidas (decisão do
+Senior/Gestor); o comportamento com os volumes reais da campanha (26 execuções de 300 s).
+
+### W-9, complemento 1 da calibração (DT-022) (2026-11-05)
+
+Par `d0dcce9` (test, vermelho: 61 testes, 8 falhas, 11 erros) → `a3c34d8` (fix). Depois do vermelho, dois ajustes de
+teste registrados no `fix:`: `test_sem_execucao_nao_deriva` na assinatura nova de `m_reentrada`; e, na reserva em
+que a latência perde toda a cobertura, θ_lat_in, m e T_cooldown não derivam (declarado). Um caso novo de reserva com
+cobertura parcial (4 %) confere T_cooldown = m × W final.
+
+| Comando (ponta `a3c34d8`) | Resultado |
+|---|---|
+| `python3 -I -m unittest discover -s analysis -p "test_calibracao_s3.py"` | **PASS**: 62, 60 OK e 2 pulados (9,4 s) |
+| `python3 -E -P -m unittest discover -s analysis -p "test_calibracao_s3.py"` | **PASS**: 62 OK |
+
+Testes novos ou mudados: W_min estrito (atraso de 1 s exato dá 4), reserva de W pura (viável, reserva, inviável,
+W ≥ 27 s, `kLag` não derivado), reserva de ponta a ponta nos três casos (viável na base; `test_reserva_de_w_aplicada`,
+de 5 para 4 s; `test_ac5_inviavel_sem_w_viavel`, com W' = 5, 4 e 3), janela sem rodada pulada no `kLag` (pura e com
+W = 4 s), m pelo trecho máximo sem alto (o que começa antes do `end` não conta), θ_out pelo menor valor (indeterminada
+quebra o trecho), ciclo completo, `n_fora`, comando do `poder.py` e as leituras com a situação no complemento.
+Mutantes (cada um desfeito): W_min com teto, reserva desligada, m contando trecho que começa antes do `end`, `kLag`
+sem pular a janela sem rodada e θ_out pelo maior candidato: os cinco morrem. O *smoke* com os brutos do I-3b roda a
+reserva de W' = 19 a 3 s em 0,3 s.
+
+### W-9b: ajustes da V-W9 (R-1, R-2, R-3, R-5) (2026-11-05)
+
+Parecer `docs/validacao-w9-2026-11-05.md` (`8d6ebfc`), ajustes aprovados pelo coordenador; o Senior escreve o
+complemento 3 (DT-024) com o mesmo conteúdo. Um `test:` vermelho antes de cada `fix:`.
+
+| Par | Vermelho | O quê |
+|---|---|---|
+| `10d4d96` → `bbf1061` | 62 testes: 2 falhas, 1 erro | R-1: `viavel_em` = `max(k, kLag)·W + 13,3 < 39,8` na reserva, no limite da 7.13 e no `k_max_no_limite`; R-5: `viabilidade()` sem uso saiu |
+| `e01de1f` → `690bcc6` | 67 testes: 6 erros | R-2: latência ou erro sem janela determinada → θ_in = 2,0, θ_out = 1, m e `T_cooldown` derivados; `valores_b40_parte2.carga` com o espelho dos guardas do Java (`GUARDAS_JAVA`) |
+| `0f0c7c9` → `05ca007` | 67 testes: 1 falha | R-3: trecho do m que atravessa o `end` cortado no `end`; `trechos_cortados_no_end` |
+| `6786244` (test) | — | o teste que lê os guardas no código Java é pulado quando `analysis/` roda fora da árvore (o *harness* de mutações copia só `analysis/`); no repositório ele roda |
+
+| Comando (ponta `6786244`) | Resultado |
+|---|---|
+| `python3 -I -m unittest discover -s analysis -p "test_calibracao_s3.py"` | **PASS**: 67, 65 OK e 2 pulados (paridade) |
+| `python3 -E -P -m unittest discover -s analysis -p "test_calibracao_s3.py"` | **PASS**: 67 OK |
+
+Testes editados: `test_reserva_w` (kLag = 1 vai a W = 13, não 26; W = 14 inviável), `test_klag_puro` (W = 14 sem
+kLag que caiba), `test_viabilidade` trocado por `test_viavel_em`, `test_reserva_de_w_aplicada` (θ_lat_in e θ_err_in
+"sem cobertura", m e `T_cooldown` derivados no lugar de nulos), `test_m_reentrada` (`NNNNHNH` com o `end` em 2 dá
+m = 3, não 2). Novos: carga dos valores do B-40 na base e na reserva sem cobertura (inclusive tipos inteiros do JSON
+gravado), `test_problemas_de_carga` (17 valores ruins recusados), `test_guardas_lidos_do_codigo_java`,
+`test_nem_sempre_sem_cobertura`. O *smoke* com os brutos do I-3b (sem célula com falha) dá `carga.carrega_no_controlador`
+falso, com os campos que faltam (m e θ_out): a conferência acusa o que não carregaria.
+
+Mutações (cada uma numa cópia de `analysis/` fora do repositório, `python3 -I`). Do validador
+(`scratchpad/vw9/mutar.py`, 18 mutações): 16 aplicáveis, 14 mortas e as 2 equivalentes do parecer vivas (7.13-b, sem
+exigir resposta do suspeito; R-c, limite com `<=`); as duas do m (7.8-a e 7.8-b) não acham mais o trecho, que a R-3
+mudou, e entram com o trecho novo no conjunto do W-9b. Do W-9b (10 mutações): `viavel_em` sem o `max`, reserva e
+limite da 7.13 com `_cabe(kLag, W)`, sem cobertura desligado, θ_out sem cobertura igual ao θ_in, carga sem a
+histerese, carga aceitando inteiro como *float*, m sem o corte no `end`, m com o trecho inteiro e m contando trecho
+que chega ao fim: as dez morrem. Antes do `6786244`, o teste dos guardas Java dava erro na cópia e matava todo
+mutante; a contagem acima é a de depois.
+
+### W-9c: adendo da V-W9 e complemento 3a (2026-11-06)
+
+Adendo `docs/validacao-w9-2026-11-05.md` §8 (`330c321`) e complemento 3a (`639966c`). Um `test:` vermelho antes de cada
+`fix:`:
+
+| Par | Vermelho | O quê |
+|---|---|---|
+| `83b952b` → `6c0fa8e` | 68: 1 falha | θ_in sem cobertura = `math.nextafter(1.0, inf)` (complemento 3 §2, 3a §3) |
+| `da91d1b` → `da4b7f2` | 69: 3 erros | sem cobertura sempre que a 7.7 tem N = 0 (3a §2), por `limiar_entrada_com_cobertura`; `janelas_determinadas` e `fracao_determinada` |
+| `0629f62` → `0a65637` | 69: 3 erros | R-4: `W_s.dados.subestimacao_w_menor_que_5_s` com o fator 5/W, o caso e os parâmetros afetados |
+| `b5ccc41` → `aa81e38` | 70: 1 falha | texto do m (cortado no `end`), `EMENDAS_VW9` com R-4 e 3a, `pre_registro` com os complementos 3 e 3a |
+
+Ponta `aa81e38`: `python3 -I` **PASS** (70: 68 OK, 2 pulados); `python3 -E -P` **PASS** (70 OK). Três mutantes (θ sem
+cobertura = 2,0, sem cobertura só com zero janela determinada, R-4 nunca declarada) são pegos.
+
+### W-9 com a sonda de replay do W-10 (2026-11-06)
+
+`--s3-replay-probe` (W-10, `feature/s3-sonda-replay`) grava eventos `ReplayValidate` no `rep-001.csv` e a coluna
+`origem` no CSV de violações (contrato CSV v2 §7). Par `d48370a` (test, vermelho: 73 testes, 2 falhas) → `e561580` e
+`e895313` (fix):
+
+| Commit | O quê |
+|---|---|
+| `e561580` | traz de `feature/s3-sonda-replay` o filtro `OPERACOES_INSTRUMENTACAO` de `referencia_p99.ler_eventos` e `energia_proxy.ler_eventos_inicio`, com os testes deles (mudança idêntica à `6307230` do W-10, sem o teste do `comparar_bracos`). O W-9 lê eventos só por esses dois leitores: referência de p99, λ₅, excedências e denominadores de latência e erro |
+| `e895313` | violação com `origem = sonda` fora da janela de violação (m) e do T_hold_viol, porque o `InvariantAuditor` não a entrega ao laço de controle; o q̂ continua contando, como o `comparar_bracos` (decisão do Gestor pendente no W-10) |
+
+| Comando (ponta `e895313`) | Resultado |
+|---|---|
+| `python3 -I -m unittest discover -s analysis -p "test_calibracao_s3.py"` | **PASS**: 73, 71 OK e 2 pulados |
+| `python3 -E -P`, mesmo comando | **PASS**: 73 OK |
+| `test_referencia_p99.py` e `test_energia_proxy.py`, em `-I` e `-E -P` | **PASS** |
+
+`SondaReplay.test_replay_validate_nao_muda_nenhum_valor`: a campanha base com `ReplayValidate` em todas as execuções
+(a cada 200 ms, lentos, com erro, e um replay tardio depois da carga) dá os mesmos `valor` e `incerteza` de todos os
+parâmetros que sem eles, fora o SHA-256 dos CSV na referência e o volume. A derivação oficial da calibração
+(`derivacao-20261106T050404Z`) refeita com este código dá os mesmos parâmetros e valores do B-40 parte 2; as
+referências mudam só no `gerado_por`, porque o SHA-256 do `referencia_p99.py` mudou com o filtro.

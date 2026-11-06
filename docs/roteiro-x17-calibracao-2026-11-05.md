@@ -312,7 +312,9 @@ free -m | tee -a ~/cs3-infra/recriacao-$TS/conferencia.txt
 ```
 
 Esperado: `recriar rc=0` e a última linha `RECRIAR-CS3 OK`, depois de `down rc=0`, `up rc=0`, `ESTAVEL size=3 HEALTHY`,
-18 linhas `antes do cria-caches: <cache> ausente em :<porta> (404)`, `cria-caches rc=0 (6 POST, 18 GET)`, três
+três linhas `antes do cria-caches: nenhum dos seis em :<porta> (["___protobuf_metadata","___script_cache"])`
+(a lista `GET /rest/v2/caches` de cada nó só com os *caches* internos; no 15.0.21, `?action=config` de *cache*
+inexistente responde HTTP 500, não 404, e por isso a conferência usa a lista), `cria-caches rc=0 (6 POST, 18 GET)`, três
 `rebalancing_enabled true`, 18 `AVAILABLE`, `nenhum timer tcc-heal*` e três `sem regra de rede`. O *swap* do `free -m`
 cai para perto de zero (na noite 1, ~50 MB depois de cada recriação). Qualquer `FALHA`: seção 8.
 
@@ -833,7 +835,7 @@ uma segunda falha igual na mesma fase para e chama o Senior.
 | 2.3 | `--dry-run` com exit 2 ou 4 | ler a mensagem; corrigir a entrada (arquivo, SHA ou opção); nunca o *script* |
 | 2.4 | `up` falha com nome em uso | `sudo podman rm -f isn1 isn2 isn3` e repetir o `recriar-cs3.sh` (sob *lock*) |
 | 2.4 | ESTAVEL não fecha em 180 s | repetir uma vez; se repetir, guardar `sudo podman logs` dos três e chamar o Senior |
-| 2.4 | `antes do cria-caches: … HTTP 200` | o XML em uso não é o sem *caches*: parar e chamar o Senior |
+| 2.4 | `antes do cria-caches: … presentes: <cache>` | o XML em uso não é o sem *caches*: parar e chamar o Senior |
 | 2.4 | `cria-caches rc=3` | repetir uma vez depois de 30 s; se repetir, chamar o Senior com `caches.err` |
 | 2.4 | `cria-caches rc=4` ou camada 3 divergente | parar (JSON e servidor discordam): chamar o Senior |
 | 4.2/5.4 | `amostrador-infra.sh iniciar` com exit 3 | `amostrador-infra.sh estado`; se for uma *unit* `diag-*` de tentativa anterior, `parar --id` dela e repetir |
@@ -874,7 +876,7 @@ Extraídos no 2.1 do *blob* deste roteiro. A extração tem de dar exatamente es
 
 | Arquivo | SHA-256 | Vai para |
 |---|---|---|
-| `recriar-cs3.sh` | `fe3bc4f2c931f1c2826d52952df8352f737794b6d0ff26fb1bb1660d1256d9ca` | `~/cs3-infra/` |
+| `recriar-cs3.sh` | `e8b96d6180b5d34f8abea9f3c084d5a662e9b353790abaaa2c21d3c9a900b03d` | `~/cs3-infra/` |
 | `supervisor-cs3.sh` | `438044421b1ce7da19e9c3e707305b78d7e986268e27c94a2311607445ac1714` | `~/cs3-infra/` |
 | `cs3-conferir.py` | `3d11fed75de618e6bc47139fb3ac2578ac742fe22292b41b7a63a9b34e88e5b6` | `~/cs3-infra/` |
 | `campanha-s3-calibracao-v1.json` | `cfd5fa6a0d5de696d52dac1ae1646b1ae87eb9303dc7533cedba8a5e24af9a98` | `runs/entrada/` |
@@ -892,7 +894,8 @@ parametros` da ponta `081e1c4` o aceita, com mínimo de 986 s para o teto.
 #!/bin/bash
 # recriar-cs3.sh <bundle> <dir-saida>: recria o cluster com o XML SEM caches do bundle S3 (W-6, TD-015) e confere o
 # desenho: ESTAVEL (3 nos HEALTHY com 3 membros por 20 s seguidos, ate 180 s; criterio do recriar-rb-20805b0.sh),
-# nenhum dos seis caches antes do cria-caches.sh (HTTP 404 nos 3 nos), os seis criados pela REST com leitura de volta
+# nenhum dos seis caches antes do cria-caches.sh (lista GET /rest/v2/caches de cada no so com os internos ___*; o
+# ?action=config de cache inexistente da HTTP 500 no 15.0.21, nao 404), os seis criados pela REST com leitura de volta
 # byte a byte nos 3 nos, e a camada 3 (rebalancing_enabled true e os seis AVAILABLE nos 3 nos). Sem netem/timer.
 # Roteiro X-17/X-18 (roteiro-x17-calibracao-2026-11-05.md), passo 2.2. Rodar sob flock /var/lock/tcc-vm.lock.
 # Ultima linha: "RECRIAR-CS3 OK" ou "RECRIAR-CS3 FALHA (<n>)". Exit 0 ou 1.
@@ -906,8 +909,8 @@ nf=0
 ok() { echo "OK    $*" | tee -a "$D/conferencia.txt"; }
 falha() { echo "FALHA $*" | tee -a "$D/conferencia.txt"; nf=$((nf + 1)); }
 cod() { printf 'user = "admin:%s"\n' "$S" | curl -s -o "$3" -w '%{http_code}' -m 5 --digest -K - "http://127.0.0.1:$1$2"; }
-hs() { for p in $PORTAS; do cod "$p" /rest/v2/cache-managers/default/health "$D/h.json" > /dev/null
-         tr -d ' \n' < "$D/h.json" | grep -o '"health_status":"[A-Z_]*","number_of_nodes":[0-9]*' || echo "$p:ERR"
+hs() { for p in $PORTAS; do rm -f "$D/h.json"; cod "$p" /rest/v2/cache-managers/default/health "$D/h.json" > /dev/null
+         tr -d ' \n' < "$D/h.json" 2>/dev/null | grep -o '"health_status":"[A-Z_]*","number_of_nodes":[0-9]*' || echo "$p:ERR"
        done | paste -sd' '; }
 echo "inicio $(date -u +%FT%TZ) bundle=$B xml=$(sha256sum cluster/infinispan-sem-caches.xml | cut -c1-64)" > "$D/conferencia.txt"
 sudo podman-compose -f "$C" down > "$D/down.log" 2>&1; r=$?; [ $r = 0 ] && ok "down rc=0" || falha "down rc=$r"
@@ -924,11 +927,11 @@ done
 [ -n "$EST" ] && ok "ESTAVEL size=3 HEALTHY: primeira leitura boa +$((OKS - T0))s, total $((EST - T0))s" \
               || falha "ESTAVEL: nao fechou em 180 s"
 for p in $PORTAS; do
-  cod "$p" /rest/v2/caches "$D/lista-antes-$p.json" > /dev/null
-  for c in $CACHES; do
-    h=$(cod "$p" "/rest/v2/caches/$c?action=config" "$D/x.json")
-    [ "$h" = 404 ] && ok "antes do cria-caches: $c ausente em :$p (404)" || falha "antes do cria-caches: $c em :$p HTTP $h (o XML devia vir sem caches)"
-  done
+  h=$(cod "$p" /rest/v2/caches "$D/lista-antes-$p.json")
+  r=$(python3 -I -c 'import json,sys; l=json.load(open(sys.argv[1])); n=[x if isinstance(x, str) else x.get("name") for x in l]; u=sorted(set(sys.argv[2].split()) & set(n)); print(" ".join(u) if u else "nenhum")' \
+      "$D/lista-antes-$p.json" "$CACHES" 2>/dev/null) || r="ilegivel"
+  [ "$h" = 200 ] && [ "$r" = nenhum ] && ok "antes do cria-caches: nenhum dos seis em :$p ($(tr -d '\r\n' < "$D/lista-antes-$p.json"))" \
+    || falha "antes do cria-caches: :$p HTTP $h, presentes: $r (o XML devia vir sem caches)"
 done
 CRIA_CACHES_SENHA="$S" bash scripts/cria-caches.sh --url http://127.0.0.1:11222 \
   --conferir http://127.0.0.1:11222,http://127.0.0.1:11223,http://127.0.0.1:11224 --usuario admin \

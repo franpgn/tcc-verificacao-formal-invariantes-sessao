@@ -89,10 +89,10 @@ CONFIANCA_Q = 0.95             # secao 6: q-chapeu com intervalo de Clopper-Pear
 FASES_Q = ("durante", "recuperacao")   # secao 6: violacoes das fases durante + recuperacao
 M_CELULAS_TESTE = 2            # 7.18: m das celulas de teste do B-40 (ASYNC F2 e F4)
 SEMENTE_PODER = 20261105       # complemento 1 §5 (A-13): a mesma regra da --ordem-seed
-# R-2 da V-W9 (aprovada pelo coordenador; complemento 3, DT-024): sinal de latencia (ou erro) sem nenhuma janela
-# determinada nas ASYNC sem falha no W final fica "sem cobertura": theta_in acima de 1 (inalcancavel: a taxa e <= 1) e
-# theta_out = 1. O valor exato acima de 1 nao muda nada no controlador; 2,0 e o escolhido aqui
-THETA_SEM_COBERTURA = 2.0
+# R-2 da V-W9 (complemento 3 §2, DT-024, com o 3a): sinal de latencia (ou erro) "sem cobertura" no W final: theta_in =
+# o menor double acima de 1 (complemento 3 §2 e 3a §3; inalcancavel, a taxa e <= 1; mesma convencao do A-2) e
+# theta_out = 1
+THETA_SEM_COBERTURA = math.nextafter(1.0, math.inf)
 THETA_OUT_SEM_COBERTURA = 1.0
 N_SIM_PODER = 10000            # complemento 1 §5 (A-13): as 10 000 reamostragens da analise do rebaseline (DT-009)
 

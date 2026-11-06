@@ -225,7 +225,9 @@ REGRA_FATORIAL = ("fatorial 2x2 por bloco (DT-027): bracos PO, PL, AO, AL com a 
                   "rastreabilidade dos bracos PL e AL); Holm sobre as hipoteses de teste (os dois efeitos de cada "
                   "celula fatorial, m = 2 com uma celula); interacao com IC e p, sem Holm e fora da IU; efeitos "
                   "simples so com IC; secundarios com Holm por efeito; varredura com erro em qualquer braco: V e "
-                  ":sem_forma2 dos quatro sem a varredura e perda permanente do bloco nao avaliavel")
+                  ":sem_forma2 dos quatro sem a varredura e perda permanente do bloco nao avaliavel; t_fusao_ns "
+                  "ausente ou nulo com varredura conta como varredura com erro (DT-027, 5.3); mesma semente (seed do "
+                  "execucao.json) nos quatro bracos do bloco")
 REGRA_PERDA_EXPOSICAO = ("perda_permanente_sids: sids distintas com I1 que conta em V vista pela varredura (REAL), "
                          "pelo replay tardio ou pelo auditor online em ou depois de t_fusao_ns; exposicao_janela_sids: "
                          "sids distintas com I1 que conta em V vista pelo replay imediato ou pelo auditor online antes "
@@ -981,12 +983,14 @@ def ler_execucao_json(execucao):
 
 
 def desfechos_execucao(execucao, rep, fases_sel, w_recovery_ns, marcadores_nome="marcadores.txt", *,
-                       w_analise_ns=None, referencia_erro=None, energia=None):
+                       w_analise_ns=None, referencia_erro=None, energia=None, fusao_obrigatoria=False):
     """({desfecho: {"y","n","motivo","eventos"}}, info) de uma execucao, nas fases pedidas.
 
     w_analise_ns: W_c e janela do Delta_rec de sensibilidade (None: Delta_rec ausente, com motivo; a CLI
     exige o valor). referencia_erro: dicionario de referencia_erro.ler (None: Delta_rec de sensibilidade
-    ausente). energia: {"p_max_w", "razao_central"} (None: energia estimada nao entra).
+    ausente). energia: {"p_max_w", "razao_central"} (None: energia estimada nao entra). fusao_obrigatoria (W-5f,
+    celula do fatorial; DT-027, 5.3): com varredura e sem t_fusao_ns (ausente ou nulo) no execucao.json, a varredura
+    pode ter rodado antes da fusao e conta como com erro (varredura_erro_origem = "sem_fusao").
     """
     d = Path(execucao)
     if not d.is_dir():
@@ -1065,11 +1069,20 @@ def desfechos_execucao(execucao, rep, fases_sel, w_recovery_ns, marcadores_nome=
     # W-5c (pre-registro do benchmark refeito, 2.3 a 2.6): pares distintos das tres origens; os ReplayValidate
     # ficam fora do denominador (acoes S3), da latencia, da vazao e da taxa de erro (ler_eventos_inicio os descarta)
     apur = apurar_violacoes_execucao(d, nnn, ev_path, t1 - 1, dentro, args, marcadores_nome)
+    ej = ler_execucao_json(d)
+    if (fusao_obrigatoria and apur is not None and apur["varredura"] == "presente"
+            and (ej or {}).get(CAMPO_T_FUSAO) is None):
+        # W-5f (DT-027, 5.3): sem fusao registrada, a varredura e tratada como com erro, sem depender do orquestrador
+        apur["varredura"] = "erro"
+        apur["varredura_erro_origem"] = "sem_fusao"
     varredura_erro = apur is not None and apur["varredura"] == "erro"
     viol = None if apur is None or varredura_erro else apur["pares"]
     if acoes is not None:
         if apur is None:
             out[DESFECHO_V] = dict(_ausente("sem violacoes-rep (contagem desconhecida)", n_acoes), contagem=None)
+        elif varredura_erro and apur.get("varredura_erro_origem") == "sem_fusao":
+            out[DESFECHO_V] = dict(_ausente("sem fusao registrada (%s ausente ou nulo): varredura tratada como com "
+                                            "erro (DT-027, 5.3)" % CAMPO_T_FUSAO, n_acoes), contagem=None)
         elif varredura_erro:
             out[DESFECHO_V] = dict(_ausente("varredura com erro (varredura-rep-%s.erro.txt): contagem incompleta"
                                             % nnn, n_acoes), contagem=None)
@@ -1086,7 +1099,6 @@ def desfechos_execucao(execucao, rep, fases_sel, w_recovery_ns, marcadores_nome=
                 out[DESFECHO_V_SEM_F2] = dict(_taxa(c2, n_acoes, 1000.0), contagem=c2)
 
     # W-5e (DT-027, 2.2): perda permanente e exposicao na janela, so quando o execucao.json traz t_fusao_ns
-    ej = ler_execucao_json(d)
     fusao = None
     if ej is not None and CAMPO_T_FUSAO in ej:
         bruto = ej[CAMPO_T_FUSAO]
@@ -1336,6 +1348,7 @@ def _detalhe_v_celula(blocos, infos, divergentes, afetados=(), sens_varredura=No
                    "nos_dois": sum(1 for x in afetados if len(x["bracos_com_erro"]) == 2)})
     else:
         vc["por_braco"] = {br: sum(1 for x in afetados if br in x["bracos_com_erro"]) for br in bracos}
+        vc["sem_fusao_por_braco"] = {br: sum(1 for x in afetados if br in x.get("sem_fusao", ())) for br in bracos}
     return {"regra": REGRA_V, "totais": totais, "instrumentos_divergentes": list(divergentes),
             "varredura_com_erro": vc, "por_execucao": por_exec}
 
@@ -1370,7 +1383,11 @@ def _aplicar_varredura_simetrica(blocos, res, infos, bracos=BRACOS):
                                                      if c2 is None else dict(_taxa(c2, n, 1000.0), contagem=c2))
                 infos[b][br]["violacoes"] = dict(det["pares_sem_varredura"])
             v[br] = {"com_varredura": com, "sem_varredura": sem}
-        afetados.append({"bloco": b, "bracos_com_erro": erro, "v": v})
+        entrada = {"bloco": b, "bracos_com_erro": erro, "v": v}
+        sem_fusao = [br for br in erro if dets[br].get("varredura_erro_origem") == "sem_fusao"]
+        if tuple(bracos) != BRACOS or sem_fusao:
+            entrada["sem_fusao"] = sem_fusao
+        afetados.append(entrada)
     return afetados
 
 
@@ -1556,6 +1573,19 @@ def _analisar_contraste(d, semente, indice, n_boot, log, permutar):
             "k_nao_nulos": k, "p_minimo_atingivel": p_minimo_atingivel(k) if n else None}
 
 
+def _conferir_sementes(celula, blocos, infos, bracos, obrigatoria):
+    """W-5f (DT-027, 1; DT-021): os bracos de um bloco tem a mesma semente (seed do execucao.json, gravado pelo
+    orquestrador). obrigatoria (fatorial): seed em todos os bracos; senao, so confere quando todos a tem."""
+    for b in blocos:
+        sementes = {br: (infos[b][br]["execucao_json"] or {}).get("seed") for br in bracos}
+        faltam = [br for br, v in sementes.items() if v is None]
+        if faltam and obrigatoria:
+            raise ErroUso("celula %s, bloco %s: sem seed no execucao.json do(s) braco(s) %s (mesma semente nos bracos "
+                          "do bloco)" % (celula, b, ",".join(faltam)))
+        if not faltam and len({str(v) for v in sementes.values()}) > 1:
+            raise ErroUso("celula %s, bloco %s: semente diferente entre os bracos: %r" % (celula, b, sementes))
+
+
 def _conferir_braco_fatorial(celula, b, br, execucao, info):
     """O braco do manifesto tem de ser o do execucao.json (fusao e controller; bloco, se houver) e o da trilha."""
     ej = info["execucao_json"]
@@ -1654,13 +1684,15 @@ def _comparar_celula_fatorial(celula, blocos, tipo, *, semente, rep, fases_sel, 
         res[b], infos[b] = {}, {}
         for br in BRACOS_FATORIAL:
             res[b][br], infos[b][br] = desfechos_execucao(grupo[br], rep, fases_sel, w_ns, marcadores_nome,
-                                                          w_analise_ns=w_an_ns, referencia_erro=ref, energia=energia)
+                                                          w_analise_ns=w_an_ns, referencia_erro=ref, energia=energia,
+                                                          fusao_obrigatoria=True)
     if all(infos[b][br]["n_eventos"] == 0 and not infos[b][br]["n_acoes"] for b in blocos for br in BRACOS_FATORIAL):
         raise ErroUso("celula %s sem nenhum evento nem acao nas fases pedidas (%s); celula sem falha: chamada "
                       "propria com --fases antes (A-2 da V-W5)" % (celula, ",".join(fases_sel)))
     for b, grupo in blocos.items():
         for br in BRACOS_FATORIAL:
             _conferir_braco_fatorial(celula, b, br, grupo[br], infos[b][br])
+    _conferir_sementes(celula, blocos, infos, BRACOS_FATORIAL, obrigatoria=True)
     if teste:
         _conferir_trilhas_do_teste_fatorial(celula, blocos, infos)
     divergentes = _instrumentos_divergentes(blocos, infos, BRACOS_FATORIAL)
@@ -1848,6 +1880,7 @@ def comparar(manifesto, semente, *, delta_latencia, w_analise_s, w_recovery_s, t
                 if ctl is not None and ctl["modo"] != MODO_ESPERADO[br]:
                     raise ErroUso("braco %s do bloco %s da celula %s com trilha em modo %r (esperado %s): %s"
                                   % (br, b, celula, ctl["modo"], MODO_ESPERADO[br], par[br]))
+        _conferir_sementes(celula, blocos, infos, BRACOS, obrigatoria=False)
         if teste:
             _conferir_trilhas_do_teste(celula, blocos, infos)
         divergentes = _instrumentos_divergentes(blocos, infos)
@@ -2051,9 +2084,10 @@ def _markdown_fatorial(celula, c):
             linhas.append("- `%s`, efeitos simples (so IC, sem teste): %s." % (nome, "; ".join(
                 "%s %s %s" % (ef, _fmt(x["estimativa"]), _fmt_ic(x["ic_t"])) for ef, x in e["efeitos_simples"].items())))
     vc = c["violacoes"]["detalhe"]["varredura_com_erro"]
-    txt = ("- Blocos com varredura com erro: %d bloco(s) (por braco da falha: %s); V e :sem_forma2 dos quatro bracos "
-           "sem a varredura, perda permanente do bloco nao avaliavel" % (
-               vc["blocos"], ", ".join("%s %d" % kv for kv in vc["por_braco"].items())))
+    txt = ("- Blocos com varredura com erro: %d bloco(s) (por braco da falha: %s; desses, sem fusao registrada: %s); "
+           "V e :sem_forma2 dos quatro bracos sem a varredura, perda permanente do bloco nao avaliavel" % (
+               vc["blocos"], ", ".join("%s %d" % kv for kv in vc["por_braco"].items()),
+               ", ".join("%s %d" % kv for kv in vc["sem_fusao_por_braco"].items())))
     sv = vc.get("sensibilidade_blocos_excluidos")
     if sv:
         txt += "; sem esses blocos (descritiva): %s" % "; ".join(

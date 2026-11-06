@@ -133,6 +133,13 @@ class ClassificadorMensagemRealTest {
 
     static Stream<Arguments> capturasDeIndisponibilidade() { return capturasPorTipo(true); }
 
+    /** As de particao (AvailabilityException); a recusa do cache ignorado (P1-IC) tem teste proprio. */
+    static Stream<Arguments> capturasDeParticao() {
+        return CapturasReais.TODAS.stream()
+                .filter(c -> c.esperado() == Code.ERROR_UNAVAILABLE && c.mensagem().contains("AvailabilityException"))
+                .map(c -> Arguments.of(c));
+    }
+
     static Stream<Arguments> capturasDeTransporte() { return capturasPorTipo(false); }
 
     @Test
@@ -171,7 +178,7 @@ class ClassificadorMensagemRealTest {
     }
 
     @ParameterizedTest(name = "[{index}] {0}")
-    @MethodSource("capturasDeIndisponibilidade")
+    @MethodSource("capturasDeParticao")
     @DisplayName("AvailabilityException (ISPN000306/ISPN000305): classe do topo e HotRodClientException, sem causas")
     void availabilityExceptionVemSoNaMensagemDeUmHotRodClientException(Captura c) {
         assertEquals("org.infinispan.client.hotrod.exceptions.HotRodClientException", c.classe());
@@ -181,6 +188,19 @@ class ClassificadorMensagemRealTest {
         RuntimeException e = reconstruirDoCsv(c.classe(), c.mensagem(), c.causas());
         assertNull(e.getCause(), "cadeia de causas vazia");
         assertTrue(ClassificadorDeErro.indisponivel(e));
+    }
+
+    @Test
+    @DisplayName("P1-IC (G-4): a recusa real do cache ignorado (A4) e HotRodClientException com o nome da classe do servidor, sem causas")
+    void cacheIgnoradoRealEhIndisponivel() {
+        List<Captura> a4 = CapturasReais.TODAS.stream().filter(c -> c.rep().equals("A4")).toList();
+        assertEquals(1, a4.size());
+        Captura c = a4.get(0);
+        assertEquals("org.infinispan.client.hotrod.exceptions.HotRodClientException", c.classe());
+        assertEquals("org.infinispan.server.hotrod.CacheUnavailableException", c.mensagem());
+        RuntimeException e = reconstruirDoCsv(c.classe(), c.mensagem(), c.causas());
+        assertNull(e.getCause());
+        assertEquals(Code.ERROR_UNAVAILABLE, ClassificadorDeErro.classificar(e).code());
     }
 
     @ParameterizedTest(name = "[{index}] {0}")

@@ -17,9 +17,11 @@ import java.util.Objects;
  * @param politica politica de reacao escolhida ({@code P0}, {@code P1}, {@code P2}), ou {@code null}
  * @param motivo   motivo da escolha (sem espaco), ou {@code null}
  * @param no       V-7: rotulo do no da escolha (suspeito do P1, ausente do P2, no do AC-2 revertido), ou {@code null}
+ * @param usadasP1 P1-IC: acoes de P1 ja pedidas na execucao depois desta janela (a cota vai a trilha), ou {@code null}
+ *                 quando a politica nao informa
  */
 public record PlanoDeAcao(List<AcaoCluster> reverter, List<AcaoCluster> aplicar, String politica, String motivo,
-                          String no) {
+                          String no, Integer usadasP1) {
 
     /** Nada a fazer. */
     public static final PlanoDeAcao VAZIO = new PlanoDeAcao(List.of(), List.of());
@@ -32,6 +34,17 @@ public record PlanoDeAcao(List<AcaoCluster> reverter, List<AcaoCluster> aplicar,
         }
     }
 
+    /** Plano com politica, motivo e no, sem a cota usada. */
+    public PlanoDeAcao(List<AcaoCluster> reverter, List<AcaoCluster> aplicar, String politica, String motivo,
+                       String no) {
+        this(reverter, aplicar, politica, motivo, no, null);
+    }
+
+    /** O mesmo plano com a cota de P1 usada (P1-IC). */
+    public PlanoDeAcao comUsadasP1(int usadas) {
+        return new PlanoDeAcao(reverter, aplicar, politica, motivo, no, usadas);
+    }
+
     /** Plano com politica e motivo, sem no. */
     public PlanoDeAcao(List<AcaoCluster> reverter, List<AcaoCluster> aplicar, String politica, String motivo) {
         this(reverter, aplicar, politica, motivo, null);
@@ -39,6 +52,6 @@ public record PlanoDeAcao(List<AcaoCluster> reverter, List<AcaoCluster> aplicar,
 
     /** Plano sem registro de politica (W-3). */
     public PlanoDeAcao(List<AcaoCluster> reverter, List<AcaoCluster> aplicar) {
-        this(reverter, aplicar, null, null, null);
+        this(reverter, aplicar, null, null, null, null);
     }
 }

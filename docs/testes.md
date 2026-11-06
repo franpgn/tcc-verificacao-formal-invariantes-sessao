@@ -1649,3 +1649,32 @@ Mesma branch, depois da V-W5e (`0583455`). TDD: `e8adfbd` (`test:`, 7 vermelhos;
 |---|---|---|
 | `SemFusaoComoVarreduraComErro` | 6 | no fatorial, `t_fusao_ns` nulo ou ausente com varredura e sem `.erro.txt` dá o tratamento simétrico do bloco, com os mesmos d e as mesmas contagens do `.erro.txt` no mesmo braço; `sem_fusao` por bloco e por braço; sem varredura não converte; célula de 2 braços não converte; na execução isolada, só com `fusao_obrigatoria` |
 | `MesmaSemente` | 5 | mesma `seed` passa; divergente ou ausente no fatorial: exit 2; divergente em 2 braços: exit 2; 2 braços sem `seed`: sem conferência |
+
+## P1-IC: o P1 ignora o cache de sessões no suspeito (AC-7) (2026-11-06)
+
+Na integração (06/11, depois da A1 e do W-5e): TD-022 (TD-021 provisório na branch) e P-61 a P-64 (P-P1IC.1 a
+P-P1IC.4 na branch).
+
+Branch `feature/p1-ignorar-cache` (base `int/2026-11-06-bench`, `cc2b71c`). TDD: os testes foram escritos antes e
+commitados vermelhos (`4f9edae`: não compilam sem `AcaoCluster.Tipo.AC_7`, `AtuadorIgnorarCache`,
+`ParametrosPolitica.acaoP1`, `PlanoDeAcao.usadasP1` e `LigacaoControlador.DescontoSobAcao`; `83e5496`: sem
+`GuardaContinuaIgnorados`). Surefire na ponta: **1207 testes, 0 falhas, 1 ignorado** (o mesmo ignorado da base),
+172 classes; no `ae07fad` (antes da guarda contínua), 1205 testes, 171 classes.
+
+| Classe de teste | O que fixa |
+|---|---|
+| `controle.AcaoIgnorarCacheTest` | AC-7: um nó, um cache (R1), reversível, `T_cham + 15 s`; JSONL com `reversao` = `null`; braço B com o adaptador novo e o mesmo pior caso de `T_enc` (21/19 s); executor: pilha, R4, FALHOU revertida na hora; `acaoP1` opcional (ausente = AC-7; `"AC-5"`; outro valor, tipo errado ou origem faltando são recusados) |
+| `controle.PoliticaIgnorarCacheTest` | mesma condição de disparo do P1 com AC-7 e só o cache de sessões; a ação fica até a detecção; `desfazer-alvo-sozinho` (R6), em CONSERVADOR e fora dele; `desfazer-apos-fusao` (R7); `suspeita-desfeita` só com S_lag determinado abaixo do teto por `kLag` janelas; nada sem AC-7 ativo; AC-5 para comparação; `usadas_p1` no fim da linha `politica` |
+| `controle.PoliticaPorAssinaturaTest` | a suíte do W-2a, agora com `acaoP1 = AC-5` fixado: regressão da parada |
+| `session.AtuadorIgnorarCacheTest` | servidores falsos com lista por nó e partição simulada: corte (POST só ao alvo, efeito em ms, guarda limpa, POST pendente, sem esperar o 500); R2 (o DELETE espera o POST pendente; nenhum pedido que muda lista sobreposto a outro); R6 (alvo `DEGRADED_MODE` → DELETE no próprio alvo); R7 (depois da fusão, um DELETE à maioria zera a lista do alvo; sob corte não detectado, DELETE no alvo em sequência); R4 (sem corte, a lista da maioria mostra o cache → desfaz na hora, FALHOU `falso-alarme-desfeito`, reverter seguinte sem pedido); R5 (nenhum `/rest/v2/container`); recusas sem pedido; efeito não confirmado; tempo real do POST pendente no `lido` |
+| `session.GuardaContinuaIgnoradosTest` | guarda contínua: lista de outro nó com o cache depois da carência → um desfazer por ação; nunca lê o alvo; só a lista; carência e ausência de AC-7 sem efeito |
+| `session.LigacaoControladorDescontoTest` | o sensor desconta os erros do servidor do nó sob o AC-7, só em active; sucessos e outros nós contam; mapa REST → Hot Rod pela posição |
+| `session.ClassificadorDeErroTest`, `ClassificadorMensagemRealTest`, `CapturasReais` | `CacheUnavailableException` → `ERROR_UNAVAILABLE`, com a captura real do A4 como fonte da marca |
+| `session.LigacaoControlador*Test`, `Arquitetura*Test` | nome novo do atuador, `acao_p1` na meta, P1 com AC-7 previsto em shadow (ponta a ponta com canal falso), `eventos_descontados_sob_acao` e `guarda_ac7_desfazeres` no `fim`; o adaptador e a guarda nas listas de arquitetura (R-C1, R-ARQ-1) |
+
+**Braço shadow (não regressão):** em shadow o atuador nunca é chamado (testes do W-3/W-2a sem mudança), o desconto
+não age (`LigacaoControladorDescontoTest.shadowEOutrosTipos`, `eventos_descontados_sob_acao` = 0 no ponta a ponta
+shadow) e a guarda contínua não é criada (`guarda_ac7_desfazeres` = `null`). A política é a mesma nos dois braços;
+o que muda no shadow é só a linha `acao` prevista (AC-7 em vez de AC-5).
+
+**Smoke local** (`runs/p1ic-smoke/`, `comandos.md`): ver `docs/relatorio-p1-ignorar-cache-2026-11-06.md`.

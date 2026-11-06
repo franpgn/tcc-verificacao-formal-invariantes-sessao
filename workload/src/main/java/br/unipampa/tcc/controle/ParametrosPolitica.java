@@ -46,12 +46,22 @@ import java.util.Set;
  * @param p2Habilitada D-B: {@code false} = modo de avaliacao, a politica nunca pede o AC-2 (a assinatura do P2 vira
  *                  P0 com o motivo {@link PoliticaPorAssinatura#P2_DESABILITADA}); {@code true} = uso exploratorio
  * @param origem    origem declarada de cada parametro (chave = nome do campo); vazio quando construido no codigo
+ * @param acaoP1    P1-IC (06/11): tipo da acao do P1, {@link AcaoCluster.Tipo#AC_7} (ignorar o cache de sessoes no
+ *                  suspeito; G-1 do coordenador, a A4 substitui a parada) ou {@link AcaoCluster.Tipo#AC_5} (a parada,
+ *                  mantida no codigo para comparacao). Campo <b>opcional</b> no arquivo, o unico com valor padrao: nao
+ *                  e parametro calibrado, e a escolha do desenho (G-1); ausente, vale AC-7, e o arquivo da calibracao
+ *                  (sem o campo) continua valido com o mesmo SHA-256. Presente, exige a sua origem. {@code cotaAc5}
+ *                  passa a ser a cota do P1, qualquer que seja a acao
  */
 public record ParametrosPolitica(int kLag, long tetoLagMs, long tRebNs, int cotaAc5, boolean p2Habilitada,
-                                 Map<String, String> origem) {
+                                 Map<String, String> origem, AcaoCluster.Tipo acaoP1) {
 
     /** Campos do bloco, todos obrigatorios e sem valor padrao (os quatro numericos e o booleano da D-B). */
     public static final List<String> CAMPOS = List.of("kLag", "tetoLagMs", "tRebNs", "cotaAc5", "p2Habilitada");
+    /** P1-IC: campo opcional com a acao do P1 ("AC-7" ou "AC-5"); com ele, a origem dele e obrigatoria. */
+    public static final String ACAO_P1 = "acaoP1";
+    /** Acao do P1 sem o campo {@value #ACAO_P1} (G-1 do coordenador, 06/11). */
+    public static final AcaoCluster.Tipo ACAO_P1_PADRAO = AcaoCluster.Tipo.AC_7;
     /** Campo com a origem de cada parametro, obrigatorio no arquivo. */
     public static final String ORIGEM = "origem";
 
@@ -69,11 +79,19 @@ public record ParametrosPolitica(int kLag, long tetoLagMs, long tRebNs, int cota
             throw new IllegalArgumentException("cotaAc5 deve ser 0 ou 1 (owners=2 tolera um no fora): " + cotaAc5);
         }
         Objects.requireNonNull(origem, "origem");
-        if (!origem.isEmpty() && !origem.keySet().equals(new LinkedHashSet<>(CAMPOS))) {
-            throw new IllegalArgumentException("origem deve ter exatamente " + CAMPOS + ": " + origem.keySet());
+        Objects.requireNonNull(acaoP1, "acaoP1");
+        if (acaoP1 != AcaoCluster.Tipo.AC_5 && acaoP1 != AcaoCluster.Tipo.AC_7) {
+            throw new IllegalArgumentException("acaoP1 deve ser AC-5 ou AC-7: " + acaoP1.rotulo());
+        }
+        List<String> comAcao = new ArrayList<>(CAMPOS);
+        comAcao.add(ACAO_P1);
+        if (!origem.isEmpty() && !origem.keySet().equals(new LinkedHashSet<>(CAMPOS))
+                && !origem.keySet().equals(new LinkedHashSet<>(comAcao))) {
+            throw new IllegalArgumentException("origem deve ter exatamente " + CAMPOS + " (e " + ACAO_P1
+                    + " com o campo): " + origem.keySet());
         }
         LinkedHashMap<String, String> copia = new LinkedHashMap<>();
-        for (String c : CAMPOS) {
+        for (String c : comAcao) {
             if (origem.containsKey(c)) {
                 String v = origem.get(c);
                 if (v == null || v.isBlank()) {
@@ -85,9 +103,15 @@ public record ParametrosPolitica(int kLag, long tetoLagMs, long tRebNs, int cota
         origem = Collections.unmodifiableMap(copia);
     }
 
-    /** Parametros montados no codigo (testes), sem origem declarada; a P2 e sempre explicita (D-B). */
+    /** Parametros montados no codigo (testes), sem origem declarada; a P2 e sempre explicita (D-B); P1 = AC-7. */
     public ParametrosPolitica(int kLag, long tetoLagMs, long tRebNs, int cotaAc5, boolean p2Habilitada) {
         this(kLag, tetoLagMs, tRebNs, cotaAc5, p2Habilitada, Map.of());
+    }
+
+    /** Com origem e a acao do P1 padrao (AC-7, G-1). */
+    public ParametrosPolitica(int kLag, long tetoLagMs, long tRebNs, int cotaAc5, boolean p2Habilitada,
+                              Map<String, String> origem) {
+        this(kLag, tetoLagMs, tRebNs, cotaAc5, p2Habilitada, origem, ACAO_P1_PADRAO);
     }
 
     /**
@@ -102,6 +126,10 @@ public record ParametrosPolitica(int kLag, long tetoLagMs, long tRebNs, int cota
         }
         List<String> esperados = new ArrayList<>(CAMPOS);
         esperados.add(ORIGEM);
+        boolean comAcao = raiz.has(ACAO_P1);
+        if (comAcao) {
+            esperados.add(ACAO_P1);
+        }
         Set<String> presentes = new LinkedHashSet<>();
         for (Iterator<String> it = raiz.fieldNames(); it.hasNext(); ) {
             presentes.add(it.next());
@@ -128,16 +156,33 @@ public record ParametrosPolitica(int kLag, long tetoLagMs, long tRebNs, int cota
             }
             origem.put(e.getKey(), e.getValue().asText());
         }
-        if (!origem.keySet().equals(new LinkedHashSet<>(CAMPOS))) {
-            throw new IllegalArgumentException("parametros da politica: origem deve ter exatamente " + CAMPOS
+        List<String> origensEsperadas = new ArrayList<>(CAMPOS);
+        if (comAcao) {
+            origensEsperadas.add(ACAO_P1);
+        }
+        if (!origem.keySet().equals(new LinkedHashSet<>(origensEsperadas))) {
+            throw new IllegalArgumentException("parametros da politica: origem deve ter exatamente " + origensEsperadas
                     + ": " + origem.keySet());
+        }
+        AcaoCluster.Tipo acao = ACAO_P1_PADRAO;
+        if (comAcao) {
+            JsonNode a = raiz.get(ACAO_P1);
+            if (!a.isTextual()) {
+                throw new IllegalArgumentException("parametros da politica: acaoP1 deve ser texto (AC-5 ou AC-7): " + a);
+            }
+            acao = switch (a.asText()) {
+                case "AC-7" -> AcaoCluster.Tipo.AC_7;
+                case "AC-5" -> AcaoCluster.Tipo.AC_5;
+                default -> throw new IllegalArgumentException("parametros da politica: acaoP1 deve ser AC-5 ou AC-7: "
+                        + a.asText());
+            };
         }
         JsonNode p2 = raiz.get("p2Habilitada");
         if (!p2.isBoolean()) {
             throw new IllegalArgumentException("parametros da politica: p2Habilitada deve ser booleano (D-B): " + p2);
         }
         return new ParametrosPolitica((int) inteiro(raiz, "kLag", true), inteiro(raiz, "tetoLagMs", false),
-                inteiro(raiz, "tRebNs", false), (int) inteiro(raiz, "cotaAc5", true), p2.booleanValue(), origem);
+                inteiro(raiz, "tRebNs", false), (int) inteiro(raiz, "cotaAc5", true), p2.booleanValue(), origem, acao);
     }
 
     private static long inteiro(JsonNode raiz, String campo, boolean cabeEmInt) {

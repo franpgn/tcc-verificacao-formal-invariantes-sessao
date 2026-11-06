@@ -41,6 +41,10 @@ class ArquiteturaSemAcaoNoClienteTest {
             "ConsultaSaudeRest", Set.of("FonteDeSaude", "LeituraSaude"),
             // W-2a (B-44.2, D-C): o atuador REST do cluster so usa os tipos da interface do atuador
             "AtuadorRestInfinispan", Set.of("AcaoCluster", "AtuadorCluster", "ResultadoAtuacao"),
+            // P1-IC (06/11, G-1): o adaptador do AC-7 (ignored-caches) usa so os mesmos tipos do atuador
+            "AtuadorIgnorarCache", Set.of("AcaoCluster", "AtuadorCluster", "ResultadoAtuacao"),
+            // P1-IC: a guarda continua do AC-7 so le o tipo e o alvo das acoes ativas
+            "GuardaContinuaIgnorados", Set.of("AcaoCluster"),
             "SondaTopologiaCli", Set.of("AmostraTopologia", "FonteDeTempo", "ResultadoNo", "SondaTopologia"),
             // W-4 (B-26.3): o adaptador Hot Rod do S_lag so implementa o canal da sonda
             "CanalCanarioHotRod", Set.of("CanalCanario"),
@@ -52,7 +56,10 @@ class ArquiteturaSemAcaoNoClienteTest {
                     // W-2a (P-38, autorizado em 05/11): ligacao do atuador REST e da politica por assinatura
                     "PoliticaPorAssinatura", "ParametrosPolitica", "AtuadorPorTipo",
                     // W-4 (B-26.3): ligacao da sonda de defasagem (S_lag) ao laco
-                    "CanalCanario", "ParametrosDefasagem", "SondaDefasagem"));
+                    "CanalCanario", "ParametrosDefasagem", "SondaDefasagem",
+                    // P1-IC (G-4): o desconto do no sob o AC-7 le o tipo e o alvo das acoes ativas; a guarda continua
+                    // pede o desfazer com a origem GUARDA
+                    "AcaoCluster", "RegistroAcao"));
 
     /** Tipos do portao de emissao retirados no B-27.3. */
     static final List<String> TIPOS_RETIRADOS = List.of(

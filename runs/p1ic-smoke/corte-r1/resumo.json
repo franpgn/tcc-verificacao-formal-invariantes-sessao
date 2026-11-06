@@ -1,0 +1,361 @@
+{
+ "execucao": "corte-r1",
+ "caso": "corte",
+ "alvo": "isn2",
+ "rotulo_alvo": "127.0.0.1:13002",
+ "fases_rel_s": [
+  [
+   -142.692,
+   "inicio corte-r1 caso=corte semente=81001 duracao=300 base=ae07fad jar_sha256=c1fab66258e0e"
+  ],
+  [
+   -106.452,
+   "parametros alvo=isn2 outros=isn1 isn3 "
+  ],
+  [
+   -103.725,
+   "origem o_ns=1793989857664983400"
+  ],
+  [
+   0.0,
+   "corte-inicio isn2"
+  ],
+  [
+   3.005,
+   "corte-fim rc=0"
+  ],
+  [
+   89.254,
+   "cura-inicio isn2"
+  ],
+  [
+   91.587,
+   "cura-fim rc=0"
+  ],
+  [
+   189.416,
+   "fim-sondas"
+  ],
+  [
+   208.213,
+   "carga exit=0"
+  ],
+  [
+   245.083,
+   "fim corte-r1"
+  ]
+ ],
+ "politica_nao_P0_ou_desfazer": [
+  {
+   "t_decisao_s": 14.593,
+   "perfil": "CONSERVADOR",
+   "politica": "P1",
+   "motivo": "isolar-suspeito",
+   "no": "127.0.0.1:13002",
+   "aplicar": [
+    "AC-7"
+   ],
+   "reverter": [],
+   "usadas_p1": 1
+  },
+  {
+   "t_decisao_s": 49.592,
+   "perfil": "CONSERVADOR",
+   "politica": "P0",
+   "motivo": "desfazer-alvo-sozinho",
+   "no": "127.0.0.1:13002",
+   "aplicar": [],
+   "reverter": [
+    "AC-7"
+   ],
+   "usadas_p1": 1
+  }
+ ],
+ "acoes": [
+  {
+   "operacao": "APLICAR",
+   "tipo": "AC-7",
+   "alvo": "127.0.0.1:13002",
+   "caches": [
+    "sessions-async"
+   ],
+   "origem": "POLITICA",
+   "resultado": "APLICADA",
+   "executada": true,
+   "t_pedido_s": 14.594,
+   "t_inicio_s": 14.594,
+   "duracao_ms": 1003.8,
+   "codigo_http": null,
+   "lido": "efeito_ms=34;guarda=limpa_43x_1001ms;post=pendente",
+   "erro": null
+  },
+  {
+   "operacao": "REVERTER",
+   "tipo": "AC-7",
+   "alvo": "127.0.0.1:13002",
+   "caches": [
+    "sessions-async"
+   ],
+   "origem": "POLITICA",
+   "resultado": "APLICADA",
+   "executada": true,
+   "t_pedido_s": 49.592,
+   "t_inicio_s": 49.592,
+   "duracao_ms": 16.6,
+   "codigo_http": 204,
+   "lido": "anterior=POST:500@34997ms;anterior=DELETE:204@3ms;rota=alvo-sozinho;127.0.0.1:13001=-;127.0.0.1:13002=-;127.0.0.1:13003=-",
+   "erro": null
+  }
+ ],
+ "transicoes": [
+  {
+   "t_s": 14.154,
+   "perfil": "CONSERVADOR",
+   "regra": "R2"
+  },
+  {
+   "t_s": 174.154,
+   "perfil": "NORMAL",
+   "regra": "R4"
+  }
+ ],
+ "fim_decisoes": {
+  "acoes_pedidas": 1,
+  "acoes_executadas": 1,
+  "acoes_falhas": 0,
+  "reversoes": 1,
+  "reversoes_falhas": 0,
+  "executor_no_prazo": true,
+  "prazo_encerramento_ns": 2000000000,
+  "linhas_perdidas": 0,
+  "perfil_final": "NORMAL"
+ },
+ "fim_observaveis": {
+  "eventos_descontados_sob_acao": 153,
+  "guarda_ac7_desfazeres": null,
+  "eventos_fora_do_contrato": 0,
+  "linhas_perdidas": 0
+ },
+ "meta": {
+  "esquema": "decisoes-controlador/1.2",
+  "atuador": "por-tipo(AC-2=rest-infinispan,AC-5=rest-infinispan,AC-7=rest-ignored-caches)",
+  "modo": "active",
+  "acao_p1": "AC-7"
+ },
+ "sondas": {
+  "isn1/sessions-async": {
+   "recusas_cache_ignorado": 0,
+   "primeira_cache_ignorado_s": null,
+   "ultima_cache_ignorado_s": null,
+   "primeira_cache_ignorado_desde_acao_ms": null,
+   "puts_ok_iniciados_apos_acao_antes_da_recusa": 1587,
+   "primeira_availability_s": null,
+   "primeiro_put_ok_desde_reverter_ms": 18.5,
+   "primeiro_put_ok_apos_reverter_s": 49.61,
+   "resultados_desde_acao": {
+    "get:OK": 1398,
+    "get:TransportException": 10,
+    "put:OK": 1587
+   }
+  },
+  "isn1/counters-async": {
+   "recusas_cache_ignorado": 0,
+   "primeira_cache_ignorado_s": null,
+   "ultima_cache_ignorado_s": null,
+   "primeira_cache_ignorado_desde_acao_ms": null,
+   "puts_ok_iniciados_apos_acao_antes_da_recusa": 1588,
+   "primeira_availability_s": null,
+   "primeiro_put_ok_desde_reverter_ms": 66.1,
+   "primeiro_put_ok_apos_reverter_s": 49.658,
+   "resultados_desde_acao": {
+    "get:OK": 1386,
+    "get:TransportException": 12,
+    "put:OK": 1588
+   }
+  },
+  "isn2/sessions-async": {
+   "recusas_cache_ignorado": 2515,
+   "primeira_cache_ignorado_s": 14.633,
+   "ultima_cache_ignorado_s": 49.588,
+   "primeira_cache_ignorado_desde_acao_ms": 38.9,
+   "puts_ok_iniciados_apos_acao_antes_da_recusa": 0,
+   "primeira_availability_s": 49.61,
+   "primeiro_put_ok_desde_reverter_ms": 91568.5,
+   "primeiro_put_ok_apos_reverter_s": 141.16,
+   "resultados_desde_acao": {
+    "get:Availability": 3390,
+    "get:CacheUnavailable": 1243,
+    "get:OK": 1821,
+    "put:Availability": 3387,
+    "put:CacheUnavailable": 1271,
+    "put:OK": 1828
+   }
+  },
+  "isn2/counters-async": {
+   "recusas_cache_ignorado": 0,
+   "primeira_cache_ignorado_s": null,
+   "ultima_cache_ignorado_s": null,
+   "primeira_cache_ignorado_desde_acao_ms": null,
+   "puts_ok_iniciados_apos_acao_antes_da_recusa": 2952,
+   "primeira_availability_s": 45.219,
+   "primeiro_put_ok_desde_reverter_ms": 91568.5,
+   "primeiro_put_ok_apos_reverter_s": 141.16,
+   "resultados_desde_acao": {
+    "get:Availability": 3551,
+    "get:OK": 1852,
+    "get:TransportException": 28,
+    "put:Availability": 3550,
+    "put:OK": 2952
+   }
+  },
+  "isn3/sessions-async": {
+   "recusas_cache_ignorado": 0,
+   "primeira_cache_ignorado_s": null,
+   "ultima_cache_ignorado_s": null,
+   "primeira_cache_ignorado_desde_acao_ms": null,
+   "puts_ok_iniciados_apos_acao_antes_da_recusa": 1588,
+   "primeira_availability_s": null,
+   "primeiro_put_ok_desde_reverter_ms": 50.5,
+   "primeiro_put_ok_apos_reverter_s": 49.642,
+   "resultados_desde_acao": {
+    "get:OK": 1376,
+    "get:TransportException": 13,
+    "put:OK": 1588
+   }
+  },
+  "isn3/counters-async": {
+   "recusas_cache_ignorado": 0,
+   "primeira_cache_ignorado_s": null,
+   "ultima_cache_ignorado_s": null,
+   "primeira_cache_ignorado_desde_acao_ms": null,
+   "puts_ok_iniciados_apos_acao_antes_da_recusa": 1588,
+   "primeira_availability_s": null,
+   "primeiro_put_ok_desde_reverter_ms": 50.5,
+   "primeiro_put_ok_apos_reverter_s": 49.642,
+   "resultados_desde_acao": {
+    "get:OK": 1376,
+    "get:TransportException": 11,
+    "put:OK": 1588
+   }
+  }
+ },
+ "ignorados_transicoes": [
+  [
+   "isn2",
+   -106.143,
+   "-"
+  ],
+  [
+   "isn1",
+   -106.142,
+   "-"
+  ],
+  [
+   "isn3",
+   -106.125,
+   "-"
+  ],
+  [
+   "isn2",
+   14.624,
+   "sessions-async"
+  ],
+  [
+   "isn2",
+   49.691,
+   "-"
+  ],
+  [
+   "isn1",
+   70.288,
+   "-"
+  ]
+ ],
+ "disponibilidade_transicoes": [
+  [
+   "isn2",
+   -106.161,
+   "sessions-async=AVAILABLE counters-async=AVAILABLE"
+  ],
+  [
+   "isn3",
+   -106.16,
+   "sessions-async=AVAILABLE counters-async=AVAILABLE"
+  ],
+  [
+   "isn1",
+   -106.161,
+   "sessions-async=AVAILABLE counters-async=AVAILABLE"
+  ],
+  [
+   "isn2",
+   45.569,
+   "sessions-async=DEGRADED_MODE counters-async=DEGRADED_MODE"
+  ],
+  [
+   "isn2",
+   141.225,
+   "sessions-async=AVAILABLE counters-async=AVAILABLE"
+  ]
+ ],
+ "carga_stdout": [
+  "Sonda replay: imediatas_agendadas=272 imediatas_lidas=270 imediatas_valid=4 imediatas_invalid=222 imediatas_not_found=0 imediatas_erro=44 imediatas_descartadas_fim=2 tardias_candidatas=95 tardias_amos",
+  "Controlador: modo=active janelas=51 transicoes=2 acoes_pedidas=1 acoes_executadas=1 reversoes=1 reversoes_falhas=0 executor_no_prazo=true eventos_antes_da_origem=2032 linhas_jsonl_perdidas=0",
+  "Fim da carga: rep=1 t_fim_carga_ns=1793990113752089200 ac5_alvo=-",
+  "Convergencia: convergiu=true, persistente=false, rodadas=3, t_convergencia=103592244800 ns",
+  "Varredura final: sessoes=357, identidades=50, achados=5; REAL={}; BLOCKED por motivo={ADMINISTRATIVO=1, POR_LIMITE=5, INCERTO=2, INEXPLICADO=0}",
+  "Total de operacoes: 9657",
+  "Violacoes detectadas: 7",
+  "Auditor: i1_concorrentes=0 i4_concorrentes=0",
+  "Auditor I2: concorrentes=0 janela_cascata=3 cascata_incompleta=0 sem_marco=0",
+  "Auditor total: i1_concorrentes=0 i4_concorrentes=0 i2_concorrentes=0"
+ ],
+ "carga_exit": "exit=0",
+ "violacoes_auditor": {
+  "I1": 4,
+  "I2_JANELA_CASCATA": 3
+ },
+ "varredura_cabecalho": "invariante,chave,classificacao,detalhe",
+ "varredura_linhas": 5,
+ "vistas": [
+  [
+   "isn1",
+   46.641,
+   "ISPN000094",
+   "2"
+  ],
+  [
+   "isn1",
+   141.144,
+   "ISPN000093",
+   "3"
+  ],
+  [
+   "isn2",
+   45.189,
+   "ISPN000094",
+   "1"
+  ],
+  [
+   "isn2",
+   141.143,
+   "ISPN000093",
+   "3"
+  ],
+  [
+   "isn3",
+   45.134,
+   "ISPN000094",
+   "2"
+  ],
+  [
+   "isn3",
+   141.142,
+   "ISPN000093",
+   "3"
+  ]
+ ],
+ "servidor_ISPN005003_por_no": {
+  "isn2": 20647
+ }
+}

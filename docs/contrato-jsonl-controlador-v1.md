@@ -25,6 +25,19 @@ preenchido na hora em que a linha `fim` é gravada; a sonda de topologia deixa d
 vale 0 com ela (decisão 4 do coordenador: o campo fica no esquema); o fechamento espera a gravadora só pelo que
 sobra do `T_enc` (decisão 5) e as linhas abandonadas vão a `linhas_jsonl_perdidas=` do stdout; as linhas
 `Hot Rod ISPN004007:` e `Hot Rod ISPN004005:` no stdout (seção própria, decisão 6).
+**P1-IC** (`feature/p1-ignorar-cache`, 06/11, G-1 a G-4 do coordenador sobre o A4; aditivo, esquemas continuam
+`observaveis-controlador/1.2` e `decisoes-controlador/1.2`; **há dado de campanha anterior**, então a escolha entre
+manter 1.2 e passar a 1.3 é ponto de validação do relatório `docs/relatorio-p1-ignorar-cache-2026-11-06.md`): tipo de
+ação novo `AC-7` (ignorar só o cache de sessões no nó suspeito; um nó, **um** cache, reversível, então `reversao` =
+`null`); `acao_p1` (`"AC-7"` ou `"AC-5"`) em `parametros_politica`, depois de `p2_habilitada`; `usadas_p1` (ações de P1
+já pedidas na execução depois da janela, ou `null`) no fim de toda linha `politica`; motivos novos da linha `politica`
+`desfazer-alvo-sozinho`, `desfazer-apos-fusao` e `suspeita-desfeita` (P0 com `reverter` = `["AC-7"]`);
+`eventos_descontados_sob_acao` no `fim` do `observaveis` (erros do servidor de aplicação do nó sob o AC-7 que não
+foram ao laço; 0 em shadow); `guarda_ac7_desfazeres` no mesmo `fim` (desfazeres pedidos pela guarda contínua do AC-7;
+`null` sem ela, isto é, em shadow ou com `acaoP1 = AC-5`); origem nova `GUARDA` na linha `acao` (reversão pedida pela
+guarda contínua). O `lido` da linha `acao` do AC-7 segue o formato de `session.AtuadorIgnorarCache`
+(`efeito_ms`, `guarda`, `post`, `anterior`, `rota` e as listas por nó). O bloco `politica` aceita o campo opcional
+`acaoP1` (com a origem dele); sem o campo, a ação do P1 é o `AC-7`.
 
 Com `--controller off` nenhum dos dois existe. Código: `workload/src/main/java/br/unipampa/tcc/controle/FormatoJsonl.java`
 (formato), `TrilhaJsonl.java` (gravação), `LacoDeControle.java` (ordem das linhas). Teste de contrato:

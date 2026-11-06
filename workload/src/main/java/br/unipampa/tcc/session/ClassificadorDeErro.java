@@ -45,7 +45,11 @@ public final class ClassificadorDeErro {
      *       (put/get/remove, REP=3 linha 18);</li>
      *   <li>{@code ISPN000305}: "Cluster is operating in degraded mode because of node failures."
      *       (entrySet, REP=3 linha 20);</li>
-     *   <li>{@code degraded mode}: a mesma frase do ISPN000305.</li>
+     *   <li>{@code degraded mode}: a mesma frase do ISPN000305;</li>
+     *   <li>{@code CacheUnavailableException} (P1-IC, G-4 do coordenador de 06/11; P-A4.4): a recusa do cache
+     *       ignorado pelo no ({@code POST /rest/v2/server/ignored-caches/{cache}}); o servidor Hot Rod responde com o
+     *       nome da classe ({@code org.infinispan.server.hotrod.CacheUnavailableException}, captura real do A4 em
+     *       {@code runs/a4-teste/}) e o cliente 15.0.0 lanca {@code HotRodClientException} com esse texto.</li>
      * </ul>
      * Removidas por nao virem da captura como excecao de cliente: {@code DEGRADED} (so aparece no
      * JSON de saude e no log do servidor) e {@code is not available} (generica; todas as capturas em
@@ -55,7 +59,8 @@ public final class ClassificadorDeErro {
             "AvailabilityException",
             "ISPN000306",
             "ISPN000305",
-            "degraded mode");
+            "degraded mode",
+            "CacheUnavailableException");
 
     private ClassificadorDeErro() { /* utilitario */ }
 

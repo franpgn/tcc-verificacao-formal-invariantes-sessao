@@ -1,0 +1,2 @@
+APLICAR	t_ini_epoch_ns=1793990294758913500	t_fim_epoch_ns=1793990294871484700	duracao_ms=112	estado=FALHOU	http=204	erro=falso-alarme-desfeito	lido=efeito=nao-visto;guarda=falso-alarme@127.0.0.1:13001_83ms;anterior=POST:204@84ms;anterior=DELETE:204@9ms;rota=maioria@127.0.0.1:13001;127.0.0.1:13001=-;127.0.0.1:13002=-;127.0.0.1:13003=-
+REVERTER	t_ini_epoch_ns=1793990294877478000	t_fim_epoch_ns=1793990294881989900	duracao_ms=4	estado=APLICADA	http=null	erro=null	lido=nada-a-desfazer;127.0.0.1:13001=-;127.0.0.1:13002=-;127.0.0.1:13003=-

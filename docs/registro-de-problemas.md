@@ -1371,6 +1371,44 @@ branch) foram trocadas pelos da integração (+2). As mensagens de commit da bra
 - **Status:** `RESOLVIDO` no W-6c, exceto a regra da análise do N1 (fim nominal ou `end` do injetor nas execuções com o
   aviso do B1), que é decisão do Gestor no B-40 §9 e uso no W-5b.
 
+## 2026-11-06 — P1-IC, o P1 ignora o cache de sessões no suspeito (AC-7)
+
+Branch `feature/p1-ignorar-cache` (base `int/2026-11-06-bench`, `cc2b71c`). Relatório:
+`docs/relatorio-p1-ignorar-cache-2026-11-06.md`. Números provisórios **P-P1IC.1 a P-P1IC.4** na branch; na
+integração (06/11) são os **P-61 a P-64**, depois do P-60 do W-6c. Os achados do A4 (P-A4.1 a P-A4.4) estão na branch `test/a4-ignored-caches`; o P-A4.4 (recusa contada
+como transporte) fica resolvido aqui pela G-4, e o P-A4.1 e o P-A4.3 viram regras do adaptador (R2 e R5).
+
+### P-61 (P1-IC; P-P1IC.1 na branch, renumerado na integração) — depois de um corte curto, a gravação que respondeu 500 chega à maioria e o cache cai no cluster inteiro
+
+- **Sintoma (smoke `curto-r1`, corte de 24 s curado antes da detecção):** o P1 disparou sob o corte e a guarda do
+  adaptador não viu nada (a gravação não alcança a maioria sob o corte). O POST respondeu 500 depois de 15 s, e mesmo
+  assim a lista dos nós da maioria passou a ter o `sessions-async` 7,4 e 9,4 s depois da cura (provável retransmissão
+  do JGroups depois da cura). O cache de sessões ficou recusado nos três nós até a regra `suspeita-desfeita`, 11 a 13 s.
+  No `curto-r2` o POST respondeu **204** 13,9 s depois do envio, já com a rede curada.
+- **Correção:** guarda contínua (`session.GuardaContinuaIgnorados`, `78a151d`): enquanto houver AC-7 ativo, lê a lista
+  dos outros nós a cada 1 s e pede o desfazer (origem `GUARDA`). No `curto-r2`, o desfazer veio 0,07 s depois de a
+  maioria mostrar o cache, e a recusa no cluster inteiro durou ~0,1 s.
+- **Status:** `RESOLVIDO` no código (n = 1 no smoke); a confirmar na avaliação.
+
+### P-62 (P1-IC; P-P1IC.2 na branch, renumerado na integração) — o tempo do POST pendente no `lido` era o da leitura, não o da resposta
+
+- **Sintoma (smoke `corte-r1`):** `anterior=POST:500@34997ms` era o instante em que o reverter leu o POST, não o da
+  resposta. **Correção:** `c532215` (instante da resposta pelo `whenComplete`). **Status:** `RESOLVIDO`.
+
+### P-63 (P1-IC; P-P1IC.3 na branch, renumerado na integração) — o conferidor e a análise das campanhas ainda esperam o AC-5
+
+- **Sintoma:** `scripts/campanha_s3_conferir.py` e `analysis/comparar_bracos.py` tratam a ação do P1 como AC-5
+  (religamento do nó parado, `ac5_aplicada`, `trilha_ac5`). Com o AC-7 nada é religado e o AC-5 não aparece; os dois
+  continuam aceitando a trilha (o esquema é 1.2), mas não sabem da ação nova nem das origens `GUARDA` e dos motivos de
+  desfazer.
+- **Status:** `ABERTO` (integração: ensinar o AC-7 ao conferidor e à análise, ou passar o `decisoes` a 1.3).
+
+### P-64 (P1-IC; P-P1IC.4 na branch, renumerado na integração) — volume de log no alvo
+
+- **Sintoma:** com a sonda de 25 ms, o alvo gravou 20 647 `ISPN005003` (ERROR com pilha) no `corte-r1`. É o P-A4.2: o
+  harness usa `k8s-file` (G-5); na VM, o destino do log do Podman decide se isso apaga linhas de outros contêineres.
+- **Status:** `ABERTO` (conferir o *log driver* na VM antes da campanha).
+
 ## Observação de modelagem (não é defeito)
 
 Com 8 *threads* = 8 identidades fixas (`user-<tid>`), `incrementFailure`

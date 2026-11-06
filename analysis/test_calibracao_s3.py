@@ -77,7 +77,7 @@ def parametros_campanha(d, **mud):
 def escrever_execucao(base, i, celula, *, veredito="ACEITA", braco="A", dur=100, ops=("Login", "Validate"),
                       lentas=None, erros=None, lacunas=None, top_anomala=(), morto=None, lag_teto=None,
                       atrasos=None, violacoes=(), marcadores=None, conv=("convergiu", 10.0), t_pre_ms=2000,
-                      t_pos_s=13.0, previstas=0, extra_bytes=0, nome_dir=None):
+                      t_pos_s=13.0, previstas=0, extra_bytes=0, nome_dir=None, replay=False):
     """Grava uma execucao sintetica e devolve o diretorio.
 
     Eventos: a cada 100 ms, uma operacao de cada nome de `ops` (latencia 1 ms; 10/s por operacao) e um Logout a
@@ -86,7 +86,9 @@ def escrever_execucao(base, i, celula, *, veredito="ACEITA", braco="A", dur=100,
     (t = -9,5 + 2q s). top_anomala: intervalos [a, b) em s em que o isn3 informa 2 membros. morto = (no, a, b, v):
     o no nao responde em [a, b) e os outros informam 2 membros a partir de v. Defasagem: uma rodada a cada 5 s no
     inicio da janela + atraso (1 ms padrao), lag de no 1,5/1,2/1,0 ms (suspeito unico isn1); lag_teto = {rodada:
-    no no teto de 2000 ms}. violacoes = [(t_s, invariante, classificacao)].
+    no no teto de 2000 ms}. violacoes = [(t_s, invariante, classificacao[, origem])]; com origem em alguma, o CSV
+    ganha a coluna origem (W-10). replay: eventos ReplayValidate da sonda do W-10 (contrato CSV v2 §7) a cada 200 ms,
+    lentos (50 ms), com VALID/INVALID/NOT_FOUND/ERROR_TRANSPORT, mais um replay tardio depois do fim da carga.
     """
     lentas, erros, lacunas = dict(lentas or {}), dict(erros or {}), dict(lacunas or {})
     lag_teto, atrasos = dict(lag_teto or {}), dict(atrasos or {})
@@ -109,9 +111,15 @@ def escrever_execucao(base, i, celula, *, veredito="ACEITA", braco="A", dur=100,
             evs.append([op, bt + (10 + 10 * k) * MS, 1 * MS, RC_OK.get(op, "OK")])
         if q % 20 == 0:
             evs.append(["Logout", bt + 80 * MS, 1 * MS, "NONE"])
+    if replay:
+        rcs = ("VALID", "INVALID", "NOT_FOUND", "ERROR_TRANSPORT")
+        for n, q in enumerate(range(-100, dur * 10, 2)):
+            evs.append(["ReplayValidate", T0 + q * 100 * MS + 95 * MS, 50 * MS, rcs[n % 4]])
+        for n in range(40):                                   # replay tardio, depois do fim da carga
+            evs.append(["ReplayValidate", t_fim_carga + 5 * S + n * 10 * MS, 3 * MS, rcs[n % 2]])
     por_j = {}
     for e in evs:
-        if e[0] != "Logout":
+        if e[0] in ops:
             por_j.setdefault((e[1] + e[2] - T0) // (5 * S), []).append(e)
     remover = set()
     for j, n in lacunas.items():
@@ -190,10 +198,13 @@ def escrever_execucao(base, i, celula, *, veredito="ACEITA", braco="A", dur=100,
     (d / "decisoes-rep-001.jsonl").write_text(jl(dec), encoding="utf-8")
 
     # ---- violacoes-rep-001.csv (InvariantAuditor.dumpCsv com fase e classificacao)
-    vl = ["instante,invariante,chave,mensagem,fase,classificacao"]
-    for ts, inv, cl in violacoes:
+    com_origem = any(len(v) > 3 for v in violacoes)
+    vl = ["instante,invariante,chave,mensagem,fase,classificacao" + (",origem" if com_origem else "")]
+    for v in violacoes:
+        ts, inv, cl = v[:3]
         tn = T0 + int(round(ts * S))
-        vl.append('%s,%s,u-1,"mensagem, com virgula",%s,%s' % (iso(tn), inv, fase_de(tn), cl))
+        vl.append('%s,%s,u-1,"mensagem, com virgula",%s,%s' % (iso(tn), inv, fase_de(tn), cl)
+                  + ("," + (v[3] if len(v) > 3 else "") if com_origem else ""))
     (d / "violacoes-rep-001.csv").write_text("\n".join(vl) + "\n", encoding="utf-8")
 
     # ---- s3-acoes-rep-001.csv (contrato S3 v2): uma acao a cada 250 ms
@@ -735,6 +746,58 @@ class Bordas(unittest.TestCase):
         P = self.derivar({"sf2": dict(omitir=True)})
         self.assertEqual(600, P["teto_convergencia_s"]["valor"])
         self.assertEqual(4, P["teto_convergencia_s"]["dados"]["n_convergiram"])
+
+
+class SondaReplay(unittest.TestCase):
+    """W-10 (--s3-replay-probe): os eventos ReplayValidate e as violacoes com origem = sonda nao entram em nenhum sinal
+    recalculado (contrato CSV v2 §7; InvariantAuditor: a violacao da sonda nao vai ao laco de controle)."""
+
+    TODOS = ("n0", "n1", "n2", "s0", "s1", "f1a", "f1b", "f2a", "f2b", "sf2", "f4", "rec", "dsc")
+
+    def derivar(self, mud):
+        with tempfile.TemporaryDirectory() as tmp:
+            base = Path(tmp) / "c"
+            base.mkdir()
+            montar_campanha(base, mud)
+            return cal.derivar(base, parametros_campanha(tmp))
+
+    @staticmethod
+    def sem_bytes(r):
+        """Os parametros sem o que depende dos bytes dos arquivos (SHA-256 dos CSV na referencia, volume)."""
+        P = json.loads(cal.serializar(r).decode("utf-8"))["parametros"]
+        for perf in ("async", "sync"):
+            P["referencia_p99_%s" % perf]["valor"].pop("sha256")
+        P.pop("volume_exec_mb")
+        return P
+
+    def test_replay_validate_nao_muda_nenhum_valor(self):
+        sem = self.derivar({})
+        com = self.derivar({n: dict(replay=True) for n in self.TODOS})
+        a, b = self.sem_bytes(sem), self.sem_bytes(com)
+        self.assertEqual(sorted(a), sorted(b))
+        for nome in a:
+            self.assertEqual(a[nome]["valor"], b[nome]["valor"], nome)
+            self.assertEqual(a[nome]["incerteza"], b[nome]["incerteza"], nome)
+        self.assertNotIn("ReplayValidate", b["referencia_p99_async"]["valor"]["omitidas"])
+        self.assertNotIn("ReplayValidate", b["referencia_p99_async"]["valor"]["p99_ns"])
+        for k in ("thetaLatIn", "thetaErrIn", "wNs", "m", "politica.kLag", "defasagem.lagInMs"):
+            self.assertEqual(sem["valores_b40_parte2"][k], com["valores_b40_parte2"][k], k)
+
+    def test_violacao_da_sonda_fora_dos_sinais(self):
+        # f4 com I1 da sonda em 20 s e 80 s: contadas, m iria a 6 (trecho 11..15 seguido da janela 16) e T_hold_viol
+        # a 60 s; o controlador nao as recebe, entao m = 5 e T_hold_viol = 26,5 s como sem elas
+        r = self.derivar({"f4": dict(violacoes=[(20.0, "I1", "", "sonda"), (80.0, "I1", "", "sonda")])})
+        P = r["parametros"]
+        self.assertEqual(5, P["m"]["valor"])
+        self.assertAlmostEqual(26.5, P["T_hold_viol_s"]["valor"])
+        # o q-chapeu (7.18, descritivo) segue o comparar_bracos.contar_violacoes, que conta a origem sonda (W-10,
+        # decisao do Gestor pendente)
+        self.assertEqual(1, P["q_hat"]["valor"]["ASYNC-F4"]["com_violacao"])
+
+    def test_violacao_sem_origem_continua_contando(self):
+        r = self.derivar({"f4": dict(violacoes=[(20.0, "I1", "", ""), (80.0, "I1", "", "")])})
+        self.assertEqual(6, r["parametros"]["m"]["valor"])
+        self.assertAlmostEqual(60.0, r["parametros"]["T_hold_viol_s"]["valor"])
 
 
 class Funcoes(unittest.TestCase):

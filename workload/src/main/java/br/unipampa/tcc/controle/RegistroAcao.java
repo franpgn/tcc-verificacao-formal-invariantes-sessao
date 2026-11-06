@@ -42,7 +42,12 @@ public record RegistroAcao(Operacao operacao, AcaoCluster acao, ModoAtuacao modo
         /** Encerramento normal do laco (fim da carga). */
         ENCERRAMENTO,
         /** Gancho de desligamento da JVM (camada 2). */
-        GANCHO_JVM
+        GANCHO_JVM,
+        /**
+         * P1-IC: guarda continua do AC-7 ({@code session.GuardaContinuaIgnorados}): a lista de um no diferente do alvo
+         * mostrou o cache ignorado (a gravacao chegou a maioria depois da janela da guarda do adaptador).
+         */
+        GUARDA
     }
 
     public RegistroAcao {

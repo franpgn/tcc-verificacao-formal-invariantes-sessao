@@ -25,6 +25,7 @@ import br.unipampa.tcc.controle.ParametrosDefasagem;
 import br.unipampa.tcc.controle.ParametrosPolitica;
 import br.unipampa.tcc.controle.PoliticaDeAcao;
 import br.unipampa.tcc.controle.PoliticaPorAssinatura;
+import br.unipampa.tcc.controle.RegistroAcao;
 import br.unipampa.tcc.controle.Referencia;
 import br.unipampa.tcc.controle.SondaDefasagem;
 import br.unipampa.tcc.controle.SondaTopologia;
@@ -105,6 +106,14 @@ final class LigacaoControlador implements AutoCloseable, WorkloadMain.ControleDa
     static final long PRAZO_CHAMADA_NS = 2_000_000_000L;
     /** Intervalo entre as consultas de saude do alvo do AC-5 (W-2a). */
     static final long PASSO_SAUDE_AC5_NS = 100_000_000L;
+    /**
+     * P1-IC: periodo da guarda continua do AC-7 (1 s: no smoke curto-r1 a lista da maioria passou a ter o cache 7 a 9 s
+     * depois da cura e o cluster ficou sem o cache de sessoes ate o desfazer), carencia de 2 s (a guarda do adaptador
+     * olha o primeiro segundo; o dobro cobre a chamada inteira de aplicar) e prazo de cada GET de 500 ms.
+     */
+    static final long PERIODO_GUARDA_NS = 1_000_000_000L;
+    static final long CARENCIA_GUARDA_NS = 2_000_000_000L;
+    static final long PRAZO_LEITURA_GUARDA_NS = 500_000_000L;
     /** Divisor de W no tick (V-B26.1 secao 5.9: 1 s com W = 5 s). */
     static final int DIVISOR_TICK = 5;
 
@@ -248,6 +257,8 @@ final class LigacaoControlador implements AutoCloseable, WorkloadMain.ControleDa
     private final AtomicLong eventosForaDoContrato = new AtomicLong();
     /** P1-IC (G-4): erros do no sob o AC-7 fora do sensor (so em active). */
     private final DescontoSobAcao desconto;
+    /** P1-IC: guarda continua do AC-7 (so em active com o bloco politica); {@code null} sem ela. */
+    private GuardaContinuaIgnorados guarda;
     private volatile boolean fechada;
     private LacoDeControle.Resumo resumo;
 
@@ -644,6 +655,14 @@ final class LigacaoControlador implements AutoCloseable, WorkloadMain.ControleDa
                 pecas.saude() instanceof ConsultaSaudeRest r ? r : null, tempo, rastro, lag, pecas.canario(), obs, dec,
                 executor);
         self[0] = l;
+        if (c.modo() == ModoAtuacao.ACTIVE && c.parametros().politica() != null
+                && c.parametros().politica().acaoP1() == AcaoCluster.Tipo.AC_7) {
+            // P1-IC: guarda continua do AC-7; o desfazer vai pela fila unica do executor (origem GUARDA)
+            l.guarda = new GuardaContinuaIgnorados(c.urlsAdmin(), new ClienteAdminRest(cli.usuario, cli.senha),
+                    executor::ativas, a -> executor.reverter(a, RegistroAcao.Origem.GUARDA, null, tempo.agoraNs()),
+                    System::nanoTime, CARENCIA_GUARDA_NS, PRAZO_LEITURA_GUARDA_NS);
+            l.guarda.iniciar(PERIODO_GUARDA_NS);
+        }
         if (sonda != null) {
             sonda.iniciar();
         }
@@ -722,6 +741,9 @@ final class LigacaoControlador implements AutoCloseable, WorkloadMain.ControleDa
             return;
         }
         fechada = true;
+        if (guarda != null) {
+            guarda.close(); // antes do encerramento do executor: nenhum pedido novo de desfazer depois dele
+        }
         if (sonda != null) {
             sonda.close();
         }
@@ -735,6 +757,8 @@ final class LigacaoControlador implements AutoCloseable, WorkloadMain.ControleDa
             o.put("eventos_fora_do_contrato", eventosForaDoContrato.get());
             // P1-IC (G-4, aditivo no observaveis 1.2): erros do no sob o AC-7 descontados do sensor
             o.put("eventos_descontados_sob_acao", desconto.descontados());
+            // P1-IC (aditivo no observaveis 1.2): desfazeres pedidos pela guarda continua do AC-7; null sem ela
+            o.put("guarda_ac7_desfazeres", guarda == null ? null : guarda.desfazeres());
             o.put("sonda_rodadas", sonda == null ? null : sonda.rodadas());
             o.put("sonda_rodadas_puladas", sonda == null ? null : sonda.rodadasPuladas());
             o.put("sonda_amostras_atrasadas", sonda == null ? null : sonda.amostrasAtrasadas());

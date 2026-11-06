@@ -95,6 +95,31 @@ o ProtoStream padrão falha ao serializar e toda escrita vira
 
 ## Decisões técnicas a registrar
 
+### TD-021 (provisório) — P1-IC: o P1 manda o nó suspeito ignorar o cache de sessões (AC-7) (2026-11-06)
+
+Numeração provisória: o TD-020 está na branch da A1 (`feature/merge-policy-semirreticulado`); o número definitivo sai
+na integração. Branch `feature/p1-ignorar-cache` (base `int/2026-11-06-bench`, `cc2b71c`). Decisões do coordenador
+sobre o A4 (G-1 a G-5, 06/11) e regras R1 a R8 de `docs/relatorio-a4-2026-11-06.md` (branch `test/a4-ignored-caches`),
+seção 8. Relatório: `docs/relatorio-p1-ignorar-cache-2026-11-06.md`.
+
+| Peça | O que faz | Onde |
+|---|---|---|
+| `AcaoCluster.Tipo.AC_7` | ignorar um cache num nó; um nó, **um** cache (R1), reversível, prazo `T_cham + 15 s` | `controle/AcaoCluster.java` |
+| `AtuadorIgnorarCache` | `POST`/`DELETE /rest/v2/server/ignored-caches/{cache}`; um pedido por vez sem cancelar o pendente (R2); efeito pela lista do alvo (R3); guarda de falso alarme no primeiro segundo (R4); só leituras locais (R5); desfazer no alvo em `DEGRADED_MODE` (R6) ou por um nó da maioria, e no alvo em sequência se o corte ainda não foi detectado (R7); reverter idempotente (R8) | `session/AtuadorIgnorarCache.java` |
+| `GuardaContinuaIgnorados` | enquanto houver AC-7 ativo (só em active), lê a lista dos outros nós a cada 1 s e pede o desfazer (origem `GUARDA`) se alguma mostrar o cache; carência de 2 s | `session/GuardaContinuaIgnorados.java` |
+| `PoliticaPorAssinatura` | mesma condição de disparo do P1; ação de `ParametrosPolitica.acaoP1` (AC-7 padrão, AC-5 para comparação); desfazer em qualquer perfil: `desfazer-alvo-sozinho`, `desfazer-apos-fusao`, `suspeita-desfeita`; `usadas_p1` na linha `politica` | `controle/PoliticaPorAssinatura.java` |
+| `ParametrosPolitica.acaoP1` | campo opcional `acaoP1` do bloco `politica` (com origem); ausente = AC-7 | `controle/ParametrosPolitica.java` |
+| `ClassificadorDeErro` | marca `CacheUnavailableException` → `ERROR_UNAVAILABLE` (G-4) | `session/ClassificadorDeErro.java` |
+| `LigacaoControlador.DescontoSobAcao` | os erros do servidor de aplicação do nó sob o AC-7 não vão ao laço (só em active; G-4) | `session/LigacaoControlador.java` |
+
+**Escolhas que o pedido não fixava (para validação):** (1) a regra `suspeita-desfeita` (sem partição vista, S_lag
+determinado abaixo do teto com vista completa por `kLag` janelas): sem ela, um corte curto deixaria o alvo ignorando o
+cache até o fim da execução; (2) a guarda contínua, criada depois do smoke `curto-r1`, em que a gravação que deu 500
+sob o corte chegou à maioria 7 a 9 s depois da cura; (3) o campo `acaoP1` opcional com padrão AC-7, para o arquivo da
+calibração continuar válido com o mesmo SHA-256; (4) os esquemas continuam 1.2, com campos aditivos (ver o contrato);
+(5) os parâmetros do adaptador e da guarda contínua são constantes do código com a origem no comentário (medidas do
+A4 e do smoke), não do `controlador-*.json`.
+
 ### TD-019 — W-5c: V com a sonda de *replay* e a varredura no `comparar_bracos.py` (2026-11-06)
 
 Numeração: TD-017 na branch `feature/w5c-v-com-sonda` (o próximo livre na base `daa18a2`). Na integração (06/11) o

@@ -81,6 +81,31 @@
 #   inj_inicio_offset_s + f*_dur_s) e a saida do injetor (injetor_saida_desde_ancora_s), porque o F4 do braco B sai no
 #   fim do ping quando o AC-5 para o alvo e o end adianta (N1); o B1 exige o marcador start da falha no no (F2, F3, F4)
 #   e, no F4, a linha "degradacao aplicada: alvo <no>" do injetor (R4).
+# Complemento 1 do benchmark refeito (DT-027, avaliacao fatorial 2x2; secao 5 "o que o orquestrador precisa ter"). So
+#   com a matriz fatorial (campanha_s3_matriz.py gerar --modo fatorial: 14 colunas, a ultima "fusao"); com a de 13
+#   colunas nada muda. Fonte unica dos nomes com a analise (W-5e, wt-w5e d1bb887): no execucao.json, fusao = pnn|a1,
+#   controller, bloco e t_fusao_ns; no manifesto-bracos.tsv, os bracos PO, PL, AO e AL do bloco 2x2 (A e B nos de 2).
+#   - variante da regra de fusao por braco (item 1): o sessions-async e criado do cluster/caches/sessions-async.json
+#     (fusao=pnn, PREFERRED_NON_NULL) ou do sessions-async-a1.json (fusao=a1, a classe da A1, TD-020); os seis JSON
+#     da execucao vao para <exec>/caches/ (o cria-caches.sh, congelado, le um diretorio) e a camada 3 compara com eles.
+#     O counters-async fica PREFERRED_NON_NULL nos quatro bracos. O pre-voo (e o --dry-run) confere os arquivos das
+#     variantes da fila (uma linha, a politica esperada) e o counters-async;
+#   - confirmacao da politica no cluster (itens 1 e 2): depois do K1, o ?action=config do sessions-async e do
+#     counters-async nos tres nos e a linha "A1-POLITICA carregada" no log de cada no (>= 1 no braco a1; 0 no pnn,
+#     smoke da A1). Se a politica nao ficou (ou a criacao do sessions-async falhou no cria-caches.sh), a execucao vira
+#     DESCARTADA-INFRA sem carga e a fase segue; o bloco perdido e refeito inteiro (repor);
+#   - JAR da extensao (item 2): lido do volume do compose em /opt/infinispan/server/lib/tcc-extensao-servidor.jar,
+#     montado nos tres nos ou em nenhum; com fusao=a1 na fila, obrigatorio. Montado: --extensao-sha256 obrigatorio
+#     fora do --dry-run, SHA-256 conferido, no bundle e no execucao.json (extensao_sha256);
+#   - checagem de fusao antes da varredura (item 3): a matriz fatorial exige --sonda-replay e o fusao_teto_s do
+#     --parametros (conferido pelo campanha_s3_conferir.py: so com a sonda, e inj_offset_s + f2_dur_s + fusao_teto_s
+#     <= duracao_s), que vai ao programa como --sweep-merge-timeout-sec depois do --sweep. O programa grava
+#     fusao-rep-001.json; o orquestrador copia para o execucao.json o registro (fusao_checagem) e, se a vista de 3
+#     veio, t_fusao_ns (sem fusao no teto, o campo fica ausente e o programa grava varredura-rep-001.erro.txt). A
+#     primeira vista de fusao ISPN000093 depois do end (DT-027 secao 2.2) e o driver de log dos conteineres vao em
+#     fusao_vista, so como registro (campanha_s3_conferir.py fusao-vista);
+#   - matriz com quatro bracos por bloco na celula de teste e dois nas descritivas (item 4): pareamento pelo
+#     campanha_s3_conferir.py pareamento (os dois formatos), bloco perdido refeito inteiro, controlador pelo braco.
 # I-1 da V-W6 (secao 5.2, integracao com o W-2b, cuja TrilhaJsonl grava por thread): a meta da trilha e relida a cada
 # 0,2 s por ate 5 s enquanto a conferencia sair com 4 (trilha ausente ou primeira linha ilegivel); se nao chegar, a
 # carga e parada e a execucao vira DESCARTADA-INFRA sem parar a fase. O exit 6 fica so para a recusa (exit 5).
@@ -94,10 +119,11 @@
 #       --saida <dir>
 #       [--jar <jar> --jar-sha256 <hex> --boot-esperado <uuid> --h4-id <id>]
 #       [--servers h:p,h:p,h:p] [--admin http://h:p,...] [--username <u>] [--password <p>] [--dry-run]
-#       [--swap-limite-kb N] [--exigir-trilha-completa] [--sonda-replay]
+#       [--swap-limite-kb N] [--exigir-trilha-completa] [--sonda-replay] [--extensao-sha256 <hex>]
 #   (--jar, --jar-sha256, --boot-esperado e --h4-id sao obrigatorios fora do --dry-run. A referencia de cada modo de
 #   replicacao presente na fase e obrigatoria: o programa recusa referencia de outro perfil.)
 #   A fase "reposicoes" le <saida>/reposicoes/reposicoes.tsv, escrito antes por campanha_s3_matriz.py repor.
+#   (--extensao-sha256 e obrigatorio fora do --dry-run com a matriz fatorial e o JAR da extensao montado no compose.)
 #
 # Variaveis: PODMAN (padrao "sudo podman", exportada aos injetores), PODMAN_COMPOSE (padrao "sudo podman-compose"),
 # JAVA (padrao java), CS_PASSWORD (senha, se --password nao for dado). So nos testes: CS_MODO_TESTE=1 com
@@ -105,7 +131,8 @@
 # /dev/tty), CS_H4_RUN (no lugar de /run/tccdiag), CS_COLETOR (no lugar de scripts/collect-resources.sh) e
 # CS_INJ_PART/CS_INJ_DEGR (duble dos injetores de F2 e F4; o F1 roda o inject-crash.sh real contra os shims, e o F3 o
 # inject-jitter.sh real) e CS_NETEM_EFETIVA_MS (no lugar dos 2 s da conferencia do netem). No modo de teste o
-# /proc/meminfo e o arquivo meminfo de CS_SHIM_DIR.
+# /proc/meminfo e o arquivo meminfo de CS_SHIM_DIR. DT-027: CS_DIR_CACHES (no lugar de cluster/caches) e CS_COMPOSE_ARQ
+# (no lugar de cluster/podman-compose-sem-caches.yml), tambem no --dry-run.
 #
 # Exit codes (os do runner do rebaseline):
 #   0  fase concluida ou parada por PARAR     2  uso      3  dependencia ausente     4  pre-voo recusado
@@ -153,6 +180,15 @@ readonly EXITS_REDE_SEGUEM=" 0 1 4 6 "  # idem, mais 6 (a falha nao se efetivou)
 readonly EXITS_F3_SEGUEM=" 0 1 4 "      # C3/P2: INJ_EXITS_SEGUEM do run-rebaseline.sh (inject-jitter.sh); 5 e outros: exit 6
 readonly NETEM_EFETIVA_APOS_S=2         # C5 do rebaseline (NETEM_EFETIVA_S = 51 = +49 + 2); B-40 4.3: sem netem, recusa
 readonly EXITS_PREVISTOS=" 0 2 3 4 5 6 10 11 130 143 "
+# DT-027 (complemento 1 do benchmark refeito): variante da regra de fusao do sessions-async por braco
+readonly FUSAO_CACHE=sessions-async                                      # DT-027 secao 1: so ele muda
+readonly POLITICA_PNN=PREFERRED_NON_NULL                                 # cluster/caches/sessions-async.json
+readonly POLITICA_A1=br.unipampa.tcc.servidor.PoliticaFusaoSessoes       # A1 (TD-020, 288b01c): sessions-async-a1.json
+readonly A1_CARREGADA="A1-POLITICA carregada"                            # construtor da PoliticaFusaoSessoes; smoke da A1 4.1
+readonly EXTENSAO_DESTINO=/opt/infinispan/server/lib/tcc-extensao-servidor.jar   # volume do compose (A1, 04719ee)
+readonly LOG_FUSAO=ISPN000093                                            # DT-027 secao 2.2: vista de fusao no log
+fusao_arquivo() { case "$1" in pnn) echo sessions-async.json ;; a1) echo sessions-async-a1.json ;; *) return 1 ;; esac; }
+fusao_politica() { case "$1" in pnn) echo "${POLITICA_PNN}" ;; a1) echo "${POLITICA_A1}" ;; *) return 1 ;; esac; }
 
 PODMAN="${PODMAN:-sudo podman}"
 export PODMAN
@@ -170,7 +206,7 @@ LOCK=/var/lock/tcc-vm.lock
 MATRIZ=""; MATRIZ_SHA=""; FASE=""; PARAMS=""; PARAMS_SHA=""; CTRL=""; CTRL_SHA=""
 REF_ASYNC=""; REF_ASYNC_SHA=""; REF_SYNC=""; REF_SYNC_SHA=""
 JAR=""; JAR_SHA=""; SAIDA=""; BOOT_ESPERADO=""; H4_ID=""; DRY_RUN=0
-SWAP_LIMITE_KB=""; SWAP_LIMITE_DADO=0; EXIGIR_TRILHA=0; SONDA_REPLAY=0
+SWAP_LIMITE_KB=""; SWAP_LIMITE_DADO=0; EXIGIR_TRILHA=0; SONDA_REPLAY=0; EXTENSAO_SHA=""
 SERVERS="127.0.0.1:11222,127.0.0.1:11223,127.0.0.1:11224"
 ADMIN="http://127.0.0.1:11222,http://127.0.0.1:11223,http://127.0.0.1:11224"
 USERNAME="admin"; PASSWORD="${CS_PASSWORD:-}"
@@ -183,7 +219,7 @@ while [[ $# -gt 0 ]]; do
         --matriz|--matriz-sha256|--fase|--parametros|--parametros-sha256|--controlador|--controlador-sha256|\
 --referencia-async|--referencia-async-sha256|--referencia-sync|--referencia-sync-sha256|\
 --jar|--jar-sha256|--saida|--boot-esperado|--h4-id|--servers|--admin|\
---username|--password|--swap-limite-kb)
+--username|--password|--swap-limite-kb|--extensao-sha256)
             [[ $# -ge 2 ]] || erro_uso "$1 exige valor"
             case "$1" in
                 --matriz) MATRIZ="$2" ;; --matriz-sha256) MATRIZ_SHA="$2" ;; --fase) FASE="$2" ;;
@@ -196,6 +232,7 @@ while [[ $# -gt 0 ]]; do
                 --servers) SERVERS="$2" ;; --admin) ADMIN="$2" ;;
                 --username) USERNAME="$2" ;; --password) PASSWORD="$2" ;;
                 --swap-limite-kb) SWAP_LIMITE_KB="$2"; SWAP_LIMITE_DADO=1 ;;
+                --extensao-sha256) EXTENSAO_SHA="$2" ;;
             esac
             shift 2 ;;
         --dry-run) DRY_RUN=1; shift ;;
@@ -224,6 +261,7 @@ for perf in async sync; do  # B2: cada referencia vem com o seu SHA-256; qual e 
 done
 [[ -n "${REF_ASYNC}${REF_SYNC}" ]] || erro_uso "--referencia-async e/ou --referencia-sync (uma por modo de replicacao da fase) e obrigatoria"
 [[ -n "${SAIDA}" ]] || erro_uso "--saida e obrigatoria"
+[[ -z "${EXTENSAO_SHA}" || "${EXTENSAO_SHA}" =~ ^[0-9a-f]{64}$ ]] || erro_uso "--extensao-sha256 deve ter 64 hexadecimais"
 if [[ "${SWAP_LIMITE_DADO}" -eq 1 && ! "${SWAP_LIMITE_KB}" =~ ^[1-9][0-9]*$ ]]; then
     erro_uso "--swap-limite-kb deve ser inteiro > 0 (kB de swap usado no portao; o pre-registro da o valor)"
 fi
@@ -299,8 +337,11 @@ if [[ "${CS_MODO_TESTE:-}" == 1 ]]; then
         MEMINFO="${CS_SHIM_DIR}/meminfo"
         LOCK="${CS_SHIM_DIR}/tcc-vm.lock"
     fi
-elif [[ -n "${CS_TTY_ARQUIVO:-}${CS_H4_RUN:-}${CS_COLETOR:-}${CS_INJ_PART:-}${CS_INJ_DEGR:-}${CS_NETEM_EFETIVA_MS:-}" ]]; then
-    echo "Erro: CS_TTY_ARQUIVO, CS_H4_RUN, CS_COLETOR, CS_INJ_PART, CS_INJ_DEGR e CS_NETEM_EFETIVA_MS so valem com CS_MODO_TESTE=1" >&2; exit 4
+    # DT-027: os JSON dos caches (com o sessions-async-a1.json) e o compose com o JAR da extensao, tambem no --dry-run
+    if [[ -n "${CS_DIR_CACHES:-}" ]]; then DIR_CACHES="${CS_DIR_CACHES}"; fi
+    if [[ -n "${CS_COMPOSE_ARQ:-}" ]]; then COMPOSE_ARQ="${CS_COMPOSE_ARQ}"; fi
+elif [[ -n "${CS_TTY_ARQUIVO:-}${CS_H4_RUN:-}${CS_COLETOR:-}${CS_INJ_PART:-}${CS_INJ_DEGR:-}${CS_NETEM_EFETIVA_MS:-}${CS_DIR_CACHES:-}${CS_COMPOSE_ARQ:-}" ]]; then
+    echo "Erro: CS_TTY_ARQUIVO, CS_H4_RUN, CS_COLETOR, CS_INJ_PART, CS_INJ_DEGR, CS_NETEM_EFETIVA_MS, CS_DIR_CACHES e CS_COMPOSE_ARQ so valem com CS_MODO_TESTE=1" >&2; exit 4
 fi
 
 # ------------------------------------------------------------------ parametros da campanha
@@ -327,30 +368,25 @@ carga_s3_txt() { if [[ ${#CARGA_S3[@]} -eq 0 ]]; then printf -- '-'; else printf
 
 # ------------------------------------------------------------------ matriz e plano
 COLS="i fase rodada posicao celula modo falha papel bloco braco controlador seed repoe"
+COLS_FATORIAL="${COLS} fusao"   # DT-027 secao 5, item 1 (campanha_s3_matriz.py --modo fatorial)
 FILA=()
-ler_fila() {  # ler_fila <tsv> <fase|"">: linhas "i celula modo falha papel bloco braco controlador seed"
+ler_fila() {  # ler_fila <tsv> <fase|"">: linhas "i celula modo falha papel bloco braco controlador seed fusao"
     local l
+    # sem a coluna fusao (13 colunas), a regra atual (pnn)
     while IFS= read -r l; do FILA+=("${l}"); done < <(awk -F'\t' -v f="$2" \
-        'NR == 1 {next} (f == "" || $2 == f) {print $1, $5, $6, $7, $8, $9, $10, $11, $12}' "$1")
+        'NR == 1 {k = ($14 == "fusao") ? 14 : 0; next} (f == "" || $2 == f) {print $1, $5, $6, $7, $8, $9, $10, $11, $12, (k ? $k : "pnn")}' "$1")
 }
 conferir_cabecalho() {
     local cab; cab="$(head -1 "$1" | tr '\t' ' ' | tr -d '\r')"
-    [[ "${cab}" == "${COLS}" ]] || { echo "Erro: cabecalho de $1 nao e o de campanha_s3_matriz.py ('${cab}')" >&2; exit 4; }
+    [[ "${cab}" == "${COLS}" || "${cab}" == "${COLS_FATORIAL}" ]] \
+        || { echo "Erro: cabecalho de $1 nao e o de campanha_s3_matriz.py ('${cab}')" >&2; exit 4; }
 }
 dir_exec() { printf '%s/exec-%04d-%s-%s' "${SAIDA}" "$1" "$2" "$3"; }
-conferir_pareamento() {  # A e B de cada bloco: os dois bracos, a mesma celula e a mesma semente (plano de execucao 5.2)
-    local out
-    out="$(awk -F'\t' '
-        NR == 1 {next}
-        $9 == "-" { if ($10 != "A") print "linha " NR ": braco " $10 " sem bloco"; next }
-        { k = $9; n[k]++; b[k] = b[k] $10
-          c[k] = (k in c && c[k] != $5) ? "DIFERENTE" : $5
-          s[k] = (k in s && s[k] != $12) ? "DIFERENTE" : $12 }
-        END { for (k in n)
-                  if (n[k] != 2 || (b[k] != "AB" && b[k] != "BA") || c[k] == "DIFERENTE" || s[k] == "DIFERENTE")
-                      print "bloco " k ": " n[k] " linha(s), bracos " b[k] ", celula " c[k] ", semente " s[k] }' "$1")"
-    if [[ -n "${out}" ]]; then
-        echo "Erro: pareamento quebrado em $1 (plano 5.2: um A e um B por bloco, mesma celula e mesma semente): ${out//$'\n'/; }" >&2
+conferir_pareamento() {  # bloco A/B (plano de execucao 5.2) ou PO/PL/AO/AL (DT-027): campanha_s3_conferir.py pareamento
+    local out rc=0
+    out="$(py "${CONFERIR}" pareamento --matriz "$1")" || rc=$?
+    if [[ "${rc}" -ne 0 ]]; then
+        echo "Erro: pareamento quebrado em $1 (plano 5.2: um A e um B por bloco; DT-027: PO, PL, AO e AL no bloco fatorial; mesma celula e mesma semente): ${out//$'\n'/; }" >&2
         exit 4
     fi
 }
@@ -382,6 +418,8 @@ montar_cmd() {  # montar_cmd <modo> <seed> <csv-dir> <controlador> <marcadores> 
     [[ ${#CARGA_S3[@]} -eq 0 ]] || CMD+=("${CARGA_S3[@]}")
     # W-10: sonda de replay e varredura final, so com --sonda-replay (sem ela a linha e a de antes)
     [[ "${SONDA_REPLAY}" -eq 0 ]] || CMD+=(--s3-replay-probe --sweep)
+    # DT-027 secao 5, item 3: checagem de fusao antes da varredura (o conferidor so aceita fusao_teto_s com a sonda)
+    [[ -z "${P[fusao_teto_s]:-}" ]] || CMD+=(--sweep-merge-timeout-sec "${P[fusao_teto_s]}")
     CMD_MASC=("${CMD[@]}")
     local k
     for k in "${!CMD_MASC[@]}"; do
@@ -400,30 +438,31 @@ descrever_falha() {  # descrever_falha <falha>
 }
 
 imprimir_plano() {
-    local t0 k=0 l i cel modo falha papel bloco braco ctl seed por_exec
+    local t0 k=0 l i cel modo falha papel bloco braco ctl seed fusao por_exec
     t0="$(agora_ms)"
     # pior caso por execucao: recriacao + portao K1 + teto do processo (estimativa de calendario, nao limiar); com o
     # --swap-limite-kb, mais uma recriacao e um K1 (W-6c)
     por_exec=$(( RECRIAR_TIMEOUT_S + K1_JANELA_S + P[exec_teto_s] ))
     [[ -z "${SWAP_LIMITE_KB}" ]] || por_exec=$(( por_exec + RECRIAR_TIMEOUT_S + K1_JANELA_S ))
     for l in "${FILA[@]}"; do
-        read -r i cel modo falha papel bloco braco ctl seed <<< "${l}"
+        read -r i cel modo falha papel bloco braco ctl seed fusao <<< "${l}"
         montar_cmd "${modo}" "${seed}" "$(dir_exec "${i}" "${cel}" "${braco}")/.scratch" "${ctl}" \
             "$(dir_exec "${i}" "${cel}" "${braco}")/marcadores.txt"
-        echo "PLANO i=${i} celula=${cel} papel=${papel} bloco=${bloco} braco=${braco} controller=${ctl} seed=${seed} inicio_ate=$(iso_ms $(( t0 + k * por_exec * 1000 ))) $(descrever_falha "${falha}")"
+        echo "PLANO i=${i} celula=${cel} papel=${papel} bloco=${bloco} braco=${braco} controller=${ctl}$([[ "${FATORIAL}" -eq 0 ]] || echo " fusao=${fusao}") seed=${seed} inicio_ate=$(iso_ms $(( t0 + k * por_exec * 1000 ))) $(descrever_falha "${falha}")"
         echo "      ${CMD_MASC[*]}"
         k=$((k + 1))
     done
     echo "PLANO execucoes=${#FILA[@]} encerramento: SIGTERM no teto (${P[exec_teto_s]} s) e SIGKILL ${K_ENC} s depois (T_enc pior caso ${T_ENC_PIOR_S} s + folga ${P[encerramento_folga_s]} s) fim_no_pior_caso=$(iso_ms $(( t0 + k * por_exec * 1000 )))"
 }
 
-TEM_B=0; TEM_REDE=0; TEM_F3=0; PERFIS=" "
-marcar_fila() {  # TEM_B (algum braco B na fila), TEM_REDE (alguma F2/F3/F4), TEM_F3 e PERFIS (modos da fila)
-    local l _i _c m f _p _b br _ct _s
-    TEM_B=0; TEM_REDE=0; TEM_F3=0; PERFIS=" "
+TEM_B=0; TEM_REDE=0; TEM_F3=0; PERFIS=" "; FUSOES=" "
+marcar_fila() {  # TEM_B (algum braco active: B, PL ou AL), TEM_REDE (alguma F2/F3/F4), TEM_F3, PERFIS e FUSOES da fila
+    local l _i _c m f _p _b _br ct _s fu
+    TEM_B=0; TEM_REDE=0; TEM_F3=0; PERFIS=" "; FUSOES=" "
     for l in "${FILA[@]}"; do
-        read -r _i _c m f _p _b br _ct _s <<< "${l}"
-        [[ "${br}" == B ]] && TEM_B=1
+        read -r _i _c m f _p _b _br ct _s fu <<< "${l}"
+        [[ "${ct}" == active ]] && TEM_B=1
+        [[ "${FUSOES}" == *" ${fu} "* ]] || FUSOES+="${fu} "
         [[ "${f}" == F2 || "${f}" == F3 || "${f}" == F4 ]] && TEM_REDE=1
         [[ "${f}" == F3 ]] && TEM_F3=1
         [[ "${PERFIS}" == *" ${m} "* ]] || PERFIS+="${m} "
@@ -460,6 +499,75 @@ conferir_controlador() {  # politica obrigatoria com braco B; p2Habilitada = fal
     CTRL_INFO="${out}"
 }
 
+# ------------------------------------------------------------------ DT-027: matriz fatorial, regra de fusao e extensao
+FATORIAL=0
+[[ "$(head -1 "${MATRIZ}" | tr '\t' ' ' | tr -d '\r')" != "${COLS_FATORIAL}" ]] || FATORIAL=1
+EXT_MONTAGENS=0; EXT_FONTES=" "; EXTENSAO_JAR=""; EXT_INFO="nao montado no compose"; EXT_SHA_LIDO=""
+ler_extensao() {  # volumes do compose em ${EXTENSAO_DESTINO}: quantos e de onde (relativo ao diretorio do compose)
+    local l src
+    while IFS= read -r l || [[ -n "${l}" ]]; do
+        l="${l%$'\r'}"
+        [[ "${l}" =~ ^[[:space:]]*-[[:space:]]*([^[:space:]]+):${EXTENSAO_DESTINO}(:ro)?[[:space:]]*$ ]] || continue
+        src="${BASH_REMATCH[1]}"; EXT_MONTAGENS=$(( EXT_MONTAGENS + 1 ))
+        [[ "${EXT_FONTES}" == *" ${src} "* ]] || EXT_FONTES+="${src} "
+    done < "${COMPOSE_ARQ}"
+    src="${EXT_FONTES# }"; src="${src% }"
+    if [[ "${EXT_MONTAGENS}" -gt 0 && "${src}" != *" "* ]]; then
+        if [[ "${src}" == /* ]]; then EXTENSAO_JAR="${src}"; else EXTENSAO_JAR="$(realpath -m "$(dirname "${COMPOSE_ARQ}")/${src}")"; fi
+    fi
+}
+if [[ "${FATORIAL}" -eq 1 ]]; then
+    ler_extensao
+    if [[ "${DRY_RUN}" -eq 0 && "${EXT_MONTAGENS}" -gt 0 && -z "${EXTENSAO_SHA}" ]]; then
+        erro_uso "--extensao-sha256 <hex> e obrigatorio fora do --dry-run com a matriz fatorial e o JAR da extensao montado no compose (DT-027 secao 5, item 2)"
+    fi
+fi
+FUSAO_INFO=""
+conferir_fusao_arquivos() {  # DT-027 secao 5, itens 1 e 3: sonda, fusao_teto_s, JSON de cada variante da fila, counters-async
+    local v f pol
+    [[ "${FATORIAL}" -eq 1 ]] || return 0
+    if [[ "${SONDA_REPLAY}" -ne 1 ]]; then
+        echo "Erro: a matriz fatorial (DT-027) roda com a sonda de replay e a varredura (--sonda-replay; instrumentos da DT-026 secao 2.1)" >&2; exit 4
+    fi
+    if [[ -z "${P[fusao_teto_s]:-}" ]]; then
+        echo "Erro: a matriz fatorial (DT-027 secao 5, item 3) exige fusao_teto_s no --parametros (teto da espera pela fusao antes da varredura, contado do end, com origem)" >&2; exit 4
+    fi
+    FUSAO_INFO=""
+    for v in pnn a1; do
+        [[ "${FUSOES}" == *" ${v} "* ]] || continue
+        f="${DIR_CACHES}/$(fusao_arquivo "${v}")"; pol="$(fusao_politica "${v}")"
+        [[ -f "${f}" ]] || { echo "Erro: a fila tem fusao=${v} e ${f##*/} nao existe em ${DIR_CACHES} (DT-027 secao 5, item 1)" >&2; exit 4; }
+        [[ "$(tr -d '\r' < "${f}" | grep -c .)" -eq 1 ]] || { echo "Erro: ${f##*/} deve ter uma linha so (JSON compacto, como no cria-caches.sh)" >&2; exit 4; }
+        [[ "$(grep -o '"merge-policy":"[^"]*"' "${f}")" == "\"merge-policy\":\"${pol}\"" ]] \
+            || { echo "Erro: ${f##*/} sem \"merge-policy\":\"${pol}\" (fusao=${v}; DT-027 secao 1)" >&2; exit 4; }
+        FUSAO_INFO+="${FUSAO_INFO:+ }${v}=${f##*/} ${pol} $(sha256 "${f}" | cut -c1-12)"
+    done
+    f="${DIR_CACHES}/counters-async.json"
+    [[ "$(grep -o '"merge-policy":"[^"]*"' "${f}" 2>/dev/null)" == "\"merge-policy\":\"${POLITICA_PNN}\"" ]] \
+        || { echo "Erro: counters-async.json sem \"merge-policy\":\"${POLITICA_PNN}\" (fica a regra atual nos quatro bracos; DT-027 secao 5, item 1; TD-020 da A1)" >&2; exit 4; }
+}
+conferir_extensao() {  # DT-027 secao 5, item 2: o JAR da extensao nos tres nos ou em nenhum; obrigatorio com fusao=a1
+    [[ "${FATORIAL}" -eq 1 ]] || return 0
+    if [[ "${EXT_MONTAGENS}" -eq 0 ]]; then
+        [[ -z "${EXTENSAO_SHA}" ]] || { echo "Erro: --extensao-sha256 dado, mas o compose (${COMPOSE_ARQ}) nao monta o JAR da extensao em ${EXTENSAO_DESTINO}" >&2; exit 4; }
+        if [[ "${FUSOES}" == *" a1 "* ]]; then
+            echo "Erro: a fila tem fusao=a1 e o compose (${COMPOSE_ARQ}) nao monta o JAR da extensao em ${EXTENSAO_DESTINO} nos tres nos (DT-027 secao 5, item 2)" >&2; exit 4
+        fi
+        EXT_INFO="nao montado no compose"; return 0
+    fi
+    if [[ "${EXT_MONTAGENS}" -ne 3 || -z "${EXTENSAO_JAR}" ]]; then
+        echo "Erro: o JAR da extensao montado em ${EXT_MONTAGENS} servico(s) do compose, de:${EXT_FONTES% } (esperado os tres nos, da mesma fonte; DT-027 secao 5, item 2)" >&2; exit 4
+    fi
+    [[ -f "${EXTENSAO_JAR}" ]] || { echo "Erro: JAR da extensao ${EXTENSAO_JAR} ausente (mvn -f extensao-servidor/pom.xml package; o git archive nao leva target/)" >&2; exit 4; }
+    EXT_SHA_LIDO="$(sha256 "${EXTENSAO_JAR}")"
+    if [[ -n "${EXTENSAO_SHA}" ]]; then
+        [[ "${EXT_SHA_LIDO}" == "${EXTENSAO_SHA}" ]] || { echo "Erro: SHA-256 do JAR da extensao ${EXTENSAO_JAR} (${EXT_SHA_LIDO}) difere do --extensao-sha256" >&2; exit 4; }
+        EXT_INFO="${EXTENSAO_JAR} montado nos 3 nos (SHA-256 confere)"
+    else
+        EXT_INFO="${EXTENSAO_JAR} montado nos 3 nos (SHA-256 ${EXT_SHA_LIDO}; sem --extensao-sha256 no --dry-run)"
+    fi
+}
+
 ARQ_FILA="${MATRIZ}"
 [[ "${FASE}" != reposicoes ]] || ARQ_FILA="${SAIDA}/reposicoes/reposicoes.tsv"
 
@@ -486,6 +594,8 @@ if [[ "${DRY_RUN}" -eq 1 ]]; then
     conferir_esquema_f3
     conferir_controlador
     conferir_referencias
+    conferir_fusao_arquivos
+    conferir_extensao
     echo "DRY-RUN fase=${FASE} matriz=${MATRIZ} (SHA-256 confere) parametros=${PARAMS} ($(grep -c . <<< "$(printf '%s\n' "${!P[@]}")") numeros, todos com origem) controlador=${CTRL}"
     echo "DRY-RUN controlador conferido: $(tr '\t\n' '= ' <<< "${CTRL_INFO}" | sed 's/ *$//')"
     echo "DRY-RUN perfis da fase:${PERFIS% } (referencia de cada um conferida)"
@@ -494,6 +604,11 @@ if [[ "${DRY_RUN}" -eq 1 ]]; then
         echo "DRY-RUN carga S3: padrao do programa (nenhum s3_* no --parametros)"
     else
         echo "DRY-RUN carga S3: $(carga_s3_txt) (tipo e faixa conferidos)"
+    fi
+    if [[ "${FATORIAL}" -eq 1 ]]; then
+        echo "DRY-RUN fusao: ${FUSAO_INFO} (politica de cada arquivo conferida; counters-async ${POLITICA_PNN})"
+        echo "DRY-RUN fusao antes da varredura: fusao_teto_s=${P[fusao_teto_s]} s contados do end (--sweep-merge-timeout-sec)"
+        echo "DRY-RUN extensao: ${EXT_INFO}"
     fi
     imprimir_plano
     echo "DRY-RUN: nada executado (sem java, podman, sudo, tty)"
@@ -561,6 +676,8 @@ conferir_pareamento "${ARQ_FILA}"
 marcar_fila
 conferir_esquema_f3
 conferir_referencias
+conferir_fusao_arquivos
+conferir_extensao
 
 # ------------------------------------------------------------------ pre-voo 3: controlador, h4, bundle
 conferir_controlador
@@ -607,7 +724,8 @@ bundle_lista() {  # SHA-256 de tudo o que a fase usa; a retomada recusa se mudar
     for f in "${SELF}" "${CONFERIR}" "${H4S3}" "${SCRIPT_DIR}/campanha_s3_matriz.py" "${REPO_DIR}/analysis/h4.py" \
              "${CRIA_CACHES}" "${INJ_CRASH}" "${INJ_PART}" "${INJ_DEGR}" "${INJ_JITTER}" "${COLETOR}" "${COMPOSE_ARQ}" \
              "${REPO_DIR}/cluster/infinispan-sem-caches.xml" "${REPO_DIR}/cluster/jgroups-tcp.xml" \
-             "${DIR_CACHES}"/*.json "${JAR}" "${MATRIZ}" "${PARAMS}" "${CTRL}" "${refs[@]}"; do
+             "${DIR_CACHES}"/*.json "${JAR}" "${MATRIZ}" "${PARAMS}" "${CTRL}" "${refs[@]}" \
+             $([[ "${FATORIAL}" -eq 1 && -n "${EXT_SHA_LIDO}" ]] && printf '%s' "${EXTENSAO_JAR}"); do
         printf '%s  %s\n' "$(sha256 "${f}")" "${f##*/}"
     done
     # W-6c: as opcoes que mudam o protocolo (swap no portao, trilha completa) tambem
@@ -723,10 +841,10 @@ limpar() {
 }
 
 dirs_da_fase() {
-    local l i cel _m _f _p _b br _ct _s d
+    local l i cel _m _f _p _b br _ct _s _fu d
     DIRS_FASE=()
     for l in "${FILA[@]}"; do
-        read -r i cel _m _f _p _b br _ct _s <<< "${l}"
+        read -r i cel _m _f _p _b br _ct _s _fu <<< "${l}"
         d="$(dir_exec "${i}" "${cel}" "${br}")"
         if [[ -d "${d}" ]]; then DIRS_FASE+=("${d##*/}"); fi
         for d in "${d}".abortada-*; do if [[ -d "${d}" ]]; then DIRS_FASE+=("${d##*/}"); fi; done
@@ -766,8 +884,8 @@ md += ["| %s | %s | %s | %s |" % (e["dir"], e["veredito"], "; ".join(e["motivos"
                                   "; ".join(e["avisos"]).replace("|", "/") or "-") for e in ex]
 md += ["", "Contagem: " + ", ".join("%s=%d" % kv for kv in sorted(cont.items()))]
 (fase_dir / "resumo.md").write_bytes(("\n".join(md) + "\n").encode("utf-8"))
-# manifesto do comparar_bracos.py (cabecalho bloco/celula/braco/execucao): so blocos com os dois bracos ACEITA,
-# de todas as fases ja rodadas nesta saida
+# manifesto do comparar_bracos.py (cabecalho bloco/celula/braco/execucao): so blocos com todos os bracos ACEITA (A e B;
+# no fatorial 2x2 da DT-027, PO, PL, AO e AL, os rotulos do W-5e), de todas as fases ja rodadas nesta saida
 blocos = {}
 for c in sorted(saida.glob("exec-*/checagem.json")):
     if ".abortada-" in c.parent.name:
@@ -778,8 +896,9 @@ for c in sorted(saida.glob("exec-*/checagem.json")):
     blocos.setdefault((ch["celula"], str(ch["bloco"])), {})[ch["braco"]] = c.parent.name
 linhas = ["bloco\tcelula\tbraco\texecucao"]
 for (cel, b), par in sorted(blocos.items(), key=lambda kv: (kv[0][0], int(kv[0][1]))):
-    if set(par) == {"A", "B"}:
-        linhas += ["%s\t%s\t%s\t%s" % (b, cel, br, par[br]) for br in ("A", "B")]
+    for bracos in (("A", "B"), ("PO", "PL", "AO", "AL")):
+        if set(par) == set(bracos):
+            linhas += ["%s\t%s\t%s\t%s" % (b, cel, br, par[br]) for br in bracos]
 if len(linhas) > 1:
     (saida / "manifesto-bracos.tsv").write_bytes(("\n".join(linhas) + "\n").encode("utf-8"))
 PY
@@ -822,6 +941,10 @@ cmd_txt() { local rc=0 o=""; o="$("$@" 2>&1)" || rc=$?; printf '%s' "${o}"; [[ "
     echo "constantes: K1=${K1_JANELA_S}/${K1_PERIODO_S}/${K1_TIMEOUT_S}s volta=${VOLTA_TIMEOUT_S}s recriar=${RECRIAR_TIMEOUT_S}s ancora=${ANCORA_TIMEOUT_S}s dead-man=+${DEADMAN_MARGEM_S}s ${DEADMAN_PRECISAO} T_enc_pior=${T_ENC_PIOR_S}s netem_F3=+$(ms_para_s "${NETEM_EFETIVA_MS}")s do disparo"
     echo "opcoes: ${OPCOES_PROTOCOLO}"
     echo "carga_s3: $(carga_s3_txt)"
+    if [[ "${FATORIAL}" -eq 1 ]]; then
+        echo "fusao: ${FUSAO_INFO} (DT-027)"
+        echo "extensao: ${EXT_INFO}"
+    fi
     echo "swap usado no pre-voo: ${SWAP_PRE:-ilegivel} kB (${MEMINFO})"
     echo "h4: unit ${H4_UNIT}, amostras ${H4_AMOSTRAS}"
     echo '```'
@@ -968,7 +1091,7 @@ camada3() {  # camada3 <pre|pos>: rebalanceamento, disponibilidade e configuraca
                 CAM3_DIVERGE+="${CAM3_DIVERGE:+; }isn$((k + 1)) ${c} disponibilidade='${obtido}' (HTTP ${REST_COD})"
             fi
             rest GET "${u}/rest/v2/caches/${c}?action=config" "${TMPC}/c3"
-            esperado="{\"${c}\":$(tr -d '\r\n' < "${DIR_CACHES}/${c}.json")}"
+            esperado="{\"${c}\":$(tr -d '\r\n' < "${E_DIR_CACHES:-${DIR_CACHES}}/${c}.json")}"
             obtido="$(tr -d '\r\n' < "${TMPC}/c3" 2>/dev/null)"
             if [[ "${REST_COD}" != 200 || "${obtido}" != "${esperado}" ]]; then
                 CAM3_DIVERGE+="${CAM3_DIVERGE:+; }isn$((k + 1)) ${c} configuracao difere do JSON (HTTP ${REST_COD})"
@@ -999,8 +1122,16 @@ recriar_cluster() {  # recriar_cluster <dir>: down/up com o XML sem caches, 3 HE
     done
     rc=0
     CRIA_CACHES_SENHA="${PASSWORD_REAL}" bash "${CRIA_CACHES}" --url "${ADM[0]}" \
-        --conferir "${ADM[0]},${ADM[1]},${ADM[2]}" --usuario "${USERNAME}" --dir "${DIR_CACHES}" ${CACHES} \
+        --conferir "${ADM[0]},${ADM[1]},${ADM[2]}" --usuario "${USERNAME}" --dir "${E_DIR_CACHES:-${DIR_CACHES}}" ${CACHES} \
         > "${d}/caches.tsv" 2> "${d}/caches.err" || rc=$?
+    # DT-027: a criacao ou a leitura de volta do sessions-async (o cache da variante do braco) que falha descarta a
+    # execucao (a politica nao ficou), sem parar a fase; nos outros caches, como antes
+    if [[ "${rc}" -ne 0 && "${FATORIAL}" -eq 1 ]] && grep -qE "^(criacao|leitura de volta) de ${FUSAO_CACHE} " "${d}/caches.err" 2>/dev/null; then
+        E_FUSAO_FALHA="cria-caches.sh saiu com ${rc} no ${FUSAO_CACHE} do braco: $(head -c 300 "${d}/caches.err" | tr '\n' ' ')"
+        E_STARTED_PRE="$(started_at)"
+        log "exec i=${E_I}: ${E_FUSAO_FALHA}"
+        return 0
+    fi
     [[ "${rc}" -eq 0 ]] || finalizar 6 "infra: cria-caches.sh saiu com ${rc} antes de i=${E_I} ($(head -c 200 "${d}/caches.err"))"
     while IFS=$'\t' read -r _u nome m _url cod dur; do
         [[ "${m}" == POST && "${dur}" =~ ^[0-9]+\.[0-9]+$ ]] || continue
@@ -1014,8 +1145,9 @@ recriar_cluster() {  # recriar_cluster <dir>: down/up com o XML sem caches, 3 HE
 preparar_cluster() {  # preparar_cluster <dir> <passo>: recriacao, camada 3 antes e portao K1 (o caminho de toda execucao)
     local d="$1"
     gravar_progresso "${E_I}" "$2"
-    log "exec i=${E_I} ${E_CEL} braco=${E_BRACO} bloco=${E_BLOCO} seed=${E_SEED}: recriando o cluster"
+    log "exec i=${E_I} ${E_CEL} braco=${E_BRACO} bloco=${E_BLOCO} seed=${E_SEED}$([[ "${FATORIAL}" -eq 0 ]] || echo " fusao=${E_FUSAO}"): recriando o cluster"
     recriar_cluster "${d}"
+    [[ -z "${E_FUSAO_FALHA}" ]] || return 0   # DT-027: sem o sessions-async do braco, sem camada 3 nem K1
     if ! camada3 pre; then
         finalizar 6 "infra: camada 3 antes de i=${E_I}: ${CAM3_DIVERGE}"
     fi
@@ -1056,9 +1188,97 @@ portao_swap() {  # W-6c: swap usado no portao; com --swap-limite-kb e swap >= li
     E_SWAP_KB="${kb}"
 }
 
+# ------------------------------------------------------------------ DT-027: a politica do braco no cluster
+montar_caches_braco() {  # <dir>: os seis JSON da execucao em <dir>/caches, com o sessions-async da variante do braco
+    local d="$1" c
+    E_DIR_CACHES="${DIR_CACHES}"
+    [[ "${FATORIAL}" -eq 1 ]] || return 0
+    E_DIR_CACHES="${d}/caches"
+    mkdir -p "${E_DIR_CACHES}"
+    for c in ${CACHES}; do cp "${DIR_CACHES}/${c}.json" "${E_DIR_CACHES}/${c}.json"; done
+    cp "${DIR_CACHES}/$(fusao_arquivo "${E_FUSAO}")" "${E_DIR_CACHES}/${FUSAO_CACHE}.json"
+}
+politica_lida() {  # politica_lida <url> <cache>: o merge-policy do ?action=config, ou "-(HTTP <cod>)"
+    local v=""
+    rest GET "$1/rest/v2/caches/$2?action=config" "${TMPC}/fz"
+    if [[ "${REST_COD}" == 200 ]]; then v="$(grep -o '"merge-policy":"[^"]*"' "${TMPC}/fz" 2>/dev/null | head -1)"; fi
+    v="${v#\"merge-policy\":\"}"; v="${v%\"}"
+    printf '%s' "${v:--(HTTP ${REST_COD})}"
+}
+conferir_fusao_cluster() {  # DT-027 secao 5, itens 1 e 2: politica lida de volta e A1-POLITICA carregada nos tres nos
+    local d="$1" k n esperada lida cnt c rc pols="" cnts="" a1s="" falhas=()
+    esperada="$(fusao_politica "${E_FUSAO}")"
+    [[ -z "${E_FUSAO_FALHA}" ]] || falhas+=("${E_FUSAO_FALHA}")
+    for k in 0 1 2; do
+        n="isn$((k + 1))"
+        lida="$(politica_lida "${ADM[$k]}" "${FUSAO_CACHE}")"
+        cnt="$(politica_lida "${ADM[$k]}" counters-async)"
+        rc=0; c="$(${PODMAN} logs "${n}" 2>&1 | grep -cF -e "${A1_CARREGADA}")" || rc=$?
+        [[ "${c}" =~ ^[0-9]+$ ]] || c=""
+        pols+="${pols:+,}$(json_str "${lida}")"; cnts+="${cnts:+,}$(json_str "${cnt}")"; a1s+="${a1s:+,}${c:-null}"
+        [[ "${lida}" == "${esperada}" ]] || falhas+=("${FUSAO_CACHE} com merge-policy '${lida}' em ${n} (esperada ${esperada}, fusao=${E_FUSAO})")
+        [[ "${cnt}" == "${POLITICA_PNN}" ]] || falhas+=("counters-async com merge-policy '${cnt}' em ${n} (esperada ${POLITICA_PNN})")
+        if [[ -z "${c}" ]]; then
+            falhas+=("log de ${n} ilegivel (podman logs) para a linha '${A1_CARREGADA}'")
+        elif [[ "${E_FUSAO}" == a1 && "${c}" -lt 1 ]]; then
+            falhas+=("'${A1_CARREGADA}' ausente do log de ${n} (o braco a1 espera >= 1 linha em cada no)")
+        elif [[ "${E_FUSAO}" == pnn && "${c}" -gt 0 ]]; then
+            falhas+=("'${A1_CARREGADA}' em ${n} (${c} linha(s)) num braco pnn (esperado 0)")
+        fi
+    done
+    E_FUSAO_OK=true; [[ "${#falhas[@]}" -eq 0 ]] || E_FUSAO_OK=false
+    local mot=""; [[ "${E_FUSAO_OK}" == true ]] || mot="$(printf '%s; ' "${falhas[@]}")"; mot="${mot%; }"
+    E_FUSAO_CONFIG_JSON="{\"arquivo\":$(json_str "$(fusao_arquivo "${E_FUSAO}")"),\"arquivo_sha256\":$(json_str "$(sha256 "${DIR_CACHES}/$(fusao_arquivo "${E_FUSAO}")")"),\"politica_esperada\":$(json_str "${esperada}"),\"politica_lida\":[${pols}],\"counters_async_lida\":[${cnts}],\"a1_politica_carregada\":[${a1s}],\"cria_caches\":$(json_str_ou_null "${E_FUSAO_FALHA}"),\"ok\":${E_FUSAO_OK},\"motivo\":$(json_str_ou_null "${mot}")}"
+    if [[ "${E_FUSAO_OK}" == true ]]; then
+        log "exec i=${E_I}: fusao=${E_FUSAO}: ${FUSAO_CACHE} com ${esperada} nos tres nos; '${A1_CARREGADA}' por no: ${a1s}"
+    else
+        E_MOTIVOS+=("infra: fusao: ${mot} (DT-027 secao 5: a politica do braco nao ficou no cluster)")
+        log "exec i=${E_I}: fusao=${E_FUSAO}: a politica do braco nao ficou: ${mot}"
+    fi
+}
+descartar_sem_carga() {  # DT-027: DESCARTADA-INFRA sem carga; a fase segue (o cluster e recriado antes da proxima)
+    local d="$1"
+    montar_cmd "${E_MODO}" "${E_SEED}" "${d}/.scratch" "${E_CTL}" "${d}/marcadores.txt"
+    gravar_execucao "${d}"
+    gravar_checagem "${d}" DESCARTADA-INFRA
+    tirar_nul "${d}"
+    ( cd "${d}" && find . -type f ! -name MANIFEST.sha256 ! -name NUL -print0 | LC_ALL=C sort -z | xargs -0 sha256sum ) > "${d}/MANIFEST.sha256"
+    log "exec i=${E_I}: DESCARTADA-INFRA sem carga (${E_MOTIVOS[*]})"
+    gravar_progresso "" "entre-execucoes"
+}
+registrar_fusao() {  # DT-027 secoes 2.2 e 5.3, depois da carga: checagem do programa (t_fusao_ns) e vista ISPN000093
+    local d="$1" n rc out drv="" l
+    E_T_FUSAO=""; E_FUSAO_CHEC_JSON=""; E_FUSAO_VISTA_JSON=""
+    if [[ -f "${d}/fusao-rep-001.json" ]]; then
+        rc=0; out="$(py -c 'import json, sys
+j = json.load(open(sys.argv[1], encoding="utf-8"))
+t = j.get("t_vista_ns")
+print(json.dumps(j, ensure_ascii=True, separators=(",", ":")))
+print(t if j.get("fundiu") is True and isinstance(t, int) and not isinstance(t, bool) else "-")' "${d}/fusao-rep-001.json")" || rc=$?
+        if [[ "${rc}" -eq 0 ]]; then
+            E_FUSAO_CHEC_JSON="$(head -1 <<< "${out}")"; l="$(sed -n 2p <<< "${out}")"
+            [[ "${l}" == "-" ]] || E_T_FUSAO="${l}"
+        else
+            E_AVISOS+=("fusao-rep-001.json ilegivel: t_fusao_ns ausente (${out//$'\n'/ })")
+        fi
+    else
+        E_AVISOS+=("sem fusao-rep-001.json (a checagem de fusao do programa nao gravou): t_fusao_ns ausente")
+    fi
+    [[ -z "${E_T_FUSAO}" ]] || log "exec i=${E_I}: checagem de fusao do programa: t_fusao_ns=${E_T_FUSAO}"
+    : > "${d}/fusao-${LOG_FUSAO,,}.txt"
+    for n in ${NOS}; do
+        rc=0; ${PODMAN} logs "${n}" 2>&1 | grep -F -e "${LOG_FUSAO}" | sed "s/^/${n}\t/" >> "${d}/fusao-${LOG_FUSAO,,}.txt" || rc=$?
+    done
+    drv="$(podman_campo '{{.HostConfig.LogConfig.Type}}' isn1)" || drv=""
+    rc=0; out="$(py "${CONFERIR}" fusao-vista --logs "${d}/fusao-${LOG_FUSAO,,}.txt" --marcadores "${d}/marcadores.txt" \
+        ${drv:+--log-driver "${drv}"})" || rc=$?
+    if [[ "${rc}" -eq 0 ]]; then E_FUSAO_VISTA_JSON="${out}"; else E_AVISOS+=("fusao-vista saiu com ${rc}: ${out//$'\n'/ }"); fi
+}
+
 # ------------------------------------------------------------------ uma execucao
 gravar_execucao() {
     local d="$1" cmdj="" a
+    montar_json_fatorial
     for a in "${CMD_MASC[@]}"; do cmdj+="${cmdj:+,}$(json_str "${a}")"; done
     cat > "${d}/execucao.json" <<EOF
 {
@@ -1109,9 +1329,24 @@ gravar_execucao() {
  "swap_usado_kb_k1": $(json_ou_null "${E_SWAP_KB}"),
  "swap_portao": {"limite_kb": $(json_ou_null "${SWAP_LIMITE_KB}"), "leituras_kb": [${E_SWAP_LEIT}], "recriado": ${E_SWAP_RECRIADO}, "parada": $(json_str_ou_null "${E_SWAP_PARADA}"), "fonte": $(json_str "${MEMINFO}")},
  "trilha_incompleta": ${E_TRILHA_INC:-null},
- "trilha": ${E_TRILHA_JSON:-null}
+ "trilha": ${E_TRILHA_JSON:-null}${E_FAT_JSON}
 }
 EOF
+}
+
+montar_json_fatorial() {  # DT-027: campos do execucao.json da matriz fatorial (nomes combinados com o W-5e)
+    E_FAT_JSON=""
+    [[ "${FATORIAL}" -eq 1 ]] || return 0
+    E_FAT_JSON=",
+ \"fusao\": $(json_str "${E_FUSAO}"),
+ \"fusao_config\": ${E_FUSAO_CONFIG_JSON:-null},
+ \"fusao_teto_s\": $(json_ou_null "${P[fusao_teto_s]:-}"),
+ \"fusao_checagem\": ${E_FUSAO_CHEC_JSON:-null},
+ \"fusao_vista\": ${E_FUSAO_VISTA_JSON:-null},
+ \"extensao_sha256\": $(json_str_ou_null "${EXT_SHA_LIDO}")"
+    # sem fusao no teto da checagem do programa, t_fusao_ns fica ausente (o W-5e nao emite perda nem exposicao)
+    [[ -z "${E_T_FUSAO}" ]] || E_FAT_JSON+=",
+ \"t_fusao_ns\": ${E_T_FUSAO}"
 }
 
 fim_nominal_s() {  # N1 da V-W6b: inj_inicio_offset_s + f*_dur_s (o fim da falha pelo plano, nao pelo end do injetor)
@@ -1120,11 +1355,13 @@ fim_nominal_s() {  # N1 da V-W6b: inj_inicio_offset_s + f*_dur_s (o fim da falha
 }
 
 gravar_checagem() {  # gravar_checagem <dir> <veredito> : motivos em E_MOTIVOS, avisos em E_AVISOS
-    local d="$1" v="$2"
-    printf '{"i": %s, "fase": %s, "celula": %s, "bloco": %s, "braco": %s, "veredito": %s, "motivos": %s, "avisos": %s}\n' \
+    local d="$1" v="$2" fus=""
+    # DT-027: com a matriz fatorial, a variante da regra de fusao no fim (mesmo formato de linha unica)
+    [[ "${FATORIAL}" -eq 0 ]] || fus=", \"fusao\": $(json_str "${E_FUSAO}")"
+    printf '{"i": %s, "fase": %s, "celula": %s, "bloco": %s, "braco": %s, "veredito": %s, "motivos": %s, "avisos": %s%s}\n' \
         "${E_I}" "$(json_str "${FASE}")" "$(json_str "${E_CEL}")" "$(json_str "${E_BLOCO}")" "$(json_str "${E_BRACO}")" \
         "$(json_str "${v}")" "$(json_lista "${E_MOTIVOS[@]}")" \
-        "$(json_lista "${E_AVISOS[@]}")" > "${d}/checagem.json"
+        "$(json_lista "${E_AVISOS[@]}")" "${fus}" > "${d}/checagem.json"
 }
 
 instante_efetivo_f1() {  # como no runner: parada e reinicio do no do F1 pelo podman, relativos a ancora
@@ -1385,7 +1622,7 @@ conferir_meta() {  # conferir_meta <decisoes>: braco certo e, no B, que ele atua
     t0="$(agora_ms)"
     while :; do
         rc=0; out=""; leituras=$(( leituras + 1 ))
-        out="$(py "${CONFERIR}" meta --decisoes "$1" --braco "${E_BRACO}" --param-sha256 "${CTRL_SHA}" --exigir-p2-desabilitada)" || rc=$?
+        out="$(py "${CONFERIR}" meta --decisoes "$1" --braco "$([[ "${E_CTL}" == active ]] && echo B || echo A)" --param-sha256 "${CTRL_SHA}" --exigir-p2-desabilitada)" || rc=$?
         [[ "${rc}" -eq 4 && $(( $(agora_ms) - t0 )) -lt $(( META_PRAZO_S * 1000 )) ]] || break
         dormir "${META_PERIODO_S}"
     done
@@ -1576,6 +1813,7 @@ pos_execucao() {  # pos-checagem igual a pre: boot, StartedAt explicado, saude, 
     if grep -q '"convergencia_estado" : "sem_rodada_valida"' "${d}/convergencia-resumo-rep-001.json" 2>/dev/null; then
         E_AVISOS+=("convergencia sem rodada valida (convergencia_estado = sem_rodada_valida): Delta_conv e divergencia nao avaliaveis na analise")
     fi
+    [[ "${FATORIAL}" -eq 0 ]] || registrar_fusao "${d}"
     # o veredito DESCARTADA-INFRA olha o prefixo "infra"; sem ele um no religado pelo O8 terminava ACEITA (W-6b)
     for n in "${E_INFRAS[@]}"; do E_MOTIVOS+=("infra: ${n}"); done
 }
@@ -1621,8 +1859,8 @@ avaliar_h4() {  # C3 e DT-019 pelo campanha_s3_h4.py; parada h4 pela regra 4.3
     [[ "${rc}" -ne 30 ]] || { E_INFRA_STOP=10; E_PARADA_H4="$(grep '^PARADA H4' <<< "${out}" | head -1)"; }
 }
 
-rodar_execucao() {  # rodar_execucao "<i> <celula> <modo> <falha> <papel> <bloco> <braco> <controlador> <seed>"
-    read -r E_I E_CEL E_MODO E_FALHA E_PAPEL E_BLOCO E_BRACO E_CTL E_SEED <<< "$1"
+rodar_execucao() {  # rodar_execucao "<i> <celula> <modo> <falha> <papel> <bloco> <braco> <controlador> <seed> <fusao>"
+    read -r E_I E_CEL E_MODO E_FALHA E_PAPEL E_BLOCO E_BRACO E_CTL E_SEED E_FUSAO <<< "$1"
     local d scratch f outro
     d="$(dir_exec "${E_I}" "${E_CEL}" "${E_BRACO}")"; E_DIR="${d}"
     E_RECRIACAO_MS=""; E_STARTED_PRE=""; E_STARTED_POS=""; E_CAM3_PRE=""; E_CAM3_POS=""; E_LANC_MS=""; E_LANC_UTC=""
@@ -1632,6 +1870,8 @@ rodar_execucao() {  # rodar_execucao "<i> <celula> <modo> <falha> <papel> <bloco
     E_INJ_PARADO=""; E_RELIG_OUTROS=" "; PARADOS=""
     E_SWAP_KB=""; E_SWAP_LEIT=""; E_SWAP_RECRIADO=false; E_SWAP_PARADA=""; E_TRILHA_INC=""; E_TRILHA_JSON=""; E_INJ_SAIDA_MS=""
     F3_MARCA=""; PID_ALVO=""; NETEM_ESTADO=""; NETEM_AMOSTRA_MS=0
+    E_DIR_CACHES="${DIR_CACHES}"; E_FUSAO_FALHA=""; E_FUSAO_OK=""; E_FUSAO_CONFIG_JSON=""; E_FUSAO_CHEC_JSON=""
+    E_FUSAO_VISTA_JSON=""; E_T_FUSAO=""; E_FAT_JSON=""
     E_MOTIVOS=(); E_RECUSAS=(); E_AVISOS=(); E_INFRAS=()
     if [[ -d "${d}" ]]; then
         if [[ -f "${d}/checagem.json" ]]; then log "exec i=${E_I} ${E_CEL} ${E_BRACO}: ja checada; pulando"; return 0; fi
@@ -1646,9 +1886,10 @@ rodar_execucao() {  # rodar_execucao "<i> <celula> <modo> <falha> <papel> <bloco
             return 0
         fi
     fi
-    # bloco ja perdido: o outro braco nao e rodado (o bloco inteiro e refeito, plano de execucao 5.2)
+    # bloco ja perdido: os outros bracos nao sao rodados (o bloco inteiro e refeito, plano de execucao 5.2; DT-027)
     if [[ "${E_BLOCO}" != "-" ]]; then
-        for outro in "${SAIDA}"/exec-*-"${E_CEL}"-[AB]; do
+        for outro in "${SAIDA}"/exec-*-"${E_CEL}"-*; do
+            [[ "${outro##*/}" =~ ^exec-[0-9]{4}-${E_CEL}-(A|B|PO|PL|AO|AL)$ ]] || continue
             [[ -f "${outro}/checagem.json" && "${outro}" != "${d}" ]] || continue
             grep -q "\"bloco\": \"${E_BLOCO}\"" "${outro}/checagem.json" || continue
             if ! grep -q '"veredito": "ACEITA"' "${outro}/checagem.json"; then
@@ -1667,8 +1908,13 @@ rodar_execucao() {  # rodar_execucao "<i> <celula> <modo> <falha> <papel> <bloco
         GATE_REDE_DADO=1
     fi
     mkdir -p "${d}"
+    montar_caches_braco "${d}"
     preparar_cluster "${d}" "recriacao"
-    portao_swap "${d}"
+    [[ -n "${E_FUSAO_FALHA}" ]] || portao_swap "${d}"
+    if [[ "${FATORIAL}" -eq 1 ]]; then
+        conferir_fusao_cluster "${d}"
+        if [[ "${E_FUSAO_OK}" != true ]]; then descartar_sem_carga "${d}"; return 0; fi
+    fi
     scratch="${d}/.scratch"
     mkdir -p "${scratch}"
     montar_cmd "${E_MODO}" "${E_SEED}" "${scratch}" "${E_CTL}" "${d}/marcadores.txt"

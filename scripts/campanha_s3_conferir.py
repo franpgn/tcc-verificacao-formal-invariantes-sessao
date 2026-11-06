@@ -3,7 +3,7 @@
 So biblioteca padrao; roda com python3 -I. Cada subcomando imprime linhas "nome<TAB>valor" e sai com:
 0 ok; 2 uso ou arquivo invalido; 4 arquivo ausente ou ilegivel; 5 recusa (a execucao nao pode seguir).
 
-  parametros  --arquivo <campanha.json> --t-enc-pior-s N
+  parametros  --arquivo <campanha.json> --t-enc-pior-s N [--sonda-replay]
       Arquivo dos numeros da campanha, esquema "campanha-s3/1":
         {"esquema": "campanha-s3/1", "versao": "...",
          "parametros": {"<nome>": {"valor": <v>, "origem": "<texto nao vazio>"}, ...}}
@@ -28,8 +28,14 @@ So biblioteca padrao; roda com python3 -I. Cada subcomando imprime linhas "nome<
       [0, 1]); a coerencia s3_users + s3_limit_accounts > 0 e s3_back_max_sec >= s3_back_min_sec usa o padrao do
       programa para o campo ausente (20, 10, 3 s e 1 s). O orquestrador passa cada um como --<opcao> <valor>.
       Ausente, o programa usa o proprio padrao e a linha do jar e a de antes.
+      Sonda de replay (D-1 do roteiro da recalibracao, DT-026 secao 8): os campos de PARAMETROS_SONDA
+      (s3_replay_min_sec, s3_replay_max_sec, s3_replay_late_max, um por opcao --s3-replay-* com valor) sao
+      opcionais, na mesma forma e com a faixa de S3Parametros.validar (min > 0, max >= min com o padrao do programa
+      para o ausente, 1 s e 3 s; late_max inteiro >= 0), e so valem com --sonda-replay (o orquestrador o repassa
+      quando roda com a sonda). Sem ele, o campo presente e recusado (2): o programa so le os --s3-replay-* com
+      --s3-replay-probe, e o arquivo nao pode registrar um valor que nao valeu.
       Imprime "nome<TAB>valor" de cada parametro (os de carga presentes depois dos obrigatorios, na ordem de
-      PARAMETROS_CARGA).
+      PARAMETROS_CARGA, e os da sonda depois deles, na ordem de PARAMETROS_SONDA).
 
   controlador --arquivo <controlador-*.json> --hotrod-timeout-ms N [--exigir-politica] [--exigir-p2-desabilitada]
       Le o --controller-config. Com --exigir-politica (braco B na avaliacao), recusa (5) sem o bloco "politica"
@@ -136,6 +142,14 @@ PARAMETROS_CARGA = {
 }
 # padroes do programa (S3Parametros), so para a coerencia quando um dos dois campos falta
 PADROES_CARGA_PROGRAMA = {"s3_users": 20, "s3_limit_accounts": 10, "s3_back_min_sec": 1, "s3_back_max_sec": 3}
+# Sonda de replay do W-10 (D-1 do roteiro da recalibracao; DT-026 secao 8): opcionais, so com --sonda-replay, um por
+# opcao --s3-replay-* com valor de S3Parametros (o --s3-replay-probe, sem valor, e o --sonda-replay do orquestrador).
+PARAMETROS_SONDA = {
+    "s3_replay_min_sec": NUM_POS,
+    "s3_replay_max_sec": NUM_POS,
+    "s3_replay_late_max": INT_NAO_NEG_CARGA,
+}
+PADROES_SONDA_PROGRAMA = {"s3_replay_min_sec": 1, "s3_replay_max_sec": 3}
 ESQUEMA_DECISOES = "decisoes-controlador/1.2"
 ESQUEMA_REFERENCIA = "referencia-p99/1"   # controle/ArquivoReferencia.java (ESQUEMA)
 ATUADOR_NULO = "nulo"
@@ -169,7 +183,7 @@ def sha256(p):
     return hashlib.sha256(Path(p).read_bytes()).hexdigest()
 
 
-def conferir_parametros(obj, t_enc_pior_s):
+def conferir_parametros(obj, t_enc_pior_s, sonda_replay=False):
     """{nome: valor} ou ErroUso. t_enc_pior_s e a parcela do teto que vem do orquestrador (M1 da V-W6)."""
     if isinstance(t_enc_pior_s, bool) or not isinstance(t_enc_pior_s, int) or t_enc_pior_s < 0:
         raise ErroUso("--t-enc-pior-s deve ser inteiro >= 0: %r" % (t_enc_pior_s,))
@@ -186,7 +200,7 @@ def conferir_parametros(obj, t_enc_pior_s):
     if not isinstance(ps, dict):
         raise ErroUso("bloco parametros ausente")
     faltam = sorted(set(nomes) - set(ps))
-    sobram = sorted(set(ps) - set(nomes) - set(PARAMETROS_CARGA))
+    sobram = sorted(set(ps) - set(nomes) - set(PARAMETROS_CARGA) - set(PARAMETROS_SONDA))
     if faltam:
         raise ErroUso("parametros ausentes (obrigatorios, sem padrao): %s" % ", ".join(faltam))
     if sobram:
@@ -211,6 +225,7 @@ def conferir_parametros(obj, t_enc_pior_s):
                 raise ErroUso("%s deve ser isn1, isn2 ou isn3: %r" % (nome, x))
         v[nome] = x
     v.update(conferir_carga(ps))
+    v.update(conferir_sonda(ps, sonda_replay))
     for f in ("f1", "f2", "f3", "f4"):
         if f + "_dur_s" not in v:
             continue
@@ -228,10 +243,10 @@ def conferir_parametros(obj, t_enc_pior_s):
     return v
 
 
-def conferir_carga(ps):
-    """{nome: valor} dos campos de PARAMETROS_CARGA presentes em ps (na ordem da tabela) ou ErroUso."""
+def conferir_opcionais(ps, tabela):
+    """{nome: valor} dos campos de tabela presentes em ps (na ordem da tabela), com forma, origem, tipo e faixa."""
     v = {}
-    for nome, (tipo, minimo, exclusivo, maximo) in PARAMETROS_CARGA.items():
+    for nome, (tipo, minimo, exclusivo, maximo) in tabela.items():
         if nome not in ps:
             continue
         p = ps[nome]
@@ -255,6 +270,12 @@ def conferir_carga(ps):
                 faixa = "em [%s, %s]" % (minimo, maximo)
             raise ErroUso("%s deve ser %s %s (S3Parametros.validar): %r" % (nome, desc, faixa, x))
         v[nome] = x
+    return v
+
+
+def conferir_carga(ps):
+    """{nome: valor} dos campos de PARAMETROS_CARGA presentes em ps (na ordem da tabela) ou ErroUso."""
+    v = conferir_opcionais(ps, PARAMETROS_CARGA)
     ef = dict(PADROES_CARGA_PROGRAMA, **{k: x for k, x in v.items() if k in PADROES_CARGA_PROGRAMA})
     if ef["s3_users"] + ef["s3_limit_accounts"] <= 0:
         raise ErroUso("s3_users + s3_limit_accounts = 0 (S3 sem nenhuma identidade; o ausente vale o padrao do "
@@ -265,8 +286,23 @@ def conferir_carga(ps):
     return v
 
 
+def conferir_sonda(ps, sonda_replay):
+    """{nome: valor} dos campos de PARAMETROS_SONDA presentes em ps ou ErroUso; sem a sonda, presente e recusa."""
+    presentes = [k for k in PARAMETROS_SONDA if k in ps]
+    if presentes and not sonda_replay:
+        raise ErroUso("%s so vale com a sonda de replay (--sonda-replay do orquestrador): sem ela o programa nao le "
+                      "os --s3-replay-*, e o arquivo de parametros nao pode registrar um valor que nao valeu"
+                      % ", ".join(presentes))
+    v = conferir_opcionais(ps, PARAMETROS_SONDA)
+    ef = dict(PADROES_SONDA_PROGRAMA, **{k: x for k, x in v.items() if k in PADROES_SONDA_PROGRAMA})
+    if ef["s3_replay_max_sec"] < ef["s3_replay_min_sec"]:
+        raise ErroUso("s3_replay_max_sec (%s) < s3_replay_min_sec (%s) (o ausente vale o padrao do programa: 3 s e "
+                      "1 s)" % (ef["s3_replay_max_sec"], ef["s3_replay_min_sec"]))
+    return v
+
+
 def cmd_parametros(a):
-    v = conferir_parametros(ler_json(a.arquivo), a.t_enc_pior_s)
+    v = conferir_parametros(ler_json(a.arquivo), a.t_enc_pior_s, sonda_replay=a.sonda_replay)
     for nome, x in v.items():
         print("%s\t%s" % (nome, x))
 
@@ -430,6 +466,7 @@ def main(argv):
     p = sub.add_parser("parametros")
     p.add_argument("--arquivo", required=True)
     p.add_argument("--t-enc-pior-s", type=int, required=True)
+    p.add_argument("--sonda-replay", action="store_true")
     c = sub.add_parser("controlador")
     c.add_argument("--arquivo", required=True)
     c.add_argument("--hotrod-timeout-ms", type=int, required=True)

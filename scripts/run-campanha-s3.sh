@@ -73,6 +73,10 @@
 #   --s3-replay-*; campanha_s3_conferir.py, PARAMETROS_CARGA) vao a linha do jar como --s3-<...> <valor>, depois de
 #   --rejoin-timeout-sec e na ordem da tabela; o execucao.json traz "carga_s3" ({} sem nenhum) e o bundle uma linha
 #   carga_s3:. Sem nenhum s3_*, a linha do jar e a de antes (o programa usa os proprios padroes).
+# D-1 do roteiro da recalibracao (DT-026 secao 8): s3_replay_min_sec, s3_replay_max_sec e s3_replay_late_max
+#   (PARAMETROS_SONDA do conferidor) so valem com --sonda-replay: o orquestrador repassa a opcao ao conferidor, que
+#   recusa o campo presente sem ela. Com ela, vao a linha do jar como os s3_* da carga (--s3-replay-late-max 268 etc.,
+#   antes de --s3-replay-probe --sweep), ao carga_s3 do execucao.json e a linha carga_s3: do bundle.
 #   Acrescimos da V-W6b: o execucao.json de toda falha injetada traz o fim nominal (fim_nominal_desde_ancora_s =
 #   inj_inicio_offset_s + f*_dur_s) e a saida do injetor (injetor_saida_desde_ancora_s), porque o F4 do braco B sai no
 #   fim do ping quando o AC-5 para o alvo e o end adianta (N1); o B1 exige o marcador start da falha no no (F2, F3, F4)
@@ -306,13 +310,15 @@ CARGA_S3_JSON="{}"   # os mesmos, para o execucao.json
 ler_parametros() {
     local rc=0 out="" k v j=""
     # M1 da V-W6: o teto do processo cobre tambem o T_enc, que e constante daqui
-    out="$(py "${CONFERIR}" parametros --arquivo "${PARAMS}" --t-enc-pior-s "${T_ENC_PIOR_S}")" || rc=$?
+    # D-1: os s3_replay_* so passam no conferidor com a sonda ligada (sem ela, campo presente e recusa)
+    out="$(py "${CONFERIR}" parametros --arquivo "${PARAMS}" --t-enc-pior-s "${T_ENC_PIOR_S}" \
+        $([[ "${SONDA_REPLAY}" -eq 1 ]] && echo --sonda-replay))" || rc=$?
     if [[ "${rc}" -ne 0 ]]; then echo "Erro: parametros da campanha recusados: ${out}" >&2; exit 4; fi
     CARGA_S3=()
     while IFS=$'\t' read -r k v; do
         [[ -n "${k}" ]] || continue
         P[${k}]="${v}"
-        # o conferidor so deixa passar s3_* da tabela, com valor numerico conferido (tipo e faixa)
+        # o conferidor so deixa passar s3_* das tabelas (carga e, com --sonda-replay, sonda), com valor conferido
         if [[ "${k}" == s3_* ]]; then CARGA_S3+=("--${k//_/-}" "${v}"); j+="${j:+, }\"${k}\": ${v}"; fi
     done <<< "${out}"
     CARGA_S3_JSON="{${j}}"

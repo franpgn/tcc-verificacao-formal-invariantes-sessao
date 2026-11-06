@@ -39,6 +39,12 @@
 >   `fim`, o disparo do dublê sai fora de [49, 51) s (tempo comprimido) e `9cf777a` ainda não grava o `loggers.tsv`
 >   do P-64.
 > - Os quatro auxiliares passaram em `bash -n` ou `py_compile`; os blocos *bash* deste roteiro passaram em `bash -n`.
+> - **Conferência prévia na ponta `04aea52`** (merge das duas linhas em `feature/controlador-integracao`, antes da
+>   tag): as 18 primeiras linhas do `congelados-fat.sha256` conferem; as funções do 2.1 estão lá; a matriz sai com o
+>   mesmo `406a845c…`; o controlador gerado passa com `acao_p1 AC-7`; os parâmetros dão 31 números; e o `--dry-run`
+>   das duas fases sai com exit 0, com todas as linhas esperadas do 2.4, inclusive `DRY-RUN loggers: …=FATAL` e
+>   `acao_p1=AC-7`. Nessa ponta, o *compose* tem `48f357bf…`, o `loggers-avaliacao.tsv` `31e98854…` e o
+>   `ajusta-log.sh` `955339c7…`.
 
 ## Siglas
 

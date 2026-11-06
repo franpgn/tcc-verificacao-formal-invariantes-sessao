@@ -18,6 +18,14 @@
 > - **a ponta `ade376e` não passa o `--s3-replay-late-max`**: o `campanha_s3_conferir.py` recusa o campo
 >   `s3_replay_late_max` ("parametros desconhecidos"), e o `--sonda-replay` só acrescenta `--s3-replay-probe --sweep`.
 >   A DT-026 fixa 268 (P-3). Isso depende da tag (seção 9, D-1);
+>
+> **Atualização com a tag (`int/2026-11-06-bench` = `cc2b71c`, D-1 em `acd079d`).** O conferidor aceita
+> `s3_replay_min_sec`, `s3_replay_max_sec` e `s3_replay_late_max` só com `--sonda-replay` (o orquestrador repassa a
+> opção ao conferidor) e o orquestrador os põe na linha do programa, no `carga_s3` do `execucao.json` e no bundle.
+> Conferido no *host* com a árvore de `cc2b71c`: o arquivo do 2.2 (`1ca5877f…`) passa no `parametros --sonda-replay`
+> (25 números) e é recusado sem a opção; o `--dry-run` sai com exit 0 e a linha do programa termina em
+> `--s3-admin-mean-sec 5 --s3-replay-late-max 268 --s3-replay-probe --sweep`. Por isso o 2.2 e o 2.4 chamam o
+> conferidor com `--sonda-replay`.
 > - os quatro auxiliares passaram em `bash -n` ou `py_compile`, e o `rc-param.py` recusou regravar a saída.
 
 ## 0. O que muda em relação ao X-18
@@ -42,7 +50,7 @@
 | # | Item | Bloqueia |
 |---|---|---|
 | P-1 | Aviso do coordenador para executar; tag `int/2026-11-06-bench` fechada, com as suítes do integrador registradas | tudo |
-| P-2 | **A tag passa `--s3-replay-late-max 268` ao programa** pelo arquivo de parâmetros (campo `s3_replay_late_max`, com origem; DT-026 §8: "gravadas no `execucao.json` e no arquivo de parâmetros com origem"). O 2.2 confere | tudo |
+| P-2 | **A tag passa `--s3-replay-late-max 268` ao programa** pelo arquivo de parâmetros (campo `s3_replay_late_max`, com origem; DT-026 §8: "gravadas no `execucao.json` e no arquivo de parâmetros com origem"). O 2.2 confere. **Atendida em `cc2b71c`** | tudo |
 | P-3 | Nenhuma fase em curso na VM; *lock* livre; 0 *timers* `tcc-heal*`; 0 *units* `tcc-amostrador-*` (o piloto já fechou e recriou o *cluster* no desenho S3, roteiro do piloto §8.3) | 2.5 |
 | P-4 | *Host* em H0 há ≥ 5 min antes do GO, como no X-18 | GO |
 | P-5 | Disco da VM: livre ≥ 1,5 × 32 × 14 MiB = 672 MiB além do *bundle* | 2.5 |
@@ -53,9 +61,9 @@
 ### 2.1 Host: bundle da tag e auxiliares (H2; ~10 min)
 
 ```bash
-# host. Trocar SHA_DA_PONTA pelo SHA completo da tag int/2026-11-06-bench.
-T=SHA_DA_PONTA
-[[ "$T" =~ ^[0-9a-f]{40}$ ]] || echo "T invalido: trocar SHA_DA_PONTA"
+# host. T = a tag int/2026-11-06-bench (cc2b71c).
+T=cc2b71c50775765cc7b120433797de6173d5af17
+[ "$(git -C /c/Users/Francesco/Development/tcc/wt-ctrl-integ rev-parse 'int/2026-11-06-bench^{commit}')" = "$T" ] && echo "T e a tag"
 TCC=/c/Users/Francesco/Development/tcc
 for c in 494ccce 7c94cfb a97675f; do git -C $TCC/wt-ctrl-integ merge-base --is-ancestor $c "$T" && echo "T contem $c"; done   # W-6c, W-10, P-48
 S7=$(git -C $TCC/wt-ctrl-integ rev-parse --short=7 "$T"); echo "S7=$S7"
@@ -87,9 +95,9 @@ mkdir -p "$D/entrada"
 python -I "$D/aux/rc-param.py" --base "$PB" --saida "$D/entrada/campanha-s3-recalibracao.json" --late-max 268 \
   --late-max-origem "DT-026 (P-3): maior numero de logouts confirmados por execucao no piloto de 06/11, 267, mais 1"
 #   esperado: 1ca5877f3b2ea01982477fd45e52befb9a794a71d5bf7d39f025560942d7222b
-python -I "$TCC/wt-cs3-$S7/scripts/campanha_s3_conferir.py" parametros --arquivo "$D/entrada/campanha-s3-recalibracao.json" --t-enc-pior-s 21 | tail -8
+python -I "$TCC/wt-cs3-$S7/scripts/campanha_s3_conferir.py" parametros --arquivo "$D/entrada/campanha-s3-recalibracao.json" --t-enc-pior-s 21 --sonda-replay | tail -8
 #   esperado: os cinco s3_* e s3_replay_late_max 268 depois dos 19 numeros
-#   "Erro: parametros desconhecidos: s3_replay_late_max": a tag nao tem a P-2; PARAR e avisar o coordenador (secao 9, D-1)
+#   sem --sonda-replay o conferidor recusa o s3_replay_late_max (D-1 de cc2b71c): e o esperado
 cp /c/Users/Francesco/Development/tcc/dados-vm/cs3-2026-11/bundle-1f65a02/aux/referencia-S3-*-inerte.json "$D/entrada/"
 (cd "$D/entrada" && sha256sum * | sed 's/ \*/  /' > SHA256SUMS && cat SHA256SUMS)
 #   referencia-S3-async-inerte.json 05342de4..., referencia-S3-sync-inerte.json 30dee87f... (as do X-18)
@@ -165,7 +173,7 @@ python3 -I scripts/campanha_s3_matriz.py gerar --modo calibracao \
   --celulas "ASYNC-none:calibracao:5,ASYNC-F1:calibracao:5,ASYNC-F2:calibracao:5,SYNC-F2:calibracao:3,SYNC-none:calibracao:3,ASYNC-F4:calibracao:5" \
   --ordem-seed 20261106 --s0 700000 --passo-semente 100 --i0 0 --saida $MRC
 printf '%s  %s\n' $MRC_SHA $MRC | sha256sum -c                       # OK (3f20219d...)
-python3 -I scripts/campanha_s3_conferir.py parametros --arquivo $PRC --t-enc-pior-s 21 | grep -E '^(exec_teto_s|volume_exec_mb|s3_)'
+python3 -I scripts/campanha_s3_conferir.py parametros --arquivo $PRC --t-enc-pior-s 21 --sonda-replay | grep -E '^(exec_teto_s|volume_exec_mb|s3_)'
 bash scripts/run-campanha-s3.sh --dry-run --matriz $MRC --matriz-sha256 $MRC_SHA --fase calibracao \
   --parametros $PRC --parametros-sha256 $PRC_SHA --controlador $CTRL --controlador-sha256 $CTRL_SHA \
   --referencia-async $REF_A --referencia-async-sha256 $REF_A_SHA --referencia-sync $REF_S --referencia-sync-sha256 $REF_S_SHA \
@@ -425,7 +433,7 @@ derivação usa o `analysis/calibracao_s3.py` da tag (P-6).
 
 | Sintoma | O que fazer |
 |---|---|
-| 2.2: `parametros desconhecidos: s3_replay_late_max` | a tag não tem a P-2; parar e avisar o coordenador (D-1) |
+| 2.2: `parametros desconhecidos: s3_replay_late_max` ou `so vale com a sonda de replay` | ponta sem o D-1, ou conferidor chamado sem `--sonda-replay`; conferir o T e a chamada; com T = `cc2b71c` e a opção, não acontece |
 | 2.4 ou 4.4: linha do programa sem `--s3-replay-late-max 268`, sem `--sweep` ou sem a L+ | no 2.4, não lançar; no 4.4, `touch $SRC/PARAR` (a fase para antes da i = 1) e chamar o Senior. O supervisor não confere a linha |
 | exit 11 (`parada swap … depois da recriacao`, P-59; o supervisor grava `ALERTA-FIM-calibracao`) | não retomar; diagnóstico de memória à mão (`free -m`, `swapon --show`, 15 maiores `VmSwap`) em `~/rc-infra/memoria-exit11-<UTC>.txt`; chamar o Senior (DT-023) |
 | `varredura-rep-001.erro.txt` numa execução (leitura global com *cache* DEGRADED) | nada na hora; a execução segue e vai listada na entrega (DT-026 trata a varredura com erro na avaliação; na recalibração, o W-9 decide pela regra dele) |
@@ -441,8 +449,8 @@ derivação usa o `analysis/calibracao_s3.py` da tag (P-6).
 | D-3 | W-9 da tag com os `s3_*`/`s3_replay_late_max` no arquivo de parâmetros e o `ReplayValidate` fora das regras | só a derivação depois |
 | D-4 | o SHA do jar e do bundle | entram no 2.1 e na entrega |
 
-Se a tag passar o `--s3-replay-late-max` por outro caminho (uma opção do orquestrador em vez do campo), o 2.2 e o
-`ORC` do 2.3 mudam, e o Senior ajusta este anexo antes do GO.
+D-1 resolvido na tag `cc2b71c` (`acd079d`), pelo campo do arquivo de parâmetros, como este anexo previa; D-2 conferido
+por ancestralidade (W-6c `494ccce`, W-10 `7c94cfb`, P-48 `a97675f`).
 
 ## 10. Arquivos auxiliares
 
@@ -1008,7 +1016,7 @@ Nenhuma de código. Anexo em `docs/plano-implementacao-controlador`.
 4.4 (linha do programa e protocolo), 6.1 e 6.2.
 
 ### Pontos que precisam de validação do gestor
-D-1 (seção 9): sem a passagem do late-max pela tag, a recalibração não roda.
+D-1 (seção 9) resolvido na tag `cc2b71c`. Execução sob a autorização do Gestor ("continue executando e siga o plano").
 
 ### Próxima tarefa sugerida para o Worker
-Integrador: passar `s3_replay_late_max` do arquivo de parâmetros ao programa (D-1), com teste, antes da tag.
+W-9: derivação da recalibração sobre a entrega do 6.3 (D-3).

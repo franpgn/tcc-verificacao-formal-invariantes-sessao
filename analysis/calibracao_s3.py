@@ -129,10 +129,10 @@ LEITURAS = [
     _l("A-4", ["7.8"], "resolvida pelo %s, secoes 1 e 3" % C1,
        "m nao usa theta_out; theta_out e lag_out sao calculados depois de m"),
     _l("A-5", ["7.8"], "emendada pelo %s, secao 3" % C1,
-       "m = 1 + L, L = maior trecho maximo de janelas sem sinal alto (algumAlto do Controlador) que comeca em ou depois "
-       "do end e termina imediatamente numa janela alta, nas ASYNC F1, F2 e F4; trechos que chegam ao fim das janelas "
-       "nao contam; sem nenhum, m = 1; sem janela depois do end, nao derivado. Trecho maximo e tomado sobre todas as "
-       "janelas da execucao: o que comeca antes do end nao conta"),
+       "m = 1 + L, L = maior trecho de janelas sem sinal alto (algumAlto do Controlador) depois do end que termina "
+       "imediatamente numa janela alta, nas ASYNC F1, F2 e F4; trechos que chegam ao fim das janelas nao contam; sem "
+       "nenhum, m = 1; sem janela depois do end, nao derivado. O trecho que atravessa o end e cortado no end e conta so "
+       "a parte depois dele (R-3 da V-W9, ver emendas_vw9)"),
     _l("A-6", ["7.3", "7.8", "7.10", "7.14", "7.15"], "confirmada pelo %s, secao 5" % C1,
        "W, theta, k, m, lag_in, lag_out e kLag so de execucoes ASYNC; atraso maximo (7.3), 7.10, 7.14 e 7.15 de "
        "todas as aceitas, inclusive SYNC"),
@@ -178,6 +178,8 @@ EMENDAS_VW9 = [
      "leitura": "sinal de latencia (ou erro) sem nenhuma janela determinada nas ASYNC sem falha no W final: theta_in = "
                 "%s (acima de 1, inalcancavel) e theta_out = %s; m e T_cooldown derivam com eles"
                 % (THETA_SEM_COBERTURA, THETA_OUT_SEM_COBERTURA)},
+    {"id": "R-3", "regras": ["7.8", "C1 §3"], "situacao": "aprovada pelo coordenador (W-9b); complemento 3",
+     "leitura": "no m, o trecho sem alto que atravessa o end e cortado no end e conta so a parte depois dele"},
 ]
 
 
@@ -407,10 +409,11 @@ def m_reentrada(execucoes):
 
     execucoes: [(classes, inicio)], classes = "H" (algum sinal alto) ou outra letra (sem alto) para cada janela da
     execucao, sem as janelas puladas; inicio = indice da primeira janela com inicio em ou depois do end. L = maior
-    trecho maximo sem alto que comeca em ou depois de inicio e termina numa janela alta (o que chega ao fim nao
-    conta). Sem nenhuma janela depois do end: nao derivado.
+    trecho maximo sem alto, contado nas janelas depois do end, que termina numa janela alta (o que chega ao fim nao
+    conta). R-3 da V-W9: o trecho que atravessa o end e cortado no end e conta so a parte depois dele (como a 7.14 corta
+    o trecho saudavel no end). Sem nenhuma janela depois do end: nao derivado.
     """
-    maior, trechos, n = None, 0, 0
+    maior, trechos, n, cortados = None, 0, 0, 0
     for classes, inicio in execucoes:
         classes = list(classes)
         n += max(0, len(classes) - inicio)
@@ -422,17 +425,19 @@ def m_reentrada(execucoes):
             a = i
             while i < len(classes) and classes[i] != "H":
                 i += 1
-            if a >= inicio and i < len(classes):          # trecho maximo [a, i) seguido da alta em i
+            if i > inicio and i < len(classes):           # trecho [a, i) seguido da alta em i, com parte depois do end
+                c = max(a, inicio)
+                cortados += c > a
                 trechos += 1
-                maior = i - a if maior is None else max(maior, i - a)
+                maior = i - c if maior is None else max(maior, i - c)
     if n == 0:
-        return {"valor": None, "maior_trecho": None, "trechos_seguidos_de_alta": 0, "N": 0,
-                "motivo": "nenhuma execucao com janela depois do end nas celulas da regra: nao derivavel"}
+        return {"valor": None, "maior_trecho": None, "trechos_seguidos_de_alta": 0, "trechos_cortados_no_end": 0,
+                "N": 0, "motivo": "nenhuma execucao com janela depois do end nas celulas da regra: nao derivavel"}
     motivo = None
     if maior is None:
         motivo = "nenhum trecho sem alto depois do end terminou em janela alta (sem recaida): m = 1 + 0"
-    return {"valor": 1 + (maior or 0), "maior_trecho": maior or 0, "trechos_seguidos_de_alta": trechos, "N": n,
-            "motivo": motivo}
+    return {"valor": 1 + (maior or 0), "maior_trecho": maior or 0, "trechos_seguidos_de_alta": trechos,
+            "trechos_cortados_no_end": cortados, "N": n, "motivo": motivo}
 
 
 def resumo_lag(rodadas):
@@ -1325,7 +1330,8 @@ def derivar(campanha, parametros):
     fm = _de(usadas, CEL_M)
     seqs, nomes_seq = [], []
     if w_ns is None or any(v is None for v in lim.values()):
-        rm = {"valor": None, "maior_trecho": None, "trechos_seguidos_de_alta": None, "N": 0,
+        rm = {"valor": None, "maior_trecho": None, "trechos_seguidos_de_alta": None, "trechos_cortados_no_end": None,
+              "N": 0,
               "motivo": "depende de W, theta_lat_in, theta_err_in e lag_in (algum nao derivado)"}
     else:
         for e in fm:
@@ -1341,6 +1347,7 @@ def derivar(campanha, parametros):
         "7.8", m, "m = 1 + L, L = maior trecho maximo de janelas sem sinal alto que comeca em ou depois do end e "
         "termina numa janela alta, nas ASYNC F1, F2 e F4 (complemento 1 §3)", execs=fm, celulas=CEL_M,
         dados={"maior_trecho": rm["maior_trecho"], "trechos_seguidos_de_alta": rm["trechos_seguidos_de_alta"],
+               "trechos_cortados_no_end": rm.get("trechos_cortados_no_end"),
                "limiares_usados": {k: lim[k] for k in sorted(lim)},
                "sequencias": [{"dir": n, "classes": c, "inicio_depois_do_end": i, "janelas_puladas": p}
                               for (n, p), (c, i) in zip(nomes_seq, seqs)]},

@@ -371,6 +371,23 @@ def limiar_entrada(series, k):
             "motivo": None}
 
 
+def limiar_entrada_com_cobertura(series, k):
+    """7.7 com a R-2 (complemento 3 §2) e o complemento 3a §2: se ha janelas mas a 7.7 tem N = 0 (nenhuma posicao de
+    k janelas determinadas seguidas, inclusive sem nenhuma janela determinada), o sinal fica sem cobertura: theta_in =
+    THETA_SEM_COBERTURA. Sem nenhuma janela, nao deriva. Acrescenta sem_cobertura, janelas_determinadas,
+    n_janelas_total e fracao_determinada ao resultado de limiar_entrada.
+    """
+    n_tot = sum(len(x) for x in series)
+    n_det = sum(1 for x in series for t in x if t is not None)
+    r = dict(limiar_entrada(series, k))
+    sem = n_tot > 0 and r["N"] == 0
+    if sem:
+        r.update(valor=THETA_SEM_COBERTURA, ocorrencias=0, motivo=None)
+    r.update(sem_cobertura=sem, janelas_determinadas=n_det, n_janelas_total=n_tot,
+             fracao_determinada=None if n_tot == 0 else n_det / n_tot)
+    return r
+
+
 def _maior_trecho_na_banda(series, baixo, alto):
     maior = 0
     for s in series:
@@ -1293,24 +1310,21 @@ def derivar(campanha, parametros):
 
     lim, sem_cob = {}, {}
     for nome, campo in (("theta_lat_in", "taxa_lat"), ("theta_err_in", "taxa_err")):
-        ser = serie(sf, campo)
-        n_tot = sum(len(x) for x in ser)
-        n_det = sum(1 for x in ser for t in x if t is not None)
-        sem_cob[nome] = w_ns is not None and n_tot > 0 and n_det == 0      # R-2 da V-W9: cobertura nula
-        if sem_cob[nome]:
-            r = {"valor": THETA_SEM_COBERTURA, "maximo_dos_minimos": None, "N": 0, "ocorrencias": 0, "motivo": None}
-        elif w_ns is not None:
-            r = limiar_entrada(ser, K_NUCLEO)
+        if w_ns is not None:
+            r = limiar_entrada_com_cobertura(serie(sf, campo), K_NUCLEO)     # R-2 com o complemento 3a §2
         else:
-            r = {"valor": None, "maximo_dos_minimos": None, "N": 0, "ocorrencias": None, "motivo": sem_w}
+            r = {"valor": None, "maximo_dos_minimos": None, "N": 0, "ocorrencias": None, "motivo": sem_w,
+                 "sem_cobertura": False, "janelas_determinadas": 0, "n_janelas_total": 0, "fracao_determinada": None}
+        sem_cob[nome] = r["sem_cobertura"]
         lim[nome] = r["valor"]
         P[nome] = _entrada(
             "7.7", r["valor"], "menor valor tal que 'k janelas seguidas >= theta_in' tem zero ocorrencias nas janelas "
-            "das execucoes ASYNC sem falha (C-8); sem nenhuma janela determinada, o sinal fica sem cobertura e "
-            "theta_in = %s, acima de qualquer taxa (R-2 da V-W9)" % THETA_SEM_COBERTURA,
+            "das execucoes ASYNC sem falha (C-8); com N = 0 (nenhuma posicao de k janelas determinadas seguidas), o "
+            "sinal fica sem cobertura e theta_in = o menor double acima de 1 (complemento 3 §2 e 3a)",
             execs=sf, celulas=CEL_SEM_FALHA_ASYNC,
             dados={"maximo_dos_minimos": r["maximo_dos_minimos"], "ocorrencias": r["ocorrencias"], "k": K_NUCLEO,
-                   "n_janelas_total": n_tot, "janelas_determinadas": n_det, "sem_cobertura": sem_cob[nome]},
+                   "n_janelas_total": r["n_janelas_total"], "janelas_determinadas": r["janelas_determinadas"],
+                   "fracao_determinada": r["fracao_determinada"], "sem_cobertura": r["sem_cobertura"]},
             incerteza=incerteza_zero(r["N"], w_s), motivo=r["motivo"], leituras=["A-2", "A-7", "A-8"])
 
     # ---- 7.11 lag_in

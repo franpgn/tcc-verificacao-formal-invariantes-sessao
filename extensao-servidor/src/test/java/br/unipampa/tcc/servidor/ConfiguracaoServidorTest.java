@@ -88,25 +88,26 @@ class ConfiguracaoServidorTest {
     }
 
     @Test
-    @DisplayName("sessions-async.json: o parser da REST instancia a politica, com DENY_READ_WRITES")
+    @DisplayName("sessions-async-a1.json (variante A1, DT-027): o parser da REST instancia a politica, com DENY_READ_WRITES")
     void sessionsAsync() throws Exception {
-        Configuration c = comoARest(json("sessions-async"));
+        Configuration c = comoARest(json("sessions-async-a1"));
         assertTrue(c.clustering().partitionHandling().mergePolicy() instanceof PoliticaFusaoSessoes,
                 String.valueOf(c.clustering().partitionHandling().mergePolicy()));
         assertEquals(PartitionHandling.DENY_READ_WRITES, c.clustering().partitionHandling().whenSplit());
     }
 
     @Test
-    @DisplayName("sessions-async.json: a leitura de volta (?action=config) e o arquivo com o nome, byte a byte")
+    @DisplayName("sessions-async-a1.json criado como sessions-async: a leitura de volta e o arquivo com o nome, byte a byte")
     void leituraDeVoltaIgual() throws Exception {
-        String arquivo = json("sessions-async");
+        // a variante cria o mesmo cache (sessions-async); so o arquivo muda
+        String arquivo = json("sessions-async-a1");
         assertEquals("{\"sessions-async\":" + arquivo + "}", leituraDeVolta("sessions-async", comoARest(arquivo)));
     }
 
     @Test
-    @DisplayName("counters-async e canario-async continuam com PREFERRED_NON_NULL (desbloquear/resetar; sonda de defasagem)")
+    @DisplayName("os seis JSON do orquestrador ficam com PREFERRED_NON_NULL; a politica so na variante sessions-async-a1")
     void outrosCachesSemAPolitica() throws Exception {
-        for (String nome : List.of("counters-async", "canario-async", "sessions", "counters", "canario")) {
+        for (String nome : List.of("sessions-async", "counters-async", "canario-async", "sessions", "counters", "canario")) {
             Configuration c = comoARest(json(nome));
             assertSame(MergePolicy.PREFERRED_NON_NULL, c.clustering().partitionHandling().mergePolicy(), nome);
             assertTrue(!json(nome).contains(CLASSE), nome);

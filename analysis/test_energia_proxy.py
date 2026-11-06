@@ -225,6 +225,19 @@ class EdUteis(Base):
         self.assertAlmostEqual(10 / 30, rt["falhas_por_util"])
 
 
+class EdbInstrumentacao(Base):
+    """W-10: o ReplayValidate da sonda de replay do S3 nao entra nos eventos lidos (nem em t0/t1)."""
+
+    def test_replay_validate_fora_dos_eventos(self):
+        ev = [("Validate", "VALID", T0 + i, T0 + i + 10) for i in range(5)]
+        ev += [("ReplayValidate", "ERROR_TRANSPORT", T0 + 100 * S, T0 + 104 * S)]
+        escrever_eventos(self.d, 1, ev)
+        lidos = ep.ler_eventos_inicio(self.d / "rep-001.csv")
+        self.assertEqual(5, len(lidos))
+        self.assertTrue(all(op == "Validate" for _, _, op, _ in lidos))
+        self.assertEqual(T0 + 14, max(b for _, b, _, _ in lidos))
+
+
 class EeModelo(Base):
 
     def test_energia_fase_a_mao(self):

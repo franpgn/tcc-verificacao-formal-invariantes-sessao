@@ -1238,13 +1238,25 @@ def derivar(campanha, parametros):
                      "(latencia indeterminada)" % (w_s, w_formula, 100 * frac if frac is not None else float("nan"),
                                                    N_LAT))}
 
+    # R-4 (complemento 3 §4): com W final abaixo do periodo da sonda na calibracao (5 s), as janelas sem rodada sao
+    # puladas e persistencia e trechos ficam contados em rodadas de 5 s: kLag, m e o trecho do lag_out subestimados
+    per_cal = max((e.obs["meta"]["parametros_defasagem"]["periodo_ns"] for e in usadas), default=None)
+    subest = None
+    if w_ns is not None and per_cal is not None and w_ns < per_cal:
+        fator = Fraction(per_cal, w_ns)
+        subest = {"fator": float(fator), "W_s": w_s, "periodo_sonda_calibracao_s": per_cal / S,
+                  "caso": "reserva" if reserva else "7.3", "afeta": ["kLag", "m", "lag_out"],
+                  "declaracao": "W final = %d s < %s s (periodo da sonda na calibracao): com as janelas sem rodada "
+                                "puladas, persistencia e trechos ficam contados em rodadas de %s s, o que subestima "
+                                "kLag, m e o trecho do lag_out em cerca de %.3g vezes (complemento 3 §4, R-4)"
+                                % (w_s, per_cal / S, per_cal / S, float(fator))}
     P["W_s"] = _entrada(
         "7.3", w_s, "W = max(ceil(n_lat/lambda5), W_min), W_min = floor(tetoLag + atraso_max) + 1 (complemento 1 "
         "§4.2), com a reserva de W do §4.3", execs=usadas, celulas=sorted({e.celula for e in usadas}), unidade="s",
         dados={"w_formula_s": w_formula, "termo_vazao_s": cw["termo_vazao_s"], "w_min_s": cw["w_min_s"],
                "reserva_aplicada": reserva, "atraso_max_ns": atraso_max,
                "atraso_max_execucao": max(atrasos)[1] if atrasos else None, "rodadas": len(atrasos),
-               "teto_lag_ms": teto_ms, "n_lat": N_LAT,
+               "teto_lag_ms": teto_ms, "n_lat": N_LAT, "subestimacao_w_menor_que_5_s": subest,
                "aceito_pelo_codigo": None if w_s is None else
                (teto_ms * MS < w_ns and (atraso_max or 0) <= w_ns - teto_ms * MS)},
         incerteza={"lambda5_N": len(lambdas), "rodadas_defasagem": len(atrasos)}, motivo=cw["motivo"],

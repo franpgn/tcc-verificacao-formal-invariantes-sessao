@@ -1,0 +1,29 @@
+TLC2 Version 2.19 of 08 August 2024 (rev: 5a47802)
+Running breadth-first search Model-Checking with fp 92 and seed -8324358059779814920 with 4 workers on 20 cores with 2731MB heap and 64MB offheap memory [pid: 28424] (Windows 11 10.0 amd64, Oracle Corporation 17.0.2 x86_64, MSBDiskFPSet, DiskStateQueue).
+Parsing file C:\Users\Francesco\Development\tcc\wt-tla-join\spec\states\join\snap-58ecd38\MCSessionJoin.tla
+Parsing file C:\Users\Francesco\Development\tcc\wt-tla-join\spec\states\join\snap-58ecd38\MCSession.tla
+Parsing file C:\Users\Francesco\Development\tcc\wt-tla-join\spec\states\join\snap-58ecd38\SessionStore.tla
+Parsing file C:\Users\Francesco\Development\tcc\wt-tla-join\spec\states\join\jtmp\jr-particao-r2c2r3-I1F\TLC.tla
+Parsing file C:\Users\Francesco\Development\tcc\wt-tla-join\spec\states\join\jtmp\jr-particao-r2c2r3-I1F\Naturals.tla
+Parsing file C:\Users\Francesco\Development\tcc\wt-tla-join\spec\states\join\jtmp\jr-particao-r2c2r3-I1F\Sequences.tla
+Parsing file C:\Users\Francesco\Development\tcc\wt-tla-join\spec\states\join\jtmp\jr-particao-r2c2r3-I1F\FiniteSets.tla
+Semantic processing of module Naturals
+Semantic processing of module Sequences
+Semantic processing of module FiniteSets
+Semantic processing of module SessionStore
+Semantic processing of module TLC
+Semantic processing of module MCSession
+Semantic processing of module MCSessionJoin
+Starting... (2026-11-06 13:53:14)
+Computing initial states...
+Finished computing initial states: 1 distinct state generated at 2026-11-06 13:53:15.
+Progress(13) at 2026-11-06 13:53:18: 1,256,342 states generated (1,256,342 s/min), 79,034 distinct states found (79,034 ds/min), 2,913 states left on queue.
+Model checking completed. No error has been found.
+  Estimates of the probability that TLC did not check all reachable states
+  because two distinct states had the same fingerprint:
+  calculated (optimistic):  val = 5.3E-9
+  based on the actual fingerprints:  val = 6.7E-11
+1308515 states generated, 79224 distinct states found, 0 states left on queue.
+The depth of the complete state graph search is 13.
+The average outdegree of the complete state graph is 1 (minimum is 0, the maximum 11 and the 95th percentile is 3).
+Finished in 04s at (2026-11-06 13:53:18)

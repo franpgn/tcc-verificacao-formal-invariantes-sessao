@@ -1,0 +1,6 @@
+c1-particao-r3-I1F	58ecd38	MCSession	SpecSemeada	r3	SoParticao	3/5/2	I1F	-	S	1	VIOLADA	traco_de_4_estados	468	162	146	Initial,Logout,Particionar,Mesclar	2s
+c1-particao-r3-I1M	58ecd38	MCSession	SpecSemeada	r3	SoParticao	3/5/2	I1M	-	S	1	VIOLADA	traco_de_4_estados	468	162	146	Initial,Logout,Particionar,Mesclar	3s
+c1-particao-r3-I4M	58ecd38	MCSession	SpecSemeada	r3	SoParticao	3/5/2	I4M	-	S	1	VIOLADA	traco_de_4_estados	468	162	146	Initial,Logout,Particionar,Mesclar	2s
+c1-particao-r3-I4Mp	58ecd38	MCSession	SpecSemeada	r3	SoParticao	3/5/2	I4Mp	-	S	1	VIOLADA	traco_de_5_estados	4562	1422	1273	Initial,Logout,Block,Particionar,Mesclar	2s
+c1-particao-r3-I2Fa	58ecd38	MCSession	SpecSemeada	r3	SoParticao	3/5/2	I2Fa	-	S	1	VIOLADA	traco_de_4_estados	1096	363	325	Initial,Block,Particionar,Mesclar	2s
+c1-livre-particao-r3-MesclarPerdeChave	58ecd38	MCSession	Spec	r3	SoParticao	3/5/2	MesclarPerdeChave	-	S	1	VIOLADA	traco_de_4_estados	531	185	168	Initial,Login,Particionar,Mesclar	2s

@@ -266,6 +266,7 @@ class LigacaoControladorTest {
         assertEquals("fim", obs.get(obs.size() - 1).get("tipo").asText());
         // P1-IC (G-4): contador do desconto do no sob o AC-7; em shadow nunca desconta
         assertEquals(0, obs.get(obs.size() - 1).get("eventos_descontados_sob_acao").asLong());
+        assertTrue(obs.get(obs.size() - 1).get("guarda_ac7_desfazeres").isNull(), "sem guarda continua em shadow");
         long fimAnterior = -1;
         for (JsonNode n : dec) {
             if ("decisao".equals(n.get("tipo").asText())) {

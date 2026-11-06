@@ -38,7 +38,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  */
 class ArquiteturaAtuadorTest {
 
-    static final List<String> ADAPTADORES = List.of("AtuadorRestInfinispan", "ClienteAdminRest", "AtuadorIgnorarCache");
+    static final List<String> ADAPTADORES = List.of("AtuadorRestInfinispan", "ClienteAdminRest", "AtuadorIgnorarCache",
+            "GuardaContinuaIgnorados");
 
     static final Pattern PROIBIDO_ADAPTADOR = Pattern.compile(
             "org\\.infinispan\\.client\\.hotrod|\\bRemoteCache\\w*\\b|\\bS3Clientes\\b|\\bProcessBuilder\\b"

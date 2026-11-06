@@ -14,6 +14,8 @@
   f3_distribuicao, f3_dur_s), cada um com origem; o /1 continua valido (calibracao sem F3). Trilha completa: linha
   fim presente e linhas_perdidas = 0 (contrato JSONL 1.2, linha fim de decisoes); o orquestrador marca
   trilha_incompleta e, com --exigir-trilha-completa, descarta como infraestrutura (B-7 do B-40).
+- Carga S3 parametrizada (06/11): os campos s3_* opcionais nos dois esquemas, um por opcao --s3-* do programa, com
+  origem, tipo e faixa de S3Parametros.validar; ausentes, a saida e a de antes.
 
 Uso: python -I scripts/test_campanha_s3_conferir.py
 """
@@ -549,6 +551,112 @@ class TrilhaCompleta(unittest.TestCase):
             rc, o, _ = self.saida(trilha(d, acao("AC-5", "APLICADA", "127.0.0.1:11224"), perdidas=2), "-")
             self.assertEqual(5, rc)
             self.assertEqual("sim", o["trilha_incompleta"])
+
+
+class ParametrosCargaS3(unittest.TestCase):
+    """Carga S3 parametrizada: os campos s3_* sao opcionais em campanha-s3/1 e /2, um por opcao --s3-* do programa
+    (nome = opcao sem "--", com "_" no lugar de "-"), cada um com origem e com o tipo e a faixa de
+    S3Parametros.validar. Ausentes, a saida e a de antes."""
+
+    CARGA = {"s3_users": 30, "s3_think_ms": 500, "s3_session_median_sec": 8.5, "s3_logout_prob": 0.9,
+             "s3_admin_mean_sec": 15}
+
+    def conferir(self, obj):
+        with tempfile.TemporaryDirectory() as d:
+            return rodar("parametros", *EXTRA, "--arquivo", str(escrever(d, "p.json", obj)))
+
+    @staticmethod
+    def com(obj, **carga):
+        obj["parametros"].update({k: {"valor": x, "origem": "teste"} for k, x in carga.items()})
+        return obj
+
+    def test_ausentes_saida_sem_s3(self):
+        for obj in (parametros_validos(), parametros_v2()):
+            with self.subTest(esquema=obj["esquema"]):
+                rc, out, err = self.conferir(obj)
+                self.assertEqual(0, rc, err)
+                self.assertFalse([l for l in out.split("\n") if l.startswith("s3_")], out)
+
+    def test_presentes_impressos_nos_dois_esquemas(self):
+        for obj in (parametros_validos(), parametros_v2()):
+            with self.subTest(esquema=obj["esquema"]):
+                rc, out, err = self.conferir(self.com(obj, **self.CARGA))
+                self.assertEqual(0, rc, err)
+                linhas = out.strip().split("\n")
+                d = dict(l.split("\t") for l in linhas)
+                self.assertEqual({"s3_users": "30", "s3_think_ms": "500", "s3_session_median_sec": "8.5",
+                                  "s3_logout_prob": "0.9", "s3_admin_mean_sec": "15"},
+                                 {k: v for k, v in d.items() if k.startswith("s3_")})
+                # depois dos obrigatorios, na ordem de PARAMETROS_CARGA
+                s3 = [l.split("\t")[0] for l in linhas if l.startswith("s3_")]
+                self.assertEqual([k for k in cc.PARAMETROS_CARGA if k in self.CARGA], s3)
+                self.assertTrue(all(not l.startswith("s3_") for l in linhas[:len(linhas) - len(s3)]))
+
+    def test_um_campo_por_opcao_s3_do_programa(self):
+        fonte = (AQUI.parent / "workload" / "src" / "main" / "java" / "br" / "unipampa" / "tcc" / "session"
+                 / "S3Parametros.java").read_text(encoding="utf-8")
+        import re
+        opcoes = re.findall(r'names = "--(s3-[a-z-]+)"', fonte)
+        esperado = {o.replace("-", "_") for o in opcoes if not o.startswith("s3-replay-")}
+        self.assertEqual(esperado, set(cc.PARAMETROS_CARGA))
+        self.assertEqual(22, len(cc.PARAMETROS_CARGA))
+        for k in ("s3_users", "s3_think_ms", "s3_session_median_sec", "s3_logout_prob", "s3_admin_mean_sec"):
+            self.assertIn(k, cc.PARAMETROS_CARGA)
+
+    def test_limites_aceitos(self):
+        casos = [{"s3_logout_prob": 0}, {"s3_logout_prob": 1}, {"s3_logout_prob": 1.0}, {"s3_session_sigma": 0},
+                 {"s3_users": 0}, {"s3_limit_accounts": 0}, {"s3_back_window_sec": 0}, {"s3_app_retries": 0},
+                 {"s3_backoff_ms": 0}, {"s3_think_ms": 0.001}, {"s3_back_min_sec": 2, "s3_back_max_sec": 2},
+                 {"s3_l_reset_prob": 0.5}, {"s3_admin_block_retries": 3}, {"s3_think_ms": 1000}]
+        for c in casos:
+            with self.subTest(c=c):
+                rc, _, err = self.conferir(self.com(parametros_validos(), **c))
+                self.assertEqual(0, rc, err)
+
+    def test_tipo_e_faixa_recusados(self):
+        casos = [("s3_users", -1), ("s3_users", 30.0), ("s3_users", "30"), ("s3_users", True), ("s3_users", None),
+                 ("s3_limit_accounts", -1), ("s3_think_ms", 0), ("s3_think_ms", -5), ("s3_think_ms", "x"),
+                 ("s3_think_ms", False), ("s3_think_ms", float("nan")), ("s3_think_ms", float("inf")),
+                 ("s3_session_median_sec", 0), ("s3_session_sigma", -0.1), ("s3_logout_prob", 1.5),
+                 ("s3_logout_prob", -0.1), ("s3_l_reset_prob", 2), ("s3_admin_mean_sec", 0),
+                 ("s3_back_window_sec", -1), ("s3_app_retries", 1.5), ("s3_app_retries", -1),
+                 ("s3_backoff_ms", -1), ("s3_l_spacing_ms", 0), ("s3_admin_hold_min_sec", -1),
+                 ("s3_idle_timeout_sec", 0), ("s3_visit_pause_sec", 0)]
+        for nome, x in casos:
+            with self.subTest(nome=nome, valor=x):
+                rc, _, err = self.conferir(self.com(parametros_validos(), **{nome: x}))
+                self.assertEqual(2, rc, "%s=%r aceito" % (nome, x))
+                self.assertIn(nome, err)
+
+    def test_coerencia_com_os_padroes_do_programa(self):
+        casos = [({"s3_users": 0, "s3_limit_accounts": 0}, "s3_users"),
+                 ({"s3_back_min_sec": 4}, "s3_back_max_sec"),     # maximo padrao do programa: 3 s
+                 ({"s3_back_max_sec": 0.5}, "s3_back_max_sec"),   # minimo padrao do programa: 1 s
+                 ({"s3_back_min_sec": 3, "s3_back_max_sec": 2}, "s3_back_max_sec")]
+        for c, termo in casos:
+            with self.subTest(c=c):
+                rc, _, err = self.conferir(self.com(parametros_validos(), **c))
+                self.assertEqual(2, rc)
+                self.assertIn(termo, err)
+        rc, _, err = self.conferir(self.com(parametros_validos(), s3_back_min_sec=4, s3_back_max_sec=5))
+        self.assertEqual(0, rc, err)
+
+    def test_sem_origem_e_desconhecido(self):
+        obj = self.com(parametros_validos(), s3_users=30)
+        obj["parametros"]["s3_users"]["origem"] = " "
+        rc, _, err = self.conferir(obj)
+        self.assertEqual(2, rc)
+        self.assertIn("s3_users", err)
+        for nome in ("s3_replay_min_sec", "s3_foo", "s3_client_mode"):
+            with self.subTest(nome=nome):
+                rc, _, err = self.conferir(self.com(parametros_validos(), **{nome: 1}))
+                self.assertEqual(2, rc)
+                self.assertIn("desconhecidos", err)
+
+    def test_funcao_devolve_os_valores(self):
+        v = cc.conferir_parametros(self.com(parametros_v2(), **self.CARGA), 21)
+        self.assertEqual(30, v["s3_users"])
+        self.assertEqual(0.9, v["s3_logout_prob"])
 
 
 if __name__ == "__main__":

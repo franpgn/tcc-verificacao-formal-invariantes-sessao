@@ -1,0 +1,38 @@
+== S31: carga S3 parametrizada: os s3_* do --parametros viram --s3-* na linha do jar; ausentes, a linha e a de antes ==
+PASS: S31 sem s3_*: dry-run exit 0
+PASS: S31 sem s3_*: a linha do jar termina como antes (--rejoin-timeout-sec 30)
+PASS: S31 sem s3_*: nenhuma opcao --s3-
+PASS: S31 sem s3_*: dry-run diz que a carga e a padrao do programa
+PASS: S31 com s3_*: dry-run exit 0
+PASS: S31 com s3_*: linha do jar = a de antes + as opcoes, na ordem da tabela
+PASS: S31 com s3_*: dry-run mostra a carga
+PASS: S31 com s3_* e --sonda-replay: carga antes da sonda
+PASS: S31 s3_logout_prob=1.5: dry-run recusa (exit 4)
+PASS: S31 s3_logout_prob=1.5: motivo com o nome
+PASS: S31 s3_users=-1: dry-run recusa (exit 4)
+PASS: S31 s3_users=-1: motivo com o nome
+PASS: S31 s3_think_ms=0: dry-run recusa (exit 4)
+PASS: S31 s3_think_ms=0: motivo com o nome
+PASS: S31 s3_users=2.5: dry-run recusa (exit 4)
+PASS: S31 s3_users=2.5: motivo com o nome
+PASS: S31 s3_foo=1: dry-run recusa (exit 4)
+PASS: S31 s3_foo=1: motivo com o nome
+PASS: S31 execucao com s3_*: exit 0, ACEITA
+PASS: S31 a carga e o pre-voo recebem as opcoes
+PASS: S31 execucao.json: carga_s3
+PASS: S31 execucao.json: comando com as opcoes
+PASS: S31 bundle com a carga
+PASS: S31 ambiente.md com os parametros de carga
+PASS: S31 retomada com outra carga (bundle mudou) -> exit 4
+PASS: S31 motivo bundle
+-- S31b: execucao sem s3_*: carga_s3 vazio, linha do jar sem --s3-, bundle com carga_s3:-
+PASS: S31b exit 0, ACEITA
+PASS: S31b execucao.json: carga_s3 vazio
+PASS: S31b nenhuma linha do jar com --s3-
+PASS: S31b bundle com carga_s3:-
+
+==== RESULTADO: 30 PASS, 0 FAIL ====
+
+real	2m33.901s
+user	0m42.637s
+sys	1m31.419s

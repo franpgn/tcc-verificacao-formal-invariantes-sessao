@@ -1359,3 +1359,36 @@ cobertura = 2,0, sem cobertura só com zero janela determinada, R-4 nunca declar
 parâmetros que sem eles, fora o SHA-256 dos CSV na referência e o volume. A derivação oficial da calibração
 (`derivacao-20261106T050404Z`) refeita com este código dá os mesmos parâmetros e valores do B-40 parte 2; as
 referências mudam só no `gerado_por`, porque o SHA-256 do `referencia_p99.py` mudou com o filtro.
+
+## Carga S3 parametrizada no orquestrador (2026-11-06)
+
+Na integração (06/11, depois do W-9), o TD-017 desta branch virou TD-018 (o W-9 entrou antes com o TD-017).
+
+Branch `feature/s3-carga-parametrizada` (worktree `wt-carga`), a partir de `daa18a2`. TDD: testes do conferidor
+vermelhos (`147aaec`: 8 testes, 18 falhas e 2 erros) antes do `feat:`; S31 vermelho (`runs/carga-s3-param/s31-vermelho.out`:
+20 PASS, 10 FAIL, com o conferidor novo e o orquestrador da base, que conferia os campos e não os passava) antes do
+`feat:` do orquestrador. Com a VM rodando o piloto, só os testes novos e os afetados rodaram no *host* (sem Surefire,
+sem a suíte completa do orquestrador; o código Java não mudou).
+
+| Suíte | Comando | Resultado |
+|---|---|---|
+| `test_campanha_s3_conferir.py` | `python -I scripts/test_campanha_s3_conferir.py` | **52 OK** (44 da base + 8 da classe `ParametrosCargaS3`) |
+| `run-campanha-s3.test.sh` S31 | `bash scripts/run-campanha-s3.test.sh S31` | **30 PASS, 0 FAIL** (`runs/carga-s3-param/s31-verde.out`) |
+| `run-campanha-s3.test.sh` afetados | `bash scripts/run-campanha-s3.test.sh S1 S4 S11 S24 S30` | **117 PASS, 0 FAIL** (492 s; `runs/carga-s3-param/afetados-s1-s4-s11-s24-s30.out`): o plano do `--dry-run` (S1), o *bundle* e o `ambiente.md` (S4), a retomada com *bundle* alterado (S11), o `--dry-run` por perfil (S24) e a linha da sonda (S30) |
+
+`ParametrosCargaS3`: ausentes, nenhuma linha `s3_*` nos dois esquemas; presentes, impressos nos dois esquemas, depois
+dos obrigatórios e na ordem da tabela; a tabela tem exatamente um campo por opção `--s3-*` de `S3Parametros.java`
+(lida da fonte), menos as `--s3-replay-*`; limites aceitos (0 e 1 na probabilidade, 0 onde a faixa é ≥ 0); tipo e
+faixa recusados (26 casos: negativo, zero onde é > 0, real em inteiro, texto, booleano, nulo, `NaN`, `Infinity`, acima
+de 1); coerência com os padrões do programa (`s3_users` e `s3_limit_accounts` zerados; `s3_back_min_sec` acima do
+máximo padrão; `s3_back_max_sec` abaixo do mínimo padrão); sem origem e nome desconhecido (`s3_replay_min_sec`,
+`s3_foo`, `s3_client_mode`).
+
+S31 (orquestrador): sem `s3_*`, a linha do jar termina em `--rejoin-timeout-sec 30`, sem `--s3-`, e o `--dry-run` diz
+"padrao do programa"; com `s3_users=30 s3_think_ms=500 s3_logout_prob=0.9`, a linha é **exatamente** a de antes mais
+` --s3-users 30 --s3-think-ms 500 --s3-logout-prob 0.9`; com `--sonda-replay`, a carga vem antes de
+`--s3-replay-probe --sweep`; cinco valores ruins (`s3_logout_prob=1.5`, `s3_users=-1`, `s3_think_ms=0`, `s3_users=2.5`,
+`s3_foo=1`) recusados no `--dry-run` (exit 4, com o nome no motivo); execução real ACEITA com as opções no pré-voo e na
+carga, `carga_s3` no `execucao.json`, linha `carga_s3:` no *bundle*, os valores no `ambiente.md`; retomada com outra
+carga recusada (bundle mudou). S31b: execução sem `s3_*` com `carga_s3 = {}`, nenhuma linha do jar com `--s3-` e
+`carga_s3:-` no *bundle*. O auxiliar `parametros` do teste passou a gravar `0.9` como número real.

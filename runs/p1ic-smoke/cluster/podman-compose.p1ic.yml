@@ -1,0 +1,100 @@
+# P1-IC (06/11): copia do podman-compose.a4.yml do A4 (que e o cluster/podman-compose-sem-caches.yml com nomes, rede e portas proprios), com nomes p1ic-*, rede p1ic-net e portas 13001-13003 (projeto Podman proprio p1ic).
+# logging k8s-file (arquivo por conteiner) em vez do journald padrao da maquina do Podman: a recusa do cache ignorado
+# grava um ERROR com pilha (ISPN005003) por pedido, e no journald isso estoura o limite de taxa do podman.service,
+# que entao descarta linhas de TODOS os conteineres (inclusive os de outros projetos). So o destino do log muda.
+# W-6 (B-46): igual ao podman-compose.yml, mas cada no monta o infinispan-sem-caches.xml (nenhum cache no XML;
+# os seis caches sao criados pela REST por scripts/cria-caches.sh). ClusterSemCachesXmlTest confere que so o
+# volume do XML muda. Usado por scripts/run-campanha-s3.sh na recriacao do cluster antes de cada execucao.
+# Cluster Infinispan, 3 nós, para experimentação local.
+# Uso: podman-compose -f podman-compose.yml up -d
+#
+# Imagem oficial: quay.io/infinispan/server
+# Porta Hot Rod: 11222
+# Porta gerenciamento (REST/Console): 11222 (mesma; protocolos co-existem)
+# A rede 'p1ic-net' é criada automaticamente por podman-compose.
+#
+# Para reproduzir cenários de falha (F1 crash, F3 latência), use os scripts em
+# scripts/. Cenários F2 (partição) e F4 (state transfer) são opcionais em TCC-I.
+
+version: "3.8"
+
+networks:
+  p1ic-net:
+    driver: bridge
+
+services:
+  isn1:
+    image: quay.io/infinispan/server:15.0.21.Final
+    container_name: p1ic-isn1
+    hostname: isn1
+    command: ["-c", "infinispan.xml", "-Dinfinispan.hotrod.external-port=13001"]
+    environment:
+      - USER=admin
+      - PASS=infinispan
+      - INFINISPAN_CLUSTER_NAME=cluster-tcc
+    volumes:
+      - ./infinispan-sem-caches.xml:/opt/infinispan/server/conf/infinispan.xml:ro
+      - ./jgroups-tcp.xml:/opt/infinispan/server/conf/jgroups-tcp.xml:ro
+    ports:
+      - "13001:11222"
+    networks:
+      - p1ic-net
+    logging:
+      driver: k8s-file
+    healthcheck:
+      test: ["CMD", "curl", "-f", "--digest", "-u", "admin:infinispan", "http://localhost:11222/rest/v2/cache-managers/default/health/status"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  isn2:
+    image: quay.io/infinispan/server:15.0.21.Final
+    container_name: p1ic-isn2
+    hostname: isn2
+    command: ["-c", "infinispan.xml", "-Dinfinispan.hotrod.external-port=13002"]
+    environment:
+      - USER=admin
+      - PASS=infinispan
+      - INFINISPAN_CLUSTER_NAME=cluster-tcc
+    volumes:
+      - ./infinispan-sem-caches.xml:/opt/infinispan/server/conf/infinispan.xml:ro
+      - ./jgroups-tcp.xml:/opt/infinispan/server/conf/jgroups-tcp.xml:ro
+    ports:
+      - "13002:11222"
+    networks:
+      - p1ic-net
+    logging:
+      driver: k8s-file
+    healthcheck:
+      test: ["CMD", "curl", "-f", "--digest", "-u", "admin:infinispan", "http://localhost:11222/rest/v2/cache-managers/default/health/status"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    depends_on:
+      - isn1
+
+  isn3:
+    image: quay.io/infinispan/server:15.0.21.Final
+    container_name: p1ic-isn3
+    hostname: isn3
+    command: ["-c", "infinispan.xml", "-Dinfinispan.hotrod.external-port=13003"]
+    environment:
+      - USER=admin
+      - PASS=infinispan
+      - INFINISPAN_CLUSTER_NAME=cluster-tcc
+    volumes:
+      - ./infinispan-sem-caches.xml:/opt/infinispan/server/conf/infinispan.xml:ro
+      - ./jgroups-tcp.xml:/opt/infinispan/server/conf/jgroups-tcp.xml:ro
+    ports:
+      - "13003:11222"
+    networks:
+      - p1ic-net
+    logging:
+      driver: k8s-file
+    healthcheck:
+      test: ["CMD", "curl", "-f", "--digest", "-u", "admin:infinispan", "http://localhost:11222/rest/v2/cache-managers/default/health/status"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    depends_on:
+      - isn1

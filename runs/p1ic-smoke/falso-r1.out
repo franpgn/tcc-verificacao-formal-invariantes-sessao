@@ -1,0 +1,9 @@
+== 2026-11-06T18:36:04.413Z inicio falso-r1 caso=falso semente=82001 duracao=150 base=ae07fad jar_sha256=c1fab66258e0e34d0dfd0d81ff4647585eb3a3a47a31f9bad7b6976a060a1136 cfg_sha256=0ff8714b217a50c10b44cf7e3a992650527692662cd4e9ae33554f1946253c8a compose_sha256=5ae07f7f9c76d129749e4376051c91461f08d113ed72528a170522b7b3bf670b
+cria-caches: rc=0
+== 2026-11-06T18:36:33.337Z parametros alvo=isn3 outros=isn1 isn2 
+== 2026-11-06T18:36:35.887Z origem o_ns=1793990230726731300
+== 2026-11-06T18:38:11.297Z falso-alarme-inicio AC-7 ao isn3 pelo adaptador
+== 2026-11-06T18:38:15.834Z falso-alarme-fim rc=0
+== 2026-11-06T18:38:51.269Z fim-sondas
+== 2026-11-06T18:39:19.102Z carga exit=0
+== 2026-11-06T18:39:34.616Z fim falso-r1

@@ -1,0 +1,11 @@
+== 2026-11-06T18:55:03.891Z inicio corte-r2 caso=corte semente=81002 duracao=300 base=78a151d jar_sha256=ccdb05d7b3dd516052b442a0d0869c2c7dadfb52b225cbe801874dd0bba5d6a6 cfg_sha256=0ff8714b217a50c10b44cf7e3a992650527692662cd4e9ae33554f1946253c8a compose_sha256=5ae07f7f9c76d129749e4376051c91461f08d113ed72528a170522b7b3bf670b
+cria-caches: rc=0
+== 2026-11-06T18:55:39.438Z parametros alvo=isn3 outros=isn1 isn2 
+== 2026-11-06T18:55:42.483Z origem o_ns=1793991384909602100
+== 2026-11-06T18:57:25.464Z corte-inicio isn3
+== 2026-11-06T18:57:28.215Z corte-fim rc=0
+== 2026-11-06T18:58:55.374Z cura-inicio isn3
+== 2026-11-06T18:58:58.064Z cura-fim rc=0
+== 2026-11-06T19:00:35.068Z fim-sondas
+== 2026-11-06T19:00:54.658Z carga exit=0
+== 2026-11-06T19:01:32.207Z fim corte-r2

@@ -1,0 +1,235 @@
+{
+ "execucao": "falso-r1",
+ "caso": "falso",
+ "alvo": "isn3",
+ "rotulo_alvo": "127.0.0.1:13003",
+ "fases_rel_s": [
+  [
+   -130.403,
+   "inicio falso-r1 caso=falso semente=82001 duracao=150 base=ae07fad jar_sha256=c1fab66258e0e"
+  ],
+  [
+   -101.479,
+   "parametros alvo=isn3 outros=isn1 isn2 "
+  ],
+  [
+   -98.93,
+   "origem o_ns=1793990230726731300"
+  ],
+  [
+   -3.517,
+   "falso-alarme-inicio AC-7 ao isn3 pelo adaptador"
+  ],
+  [
+   1.018,
+   "falso-alarme-fim rc=0"
+  ],
+  [
+   36.255,
+   "fim-sondas"
+  ],
+  [
+   64.297,
+   "carga exit=0"
+  ],
+  [
+   79.444,
+   "fim falso-r1"
+  ]
+ ],
+ "politica_nao_P0_ou_desfazer": [],
+ "acoes": [],
+ "transicoes": [],
+ "fim_decisoes": {
+  "acoes_pedidas": 0,
+  "acoes_executadas": 0,
+  "acoes_falhas": 0,
+  "reversoes": 0,
+  "reversoes_falhas": 0,
+  "executor_no_prazo": true,
+  "prazo_encerramento_ns": 2000000000,
+  "linhas_perdidas": 0,
+  "perfil_final": "NORMAL"
+ },
+ "fim_observaveis": {
+  "eventos_descontados_sob_acao": 0,
+  "guarda_ac7_desfazeres": null,
+  "eventos_fora_do_contrato": 0,
+  "linhas_perdidas": 0
+ },
+ "meta": {
+  "esquema": "decisoes-controlador/1.2",
+  "atuador": "por-tipo(AC-2=rest-infinispan,AC-5=rest-infinispan,AC-7=rest-ignored-caches)",
+  "modo": "active",
+  "acao_p1": "AC-7"
+ },
+ "smoke_ac7": [
+  "APLICAR\tt_ini_epoch_ns=1793990294758913500\tt_fim_epoch_ns=1793990294871484700\tduracao_ms=112\testado=FALHOU\thttp=204\terro=falso-alarme-desfeito\tlido=efeito=nao-visto;guarda=falso-alarme@127.0.0.1:13001_83ms;anterior=POST:204@84ms;anterior=DELETE:204@9ms;rota=maioria@127.0.0.1:13001;127.0.0.1:13001=-;127.0.0.1:13002=-;127.0.0.1:13003=-",
+  "REVERTER\tt_ini_epoch_ns=1793990294877478000\tt_fim_epoch_ns=1793990294881989900\tduracao_ms=4\testado=APLICADA\thttp=null\terro=null\tlido=nada-a-desfazer;127.0.0.1:13001=-;127.0.0.1:13002=-;127.0.0.1:13003=-"
+ ],
+ "sondas": {
+  "isn1/sessions-async": {
+   "recusas_cache_ignorado": 0,
+   "primeira_cache_ignorado_s": null,
+   "ultima_cache_ignorado_s": null,
+   "primeira_cache_ignorado_desde_acao_ms": null,
+   "puts_ok_iniciados_apos_acao_antes_da_recusa": 333,
+   "primeira_availability_s": null,
+   "primeiro_put_ok_desde_reverter_ms": 18.5,
+   "primeiro_put_ok_apos_reverter_s": 0.137,
+   "resultados_desde_acao": {
+    "get:OK": 332,
+    "put:OK": 333
+   }
+  },
+  "isn1/counters-async": {
+   "recusas_cache_ignorado": 0,
+   "primeira_cache_ignorado_s": null,
+   "ultima_cache_ignorado_s": null,
+   "primeira_cache_ignorado_desde_acao_ms": null,
+   "puts_ok_iniciados_apos_acao_antes_da_recusa": 331,
+   "primeira_availability_s": null,
+   "primeiro_put_ok_desde_reverter_ms": 50.5,
+   "primeiro_put_ok_apos_reverter_s": 0.169,
+   "resultados_desde_acao": {
+    "get:OK": 330,
+    "put:OK": 331
+   }
+  },
+  "isn2/sessions-async": {
+   "recusas_cache_ignorado": 0,
+   "primeira_cache_ignorado_s": null,
+   "ultima_cache_ignorado_s": null,
+   "primeira_cache_ignorado_desde_acao_ms": null,
+   "puts_ok_iniciados_apos_acao_antes_da_recusa": 331,
+   "primeira_availability_s": null,
+   "primeiro_put_ok_desde_reverter_ms": 18.5,
+   "primeiro_put_ok_apos_reverter_s": 0.137,
+   "resultados_desde_acao": {
+    "get:OK": 332,
+    "put:OK": 331
+   }
+  },
+  "isn2/counters-async": {
+   "recusas_cache_ignorado": 0,
+   "primeira_cache_ignorado_s": null,
+   "ultima_cache_ignorado_s": null,
+   "primeira_cache_ignorado_desde_acao_ms": null,
+   "puts_ok_iniciados_apos_acao_antes_da_recusa": 330,
+   "primeira_availability_s": null,
+   "primeiro_put_ok_desde_reverter_ms": 50.5,
+   "primeiro_put_ok_apos_reverter_s": 0.169,
+   "resultados_desde_acao": {
+    "get:OK": 333,
+    "put:OK": 330
+   }
+  },
+  "isn3/sessions-async": {
+   "recusas_cache_ignorado": 4,
+   "primeira_cache_ignorado_s": 0.068,
+   "ultima_cache_ignorado_s": 0.102,
+   "primeira_cache_ignorado_desde_acao_ms": 68.0,
+   "puts_ok_iniciados_apos_acao_antes_da_recusa": 2,
+   "primeira_availability_s": null,
+   "primeiro_put_ok_desde_reverter_ms": 6.5,
+   "primeiro_put_ok_apos_reverter_s": 0.125,
+   "resultados_desde_acao": {
+    "get:CacheUnavailable": 2,
+    "get:OK": 1358,
+    "put:CacheUnavailable": 2,
+    "put:OK": 1360
+   }
+  },
+  "isn3/counters-async": {
+   "recusas_cache_ignorado": 0,
+   "primeira_cache_ignorado_s": null,
+   "ultima_cache_ignorado_s": null,
+   "primeira_cache_ignorado_desde_acao_ms": null,
+   "puts_ok_iniciados_apos_acao_antes_da_recusa": 1353,
+   "primeira_availability_s": null,
+   "primeiro_put_ok_desde_reverter_ms": 25.5,
+   "primeiro_put_ok_apos_reverter_s": 0.144,
+   "resultados_desde_acao": {
+    "get:OK": 1359,
+    "put:OK": 1353
+   }
+  }
+ },
+ "ignorados_transicoes": [
+  [
+   "isn3",
+   -101.083,
+   "-"
+  ],
+  [
+   "isn2",
+   -101.08,
+   "-"
+  ],
+  [
+   "isn1",
+   -101.079,
+   "-"
+  ],
+  [
+   "isn2",
+   0.087,
+   "sessions-async"
+  ],
+  [
+   "isn3",
+   0.091,
+   "sessions-async"
+  ],
+  [
+   "isn2",
+   0.192,
+   "-"
+  ],
+  [
+   "isn3",
+   0.197,
+   "-"
+  ]
+ ],
+ "disponibilidade_transicoes": [
+  [
+   "isn3",
+   -101.107,
+   "sessions-async=AVAILABLE counters-async=AVAILABLE"
+  ],
+  [
+   "isn1",
+   -101.127,
+   "sessions-async=AVAILABLE counters-async=AVAILABLE"
+  ],
+  [
+   "isn2",
+   -101.107,
+   "sessions-async=AVAILABLE counters-async=AVAILABLE"
+  ]
+ ],
+ "carga_stdout": [
+  "Sonda replay: imediatas_agendadas=164 imediatas_lidas=160 imediatas_valid=0 imediatas_invalid=160 imediatas_not_found=0 imediatas_erro=0 imediatas_descartadas_fim=4 tardias_candidatas=0 tardias_amostr",
+  "Controlador: modo=active janelas=22 transicoes=0 acoes_pedidas=0 acoes_executadas=0 reversoes=0 reversoes_falhas=0 executor_no_prazo=true eventos_antes_da_origem=1566 linhas_jsonl_perdidas=0",
+  "Fim da carga: rep=1 t_fim_carga_ns=1793990344785781800 ac5_alvo=-",
+  "Convergencia: convergiu=true, persistente=false, rodadas=3, t_convergencia=27215300 ns",
+  "Varredura final: sessoes=209, identidades=50, achados=0; REAL={}; BLOCKED por motivo={ADMINISTRATIVO=1, POR_LIMITE=7, INCERTO=0, INEXPLICADO=0}",
+  "Total de operacoes: 6119",
+  "Violacoes detectadas: 1",
+  "Auditor: i1_concorrentes=0 i4_concorrentes=0",
+  "Auditor I2: concorrentes=0 janela_cascata=0 cascata_incompleta=0 sem_marco=0",
+  "Auditor total: i1_concorrentes=0 i4_concorrentes=0 i2_concorrentes=0"
+ ],
+ "carga_exit": "exit=0",
+ "violacoes_auditor": {
+  "I2_JANELA_CASCATA": 1
+ },
+ "varredura_cabecalho": "invariante,chave,classificacao,detalhe",
+ "varredura_linhas": 0,
+ "vistas": [],
+ "servidor_ISPN005003_por_no": {
+  "isn2": 1,
+  "isn3": 6
+ }
+}

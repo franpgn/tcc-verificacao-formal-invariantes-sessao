@@ -108,6 +108,28 @@ class R2Populacao(Base):
         self.assertIn("Block", r["p99_ns"])
 
 
+class R2bInstrumentacao(Base):
+    """W-10: o ReplayValidate da sonda de replay do S3 fica fora da referencia (nao e carga)."""
+
+    def test_replay_validate_fora_da_referencia(self):
+        ev = [("Validate", 1_000 + i, "VALID") for i in range(1000)]
+        ev += [("ReplayValidate", 10 ** 9, "ERROR_TRANSPORT") for _ in range(1500)]
+        csv = escrever_csv(self.d, 1, ev)
+        por_op, linhas = ref.ler_eventos(csv)
+        self.assertNotIn("ReplayValidate", por_op)
+        self.assertEqual(1000, linhas)
+        r = ref.gerar_referencia([csv], "S3", "async")
+        self.assertEqual({"Validate"}, set(r["p99_ns"]))
+        self.assertEqual(("ReplayValidate",), ref.OPERACOES_INSTRUMENTACAO)
+
+    def test_replay_validate_fora_da_fase_antes_nao_recusa(self):
+        # o replay tardio pode cair na recuperacao; a regra de phase so vale para os eventos da carga
+        ev = [("Validate", 1_000 + i, "VALID") for i in range(1000)] + [("ReplayValidate", 5, "VALID")]
+        csv = escrever_csv(self.d, 1, ev, phase=lambda i: "antes" if i < 1000 else "recuperacao")
+        por_op, linhas = ref.ler_eventos(csv)
+        self.assertEqual(1000, linhas)
+
+
 class R3PostoMaisProximo(Base):
 
     def test_posto_e_nao_lower(self):

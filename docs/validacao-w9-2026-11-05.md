@@ -171,3 +171,35 @@ completa.
    com eles, e a declaração no B-40).
 3. **R-3:** leitura do m cortada no `end` (recomendada) ou a literal do Worker, com diagnóstico.
 4. **Quando:** complemento 3 antes do X-18 (recomendado) ou durante ele, sem abrir os brutos antes do commit.
+
+## 8. Adendo: conferência do W-9b (2026-11-06)
+
+> Diff `8d6ebfc..e9e217e` (7 commits, pares `test:`/`fix:`), contra o complemento 3 (DT-024, `45e7800`) e o
+> complemento 3a (`639966c`), os dois em `docs/pre-registro-calibracao-s3`.
+
+**Testes.** `python3 -I`: 67 testes, OK, 2 pulados. `python3 -E -P`: 67, OK. Fiz cinco mutações novas nas regras do
+W-9b, e as cinco foram pegas: viabilidade sem `max(k, kLag)`, trecho cortado contado inteiro, trecho que atravessa o
+`end` descartado, "sem cobertura" desligado e θ_out "sem cobertura" = 0.
+
+| Item | Situação |
+|---|---|
+| R-1 | confere: `viavel_em` = `max(2, kLag)·W + 13,3 < 39,8` na reserva, no `dentro_do_limite` da 7.13 e no `k_max_no_limite`; a tabela do complemento 3 §1 sai igual |
+| R-3 | confere: trecho com parte depois do `end` e seguido de alta conta a partir de `max(a, inicio)`; o que termina no `end` sem parte depois não conta |
+| R-5 | confere |
+| Carga | `problemas_de_carga` espelha os guardas de `ParametrosControlador`, `ParametrosPolitica` e `ParametrosDefasagem`, e um teste procura cada trecho no código Java. Acréscimo útil, porque mostra no JSON se o arquivo do B-40 carrega |
+| R-2, valor | **diverge do texto.** O complemento 3 §2 fixa θ_in = o menor *double* acima de 1 (`math.nextafter(1, +∞)`), e o script usa 2,0. O controlador fica igual (a taxa é ≤ 1), mas o número que vai ao B-40 é o do texto. O complemento 3a §3 confirma o valor do texto |
+| R-2, caso restante | **lacuna do texto, fechada no complemento 3a.** Há janelas determinadas, mas nenhum par seguido: a 7.7 tem N = 0, e θ_in, m e `T_cooldown` ficavam "não derivados". Pela lógica da R-2, o caso é igual a estar sem cobertura, porque o sinal não chega a `persistenciaLat ≥ k` e não há dado para fixar o limiar. O texto do complemento 3 ("não tiver janela determinada") não cobria o caso. O 3a muda a condição para "N = 0 na 7.7" |
+| R-4 | **falta no código.** O complemento 3 §5 manda o JSON declarar a subestimação quando o W final for < 5 s, e o W-9b não faz isso |
+| Texto do m | detalhe: o campo `texto` de `P["m"]` ainda diz "trecho máximo que começa em ou depois do end"; `EMENDAS_VW9` não lista a R-4 nem o 3a |
+
+**Ajuste mínimo pedido ao Worker (W-9c), com testes:**
+1. `THETA_SEM_COBERTURA = math.nextafter(1.0, math.inf)`.
+2. "Sem cobertura" quando `limiar_entrada(...)["N"] == 0` com `n_tot > 0` (complemento 3a §2), e não só quando
+   `n_det == 0`; `janelas_determinadas` e a fração ao lado.
+3. Declaração da R-4 no JSON quando o W final for < 5 s (por exemplo, `dados.subestimacao_w_menor_que_5_s` em `W_s`, com
+   o fator 5/W).
+4. Texto do `P["m"]` e `EMENDAS_VW9` (R-4 e 3a) atualizados.
+
+**Veredito final: liberado para o X-18.** As regras estão fixadas por escrito antes de qualquer dado (complementos 3 e
+3a). Os quatro ajustes do W-9c não tocam a coleta, só o que o script faz depois dela. O W-9c tem de estar commitado e
+conferido por mim antes de a derivação rodar, e ninguém abre os brutos da calibração antes disso.

@@ -38,7 +38,19 @@ import java.util.function.Supplier;
  */
 public class InvariantAuditor implements AutoCloseable {
 
-    public record Violacao(Instant em, String invariante, String chave, String mensagem) {}
+    /**
+     * Uma violacao registrada. W-10: {@code origem} diz de onde veio a leitura que a revelou; {@code null} nos
+     * caminhos existentes (carga, cascata, convergencia) e {@link #ORIGEM_SONDA} na sonda de replay.
+     */
+    public record Violacao(Instant em, String invariante, String chave, String mensagem, String origem) {
+        /** Os caminhos existentes: sem origem. */
+        public Violacao(Instant em, String invariante, String chave, String mensagem) {
+            this(em, invariante, chave, mensagem, null);
+        }
+    }
+
+    /** W-10: origem das violacoes reveladas pela sonda de replay ({@link SondaReplay}). */
+    public static final String ORIGEM_SONDA = "sonda";
 
     /**
      * B-33: resultado de {@link #avaliarRodada}. {@code completa} = todos os
@@ -71,7 +83,19 @@ public class InvariantAuditor implements AutoCloseable {
     }
 
     public void registrarViolacao(String invariante, String chave, String mensagem) {
-        registros.add(new Violacao(Instant.now(), invariante, chave, mensagem));
+        registrarViolacao(invariante, chave, mensagem, null);
+    }
+
+    /**
+     * W-10: como {@link #registrarViolacao(String, String, String)}, com a {@code origem} da leitura. Com origem
+     * ({@link #ORIGEM_SONDA}) a violacao entra no registro e no CSV, mas o ouvinte (o laco de controle) NAO e
+     * avisado: a sonda e instrumentacao e nao pode mudar a decisao do controlador.
+     */
+    public void registrarViolacao(String invariante, String chave, String mensagem, String origem) {
+        registros.add(new Violacao(Instant.now(), invariante, chave, mensagem, origem));
+        if (origem != null) {
+            return;
+        }
         OuvinteDeViolacao o = ouvinte;
         if (o != null) {
             try {
@@ -83,6 +107,17 @@ public class InvariantAuditor implements AutoCloseable {
     }
 
     public int total() { return registros.size(); }
+
+    /** W-10: violacoes com a origem dada ({@code null} = os caminhos existentes). */
+    public long total(String origem) {
+        return registros.stream().filter(v -> java.util.Objects.equals(origem, v.origem())).count();
+    }
+
+    /** W-10: violacoes da invariante dada com a origem dada. */
+    public long total(String invariante, String origem) {
+        return registros.stream().filter(v -> invariante.equals(v.invariante())
+                && java.util.Objects.equals(origem, v.origem())).count();
+    }
 
     /** B-33: total acumulado de leituras de replica que lancaram excecao (toleradas). */
     public int leiturasFalhas() { return leiturasFalhas.get(); }
@@ -262,6 +297,14 @@ public class InvariantAuditor implements AutoCloseable {
 
     /** B-33: coluna adicional derivada de cada violacao (p.ex. classificacao do I2). */
     public record Coluna(String nome, java.util.function.Function<Violacao, String> valor) {}
+
+    /**
+     * W-10: coluna {@code origem} do CSV de violacoes ({@code sonda} ou vazia). So entra no CSV com a sonda
+     * ligada; sem ela o formato e o de antes.
+     */
+    public static Coluna colunaOrigem() {
+        return new Coluna("origem", v -> v.origem() == null ? "" : v.origem());
+    }
 
     /** B-33: igual a {@link #dumpCsv(Path)} mais a coluna {@code fase} (rotulo pelos marcadores). */
     public void dumpCsv(Path destino, Marcadores marcadores) throws IOException {

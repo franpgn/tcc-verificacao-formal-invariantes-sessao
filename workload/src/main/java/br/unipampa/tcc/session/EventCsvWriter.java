@@ -88,7 +88,17 @@ public final class EventCsvWriter {
      */
     public boolean registrar(String operation, long startNs, long endNs,
                              String replica, String returnCode, String key) {
-        if (!politica.deveRegistrar()) {
+        return registrar(operation, startNs, endNs, replica, returnCode, key, false);
+    }
+
+    /**
+     * W-10: como {@link #registrar(String, long, long, String, String, String)}; com {@code ignorarJanela} o
+     * evento entra mesmo fora da janela de medicao. So o replay tardio da sonda usa (ele roda depois do fim da
+     * carga, de proposito, e tem tipo de operacao proprio, {@code ReplayValidate}).
+     */
+    public boolean registrar(String operation, long startNs, long endNs,
+                             String replica, String returnCode, String key, boolean ignorarJanela) {
+        if (!ignorarJanela && !politica.deveRegistrar()) {
             descartadosWarmup.incrementAndGet();
             return false;
         }

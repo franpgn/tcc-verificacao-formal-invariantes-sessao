@@ -20,6 +20,8 @@ public final class S3Simulacao {
 
     private final ContextoS3 ctx;
     private final List<AtorS3> atores = new ArrayList<>();
+    /** W-10: sonda de replay ({@code null} = desligada, padrao). */
+    private final SondaReplay sonda;
 
     /**
      * @param servidoresApp  um {@link SessionOps} por servidor de aplicacao (ancorado ao seu no)
@@ -32,17 +34,29 @@ public final class S3Simulacao {
         }
         this.ctx = ctx;
         int n = servidoresApp.size();
+        // W-10: com --s3-replay-probe, a sonda de replay e seus atores (um por no), depois dos existentes
+        this.sonda = ctx.p.sondaReplay
+                ? new SondaReplay(servidoresApp, ctx.relogio, ctx.p, ctx.registro, ctx.rngSondaTardia())
+                : null;
         for (int i = 0; i < ctx.p.usuarios; i++) {
-            atores.add(new UsuarioVirtual(i, servidoresApp.get(i % n), ctx, inicioNs));
+            atores.add(new UsuarioVirtual(i, servidoresApp.get(i % n), ctx, inicioNs, sonda, i % n));
         }
         for (int i = 0; i < ctx.p.contasLimite; i++) {
             atores.add(new ContaLimiteS3(i, servidoresApp.get(i % n), admin, ctx, inicioNs));
         }
         atores.add(new AtorAdministrativoS3(admin, ctx, inicioNs));
+        if (sonda != null) {
+            atores.addAll(sonda.atores());
+        }
     }
 
     public List<AtorS3> atores() {
         return atores;
+    }
+
+    /** W-10: a sonda de replay; {@code null} com a sonda desligada. */
+    public SondaReplay sonda() {
+        return sonda;
     }
 
     /**

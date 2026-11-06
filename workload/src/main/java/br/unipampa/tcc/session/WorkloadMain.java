@@ -512,11 +512,17 @@ public final class WorkloadMain {
                 // B-23: persistencia das violacoes I1-I6 detectadas nesta repeticao.
                 Path violacoesDestino = Path.of(cli.csvDir,
                         String.format("violacoes-rep-%03d.csv", rep));
-                List<InvariantAuditor.Coluna> extras = rastro == null ? List.of()
-                        : List.of(new InvariantAuditor.Coluna("classificacao",
+                List<InvariantAuditor.Coluna> extras = new ArrayList<>();
+                if (rastro != null) {
+                    extras.add(new InvariantAuditor.Coluna("classificacao",
                             v -> "I2".equals(v.invariante())
                                 ? rastro.classificarViolacaoI2(v.chave(), InvariantAuditor.epochNs(v.em()))
                                 : ""));
+                }
+                if (cli.scenarioS3 && cli.s3.sondaReplay) {
+                    // W-10: coluna origem (sonda ou vazia) so com a sonda ligada; sem ela o formato e o de antes
+                    extras.add(InvariantAuditor.colunaOrigem());
+                }
                 auditor.dumpCsv(violacoesDestino, marcadores, extras);
                 System.out.printf("Violacoes gravadas em %s (total=%d)%n",
                         violacoesDestino, auditor.total());
@@ -563,6 +569,14 @@ public final class WorkloadMain {
             System.out.printf("S3: %d usuarios (U), %d contas de limite (L), 1 admin; modo %s; admin-node %s%n",
                     cli.s3.usuarios, cli.s3.contasLimite, cli.s3.modoCliente, cli.s3.noAdmin);
             sim.rodarEmThreads(fimNs, parar);
+            SondaReplay sonda = sim.sonda();
+            if (sonda != null) {
+                // W-10: replay tardio no fim da carga, com os atores parados e os clientes ainda abertos; os
+                // imediatos pendentes sao descartados. Fica fora da janela de medicao, das acoes S3 e do controlador.
+                sonda.replayTardio(lerMarcadores(cli), relogio::paraEpochNanos);
+                System.out.println(sonda.linhaResumo());
+                System.out.println(SondaReplay.linhaViolacoes(auditor));
+            }
             totalOps.set(registro.totalAcoes());
             if (cli.csvDir != null && !cli.csvDir.isBlank()) {
                 registro.escreverCsv(Path.of(cli.csvDir, String.format("s3-acoes-rep-%03d.csv", rep)), relogio);
@@ -576,6 +590,13 @@ public final class WorkloadMain {
                 par.put("hotrod_retentativas", cli.s3.hotrodRetentativas);
                 par.put("app_retentativas", cli.s3.appRetentativas);
                 par.put("idle_timeout_sec", cli.s3.idleSeg);
+                if (cli.s3.sondaReplay) {
+                    // W-10: so com a sonda ligada (sem ela o resumo e o de antes)
+                    par.put("sonda_replay", true);
+                    par.put("sonda_min_sec", cli.s3.sondaMinSeg);
+                    par.put("sonda_max_sec", cli.s3.sondaMaxSeg);
+                    par.put("sonda_tardia_max", cli.s3.sondaTardiaMax);
+                }
                 par.put("nota", "o resumo inclui o warm-up; acoes anteriores a medicao nao entram no CSV de eventos");
                 registro.escreverResumo(Path.of(cli.csvDir, String.format("s3-resumo-rep-%03d.json", rep)), par);
             }

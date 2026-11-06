@@ -55,6 +55,12 @@ public class SessionOps {
     /** B-33: O6 e O7 passam a emitir evento no CSV (antes nao emitiam). */
     public static final String OP_BLOCK = "Block";              // O6
     public static final String OP_UNBLOCK = "Unblock";          // O7
+    /**
+     * W-10: leitura da sonda de replay ({@link SondaReplay}): um Validate da sid antiga depois do logout,
+     * feito por outro servidor de aplicacao. Tipo proprio no CSV de eventos, fora da mistura, do verificador
+     * de sanidade, do p99 e da vazao util; so existe com {@code --s3-replay-probe}.
+     */
+    public static final String OP_REPLAY_VALIDATE = "ReplayValidate";
 
     private final Armazem<SessionState> sessions;
     /**
@@ -561,19 +567,70 @@ public class SessionOps {
             }
             return;
         }
-        SessionState.Motivo confirmado = confirmadoAntes;
+        verificarContraConfirmado(sid, atual, confirmadoAntes, registradas, null);
+    }
+
+    /**
+     * B-23/B-43.6: o ramo de {@link #verificarI1I4} com confirmacao anterior a leitura: I1 se a leitura deu
+     * VALID; I4 se deu INVALID com motivo diferente. W-10: a sonda de replay usa este mesmo ramo, com
+     * {@code origem} {@link InvariantAuditor#ORIGEM_SONDA} (com origem nula e o caminho de sempre).
+     */
+    private void verificarContraConfirmado(String sid, SessionState atual, SessionState.Motivo confirmado,
+                                           java.util.Set<String> registradas, String origem) {
         if (atual.estado() == SessionState.Estado.VALID) {
             if (primeiraNaOperacao(registradas, "I1", sid)) {
                 auditor.registrarViolacao("I1", sid,
-                        "invalidacao confirmada (" + confirmado + ") revertida para VALID");
+                        "invalidacao confirmada (" + confirmado + ") revertida para VALID", origem);
             }
         } else if (atual.estado() == SessionState.Estado.INVALID
                 && !confirmado.equals(atual.motivo())) {
             if (primeiraNaOperacao(registradas, "I4", sid)) {
                 auditor.registrarViolacao("I4", sid,
-                        "motivo inconsistente: confirmado " + confirmado + ", lido " + atual.motivo());
+                        "motivo inconsistente: confirmado " + confirmado + ", lido " + atual.motivo(), origem);
             }
         }
+    }
+
+    /**
+     * W-10: leitura da sonda de replay (reuso da sid depois do logout, por outro servidor de aplicacao). Um
+     * {@code get} da sessao, sem a leitura da identidade, e a checagem I1/I4 pelo ramo de
+     * {@link #verificarContraConfirmado} contra o instantaneo {@code confirmadoAntes} tirado antes do
+     * {@code get} (regra de B-43.6), com origem {@link InvariantAuditor#ORIGEM_SONDA}.
+     *
+     * <p>So instrumenta: emite o evento {@link #OP_REPLAY_VALIDATE} no CSV de eventos (e so nele: sem rastro,
+     * sem ouvinte do controlador, sem {@link LatencyRegistry}, sem contador de desfechos de Validate), nao
+     * escreve no mapa de invalidacoes confirmadas (uma leitura INVALID sem confirmacao anterior nao vira
+     * confirmacao) e nao conta corrida do observador. {@code foraDaJanela}: o evento entra mesmo fora da
+     * janela de medicao (replay tardio, depois do fim da carga).</p>
+     */
+    OpResult validarSonda(String sid, boolean foraDaJanela) {
+        long t0 = System.nanoTime();
+        OpResult r;
+        try {
+            SessionState.Motivo confirmadoAntes = invalidacoesConfirmadas.get(sid);
+            SessionState s = sessions.get(sid);
+            if (s == null) {
+                r = OpResult.notFound();
+            } else {
+                if (confirmadoAntes != null) {
+                    verificarContraConfirmado(sid, s, confirmadoAntes, null, InvariantAuditor.ORIGEM_SONDA);
+                }
+                r = OpResult.okValidate(s.estado());
+            }
+        } catch (RuntimeException e) {
+            r = ClassificadorDeErro.classificar(e);
+        }
+        long t1 = System.nanoTime();
+        if (eventos != null && relogio != null) {
+            eventos.registrar(OP_REPLAY_VALIDATE, relogio.paraEpochNanos(t0), relogio.paraEpochNanos(t1), replica,
+                    r.returnCode(), sid, foraDaJanela);
+        }
+        return r;
+    }
+
+    /** W-10: rotulo do servidor de aplicacao (coluna {@code replica} do CSV). */
+    String replica() {
+        return replica;
     }
 
     /**

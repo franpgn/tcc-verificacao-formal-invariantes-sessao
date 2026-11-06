@@ -30,8 +30,46 @@ public final class ContextoS3 {
 
     /** Gerador independente por ator (tipo + indice), derivado da semente. */
     Random rng(String tipo, int indice) {
-        long x = semente ^ (0x9E3779B97F4A7C15L * (indice + 1L)) ^ ((long) tipo.hashCode() * 0xC2B2AE3D27D4EB4FL);
-        return new Random(x);
+        return new Random(sementeAtor(tipo, indice));
+    }
+
+    /**
+     * W-10: a semente do gerador de um ator ({@link #rng}), a mesma formula de antes:
+     * {@code semente ^ (0x9E3779B97F4A7C15 * (indice + 1)) ^ (hash(tipo) * 0xC2B2AE3D27D4EB4F)}.
+     */
+    long sementeAtor(String tipo, int indice) {
+        return semente ^ (0x9E3779B97F4A7C15L * (indice + 1L)) ^ ((long) tipo.hashCode() * 0xC2B2AE3D27D4EB4FL);
+    }
+
+    /** W-10: sal da semente do atraso do replay imediato: "SONDAREP" em ASCII. */
+    static final long SAL_SONDA = 0x534F4E4441524550L;
+
+    /** W-10: sal da semente da amostra do replay tardio: "SONDATAR" em ASCII. */
+    static final long SAL_SONDA_TARDIA = 0x534F4E4441544152L;
+
+    /**
+     * W-10: semente do gerador proprio do atraso do replay do usuario {@code indice} do pool U:
+     * {@code mix64(sementeAtor("U", indice) ^ SAL_SONDA)}, pelo mesmo esquema de {@code MisturaV3.sementeToken}
+     * e {@code WorkloadMain.sementeMistura} (sal por ou exclusivo e o finalizador do SplitMix64). Dominio
+     * separado do gerador do usuario ({@link #rng}), que nao e consumido pela sonda.
+     */
+    long sementeSonda(int indice) {
+        return MisturaV3.mix64(sementeAtor("U", indice) ^ SAL_SONDA);
+    }
+
+    /** W-10: gerador do atraso do replay do usuario {@code indice} (so existe com a sonda ligada). */
+    Random rngSonda(int indice) {
+        return new Random(sementeSonda(indice));
+    }
+
+    /** W-10: semente da amostra do replay tardio: {@code mix64(semente ^ SAL_SONDA_TARDIA)}. */
+    long sementeSondaTardia() {
+        return MisturaV3.mix64(semente ^ SAL_SONDA_TARDIA);
+    }
+
+    /** W-10: gerador da amostra do replay tardio (so e consumido se houver mais candidatas que o limite). */
+    Random rngSondaTardia() {
+        return new Random(sementeSondaTardia());
     }
 
     /** Exponencial de media {@code mediaNs}, em ns (minimo 1 ms para nao girar em vazio). */

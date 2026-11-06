@@ -1,4 +1,4 @@
-b933bd008af287441c567cc4685814c50c84edaf23cf53146fe8790efbeaf78f *./comandos.md
+676f74154f656d5dc27ef8381029c08dca0478e6f9eef131e7e211c3fa6f40be *./comandos.md
 e6c2b165fea7ddbc71c4ed231426b2193c242579da7b6ee75c82a369fc37ba91 *./dry-run/comando-com-sonda.out
 a007993aba2074766556966cd58e7cd7b25b63aaab11dd143b453ae5363571e5 *./dry-run/comando-sem-sonda.out
 daef6e73b996d96a8d39113c4c47f806f49b4de97c1d7eda0ca2223c0b71a94b *./dry-run/dry-run-com-sonda.out
@@ -10,4 +10,5 @@ e8dadb6ebe4240c296666b508a5797899a3ee5a52d099e0c2b7b74d9b9c7bdc9 *./dry-run/matr
 f3a48dc4022b6f44f869095427855696977c08caa58f379933191144c6a797c8 *./dry-run/programa-dry-run.out
 fb93c3c891fcf3ea5b6bffcfceb8196a561dd4f311a0a039f34f3abdeb8f729e *./s32-verde.out
 561aa3fb8acfe6e4f0e3a634ab4588d0a26cfe4015ce167b3714fe12f4cb0d33 *./s32-vermelho.out
+53f10debc1a5a7843255eec49e0075780fc768be25483e1a7a3939a4b5733209 *./suite-s3-completa.out
 15c0d94b5b98c6951e649fdaffc508b0de761225f91bf343b66f33a5158f9a2c *./suite-s3-subconjunto.out

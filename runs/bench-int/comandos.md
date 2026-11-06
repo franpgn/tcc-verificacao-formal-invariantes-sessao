@@ -13,3 +13,6 @@ apuracao de V e o D-1 do roteiro da recalibracao, em feature/controlador-integra
    na linha do programa) e dry-run-sem-sonda.out (rc 4, campo recusado sem --sonda-replay), SHA-256 das entradas em
    entradas.sha256. programa-dry-run.out: a linha do programa do plano com o jar construido da ponta e --dry-run do
    proprio programa (rc 0).
+4. Suite completa na tag int/2026-11-06-bench (cc2b71c), sozinha no host, 14:50:50Z a 16:35:46Z:
+       bash scripts/run-campanha-s3.test.sh
+   saida em suite-s3-completa.out: 498 PASS, 0 FAIL.

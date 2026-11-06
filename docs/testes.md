@@ -1522,3 +1522,12 @@ com a origem da DT-026; `--swap-limite-kb 1048576`):
 - a linha do programa do plano, com o jar construído da ponta e `--dry-run` do próprio programa, sai com 0
   (`programa-dry-run.out`): o picocli e o `S3Parametros.validar` aceitam `--s3-replay-late-max 268` com
   `--s3-replay-probe` e `--sweep`.
+
+### Suíte completa do orquestrador na tag `int/2026-11-06-bench` (06/11, depois da recalibração)
+
+Rodada combinada antes da avaliação, depois que a recalibração terminou e o *host* saiu do H0 (14:47:17Z). Ponta
+`cc2b71c` (tag `int/2026-11-06-bench`), `bash scripts/run-campanha-s3.test.sh` (S1..S32), sozinha no *host* (nenhuma
+outra suíte de *shell*, Maven nem injetor; só uma derivação em Python de outro Worker), das 14:50:50Z às 16:35:46Z
+(6296 s): **498 PASS, 0 FAIL**, exit 0, de primeira, sem caso rodado de novo (`runs/bench-int/suite-s3-completa.out`).
+Os 498 incluem os 338 do subconjunto que rodou antes da tag e os casos que ficaram de fora dele (S2, S3, S5 a S10,
+S12 a S21, S23, S26h e S28).

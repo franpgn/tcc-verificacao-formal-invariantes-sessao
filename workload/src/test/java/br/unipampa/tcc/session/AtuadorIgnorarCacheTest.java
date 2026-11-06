@@ -245,6 +245,11 @@ class AtuadorIgnorarCacheTest {
         ResultadoAtuacao v = a.reverter(ac7(c.rotulo(2)), 17 * S);
         assertEquals(ResultadoAtuacao.Estado.APLICADA, v.estado(), v.toString());
         assertTrue(v.lidoDeVolta().contains("rota=maioria@" + c.rotulo(0)), v.lidoDeVolta());
+        // o tempo do POST na trilha e o da resposta de verdade (~400 ms), nao o da leitura na chamada seguinte (>= 800 ms)
+        java.util.regex.Matcher m = java.util.regex.Pattern.compile("anterior=POST:500@([0-9]+)ms").matcher(v.lidoDeVolta());
+        assertTrue(m.find(), v.lidoDeVolta());
+        long ms = Long.parseLong(m.group(1));
+        assertTrue(ms >= ATRASO_ISOLADO_MS && ms < ATRASO_ISOLADO_MS + 200, "tempo do POST: " + ms + " ms");
         assertEquals(List.of("DELETE " + IGN + "/" + CACHE), c.mutacoes(0));
         assertEquals(List.of("POST " + IGN + "/" + CACHE), c.mutacoes(2), "nenhum DELETE no alvo");
         assertEquals(Set.of(), c.lista(2));

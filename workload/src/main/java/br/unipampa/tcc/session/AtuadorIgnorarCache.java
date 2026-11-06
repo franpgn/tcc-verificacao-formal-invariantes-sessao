@@ -108,6 +108,8 @@ public final class AtuadorIgnorarCache implements AtuadorCluster {
     private CompletableFuture<ClienteAdminRest.Resposta> pendente;
     private String pendenteMetodo;
     private long pendenteIniNs;
+    /** Instante (nanoTime) em que o pendente respondeu, gravado pela thread do cliente HTTP; 0 enquanto nao. */
+    private volatile long pendenteFimNs;
     private Integer ultimoCodigo;
 
     /**
@@ -319,8 +321,13 @@ public final class AtuadorIgnorarCache implements AtuadorCluster {
     private void enviar(String metodo, String no, String cache, long limite) {
         pendenteMetodo = metodo + "@" + no;
         pendenteIniNs = System.nanoTime();
+        pendenteFimNs = 0L;
         ultimoCodigo = null;
-        pendente = cliente.pedirAsync(metodo, uri(no, IGNORADOS + "/" + cache), Math.max(MS, limite - pendenteIniNs));
+        CompletableFuture<ClienteAdminRest.Resposta> f = cliente.pedirAsync(metodo, uri(no, IGNORADOS + "/" + cache),
+                Math.max(MS, limite - pendenteIniNs));
+        // o instante real da resposta (a trilha mostra quanto o POST levou sob corte, mesmo lido so na chamada seguinte)
+        f.whenComplete((r, e) -> pendenteFimNs = System.nanoTime());
+        pendente = f;
     }
 
     /** Codigo do pedido pendente se ele ja respondeu; {@code null} se nao respondeu ou falhou sem codigo. */
@@ -363,8 +370,9 @@ public final class AtuadorIgnorarCache implements AtuadorCluster {
             Throwable c = e.getCause();
             registro = c == null ? "falha" : c.getClass().getSimpleName();
         }
+        long fim = pendenteFimNs == 0L ? System.nanoTime() : pendenteFimNs;
         lido.add("anterior=" + pendenteMetodo.substring(0, pendenteMetodo.indexOf('@')) + ":" + registro + "@"
-                + (System.nanoTime() - pendenteIniNs) / MS + "ms");
+                + (fim - pendenteIniNs) / MS + "ms");
         pendente = null;
         ultimoCodigo = codigo;
         return codigo == null ? -1 : codigo;

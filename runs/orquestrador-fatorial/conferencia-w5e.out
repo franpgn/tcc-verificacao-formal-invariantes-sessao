@@ -1,0 +1,19 @@
+manifesto do orquestrador: <trabalho>\saida\manifesto-bracos.tsv
+  bloco	celula	braco	execucao
+  0	ASYNC-none	PO	exec-0000-ASYNC-none-PO
+  0	ASYNC-none	PL	exec-0003-ASYNC-none-PL
+  0	ASYNC-none	AO	exec-0001-ASYNC-none-AO
+  0	ASYNC-none	AL	exec-0002-ASYNC-none-AL
+  exec-0000-ASYNC-none-PO: fusao=pnn controller=shadow bloco=0 t_fusao_ns=1793992129657000000
+  exec-0003-ASYNC-none-PL: fusao=pnn controller=active bloco=0 t_fusao_ns=1793999004817000000
+  exec-0001-ASYNC-none-AO: fusao=a1 controller=shadow bloco=0 t_fusao_ns=1793994545197000000
+  exec-0002-ASYNC-none-AL: fusao=a1 controller=active bloco=0 t_fusao_ns=1793996693157000000
+
+1) comparar_bracos.py sobre a saida do orquestrador: exit 0
+  celula ASYNC-none: bracos=['PO', 'PL', 'AO', 'AL'] blocos=['0'] efeitos de V=['A1', 'A4', 'interacao'] efeitos_principais=['A1', 'A4'] perda_permanente=True exposicao=True
+  fusao (W-5e): {"0": {"AL": {"sids_exposicao": ["ex-AL"], "sids_perda": ["pp-AL"], "t_fusao_ns": 1793996693157000000}, "AO": {"sids_exposicao": ["ex-AO"], "sids_perda": ["pp-AO"], "t_fusao_ns": 1793994545197000000}, "PL": {"sids_exposicao": ["ex-PL"], "sids_perda": ["pp-PL"], "t_fusao_ns": 1793999004817000000}, "PO": {"sids_exposicao": ["ex-PO"], "sids_perda": ["pp-PO"], "t_fusao_ns": 1793992129657000000}}}
+
+2) PO com fusao=a1 no execucao.json: exit 2 (esperado 2): ERRO: celula fatorial ASYNC-none, bloco 0, braco PO (C:\Users\FRANCE~1\AppData\Local\Temp\claude\98c9abffb040f610\0786b06c-748d-4829-8e8b-152396a994ac\scratchpad\w5e-trab\saida\exec-0000-ASYNC-none-PO): fusao = 'a1' no execucao.json (esperado 'pnn')
+3) PO com t_fusao_ns='x': exit 2 (esperado 2): ERRO: t_fusao_ns invalido no execucao.json de <trabalho>\saida\exec-0000-ASYNC-none-PO: 'x'
+
+RESULTADO: OK

@@ -1531,3 +1531,55 @@ outra suíte de *shell*, Maven nem injetor; só uma derivação em Python de out
 (6296 s): **498 PASS, 0 FAIL**, exit 0, de primeira, sem caso rodado de novo (`runs/bench-int/suite-s3-completa.out`).
 Os 498 incluem os 338 do subconjunto que rodou antes da tag e os casos que ficaram de fora dele (S2, S3, S5 a S10,
 S12 a S21, S23, S26h e S28).
+
+## Orquestrador da avaliação fatorial 2×2 (DT-027) (2026-11-06)
+
+Branch `feature/orquestrador-fatorial` (`wt-fat`), a partir de `edfa8b6`. TD-022 em `docs/implementacao.md`; relatório
+em `docs/relatorio-orquestrador-fatorial-2026-11-06.md`. Só os testes novos e os afetados (pedido do Senior); a suíte
+completa do orquestrador fica para a integração, com a A1 e a A4.
+
+| Suíte | Comando | Resultado |
+|---|---|---|
+| matriz fatorial (nova) | `python -I scripts/test_campanha_s3_matriz_fatorial.py` | vermelho (`c0e2603`): 12 testes, 8 falhas e 1 erro; verde: **12 OK** (a da recalibração X-19 sai com `3f20219d…`) |
+| conferidor do fatorial (nova) | `python -I scripts/test_campanha_s3_conferir_fatorial.py` | vermelho: 28 testes, 25 falhas e 2 erros; verde: **28 OK** (pareamento, `fusao_teto_s`, `fusao-vista`) |
+| matriz e conferidor (afetadas) | `python -I scripts/test_campanha_s3_matriz.py`, `..._conferir.py` | **16 OK, 59 OK** (`runs/orquestrador-fatorial/python-verde.out`) |
+| `EsperaFusaoTest` (nova) | `mvn -o -Dtest=EsperaFusaoTest test` | vermelho: não compila; verde: **13 OK** |
+| JUnit afetados | `mvn -o -Dtest='EsperaFusaoTest,Cli*Test,ControladorCliTest,Arquitetura*Test,NomesDeCacheSoNoResolvedorTest,CanarioArquiteturaTest,ExigirPrimarioTest,HealthRest*Test,ConsultaSaudeRestTest' test` | todos verdes (detalhe abaixo) |
+| orquestrador S33 (novo) | `bash scripts/run-campanha-s3.test.sh S33` | vermelho: 7 PASS, 29 FAIL (`runs/orquestrador-fatorial/s33-vermelho.out`); verde: **36 PASS, 0 FAIL** (`s33-verde.out`) |
+| orquestrador S34 (novo) | `bash scripts/run-campanha-s3.test.sh S34` | **74 PASS, 0 FAIL** (`runs/orquestrador-fatorial/s34-verde.out`) |
+| orquestrador S35, S36 (novos) | `bash scripts/run-campanha-s3.test.sh S35 S36` | **67 PASS, 0 FAIL** (`runs/orquestrador-fatorial/s35-s36-verde.out`) |
+| orquestrador, casos afetados | `bash scripts/run-campanha-s3.test.sh S1 S2 S4 S5 S6 S11 S12 S14 S16 S18 S20 S24 S27 S29 S30 S31 S32` | **294 PASS, 0 FAIL** (19:04:03Z a 19:52:37Z, 2914 s; `runs/orquestrador-fatorial/afetados-verde.out`): plano e `--help` (S1), pré-voo (S2), recriação, *caches* e camada 3 com o diretório da execução (S4, S12, S27), meta pelo controlador do braço (S5, S6, S18, S29/S29n), *bundle* e retomada (S11, S30, S31, S32), bloco perdido (S14), regra do `\|\| true` (S16), pareamento pelo conferidor (S20), referência por perfil (S24) |
+
+JUnit afetados, verdes: `EsperaFusaoTest` 13, `CliTest` 15, `CliS3Test` 7, `CliInstrumentacaoTest` 5,
+`CliReligamentoTest` 5, `CliSondaReplayTest` 4, `ControladorCliTest` 10, `ArquiteturaSondaSaudeTest` 5,
+`ArquiteturaAtuadorTest` 4, `ArquiteturaSemAcaoNoClienteTest` 1, `ArquiteturaControleTest` 2,
+`ArquiteturaDefasagemTest` 2, `ArquiteturaSondaTest` 1, `NomesDeCacheSoNoResolvedorTest` 4, `CanarioArquiteturaTest` 5,
+`ExigirPrimarioTest` 5, `HealthRestTest` 4, `HealthRestHttpTest` 6, `ConsultaSaudeRestTest` 12.
+
+Casos novos do orquestrador:
+
+- **S33** (*dry-run*): plano com `fusao=` (4 `pnn`, 2 `a1`), braço, controlador e fusão coerentes; linha do programa com
+  `--sweep --sweep-merge-timeout-sec 20`; as linhas `DRY-RUN fusao`, `fusao antes da varredura` e `extensao`; recusa
+  (exit 4) sem `--sonda-replay`, sem `fusao_teto_s`, com `fusao_teto_s` que passa do fim da carga, com SHA-256 do JAR
+  errado, sem o `sessions-async-a1.json`, com ele em `PREFERRED_NON_NULL`, com o *compose* sem o JAR, com dois nós ou
+  sem o arquivo, e com o bloco fatorial sem o AL; nenhuma chamada a `java`/`podman`/`curl`; a matriz de 13 colunas
+  sem o JAR nem o JSON da A1 passa como antes, sem `fusao=` no plano.
+- **S34** (bloco 2×2 executado, `ASYNC-none:teste:1`): os quatro `ACEITA`; por braço, `fusao`, `controller` e `bloco`
+  no `execucao.json`, arquivo e SHA-256 da variante, política lida de volta nos três nós, `counters-async` em
+  `PREFERRED_NON_NULL`, `A1-POLITICA carregada` 1/1/1 no `a1` e 0/0/0 no `pnn`, `<exec>/caches/sessions-async.json`
+  igual ao JSON do braço, camada 3 sem divergência, `t_fusao_ns` igual ao `t_vista_ns` do `fusao-rep-001.json`; mesma
+  semente nos quatro; `manifesto-bracos.tsv` com PO, PL, AO e AL; *bundle* com o `sessions-async-a1.json` e o JAR;
+  sem `--extensao-sha256` fora do *dry-run*, exit 2.
+- **S35** (três casos: criação do `sessions-async` recusada no braço A1; `A1-POLITICA carregada` ausente no isn2; a linha
+  presente num braço PNN): o braço vira `DESCARTADA-INFRA` com motivo `infra: fusao`, sem carga e com MANIFEST; os
+  anteriores `ACEITA`, os seguintes `PULADA`; exit 0; o `repor` refaz o bloco com os quatro.
+- **S36** (F2 na matriz fatorial, bloco A/B): `fusao_vista` com a primeira `ISPN000093` 44,0 s depois do `end` nos três
+  nós e o *driver* de log; `t_fusao_ns` presente; e, sem a linha no log e com o programa sem fusão no teto
+  (`java-sem-fusao`), `ACEITA` com `fusao_vista` nulo e motivo, `t_fusao_ns` ausente e o `varredura-rep-001.erro.txt`
+  do programa guardado.
+
+**Conferência com o W-5e** (`runs/orquestrador-fatorial/scripts/conferir_w5e.py`, saída em
+`runs/orquestrador-fatorial/conferencia-w5e.out`): a saída do S34 (guardada com `CS_TESTE_GUARDAR`), com os dados de
+carga sintéticos dos geradores do W-5c/W-5e e o manifesto e os `execucao.json` do orquestrador, passou na CLI do
+`comparar_bracos.py` de `wt-w5e` (`d1bb887`): exit 0, braços PO/PL/AO/AL, contrastes A1, A4 e interação, perda e
+exposição por `t_fusao_ns`. Com `fusao` trocada no PO, ou `t_fusao_ns` inválido, exit 2.

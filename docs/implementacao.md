@@ -95,6 +95,79 @@ o ProtoStream padrão falha ao serializar e toda escrita vira
 
 ## Decisões técnicas a registrar
 
+### TD-022 — Orquestrador da avaliação fatorial 2×2 (DT-027): variante da regra de fusão por braço, JAR da extensão e checagem de fusão antes da varredura (2026-11-06)
+
+Numeração provisória: TD-020 é da A1 (`wt-a1`) e TD-021 do W-5e (`wt-w5e`), ainda fora desta base; se a A4 tomar o
+TD-022 antes, este passa ao próximo livre na integração. Branch `feature/orquestrador-fatorial` (`wt-fat`), a partir de
+`edfa8b6`. Especificação: complemento 1 do pré-registro do *benchmark* refeito (DT-027, `4fa4546`/`f6965ae`), seções 1,
+3 e 5. Nomes combinados com a análise (W-5e, `d1bb887`, `CAMPO_FUSAO`/`CAMPO_T_FUSAO`): `fusao`, `controller`, `bloco` e
+`t_fusao_ns` no `execucao.json`; PO, PL, AO e AL no `manifesto-bracos.tsv`.
+
+**Matriz** (`campanha_s3_matriz.py gerar --modo fatorial`). Mesmos argumentos da avaliação (`--nucleo`, `--extras`,
+`--ordem-seed`, `--s0`, `--passo-semente`, `--i0`, `--b0`). O TSV tem uma coluna a mais **no fim**, `fusao` (`pnn` =
+`PREFERRED_NON_NULL`, `a1` = `PoliticaFusaoSessoes`); as 13 posições antigas não mudam. A DT-027 §5 chama a coluna de
+`regra`; o nome `fusao` segue o pedido do coordenador e o W-5e. Na célula de papel `teste`, cada bloco tem quatro braços
+com a mesma semente, em ordem `random.Random(ordem_seed * 1000000 + bloco).shuffle(["PO", "PL", "AO", "AL"])`; nas de
+papel `descritiva`/`referencia`, A e B com `pnn`, com o mesmo sorteio de antes. As matrizes de calibração e de avaliação
+continuam com 13 colunas, byte a byte (a da recalibração X-19 sai com o mesmo `3f20219d…`); a leitura aceita os dois
+formatos, e a de 13 vale como `pnn`. O `repor` refaz o bloco fatorial perdido com os quatro braços.
+
+| Braço | `fusao` | `controller` | JSON do `sessions-async` |
+|---|---|---|---|
+| PO | `pnn` | `shadow` | `cluster/caches/sessions-async.json` |
+| PL | `pnn` | `active` | idem |
+| AO | `a1` | `shadow` | `cluster/caches/sessions-async-a1.json` (do integrador, com a A1) |
+| AL | `a1` | `active` | idem |
+| A, B (descritivas) | `pnn` | `shadow`, `active` | `sessions-async.json` |
+
+**Pareamento** (`campanha_s3_conferir.py pareamento --matriz`), no lugar do `awk` do orquestrador: bloco A/B ou
+PO/PL/AO/AL, cada braço uma vez, mesma célula, papel e semente; controlador e fusão coerentes com o braço; braço do
+fatorial só na matriz de 14 colunas; sem bloco, só o A da calibração. Recusa (exit 5; o orquestrador sai com 4).
+
+**Orquestrador** (`run-campanha-s3.sh`). Tudo abaixo só com a matriz de 14 colunas; com a de 13, nada muda.
+
+1. *Variante por braço.* Os seis JSON da execução vão a `<exec>/caches/`, com o `sessions-async.json` trocado pelo da
+   variante; o `cria-caches.sh` (congelado) recebe esse diretório, e a camada 3 compara com ele. O `counters-async` fica
+   `PREFERRED_NON_NULL` nos quatro. O pré-voo e o `--dry-run` conferem o arquivo de cada variante da fila (existe, uma
+   linha, a `merge-policy` esperada) e o `counters-async.json`.
+2. *Confirmação no cluster.* Depois do K1, o `?action=config` do `sessions-async` e do `counters-async` nos três nós e a
+   contagem de `A1-POLITICA carregada` em `podman logs` de cada nó (≥ 1 no braço `a1`, 0 no `pnn`, como no *smoke* da A1).
+   Se algo não bate, ou se o `cria-caches.sh` falhou no `sessions-async` (criação recusada ou leitura de volta
+   divergente), a execução vira `DESCARTADA-INFRA` **sem carga** e a fase segue; os braços seguintes do bloco viram
+   `PULADA`, e o `repor` refaz o bloco. Falha de outro *cache* continua parando a fase com 6, como antes.
+3. *JAR da extensão.* Lido do volume do *compose* em `/opt/infinispan/server/lib/tcc-extensao-servidor.jar` (a A1 o
+   acrescenta, `04719ee`): três montagens da mesma fonte, ou nenhuma. Com `fusao=a1` na fila, obrigatório. Montado,
+   `--extensao-sha256` é obrigatório fora do `--dry-run` (exit 2), o SHA-256 é conferido (exit 4), e o JAR entra no
+   *bundle* e no `execucao.json` (`extensao_sha256`). O orquestrador não constrói o JAR: o roteiro do *bundle* o faz.
+4. *Fusão antes da varredura.* A matriz fatorial exige `--sonda-replay` e o `fusao_teto_s` do `--parametros`, que vai ao
+   programa como `--sweep-merge-timeout-sec` depois do `--sweep`. Depois da carga, o orquestrador copia o
+   `fusao-rep-001.json` do programa para `fusao_checagem` e, se a vista de 3 veio, `t_vista_ns` para **`t_fusao_ns`**; sem
+   fusão no teto, o campo fica **ausente** (pedido do coordenador; o W-5e não emite perda nem exposição) e o programa já
+   gravou `varredura-rep-001.erro.txt`. Também guarda as linhas `ISPN000093` de cada nó (`fusao-ispn000093.txt`) e a
+   primeira depois do `end` em `fusao_vista` (DT-027 §2.2), com o *driver* de log, só como registro.
+5. `manifesto-bracos.tsv`: o bloco fatorial com os quatro `ACEITA` entra com PO, PL, AO e AL (cabeçalho de sempre).
+
+**Teto da fusão: 72 s, contados do `end`.** Origem: o maior tempo de fusão medido depois do `end` da F2 na VM, 47,8 s
+(+42,2 a +47,8 s nas 18 execuções F2 do X-18 e do X-19, primeira leitura da sonda de topologia do controlador com os
+três nós em 3, resolução de 2 s; o coordenador citou +44 a +48 s), arredondado a 48 s, vezes 1,5, a folga que o
+`exec_teto_s` dá aos tempos medidos (pré-registro da calibração §4.1). O conferidor exige `inj_offset_s + f2_dur_s +
+fusao_teto_s <= duracao_s` (49 + 90 + 72 = 211 ≤ 300): o prazo vence antes do fim da carga. Como a varredura começa
+~154 s depois do `end` (fim da carga e convergência nas nove F2 do X-19), o prazo já passou nela, e a espera custa uma
+leitura (três GET em paralelo, até 5 s): o `exec_teto_s` não muda.
+
+**Programa** (`EsperaFusao`, `--sweep-merge-timeout-sec`). Exige `--sweep` e `--controller-admin` com um nó por
+servidor. Antes da varredura, lê `GET /rest/v2/cache-managers/default/health` dos nós de `--controller-admin` em paralelo
+(`ClienteAdminRest`, prazo de 5 s do `HealthRest`), a cada 2 s (período da sonda de topologia), até todos responderem
+com `number_of_nodes` = 3 e o mesmo conjunto `node_names` de 3, ou até o `end` + teto (sem `end`, uma leitura); ao
+menos uma leitura. Grava `fusao-rep-NNN.json` e a linha `Fusao antes da varredura:`; sem fusão, não varre e grava
+`varredura-rep-NNN.erro.txt` com o motivo (a última leitura de cada nó). Sem a opção, nada muda. Só GET de saúde.
+
+**Ressalva sobre `t_fusao_ns`.** É o instante em que a checagem **viu** a vista de fusão, na VM ~154 s depois do `end`,
+e não o instante da fusão (~44 s depois do `end`). Se o W-5e separar exposição e perda permanente por ele, as I1 online
+entre a fusão e a varredura vão para a exposição. A DT-027 §2.2 define o instante pela `ISPN000093`, que fica em
+`fusao_vista.primeira_apos_end_ns` (sujeita à perda de linhas do `journald`, P-A4.2). Ponto levado ao Gestor no
+relatório `docs/relatorio-orquestrador-fatorial-2026-11-06.md`.
+
 ### TD-019 — W-5c: V com a sonda de *replay* e a varredura no `comparar_bracos.py` (2026-11-06)
 
 Numeração: TD-017 na branch `feature/w5c-v-com-sonda` (o próximo livre na base `daa18a2`). Na integração (06/11) o

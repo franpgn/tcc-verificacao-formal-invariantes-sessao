@@ -173,6 +173,16 @@ A leitura de volta `?action=config` dos quatro *caches* da carga criados pela RE
 servidor real (só a dos `canario*` está prevista no *smoke* do W-4): a primeira subida local ou a validação X-17 mostra
 se ela volta byte a byte igual ao JSON, como o `cria-caches.sh` exige.
 
+**Avaliação fatorial 2×2 (DT-027; TD-022).** Com a matriz fatorial, o `sessions-async` de cada execução sai do JSON da
+variante do braço: `cluster/caches/sessions-async.json` (`merge-policy` `PREFERRED_NON_NULL`, braços PO, PL, A e B) ou
+`cluster/caches/sessions-async-a1.json` (`br.unipampa.tcc.servidor.PoliticaFusaoSessoes`, braços AO e AL; arquivo da
+A1, que entra na integração). Os outros cinco, inclusive o `counters-async` (`PREFERRED_NON_NULL` nos quatro braços),
+não mudam. O orquestrador copia os seis da execução para `<exec>/caches/` e passa esse diretório ao `cria-caches.sh`;
+depois do K1 confere a `merge-policy` lida de volta nos três nós e a linha `A1-POLITICA carregada` no log de cada nó
+(o JAR da extensão, montado em `server/lib` pelos três serviços do *compose* da A1, carrega a classe só quando um
+*cache* a usa). Com o `sessions-async-a1.json` no diretório, o `CachesCargaJsonTest` ("exatamente os seis JSON") tem de
+aceitar o sétimo na integração.
+
 ## Como verificar conectividade dos nós
 
 ```bash

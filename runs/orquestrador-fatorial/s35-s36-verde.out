@@ -1,0 +1,71 @@
+== S35: DT-027: politica que nao ficou (criacao recusada, A1-POLITICA ausente num no, classe carregada no braco PNN) -> DESCARTADA-INFRA sem carga, a fase segue ==
+PASS: S35 post-falha: exit 0 (a fase segue)
+PASS: S35 post-falha: AO DESCARTADA-INFRA
+PASS: S35 post-falha: motivo infra: fusao
+PASS: S35 post-falha: fusao_config ok false no execucao.json
+PASS: S35 post-falha: fusao e controller do braco descartado no execucao.json
+PASS: S35 post-falha: sem t_fusao_ns no braco sem carga
+PASS: S35 post-falha: sem carga no braco descartado (sem stdout.log)
+PASS: S35 post-falha: MANIFEST do braco descartado
+PASS: S35 post-falha: cargas = bracos antes do descartado
+PASS: S35 post-falha: i=0 antes do descartado ACEITA
+PASS: S35 post-falha: i=2 depois do descartado PULADA (bloco refeito inteiro)
+PASS: S35 post-falha: i=3 depois do descartado PULADA (bloco refeito inteiro)
+PASS: S35 post-falha: motivo cita a criacao do sessions-async
+PASS: S35 post-falha: repor refaz o bloco com os quatro
+PASS: S35 sem-log-isn2: exit 0 (a fase segue)
+PASS: S35 sem-log-isn2: AO DESCARTADA-INFRA
+PASS: S35 sem-log-isn2: motivo infra: fusao
+PASS: S35 sem-log-isn2: fusao_config ok false no execucao.json
+PASS: S35 sem-log-isn2: fusao e controller do braco descartado no execucao.json
+PASS: S35 sem-log-isn2: sem t_fusao_ns no braco sem carga
+PASS: S35 sem-log-isn2: sem carga no braco descartado (sem stdout.log)
+PASS: S35 sem-log-isn2: MANIFEST do braco descartado
+PASS: S35 sem-log-isn2: cargas = bracos antes do descartado
+PASS: S35 sem-log-isn2: i=0 antes do descartado ACEITA
+PASS: S35 sem-log-isn2: i=2 depois do descartado PULADA (bloco refeito inteiro)
+PASS: S35 sem-log-isn2: i=3 depois do descartado PULADA (bloco refeito inteiro)
+PASS: S35 sem-log-isn2: motivo cita isn2 e a linha
+PASS: S35 sem-log-isn2: contagem por no
+PASS: S35 sem-log-isn2: repor refaz o bloco com os quatro
+PASS: S35 log-no-pnn: exit 0 (a fase segue)
+PASS: S35 log-no-pnn: PO DESCARTADA-INFRA
+PASS: S35 log-no-pnn: motivo infra: fusao
+PASS: S35 log-no-pnn: fusao_config ok false no execucao.json
+PASS: S35 log-no-pnn: fusao e controller do braco descartado no execucao.json
+PASS: S35 log-no-pnn: sem t_fusao_ns no braco sem carga
+PASS: S35 log-no-pnn: sem carga no braco descartado (sem stdout.log)
+PASS: S35 log-no-pnn: MANIFEST do braco descartado
+PASS: S35 log-no-pnn: cargas = bracos antes do descartado
+PASS: S35 log-no-pnn: i=1 depois do descartado PULADA (bloco refeito inteiro)
+PASS: S35 log-no-pnn: i=2 depois do descartado PULADA (bloco refeito inteiro)
+PASS: S35 log-no-pnn: i=3 depois do descartado PULADA (bloco refeito inteiro)
+PASS: S35 log-no-pnn: motivo cita a linha no braco PNN
+PASS: S35 log-no-pnn: repor refaz o bloco com os quatro
+== S36: DT-027: F2 na matriz fatorial: instante da fusao (ISPN000093 depois do end) e driver de log no execucao.json ==
+PASS: S36 exit 0
+PASS: S36 A ACEITA
+PASS: S36 A fusao pnn
+PASS: S36 A vista de fusao 44 s depois do end
+PASS: S36 A os tres nos com a linha
+PASS: S36 A fonte da vista
+PASS: S36 A driver de log
+PASS: S36 A linhas ISPN000093 guardadas
+PASS: S36 A t_fusao_ns presente (checagem do programa)
+PASS: S36 B ACEITA
+PASS: S36 B fusao pnn
+PASS: S36 B vista de fusao 44 s depois do end
+PASS: S36 B os tres nos com a linha
+PASS: S36 B fonte da vista
+PASS: S36 B driver de log
+PASS: S36 B linhas ISPN000093 guardadas
+PASS: S36 B t_fusao_ns presente (checagem do programa)
+PASS: S36 manifesto-bracos.tsv (bloco A/B da matriz fatorial)
+PASS: S36b sem a linha de fusao no log: exit 0, ACEITA (so registro)
+PASS: S36b instante da fusao nulo
+PASS: S36b motivo com o driver de log
+PASS: S36b sem fusao no teto da checagem do programa: t_fusao_ns ausente
+PASS: S36b varredura-rep-001.erro.txt do programa guardado na execucao
+PASS: S36b registro da checagem no execucao.json
+
+==== RESULTADO: 67 PASS, 0 FAIL ====

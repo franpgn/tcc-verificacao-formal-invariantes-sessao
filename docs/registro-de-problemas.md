@@ -1371,6 +1371,25 @@ branch) foram trocadas pelos da integração (+2). As mensagens de commit da bra
 - **Status:** `RESOLVIDO` no W-6c, exceto a regra da análise do N1 (fim nominal ou `end` do injetor nas execuções com o
   aviso do B1), que é decisão do Gestor no B-40 §9 e uso no W-5b.
 
+### P-61 (orquestrador fatorial, `feature/orquestrador-fatorial`; número provisório) — `t_fusao_ns` da checagem antes da varredura não é o instante da fusão
+
+- **Contexto:** a DT-027 §2.2 separa a perda permanente da exposição na janela pelo instante da fusão, "a primeira
+  vista de fusão (`ISPN000093`) depois do `end`". O coordenador fixou (06/11, alinhamento com o W-5e) que `t_fusao_ns`
+  no `execucao.json` é o instante em que a checagem antes da varredura (`EsperaFusao`) viu os três nós com a mesma
+  vista de 3 membros.
+- **Achado:** na VM, a fusão vem 42,2 a 47,8 s depois do `end` da F2 (18 execuções F2 do X-18 e do X-19, sonda de
+  topologia), e a varredura (logo, a checagem) começa 153,9 a 154,1 s depois do `end` (fim da carga e convergência nas
+  nove F2 do X-19). `t_fusao_ns` fica ~110 s depois da fusão real. Se o W-5e usar esse campo para separar as duas
+  medidas, as I1 online detectadas entre a fusão e a varredura contam como exposição na janela, e não como perda.
+- **O que o orquestrador grava:** `t_fusao_ns` como pedido; e, só como registro, as linhas `ISPN000093` de cada nó
+  (`fusao-ispn000093.txt`) com a primeira depois do `end` em `fusao_vista.primeira_apos_end_ns`, mais o *driver* de log
+  dos contêineres. Com o `journald`, as recusas Hot Rod podem suprimir linhas (P-A4.2 da A4); o campo fica nulo, com o
+  motivo, quando não há linha.
+- **Status:** `ABERTO`, decisão do Gestor: (a) manter `t_fusao_ns` como está, sabendo do deslocamento; (b) o W-5e usar
+  `fusao_vista.primeira_apos_end_ns` (e o *compose* passar a `logging: driver: k8s-file`, que é mudança de
+  infraestrutura); (c) a checagem do programa passar a acompanhar a vista desde o `end` (uma *thread* a cada 2 s até a
+  fusão), o que dá o instante com 2 s de resolução, mas é mudança de desenho fora deste pedido.
+
 ## Observação de modelagem (não é defeito)
 
 Com 8 *threads* = 8 identidades fixas (`user-<tid>`), `incrementFailure`

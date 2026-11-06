@@ -1,0 +1,4623 @@
+{
+ "celulas": {
+  "D": {
+   "blocos": [
+    "1",
+    "2"
+   ],
+   "blocos_excluidos_por_steal": [],
+   "co_principal_v": {
+    "avaliavel": true,
+    "binomial_wilson_por_1000": {
+     "A": [
+      0.38894703739082326,
+      2.5685773657312603
+     ],
+     "B": [
+      0.044132501957676276,
+      1.4148310660989596
+     ]
+    },
+    "contagem": {
+     "A": 4,
+     "B": 1
+    },
+    "desfecho": "taxa_violacoes_por_1000",
+    "k_nao_nulos": 2,
+    "motivo": null,
+    "n_acoes": {
+     "A": 4000,
+     "B": 4000
+    },
+    "n_blocos": 2,
+    "nota_independencia": "uma fusao produz varias violacoes de uma vez; a unidade e a execucao",
+    "p_minimo_atingivel": 0.5,
+    "regra_de_tres": {}
+   },
+   "controlador": {
+    "por_bloco": {
+     "1": {
+      "A": {
+       "ac5_aplicada": false,
+       "acoes_politica_antes_da_falha": 0,
+       "acoes_por_tipo": {
+        "AC-2": {
+         "aplicar": {
+          "PREVISTA": 1
+         },
+         "ativa_no_fim": true,
+         "reverter": {},
+         "tempo_ativo_s": 39.989999997
+        }
+       },
+       "atraso_entrada_conservador_s": 5.0,
+       "atraso_primeira_acao_s": 5.000000002,
+       "atuador": "por-tipo(AC-2=rest-infinispan,AC-5=rest-infinispan)",
+       "completo": true,
+       "decisoes": 1,
+       "entradas_antes_da_falha": 0,
+       "entradas_conservador": 1,
+       "esquema": "decisoes-controlador/1.2",
+       "janelas_conservador": 1,
+       "modo": "shadow",
+       "param_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+       "politica": "por-assinatura",
+       "politicas": {},
+       "reversoes": {
+        "falha": 0,
+        "sucesso": 0
+       },
+       "reversoes_por_origem": {},
+       "t_ultimo_ns": 1761566415010000003,
+       "tempo_conservador_s": 5.0,
+       "transicoes": 1
+      },
+      "B": {
+       "ac5_aplicada": false,
+       "acoes_politica_antes_da_falha": 0,
+       "acoes_por_tipo": {
+        "AC-2": {
+         "aplicar": {
+          "APLICADA": 1
+         },
+         "ativa_no_fim": true,
+         "reverter": {},
+         "tempo_ativo_s": 39.989999997
+        }
+       },
+       "atraso_entrada_conservador_s": 5.0,
+       "atraso_primeira_acao_s": 5.000000002,
+       "atuador": "por-tipo(AC-2=rest-infinispan,AC-5=rest-infinispan)",
+       "completo": true,
+       "decisoes": 1,
+       "entradas_antes_da_falha": 0,
+       "entradas_conservador": 1,
+       "esquema": "decisoes-controlador/1.2",
+       "janelas_conservador": 1,
+       "modo": "active",
+       "param_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+       "politica": "por-assinatura",
+       "politicas": {},
+       "reversoes": {
+        "falha": 0,
+        "sucesso": 0
+       },
+       "reversoes_por_origem": {},
+       "t_ultimo_ns": 1761566415010000003,
+       "tempo_conservador_s": 5.0,
+       "transicoes": 1
+      }
+     },
+     "2": {
+      "A": {
+       "ac5_aplicada": false,
+       "acoes_politica_antes_da_falha": 0,
+       "acoes_por_tipo": {
+        "AC-2": {
+         "aplicar": {
+          "PREVISTA": 1
+         },
+         "ativa_no_fim": true,
+         "reverter": {},
+         "tempo_ativo_s": 39.989999997
+        }
+       },
+       "atraso_entrada_conservador_s": 5.0,
+       "atraso_primeira_acao_s": 5.000000002,
+       "atuador": "por-tipo(AC-2=rest-infinispan,AC-5=rest-infinispan)",
+       "completo": true,
+       "decisoes": 1,
+       "entradas_antes_da_falha": 0,
+       "entradas_conservador": 1,
+       "esquema": "decisoes-controlador/1.2",
+       "janelas_conservador": 1,
+       "modo": "shadow",
+       "param_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+       "politica": "por-assinatura",
+       "politicas": {},
+       "reversoes": {
+        "falha": 0,
+        "sucesso": 0
+       },
+       "reversoes_por_origem": {},
+       "t_ultimo_ns": 1761566415010000003,
+       "tempo_conservador_s": 5.0,
+       "transicoes": 1
+      },
+      "B": {
+       "ac5_aplicada": false,
+       "acoes_politica_antes_da_falha": 0,
+       "acoes_por_tipo": {
+        "AC-2": {
+         "aplicar": {
+          "APLICADA": 1
+         },
+         "ativa_no_fim": true,
+         "reverter": {},
+         "tempo_ativo_s": 39.989999997
+        }
+       },
+       "atraso_entrada_conservador_s": 5.0,
+       "atraso_primeira_acao_s": 5.000000002,
+       "atuador": "por-tipo(AC-2=rest-infinispan,AC-5=rest-infinispan)",
+       "completo": true,
+       "decisoes": 1,
+       "entradas_antes_da_falha": 0,
+       "entradas_conservador": 1,
+       "esquema": "decisoes-controlador/1.2",
+       "janelas_conservador": 1,
+       "modo": "active",
+       "param_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+       "politica": "por-assinatura",
+       "politicas": {},
+       "reversoes": {
+        "falha": 0,
+        "sucesso": 0
+       },
+       "reversoes_por_origem": {},
+       "t_ultimo_ns": 1761566415010000003,
+       "tempo_conservador_s": 5.0,
+       "transicoes": 1
+      }
+     }
+    },
+    "totais": {
+     "A": {
+      "acoes_politica_antes_da_falha": 0,
+      "acoes_por_tipo": {
+       "AC-2": {
+        "aplicar": {
+         "PREVISTA": 2
+        },
+        "execucoes_ativa_no_fim": 2,
+        "reverter": {},
+        "tempo_ativo_s": 79.979999994
+       }
+      },
+      "atrasos_entrada_s": [
+       5.0,
+       5.0
+      ],
+      "atrasos_primeira_acao_s": [
+       5.000000002,
+       5.000000002
+      ],
+      "entradas_antes_da_falha": 0,
+      "entradas_conservador": 2,
+      "execucoes_com_ac5_aplicada": 0,
+      "execucoes_com_trilha": 2,
+      "mediana_atraso_entrada_s": 5.0,
+      "mediana_atraso_primeira_acao_s": 5.000000002,
+      "reversoes": {
+       "falha": 0,
+       "sucesso": 0
+      },
+      "tempo_conservador_s": 10.0,
+      "transicoes": 2
+     },
+     "B": {
+      "acoes_politica_antes_da_falha": 0,
+      "acoes_por_tipo": {
+       "AC-2": {
+        "aplicar": {
+         "APLICADA": 2
+        },
+        "execucoes_ativa_no_fim": 2,
+        "reverter": {},
+        "tempo_ativo_s": 79.979999994
+       }
+      },
+      "atrasos_entrada_s": [
+       5.0,
+       5.0
+      ],
+      "atrasos_primeira_acao_s": [
+       5.000000002,
+       5.000000002
+      ],
+      "entradas_antes_da_falha": 0,
+      "entradas_conservador": 2,
+      "execucoes_com_ac5_aplicada": 0,
+      "execucoes_com_trilha": 2,
+      "mediana_atraso_entrada_s": 5.0,
+      "mediana_atraso_primeira_acao_s": 5.000000002,
+      "reversoes": {
+       "falha": 0,
+       "sucesso": 0
+      },
+      "tempo_conservador_s": 10.0,
+      "transicoes": 2
+     }
+    }
+   },
+   "desfechos": {
+    "acao_s3_p99_com_espera": {
+     "blocos_excluidos": [],
+     "d_b": {
+      "1": 0.0,
+      "2": 0.0
+     },
+     "escala": "log-razao",
+     "estimativa": 1.0,
+     "familia": "co-principal-L",
+     "ic_boot_blocos": [
+      1.0,
+      1.0
+     ],
+     "ic_hierarquico": [
+      1.0,
+      1.0
+     ],
+     "ic_t": [
+      1.0,
+      1.0
+     ],
+     "indice_semente": 0,
+     "k_nao_nulos": 0,
+     "n_blocos": 2,
+     "n_por_bloco": {
+      "1": {
+       "A": 2000,
+       "B": 2000
+      },
+      "2": {
+       "A": 2000,
+       "B": 2000
+      }
+     },
+     "nao_inferioridade": {
+      "delta": 0.1,
+      "limite": 1.1,
+      "limite_superior_ic_t": 1.0,
+      "p": null
+     },
+     "p_holm": null,
+     "p_minimo_atingivel": 1.0,
+     "p_permutacao": null
+    },
+    "acao_s3_p99_sem_espera": {
+     "blocos_excluidos": [],
+     "d_b": {
+      "1": 0.0,
+      "2": 0.0
+     },
+     "escala": "log-razao",
+     "estimativa": 1.0,
+     "familia": "secundario",
+     "ic_boot_blocos": [
+      1.0,
+      1.0
+     ],
+     "ic_hierarquico": [
+      1.0,
+      1.0
+     ],
+     "ic_t": [
+      1.0,
+      1.0
+     ],
+     "indice_semente": 1,
+     "k_nao_nulos": 0,
+     "n_blocos": 2,
+     "n_por_bloco": {
+      "1": {
+       "A": 2000,
+       "B": 2000
+      },
+      "2": {
+       "A": 2000,
+       "B": 2000
+      }
+     },
+     "p_holm": null,
+     "p_minimo_atingivel": 1.0,
+     "p_permutacao": null
+    },
+    "delta_conv_s": {
+     "blocos_excluidos": [],
+     "d_b": {
+      "1": 0.0,
+      "2": 0.0
+     },
+     "escala": "diferenca",
+     "estimativa": 0.0,
+     "familia": "secundario",
+     "ic_boot_blocos": [
+      0.0,
+      0.0
+     ],
+     "ic_hierarquico": null,
+     "ic_t": [
+      0.0,
+      0.0
+     ],
+     "indice_semente": 2,
+     "k_nao_nulos": 0,
+     "n_blocos": 2,
+     "n_por_bloco": {
+      "1": {
+       "A": 1,
+       "B": 1
+      },
+      "2": {
+       "A": 1,
+       "B": 1
+      }
+     },
+     "p_holm": null,
+     "p_minimo_atingivel": 1.0,
+     "p_permutacao": null
+    },
+    "delta_rec_s": {
+     "blocos_excluidos": [],
+     "censuradas": {
+      "A": 0,
+      "B": 0
+     },
+     "d_b": {
+      "1": 0.0,
+      "2": 0.0
+     },
+     "escala": "diferenca",
+     "estimativa": 0.0,
+     "familia": "secundario",
+     "ic_boot_blocos": [
+      0.0,
+      0.0
+     ],
+     "ic_hierarquico": null,
+     "ic_t": [
+      0.0,
+      0.0
+     ],
+     "indice_semente": 3,
+     "k_nao_nulos": 0,
+     "n_blocos": 2,
+     "n_por_bloco": {
+      "1": {
+       "A": 1,
+       "B": 1
+      },
+      "2": {
+       "A": 1,
+       "B": 1
+      }
+     },
+     "p_holm": null,
+     "p_minimo_atingivel": 1.0,
+     "p_permutacao": null
+    },
+    "divergencia_persistente": {
+     "blocos_excluidos": [],
+     "d_b": {
+      "1": 0.0,
+      "2": 0.0
+     },
+     "escala": "diferenca",
+     "estimativa": 0.0,
+     "familia": "secundario",
+     "ic_boot_blocos": [
+      0.0,
+      0.0
+     ],
+     "ic_hierarquico": null,
+     "ic_t": [
+      0.0,
+      0.0
+     ],
+     "indice_semente": 4,
+     "k_nao_nulos": 0,
+     "n_blocos": 2,
+     "n_por_bloco": {
+      "1": {
+       "A": 1,
+       "B": 1
+      },
+      "2": {
+       "A": 1,
+       "B": 1
+      }
+     },
+     "p_holm": null,
+     "p_minimo_atingivel": 1.0,
+     "p_permutacao": null
+    },
+    "evento_p99:Logout": {
+     "blocos_excluidos": [
+      {
+       "bloco": "1",
+       "motivo": "A: n<1000"
+      },
+      {
+       "bloco": "2",
+       "motivo": "A: n<1000"
+      }
+     ],
+     "d_b": {},
+     "escala": "log-razao",
+     "estimativa": null,
+     "familia": "secundario",
+     "ic_boot_blocos": null,
+     "ic_hierarquico": null,
+     "ic_t": null,
+     "indice_semente": 5,
+     "k_nao_nulos": 0,
+     "n_blocos": 0,
+     "n_por_bloco": {
+      "1": {
+       "A": 2,
+       "B": null
+      },
+      "2": {
+       "A": 2,
+       "B": 1
+      }
+     },
+     "p_holm": null,
+     "p_minimo_atingivel": null,
+     "p_permutacao": null
+    },
+    "evento_p99:Validate": {
+     "blocos_excluidos": [
+      {
+       "bloco": "1",
+       "motivo": "A: n<1000"
+      },
+      {
+       "bloco": "2",
+       "motivo": "A: n<1000"
+      }
+     ],
+     "d_b": {},
+     "escala": "log-razao",
+     "estimativa": null,
+     "familia": "secundario",
+     "ic_boot_blocos": null,
+     "ic_hierarquico": null,
+     "ic_t": null,
+     "indice_semente": 6,
+     "k_nao_nulos": 0,
+     "n_blocos": 0,
+     "n_por_bloco": {
+      "1": {
+       "A": 380,
+       "B": 380
+      },
+      "2": {
+       "A": 380,
+       "B": 380
+      }
+     },
+     "p_holm": null,
+     "p_minimo_atingivel": null,
+     "p_permutacao": null
+    },
+    "falhas_percebidas_por_1000": {
+     "blocos_excluidos": [],
+     "d_b": {
+      "1": 0.0,
+      "2": 0.0
+     },
+     "escala": "diferenca",
+     "estimativa": 0.0,
+     "familia": "secundario",
+     "ic_boot_blocos": [
+      0.0,
+      0.0
+     ],
+     "ic_hierarquico": null,
+     "ic_t": [
+      0.0,
+      0.0
+     ],
+     "indice_semente": 7,
+     "k_nao_nulos": 0,
+     "n_blocos": 2,
+     "n_por_bloco": {
+      "1": {
+       "A": 2000,
+       "B": 2000
+      },
+      "2": {
+       "A": 2000,
+       "B": 2000
+      }
+     },
+     "p_holm": null,
+     "p_minimo_atingivel": 1.0,
+     "p_permutacao": null
+    },
+    "falhas_percebidas_por_1000:razao": {
+     "blocos_excluidos": [
+      {
+       "bloco": "1",
+       "motivo": "A: valor zero (log indefinido)"
+      },
+      {
+       "bloco": "2",
+       "motivo": "A: valor zero (log indefinido)"
+      }
+     ],
+     "d_b": {},
+     "escala": "log-razao",
+     "estimativa": null,
+     "familia": "sensibilidade",
+     "ic_boot_blocos": null,
+     "ic_hierarquico": null,
+     "ic_t": null,
+     "indice_semente": 8,
+     "k_nao_nulos": 0,
+     "n_blocos": 0,
+     "n_por_bloco": {
+      "1": {
+       "A": 2000,
+       "B": 2000
+      },
+      "2": {
+       "A": 2000,
+       "B": 2000
+      }
+     },
+     "p_holm": null,
+     "p_minimo_atingivel": null,
+     "p_permutacao": null
+    },
+    "taxa_erro": {
+     "blocos_excluidos": [],
+     "d_b": {
+      "1": 0.0,
+      "2": 0.0
+     },
+     "escala": "diferenca",
+     "estimativa": 0.0,
+     "familia": "secundario",
+     "ic_boot_blocos": [
+      0.0,
+      0.0
+     ],
+     "ic_hierarquico": null,
+     "ic_t": [
+      0.0,
+      0.0
+     ],
+     "indice_semente": 9,
+     "k_nao_nulos": 0,
+     "n_blocos": 2,
+     "n_por_bloco": {
+      "1": {
+       "A": 382,
+       "B": 380
+      },
+      "2": {
+       "A": 382,
+       "B": 381
+      }
+     },
+     "p_holm": null,
+     "p_minimo_atingivel": 1.0,
+     "p_permutacao": null
+    },
+    "taxa_erro:razao": {
+     "blocos_excluidos": [
+      {
+       "bloco": "1",
+       "motivo": "A: valor zero (log indefinido)"
+      },
+      {
+       "bloco": "2",
+       "motivo": "A: valor zero (log indefinido)"
+      }
+     ],
+     "d_b": {},
+     "escala": "log-razao",
+     "estimativa": null,
+     "familia": "sensibilidade",
+     "ic_boot_blocos": null,
+     "ic_hierarquico": null,
+     "ic_t": null,
+     "indice_semente": 10,
+     "k_nao_nulos": 0,
+     "n_blocos": 0,
+     "n_por_bloco": {
+      "1": {
+       "A": 382,
+       "B": 380
+      },
+      "2": {
+       "A": 382,
+       "B": 381
+      }
+     },
+     "p_holm": null,
+     "p_minimo_atingivel": null,
+     "p_permutacao": null
+    },
+    "taxa_violacoes_por_1000": {
+     "blocos_excluidos": [],
+     "d_b": {
+      "1": -1.0,
+      "2": -0.5
+     },
+     "escala": "diferenca",
+     "estimativa": -0.75,
+     "familia": "co-principal-V",
+     "ic_boot_blocos": [
+      -1.0,
+      -0.5
+     ],
+     "ic_hierarquico": null,
+     "ic_t": [
+      -3.9265511841080234,
+      2.4265511841080234
+     ],
+     "indice_semente": 11,
+     "k_nao_nulos": 2,
+     "n_blocos": 2,
+     "n_por_bloco": {
+      "1": {
+       "A": 2000,
+       "B": 2000
+      },
+      "2": {
+       "A": 2000,
+       "B": 2000
+      }
+     },
+     "p_holm": null,
+     "p_minimo_atingivel": 0.5,
+     "p_permutacao": null
+    },
+    "taxa_violacoes_por_1000:sem_forma2": {
+     "blocos_excluidos": [],
+     "d_b": {
+      "1": -0.5,
+      "2": 0.5
+     },
+     "escala": "diferenca",
+     "estimativa": 0.0,
+     "familia": "sensibilidade",
+     "ic_boot_blocos": [
+      -0.5,
+      0.5
+     ],
+     "ic_hierarquico": null,
+     "ic_t": [
+      -6.353102368216047,
+      6.353102368216047
+     ],
+     "indice_semente": 12,
+     "k_nao_nulos": 2,
+     "n_blocos": 2,
+     "n_por_bloco": {
+      "1": {
+       "A": 2000,
+       "B": 2000
+      },
+      "2": {
+       "A": 2000,
+       "B": 2000
+      }
+     },
+     "p_holm": null,
+     "p_minimo_atingivel": 0.5,
+     "p_permutacao": null
+    },
+    "vazao_util": {
+     "blocos_excluidos": [],
+     "d_b": {
+      "1": 0.0,
+      "2": 0.0
+     },
+     "escala": "log-razao",
+     "estimativa": 1.0,
+     "familia": "nao-inferioridade",
+     "ic_boot_blocos": [
+      1.0,
+      1.0
+     ],
+     "ic_hierarquico": null,
+     "ic_t": [
+      1.0,
+      1.0
+     ],
+     "indice_semente": 13,
+     "k_nao_nulos": 0,
+     "n_blocos": 2,
+     "n_por_bloco": {
+      "1": {
+       "A": 2000,
+       "B": 2000
+      },
+      "2": {
+       "A": 2000,
+       "B": 2000
+      }
+     },
+     "nao_inferioridade": {
+      "delta": 0.1,
+      "limite": 0.9,
+      "limite_inferior_ic_t": 1.0,
+      "resultado": "nao-inferior"
+     },
+     "p_holm": null,
+     "p_minimo_atingivel": 1.0,
+     "p_permutacao": null
+    }
+   },
+   "n_secundarios_holm": 0,
+   "rastreabilidade": {
+    "A": {
+     "execucoes_sem_trilha": [],
+     "integral": true,
+     "problemas": {}
+    },
+    "B": {
+     "execucoes_sem_trilha": [],
+     "integral": true,
+     "problemas": {}
+    }
+   },
+   "recuperacao": {
+    "ac5_aplicada": {
+     "1": {
+      "A": false,
+      "B": false
+     },
+     "2": {
+      "A": false,
+      "B": false
+     }
+    },
+    "delta_conv_origem": {
+     "1": {
+      "A": "t_fim_carga_ns",
+      "B": "t_fim_carga_ns"
+     },
+     "2": {
+      "A": "t_fim_carga_ns",
+      "B": "t_fim_carga_ns"
+     }
+    },
+    "fim_medicao_origem": {
+     "1": {
+      "A": "t_fim_carga_ns",
+      "B": "t_fim_carga_ns"
+     },
+     "2": {
+      "A": "t_fim_carga_ns",
+      "B": "t_fim_carga_ns"
+     }
+    }
+   },
+   "teste": false,
+   "tipo": "descritiva",
+   "violacoes": {
+    "I1": {
+     "contagem": {
+      "A": 4,
+      "B": 1
+     },
+     "n_base": {
+      "A": 4000,
+      "B": 4000
+     },
+     "razao_de_taxas": {
+      "estimativa": 0.25,
+      "ic_boot_blocos": [
+       0.0,
+       0.5
+      ],
+      "reamostras_indefinidas": 0
+     }
+    },
+    "I2_REAL": {
+     "contagem": {
+      "A": 0,
+      "B": 0
+     },
+     "n_base": {
+      "A": 4000,
+      "B": 4000
+     },
+     "regra_de_tres": {
+      "A": {
+       "limite_superior_95": 0.0007486526880178257,
+       "rotulo": "≈ 3/N = 0.00075 (N = 4000)"
+      },
+      "B": {
+       "limite_superior_95": 0.0007486526880178257,
+       "rotulo": "≈ 3/N = 0.00075 (N = 4000)"
+      }
+     }
+    },
+    "I4": {
+     "contagem": {
+      "A": 0,
+      "B": 0
+     },
+     "n_base": {
+      "A": 4000,
+      "B": 4000
+     },
+     "regra_de_tres": {
+      "A": {
+       "limite_superior_95": 0.0007486526880178257,
+       "rotulo": "≈ 3/N = 0.00075 (N = 4000)"
+      },
+      "B": {
+       "limite_superior_95": 0.0007486526880178257,
+       "rotulo": "≈ 3/N = 0.00075 (N = 4000)"
+      }
+     }
+    },
+    "blocos_com_arquivo": 2,
+    "detalhe": {
+     "instrumentos_divergentes": [],
+     "por_execucao": {
+      "1": {
+       "A": {
+        "atribuicao": {
+         "deteccao": 2,
+         "invalidacao": 0,
+         "sem_invalidacao_localizada": 0
+        },
+        "formas_avaliaveis": true,
+        "formas_i1": {
+         "forma1": 0,
+         "forma2": 1,
+         "indeterminada": 0,
+         "outra": 1
+        },
+        "formas_motivo": null,
+        "instrumentos": true,
+        "linhas": {
+         "I1": 2,
+         "I2_REAL": 0,
+         "I4": 0
+        },
+        "no_falha": "isn3",
+        "pares": {
+         "I1": 2,
+         "I2_REAL": 0,
+         "I4": 0
+        },
+        "pares_lista": [
+         {
+          "chave": "f2-0",
+          "classe": "I1",
+          "conta": true,
+          "deteccoes": [
+           {
+            "atribuicao": "deteccao",
+            "conta": true,
+            "forma": "forma2",
+            "origem": "sonda",
+            "replica_leitura": "h:3",
+            "rotulo": "I1",
+            "t_atribuido_ns": 1761566412000500000,
+            "t_ns": 1761566412000500000,
+            "tipo": "imediata"
+           }
+          ],
+          "forma": "forma2",
+          "origens": [
+           "sonda"
+          ]
+         },
+         {
+          "chave": "o-0",
+          "classe": "I1",
+          "conta": true,
+          "deteccoes": [
+           {
+            "atribuicao": "deteccao",
+            "conta": true,
+            "forma": "outra",
+            "origem": "online",
+            "replica_leitura": null,
+            "rotulo": "I1",
+            "t_atribuido_ns": 1761566422000000000,
+            "t_ns": 1761566422000000000,
+            "tipo": "online"
+           }
+          ],
+          "forma": "outra",
+          "origens": [
+           "online"
+          ]
+         }
+        ],
+        "pares_multiplas_origens": 0,
+        "pares_sem_varredura": {
+         "I1": 2,
+         "I2_REAL": 0,
+         "I4": 0
+        },
+        "por_origem": {
+         "online": {
+          "linhas": 1,
+          "pares": 1
+         },
+         "sonda": {
+          "linhas": 1,
+          "pares": 1
+         },
+         "varredura": {
+          "linhas": 0,
+          "pares": 0
+         }
+        },
+        "regra": "pares distintos (chave, invariante) com ao menos uma deteccao nas fases selecionadas, por execucao, somando as origens online, sonda (W-10) e varredura (so REAL); I1, I4 e I2 REAL (varredura: I2 administrativo e I2-PERDIDO REAL); linhas e contagem por origem so descritivas; online e replay imediato pelo instante da deteccao, replay tardio e varredura pelo instante da invalidacao confirmada (Logout NONE da sid; I2 e I2-PERDIDO: ultimo Block NONE da identidade); sem invalidacao localizada no CSV de eventos, conta sem filtro de fase (pre-registro do benchmark refeito, 2.3 e 2.4)",
+        "replay_validate": {
+         "eventos": 1,
+         "imediatos": 1,
+         "sids_tardios": 0,
+         "tardios": 0
+        },
+        "replica_no_falha": "h:3",
+        "sonda": true,
+        "sonda_tardia_max": null,
+        "sonda_tardia_no_teto": null,
+        "t_fim_carga_obs_ns": 1761566449982490000,
+        "total_linhas": 2,
+        "total_linhas_sem_varredura": 2,
+        "total_pares": 2,
+        "total_pares_sem_forma2": 1,
+        "total_pares_sem_forma2_sem_varredura": 1,
+        "total_pares_sem_varredura": 2,
+        "varredura": "presente",
+        "varredura_fora_de_v": 0
+       },
+       "B": {
+        "atribuicao": {
+         "deteccao": 0,
+         "invalidacao": 0,
+         "sem_invalidacao_localizada": 0
+        },
+        "formas_avaliaveis": true,
+        "formas_i1": {
+         "forma1": 0,
+         "forma2": 0,
+         "indeterminada": 0,
+         "outra": 0
+        },
+        "formas_motivo": null,
+        "instrumentos": true,
+        "linhas": {
+         "I1": 0,
+         "I2_REAL": 0,
+         "I4": 0
+        },
+        "no_falha": "isn3",
+        "pares": {
+         "I1": 0,
+         "I2_REAL": 0,
+         "I4": 0
+        },
+        "pares_lista": [],
+        "pares_multiplas_origens": 0,
+        "pares_sem_varredura": {
+         "I1": 0,
+         "I2_REAL": 0,
+         "I4": 0
+        },
+        "por_origem": {
+         "online": {
+          "linhas": 0,
+          "pares": 0
+         },
+         "sonda": {
+          "linhas": 0,
+          "pares": 0
+         },
+         "varredura": {
+          "linhas": 0,
+          "pares": 0
+         }
+        },
+        "regra": "pares distintos (chave, invariante) com ao menos uma deteccao nas fases selecionadas, por execucao, somando as origens online, sonda (W-10) e varredura (so REAL); I1, I4 e I2 REAL (varredura: I2 administrativo e I2-PERDIDO REAL); linhas e contagem por origem so descritivas; online e replay imediato pelo instante da deteccao, replay tardio e varredura pelo instante da invalidacao confirmada (Logout NONE da sid; I2 e I2-PERDIDO: ultimo Block NONE da identidade); sem invalidacao localizada no CSV de eventos, conta sem filtro de fase (pre-registro do benchmark refeito, 2.3 e 2.4)",
+        "replay_validate": {
+         "eventos": 0,
+         "imediatos": 0,
+         "sids_tardios": 0,
+         "tardios": 0
+        },
+        "replica_no_falha": "h:3",
+        "sonda": true,
+        "sonda_tardia_max": null,
+        "sonda_tardia_no_teto": null,
+        "t_fim_carga_obs_ns": 1761566449982490000,
+        "total_linhas": 0,
+        "total_linhas_sem_varredura": 0,
+        "total_pares": 0,
+        "total_pares_sem_forma2": 0,
+        "total_pares_sem_forma2_sem_varredura": 0,
+        "total_pares_sem_varredura": 0,
+        "varredura": "presente",
+        "varredura_fora_de_v": 0
+       }
+      },
+      "2": {
+       "A": {
+        "atribuicao": {
+         "deteccao": 2,
+         "invalidacao": 0,
+         "sem_invalidacao_localizada": 0
+        },
+        "formas_avaliaveis": true,
+        "formas_i1": {
+         "forma1": 0,
+         "forma2": 2,
+         "indeterminada": 0,
+         "outra": 0
+        },
+        "formas_motivo": null,
+        "instrumentos": true,
+        "linhas": {
+         "I1": 2,
+         "I2_REAL": 0,
+         "I4": 0
+        },
+        "no_falha": "isn3",
+        "pares": {
+         "I1": 2,
+         "I2_REAL": 0,
+         "I4": 0
+        },
+        "pares_lista": [
+         {
+          "chave": "f2-0",
+          "classe": "I1",
+          "conta": true,
+          "deteccoes": [
+           {
+            "atribuicao": "deteccao",
+            "conta": true,
+            "forma": "forma2",
+            "origem": "sonda",
+            "replica_leitura": "h:3",
+            "rotulo": "I1",
+            "t_atribuido_ns": 1761566412000500000,
+            "t_ns": 1761566412000500000,
+            "tipo": "imediata"
+           }
+          ],
+          "forma": "forma2",
+          "origens": [
+           "sonda"
+          ]
+         },
+         {
+          "chave": "f2-1",
+          "classe": "I1",
+          "conta": true,
+          "deteccoes": [
+           {
+            "atribuicao": "deteccao",
+            "conta": true,
+            "forma": "forma2",
+            "origem": "sonda",
+            "replica_leitura": "h:3",
+            "rotulo": "I1",
+            "t_atribuido_ns": 1761566413000500000,
+            "t_ns": 1761566413000500000,
+            "tipo": "imediata"
+           }
+          ],
+          "forma": "forma2",
+          "origens": [
+           "sonda"
+          ]
+         }
+        ],
+        "pares_multiplas_origens": 0,
+        "pares_sem_varredura": {
+         "I1": 2,
+         "I2_REAL": 0,
+         "I4": 0
+        },
+        "por_origem": {
+         "online": {
+          "linhas": 0,
+          "pares": 0
+         },
+         "sonda": {
+          "linhas": 2,
+          "pares": 2
+         },
+         "varredura": {
+          "linhas": 0,
+          "pares": 0
+         }
+        },
+        "regra": "pares distintos (chave, invariante) com ao menos uma deteccao nas fases selecionadas, por execucao, somando as origens online, sonda (W-10) e varredura (so REAL); I1, I4 e I2 REAL (varredura: I2 administrativo e I2-PERDIDO REAL); linhas e contagem por origem so descritivas; online e replay imediato pelo instante da deteccao, replay tardio e varredura pelo instante da invalidacao confirmada (Logout NONE da sid; I2 e I2-PERDIDO: ultimo Block NONE da identidade); sem invalidacao localizada no CSV de eventos, conta sem filtro de fase (pre-registro do benchmark refeito, 2.3 e 2.4)",
+        "replay_validate": {
+         "eventos": 2,
+         "imediatos": 2,
+         "sids_tardios": 0,
+         "tardios": 0
+        },
+        "replica_no_falha": "h:3",
+        "sonda": true,
+        "sonda_tardia_max": null,
+        "sonda_tardia_no_teto": null,
+        "t_fim_carga_obs_ns": 1761566449982490000,
+        "total_linhas": 2,
+        "total_linhas_sem_varredura": 2,
+        "total_pares": 2,
+        "total_pares_sem_forma2": 0,
+        "total_pares_sem_forma2_sem_varredura": 0,
+        "total_pares_sem_varredura": 2,
+        "varredura": "presente",
+        "varredura_fora_de_v": 0
+       },
+       "B": {
+        "atribuicao": {
+         "deteccao": 1,
+         "invalidacao": 0,
+         "sem_invalidacao_localizada": 0
+        },
+        "formas_avaliaveis": true,
+        "formas_i1": {
+         "forma1": 0,
+         "forma2": 0,
+         "indeterminada": 0,
+         "outra": 1
+        },
+        "formas_motivo": null,
+        "instrumentos": true,
+        "linhas": {
+         "I1": 1,
+         "I2_REAL": 0,
+         "I4": 0
+        },
+        "no_falha": "isn3",
+        "pares": {
+         "I1": 1,
+         "I2_REAL": 0,
+         "I4": 0
+        },
+        "pares_lista": [
+         {
+          "chave": "o-0",
+          "classe": "I1",
+          "conta": true,
+          "deteccoes": [
+           {
+            "atribuicao": "deteccao",
+            "conta": true,
+            "forma": "outra",
+            "origem": "online",
+            "replica_leitura": null,
+            "rotulo": "I1",
+            "t_atribuido_ns": 1761566422000000000,
+            "t_ns": 1761566422000000000,
+            "tipo": "online"
+           }
+          ],
+          "forma": "outra",
+          "origens": [
+           "online"
+          ]
+         }
+        ],
+        "pares_multiplas_origens": 0,
+        "pares_sem_varredura": {
+         "I1": 1,
+         "I2_REAL": 0,
+         "I4": 0
+        },
+        "por_origem": {
+         "online": {
+          "linhas": 1,
+          "pares": 1
+         },
+         "sonda": {
+          "linhas": 0,
+          "pares": 0
+         },
+         "varredura": {
+          "linhas": 0,
+          "pares": 0
+         }
+        },
+        "regra": "pares distintos (chave, invariante) com ao menos uma deteccao nas fases selecionadas, por execucao, somando as origens online, sonda (W-10) e varredura (so REAL); I1, I4 e I2 REAL (varredura: I2 administrativo e I2-PERDIDO REAL); linhas e contagem por origem so descritivas; online e replay imediato pelo instante da deteccao, replay tardio e varredura pelo instante da invalidacao confirmada (Logout NONE da sid; I2 e I2-PERDIDO: ultimo Block NONE da identidade); sem invalidacao localizada no CSV de eventos, conta sem filtro de fase (pre-registro do benchmark refeito, 2.3 e 2.4)",
+        "replay_validate": {
+         "eventos": 0,
+         "imediatos": 0,
+         "sids_tardios": 0,
+         "tardios": 0
+        },
+        "replica_no_falha": "h:3",
+        "sonda": true,
+        "sonda_tardia_max": null,
+        "sonda_tardia_no_teto": null,
+        "t_fim_carga_obs_ns": 1761566449982490000,
+        "total_linhas": 1,
+        "total_linhas_sem_varredura": 1,
+        "total_pares": 1,
+        "total_pares_sem_forma2": 1,
+        "total_pares_sem_forma2_sem_varredura": 1,
+        "total_pares_sem_varredura": 1,
+        "varredura": "presente",
+        "varredura_fora_de_v": 0
+       }
+      }
+     },
+     "regra": "pares distintos (chave, invariante) com ao menos uma deteccao nas fases selecionadas, por execucao, somando as origens online, sonda (W-10) e varredura (so REAL); I1, I4 e I2 REAL (varredura: I2 administrativo e I2-PERDIDO REAL); linhas e contagem por origem so descritivas; online e replay imediato pelo instante da deteccao, replay tardio e varredura pelo instante da invalidacao confirmada (Logout NONE da sid; I2 e I2-PERDIDO: ultimo Block NONE da identidade); sem invalidacao localizada no CSV de eventos, conta sem filtro de fase (pre-registro do benchmark refeito, 2.3 e 2.4)",
+     "totais": {
+      "A": {
+       "atribuicao": {
+        "deteccao": 4,
+        "invalidacao": 0,
+        "sem_invalidacao_localizada": 0
+       },
+       "execucoes": 2,
+       "execucoes_com_sonda": 2,
+       "execucoes_com_varredura": 2,
+       "execucoes_tardio_no_teto": 0,
+       "execucoes_varredura_com_erro": 0,
+       "formas_i1": {
+        "forma1": 0,
+        "forma2": 3,
+        "indeterminada": 0,
+        "outra": 1
+       },
+       "linhas": {
+        "I1": 4,
+        "I2_REAL": 0,
+        "I4": 0
+       },
+       "pares": {
+        "I1": 4,
+        "I2_REAL": 0,
+        "I4": 0
+       },
+       "pares_multiplas_origens": 0,
+       "por_origem": {
+        "online": {
+         "linhas": 1,
+         "pares": 1
+        },
+        "sonda": {
+         "linhas": 3,
+         "pares": 3
+        },
+        "varredura": {
+         "linhas": 0,
+         "pares": 0
+        }
+       },
+       "replay_validate": {
+        "eventos": 3,
+        "imediatos": 3,
+        "sids_tardios": 0,
+        "tardios": 0
+       },
+       "total_linhas": 4,
+       "total_pares": 4,
+       "total_pares_sem_forma2": 1,
+       "varredura_fora_de_v": 0
+      },
+      "B": {
+       "atribuicao": {
+        "deteccao": 1,
+        "invalidacao": 0,
+        "sem_invalidacao_localizada": 0
+       },
+       "execucoes": 2,
+       "execucoes_com_sonda": 2,
+       "execucoes_com_varredura": 2,
+       "execucoes_tardio_no_teto": 0,
+       "execucoes_varredura_com_erro": 0,
+       "formas_i1": {
+        "forma1": 0,
+        "forma2": 0,
+        "indeterminada": 0,
+        "outra": 1
+       },
+       "linhas": {
+        "I1": 1,
+        "I2_REAL": 0,
+        "I4": 0
+       },
+       "pares": {
+        "I1": 1,
+        "I2_REAL": 0,
+        "I4": 0
+       },
+       "pares_multiplas_origens": 0,
+       "por_origem": {
+        "online": {
+         "linhas": 1,
+         "pares": 1
+        },
+        "sonda": {
+         "linhas": 0,
+         "pares": 0
+        },
+        "varredura": {
+         "linhas": 0,
+         "pares": 0
+        }
+       },
+       "replay_validate": {
+        "eventos": 0,
+        "imediatos": 0,
+        "sids_tardios": 0,
+        "tardios": 0
+       },
+       "total_linhas": 1,
+       "total_pares": 1,
+       "total_pares_sem_forma2": 1,
+       "varredura_fora_de_v": 0
+      }
+     },
+     "varredura_com_erro": {
+      "blocos": 0,
+      "lista": [],
+      "nos_dois": 0,
+      "regra": "varredura com erro (varredura-rep-NNN.erro.txt) em qualquer braco do bloco: V e :sem_forma2 dos dois bracos sem as deteccoes da varredura (online e sonda), bloco no teste; subestima V nos dois bracos desses blocos; sensibilidade descritiva sem esses blocos, sem p e sem Holm (V-W5c, secao 5; W-5d)",
+      "sensibilidade_blocos_excluidos": null,
+      "so_A": 0,
+      "so_B": 0
+     }
+    },
+    "presente": true
+   }
+  },
+  "F2": {
+   "blocos": [
+    "1",
+    "2",
+    "3",
+    "4",
+    "5",
+    "6"
+   ],
+   "blocos_excluidos_por_steal": [],
+   "co_principal_v": {
+    "avaliavel": true,
+    "binomial_wilson_por_1000": {
+     "A": [
+      0.6951105243506581,
+      1.9574952210623078
+     ],
+     "B": [
+      0.33785395680317115,
+      1.3150718077331618
+     ]
+    },
+    "contagem": {
+     "A": 14,
+     "B": 8
+    },
+    "desfecho": "taxa_violacoes_por_1000",
+    "k_nao_nulos": 5,
+    "motivo": null,
+    "n_acoes": {
+     "A": 12000,
+     "B": 12000
+    },
+    "n_blocos": 6,
+    "nota_independencia": "uma fusao produz varias violacoes de uma vez; a unidade e a execucao",
+    "p_minimo_atingivel": 0.0625,
+    "regra_de_tres": {},
+    "sensibilidades": {
+     "a_razao_exclusao_zero_a": {
+      "blocos": 6,
+      "estimativa": 0.5714285714285714,
+      "ic_boot_blocos": [
+       0.15384615384615385,
+       0.9350000000000004
+      ]
+     },
+     "b_poisson_condicional": {
+      "p": 0.28627872467041016,
+      "razao_de_taxas": 0.5714285714285714,
+      "rotulo": "anticonservador (eventos da mesma execucao nao sao independentes)"
+     },
+     "c_boot_blocos_diferenca": [
+      -0.9166666666666666,
+      0.0
+     ]
+    }
+   },
+   "controlador": {
+    "por_bloco": {
+     "1": {
+      "A": {
+       "ac5_aplicada": false,
+       "acoes_politica_antes_da_falha": 0,
+       "acoes_por_tipo": {
+        "AC-2": {
+         "aplicar": {
+          "PREVISTA": 1
+         },
+         "ativa_no_fim": true,
+         "reverter": {},
+         "tempo_ativo_s": 39.989999997
+        }
+       },
+       "atraso_entrada_conservador_s": 5.0,
+       "atraso_primeira_acao_s": 5.000000002,
+       "atuador": "por-tipo(AC-2=rest-infinispan,AC-5=rest-infinispan)",
+       "completo": true,
+       "decisoes": 1,
+       "entradas_antes_da_falha": 0,
+       "entradas_conservador": 1,
+       "esquema": "decisoes-controlador/1.2",
+       "janelas_conservador": 1,
+       "modo": "shadow",
+       "param_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+       "politica": "por-assinatura",
+       "politicas": {},
+       "reversoes": {
+        "falha": 0,
+        "sucesso": 0
+       },
+       "reversoes_por_origem": {},
+       "t_ultimo_ns": 1761566415010000003,
+       "tempo_conservador_s": 5.0,
+       "transicoes": 1
+      },
+      "B": {
+       "ac5_aplicada": false,
+       "acoes_politica_antes_da_falha": 0,
+       "acoes_por_tipo": {
+        "AC-2": {
+         "aplicar": {
+          "APLICADA": 1
+         },
+         "ativa_no_fim": true,
+         "reverter": {},
+         "tempo_ativo_s": 39.989999997
+        }
+       },
+       "atraso_entrada_conservador_s": 5.0,
+       "atraso_primeira_acao_s": 5.000000002,
+       "atuador": "por-tipo(AC-2=rest-infinispan,AC-5=rest-infinispan)",
+       "completo": true,
+       "decisoes": 1,
+       "entradas_antes_da_falha": 0,
+       "entradas_conservador": 1,
+       "esquema": "decisoes-controlador/1.2",
+       "janelas_conservador": 1,
+       "modo": "active",
+       "param_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+       "politica": "por-assinatura",
+       "politicas": {},
+       "reversoes": {
+        "falha": 0,
+        "sucesso": 0
+       },
+       "reversoes_por_origem": {},
+       "t_ultimo_ns": 1761566415010000003,
+       "tempo_conservador_s": 5.0,
+       "transicoes": 1
+      }
+     },
+     "2": {
+      "A": {
+       "ac5_aplicada": false,
+       "acoes_politica_antes_da_falha": 0,
+       "acoes_por_tipo": {
+        "AC-2": {
+         "aplicar": {
+          "PREVISTA": 1
+         },
+         "ativa_no_fim": true,
+         "reverter": {},
+         "tempo_ativo_s": 39.989999997
+        }
+       },
+       "atraso_entrada_conservador_s": 5.0,
+       "atraso_primeira_acao_s": 5.000000002,
+       "atuador": "por-tipo(AC-2=rest-infinispan,AC-5=rest-infinispan)",
+       "completo": true,
+       "decisoes": 1,
+       "entradas_antes_da_falha": 0,
+       "entradas_conservador": 1,
+       "esquema": "decisoes-controlador/1.2",
+       "janelas_conservador": 1,
+       "modo": "shadow",
+       "param_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+       "politica": "por-assinatura",
+       "politicas": {},
+       "reversoes": {
+        "falha": 0,
+        "sucesso": 0
+       },
+       "reversoes_por_origem": {},
+       "t_ultimo_ns": 1761566415010000003,
+       "tempo_conservador_s": 5.0,
+       "transicoes": 1
+      },
+      "B": {
+       "ac5_aplicada": false,
+       "acoes_politica_antes_da_falha": 0,
+       "acoes_por_tipo": {
+        "AC-2": {
+         "aplicar": {
+          "APLICADA": 1
+         },
+         "ativa_no_fim": true,
+         "reverter": {},
+         "tempo_ativo_s": 39.989999997
+        }
+       },
+       "atraso_entrada_conservador_s": 5.0,
+       "atraso_primeira_acao_s": 5.000000002,
+       "atuador": "por-tipo(AC-2=rest-infinispan,AC-5=rest-infinispan)",
+       "completo": true,
+       "decisoes": 1,
+       "entradas_antes_da_falha": 0,
+       "entradas_conservador": 1,
+       "esquema": "decisoes-controlador/1.2",
+       "janelas_conservador": 1,
+       "modo": "active",
+       "param_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+       "politica": "por-assinatura",
+       "politicas": {},
+       "reversoes": {
+        "falha": 0,
+        "sucesso": 0
+       },
+       "reversoes_por_origem": {},
+       "t_ultimo_ns": 1761566415010000003,
+       "tempo_conservador_s": 5.0,
+       "transicoes": 1
+      }
+     },
+     "3": {
+      "A": {
+       "ac5_aplicada": false,
+       "acoes_politica_antes_da_falha": 0,
+       "acoes_por_tipo": {
+        "AC-2": {
+         "aplicar": {
+          "PREVISTA": 1
+         },
+         "ativa_no_fim": true,
+         "reverter": {},
+         "tempo_ativo_s": 39.989999997
+        }
+       },
+       "atraso_entrada_conservador_s": 5.0,
+       "atraso_primeira_acao_s": 5.000000002,
+       "atuador": "por-tipo(AC-2=rest-infinispan,AC-5=rest-infinispan)",
+       "completo": true,
+       "decisoes": 1,
+       "entradas_antes_da_falha": 0,
+       "entradas_conservador": 1,
+       "esquema": "decisoes-controlador/1.2",
+       "janelas_conservador": 1,
+       "modo": "shadow",
+       "param_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+       "politica": "por-assinatura",
+       "politicas": {},
+       "reversoes": {
+        "falha": 0,
+        "sucesso": 0
+       },
+       "reversoes_por_origem": {},
+       "t_ultimo_ns": 1761566415010000003,
+       "tempo_conservador_s": 5.0,
+       "transicoes": 1
+      },
+      "B": {
+       "ac5_aplicada": false,
+       "acoes_politica_antes_da_falha": 0,
+       "acoes_por_tipo": {
+        "AC-2": {
+         "aplicar": {
+          "APLICADA": 1
+         },
+         "ativa_no_fim": true,
+         "reverter": {},
+         "tempo_ativo_s": 39.989999997
+        }
+       },
+       "atraso_entrada_conservador_s": 5.0,
+       "atraso_primeira_acao_s": 5.000000002,
+       "atuador": "por-tipo(AC-2=rest-infinispan,AC-5=rest-infinispan)",
+       "completo": true,
+       "decisoes": 1,
+       "entradas_antes_da_falha": 0,
+       "entradas_conservador": 1,
+       "esquema": "decisoes-controlador/1.2",
+       "janelas_conservador": 1,
+       "modo": "active",
+       "param_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+       "politica": "por-assinatura",
+       "politicas": {},
+       "reversoes": {
+        "falha": 0,
+        "sucesso": 0
+       },
+       "reversoes_por_origem": {},
+       "t_ultimo_ns": 1761566415010000003,
+       "tempo_conservador_s": 5.0,
+       "transicoes": 1
+      }
+     },
+     "4": {
+      "A": {
+       "ac5_aplicada": false,
+       "acoes_politica_antes_da_falha": 0,
+       "acoes_por_tipo": {
+        "AC-2": {
+         "aplicar": {
+          "PREVISTA": 1
+         },
+         "ativa_no_fim": true,
+         "reverter": {},
+         "tempo_ativo_s": 39.989999997
+        }
+       },
+       "atraso_entrada_conservador_s": 5.0,
+       "atraso_primeira_acao_s": 5.000000002,
+       "atuador": "por-tipo(AC-2=rest-infinispan,AC-5=rest-infinispan)",
+       "completo": true,
+       "decisoes": 1,
+       "entradas_antes_da_falha": 0,
+       "entradas_conservador": 1,
+       "esquema": "decisoes-controlador/1.2",
+       "janelas_conservador": 1,
+       "modo": "shadow",
+       "param_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+       "politica": "por-assinatura",
+       "politicas": {},
+       "reversoes": {
+        "falha": 0,
+        "sucesso": 0
+       },
+       "reversoes_por_origem": {},
+       "t_ultimo_ns": 1761566415010000003,
+       "tempo_conservador_s": 5.0,
+       "transicoes": 1
+      },
+      "B": {
+       "ac5_aplicada": false,
+       "acoes_politica_antes_da_falha": 0,
+       "acoes_por_tipo": {
+        "AC-2": {
+         "aplicar": {
+          "APLICADA": 1
+         },
+         "ativa_no_fim": true,
+         "reverter": {},
+         "tempo_ativo_s": 39.989999997
+        }
+       },
+       "atraso_entrada_conservador_s": 5.0,
+       "atraso_primeira_acao_s": 5.000000002,
+       "atuador": "por-tipo(AC-2=rest-infinispan,AC-5=rest-infinispan)",
+       "completo": true,
+       "decisoes": 1,
+       "entradas_antes_da_falha": 0,
+       "entradas_conservador": 1,
+       "esquema": "decisoes-controlador/1.2",
+       "janelas_conservador": 1,
+       "modo": "active",
+       "param_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+       "politica": "por-assinatura",
+       "politicas": {},
+       "reversoes": {
+        "falha": 0,
+        "sucesso": 0
+       },
+       "reversoes_por_origem": {},
+       "t_ultimo_ns": 1761566415010000003,
+       "tempo_conservador_s": 5.0,
+       "transicoes": 1
+      }
+     },
+     "5": {
+      "A": {
+       "ac5_aplicada": false,
+       "acoes_politica_antes_da_falha": 0,
+       "acoes_por_tipo": {
+        "AC-2": {
+         "aplicar": {
+          "PREVISTA": 1
+         },
+         "ativa_no_fim": true,
+         "reverter": {},
+         "tempo_ativo_s": 39.989999997
+        }
+       },
+       "atraso_entrada_conservador_s": 5.0,
+       "atraso_primeira_acao_s": 5.000000002,
+       "atuador": "por-tipo(AC-2=rest-infinispan,AC-5=rest-infinispan)",
+       "completo": true,
+       "decisoes": 1,
+       "entradas_antes_da_falha": 0,
+       "entradas_conservador": 1,
+       "esquema": "decisoes-controlador/1.2",
+       "janelas_conservador": 1,
+       "modo": "shadow",
+       "param_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+       "politica": "por-assinatura",
+       "politicas": {},
+       "reversoes": {
+        "falha": 0,
+        "sucesso": 0
+       },
+       "reversoes_por_origem": {},
+       "t_ultimo_ns": 1761566415010000003,
+       "tempo_conservador_s": 5.0,
+       "transicoes": 1
+      },
+      "B": {
+       "ac5_aplicada": false,
+       "acoes_politica_antes_da_falha": 0,
+       "acoes_por_tipo": {
+        "AC-2": {
+         "aplicar": {
+          "APLICADA": 1
+         },
+         "ativa_no_fim": true,
+         "reverter": {},
+         "tempo_ativo_s": 39.989999997
+        }
+       },
+       "atraso_entrada_conservador_s": 5.0,
+       "atraso_primeira_acao_s": 5.000000002,
+       "atuador": "por-tipo(AC-2=rest-infinispan,AC-5=rest-infinispan)",
+       "completo": true,
+       "decisoes": 1,
+       "entradas_antes_da_falha": 0,
+       "entradas_conservador": 1,
+       "esquema": "decisoes-controlador/1.2",
+       "janelas_conservador": 1,
+       "modo": "active",
+       "param_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+       "politica": "por-assinatura",
+       "politicas": {},
+       "reversoes": {
+        "falha": 0,
+        "sucesso": 0
+       },
+       "reversoes_por_origem": {},
+       "t_ultimo_ns": 1761566415010000003,
+       "tempo_conservador_s": 5.0,
+       "transicoes": 1
+      }
+     },
+     "6": {
+      "A": {
+       "ac5_aplicada": false,
+       "acoes_politica_antes_da_falha": 0,
+       "acoes_por_tipo": {
+        "AC-2": {
+         "aplicar": {
+          "PREVISTA": 1
+         },
+         "ativa_no_fim": true,
+         "reverter": {},
+         "tempo_ativo_s": 39.989999997
+        }
+       },
+       "atraso_entrada_conservador_s": 5.0,
+       "atraso_primeira_acao_s": 5.000000002,
+       "atuador": "por-tipo(AC-2=rest-infinispan,AC-5=rest-infinispan)",
+       "completo": true,
+       "decisoes": 1,
+       "entradas_antes_da_falha": 0,
+       "entradas_conservador": 1,
+       "esquema": "decisoes-controlador/1.2",
+       "janelas_conservador": 1,
+       "modo": "shadow",
+       "param_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+       "politica": "por-assinatura",
+       "politicas": {},
+       "reversoes": {
+        "falha": 0,
+        "sucesso": 0
+       },
+       "reversoes_por_origem": {},
+       "t_ultimo_ns": 1761566415010000003,
+       "tempo_conservador_s": 5.0,
+       "transicoes": 1
+      },
+      "B": {
+       "ac5_aplicada": false,
+       "acoes_politica_antes_da_falha": 0,
+       "acoes_por_tipo": {
+        "AC-2": {
+         "aplicar": {
+          "APLICADA": 1
+         },
+         "ativa_no_fim": true,
+         "reverter": {},
+         "tempo_ativo_s": 39.989999997
+        }
+       },
+       "atraso_entrada_conservador_s": 5.0,
+       "atraso_primeira_acao_s": 5.000000002,
+       "atuador": "por-tipo(AC-2=rest-infinispan,AC-5=rest-infinispan)",
+       "completo": true,
+       "decisoes": 1,
+       "entradas_antes_da_falha": 0,
+       "entradas_conservador": 1,
+       "esquema": "decisoes-controlador/1.2",
+       "janelas_conservador": 1,
+       "modo": "active",
+       "param_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+       "politica": "por-assinatura",
+       "politicas": {},
+       "reversoes": {
+        "falha": 0,
+        "sucesso": 0
+       },
+       "reversoes_por_origem": {},
+       "t_ultimo_ns": 1761566415010000003,
+       "tempo_conservador_s": 5.0,
+       "transicoes": 1
+      }
+     }
+    },
+    "totais": {
+     "A": {
+      "acoes_politica_antes_da_falha": 0,
+      "acoes_por_tipo": {
+       "AC-2": {
+        "aplicar": {
+         "PREVISTA": 6
+        },
+        "execucoes_ativa_no_fim": 6,
+        "reverter": {},
+        "tempo_ativo_s": 239.93999998199996
+       }
+      },
+      "atrasos_entrada_s": [
+       5.0,
+       5.0,
+       5.0,
+       5.0,
+       5.0,
+       5.0
+      ],
+      "atrasos_primeira_acao_s": [
+       5.000000002,
+       5.000000002,
+       5.000000002,
+       5.000000002,
+       5.000000002,
+       5.000000002
+      ],
+      "entradas_antes_da_falha": 0,
+      "entradas_conservador": 6,
+      "execucoes_com_ac5_aplicada": 0,
+      "execucoes_com_trilha": 6,
+      "mediana_atraso_entrada_s": 5.0,
+      "mediana_atraso_primeira_acao_s": 5.000000002,
+      "reversoes": {
+       "falha": 0,
+       "sucesso": 0
+      },
+      "tempo_conservador_s": 30.0,
+      "transicoes": 6
+     },
+     "B": {
+      "acoes_politica_antes_da_falha": 0,
+      "acoes_por_tipo": {
+       "AC-2": {
+        "aplicar": {
+         "APLICADA": 6
+        },
+        "execucoes_ativa_no_fim": 6,
+        "reverter": {},
+        "tempo_ativo_s": 239.93999998199996
+       }
+      },
+      "atrasos_entrada_s": [
+       5.0,
+       5.0,
+       5.0,
+       5.0,
+       5.0,
+       5.0
+      ],
+      "atrasos_primeira_acao_s": [
+       5.000000002,
+       5.000000002,
+       5.000000002,
+       5.000000002,
+       5.000000002,
+       5.000000002
+      ],
+      "entradas_antes_da_falha": 0,
+      "entradas_conservador": 6,
+      "execucoes_com_ac5_aplicada": 0,
+      "execucoes_com_trilha": 6,
+      "mediana_atraso_entrada_s": 5.0,
+      "mediana_atraso_primeira_acao_s": 5.000000002,
+      "reversoes": {
+       "falha": 0,
+       "sucesso": 0
+      },
+      "tempo_conservador_s": 30.0,
+      "transicoes": 6
+     }
+    }
+   },
+   "desfechos": {
+    "acao_s3_p99_com_espera": {
+     "blocos_excluidos": [],
+     "d_b": {
+      "1": 0.0,
+      "2": 0.0,
+      "3": 0.0,
+      "4": 0.0,
+      "5": 0.0,
+      "6": 0.0
+     },
+     "escala": "log-razao",
+     "estimativa": 1.0,
+     "familia": "co-principal-L",
+     "ic_boot_blocos": [
+      1.0,
+      1.0
+     ],
+     "ic_hierarquico": [
+      1.0,
+      1.0
+     ],
+     "ic_t": [
+      1.0,
+      1.0
+     ],
+     "indice_semente": 0,
+     "k_nao_nulos": 0,
+     "n_blocos": 6,
+     "n_por_bloco": {
+      "1": {
+       "A": 2000,
+       "B": 2000
+      },
+      "2": {
+       "A": 2000,
+       "B": 2000
+      },
+      "3": {
+       "A": 2000,
+       "B": 2000
+      },
+      "4": {
+       "A": 2000,
+       "B": 2000
+      },
+      "5": {
+       "A": 2000,
+       "B": 2000
+      },
+      "6": {
+       "A": 2000,
+       "B": 2000
+      }
+     },
+     "nao_inferioridade": {
+      "delta": 0.1,
+      "limite": 1.1,
+      "limite_superior_ic_t": 1.0,
+      "p": 0.0
+     },
+     "p_holm": null,
+     "p_minimo_atingivel": 1.0,
+     "p_permutacao": 1.0
+    },
+    "acao_s3_p99_sem_espera": {
+     "blocos_excluidos": [],
+     "d_b": {
+      "1": 0.0,
+      "2": 0.0,
+      "3": 0.0,
+      "4": 0.0,
+      "5": 0.0,
+      "6": 0.0
+     },
+     "escala": "log-razao",
+     "estimativa": 1.0,
+     "familia": "secundario",
+     "ic_boot_blocos": [
+      1.0,
+      1.0
+     ],
+     "ic_hierarquico": [
+      1.0,
+      1.0
+     ],
+     "ic_t": [
+      1.0,
+      1.0
+     ],
+     "indice_semente": 1,
+     "k_nao_nulos": 0,
+     "n_blocos": 6,
+     "n_por_bloco": {
+      "1": {
+       "A": 2000,
+       "B": 2000
+      },
+      "2": {
+       "A": 2000,
+       "B": 2000
+      },
+      "3": {
+       "A": 2000,
+       "B": 2000
+      },
+      "4": {
+       "A": 2000,
+       "B": 2000
+      },
+      "5": {
+       "A": 2000,
+       "B": 2000
+      },
+      "6": {
+       "A": 2000,
+       "B": 2000
+      }
+     },
+     "p_holm": 1.0,
+     "p_minimo_atingivel": 1.0,
+     "p_permutacao": 1.0
+    },
+    "delta_conv_s": {
+     "blocos_excluidos": [],
+     "d_b": {
+      "1": 0.0,
+      "2": 0.0,
+      "3": 0.0,
+      "4": 0.0,
+      "5": 0.0,
+      "6": 0.0
+     },
+     "escala": "diferenca",
+     "estimativa": 0.0,
+     "familia": "secundario",
+     "ic_boot_blocos": [
+      0.0,
+      0.0
+     ],
+     "ic_hierarquico": null,
+     "ic_t": [
+      0.0,
+      0.0
+     ],
+     "indice_semente": 2,
+     "k_nao_nulos": 0,
+     "n_blocos": 6,
+     "n_por_bloco": {
+      "1": {
+       "A": 1,
+       "B": 1
+      },
+      "2": {
+       "A": 1,
+       "B": 1
+      },
+      "3": {
+       "A": 1,
+       "B": 1
+      },
+      "4": {
+       "A": 1,
+       "B": 1
+      },
+      "5": {
+       "A": 1,
+       "B": 1
+      },
+      "6": {
+       "A": 1,
+       "B": 1
+      }
+     },
+     "p_holm": 1.0,
+     "p_minimo_atingivel": 1.0,
+     "p_permutacao": 1.0
+    },
+    "delta_rec_s": {
+     "blocos_excluidos": [],
+     "censuradas": {
+      "A": 0,
+      "B": 0
+     },
+     "d_b": {
+      "1": 0.0,
+      "2": 0.0,
+      "3": 0.0,
+      "4": 0.0,
+      "5": 0.0,
+      "6": 0.0
+     },
+     "escala": "diferenca",
+     "estimativa": 0.0,
+     "familia": "secundario",
+     "ic_boot_blocos": [
+      0.0,
+      0.0
+     ],
+     "ic_hierarquico": null,
+     "ic_t": [
+      0.0,
+      0.0
+     ],
+     "indice_semente": 3,
+     "k_nao_nulos": 0,
+     "n_blocos": 6,
+     "n_por_bloco": {
+      "1": {
+       "A": 1,
+       "B": 1
+      },
+      "2": {
+       "A": 1,
+       "B": 1
+      },
+      "3": {
+       "A": 1,
+       "B": 1
+      },
+      "4": {
+       "A": 1,
+       "B": 1
+      },
+      "5": {
+       "A": 1,
+       "B": 1
+      },
+      "6": {
+       "A": 1,
+       "B": 1
+      }
+     },
+     "p_holm": 1.0,
+     "p_minimo_atingivel": 1.0,
+     "p_permutacao": 1.0
+    },
+    "divergencia_persistente": {
+     "blocos_excluidos": [],
+     "d_b": {
+      "1": 0.0,
+      "2": 0.0,
+      "3": 0.0,
+      "4": 0.0,
+      "5": 0.0,
+      "6": 0.0
+     },
+     "escala": "diferenca",
+     "estimativa": 0.0,
+     "familia": "secundario",
+     "ic_boot_blocos": [
+      0.0,
+      0.0
+     ],
+     "ic_hierarquico": null,
+     "ic_t": [
+      0.0,
+      0.0
+     ],
+     "indice_semente": 4,
+     "k_nao_nulos": 0,
+     "n_blocos": 6,
+     "n_por_bloco": {
+      "1": {
+       "A": 1,
+       "B": 1
+      },
+      "2": {
+       "A": 1,
+       "B": 1
+      },
+      "3": {
+       "A": 1,
+       "B": 1
+      },
+      "4": {
+       "A": 1,
+       "B": 1
+      },
+      "5": {
+       "A": 1,
+       "B": 1
+      },
+      "6": {
+       "A": 1,
+       "B": 1
+      }
+     },
+     "p_holm": 1.0,
+     "p_minimo_atingivel": 1.0,
+     "p_permutacao": 1.0
+    },
+    "evento_p99:Logout": {
+     "blocos_excluidos": [
+      {
+       "bloco": "1",
+       "motivo": "A: n<1000"
+      },
+      {
+       "bloco": "2",
+       "motivo": "A: n<1000"
+      },
+      {
+       "bloco": "3",
+       "motivo": "A: n<1000"
+      },
+      {
+       "bloco": "4",
+       "motivo": "A: n<1000"
+      },
+      {
+       "bloco": "5",
+       "motivo": "A: n<1000"
+      },
+      {
+       "bloco": "6",
+       "motivo": "A: n<1000"
+      }
+     ],
+     "d_b": {},
+     "escala": "log-razao",
+     "estimativa": null,
+     "familia": "secundario",
+     "ic_boot_blocos": null,
+     "ic_hierarquico": null,
+     "ic_t": null,
+     "indice_semente": 5,
+     "k_nao_nulos": 0,
+     "n_blocos": 0,
+     "n_por_bloco": {
+      "1": {
+       "A": 3,
+       "B": 2
+      },
+      "2": {
+       "A": 4,
+       "B": 2
+      },
+      "3": {
+       "A": 3,
+       "B": 2
+      },
+      "4": {
+       "A": 2,
+       "B": 3
+      },
+      "5": {
+       "A": 3,
+       "B": 3
+      },
+      "6": {
+       "A": 3,
+       "B": null
+      }
+     },
+     "p_holm": null,
+     "p_minimo_atingivel": null,
+     "p_permutacao": null
+    },
+    "evento_p99:Validate": {
+     "blocos_excluidos": [
+      {
+       "bloco": "1",
+       "motivo": "A: n<1000"
+      },
+      {
+       "bloco": "2",
+       "motivo": "A: n<1000"
+      },
+      {
+       "bloco": "3",
+       "motivo": "A: n<1000"
+      },
+      {
+       "bloco": "4",
+       "motivo": "A: n<1000"
+      },
+      {
+       "bloco": "5",
+       "motivo": "A: n<1000"
+      },
+      {
+       "bloco": "6",
+       "motivo": "A: n<1000"
+      }
+     ],
+     "d_b": {},
+     "escala": "log-razao",
+     "estimativa": null,
+     "familia": "secundario",
+     "ic_boot_blocos": null,
+     "ic_hierarquico": null,
+     "ic_t": null,
+     "indice_semente": 6,
+     "k_nao_nulos": 0,
+     "n_blocos": 0,
+     "n_por_bloco": {
+      "1": {
+       "A": 380,
+       "B": 380
+      },
+      "2": {
+       "A": 380,
+       "B": 380
+      },
+      "3": {
+       "A": 380,
+       "B": 380
+      },
+      "4": {
+       "A": 380,
+       "B": 380
+      },
+      "5": {
+       "A": 380,
+       "B": 380
+      },
+      "6": {
+       "A": 380,
+       "B": 380
+      }
+     },
+     "p_holm": null,
+     "p_minimo_atingivel": null,
+     "p_permutacao": null
+    },
+    "falhas_percebidas_por_1000": {
+     "blocos_excluidos": [],
+     "d_b": {
+      "1": 0.0,
+      "2": 0.0,
+      "3": 0.0,
+      "4": 0.0,
+      "5": 0.0,
+      "6": 0.0
+     },
+     "escala": "diferenca",
+     "estimativa": 0.0,
+     "familia": "secundario",
+     "ic_boot_blocos": [
+      0.0,
+      0.0
+     ],
+     "ic_hierarquico": null,
+     "ic_t": [
+      0.0,
+      0.0
+     ],
+     "indice_semente": 7,
+     "k_nao_nulos": 0,
+     "n_blocos": 6,
+     "n_por_bloco": {
+      "1": {
+       "A": 2000,
+       "B": 2000
+      },
+      "2": {
+       "A": 2000,
+       "B": 2000
+      },
+      "3": {
+       "A": 2000,
+       "B": 2000
+      },
+      "4": {
+       "A": 2000,
+       "B": 2000
+      },
+      "5": {
+       "A": 2000,
+       "B": 2000
+      },
+      "6": {
+       "A": 2000,
+       "B": 2000
+      }
+     },
+     "p_holm": 1.0,
+     "p_minimo_atingivel": 1.0,
+     "p_permutacao": 1.0
+    },
+    "falhas_percebidas_por_1000:razao": {
+     "blocos_excluidos": [
+      {
+       "bloco": "1",
+       "motivo": "A: valor zero (log indefinido)"
+      },
+      {
+       "bloco": "2",
+       "motivo": "A: valor zero (log indefinido)"
+      },
+      {
+       "bloco": "3",
+       "motivo": "A: valor zero (log indefinido)"
+      },
+      {
+       "bloco": "4",
+       "motivo": "A: valor zero (log indefinido)"
+      },
+      {
+       "bloco": "5",
+       "motivo": "A: valor zero (log indefinido)"
+      },
+      {
+       "bloco": "6",
+       "motivo": "A: valor zero (log indefinido)"
+      }
+     ],
+     "d_b": {},
+     "escala": "log-razao",
+     "estimativa": null,
+     "familia": "sensibilidade",
+     "ic_boot_blocos": null,
+     "ic_hierarquico": null,
+     "ic_t": null,
+     "indice_semente": 8,
+     "k_nao_nulos": 0,
+     "n_blocos": 0,
+     "n_por_bloco": {
+      "1": {
+       "A": 2000,
+       "B": 2000
+      },
+      "2": {
+       "A": 2000,
+       "B": 2000
+      },
+      "3": {
+       "A": 2000,
+       "B": 2000
+      },
+      "4": {
+       "A": 2000,
+       "B": 2000
+      },
+      "5": {
+       "A": 2000,
+       "B": 2000
+      },
+      "6": {
+       "A": 2000,
+       "B": 2000
+      }
+     },
+     "p_holm": null,
+     "p_minimo_atingivel": null,
+     "p_permutacao": null
+    },
+    "taxa_erro": {
+     "blocos_excluidos": [],
+     "d_b": {
+      "1": 0.0,
+      "2": 0.0,
+      "3": 0.0,
+      "4": 0.0,
+      "5": 0.0,
+      "6": 0.0
+     },
+     "escala": "diferenca",
+     "estimativa": 0.0,
+     "familia": "secundario",
+     "ic_boot_blocos": [
+      0.0,
+      0.0
+     ],
+     "ic_hierarquico": null,
+     "ic_t": [
+      0.0,
+      0.0
+     ],
+     "indice_semente": 9,
+     "k_nao_nulos": 0,
+     "n_blocos": 6,
+     "n_por_bloco": {
+      "1": {
+       "A": 383,
+       "B": 382
+      },
+      "2": {
+       "A": 384,
+       "B": 382
+      },
+      "3": {
+       "A": 383,
+       "B": 382
+      },
+      "4": {
+       "A": 382,
+       "B": 383
+      },
+      "5": {
+       "A": 383,
+       "B": 383
+      },
+      "6": {
+       "A": 383,
+       "B": 380
+      }
+     },
+     "p_holm": 1.0,
+     "p_minimo_atingivel": 1.0,
+     "p_permutacao": 1.0
+    },
+    "taxa_erro:razao": {
+     "blocos_excluidos": [
+      {
+       "bloco": "1",
+       "motivo": "A: valor zero (log indefinido)"
+      },
+      {
+       "bloco": "2",
+       "motivo": "A: valor zero (log indefinido)"
+      },
+      {
+       "bloco": "3",
+       "motivo": "A: valor zero (log indefinido)"
+      },
+      {
+       "bloco": "4",
+       "motivo": "A: valor zero (log indefinido)"
+      },
+      {
+       "bloco": "5",
+       "motivo": "A: valor zero (log indefinido)"
+      },
+      {
+       "bloco": "6",
+       "motivo": "A: valor zero (log indefinido)"
+      }
+     ],
+     "d_b": {},
+     "escala": "log-razao",
+     "estimativa": null,
+     "familia": "sensibilidade",
+     "ic_boot_blocos": null,
+     "ic_hierarquico": null,
+     "ic_t": null,
+     "indice_semente": 10,
+     "k_nao_nulos": 0,
+     "n_blocos": 0,
+     "n_por_bloco": {
+      "1": {
+       "A": 383,
+       "B": 382
+      },
+      "2": {
+       "A": 384,
+       "B": 382
+      },
+      "3": {
+       "A": 383,
+       "B": 382
+      },
+      "4": {
+       "A": 382,
+       "B": 383
+      },
+      "5": {
+       "A": 383,
+       "B": 383
+      },
+      "6": {
+       "A": 383,
+       "B": 380
+      }
+     },
+     "p_holm": null,
+     "p_minimo_atingivel": null,
+     "p_permutacao": null
+    },
+    "taxa_violacoes_por_1000": {
+     "blocos_excluidos": [],
+     "d_b": {
+      "1": -0.5,
+      "2": -0.5,
+      "3": -1.0,
+      "4": 0.5,
+      "5": 0.0,
+      "6": -1.5
+     },
+     "escala": "diferenca",
+     "estimativa": -0.5,
+     "familia": "co-principal-V",
+     "ic_boot_blocos": [
+      -0.9166666666666666,
+      0.0
+     ],
+     "ic_hierarquico": null,
+     "ic_t": [
+      -1.2420630573892941,
+      0.24206305738929423
+     ],
+     "indice_semente": 11,
+     "k_nao_nulos": 5,
+     "n_blocos": 6,
+     "n_por_bloco": {
+      "1": {
+       "A": 2000,
+       "B": 2000
+      },
+      "2": {
+       "A": 2000,
+       "B": 2000
+      },
+      "3": {
+       "A": 2000,
+       "B": 2000
+      },
+      "4": {
+       "A": 2000,
+       "B": 2000
+      },
+      "5": {
+       "A": 2000,
+       "B": 2000
+      },
+      "6": {
+       "A": 2000,
+       "B": 2000
+      }
+     },
+     "p_holm": null,
+     "p_minimo_atingivel": 0.0625,
+     "p_permutacao": 0.25
+    },
+    "taxa_violacoes_por_1000:sem_forma2": {
+     "blocos_excluidos": [],
+     "d_b": {
+      "1": -0.5,
+      "2": 0.0,
+      "3": -1.0,
+      "4": 0.5,
+      "5": 0.0,
+      "6": -1.5
+     },
+     "escala": "diferenca",
+     "estimativa": -0.4166666666666667,
+     "familia": "sensibilidade",
+     "ic_boot_blocos": [
+      -1.0020833333333332,
+      0.08333333333333333
+     ],
+     "ic_hierarquico": null,
+     "ic_t": [
+      -1.1890303846802563,
+      0.3556970513469229
+     ],
+     "indice_semente": 12,
+     "k_nao_nulos": 4,
+     "n_blocos": 6,
+     "n_por_bloco": {
+      "1": {
+       "A": 2000,
+       "B": 2000
+      },
+      "2": {
+       "A": 2000,
+       "B": 2000
+      },
+      "3": {
+       "A": 2000,
+       "B": 2000
+      },
+      "4": {
+       "A": 2000,
+       "B": 2000
+      },
+      "5": {
+       "A": 2000,
+       "B": 2000
+      },
+      "6": {
+       "A": 2000,
+       "B": 2000
+      }
+     },
+     "p_holm": null,
+     "p_minimo_atingivel": 0.125,
+     "p_permutacao": 0.375
+    },
+    "vazao_util": {
+     "blocos_excluidos": [],
+     "d_b": {
+      "1": 0.0,
+      "2": 0.0,
+      "3": 0.0,
+      "4": 0.0,
+      "5": 0.0,
+      "6": 0.0
+     },
+     "escala": "log-razao",
+     "estimativa": 1.0,
+     "familia": "nao-inferioridade",
+     "ic_boot_blocos": [
+      1.0,
+      1.0
+     ],
+     "ic_hierarquico": null,
+     "ic_t": [
+      1.0,
+      1.0
+     ],
+     "indice_semente": 13,
+     "k_nao_nulos": 0,
+     "n_blocos": 6,
+     "n_por_bloco": {
+      "1": {
+       "A": 2000,
+       "B": 2000
+      },
+      "2": {
+       "A": 2000,
+       "B": 2000
+      },
+      "3": {
+       "A": 2000,
+       "B": 2000
+      },
+      "4": {
+       "A": 2000,
+       "B": 2000
+      },
+      "5": {
+       "A": 2000,
+       "B": 2000
+      },
+      "6": {
+       "A": 2000,
+       "B": 2000
+      }
+     },
+     "nao_inferioridade": {
+      "delta": 0.1,
+      "limite": 0.9,
+      "limite_inferior_ic_t": 1.0,
+      "resultado": "nao-inferior"
+     },
+     "p_holm": null,
+     "p_minimo_atingivel": 1.0,
+     "p_permutacao": 1.0
+    }
+   },
+   "n_secundarios_holm": 6,
+   "rastreabilidade": {
+    "A": {
+     "execucoes_sem_trilha": [],
+     "integral": true,
+     "problemas": {}
+    },
+    "B": {
+     "execucoes_sem_trilha": [],
+     "integral": true,
+     "problemas": {}
+    }
+   },
+   "recuperacao": {
+    "ac5_aplicada": {
+     "1": {
+      "A": false,
+      "B": false
+     },
+     "2": {
+      "A": false,
+      "B": false
+     },
+     "3": {
+      "A": false,
+      "B": false
+     },
+     "4": {
+      "A": false,
+      "B": false
+     },
+     "5": {
+      "A": false,
+      "B": false
+     },
+     "6": {
+      "A": false,
+      "B": false
+     }
+    },
+    "delta_conv_origem": {
+     "1": {
+      "A": "t_fim_carga_ns",
+      "B": "t_fim_carga_ns"
+     },
+     "2": {
+      "A": "t_fim_carga_ns",
+      "B": "t_fim_carga_ns"
+     },
+     "3": {
+      "A": "t_fim_carga_ns",
+      "B": "t_fim_carga_ns"
+     },
+     "4": {
+      "A": "t_fim_carga_ns",
+      "B": "t_fim_carga_ns"
+     },
+     "5": {
+      "A": "t_fim_carga_ns",
+      "B": "t_fim_carga_ns"
+     },
+     "6": {
+      "A": "t_fim_carga_ns",
+      "B": "t_fim_carga_ns"
+     }
+    },
+    "fim_medicao_origem": {
+     "1": {
+      "A": "t_fim_carga_ns",
+      "B": "t_fim_carga_ns"
+     },
+     "2": {
+      "A": "t_fim_carga_ns",
+      "B": "t_fim_carga_ns"
+     },
+     "3": {
+      "A": "t_fim_carga_ns",
+      "B": "t_fim_carga_ns"
+     },
+     "4": {
+      "A": "t_fim_carga_ns",
+      "B": "t_fim_carga_ns"
+     },
+     "5": {
+      "A": "t_fim_carga_ns",
+      "B": "t_fim_carga_ns"
+     },
+     "6": {
+      "A": "t_fim_carga_ns",
+      "B": "t_fim_carga_ns"
+     }
+    }
+   },
+   "regra_iu": {
+    "alfa": 0.05,
+    "h_l": {
+     "delta": 0.1,
+     "limite": 1.1,
+     "limite_superior_ic_t": 1.0,
+     "p": 0.0,
+     "rejeitada": true,
+     "teste": "nao inferioridade: limite superior do IC t 95 % de exp(media ln(p99_B/p99_A)) <= 1 + delta"
+    },
+    "h_v": {
+     "avaliavel": true,
+     "media_d": -0.5,
+     "p": 0.25,
+     "p_na_iu": 0.25,
+     "rejeitada": false,
+     "teste": "troca de sinal exata, bilateral, sobre d_b = y_B - y_A; rejeita com p <= alfa e media < 0"
+    },
+    "motivos": [
+     "H_V nao rejeitada"
+    ],
+    "p_iu": 0.25,
+    "rastreabilidade_integral": true,
+    "resultado": "sem-melhoria",
+    "vazao": "nao-inferior"
+   },
+   "teste": true,
+   "tipo": "teste",
+   "violacoes": {
+    "I1": {
+     "contagem": {
+      "A": 14,
+      "B": 8
+     },
+     "n_base": {
+      "A": 12000,
+      "B": 12000
+     },
+     "razao_de_taxas": {
+      "estimativa": 0.5714285714285714,
+      "ic_boot_blocos": [
+       0.21428571428571427,
+       0.9233333333333335
+      ],
+      "reamostras_indefinidas": 0
+     }
+    },
+    "I2_REAL": {
+     "contagem": {
+      "A": 0,
+      "B": 0
+     },
+     "n_base": {
+      "A": 12000,
+      "B": 12000
+     },
+     "regra_de_tres": {
+      "A": {
+       "limite_superior_95": 0.0002496131975701088,
+       "rotulo": "≈ 3/N = 0.00025 (N = 12000)"
+      },
+      "B": {
+       "limite_superior_95": 0.0002496131975701088,
+       "rotulo": "≈ 3/N = 0.00025 (N = 12000)"
+      }
+     }
+    },
+    "I4": {
+     "contagem": {
+      "A": 0,
+      "B": 0
+     },
+     "n_base": {
+      "A": 12000,
+      "B": 12000
+     },
+     "regra_de_tres": {
+      "A": {
+       "limite_superior_95": 0.0002496131975701088,
+       "rotulo": "≈ 3/N = 0.00025 (N = 12000)"
+      },
+      "B": {
+       "limite_superior_95": 0.0002496131975701088,
+       "rotulo": "≈ 3/N = 0.00025 (N = 12000)"
+      }
+     }
+    },
+    "blocos_com_arquivo": 6,
+    "detalhe": {
+     "instrumentos_divergentes": [],
+     "por_execucao": {
+      "1": {
+       "A": {
+        "atribuicao": {
+         "deteccao": 2,
+         "invalidacao": 1,
+         "sem_invalidacao_localizada": 0
+        },
+        "formas_avaliaveis": true,
+        "formas_i1": {
+         "forma1": 0,
+         "forma2": 0,
+         "indeterminada": 0,
+         "outra": 3
+        },
+        "formas_motivo": null,
+        "instrumentos": true,
+        "linhas": {
+         "I1": 3,
+         "I2_REAL": 0,
+         "I4": 0
+        },
+        "no_falha": "isn3",
+        "pares": {
+         "I1": 3,
+         "I2_REAL": 0,
+         "I4": 0
+        },
+        "pares_lista": [
+         {
+          "chave": "on-0",
+          "classe": "I1",
+          "conta": true,
+          "deteccoes": [
+           {
+            "atribuicao": "deteccao",
+            "conta": true,
+            "forma": "outra",
+            "origem": "online",
+            "replica_leitura": null,
+            "rotulo": "I1",
+            "t_atribuido_ns": 1761566422000000000,
+            "t_ns": 1761566422000000000,
+            "tipo": "online"
+           }
+          ],
+          "forma": "outra",
+          "origens": [
+           "online"
+          ]
+         },
+         {
+          "chave": "on-1",
+          "classe": "I1",
+          "conta": true,
+          "deteccoes": [
+           {
+            "atribuicao": "deteccao",
+            "conta": true,
+            "forma": "outra",
+            "origem": "online",
+            "replica_leitura": null,
+            "rotulo": "I1",
+            "t_atribuido_ns": 1761566423000000000,
+            "t_ns": 1761566423000000000,
+            "tipo": "online"
+           }
+          ],
+          "forma": "outra",
+          "origens": [
+           "online"
+          ]
+         },
+         {
+          "chave": "vr-0",
+          "classe": "I1",
+          "conta": true,
+          "deteccoes": [
+           {
+            "atribuicao": "invalidacao",
+            "conta": true,
+            "forma": "outra",
+            "origem": "varredura",
+            "replica_leitura": null,
+            "rotulo": "I1",
+            "t_atribuido_ns": 1761566411001000000,
+            "t_ns": null,
+            "tipo": "varredura"
+           }
+          ],
+          "forma": "outra",
+          "origens": [
+           "varredura"
+          ]
+         }
+        ],
+        "pares_multiplas_origens": 0,
+        "pares_sem_varredura": {
+         "I1": 2,
+         "I2_REAL": 0,
+         "I4": 0
+        },
+        "por_origem": {
+         "online": {
+          "linhas": 2,
+          "pares": 2
+         },
+         "sonda": {
+          "linhas": 0,
+          "pares": 0
+         },
+         "varredura": {
+          "linhas": 1,
+          "pares": 1
+         }
+        },
+        "regra": "pares distintos (chave, invariante) com ao menos uma deteccao nas fases selecionadas, por execucao, somando as origens online, sonda (W-10) e varredura (so REAL); I1, I4 e I2 REAL (varredura: I2 administrativo e I2-PERDIDO REAL); linhas e contagem por origem so descritivas; online e replay imediato pelo instante da deteccao, replay tardio e varredura pelo instante da invalidacao confirmada (Logout NONE da sid; I2 e I2-PERDIDO: ultimo Block NONE da identidade); sem invalidacao localizada no CSV de eventos, conta sem filtro de fase (pre-registro do benchmark refeito, 2.3 e 2.4)",
+        "replay_validate": {
+         "eventos": 0,
+         "imediatos": 0,
+         "sids_tardios": 0,
+         "tardios": 0
+        },
+        "replica_no_falha": "h:3",
+        "sonda": true,
+        "sonda_tardia_max": null,
+        "sonda_tardia_no_teto": null,
+        "t_fim_carga_obs_ns": 1761566449982490000,
+        "total_linhas": 3,
+        "total_linhas_sem_varredura": 2,
+        "total_pares": 3,
+        "total_pares_sem_forma2": 3,
+        "total_pares_sem_forma2_sem_varredura": 2,
+        "total_pares_sem_varredura": 2,
+        "varredura": "presente",
+        "varredura_fora_de_v": 0
+       },
+       "B": {
+        "atribuicao": {
+         "deteccao": 1,
+         "invalidacao": 1,
+         "sem_invalidacao_localizada": 0
+        },
+        "formas_avaliaveis": true,
+        "formas_i1": {
+         "forma1": 0,
+         "forma2": 0,
+         "indeterminada": 0,
+         "outra": 2
+        },
+        "formas_motivo": null,
+        "instrumentos": true,
+        "linhas": {
+         "I1": 2,
+         "I2_REAL": 0,
+         "I4": 0
+        },
+        "no_falha": "isn3",
+        "pares": {
+         "I1": 2,
+         "I2_REAL": 0,
+         "I4": 0
+        },
+        "pares_lista": [
+         {
+          "chave": "on-0",
+          "classe": "I1",
+          "conta": true,
+          "deteccoes": [
+           {
+            "atribuicao": "deteccao",
+            "conta": true,
+            "forma": "outra",
+            "origem": "online",
+            "replica_leitura": null,
+            "rotulo": "I1",
+            "t_atribuido_ns": 1761566422000000000,
+            "t_ns": 1761566422000000000,
+            "tipo": "online"
+           }
+          ],
+          "forma": "outra",
+          "origens": [
+           "online"
+          ]
+         },
+         {
+          "chave": "vr-0",
+          "classe": "I1",
+          "conta": true,
+          "deteccoes": [
+           {
+            "atribuicao": "invalidacao",
+            "conta": true,
+            "forma": "outra",
+            "origem": "varredura",
+            "replica_leitura": null,
+            "rotulo": "I1",
+            "t_atribuido_ns": 1761566411001000000,
+            "t_ns": null,
+            "tipo": "varredura"
+           }
+          ],
+          "forma": "outra",
+          "origens": [
+           "varredura"
+          ]
+         }
+        ],
+        "pares_multiplas_origens": 0,
+        "pares_sem_varredura": {
+         "I1": 1,
+         "I2_REAL": 0,
+         "I4": 0
+        },
+        "por_origem": {
+         "online": {
+          "linhas": 1,
+          "pares": 1
+         },
+         "sonda": {
+          "linhas": 0,
+          "pares": 0
+         },
+         "varredura": {
+          "linhas": 1,
+          "pares": 1
+         }
+        },
+        "regra": "pares distintos (chave, invariante) com ao menos uma deteccao nas fases selecionadas, por execucao, somando as origens online, sonda (W-10) e varredura (so REAL); I1, I4 e I2 REAL (varredura: I2 administrativo e I2-PERDIDO REAL); linhas e contagem por origem so descritivas; online e replay imediato pelo instante da deteccao, replay tardio e varredura pelo instante da invalidacao confirmada (Logout NONE da sid; I2 e I2-PERDIDO: ultimo Block NONE da identidade); sem invalidacao localizada no CSV de eventos, conta sem filtro de fase (pre-registro do benchmark refeito, 2.3 e 2.4)",
+        "replay_validate": {
+         "eventos": 0,
+         "imediatos": 0,
+         "sids_tardios": 0,
+         "tardios": 0
+        },
+        "replica_no_falha": "h:3",
+        "sonda": true,
+        "sonda_tardia_max": null,
+        "sonda_tardia_no_teto": null,
+        "t_fim_carga_obs_ns": 1761566449982490000,
+        "total_linhas": 2,
+        "total_linhas_sem_varredura": 1,
+        "total_pares": 2,
+        "total_pares_sem_forma2": 2,
+        "total_pares_sem_forma2_sem_varredura": 1,
+        "total_pares_sem_varredura": 1,
+        "varredura": "presente",
+        "varredura_fora_de_v": 0
+       }
+      },
+      "2": {
+       "A": {
+        "atribuicao": {
+         "deteccao": 2,
+         "invalidacao": 0,
+         "sem_invalidacao_localizada": 0
+        },
+        "formas_avaliaveis": true,
+        "formas_i1": {
+         "forma1": 0,
+         "forma2": 1,
+         "indeterminada": 0,
+         "outra": 1
+        },
+        "formas_motivo": null,
+        "instrumentos": true,
+        "linhas": {
+         "I1": 2,
+         "I2_REAL": 0,
+         "I4": 0
+        },
+        "no_falha": "isn3",
+        "pares": {
+         "I1": 2,
+         "I2_REAL": 0,
+         "I4": 0
+        },
+        "pares_lista": [
+         {
+          "chave": "f2-0",
+          "classe": "I1",
+          "conta": true,
+          "deteccoes": [
+           {
+            "atribuicao": "deteccao",
+            "conta": true,
+            "forma": "forma2",
+            "origem": "sonda",
+            "replica_leitura": "h:3",
+            "rotulo": "I1",
+            "t_atribuido_ns": 1761566412000500000,
+            "t_ns": 1761566412000500000,
+            "tipo": "imediata"
+           }
+          ],
+          "forma": "forma2",
+          "origens": [
+           "sonda"
+          ]
+         },
+         {
+          "chave": "on-0",
+          "classe": "I1",
+          "conta": true,
+          "deteccoes": [
+           {
+            "atribuicao": "deteccao",
+            "conta": true,
+            "forma": "outra",
+            "origem": "online",
+            "replica_leitura": null,
+            "rotulo": "I1",
+            "t_atribuido_ns": 1761566422000000000,
+            "t_ns": 1761566422000000000,
+            "tipo": "online"
+           }
+          ],
+          "forma": "outra",
+          "origens": [
+           "online"
+          ]
+         }
+        ],
+        "pares_multiplas_origens": 0,
+        "pares_sem_varredura": {
+         "I1": 2,
+         "I2_REAL": 0,
+         "I4": 0
+        },
+        "por_origem": {
+         "online": {
+          "linhas": 1,
+          "pares": 1
+         },
+         "sonda": {
+          "linhas": 1,
+          "pares": 1
+         },
+         "varredura": {
+          "linhas": 0,
+          "pares": 0
+         }
+        },
+        "regra": "pares distintos (chave, invariante) com ao menos uma deteccao nas fases selecionadas, por execucao, somando as origens online, sonda (W-10) e varredura (so REAL); I1, I4 e I2 REAL (varredura: I2 administrativo e I2-PERDIDO REAL); linhas e contagem por origem so descritivas; online e replay imediato pelo instante da deteccao, replay tardio e varredura pelo instante da invalidacao confirmada (Logout NONE da sid; I2 e I2-PERDIDO: ultimo Block NONE da identidade); sem invalidacao localizada no CSV de eventos, conta sem filtro de fase (pre-registro do benchmark refeito, 2.3 e 2.4)",
+        "replay_validate": {
+         "eventos": 1,
+         "imediatos": 1,
+         "sids_tardios": 0,
+         "tardios": 0
+        },
+        "replica_no_falha": "h:3",
+        "sonda": true,
+        "sonda_tardia_max": null,
+        "sonda_tardia_no_teto": null,
+        "t_fim_carga_obs_ns": 1761566449982490000,
+        "total_linhas": 2,
+        "total_linhas_sem_varredura": 2,
+        "total_pares": 2,
+        "total_pares_sem_forma2": 1,
+        "total_pares_sem_forma2_sem_varredura": 1,
+        "total_pares_sem_varredura": 2,
+        "varredura": "erro",
+        "varredura_fora_de_v": 0
+       },
+       "B": {
+        "atribuicao": {
+         "deteccao": 1,
+         "invalidacao": 1,
+         "sem_invalidacao_localizada": 0
+        },
+        "formas_avaliaveis": true,
+        "formas_i1": {
+         "forma1": 0,
+         "forma2": 0,
+         "indeterminada": 0,
+         "outra": 2
+        },
+        "formas_motivo": null,
+        "instrumentos": true,
+        "linhas": {
+         "I1": 2,
+         "I2_REAL": 0,
+         "I4": 0
+        },
+        "no_falha": "isn3",
+        "pares": {
+         "I1": 2,
+         "I2_REAL": 0,
+         "I4": 0
+        },
+        "pares_lista": [
+         {
+          "chave": "on-0",
+          "classe": "I1",
+          "conta": true,
+          "deteccoes": [
+           {
+            "atribuicao": "deteccao",
+            "conta": true,
+            "forma": "outra",
+            "origem": "online",
+            "replica_leitura": null,
+            "rotulo": "I1",
+            "t_atribuido_ns": 1761566422000000000,
+            "t_ns": 1761566422000000000,
+            "tipo": "online"
+           }
+          ],
+          "forma": "outra",
+          "origens": [
+           "online"
+          ]
+         },
+         {
+          "chave": "vr-0",
+          "classe": "I1",
+          "conta": true,
+          "deteccoes": [
+           {
+            "atribuicao": "invalidacao",
+            "conta": true,
+            "forma": "outra",
+            "origem": "varredura",
+            "replica_leitura": null,
+            "rotulo": "I1",
+            "t_atribuido_ns": 1761566411001000000,
+            "t_ns": null,
+            "tipo": "varredura"
+           }
+          ],
+          "forma": "outra",
+          "origens": [
+           "varredura"
+          ]
+         }
+        ],
+        "pares_multiplas_origens": 0,
+        "pares_sem_varredura": {
+         "I1": 1,
+         "I2_REAL": 0,
+         "I4": 0
+        },
+        "por_origem": {
+         "online": {
+          "linhas": 1,
+          "pares": 1
+         },
+         "sonda": {
+          "linhas": 0,
+          "pares": 0
+         },
+         "varredura": {
+          "linhas": 1,
+          "pares": 1
+         }
+        },
+        "regra": "pares distintos (chave, invariante) com ao menos uma deteccao nas fases selecionadas, por execucao, somando as origens online, sonda (W-10) e varredura (so REAL); I1, I4 e I2 REAL (varredura: I2 administrativo e I2-PERDIDO REAL); linhas e contagem por origem so descritivas; online e replay imediato pelo instante da deteccao, replay tardio e varredura pelo instante da invalidacao confirmada (Logout NONE da sid; I2 e I2-PERDIDO: ultimo Block NONE da identidade); sem invalidacao localizada no CSV de eventos, conta sem filtro de fase (pre-registro do benchmark refeito, 2.3 e 2.4)",
+        "replay_validate": {
+         "eventos": 0,
+         "imediatos": 0,
+         "sids_tardios": 0,
+         "tardios": 0
+        },
+        "replica_no_falha": "h:3",
+        "sonda": true,
+        "sonda_tardia_max": null,
+        "sonda_tardia_no_teto": null,
+        "t_fim_carga_obs_ns": 1761566449982490000,
+        "total_linhas": 2,
+        "total_linhas_sem_varredura": 1,
+        "total_pares": 2,
+        "total_pares_sem_forma2": 2,
+        "total_pares_sem_forma2_sem_varredura": 1,
+        "total_pares_sem_varredura": 1,
+        "varredura": "presente",
+        "varredura_fora_de_v": 0
+       }
+      },
+      "3": {
+       "A": {
+        "atribuicao": {
+         "deteccao": 2,
+         "invalidacao": 1,
+         "sem_invalidacao_localizada": 0
+        },
+        "formas_avaliaveis": true,
+        "formas_i1": {
+         "forma1": 0,
+         "forma2": 0,
+         "indeterminada": 0,
+         "outra": 3
+        },
+        "formas_motivo": null,
+        "instrumentos": true,
+        "linhas": {
+         "I1": 3,
+         "I2_REAL": 0,
+         "I4": 0
+        },
+        "no_falha": "isn3",
+        "pares": {
+         "I1": 3,
+         "I2_REAL": 0,
+         "I4": 0
+        },
+        "pares_lista": [
+         {
+          "chave": "on-0",
+          "classe": "I1",
+          "conta": true,
+          "deteccoes": [
+           {
+            "atribuicao": "deteccao",
+            "conta": true,
+            "forma": "outra",
+            "origem": "online",
+            "replica_leitura": null,
+            "rotulo": "I1",
+            "t_atribuido_ns": 1761566422000000000,
+            "t_ns": 1761566422000000000,
+            "tipo": "online"
+           }
+          ],
+          "forma": "outra",
+          "origens": [
+           "online"
+          ]
+         },
+         {
+          "chave": "on-1",
+          "classe": "I1",
+          "conta": true,
+          "deteccoes": [
+           {
+            "atribuicao": "deteccao",
+            "conta": true,
+            "forma": "outra",
+            "origem": "online",
+            "replica_leitura": null,
+            "rotulo": "I1",
+            "t_atribuido_ns": 1761566423000000000,
+            "t_ns": 1761566423000000000,
+            "tipo": "online"
+           }
+          ],
+          "forma": "outra",
+          "origens": [
+           "online"
+          ]
+         },
+         {
+          "chave": "vr-0",
+          "classe": "I1",
+          "conta": true,
+          "deteccoes": [
+           {
+            "atribuicao": "invalidacao",
+            "conta": true,
+            "forma": "outra",
+            "origem": "varredura",
+            "replica_leitura": null,
+            "rotulo": "I1",
+            "t_atribuido_ns": 1761566411001000000,
+            "t_ns": null,
+            "tipo": "varredura"
+           }
+          ],
+          "forma": "outra",
+          "origens": [
+           "varredura"
+          ]
+         }
+        ],
+        "pares_multiplas_origens": 0,
+        "pares_sem_varredura": {
+         "I1": 2,
+         "I2_REAL": 0,
+         "I4": 0
+        },
+        "por_origem": {
+         "online": {
+          "linhas": 2,
+          "pares": 2
+         },
+         "sonda": {
+          "linhas": 0,
+          "pares": 0
+         },
+         "varredura": {
+          "linhas": 1,
+          "pares": 1
+         }
+        },
+        "regra": "pares distintos (chave, invariante) com ao menos uma deteccao nas fases selecionadas, por execucao, somando as origens online, sonda (W-10) e varredura (so REAL); I1, I4 e I2 REAL (varredura: I2 administrativo e I2-PERDIDO REAL); linhas e contagem por origem so descritivas; online e replay imediato pelo instante da deteccao, replay tardio e varredura pelo instante da invalidacao confirmada (Logout NONE da sid; I2 e I2-PERDIDO: ultimo Block NONE da identidade); sem invalidacao localizada no CSV de eventos, conta sem filtro de fase (pre-registro do benchmark refeito, 2.3 e 2.4)",
+        "replay_validate": {
+         "eventos": 0,
+         "imediatos": 0,
+         "sids_tardios": 0,
+         "tardios": 0
+        },
+        "replica_no_falha": "h:3",
+        "sonda": true,
+        "sonda_tardia_max": null,
+        "sonda_tardia_no_teto": null,
+        "t_fim_carga_obs_ns": 1761566449982490000,
+        "total_linhas": 3,
+        "total_linhas_sem_varredura": 2,
+        "total_pares": 3,
+        "total_pares_sem_forma2": 3,
+        "total_pares_sem_forma2_sem_varredura": 2,
+        "total_pares_sem_varredura": 2,
+        "varredura": "presente",
+        "varredura_fora_de_v": 0
+       },
+       "B": {
+        "atribuicao": {
+         "deteccao": 0,
+         "invalidacao": 0,
+         "sem_invalidacao_localizada": 0
+        },
+        "formas_avaliaveis": true,
+        "formas_i1": {
+         "forma1": 0,
+         "forma2": 0,
+         "indeterminada": 0,
+         "outra": 0
+        },
+        "formas_motivo": null,
+        "instrumentos": true,
+        "linhas": {
+         "I1": 0,
+         "I2_REAL": 0,
+         "I4": 0
+        },
+        "no_falha": "isn3",
+        "pares": {
+         "I1": 0,
+         "I2_REAL": 0,
+         "I4": 0
+        },
+        "pares_lista": [],
+        "pares_multiplas_origens": 0,
+        "pares_sem_varredura": {
+         "I1": 0,
+         "I2_REAL": 0,
+         "I4": 0
+        },
+        "por_origem": {
+         "online": {
+          "linhas": 0,
+          "pares": 0
+         },
+         "sonda": {
+          "linhas": 0,
+          "pares": 0
+         },
+         "varredura": {
+          "linhas": 0,
+          "pares": 0
+         }
+        },
+        "regra": "pares distintos (chave, invariante) com ao menos uma deteccao nas fases selecionadas, por execucao, somando as origens online, sonda (W-10) e varredura (so REAL); I1, I4 e I2 REAL (varredura: I2 administrativo e I2-PERDIDO REAL); linhas e contagem por origem so descritivas; online e replay imediato pelo instante da deteccao, replay tardio e varredura pelo instante da invalidacao confirmada (Logout NONE da sid; I2 e I2-PERDIDO: ultimo Block NONE da identidade); sem invalidacao localizada no CSV de eventos, conta sem filtro de fase (pre-registro do benchmark refeito, 2.3 e 2.4)",
+        "replay_validate": {
+         "eventos": 0,
+         "imediatos": 0,
+         "sids_tardios": 0,
+         "tardios": 0
+        },
+        "replica_no_falha": "h:3",
+        "sonda": true,
+        "sonda_tardia_max": null,
+        "sonda_tardia_no_teto": null,
+        "t_fim_carga_obs_ns": 1761566449982490000,
+        "total_linhas": 0,
+        "total_linhas_sem_varredura": 0,
+        "total_pares": 0,
+        "total_pares_sem_forma2": 0,
+        "total_pares_sem_forma2_sem_varredura": 0,
+        "total_pares_sem_varredura": 0,
+        "varredura": "erro",
+        "varredura_fora_de_v": 0
+       }
+      },
+      "4": {
+       "A": {
+        "atribuicao": {
+         "deteccao": 1,
+         "invalidacao": 0,
+         "sem_invalidacao_localizada": 0
+        },
+        "formas_avaliaveis": true,
+        "formas_i1": {
+         "forma1": 0,
+         "forma2": 0,
+         "indeterminada": 0,
+         "outra": 1
+        },
+        "formas_motivo": null,
+        "instrumentos": true,
+        "linhas": {
+         "I1": 1,
+         "I2_REAL": 0,
+         "I4": 0
+        },
+        "no_falha": "isn3",
+        "pares": {
+         "I1": 1,
+         "I2_REAL": 0,
+         "I4": 0
+        },
+        "pares_lista": [
+         {
+          "chave": "on-0",
+          "classe": "I1",
+          "conta": true,
+          "deteccoes": [
+           {
+            "atribuicao": "deteccao",
+            "conta": true,
+            "forma": "outra",
+            "origem": "online",
+            "replica_leitura": null,
+            "rotulo": "I1",
+            "t_atribuido_ns": 1761566422000000000,
+            "t_ns": 1761566422000000000,
+            "tipo": "online"
+           }
+          ],
+          "forma": "outra",
+          "origens": [
+           "online"
+          ]
+         }
+        ],
+        "pares_multiplas_origens": 0,
+        "pares_sem_varredura": {
+         "I1": 1,
+         "I2_REAL": 0,
+         "I4": 0
+        },
+        "por_origem": {
+         "online": {
+          "linhas": 1,
+          "pares": 1
+         },
+         "sonda": {
+          "linhas": 0,
+          "pares": 0
+         },
+         "varredura": {
+          "linhas": 0,
+          "pares": 0
+         }
+        },
+        "regra": "pares distintos (chave, invariante) com ao menos uma deteccao nas fases selecionadas, por execucao, somando as origens online, sonda (W-10) e varredura (so REAL); I1, I4 e I2 REAL (varredura: I2 administrativo e I2-PERDIDO REAL); linhas e contagem por origem so descritivas; online e replay imediato pelo instante da deteccao, replay tardio e varredura pelo instante da invalidacao confirmada (Logout NONE da sid; I2 e I2-PERDIDO: ultimo Block NONE da identidade); sem invalidacao localizada no CSV de eventos, conta sem filtro de fase (pre-registro do benchmark refeito, 2.3 e 2.4)",
+        "replay_validate": {
+         "eventos": 0,
+         "imediatos": 0,
+         "sids_tardios": 0,
+         "tardios": 0
+        },
+        "replica_no_falha": "h:3",
+        "sonda": true,
+        "sonda_tardia_max": null,
+        "sonda_tardia_no_teto": null,
+        "t_fim_carga_obs_ns": 1761566449982490000,
+        "total_linhas": 1,
+        "total_linhas_sem_varredura": 1,
+        "total_pares": 1,
+        "total_pares_sem_forma2": 1,
+        "total_pares_sem_forma2_sem_varredura": 1,
+        "total_pares_sem_varredura": 1,
+        "varredura": "erro",
+        "varredura_fora_de_v": 0
+       },
+       "B": {
+        "atribuicao": {
+         "deteccao": 2,
+         "invalidacao": 0,
+         "sem_invalidacao_localizada": 0
+        },
+        "formas_avaliaveis": true,
+        "formas_i1": {
+         "forma1": 0,
+         "forma2": 0,
+         "indeterminada": 0,
+         "outra": 2
+        },
+        "formas_motivo": null,
+        "instrumentos": true,
+        "linhas": {
+         "I1": 2,
+         "I2_REAL": 0,
+         "I4": 0
+        },
+        "no_falha": "isn3",
+        "pares": {
+         "I1": 2,
+         "I2_REAL": 0,
+         "I4": 0
+        },
+        "pares_lista": [
+         {
+          "chave": "on-0",
+          "classe": "I1",
+          "conta": true,
+          "deteccoes": [
+           {
+            "atribuicao": "deteccao",
+            "conta": true,
+            "forma": "outra",
+            "origem": "online",
+            "replica_leitura": null,
+            "rotulo": "I1",
+            "t_atribuido_ns": 1761566422000000000,
+            "t_ns": 1761566422000000000,
+            "tipo": "online"
+           }
+          ],
+          "forma": "outra",
+          "origens": [
+           "online"
+          ]
+         },
+         {
+          "chave": "on-1",
+          "classe": "I1",
+          "conta": true,
+          "deteccoes": [
+           {
+            "atribuicao": "deteccao",
+            "conta": true,
+            "forma": "outra",
+            "origem": "online",
+            "replica_leitura": null,
+            "rotulo": "I1",
+            "t_atribuido_ns": 1761566423000000000,
+            "t_ns": 1761566423000000000,
+            "tipo": "online"
+           }
+          ],
+          "forma": "outra",
+          "origens": [
+           "online"
+          ]
+         }
+        ],
+        "pares_multiplas_origens": 0,
+        "pares_sem_varredura": {
+         "I1": 2,
+         "I2_REAL": 0,
+         "I4": 0
+        },
+        "por_origem": {
+         "online": {
+          "linhas": 2,
+          "pares": 2
+         },
+         "sonda": {
+          "linhas": 0,
+          "pares": 0
+         },
+         "varredura": {
+          "linhas": 0,
+          "pares": 0
+         }
+        },
+        "regra": "pares distintos (chave, invariante) com ao menos uma deteccao nas fases selecionadas, por execucao, somando as origens online, sonda (W-10) e varredura (so REAL); I1, I4 e I2 REAL (varredura: I2 administrativo e I2-PERDIDO REAL); linhas e contagem por origem so descritivas; online e replay imediato pelo instante da deteccao, replay tardio e varredura pelo instante da invalidacao confirmada (Logout NONE da sid; I2 e I2-PERDIDO: ultimo Block NONE da identidade); sem invalidacao localizada no CSV de eventos, conta sem filtro de fase (pre-registro do benchmark refeito, 2.3 e 2.4)",
+        "replay_validate": {
+         "eventos": 0,
+         "imediatos": 0,
+         "sids_tardios": 0,
+         "tardios": 0
+        },
+        "replica_no_falha": "h:3",
+        "sonda": true,
+        "sonda_tardia_max": null,
+        "sonda_tardia_no_teto": null,
+        "t_fim_carga_obs_ns": 1761566449982490000,
+        "total_linhas": 2,
+        "total_linhas_sem_varredura": 2,
+        "total_pares": 2,
+        "total_pares_sem_forma2": 2,
+        "total_pares_sem_forma2_sem_varredura": 2,
+        "total_pares_sem_varredura": 2,
+        "varredura": "erro",
+        "varredura_fora_de_v": 0
+       }
+      },
+      "5": {
+       "A": {
+        "atribuicao": {
+         "deteccao": 3,
+         "invalidacao": 0,
+         "sem_invalidacao_localizada": 0
+        },
+        "formas_avaliaveis": true,
+        "formas_i1": {
+         "forma1": 0,
+         "forma2": 0,
+         "indeterminada": 0,
+         "outra": 3
+        },
+        "formas_motivo": null,
+        "instrumentos": true,
+        "linhas": {
+         "I1": 3,
+         "I2_REAL": 0,
+         "I4": 0
+        },
+        "no_falha": "isn3",
+        "pares": {
+         "I1": 3,
+         "I2_REAL": 0,
+         "I4": 0
+        },
+        "pares_lista": [
+         {
+          "chave": "on-0",
+          "classe": "I1",
+          "conta": true,
+          "deteccoes": [
+           {
+            "atribuicao": "deteccao",
+            "conta": true,
+            "forma": "outra",
+            "origem": "online",
+            "replica_leitura": null,
+            "rotulo": "I1",
+            "t_atribuido_ns": 1761566422000000000,
+            "t_ns": 1761566422000000000,
+            "tipo": "online"
+           }
+          ],
+          "forma": "outra",
+          "origens": [
+           "online"
+          ]
+         },
+         {
+          "chave": "on-1",
+          "classe": "I1",
+          "conta": true,
+          "deteccoes": [
+           {
+            "atribuicao": "deteccao",
+            "conta": true,
+            "forma": "outra",
+            "origem": "online",
+            "replica_leitura": null,
+            "rotulo": "I1",
+            "t_atribuido_ns": 1761566423000000000,
+            "t_ns": 1761566423000000000,
+            "tipo": "online"
+           }
+          ],
+          "forma": "outra",
+          "origens": [
+           "online"
+          ]
+         },
+         {
+          "chave": "on-2",
+          "classe": "I1",
+          "conta": true,
+          "deteccoes": [
+           {
+            "atribuicao": "deteccao",
+            "conta": true,
+            "forma": "outra",
+            "origem": "online",
+            "replica_leitura": null,
+            "rotulo": "I1",
+            "t_atribuido_ns": 1761566424000000000,
+            "t_ns": 1761566424000000000,
+            "tipo": "online"
+           }
+          ],
+          "forma": "outra",
+          "origens": [
+           "online"
+          ]
+         }
+        ],
+        "pares_multiplas_origens": 0,
+        "pares_sem_varredura": {
+         "I1": 3,
+         "I2_REAL": 0,
+         "I4": 0
+        },
+        "por_origem": {
+         "online": {
+          "linhas": 3,
+          "pares": 3
+         },
+         "sonda": {
+          "linhas": 0,
+          "pares": 0
+         },
+         "varredura": {
+          "linhas": 0,
+          "pares": 0
+         }
+        },
+        "regra": "pares distintos (chave, invariante) com ao menos uma deteccao nas fases selecionadas, por execucao, somando as origens online, sonda (W-10) e varredura (so REAL); I1, I4 e I2 REAL (varredura: I2 administrativo e I2-PERDIDO REAL); linhas e contagem por origem so descritivas; online e replay imediato pelo instante da deteccao, replay tardio e varredura pelo instante da invalidacao confirmada (Logout NONE da sid; I2 e I2-PERDIDO: ultimo Block NONE da identidade); sem invalidacao localizada no CSV de eventos, conta sem filtro de fase (pre-registro do benchmark refeito, 2.3 e 2.4)",
+        "replay_validate": {
+         "eventos": 0,
+         "imediatos": 0,
+         "sids_tardios": 0,
+         "tardios": 0
+        },
+        "replica_no_falha": "h:3",
+        "sonda": true,
+        "sonda_tardia_max": null,
+        "sonda_tardia_no_teto": null,
+        "t_fim_carga_obs_ns": 1761566449982490000,
+        "total_linhas": 3,
+        "total_linhas_sem_varredura": 3,
+        "total_pares": 3,
+        "total_pares_sem_forma2": 3,
+        "total_pares_sem_forma2_sem_varredura": 3,
+        "total_pares_sem_varredura": 3,
+        "varredura": "presente",
+        "varredura_fora_de_v": 0
+       },
+       "B": {
+        "atribuicao": {
+         "deteccao": 1,
+         "invalidacao": 2,
+         "sem_invalidacao_localizada": 0
+        },
+        "formas_avaliaveis": true,
+        "formas_i1": {
+         "forma1": 0,
+         "forma2": 0,
+         "indeterminada": 0,
+         "outra": 3
+        },
+        "formas_motivo": null,
+        "instrumentos": true,
+        "linhas": {
+         "I1": 3,
+         "I2_REAL": 0,
+         "I4": 0
+        },
+        "no_falha": "isn3",
+        "pares": {
+         "I1": 3,
+         "I2_REAL": 0,
+         "I4": 0
+        },
+        "pares_lista": [
+         {
+          "chave": "on-0",
+          "classe": "I1",
+          "conta": true,
+          "deteccoes": [
+           {
+            "atribuicao": "deteccao",
+            "conta": true,
+            "forma": "outra",
+            "origem": "online",
+            "replica_leitura": null,
+            "rotulo": "I1",
+            "t_atribuido_ns": 1761566422000000000,
+            "t_ns": 1761566422000000000,
+            "tipo": "online"
+           }
+          ],
+          "forma": "outra",
+          "origens": [
+           "online"
+          ]
+         },
+         {
+          "chave": "vr-0",
+          "classe": "I1",
+          "conta": true,
+          "deteccoes": [
+           {
+            "atribuicao": "invalidacao",
+            "conta": true,
+            "forma": "outra",
+            "origem": "varredura",
+            "replica_leitura": null,
+            "rotulo": "I1",
+            "t_atribuido_ns": 1761566411001000000,
+            "t_ns": null,
+            "tipo": "varredura"
+           }
+          ],
+          "forma": "outra",
+          "origens": [
+           "varredura"
+          ]
+         },
+         {
+          "chave": "vr-1",
+          "classe": "I1",
+          "conta": true,
+          "deteccoes": [
+           {
+            "atribuicao": "invalidacao",
+            "conta": true,
+            "forma": "outra",
+            "origem": "varredura",
+            "replica_leitura": null,
+            "rotulo": "I1",
+            "t_atribuido_ns": 1761566412001000000,
+            "t_ns": null,
+            "tipo": "varredura"
+           }
+          ],
+          "forma": "outra",
+          "origens": [
+           "varredura"
+          ]
+         }
+        ],
+        "pares_multiplas_origens": 0,
+        "pares_sem_varredura": {
+         "I1": 1,
+         "I2_REAL": 0,
+         "I4": 0
+        },
+        "por_origem": {
+         "online": {
+          "linhas": 1,
+          "pares": 1
+         },
+         "sonda": {
+          "linhas": 0,
+          "pares": 0
+         },
+         "varredura": {
+          "linhas": 2,
+          "pares": 2
+         }
+        },
+        "regra": "pares distintos (chave, invariante) com ao menos uma deteccao nas fases selecionadas, por execucao, somando as origens online, sonda (W-10) e varredura (so REAL); I1, I4 e I2 REAL (varredura: I2 administrativo e I2-PERDIDO REAL); linhas e contagem por origem so descritivas; online e replay imediato pelo instante da deteccao, replay tardio e varredura pelo instante da invalidacao confirmada (Logout NONE da sid; I2 e I2-PERDIDO: ultimo Block NONE da identidade); sem invalidacao localizada no CSV de eventos, conta sem filtro de fase (pre-registro do benchmark refeito, 2.3 e 2.4)",
+        "replay_validate": {
+         "eventos": 0,
+         "imediatos": 0,
+         "sids_tardios": 0,
+         "tardios": 0
+        },
+        "replica_no_falha": "h:3",
+        "sonda": true,
+        "sonda_tardia_max": null,
+        "sonda_tardia_no_teto": null,
+        "t_fim_carga_obs_ns": 1761566449982490000,
+        "total_linhas": 3,
+        "total_linhas_sem_varredura": 1,
+        "total_pares": 3,
+        "total_pares_sem_forma2": 3,
+        "total_pares_sem_forma2_sem_varredura": 1,
+        "total_pares_sem_varredura": 1,
+        "varredura": "presente",
+        "varredura_fora_de_v": 0
+       }
+      },
+      "6": {
+       "A": {
+        "atribuicao": {
+         "deteccao": 1,
+         "invalidacao": 2,
+         "sem_invalidacao_localizada": 0
+        },
+        "formas_avaliaveis": true,
+        "formas_i1": {
+         "forma1": 0,
+         "forma2": 0,
+         "indeterminada": 0,
+         "outra": 3
+        },
+        "formas_motivo": null,
+        "instrumentos": true,
+        "linhas": {
+         "I1": 3,
+         "I2_REAL": 0,
+         "I4": 0
+        },
+        "no_falha": "isn3",
+        "pares": {
+         "I1": 3,
+         "I2_REAL": 0,
+         "I4": 0
+        },
+        "pares_lista": [
+         {
+          "chave": "on-0",
+          "classe": "I1",
+          "conta": true,
+          "deteccoes": [
+           {
+            "atribuicao": "deteccao",
+            "conta": true,
+            "forma": "outra",
+            "origem": "online",
+            "replica_leitura": null,
+            "rotulo": "I1",
+            "t_atribuido_ns": 1761566422000000000,
+            "t_ns": 1761566422000000000,
+            "tipo": "online"
+           }
+          ],
+          "forma": "outra",
+          "origens": [
+           "online"
+          ]
+         },
+         {
+          "chave": "vr-0",
+          "classe": "I1",
+          "conta": true,
+          "deteccoes": [
+           {
+            "atribuicao": "invalidacao",
+            "conta": true,
+            "forma": "outra",
+            "origem": "varredura",
+            "replica_leitura": null,
+            "rotulo": "I1",
+            "t_atribuido_ns": 1761566411001000000,
+            "t_ns": null,
+            "tipo": "varredura"
+           }
+          ],
+          "forma": "outra",
+          "origens": [
+           "varredura"
+          ]
+         },
+         {
+          "chave": "vr-1",
+          "classe": "I1",
+          "conta": true,
+          "deteccoes": [
+           {
+            "atribuicao": "invalidacao",
+            "conta": true,
+            "forma": "outra",
+            "origem": "varredura",
+            "replica_leitura": null,
+            "rotulo": "I1",
+            "t_atribuido_ns": 1761566412001000000,
+            "t_ns": null,
+            "tipo": "varredura"
+           }
+          ],
+          "forma": "outra",
+          "origens": [
+           "varredura"
+          ]
+         }
+        ],
+        "pares_multiplas_origens": 0,
+        "pares_sem_varredura": {
+         "I1": 1,
+         "I2_REAL": 0,
+         "I4": 0
+        },
+        "por_origem": {
+         "online": {
+          "linhas": 1,
+          "pares": 1
+         },
+         "sonda": {
+          "linhas": 0,
+          "pares": 0
+         },
+         "varredura": {
+          "linhas": 2,
+          "pares": 2
+         }
+        },
+        "regra": "pares distintos (chave, invariante) com ao menos uma deteccao nas fases selecionadas, por execucao, somando as origens online, sonda (W-10) e varredura (so REAL); I1, I4 e I2 REAL (varredura: I2 administrativo e I2-PERDIDO REAL); linhas e contagem por origem so descritivas; online e replay imediato pelo instante da deteccao, replay tardio e varredura pelo instante da invalidacao confirmada (Logout NONE da sid; I2 e I2-PERDIDO: ultimo Block NONE da identidade); sem invalidacao localizada no CSV de eventos, conta sem filtro de fase (pre-registro do benchmark refeito, 2.3 e 2.4)",
+        "replay_validate": {
+         "eventos": 0,
+         "imediatos": 0,
+         "sids_tardios": 0,
+         "tardios": 0
+        },
+        "replica_no_falha": "h:3",
+        "sonda": true,
+        "sonda_tardia_max": null,
+        "sonda_tardia_no_teto": null,
+        "t_fim_carga_obs_ns": 1761566449982490000,
+        "total_linhas": 3,
+        "total_linhas_sem_varredura": 1,
+        "total_pares": 3,
+        "total_pares_sem_forma2": 3,
+        "total_pares_sem_forma2_sem_varredura": 1,
+        "total_pares_sem_varredura": 1,
+        "varredura": "presente",
+        "varredura_fora_de_v": 0
+       },
+       "B": {
+        "atribuicao": {
+         "deteccao": 0,
+         "invalidacao": 0,
+         "sem_invalidacao_localizada": 0
+        },
+        "formas_avaliaveis": true,
+        "formas_i1": {
+         "forma1": 0,
+         "forma2": 0,
+         "indeterminada": 0,
+         "outra": 0
+        },
+        "formas_motivo": null,
+        "instrumentos": true,
+        "linhas": {
+         "I1": 0,
+         "I2_REAL": 0,
+         "I4": 0
+        },
+        "no_falha": "isn3",
+        "pares": {
+         "I1": 0,
+         "I2_REAL": 0,
+         "I4": 0
+        },
+        "pares_lista": [],
+        "pares_multiplas_origens": 0,
+        "pares_sem_varredura": {
+         "I1": 0,
+         "I2_REAL": 0,
+         "I4": 0
+        },
+        "por_origem": {
+         "online": {
+          "linhas": 0,
+          "pares": 0
+         },
+         "sonda": {
+          "linhas": 0,
+          "pares": 0
+         },
+         "varredura": {
+          "linhas": 0,
+          "pares": 0
+         }
+        },
+        "regra": "pares distintos (chave, invariante) com ao menos uma deteccao nas fases selecionadas, por execucao, somando as origens online, sonda (W-10) e varredura (so REAL); I1, I4 e I2 REAL (varredura: I2 administrativo e I2-PERDIDO REAL); linhas e contagem por origem so descritivas; online e replay imediato pelo instante da deteccao, replay tardio e varredura pelo instante da invalidacao confirmada (Logout NONE da sid; I2 e I2-PERDIDO: ultimo Block NONE da identidade); sem invalidacao localizada no CSV de eventos, conta sem filtro de fase (pre-registro do benchmark refeito, 2.3 e 2.4)",
+        "replay_validate": {
+         "eventos": 0,
+         "imediatos": 0,
+         "sids_tardios": 0,
+         "tardios": 0
+        },
+        "replica_no_falha": "h:3",
+        "sonda": true,
+        "sonda_tardia_max": null,
+        "sonda_tardia_no_teto": null,
+        "t_fim_carga_obs_ns": 1761566449982490000,
+        "total_linhas": 0,
+        "total_linhas_sem_varredura": 0,
+        "total_pares": 0,
+        "total_pares_sem_forma2": 0,
+        "total_pares_sem_forma2_sem_varredura": 0,
+        "total_pares_sem_varredura": 0,
+        "varredura": "presente",
+        "varredura_fora_de_v": 0
+       }
+      }
+     },
+     "regra": "pares distintos (chave, invariante) com ao menos uma deteccao nas fases selecionadas, por execucao, somando as origens online, sonda (W-10) e varredura (so REAL); I1, I4 e I2 REAL (varredura: I2 administrativo e I2-PERDIDO REAL); linhas e contagem por origem so descritivas; online e replay imediato pelo instante da deteccao, replay tardio e varredura pelo instante da invalidacao confirmada (Logout NONE da sid; I2 e I2-PERDIDO: ultimo Block NONE da identidade); sem invalidacao localizada no CSV de eventos, conta sem filtro de fase (pre-registro do benchmark refeito, 2.3 e 2.4)",
+     "totais": {
+      "A": {
+       "atribuicao": {
+        "deteccao": 11,
+        "invalidacao": 4,
+        "sem_invalidacao_localizada": 0
+       },
+       "execucoes": 6,
+       "execucoes_com_sonda": 6,
+       "execucoes_com_varredura": 4,
+       "execucoes_tardio_no_teto": 0,
+       "execucoes_varredura_com_erro": 2,
+       "formas_i1": {
+        "forma1": 0,
+        "forma2": 1,
+        "indeterminada": 0,
+        "outra": 14
+       },
+       "linhas": {
+        "I1": 15,
+        "I2_REAL": 0,
+        "I4": 0
+       },
+       "pares": {
+        "I1": 15,
+        "I2_REAL": 0,
+        "I4": 0
+       },
+       "pares_multiplas_origens": 0,
+       "por_origem": {
+        "online": {
+         "linhas": 10,
+         "pares": 10
+        },
+        "sonda": {
+         "linhas": 1,
+         "pares": 1
+        },
+        "varredura": {
+         "linhas": 4,
+         "pares": 4
+        }
+       },
+       "replay_validate": {
+        "eventos": 1,
+        "imediatos": 1,
+        "sids_tardios": 0,
+        "tardios": 0
+       },
+       "total_linhas": 15,
+       "total_pares": 15,
+       "total_pares_sem_forma2": 14,
+       "varredura_fora_de_v": 0
+      },
+      "B": {
+       "atribuicao": {
+        "deteccao": 5,
+        "invalidacao": 4,
+        "sem_invalidacao_localizada": 0
+       },
+       "execucoes": 6,
+       "execucoes_com_sonda": 6,
+       "execucoes_com_varredura": 4,
+       "execucoes_tardio_no_teto": 0,
+       "execucoes_varredura_com_erro": 2,
+       "formas_i1": {
+        "forma1": 0,
+        "forma2": 0,
+        "indeterminada": 0,
+        "outra": 9
+       },
+       "linhas": {
+        "I1": 9,
+        "I2_REAL": 0,
+        "I4": 0
+       },
+       "pares": {
+        "I1": 9,
+        "I2_REAL": 0,
+        "I4": 0
+       },
+       "pares_multiplas_origens": 0,
+       "por_origem": {
+        "online": {
+         "linhas": 5,
+         "pares": 5
+        },
+        "sonda": {
+         "linhas": 0,
+         "pares": 0
+        },
+        "varredura": {
+         "linhas": 4,
+         "pares": 4
+        }
+       },
+       "replay_validate": {
+        "eventos": 0,
+        "imediatos": 0,
+        "sids_tardios": 0,
+        "tardios": 0
+       },
+       "total_linhas": 9,
+       "total_pares": 9,
+       "total_pares_sem_forma2": 9,
+       "varredura_fora_de_v": 0
+      }
+     },
+     "varredura_com_erro": {
+      "blocos": 3,
+      "lista": [
+       {
+        "bloco": "2",
+        "bracos_com_erro": [
+         "A"
+        ],
+        "v": {
+         "A": {
+          "com_varredura": null,
+          "sem_varredura": 1.0
+         },
+         "B": {
+          "com_varredura": 1.0,
+          "sem_varredura": 0.5
+         }
+        }
+       },
+       {
+        "bloco": "3",
+        "bracos_com_erro": [
+         "B"
+        ],
+        "v": {
+         "A": {
+          "com_varredura": 1.5,
+          "sem_varredura": 1.0
+         },
+         "B": {
+          "com_varredura": null,
+          "sem_varredura": 0.0
+         }
+        }
+       },
+       {
+        "bloco": "4",
+        "bracos_com_erro": [
+         "A",
+         "B"
+        ],
+        "v": {
+         "A": {
+          "com_varredura": null,
+          "sem_varredura": 0.5
+         },
+         "B": {
+          "com_varredura": null,
+          "sem_varredura": 1.0
+         }
+        }
+       }
+      ],
+      "nos_dois": 1,
+      "regra": "varredura com erro (varredura-rep-NNN.erro.txt) em qualquer braco do bloco: V e :sem_forma2 dos dois bracos sem as deteccoes da varredura (online e sonda), bloco no teste; subestima V nos dois bracos desses blocos; sensibilidade descritiva sem esses blocos, sem p e sem Holm (V-W5c, secao 5; W-5d)",
+      "sensibilidade_blocos_excluidos": {
+       "blocos": [
+        "1",
+        "5",
+        "6"
+       ],
+       "blocos_excluidos": [
+        "2",
+        "3",
+        "4"
+       ],
+       "d_b": {
+        "1": -0.5,
+        "5": 0.0,
+        "6": -1.5
+       },
+       "desfecho": "taxa_violacoes_por_1000",
+       "escala": "diferenca",
+       "estimativa": -0.6666666666666666,
+       "familia": "sensibilidade",
+       "ic_boot_blocos": [
+        -1.5,
+        -0.16249999999999903
+       ],
+       "ic_t": [
+        -2.563958183441535,
+        1.2306248501082013
+       ],
+       "indice_semente": 18,
+       "n_blocos": 3,
+       "nota": "descritiva: sem p e sem Holm",
+       "p_holm": null,
+       "p_permutacao": null
+      },
+      "so_A": 1,
+      "so_B": 1
+     }
+    },
+    "presente": true
+   }
+  }
+ },
+ "conclusao_global": {
+  "alfa": 0.05,
+  "celulas": {
+   "F2": {
+    "melhoria": false,
+    "p_iu": 0.25,
+    "p_iu_holm": 0.25,
+    "p_iu_usado": 0.25,
+    "resultado_celula": "sem-melhoria"
+   }
+  },
+  "m": 1,
+  "metodo": "Holm sobre p_IU das celulas de teste; celula nao avaliavel entra com p = 1 (a familia pre-registrada nao encolhe com o dado)"
+ },
+ "esquema": "comparar-bracos/2",
+ "parametros": {
+  "alfa": 0.05,
+  "co_principal_l": "acao_s3_p99_com_espera",
+  "co_principal_v": "taxa_violacoes_por_1000",
+  "delta": 0.1,
+  "delta_conv": "t_convergencia_abs_ns - t_religamento_ns (topologia completa de volta depois do religamento do no parado pelo AC-5) ou - t_fim_carga_ns (sem no parado); AC-5 sem registro do religamento: nao avaliavel (plano 3.4; P-6 da V-W5)",
+  "delta_latencia": 0.1,
+  "delta_rec": "ultima operacao iniciada depois do fim da falha que terminou em anomalia (ERROR_TRANSPORT, ERROR_UNAVAILABLE, falha percebida); censura nos ultimos W_c = w_analise_s antes de t_fim_carga_ns; sem t_fim_carga_ns, ausente (plano 3.4; P-2 e P-3 da V-W5)",
+  "energia": null,
+  "escala_diferenca": [
+   "delta_conv_s",
+   "delta_rec_metodologia_s",
+   "delta_rec_s",
+   "divergencia_persistente",
+   "falhas_percebidas_por_1000",
+   "taxa_erro",
+   "taxa_violacoes_por_1000"
+  ],
+  "fases": [
+   "durante",
+   "recuperacao"
+  ],
+  "ic_primario": "t (decisao D3)",
+  "marcadores_nome": "marcadores.txt",
+  "n_boot": 200,
+  "n_hier": 200,
+  "p99": "posto-mais-proximo, n >= 1000",
+  "permutacao": "exata, troca de sinal, bilateral, identidade incluida",
+  "quantil_linha_de_base": 0.95,
+  "referencias_erro": {},
+  "regra": "intersecao-uniao (Berger 1982; D-1); Holm entre celulas de teste sobre p_IU",
+  "regra_v": "pares distintos (chave, invariante) com ao menos uma deteccao nas fases selecionadas, por execucao, somando as origens online, sonda (W-10) e varredura (so REAL); I1, I4 e I2 REAL (varredura: I2 administrativo e I2-PERDIDO REAL); linhas e contagem por origem so descritivas; online e replay imediato pelo instante da deteccao, replay tardio e varredura pelo instante da invalidacao confirmada (Logout NONE da sid; I2 e I2-PERDIDO: ultimo Block NONE da identidade); sem invalidacao localizada no CSV de eventos, conta sem filtro de fase (pre-registro do benchmark refeito, 2.3 e 2.4)",
+  "rep": 1,
+  "semente_boot": 7,
+  "tipos_celula": {
+   "D": "descritiva",
+   "F2": "teste"
+  },
+  "v_sem_forma2": "sensibilidade sem a forma 2 de I1 (Logout confirmado por outro no e releitura VALID servida pelo no da falha entre o start e o end); so com sonda ou varredura (pre-registro 2.5)",
+  "varredura_com_erro": "varredura com erro (varredura-rep-NNN.erro.txt) em qualquer braco do bloco: V e :sem_forma2 dos dois bracos sem as deteccoes da varredura (online e sonda), bloco no teste; subestima V nos dois bracos desses blocos; sensibilidade descritiva sem esses blocos, sem p e sem Holm (V-W5c, secao 5; W-5d)",
+  "w_analise_s": 5.0,
+  "w_recovery_s": 60.0
+ }
+}

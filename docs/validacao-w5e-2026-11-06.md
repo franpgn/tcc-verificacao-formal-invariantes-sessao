@@ -102,3 +102,36 @@ Rodei `test_comparar_bracos*.py` em cópias de `analysis/`, uma por mutação.
 
 O relatório do Worker aponta um arquivo criado por engano fora do *scratchpad* (`C:\FRANCE~1\placeholder.txt`, conteúdo
 "x"). Não toquei nele. Remover à mão.
+
+## 7. Adendo: W-5f (`0583455..91d5406`, 2026-11-06)
+
+**Suíte:** `python -E -P -m unittest discover -s analysis` deu 528 testes, OK, 1 pulado.
+
+- **Sem fusão registrada conta como varredura com erro:** confere.
+  - Na célula fatorial, com a varredura presente, sem `.erro.txt` e com `t_fusao_ns` ausente ou nulo no
+    `execucao.json`, a varredura vira "erro" (`varredura_erro_origem = "sem_fusao"`).
+  - Daí seguem o tratamento simétrico nos quatro braços e a perda não avaliável, com a contagem em
+    `sem_fusao_por_braco`.
+  - O teste `test_igual_ao_erro_do_arquivo` mostra que o resultado é o mesmo do `.erro.txt` no mesmo braço. Sem
+    varredura, nada é convertido.
+- **Escopo só no fatorial: aceitável.** A DT-027 §5.3 trata da checagem de fusão antes da varredura na célula de teste,
+  onde a regra de fusão é o fator. Nas células de 2 braços (sem falha, F1, F3, F4), nenhuma fusão é esperada, e
+  `t_fusao_ns` nulo é o normal. Exigir a fusão ali transformaria execuções normais em varredura com erro e quebraria a
+  não regressão: a mutação 3, abaixo, derruba 21 testes, inclusive os goldens. **Limitação a declarar:** se uma F3 ou
+  F4 descritiva tiver partição e fusão por acaso, e a varredura rodar antes da fusão, o V descritivo dessa execução
+  pode subcontar. O efeito fica restrito a uma descritiva, sem teste.
+- **Mesma semente:** confere. No fatorial, o `seed` é obrigatório e igual nos quatro braços (exit 2 se faltar ou
+  divergir). Em 2 braços, só é conferido quando os dois o têm, e por isso os goldens antigos, sem `seed`, continuam
+  iguais.
+
+**Mutações**, as quatro pegas:
+
+| # | Mutação | Resultado |
+|---|---|---|
+| 0 | fatorial sem a fusão obrigatória | pega (3 testes) |
+| 1 | só o `t_fusao_ns` ausente converte (nulo não) | pega (3) |
+| 2 | semente divergente aceita | pega (2, no fatorial e em 2 braços) |
+| 3 | fusão obrigatória também nas células de 2 braços | pega (21, inclusive a não regressão) |
+
+**Veredito: aprovado.** As duas guardas da seção 3 estão feitas. Continua pendente só a regra escrita das escolhas 2 a
+4 e o contrato de campos com o `wt-fat` (seção 5), que são documentos.

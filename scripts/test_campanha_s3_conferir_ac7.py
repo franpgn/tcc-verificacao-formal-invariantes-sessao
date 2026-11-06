@@ -53,14 +53,14 @@ def campos(out):
     return dict(l.split("\t", 1) for l in out.strip().split("\n"))
 
 
-def controlador(d, acao_p1="AC-7", origem=True):
+def controlador(d, acao_p1="AC-7", origem=True, nome="controlador.json"):
     pol = {"kLag": 2, "tetoLagMs": 2000, "tRebNs": 60000000000, "cotaAc5": 1, "p2Habilitada": False,
            "origem": {"kLag": "t", "tetoLagMs": "t", "tRebNs": "t", "cotaAc5": "t", "p2Habilitada": "t"}}
     if acao_p1 is not None:
         pol["acaoP1"] = acao_p1
         if origem:
             pol["origem"]["acaoP1"] = "G-1 do coordenador (06/11): o AC-7 substitui a parada no P1"
-    return escrever(d, "controlador.json", {"versao": "t", "wNs": 5000000000, "politica": pol})
+    return escrever(d, nome, {"versao": "t", "wNs": 5000000000, "politica": pol})
 
 
 class EsquemaDaTrilha(unittest.TestCase):
@@ -87,9 +87,9 @@ class AcaoP1Explicita(unittest.TestCase):
                                  "--exigir-politica", "--exigir-acao-p1", "AC-7")
             self.assertEqual(0, rc, out + err)
             self.assertEqual("AC-7", campos(out)["acao_p1"])
-            for nome, arq, motivo in (("sem o campo", controlador(d, acao_p1=None), "acaoP1"),
-                                      ("AC-5", controlador(d, acao_p1="AC-5"), "AC-5"),
-                                      ("sem origem", controlador(d, origem=False), "origem")):
+            for nome, arq, motivo in (("sem o campo", controlador(d, acao_p1=None, nome="c1.json"), "acaoP1"),
+                                      ("AC-5", controlador(d, acao_p1="AC-5", nome="c2.json"), "AC-5"),
+                                      ("sem origem", controlador(d, origem=False, nome="c3.json"), "origem")):
                 with self.subTest(caso=nome):
                     rc, out, err = rodar("controlador", "--arquivo", str(arq), "--hotrod-timeout-ms", "2000",
                                          "--exigir-politica", "--exigir-acao-p1", "AC-7")

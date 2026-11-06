@@ -1799,7 +1799,7 @@ fi
 
 # ============================================================================= S-P1IC
 if quer SP1IC; then
-echo "== S-P1IC: AC-7 no P1 (V-2..V-4, 06/11): acaoP1 explicito no braco B, meta 1.3 com acao_p1, AC-7 ativo no fim descarta =="
+echo "== S-P1IC: AC-7 no P1 (V-2..V-4, 06/11): acaoP1 explicito no braco B, meta 1.3 com acao_p1, AC-7 ativo no fim e aviso =="
 novo_caso sp1ic
 matriz_aval "ASYNC-none:descritiva:1"
 "${REAL_PY}" -I -c "import json,sys; p=sys.argv[1]; o=json.load(open(p)); del o['politica']['acaoP1']; del o['politica']['origem']['acaoP1']; open(p,'w').write(json.dumps(o))" "${CTRL}"
@@ -1834,8 +1834,10 @@ echo "127.0.0.1:11224" > "${ST}/ac7-alvo"
 printf 'go nucleo %s\ngo rede 0\n' "${HOJE}" > "${CS_TTY_ARQUIVO}"
 rodar nucleo
 DB="$(ls -d "${OUT}"/exec-*-ASYNC-F2-B)"
-ok "S-P1IC AC-7 ativo no fim -> B DESCARTADA-INFRA" "DESCARTADA-INFRA" "$(json "${DB}/checagem.json" 'd["veredito"]')"
-contem "S-P1IC motivo AC-7 ativo" "AC-7" "$(json "${DB}/checagem.json" 'd["motivos"]')"
+# aviso, nao descarte: a analise tira Delta_conv e divergencia (descartar tiraria do braco ativo as falhas do controlador)
+ok "S-P1IC AC-7 ativo no fim -> B ACEITA com aviso" "ACEITA" "$(json "${DB}/checagem.json" 'd["veredito"]')"
+contem "S-P1IC aviso AC-7 ativo" "AC-7 ativo no fim" "$(json "${DB}/checagem.json" 'd["avisos"]')"
+contem "S-P1IC aviso com o alvo" "trilha_ac7=127.0.0.1:11224" "$(json "${DB}/checagem.json" 'd["avisos"]')"
 fi
 
 echo

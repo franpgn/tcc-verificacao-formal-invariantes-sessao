@@ -10,7 +10,10 @@ decisoes-controlador/1.3. Aqui:
 - rastreabilidade (a mesma funcao que as guardas dos bracos ativos do fatorial, PL e AL, usam): cada APLICAR do AC-7 da
   politica tem a linha politica P1 da mesma janela; cada REVERTER da politica tem a linha politica com um motivo de
   desfazer; GUARDA so reverte um AC-7 aplicado antes; AC-7 e GUARDA so em trilha 1.3; usadas_p1 nunca passa da cota;
-  AC-7 executado tem reversao executada com sucesso ate o fim (senao o alvo terminou a carga ignorando o cache).
+  AC-7 aplicado tem linha REVERTER depois (o executor desfaz a pilha no encerramento: sem a linha, falta rastro);
+- recuperacao: AC-7 que termina ativo (reversao que falhou: o alvo pode ter terminado a carga ignorando o cache)
+  deixa Delta_conv e divergencia nao avaliaveis, como o AC-5 sem o registro do religamento. Nao e problema de
+  rastreabilidade: a trilha diz o que aconteceu.
 
 Uso: python -m unittest discover -s analysis -p "test_comparar_bracos_ac7.py"   (da raiz do repositorio)
 """
@@ -21,8 +24,8 @@ from pathlib import Path
 AQUI = Path(__file__).resolve().parent
 sys.path.insert(0, str(AQUI))
 import comparar_bracos as cb  # noqa: E402
-from test_desfechos_coprincipais import (INI, S, T0, Base, acao, dec, escrever_exec,  # noqa: E402
-                                         eventos_ok, trilha)
+from test_desfechos_coprincipais import (INI, RESUMO, S, T0, Base, acao, dec,  # noqa: E402
+                                         escrever_exec, eventos_ok, trilha)
 
 ESQ13 = "decisoes-controlador/1.3"
 ALVO = "127.0.0.1:11224"
@@ -130,7 +133,6 @@ class Ac7(Base):
         guarda_sem_acao = [dec(j1), ac7("REVERTER", "APLICADA", j1 + P, origem="GUARDA", regra=None)]
         guarda_ac2 = base[:3] + [acao("REVERTER", "AC-2", "APLICADA", j2, origem="GUARDA", regra=None)]
         sem_reversao = base[:3] + [dec(j2)]
-        reversao_falhou = base[:3] + [ac7("REVERTER", "FALHOU", j2, origem="ENCERRAMENTO", regra=None)]
         # (trilha, trecho que o problema da regra tem de trazer)
         casos = {
             "APLICAR sem politica P1": (t13(sem_p1), "sem linha politica P1"),
@@ -139,8 +141,7 @@ class Ac7(Base):
             "GUARDA aplicando": (t13(guarda_aplicar), "GUARDA so reverte"),
             "GUARDA sem AC-7 aplicado antes": (t13(guarda_sem_acao), "GUARDA sem AC-7 aplicado antes"),
             "GUARDA em outro tipo": (t13(guarda_ac2), "GUARDA so reverte"),
-            "AC-7 ativo no fim": (t13(sem_reversao), "ativo no fim"),
-            "reversao que falhou deixa ativo": (t13(reversao_falhou), "ativo no fim"),
+            "AC-7 aplicado sem linha REVERTER": (t13(sem_reversao), "sem linha REVERTER"),
             "usadas_p1 acima da cota": (t13([dict(x, usadas_p1=2) if x["tipo"] == "politica" else x for x in base]),
                                         "usadas_p1"),
             "AC-7 em trilha 1.2": (trilha("active", base), "decisoes-controlador/1.3"),
@@ -152,6 +153,30 @@ class Ac7(Base):
                 r = cb.conferir_rastreabilidade(self.ler(linhas))
                 self.assertFalse(r["integral"], nome)
                 self.assertTrue(any(trecho in p for p in r["problemas"]), (trecho, r["problemas"]))
+
+    def test_reversao_que_falhou_tira_convergencia_e_divergencia(self):
+        j2 = T0 + 50 * S
+        tr = t13(cenario_corte()[:3] + [ac7("REVERTER", "FALHOU", j2, origem="ENCERRAMENTO", regra=None)])
+        t = self.ler(tr)
+        r = cb.conferir_rastreabilidade(t)
+        self.assertTrue(r["integral"], r["problemas"])
+        x = cb.descrever_controlador(t, INI, T0 + 60 * S)
+        self.assertTrue(x["ac7"]["ativa_no_fim"])
+        self.assertEqual([{"origem": "ENCERRAMENTO", "motivo": None, "resultado": "FALHOU"}], x["ac7"]["desfazer"])
+        escrever_exec(self.d, eventos=eventos_ok(), resumo=RESUMO, trilha=tr)
+        out, info = self.desf(self.d)
+        for nome in (cb.DESFECHO_DCONV, cb.DESFECHO_DIV):
+            self.assertIsNone(out[nome]["y"], nome)
+            self.assertIn("AC-7", out[nome]["motivo"])
+        self.assertTrue(info["ac7_aplicada"])
+        self.assertTrue(info["ac7_ativa_no_fim"])
+
+    def test_ac7_desfeito_conta_do_fim_da_carga(self):
+        escrever_exec(self.d, eventos=eventos_ok(), resumo=RESUMO, trilha=t13(cenario_corte()))
+        out, info = self.desf(self.d)
+        self.assertAlmostEqual(12.0, out[cb.DESFECHO_DCONV]["y"], places=9)
+        self.assertEqual("t_fim_carga_ns", out[cb.DESFECHO_DCONV]["origem"])
+        self.assertFalse(info["ac7_ativa_no_fim"])
 
     def test_shadow_previsto_e_rastreavel(self):
         j1 = T0 + 15 * S

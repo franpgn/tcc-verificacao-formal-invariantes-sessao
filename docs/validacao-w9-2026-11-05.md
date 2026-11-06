@@ -228,3 +228,41 @@ que é só registro.
 
 **Veredito: liberado para a derivação.** O script na ponta `4e2c2c8` implementa a §7 com os complementos 1, 3 e 3a.
 Quando a derivação rodar, confiro a saída contra os brutos, como manda a §7, antes de os valores irem ao B-40 parte 2.
+
+## 10. Adendo: sonda de replay do W-10 no W-9 (2026-11-06)
+
+> Diff `0c6b7c0..3827ad8` (`d48370a` test, `e561580` e `e895313` fix, `3827ad8` docs). O código do W-10 foi conferido
+> em `wt-w10`, branch `feature/s3-sonda-replay`, ponta `7c94cfb`.
+
+**Testes.** `python3 -I`: 73 testes, OK, 2 pulados. `python3 -E -P`: 73, OK. `test_referencia_p99.py` (22) e
+`test_energia_proxy.py` (26) passam nos dois modos. Fiz cinco mutações, e as cinco foram pegas: sem o filtro no
+`energia_proxy`, sem o filtro no `referencia_p99`, janela de violação com a sonda, `T_hold_viol` com a sonda e q̂ sem a
+sonda.
+
+1. **O teste central prova o que diz.** `test_replay_validate_nao_muda_nenhum_valor` deriva a mesma campanha com e sem
+   `ReplayValidate` em todas as 13 execuções e compara `valor` e `incerteza` de todos os parâmetros. Ficam de fora só o
+   SHA-256 dos CSV nas referências e o volume, que dependem dos bytes. Os eventos de replay do teste são lentos (50 ms),
+   têm 1/4 de `ERROR_TRANSPORT` e incluem um replay tardio depois da carga. Se vazassem, mudariam a referência (o teste
+   também confere que `ReplayValidate` não aparece em `omitidas` nem em `p99_ns`), os totais e erros por janela (7.5),
+   θ_err_in e os denominadores. As duas mutações que tiram os filtros dos leitores são pegas por esse teste. Os leitores
+   trazidos para esta branch são idênticos aos de `6307230` (diff vazio nos dois arquivos), então a integração com o
+   W-10 não terá conflito neles.
+2. **Tirar dos sinais a violação da sonda está certo.** No W-10, `InvariantAuditor.registrarViolacao(..., origem)`
+   grava a violação com origem no registro e no CSV e retorna antes de avisar o ouvinte (`if (origem != null) return;`),
+   e o ouvinte é o laço de controle. O `SessionOps.validarSonda` chama a checagem com `ORIGEM_SONDA` e grava o
+   `ReplayValidate` direto no `EventCsvWriter`, sem passar pelo `ouvinteDeEvento`. O controlador real não vê nem o
+   evento nem a violação da sonda. Então a janela de violação (m) e o `T_hold_viol`, que imitam o controlador, têm de
+   ignorá-los, e o λ₅, a excedência e os denominadores também. O q̂ é descritivo e continua contando a violação, como o
+   `comparar_bracos`. A entrada da I1 da sonda no V é decisão do Gestor, pendente no W-10.
+3. **A derivação oficial refeita dá valores idênticos.** Rodei o script de `3827ad8` sobre os mesmos brutos e o mesmo
+   `campanha-s3-calibracao.json` (`cfd5fa6a…`). Contra a oficial, o JSON difere só em quatro pontos: o `gerado_por`
+   (script novo), o texto da leitura A-10 e os dois SHA-256 das referências, em `parametros` e em `valores_b40_parte2`.
+   As referências mudam só no `gerado_por` (SHA-256 do `referencia_p99.py`) e no caminho relativo do `origem`. O p99, os
+   `n`, as `omitidas` e as linhas e os SHA-256 de cada CSV são iguais. Todos os valores e incertezas são iguais. A
+   calibração não usou a sonda, então não há `ReplayValidate` nem coluna `origem` nos brutos.
+
+**Consequência para o B-40 parte 2.** Os valores não mudam. As referências que vão à avaliação continuam as da derivação
+oficial (`c5ad8687…` e `5ced3dc5…`, no MANIFEST da pasta `derivacao-20261106T050404Z`). Não há motivo para trocá-las
+pelas refeitas, que só diferem em metadados.
+
+**Veredito: aprovado.** A mudança pode ir à integração junto com o W-10, quando o Gestor autorizar.

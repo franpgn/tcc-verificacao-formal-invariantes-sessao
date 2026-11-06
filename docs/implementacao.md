@@ -130,7 +130,7 @@ chama a política com `preferredEntry` = cópia da maioria (`VALID`) e a do isn3
 | Saída de segurança (A2) | valor ilegível, tipo inesperado, empate que a ordem não resolve, sids diferentes sob a mesma chave ou erro interno → devolve `null` (a CR remove a chave nos donos: a sessão some, o usuário entra de novo, falha fechada) e registra `A1-SAIDA-SEGURANCA motivo=...` em WARN | decisão do Gestor 06/11 |
 | Nunca lança | uma exceção na política interromperia a CR no coordenador; toda falha vira saída `ERRO_INTERNO`, e falhas do *log* são engolidas | `DefaultConflictManager.java:296-330` |
 | *Log* | categoria `br.unipampa.tcc.servidor.PoliticaFusaoSessoes` (jboss-logging do servidor): `A1-POLITICA carregada` (por nó e criação), `A1-FORMATO` (classe e bytes do primeiro valor recebido), `A1-FUSAO` por chave em INFO (vencedora, escolhida, `igual_pnn` e o que `PREFERRED_NON_NULL` daria), `A1-SAIDA-SEGURANCA` em WARN | — |
-| Configuração | `cluster/caches/sessions-async.json` com `"merge-policy":"br.unipampa.tcc.servidor.PoliticaFusaoSessoes"`; `cluster/podman-compose-sem-caches.yml` monta `../extensao-servidor/target/tcc-extensao-servidor.jar` em `/opt/infinispan/server/lib/` nos três nós (o JAR precisa estar nos três: os outros nós reanalisam a configuração do estado global) | `GlobalConfigurationManagerImpl.java:109`; `CoreConfigurationSerializer.java:654-665` |
+| Configuração | na branch, `cluster/caches/sessions-async.json` com `"merge-policy":"br.unipampa.tcc.servidor.PoliticaFusaoSessoes"`; na integração (DT-027), a variante `cluster/caches/sessions-async-a1.json`, e o `sessions-async.json` com `PREFERRED_NON_NULL`; `cluster/podman-compose-sem-caches.yml` monta `../extensao-servidor/target/tcc-extensao-servidor.jar` em `/opt/infinispan/server/lib/` nos três nós (o JAR precisa estar nos três: os outros nós reanalisam a configuração do estado global) | `GlobalConfigurationManagerImpl.java:109`; `CoreConfigurationSerializer.java:654-665` |
 
 **Escopo: só o `sessions-async`.** O `counters-async` fica com `PREFERRED_NON_NULL`: `desbloquear` e `resetar` tornam
 o `IdentityState` não monótono, e escolher um registro inteiro pela ordem desfaria um desbloqueio legítimo ou faria o
@@ -143,6 +143,16 @@ não monta o JAR.
 construído antes (`mvn -f extensao-servidor/pom.xml package`); o *bundle* `git archive` não leva `target/`. O
 orquestrador, os injetores, o h4 e o *runner* do *rebaseline* não foram tocados. A troca de política é condição nova
 (D-1 do documento do Senior): a configuração muda e o *rebaseline* com `PREFERRED_NON_NULL` deixa de ser comparável.
+
+**Na integração: as duas regras como variantes (DT-027; `856b24d` test, `111d0b1` feat).** A avaliação nova é um
+fatorial com as duas regras de fusão (DT-027, `wt-bench` `4fa4546`). Por isso o `cluster/caches/sessions-async.json`
+voltou a `PREFERRED_NON_NULL` (o de `edfa8b6`), e a política A1 ficou na variante `cluster/caches/sessions-async-a1.json`:
+o mesmo arquivo, byte a byte, salvo o `merge-policy`. O JAR continua montado nos três nós, sem efeito quando o *cache*
+não usa a política. `CachesCargaJsonTest` confere os seis JSON com `PREFERRED_NON_NULL`, a variante e o diretório com
+os seis mais a variante; `ConfiguracaoServidorTest` instancia a política a partir da variante e lê de volta o *cache*
+`sessions-async` criado com ela. **Pendente, para decidir:** o orquestrador e o `cria-caches.sh` ainda criam o
+`sessions-async` sempre a partir de `sessions-async.json` (o nome do *cache* é o nome do arquivo), e a camada 3 compara
+com esse arquivo. Rodar a célula A1 pede escolher o arquivo do `sessions-async` por linha da matriz ou por fase.
 
 **Testes.** `extensao-servidor`: 47 (ordem, leitura, política com 8 200 combinações, semirreticulado, saída de
 segurança por motivo, entrada nula, parser e leitura de volta da REST). *Workload*: `ValoresServidorA1Test`,

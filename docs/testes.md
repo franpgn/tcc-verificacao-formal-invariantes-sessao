@@ -1582,3 +1582,32 @@ do mecanismo (sessões criadas antes do corte e *logout* pelo isn3 isolado). Com
 | `ISPN000466` ou erro da classe da política | 0 |
 
 Detalhe e veredito em `docs/relatorio-a1-2026-11-06.md`.
+
+## Integração do A1 (2026-11-06)
+
+Branch `feature/controlador-integracao`, a partir de `edfa8b6`. `merge --no-ff` de `feature/merge-policy-semirreticulado`
+(`288b01c`, base `cc2b71c`) em `f957d19`; o TD-020 era o próximo livre e ficou. Depois, o ajuste do fatorial da DT-027
+(as duas regras de fusão na avaliação nova): `856b24d` (`test:`, vermelho) e `111d0b1` (`feat:`). O
+`cluster/caches/sessions-async.json` voltou a `PREFERRED_NON_NULL` (o de `edfa8b6`, `b68c3ca5…`), e a política A1 ficou
+na variante `cluster/caches/sessions-async-a1.json` (`df3c290d…`), igual byte a byte salvo o `merge-policy`. O JAR
+continua montado nos três nós. Vermelho: `CachesCargaJsonTest` com 5 testes e 4 falhas; `ConfiguracaoServidorTest` com
+6 testes, 1 falha e 2 erros (variante ausente).
+
+| Suíte | Comando | Resultado |
+|---|---|---|
+| Surefire do `workload` | `mvn -q -o -T1 clean test` (em `workload/`) | **1177/0/0/1 em 168 classes** (1175 + 2: `ValoresServidorA1Test` e o teste novo da variante em `CachesCargaJsonTest`) |
+| `extensao-servidor` | `mvn -q -o clean test` (em `extensao-servidor/`) | **47/0/0/0 em 5 classes** |
+| `cria-caches.test.sh` | `bash scripts/cria-caches.test.sh` | 26 PASS, 0 FAIL |
+| `test_campanha_s3_conferir`, `_h4`, `_matriz`; `test_rebaseline_matriz` | `python3 -I -m unittest discover -s scripts -p "<nome>.py"` | 59, 11, 16 e 8 OK |
+| `run-campanha-s3.test.sh` S1 S4 S12 S24 (os casos que passam pelo compose, pelos JSON dos *caches*, pela camada 3 e pelo *bundle*) | `bash scripts/run-campanha-s3.test.sh S1 S4 S12 S24` | 108 PASS, 1 FAIL (766 s): S24 "SYNC e ASYNC ACEITA" deu `ACEITA RECUSADA`. **S24 de novo, sozinho: 18 PASS, 0 FAIL** (243 s) |
+
+O A1 não muda nada em `scripts/` nem em `analysis/`, então os Python de `analysis/` não foram rodados de novo. A
+falha do S24 não se repetiu, e a causa não ficou registrada (o diretório temporário da primeira rodada é apagado no
+fim da suíte). O S24 não depende da política: os dublês não interpretam o `merge-policy` nem montam o JAR. Saídas em
+`runs/a1-int/`.
+
+**Congelados**, iguais a `edfa8b6`: `run-rebaseline.sh` `d95305fe…`, `inject-netdegrade.sh` `4ebdd8a3…`, os demais
+injetores, a lista do h4, `cria-caches.sh`, `collect-resources.sh` e os arquivos do *rebaseline*.
+
+**Pendente:** o orquestrador e o `cria-caches.sh` ainda criam o `sessions-async` a partir de `sessions-async.json`, e a
+camada 3 compara com esse arquivo; rodar a célula A1 pede a escolha do arquivo por linha da matriz ou por fase (TD-020).

@@ -9,6 +9,9 @@ gravado em analysis/fixtures/w5c/golden-sem-sonda-daa18a2.json (python -E -P ana
 --gerar-golden). O teste exige que cada chave do golden exista no resultado atual com o mesmo valor; chaves novas
 sao permitidas. Os caminhos (manifesto, execucoes) e o SHA-256 do script ficam fora da comparacao.
 
+W-5d (V-W5c, docs/validacao-w5c-2026-11-06.md, secao 5): varredura com erro pelo tratamento simetrico (classes
+TotaisSemVarredura e VarreduraSimetrica).
+
 Uso: python -E -P -m unittest discover -s analysis -p "test_*.py"   (da raiz do repositorio; numpy e scipy no
 site do usuario, decisao G2 de 28/10)
 """
@@ -656,6 +659,175 @@ class SmokeW10(unittest.TestCase):
         self.assertEqual(1, det["varredura_fora_de_v"])
         self.assertEqual(4, out[cb.DESFECHO_V]["contagem"])
         self.assertEqual(2, out[cb.DESFECHO_V_SEM_F2]["contagem"])
+
+
+# ----------------------------------------------------------------------------- W-5d: varredura com erro, simetrica
+
+class TotaisSemVarredura(BaseI):
+    """apurar_violacoes_execucao devolve tambem os totais sem as deteccoes da varredura (V-W5c, secao 5, item 1)."""
+
+    def test_sobreposicao_sem_varredura(self):
+        ev, viol, varr = cenario_sobreposicao()
+        escrever_inst(self.d, eventos=ev, violacoes=viol, varredura=varr)
+        _, info = self.desf(self.d)
+        det = info["violacoes_detalhe"]
+        # sid-D (I2) e u-1 (I2-PERDIDO) so a varredura viu
+        self.assertEqual(5, det["total_pares"])
+        self.assertEqual(3, det["total_pares_sem_varredura"])
+        self.assertEqual({"I1": 1, "I2_REAL": 1, "I4": 1}, det["pares_sem_varredura"])
+        self.assertEqual(19 - 4, det["total_linhas_sem_varredura"])
+        self.assertEqual(3, det["total_pares_sem_forma2_sem_varredura"])
+
+    def test_forma_do_par_sem_varredura(self):
+        # sid-F2c: com a varredura e "outra"; sem ela, so a leitura cruzada do isn3 (forma 2)
+        ev, viol, varr = cenario_formas()
+        escrever_inst(self.d, eventos=ev, violacoes=viol, varredura=varr)
+        _, info = self.desf(self.d)
+        det = info["violacoes_detalhe"]
+        self.assertEqual(4, det["total_pares_sem_forma2"])
+        self.assertEqual(6, det["total_pares_sem_varredura"])
+        self.assertEqual(3, det["total_pares_sem_forma2_sem_varredura"])
+
+    def test_formas_indeterminadas_sem_varredura(self):
+        ev, viol, varr = cenario_formas()
+        escrever_inst(self.d, eventos=ev, violacoes=viol, varredura=varr, servidores=None)
+        _, info = self.desf(self.d)
+        self.assertIsNone(info["violacoes_detalhe"]["total_pares_sem_forma2_sem_varredura"])
+
+
+# por bloco: {braco: (I1 online, I1 so da varredura, pares de forma 2 da sonda, varredura com erro)}
+ESPEC_VARR = {1: {"A": (2, 1, 0, False), "B": (1, 1, 0, False)},     # intacto: A 3, B 2
+              2: {"A": (1, 2, 1, True), "B": (1, 1, 0, False)},      # erro so em A
+              3: {"A": (2, 1, 0, False), "B": (0, 2, 0, True)},      # erro so em B
+              4: {"A": (1, 1, 0, True), "B": (2, 1, 0, True)},       # erro nos dois
+              5: {"A": (3, 0, 0, False), "B": (1, 2, 0, False)},     # intacto: A 3, B 3
+              6: {"A": (1, 2, 0, False), "B": (0, 0, 0, False)}}     # intacto: A 3, B 0
+
+
+def gerar_celula_varr(raiz, celula, espec=ESPEC_VARR):
+    linhas = []
+    for b in sorted(espec):
+        for br in "AB":
+            n_on, n_vr, n_f2, erro = espec[b][br]
+            ev, viol, varr = [], [], []
+            for j in range(n_on):
+                sid = "on-%d" % j
+                ev.append(("Logout", "NONE", INI + (1 + j) * S, INI + (1 + j) * S + MS, "h:1", sid))
+                viol.append((INI + (12 + j) * S, "I1", sid, MSG_I1 % "LOGOUT", "", ""))
+            for j in range(n_vr):
+                sid = "vr-%d" % j
+                ev.append(("Logout", "NONE", INI + (1 + j) * S, INI + (1 + j) * S + MS, "h:1", sid))
+                varr.append(("I1", sid, "REAL", DET_I1 % "LOGOUT"))
+            for j in range(n_f2):
+                sid = "f2-%d" % j
+                ev += [("Logout", "NONE", INI + (1 + j) * S, INI + (1 + j) * S + MS, "h:2", sid),
+                       ("ReplayValidate", "VALID", INI + (2 + j) * S, INI + (2 + j) * S + MS, "h:3", sid)]
+                viol.append((INI + (2 + j) * S + MS // 2, "I1", sid, MSG_I1 % "LOGOUT", "", "sonda"))
+            d = Path(raiz) / celula / ("b%02d%s" % (b, br))
+            escrever_inst(d, eventos=ev, violacoes=viol, varredura=None if erro else varr, varredura_erro=erro,
+                          trilha=_trilha(cb.MODO_ESPERADO[br]))
+            linhas.append("%d\t%s\t%s\t%s" % (b, celula, br, Path(celula) / d.name))
+    man = Path(raiz) / ("manifesto-%s.tsv" % celula)
+    man.write_text("bloco\tcelula\tbraco\texecucao\n" + "\n".join(linhas) + "\n", encoding="utf-8")
+    return man
+
+
+class VarreduraSimetrica(BaseI):
+    """V-W5c, secao 5 (W-5d): bloco com varredura com erro em qualquer braco usa V sem a varredura nos dois bracos
+    e fica no teste; o bloco sem falha fica intacto."""
+
+    def rodar(self, tipo):
+        man = gerar_celula_varr(self.d, "F2")
+        return cb.comparar(man, 5, delta_latencia=0.10, w_analise_s=5, w_recovery_s=60, tipos_celula={"F2": tipo},
+                           n_boot=200, n_hier=200)["celulas"]["F2"]
+
+    def test_d_b_por_bloco(self):
+        c = self.rodar("teste")
+        v = c["desfechos"][cb.DESFECHO_V]
+        self.assertEqual(6, v["n_blocos"])
+        self.assertEqual([], v["blocos_excluidos"])
+        # x 1000 / 2000 acoes: intactos 1, 5 e 6 com a varredura; 2 (A), 3 (B) e 4 (os dois) sem ela, nos dois bracos
+        esperado = {"1": (2 - 3) * 0.5, "2": (1 - 2) * 0.5, "3": (0 - 2) * 0.5, "4": (2 - 1) * 0.5, "5": 0.0,
+                    "6": (0 - 3) * 0.5}
+        for b, d in esperado.items():
+            self.assertAlmostEqual(d, v["d_b"][b], places=12, msg="bloco %s" % b)
+        self.assertIsNotNone(v["p_permutacao"])
+        self.assertEqual({"A": 14, "B": 8}, c["co_principal_v"]["contagem"])
+        s = c["desfechos"][cb.DESFECHO_V_SEM_F2]
+        self.assertAlmostEqual((1 - 1) * 0.5, s["d_b"]["2"], places=12)      # A sem varredura: 2 pares, 1 de forma 2
+        self.assertAlmostEqual(v["d_b"]["3"], s["d_b"]["3"], places=12)
+
+    def test_detalhe_lista_os_blocos(self):
+        c = self.rodar("teste")
+        vc = c["violacoes"]["detalhe"]["varredura_com_erro"]
+        self.assertEqual({"blocos": 3, "so_A": 1, "so_B": 1, "nos_dois": 1},
+                         {k: vc[k] for k in ("blocos", "so_A", "so_B", "nos_dois")})
+        lista = {x["bloco"]: x for x in vc["lista"]}
+        self.assertEqual(["2", "3", "4"], sorted(lista))
+        self.assertEqual(["A"], lista["2"]["bracos_com_erro"])
+        self.assertEqual(["B"], lista["3"]["bracos_com_erro"])
+        self.assertEqual(["A", "B"], lista["4"]["bracos_com_erro"])
+        self.assertEqual({"A": {"com_varredura": None, "sem_varredura": 1.0},
+                          "B": {"com_varredura": 1.0, "sem_varredura": 0.5}}, lista["2"]["v"])
+        self.assertEqual({"A": {"com_varredura": 1.5, "sem_varredura": 1.0},
+                          "B": {"com_varredura": None, "sem_varredura": 0.0}}, lista["3"]["v"])
+        self.assertEqual({"A": {"com_varredura": None, "sem_varredura": 0.5},
+                          "B": {"com_varredura": None, "sem_varredura": 1.0}}, lista["4"]["v"])
+
+    def test_sensibilidade_sem_os_blocos(self):
+        c = self.rodar("teste")
+        s = c["violacoes"]["detalhe"]["varredura_com_erro"]["sensibilidade_blocos_excluidos"]
+        self.assertEqual(["1", "5", "6"], s["blocos"])
+        self.assertEqual(["2", "3", "4"], s["blocos_excluidos"])
+        self.assertAlmostEqual((-0.5 + 0.0 - 1.5) / 3, s["estimativa"], places=12)
+        self.assertEqual("sensibilidade", s["familia"])
+        self.assertIsNone(s["p_permutacao"])
+        self.assertIsNone(s["p_holm"])
+        self.assertIsNotNone(s["ic_t"])
+
+    def test_celula_descritiva_tambem(self):
+        c = self.rodar("descritiva")
+        v = c["desfechos"][cb.DESFECHO_V]
+        self.assertEqual(6, v["n_blocos"])
+        self.assertAlmostEqual(-1.0, v["d_b"]["3"], places=12)
+        self.assertEqual(3, c["violacoes"]["detalhe"]["varredura_com_erro"]["blocos"])
+
+    def test_bloco_sem_falha_intacto(self):
+        # so os blocos sem erro: o resultado e o mesmo de uma celula que nunca teve varredura com erro
+        intactos = {b: ESPEC_VARR[b] for b in (1, 5, 6)}
+        man = gerar_celula_varr(self.d, "OK", intactos)
+        c = cb.comparar(man, 5, delta_latencia=0.10, w_analise_s=5, w_recovery_s=60, tipos_celula={"OK": "teste"},
+                        n_boot=200, n_hier=200)["celulas"]["OK"]
+        self.assertEqual({"1": -0.5, "5": 0.0, "6": -1.5}, c["desfechos"][cb.DESFECHO_V]["d_b"])
+        vc = c["violacoes"]["detalhe"]["varredura_com_erro"]
+        self.assertEqual(0, vc["blocos"])
+        self.assertIsNone(vc["sensibilidade_blocos_excluidos"])
+        self.assertEqual({"A": 9, "B": 5}, c["co_principal_v"]["contagem"])
+
+    def test_contagens_por_invariante_trocadas(self):
+        c = self.rodar("teste")
+        self.assertEqual({"A": 14, "B": 8}, c["violacoes"]["I1"]["contagem"])
+        self.assertEqual(6, c["violacoes"]["blocos_com_arquivo"])
+
+    def test_markdown_conta_os_blocos(self):
+        man = gerar_celula_varr(self.d, "F2")
+        r = cb.comparar(man, 5, delta_latencia=0.10, w_analise_s=5, w_recovery_s=60, tipos_celula={"F2": "teste"},
+                        n_boot=200, n_hier=200)
+        md = cb.tabela_markdown(r)
+        self.assertIn("varredura com erro: 3 bloco(s)", md)
+        self.assertIn("so A: 1, so B: 1, nos dois: 1", md)
+        self.assertIn("varredura com erro", r["parametros"]["varredura_com_erro"])
+
+    def test_guarda_de_instrumentos_trata_erro_como_varredura_pedida(self):
+        # erro num braco e varredura no outro: mesmos instrumentos (nao recusa); sem varredura no outro: recusa
+        espec = {1: {"A": (1, 0, 0, True), "B": (1, 1, 0, False)}}
+        man = gerar_celula_varr(self.d, "G", espec)
+        cb.comparar(man, 5, delta_latencia=0.10, w_analise_s=5, w_recovery_s=60, tipos_celula={"G": "teste"},
+                    n_boot=200, n_hier=200)
+        (self.d / "G" / "b01B" / "varredura-rep-001.csv").unlink()
+        with self.assertRaises(cb.ErroUso):
+            cb.comparar(man, 5, delta_latencia=0.10, w_analise_s=5, w_recovery_s=60, tipos_celula={"G": "teste"},
+                        n_boot=200, n_hier=200)
 
 
 if __name__ == "__main__":

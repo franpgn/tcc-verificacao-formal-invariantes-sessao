@@ -169,3 +169,18 @@ Adendo da V-W9 (§8, `330c321`) e complemento 3a (`639966c`). Commits: `83b952b`
    fator 5/W, o caso (7.3 ou reserva), os parâmetros afetados e a declaração.
 4. O texto do m descreve a leitura cortada no `end`. `EMENDAS_VW9` traz R-1 a R-4 e o 3a, com a situação no
    complemento 3 (DT-024).
+
+## 11. Sonda de replay do W-10 (2026-11-06)
+
+Com `--s3-replay-probe`, o `rep-001.csv` traz eventos `ReplayValidate` e o CSV de violações a coluna `origem`. Commits
+`d48370a` (test, vermelho: 2 falhas), `e561580` e `e895313` (fix). Testes: `python3 -I` **PASS** (73: 71 OK, 2
+pulados); `python3 -E -P` **PASS** (73 OK); `test_referencia_p99.py` e `test_energia_proxy.py` **PASS**.
+
+- O W-9 lê eventos só por `referencia_p99.ler_eventos` e `energia_proxy.ler_eventos_inicio`. O filtro do W-10
+  (`OPERACOES_INSTRUMENTACAO`, `6307230`) veio para esta branch com os testes dele, idêntico ao de lá. Uma execução com
+  `ReplayValidate` dá os mesmos valores derivados que sem eles.
+- A violação com `origem = sonda` não vai ao laço de controle (`InvariantAuditor.registrarViolacao` com origem). Por
+  isso fica fora da janela de violação (m) e do T_hold_viol. O q̂ (7.18) a conta, como o `comparar_bracos`. A decisão
+  sobre a I1 da sonda em V é do Gestor (relatório do W-10).
+- A derivação oficial (`derivacao-20261106T050404Z`), refeita com este código, dá os mesmos parâmetros e valores do
+  B-40 parte 2. As referências mudam só no `gerado_por`, porque o SHA-256 do `referencia_p99.py` mudou.

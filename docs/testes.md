@@ -806,3 +806,26 @@ Adendo `docs/validacao-w9-2026-11-05.md` §8 (`330c321`) e complemento 3a (`6399
 
 Ponta `aa81e38`: `python3 -I` **PASS** (70: 68 OK, 2 pulados); `python3 -E -P` **PASS** (70 OK). Três mutantes (θ sem
 cobertura = 2,0, sem cobertura só com zero janela determinada, R-4 nunca declarada) são pegos.
+
+### W-9 com a sonda de replay do W-10 (2026-11-06)
+
+`--s3-replay-probe` (W-10, `feature/s3-sonda-replay`) grava eventos `ReplayValidate` no `rep-001.csv` e a coluna
+`origem` no CSV de violações (contrato CSV v2 §7). Par `d48370a` (test, vermelho: 73 testes, 2 falhas) → `e561580` e
+`e895313` (fix):
+
+| Commit | O quê |
+|---|---|
+| `e561580` | traz de `feature/s3-sonda-replay` o filtro `OPERACOES_INSTRUMENTACAO` de `referencia_p99.ler_eventos` e `energia_proxy.ler_eventos_inicio`, com os testes deles (mudança idêntica à `6307230` do W-10, sem o teste do `comparar_bracos`). O W-9 lê eventos só por esses dois leitores: referência de p99, λ₅, excedências e denominadores de latência e erro |
+| `e895313` | violação com `origem = sonda` fora da janela de violação (m) e do T_hold_viol, porque o `InvariantAuditor` não a entrega ao laço de controle; o q̂ continua contando, como o `comparar_bracos` (decisão do Gestor pendente no W-10) |
+
+| Comando (ponta `e895313`) | Resultado |
+|---|---|
+| `python3 -I -m unittest discover -s analysis -p "test_calibracao_s3.py"` | **PASS**: 73, 71 OK e 2 pulados |
+| `python3 -E -P`, mesmo comando | **PASS**: 73 OK |
+| `test_referencia_p99.py` e `test_energia_proxy.py`, em `-I` e `-E -P` | **PASS** |
+
+`SondaReplay.test_replay_validate_nao_muda_nenhum_valor`: a campanha base com `ReplayValidate` em todas as execuções
+(a cada 200 ms, lentos, com erro, e um replay tardio depois da carga) dá os mesmos `valor` e `incerteza` de todos os
+parâmetros que sem eles, fora o SHA-256 dos CSV na referência e o volume. A derivação oficial da calibração
+(`derivacao-20261106T050404Z`) refeita com este código dá os mesmos parâmetros e valores do B-40 parte 2; as
+referências mudam só no `gerado_por`, porque o SHA-256 do `referencia_p99.py` mudou com o filtro.

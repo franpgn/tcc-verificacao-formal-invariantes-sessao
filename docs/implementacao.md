@@ -137,6 +137,9 @@ braços. Relatório: `docs/relatorio-w9-2026-11-05.md`.
 - **W-9c (adendo da V-W9 e complemento 3a, `639966c`).** θ_in sem cobertura = o menor *double* acima de 1; sem
   cobertura sempre que a 7.7 tem N = 0 (`limiar_entrada_com_cobertura`), com a fração de janelas determinadas; com
   W final < 5 s, `W_s.dados.subestimacao_w_menor_que_5_s` declara a subestimação da R-4 (fator 5/W).
+- **Sonda de replay do W-10.** Os leitores reaproveitados descartam o `ReplayValidate` (filtro do W-10, `6307230`,
+  trazido igual); a violação com `origem = sonda` fica fora da janela de violação e do T_hold_viol (`viol_controle`),
+  porque o laço de controle não a recebe; o q̂ a conta, como o `comparar_bracos`.
 - **7.18** calcula q̂ por célula de teste com Clopper-Pearson (bissecção exata sobre a binomial) e grava as taxas e o
   comando do `poder.py` (`python -E -P`, `--semente 20261105 --n-sim 10000 --m-celulas 2 --blocos 12`), que não roda
   em `-I` (A-13).

@@ -24,7 +24,9 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  * calibracao e da avaliacao. Ele e o {@code cluster/infinispan-cluster.xml} sem nenhum cache: tirando os
  * {@code distributed-cache} do XML com caches, os comentarios e o texto so de espaco, os dois documentos sao
  * iguais no-a-no. O {@code cluster/podman-compose-sem-caches.yml} e o {@code podman-compose.yml} com o volume do
- * XML trocado, e nada mais (mesmos nomes de conteiner, portas, imagem e {@code external-port}).
+ * XML trocado e, desde o A1 (2026-11-06), o JAR da extensao do servidor ({@code extensao-servidor}, politica de fusao
+ * do {@code sessions-async}) montado em {@code server/lib} nos tres servicos, e nada mais (mesmos nomes de conteiner,
+ * portas, imagem e {@code external-port}).
  */
 class ClusterSemCachesXmlTest {
 
@@ -94,15 +96,28 @@ class ClusterSemCachesXmlTest {
                 .collect(Collectors.toList());
     }
 
+    /** A1: volume do JAR da extensao do servidor (relativo a {@code cluster/}), so leitura, em {@code server/lib}. */
+    static final String VOLUME_JAR =
+            "      - ../extensao-servidor/target/tcc-extensao-servidor.jar:/opt/infinispan/server/lib/tcc-extensao-servidor.jar:ro";
+
     @Test
-    @DisplayName("compose sem caches = compose versionado com o volume do XML trocado, nos tres servicos")
+    @DisplayName("compose sem caches = compose versionado com o volume do XML trocado e o JAR do A1, nos tres servicos")
     void composeSoTrocaOXml() throws Exception {
         List<String> base = semComentarios(dirCluster().resolve("podman-compose.yml"));
         List<String> sem = semComentarios(dirCluster().resolve("podman-compose-sem-caches.yml"));
         String velho = "./infinispan-cluster.xml:/opt/infinispan/server/conf/infinispan.xml:ro";
         String novo = "./infinispan-sem-caches.xml:/opt/infinispan/server/conf/infinispan.xml:ro";
+        String jgroups = "./jgroups-tcp.xml:/opt/infinispan/server/conf/jgroups-tcp.xml:ro";
         assertEquals(3, base.stream().filter(l -> l.contains(velho)).count(), "tres volumes no compose base");
-        List<String> trocado = base.stream().map(l -> l.replace(velho, novo)).collect(Collectors.toList());
+        assertEquals(3, base.stream().filter(l -> l.contains(jgroups)).count(), "tres volumes do jgroups no compose base");
+        List<String> trocado = new java.util.ArrayList<>();
+        for (String l : base) {
+            trocado.add(l.replace(velho, novo));
+            if (l.contains(jgroups)) {
+                trocado.add(VOLUME_JAR);
+            }
+        }
         assertEquals(trocado, sem);
+        assertEquals(3, sem.stream().filter(VOLUME_JAR::equals).count(), "o JAR nos tres servicos");
     }
 }

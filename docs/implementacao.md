@@ -20,6 +20,15 @@ workload/
     ├── EpochClock.java            # âncora epoch-ns por repetição (T2 eventos)
     ├── EventCsvWriter.java        # trilha de eventos crus em CSV (T3/T4 eventos)
     └── InvariantAuditor.java      # detector de violações I1-I6
+
+extensao-servidor/                 # A1 (2026-11-06): JAR para server/lib do Infinispan Server 15.0.21
+└── src/main/java/br/unipampa/tcc/
+    ├── servidor/
+    │   ├── PoliticaFusaoSessoes.java  # EntryMergePolicy do sessions-async (ordem de conteúdo + saída de segurança)
+    │   ├── OrdemSessao.java           # postos do modelo T2 (B-45) e comparador (estado, motivo, versão, instante)
+    │   ├── LeitorSessao.java          # desserialização restrita do valor (WrappedByteArray do cliente)
+    │   ├── Decisao.java, MotivoSaida.java, RegistroFusao.java  # decisão, motivos da saída, log
+    └── session/SessionState.java      # cópia idêntica à do workload (mesmos bytes; teste confere o fonte)
 ```
 
 ## Trilha de eventos crus (CSV consumido por analysis/)
@@ -94,6 +103,53 @@ o ProtoStream padrão falha ao serializar e toda escrita vira
 | `analysis/compare_scenarios.py` | T22 | a implementar em B-18 |
 
 ## Decisões técnicas a registrar
+
+### TD-020 — A1: política de fusão própria do `sessions-async`, com a remoção como saída de segurança (2026-11-06)
+
+Numeração: o próximo livre na tag `int/2026-11-06-bench` (`cc2b71c`) e também na integração (06/11, merge sobre
+`edfa8b6`, que só tinha docs a mais), então fica TD-020. Branch `feature/merge-policy-semirreticulado`, a partir da tag. Base da decisão:
+`wt-plano-ctrl/docs/alternativas-tratamento-cluster-2026-11-06.md` (Senior, `d4b9c2a`), seções 2.1 (A1) e 2.2 (A2),
+e a decisão do Gestor de 06/11 (A1 com a A2 como saída de segurança dentro da mesma política).
+
+**Problema.** Numa partição que isola o isn3 (`ASYNC`, `DENY_READ_WRITES`, `PREFERRED_NON_NULL`), o isn3 confirma
+logouts antes da detecção (~42 s) e grava a sessão `INVALID`. Na fusão, a resolução de conflitos (CR) do coordenador
+chama a política com `preferredEntry` = cópia da maioria (`VALID`) e a do isn3 em `otherEntries`;
+`PREFERRED_NON_NULL` devolve a da maioria e o logout se perde (I1 da varredura).
+
+**O que entrou.**
+
+| Peça | Decisão | Fonte |
+|---|---|---|
+| Onde | módulo Maven novo `extensao-servidor/` (JAR `tcc-extensao-servidor.jar`), Infinispan 15.0.21 `provided`; o mesmo JAR pode levar outras extensões de servidor depois (ex.: a tarefa da A5) | guia *Configuring Infinispan* 15.0, §7.6 "Configuring custom merge policies"; *Server* 15.0, §1.10.1 (`server/lib`) |
+| Registro | `META-INF/services/org.infinispan.conflict.EntryMergePolicy` com `br.unipampa.tcc.servidor.PoliticaFusaoSessoes`; o parser instancia a classe pelo nome em `merge-policy` (`MergePolicy.fromString` → `CUSTOM`) | §7.6; `CacheParser.java:243-247` (15.0.21) |
+| Regra | máximo na ordem (posto do estado, posto do motivo, versão, `atualizadaEm`), postos do T2: `VALID` 1 < `INVALID` 2; `NONE` 0 < `LOGOUT` 1 < `EXPIRADA` 2 < `ADMIN_BLOCK` 3. Conteúdo antes da versão (no programa de carga as duas ordens coincidem; assim a invalidação é absorvente). Chave ausente é o menor valor | `fix/b45-desempate-ts`, `spec/SessionStore.tla:233-235` |
+| O que devolve | a **entrada original** escolhida (valor e metadados intactos, sem reserializar); com cópias iguais, a preferida; nada recebido → `null` sem saída de segurança | contrato `EntryMergePolicy.java:14-35`; `DefaultConflictManager.java:337-350` |
+| Valor | `WrappedByteArray` com a serialização Java de `SessionState` (o cliente usa `JavaSerializationMarshaller`, um `ObjectOutputStream`; o *cache* não declara `encoding`, armazenamento `application/unknown`, aviso `ISPN000599` no log) | `S3Clientes.base`; `StorageConfigurationManager.java:85-110` |
+| Leitura | `ObjectInputStream` restrito: `resolveClass` pelo carregador do JAR e só `SessionState`, `SessionState$Estado`, `SessionState$Motivo`, `java.lang.Enum` e `java.time.Ser` no fluxo; filtro da JVM com limites (16 KiB, profundidade 8, 100 referências, sem vetores) e `java.time.Instant` aceito só como resultado do `readResolve`; campos nulos conferidos (a desserialização não passa pelo construtor) | — |
+| Cópia de `SessionState` | o JAR leva uma cópia **idêntica** de `br.unipampa.tcc.session.SessionState` (mesmo `serialVersionUID` 1L). `ValoresClienteTest` confere que o fonte é igual ao do *workload* e que serializa nos mesmos bytes; `ValoresServidorA1Test` (*workload*) confere o arquivo de valores com as classes e o *marshaller* reais do cliente | — |
+| Saída de segurança (A2) | valor ilegível, tipo inesperado, empate que a ordem não resolve, sids diferentes sob a mesma chave ou erro interno → devolve `null` (a CR remove a chave nos donos: a sessão some, o usuário entra de novo, falha fechada) e registra `A1-SAIDA-SEGURANCA motivo=...` em WARN | decisão do Gestor 06/11 |
+| Nunca lança | uma exceção na política interromperia a CR no coordenador; toda falha vira saída `ERRO_INTERNO`, e falhas do *log* são engolidas | `DefaultConflictManager.java:296-330` |
+| *Log* | categoria `br.unipampa.tcc.servidor.PoliticaFusaoSessoes` (jboss-logging do servidor): `A1-POLITICA carregada` (por nó e criação), `A1-FORMATO` (classe e bytes do primeiro valor recebido), `A1-FUSAO` por chave em INFO (vencedora, escolhida, `igual_pnn` e o que `PREFERRED_NON_NULL` daria), `A1-SAIDA-SEGURANCA` em WARN | — |
+| Configuração | `cluster/caches/sessions-async.json` com `"merge-policy":"br.unipampa.tcc.servidor.PoliticaFusaoSessoes"`; `cluster/podman-compose-sem-caches.yml` monta `../extensao-servidor/target/tcc-extensao-servidor.jar` em `/opt/infinispan/server/lib/` nos três nós (o JAR precisa estar nos três: os outros nós reanalisam a configuração do estado global) | `GlobalConfigurationManagerImpl.java:109`; `CoreConfigurationSerializer.java:654-665` |
+
+**Escopo: só o `sessions-async`.** O `counters-async` fica com `PREFERRED_NON_NULL`: `desbloquear` e `resetar` tornam
+o `IdentityState` não monótono, e escolher um registro inteiro pela ordem desfaria um desbloqueio legítimo ou faria o
+contador descer (I5/I6). Uma fusão campo a campo é outra semântica (D-2 do documento do Senior, para decisão). O
+`canario-async` também fica com `PREFERRED_NON_NULL` (guarda `String`; a política o removeria inteiro em toda fusão),
+assim como os *caches* SYNC. O XML com *caches* (`infinispan-cluster.xml`) não muda, porque o `podman-compose.yml`
+não monta o JAR.
+
+**Impacto fora do repositório.** Quem sobe o `podman-compose-sem-caches.yml` (o orquestrador S3 na VM) precisa do JAR
+construído antes (`mvn -f extensao-servidor/pom.xml package`); o *bundle* `git archive` não leva `target/`. O
+orquestrador, os injetores, o h4 e o *runner* do *rebaseline* não foram tocados. A troca de política é condição nova
+(D-1 do documento do Senior): a configuração muda e o *rebaseline* com `PREFERRED_NON_NULL` deixa de ser comparável.
+
+**Testes.** `extensao-servidor`: 47 (ordem, leitura, política com 8 200 combinações, semirreticulado, saída de
+segurança por motivo, entrada nula, parser e leitura de volta da REST). *Workload*: `ValoresServidorA1Test`,
+`CachesCargaJsonTest` e `ClusterSemCachesXmlTest` ajustados; suíte completa 1177 (0 falhas, 1 ignorado). Medição no
+*cluster* local (`docs/relatorio-a1-2026-11-06.md`): nos casos em que a CR recebeu `VALID` da maioria e `INVALID` do
+isn3, a A1 ficou com o `INVALID` em 2 de 2 sob carga e 26 de 26 no teste dirigido; `PREFERRED_NON_NULL` desfez 3 de 3
+e 23 de 23. Saída de segurança: 0 usos; `ISPN000466`: 0. A exposição na janela não muda.
 
 ### TD-019 — W-5c: V com a sonda de *replay* e a varredura no `comparar_bracos.py` (2026-11-06)
 

@@ -1,0 +1,4 @@
+== 2026-11-06T17:20:48.392Z inicio mecanismo-controle condicao=controle nsess=60 corte_dur_s=90 jar_sha256=7d5fc2fee76e84606384fe96dafa1e75ed8507baf83396dc00361fdc6d224707 extensao_sha256=6f1ed746f7142bed8ed2596eacfa1f8db9cc335bb448b40c72efbc37d49253b4 base=04719ee sessions_async_sha256=b68c3ca52433a1eec38f8aab9d7e5ff3ef14945a640e79468bc6da197af6154c programa_sha256=298486bff4dcd0ddae4ca7344885ab78b8034c14965e82844f8e71a008b3e41c
+== 2026-11-06T17:21:08.406Z cluster com 3 nos
+== 2026-11-06T17:21:40.311Z cria-caches rc=3 (dir=caches-controle)
+rc=1

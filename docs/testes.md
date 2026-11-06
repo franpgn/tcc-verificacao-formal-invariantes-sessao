@@ -1531,3 +1531,54 @@ outra suíte de *shell*, Maven nem injetor; só uma derivação em Python de out
 (6296 s): **498 PASS, 0 FAIL**, exit 0, de primeira, sem caso rodado de novo (`runs/bench-int/suite-s3-completa.out`).
 Os 498 incluem os 338 do subconjunto que rodou antes da tag e os casos que ficaram de fora dele (S2, S3, S5 a S10,
 S12 a S21, S23, S26h e S28).
+
+## A1: política de fusão própria do `sessions-async` (2026-11-06)
+
+Branch `feature/merge-policy-semirreticulado` (base `int/2026-11-06-bench`, `cc2b71c`); TD-020 em `implementacao.md`.
+Módulo novo `extensao-servidor/`: `mvn -f extensao-servidor/pom.xml test` (Infinispan 15.0.21 `provided`, JUnit 5.10.2,
+Surefire 3.5.4). TDD: vermelho em `f5da120` (esqueleto da API que devolve a preferida; 46 testes, 38 falhas), verde em
+`04719ee` (47 testes, 0 falhas; o teste do filtro da JVM entrou no verde, quando o filtro recusou o `java.time.Instant`
+devolvido pelo `readResolve` de `java.time.Ser`).
+
+**Valores reais do cliente.** `extensao-servidor/src/test/resources/br/unipampa/tcc/servidor/valores-cliente.tsv`
+tem 12 valores (10 `SessionState`, 1 `IdentityState`, a chave `String`) serializados pelo `JavaSerializationMarshaller`
+do infinispan-commons 15.0.0.Final, que é o *marshaller* do cliente Hot Rod (`S3Clientes.base`), com as classes do
+*workload*. Achado na geração: quando `criadaEm` = `atualizadaEm` (o `SessionState.criar`), o cliente usa o mesmo
+`Instant` nos dois campos e a serialização grava o segundo como referência ao primeiro; os bytes só batem construindo
+o objeto do mesmo jeito.
+
+| Classe de teste | n | Cobre |
+|---|---|---|
+| `ValoresClienteTest` | 4 | a cópia de `SessionState` no JAR serializa nos mesmos bytes do cliente; cabeçalho `ACED 0005` sem prefixo; `serialVersionUID` 1L e o mesmo nome; fonte idêntico ao do *workload* |
+| `OrdemSessaoTest` | 7 | postos iguais ao `RankEstado`/`RankMotivo` do T2 (B-45); ordem escrita à mão sobre os valores do arquivo, com 50 embaralhamentos; conteúdo antes da versão; motivo e versão antes do instante; empate com identidade diferente |
+| `LeitorSessaoTest` | 13 | `WrappedByteArray`, `byte[]`, `WrappedBytes` com deslocamento e objeto já desserializado; `IdentityState` e `String` do cliente, `Integer`: tipo inesperado; nulo, lixo, vazio, truncado, bytes sobrando, campo nulo no fluxo (`TC_NULL` no lugar da identidade) e `getBytes` que lança: ilegível; chave como sid ou `hex:`; filtro da JVM; lista de classes |
+| `PoliticaFusaoSessoesTest` | 17 | caso do I1 (maioria `VALID` preferida, isn3 `LOGOUT`: vence o isn3, `igual_pnn=nao`); pares; **todas as combinações** (preferida ou nula × até 3 outras em todas as ordens, 8 200 casos, com o empate); semirreticulado (comutativa, associativa, idempotente); entrada original (mesmo objeto, mesmos metadados); independência da ordem; entrada nula e `NullCacheEntry`; saída de segurança por motivo (ilegível, tipo, empate, sids diferentes, erro interno) com a linha `A1-SAIDA-SEGURANCA`; nunca lança (nem com o *log* quebrado); formato do primeiro valor uma vez; construtor público |
+| `ConfiguracaoServidorTest` | 6 | `META-INF/services/org.infinispan.conflict.EntryMergePolicy`; `ServiceLoader`; `MergePolicy.CUSTOM`; `sessions-async.json` pelo parser da REST (`ParserRegistry.parse(json, JSON)`, como `CacheResourceV2`) instancia a política; **leitura de volta** com o serializador da REST igual ao arquivo com o nome, byte a byte (o que o `cria-caches.sh --conferir` compara); os outros cinco *caches* com `PREFERRED_NON_NULL` |
+
+*Workload* (`mvn -f workload/pom.xml test`): `ValoresServidorA1Test` (1, novo: o arquivo de valores é o que as classes e
+o *marshaller* reais do cliente gravam), `CachesCargaJsonTest` (5: o `sessions-async` com a classe da A1, o resto e o
+XML com `PREFERRED_NON_NULL`; o `canario-async` igual ao `sessions-async` salvo a política) e `ClusterSemCachesXmlTest`
+(3: o JAR montado nos três serviços do compose sem *caches*). Vermelho em `f5da120` (3 falhas nessas classes), verde
+em `04719ee`. Suíte completa do *workload* na ponta: **1177 testes, 0 falhas, 0 erros, 1 ignorado** (o mesmo
+ignorado de antes).
+
+### A1 no *cluster* local (`runs/a1-smoke/`)
+
+*Harness* próprio (projeto Podman `a1`, portas 12801 a 12803, corte do isn3 por `nftables` por 90 s), carga S3 ASYNC
+L+ com `--s3-replay-probe --sweep`, 480 s, sementes 700400 e 701300, A1 × `PREFERRED_NON_NULL`, mais um teste dirigido
+do mecanismo (sessões criadas antes do corte e *logout* pelo isn3 isolado). Comandos, desvios e manifesto em
+`runs/a1-smoke/comandos.md`; análise `runs/a1-smoke/scripts/analisar_a1.py` → `analise.out`/`analise.json`.
+
+| Critério | Resultado |
+|---|---|
+| `?action=config` do `sessions-async` com a classe nos três nós | sim, nas 4 execuções A1 (`config-sessions-async-isnN.json`; `cria-caches.sh --conferir` byte a byte) |
+| Política carregada nos três nós | sim (`A1-POLITICA carregada` em isn1, isn2 e isn3) |
+| Formato do valor no servidor | `WrappedByteArray` de 552 ou 575 bytes, desserializado pelas classes do cliente (`formato-decodificado.out`) |
+| CR de fusão antes da varredura | sim nas 4 execuções de 480 s (38 a 49 s depois da cura); não na de preparo de 300 s (fora da comparação) |
+| I1 REAL da varredura | A1: 0 e 0; controle: 0 e 1 |
+| *Logouts* pré-existentes desfeitos na fusão (varredura, I1 online da recuperação ou sonda tardia) | A1: 0 de 2; controle: 3 de 3 |
+| Teste dirigido: confirmadas lidas `VALID` depois da fusão (isn1/isn2/isn3) | A1: 0/0/0 de 26; controle: 21/23/21 de 23 |
+| Saída de segurança no *cluster* | 0 em 182 decisões |
+| `ISPN000466` ou erro da classe da política | 0 |
+
+Detalhe e veredito em `docs/relatorio-a1-2026-11-06.md`.

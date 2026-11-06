@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Extensao do Infinispan Server 15.0.21 (JAR em server/lib dos tres nos).
+
+  A1 (2026-11-06): politica de fusao propria (EntryMergePolicy) do cache sessions-async, com a ordem de conteudo
+  do modelo TLA+ (INVALID > VALID; ADMIN_BLOCK > EXPIRADA > LOGOUT) e a remocao da entrada como saida de seguranca
+  (A2). Guia "Configuring Infinispan" 15.0, secao 7.6 "Configuring custom merge policies".
+
+  As dependencias do Infinispan sao "provided": o servidor ja as tem. O JAR leva so as classes deste modulo e a
+  copia de br.unipampa.tcc.session.SessionState (a mesma classe do programa de carga, para desserializar o valor).
+  Construcao: mvn -f extensao-servidor/pom.xml package  ->  extensao-servidor/target/tcc-extensao-servidor.jar
+-->
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <groupId>br.unipampa.tcc</groupId>
+  <artifactId>tcc-extensao-servidor</artifactId>
+  <version>0.1.0-SNAPSHOT</version>
+  <packaging>jar</packaging>
+  <name>TCC Extensao do Infinispan Server (politica de fusao)</name>
+
+  <properties>
+    <!-- o servidor 15.0.21 roda em JDK 17 ou mais novo -->
+    <maven.compiler.release>17</maven.compiler.release>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <!-- mesma versao da imagem quay.io/infinispan/server:15.0.21.Final do compose -->
+    <infinispan.version>15.0.21.Final</infinispan.version>
+    <jboss.logging.version>3.6.1.Final</jboss.logging.version>
+  </properties>
+
+  <dependencies>
+    <dependency>
+      <groupId>org.infinispan</groupId>
+      <artifactId>infinispan-core</artifactId>
+      <version>${infinispan.version}</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.infinispan</groupId>
+      <artifactId>infinispan-commons</artifactId>
+      <version>${infinispan.version}</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.jboss.logging</groupId>
+      <artifactId>jboss-logging</artifactId>
+      <version>${jboss.logging.version}</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter</artifactId>
+      <version>5.10.2</version>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <finalName>tcc-extensao-servidor</finalName>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <version>3.13.0</version>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-resources-plugin</artifactId>
+        <version>3.3.1</version>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <version>3.5.4</version>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-jar-plugin</artifactId>
+        <version>3.4.2</version>
+        <configuration>
+          <archive>
+            <manifestEntries>
+              <Implementation-Title>${project.name}</Implementation-Title>
+              <Implementation-Version>${project.version}</Implementation-Version>
+            </manifestEntries>
+          </archive>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+</project>

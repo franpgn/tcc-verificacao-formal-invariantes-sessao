@@ -1,0 +1,99 @@
+# Smoke do A1 (06/11, politica de fusao do sessions-async): copia de cluster/podman-compose-sem-caches.yml da ponta
+# de feature/merge-policy-semirreticulado com nomes a1-*, rede a1-net e portas 12801-12803 (projeto proprio a1). O JAR
+# montado e a copia congelada ./tcc-extensao-servidor.jar (sha256 em fases.tsv), nas DUAS condicoes (A1 e controle):
+# so o merge-policy do sessions-async (caches-a1/ x caches-controle/) muda entre elas.
+# W-6 (B-46): igual ao podman-compose.yml, mas cada no monta o infinispan-sem-caches.xml (nenhum cache no XML;
+# os seis caches sao criados pela REST por scripts/cria-caches.sh). ClusterSemCachesXmlTest confere que so o
+# volume do XML muda. Usado por scripts/run-campanha-s3.sh na recriacao do cluster antes de cada execucao.
+# A1 (2026-11-06): os tres nos montam o JAR da extensao do servidor (politica de fusao do sessions-async,
+# extensao-servidor/) em server/lib. Construir antes de subir: mvn -f extensao-servidor/pom.xml package.
+# Cluster Infinispan, 3 nós, para experimentação local.
+# Uso: podman-compose -f podman-compose.yml up -d
+#
+# Imagem oficial: quay.io/infinispan/server
+# Porta Hot Rod: 11222
+# Porta gerenciamento (REST/Console): 11222 (mesma; protocolos co-existem)
+# A rede 'a1-net' é criada automaticamente por podman-compose.
+#
+# Para reproduzir cenários de falha (F1 crash, F3 latência), use os scripts em
+# scripts/. Cenários F2 (partição) e F4 (state transfer) são opcionais em TCC-I.
+
+version: "3.8"
+
+networks:
+  a1-net:
+    driver: bridge
+
+services:
+  isn1:
+    image: quay.io/infinispan/server:15.0.21.Final
+    container_name: a1-isn1
+    hostname: isn1
+    command: ["-c", "infinispan.xml", "-Dinfinispan.hotrod.external-port=12801"]
+    environment:
+      - USER=admin
+      - PASS=infinispan
+      - INFINISPAN_CLUSTER_NAME=cluster-tcc
+    volumes:
+      - ./infinispan-sem-caches.xml:/opt/infinispan/server/conf/infinispan.xml:ro
+      - ./jgroups-tcp.xml:/opt/infinispan/server/conf/jgroups-tcp.xml:ro
+      - ./tcc-extensao-servidor.jar:/opt/infinispan/server/lib/tcc-extensao-servidor.jar:ro
+    ports:
+      - "12801:11222"
+    networks:
+      - a1-net
+    healthcheck:
+      test: ["CMD", "curl", "-f", "--digest", "-u", "admin:infinispan", "http://localhost:11222/rest/v2/cache-managers/default/health/status"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  isn2:
+    image: quay.io/infinispan/server:15.0.21.Final
+    container_name: a1-isn2
+    hostname: isn2
+    command: ["-c", "infinispan.xml", "-Dinfinispan.hotrod.external-port=12802"]
+    environment:
+      - USER=admin
+      - PASS=infinispan
+      - INFINISPAN_CLUSTER_NAME=cluster-tcc
+    volumes:
+      - ./infinispan-sem-caches.xml:/opt/infinispan/server/conf/infinispan.xml:ro
+      - ./jgroups-tcp.xml:/opt/infinispan/server/conf/jgroups-tcp.xml:ro
+      - ./tcc-extensao-servidor.jar:/opt/infinispan/server/lib/tcc-extensao-servidor.jar:ro
+    ports:
+      - "12802:11222"
+    networks:
+      - a1-net
+    healthcheck:
+      test: ["CMD", "curl", "-f", "--digest", "-u", "admin:infinispan", "http://localhost:11222/rest/v2/cache-managers/default/health/status"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    depends_on:
+      - isn1
+
+  isn3:
+    image: quay.io/infinispan/server:15.0.21.Final
+    container_name: a1-isn3
+    hostname: isn3
+    command: ["-c", "infinispan.xml", "-Dinfinispan.hotrod.external-port=12803"]
+    environment:
+      - USER=admin
+      - PASS=infinispan
+      - INFINISPAN_CLUSTER_NAME=cluster-tcc
+    volumes:
+      - ./infinispan-sem-caches.xml:/opt/infinispan/server/conf/infinispan.xml:ro
+      - ./jgroups-tcp.xml:/opt/infinispan/server/conf/jgroups-tcp.xml:ro
+      - ./tcc-extensao-servidor.jar:/opt/infinispan/server/lib/tcc-extensao-servidor.jar:ro
+    ports:
+      - "12803:11222"
+    networks:
+      - a1-net
+    healthcheck:
+      test: ["CMD", "curl", "-f", "--digest", "-u", "admin:infinispan", "http://localhost:11222/rest/v2/cache-managers/default/health/status"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    depends_on:
+      - isn1

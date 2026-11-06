@@ -1,0 +1,1796 @@
+[
+ {
+  "mecanismo": null,
+  "janela": {
+   "nft_aplicado_rel_marcador_s": 2.33,
+   "isn3_degradado_rel_corte_s": 47.32,
+   "corte_efetivo_s": 94.5,
+   "cr_sessions_async_depois_da_cura_s": 48.1,
+   "cr_antes_do_fim_da_carga": true,
+   "cr_no": "isn1",
+   "cr_antes_da_cura": 0
+  },
+  "candidatos_i1": 4,
+  "candidatos_i1_preexistentes": 0,
+  "candidatos_i1_destino": {
+   "1a4d68f1-a89e-4085-83a6-230e9c6885c2": {
+    "logout": {
+     "no": "isn3",
+     "t_rel_corte_s": 39.0
+    },
+    "i1_real": false,
+    "existia_antes_do_corte": false,
+    "i1_online": false,
+    "a1": {
+     "escolhida": "INVALID/LOGOUT/v2@2026-11-06T17:00:07.207160700Z",
+     "pnn": "INVALID/LOGOUT/v2@2026-11-06T17:00:07.207160700Z",
+     "igual_pnn": "sim"
+    },
+    "saida_seguranca": null
+   },
+   "1ab7958f-dff3-4161-a0a6-c745e7b60f5b": {
+    "logout": {
+     "no": "isn3",
+     "t_rel_corte_s": 34.07
+    },
+    "i1_real": false,
+    "existia_antes_do_corte": false,
+    "i1_online": false,
+    "a1": {
+     "escolhida": "INVALID/LOGOUT/v2@2026-11-06T17:00:02.275972100Z",
+     "pnn": "INVALID/LOGOUT/v2@2026-11-06T17:00:02.275972100Z",
+     "igual_pnn": "sim"
+    },
+    "saida_seguranca": null
+   },
+   "1da8ce82-a0ec-40a6-a7c8-d26d4ac61854": {
+    "logout": {
+     "no": "isn3",
+     "t_rel_corte_s": 18.33
+    },
+    "i1_real": false,
+    "existia_antes_do_corte": false,
+    "i1_online": false,
+    "a1": {
+     "escolhida": "INVALID/LOGOUT/v2@2026-11-06T16:59:46.538569700Z",
+     "pnn": "INVALID/LOGOUT/v2@2026-11-06T16:59:46.538569700Z",
+     "igual_pnn": "sim"
+    },
+    "saida_seguranca": null
+   },
+   "c5a53406-1d3e-4235-af05-f3ed59783103": {
+    "logout": {
+     "no": "isn3",
+     "t_rel_corte_s": 31.25
+    },
+    "i1_real": false,
+    "existia_antes_do_corte": false,
+    "i1_online": false,
+    "a1": {
+     "escolhida": "INVALID/LOGOUT/v2@2026-11-06T16:59:59.458402800Z",
+     "pnn": "INVALID/LOGOUT/v2@2026-11-06T16:59:59.458402800Z",
+     "igual_pnn": "sim"
+    },
+    "saida_seguranca": null
+   }
+  },
+  "execucao": "a1-s700400",
+  "condicao": "a1",
+  "semente": "700400",
+  "exit": "exit=0",
+  "corte_s": 96.9,
+  "merge_policy_sessions_async": {
+   "isn1": "br.unipampa.tcc.servidor.PoliticaFusaoSessoes",
+   "isn2": "br.unipampa.tcc.servidor.PoliticaFusaoSessoes",
+   "isn3": "br.unipampa.tcc.servidor.PoliticaFusaoSessoes"
+  },
+  "merge_policy_counters_async": {
+   "isn1": "PREFERRED_NON_NULL",
+   "isn2": "PREFERRED_NON_NULL",
+   "isn3": "PREFERRED_NON_NULL"
+  },
+  "varredura_linha": "Varredura final: sessoes=555, identidades=50, achados=2; REAL={}; BLOCKED por motivo={ADMINISTRATIVO=1, POR_LIMITE=8, INCERTO=2, INEXPLICADO=1}",
+  "convergencia_linha": "Convergencia: convergiu=true, persistente=false, rodadas=3, t_convergencia=302862063900 ns",
+  "sonda_linha": "Sonda violacoes: I1=1 I4=0 total=1",
+  "i1_real_varredura": 0,
+  "i1_real_sids": [],
+  "i1_real_detalhe": [],
+  "achados_varredura": {
+   "I2/ESPERADA-POR-DESENHO": 1,
+   "I2/INCERTA": 1
+  },
+  "i1_sonda": {
+   "linhas": 1,
+   "sids": 1,
+   "linhas_por_fase": {
+    "durante": 1
+   },
+   "sids_por_fase": {
+    "durante": 1
+   },
+   "lista_sids": [
+    "3c9b2bf8-b57e-471b-a4e4-7434b2b990b4"
+   ]
+  },
+  "i1_online": {
+   "linhas": 0,
+   "sids": 0,
+   "linhas_por_fase": {},
+   "sids_por_fase": {},
+   "lista_sids": []
+  },
+  "logouts_confirmados": 381,
+  "logouts_confirmados_isn3_na_janela": 4,
+  "politica": {
+   "por_no": {
+    "isn1": {
+     "politica_carregada": 2,
+     "fusao": 74,
+     "saida_seguranca": 0
+    },
+    "isn2": {
+     "politica_carregada": 1,
+     "fusao": 0,
+     "saida_seguranca": 0
+    },
+    "isn3": {
+     "politica_carregada": 1,
+     "fusao": 0,
+     "saida_seguranca": 0
+    }
+   },
+   "fusao_total": 74,
+   "fusao_por_resultado": {
+    "ESCOLHIDA": 74
+   },
+   "fusao_vencedora": {
+    "preferida": 68,
+    "outra": 6
+   },
+   "fusao_igual_pnn": {
+    "sim": 74
+   },
+   "diferente_do_pnn": [],
+   "invalid_sobre_valid": 0,
+   "saida_seguranca_total": 0,
+   "saida_por_motivo": {},
+   "saida_detalhe": [],
+   "formato": [
+    {
+     "no": "isn1",
+     "classe": "org.infinispan.commons.marshall.WrappedByteArray",
+     "bytes": 575,
+     "cabecalho_java": true,
+     "classe_no_fluxo": true
+    }
+   ]
+  },
+  "cr_linhas": [
+   {
+    "no": "isn1",
+    "codigo": "ISPN100012",
+    "cache": "canario-async",
+    "ts": "2026-11-06 17:01:53,105"
+   },
+   {
+    "no": "isn1",
+    "codigo": "ISPN100012",
+    "cache": "canario",
+    "ts": "2026-11-06 17:01:53,105"
+   },
+   {
+    "no": "isn1",
+    "codigo": "ISPN100012",
+    "cache": "counters",
+    "ts": "2026-11-06 17:01:53,105"
+   },
+   {
+    "no": "isn1",
+    "codigo": "ISPN100012",
+    "cache": "counters-async",
+    "ts": "2026-11-06 17:01:53,105"
+   },
+   {
+    "no": "isn1",
+    "codigo": "ISPN100012",
+    "cache": "sessions",
+    "ts": "2026-11-06 17:01:53,105"
+   },
+   {
+    "no": "isn1",
+    "codigo": "ISPN100012",
+    "cache": "sessions-async",
+    "ts": "2026-11-06 17:01:53,105"
+   },
+   {
+    "no": "isn1",
+    "codigo": "ISPN100013",
+    "cache": "sessions",
+    "ts": "2026-11-06 17:01:53,288"
+   },
+   {
+    "no": "isn1",
+    "codigo": "ISPN100013",
+    "cache": "canario-async",
+    "ts": "2026-11-06 17:01:53,288"
+   },
+   {
+    "no": "isn1",
+    "codigo": "ISPN100013",
+    "cache": "counters",
+    "ts": "2026-11-06 17:01:53,297"
+   },
+   {
+    "no": "isn1",
+    "codigo": "ISPN100013",
+    "cache": "canario",
+    "ts": "2026-11-06 17:01:53,297"
+   },
+   {
+    "no": "isn1",
+    "codigo": "ISPN100013",
+    "cache": "counters-async",
+    "ts": "2026-11-06 17:01:53,315"
+   },
+   {
+    "no": "isn1",
+    "codigo": "ISPN100013",
+    "cache": "sessions-async",
+    "ts": "2026-11-06 17:01:53,438"
+   }
+  ],
+  "ispn000466": 0,
+  "erros_servidor": [
+   "isn3: 2026-11-06T14:00:17-03:00 \u001b[1;31m2026-11-06 17:00:17,863 ERROR [o.i.CLUSTER] [Context=sessions-async]ISPN000319: After merge (or coordinator change), cache still hasn't recovered all its data and must stay in degraded mode. Current members are [isn3-64467], lost members are [isn2-50799, isn1-58657],",
+   "isn3: 2026-11-06T14:00:17-03:00 \u001b[1;31m2026-11-06 17:00:17,863 ERROR [o.i.CLUSTER] [Context=sessions]ISPN000319: After merge (or coordinator change), cache still hasn't recovered all its data and must stay in degraded mode. Current members are [isn3-64467], lost members are [isn2-50799, isn1-58657], stabl",
+   "isn3: 2026-11-06T14:00:17-03:00 \u001b[1;31m2026-11-06 17:00:17,863 ERROR [o.i.CLUSTER] [Context=counters]ISPN000319: After merge (or coordinator change), cache still hasn't recovered all its data and must stay in degraded mode. Current members are [isn3-64467], lost members are [isn1-58657, isn2-50799], stabl",
+   "isn3: 2026-11-06T14:00:17-03:00 \u001b[1;31m2026-11-06 17:00:17,863 ERROR [o.i.CLUSTER] [Context=canario-async]ISPN000319: After merge (or coordinator change), cache still hasn't recovered all its data and must stay in degraded mode. Current members are [isn3-64467], lost members are [isn1-58657, isn2-50799], ",
+   "isn3: 2026-11-06T14:00:17-03:00 \u001b[1;31m2026-11-06 17:00:17,863 ERROR [o.i.CLUSTER] [Context=counters-async]ISPN000319: After merge (or coordinator change), cache still hasn't recovered all its data and must stay in degraded mode. Current members are [isn3-64467], lost members are [isn1-58657, isn2-50799],",
+   "isn3: 2026-11-06T14:00:17-03:00 \u001b[1;31m2026-11-06 17:00:17,863 ERROR [o.i.CLUSTER] [Context=canario]ISPN000319: After merge (or coordinator change), cache still hasn't recovered all its data and must stay in degraded mode. Current members are [isn3-64467], lost members are [isn1-58657, isn2-50799], stable"
+  ],
+  "erros_por_codigo": {
+   "ISPN000136": 635,
+   "ISPN000319": 6,
+   "ISPN005003": 496
+  },
+  "avisos_fusao": []
+ },
+ {
+  "mecanismo": null,
+  "janela": {
+   "nft_aplicado_rel_marcador_s": 3.05,
+   "isn3_degradado_rel_corte_s": 47.16,
+   "corte_efetivo_s": 94.5,
+   "cr_sessions_async_depois_da_cura_s": 48.7,
+   "cr_antes_do_fim_da_carga": true,
+   "cr_no": "isn2",
+   "cr_antes_da_cura": 0
+  },
+  "candidatos_i1": 6,
+  "candidatos_i1_preexistentes": 1,
+  "candidatos_i1_destino": {
+   "0a5b779b-e6ac-4642-ad71-9b2fba61902e": {
+    "logout": {
+     "no": "isn3",
+     "t_rel_corte_s": 6.36
+    },
+    "i1_real": false,
+    "existia_antes_do_corte": true,
+    "i1_online": true,
+    "a1": null,
+    "saida_seguranca": null
+   },
+   "6d5b37dd-009c-4c72-bbcf-183224cb3304": {
+    "logout": {
+     "no": "isn3",
+     "t_rel_corte_s": 26.05
+    },
+    "i1_real": false,
+    "existia_antes_do_corte": false,
+    "i1_online": false,
+    "a1": null,
+    "saida_seguranca": null
+   },
+   "a6f4cea4-9cb2-48c6-865c-f1d9089f8846": {
+    "logout": {
+     "no": "isn3",
+     "t_rel_corte_s": 50.01
+    },
+    "i1_real": false,
+    "existia_antes_do_corte": false,
+    "i1_online": false,
+    "a1": null,
+    "saida_seguranca": null
+   },
+   "dad7f8d9-417f-451e-8911-a3cc0ca9fc5d": {
+    "logout": {
+     "no": "isn3",
+     "t_rel_corte_s": 40.11
+    },
+    "i1_real": false,
+    "existia_antes_do_corte": false,
+    "i1_online": false,
+    "a1": null,
+    "saida_seguranca": null
+   },
+   "f016b888-9e35-4dd1-8484-9f9d5f0d7b57": {
+    "logout": {
+     "no": "isn3",
+     "t_rel_corte_s": 18.86
+    },
+    "i1_real": false,
+    "existia_antes_do_corte": false,
+    "i1_online": false,
+    "a1": null,
+    "saida_seguranca": null
+   },
+   "fed281f2-0892-4c92-8600-9791b37569e5": {
+    "logout": {
+     "no": "isn3",
+     "t_rel_corte_s": 33.43
+    },
+    "i1_real": false,
+    "existia_antes_do_corte": false,
+    "i1_online": false,
+    "a1": null,
+    "saida_seguranca": null
+   }
+  },
+  "execucao": "controle-s700400",
+  "condicao": "controle",
+  "semente": "700400",
+  "exit": "exit=0",
+  "corte_s": 97.7,
+  "merge_policy_sessions_async": {
+   "isn1": "PREFERRED_NON_NULL",
+   "isn2": "PREFERRED_NON_NULL",
+   "isn3": "PREFERRED_NON_NULL"
+  },
+  "merge_policy_counters_async": {
+   "isn1": "PREFERRED_NON_NULL",
+   "isn2": "PREFERRED_NON_NULL",
+   "isn3": "PREFERRED_NON_NULL"
+  },
+  "varredura_linha": "Varredura final: sessoes=552, identidades=50, achados=2; REAL={}; BLOCKED por motivo={ADMINISTRATIVO=1, POR_LIMITE=8, INCERTO=2, INEXPLICADO=0}",
+  "convergencia_linha": "Convergencia: convergiu=true, persistente=false, rodadas=3, t_convergencia=301385496900 ns",
+  "sonda_linha": "Sonda violacoes: I1=3 I4=0 total=3",
+  "i1_real_varredura": 0,
+  "i1_real_sids": [],
+  "i1_real_detalhe": [],
+  "achados_varredura": {
+   "I2/ESPERADA-POR-DESENHO": 2
+  },
+  "i1_sonda": {
+   "linhas": 3,
+   "sids": 3,
+   "linhas_por_fase": {
+    "durante": 3
+   },
+   "sids_por_fase": {
+    "durante": 3
+   },
+   "lista_sids": [
+    "0a5b779b-e6ac-4642-ad71-9b2fba61902e",
+    "792355e1-efe3-456d-9469-5e04623dbd40",
+    "9ef8cb6e-3159-4948-802d-44dc9af551f6"
+   ]
+  },
+  "i1_online": {
+   "linhas": 1,
+   "sids": 1,
+   "linhas_por_fase": {
+    "recuperacao": 1
+   },
+   "sids_por_fase": {
+    "recuperacao": 1
+   },
+   "lista_sids": [
+    "0a5b779b-e6ac-4642-ad71-9b2fba61902e"
+   ]
+  },
+  "logouts_confirmados": 372,
+  "logouts_confirmados_isn3_na_janela": 6,
+  "politica": {
+   "por_no": {
+    "isn1": {
+     "politica_carregada": 0,
+     "fusao": 0,
+     "saida_seguranca": 0
+    },
+    "isn2": {
+     "politica_carregada": 0,
+     "fusao": 0,
+     "saida_seguranca": 0
+    },
+    "isn3": {
+     "politica_carregada": 0,
+     "fusao": 0,
+     "saida_seguranca": 0
+    }
+   },
+   "fusao_total": 0,
+   "fusao_por_resultado": {},
+   "fusao_vencedora": {},
+   "fusao_igual_pnn": {},
+   "diferente_do_pnn": [],
+   "invalid_sobre_valid": 0,
+   "saida_seguranca_total": 0,
+   "saida_por_motivo": {},
+   "saida_detalhe": [],
+   "formato": []
+  },
+  "cr_linhas": [
+   {
+    "no": "isn2",
+    "codigo": "ISPN100012",
+    "cache": "sessions-async",
+    "ts": "2026-11-06 17:12:17,299"
+   },
+   {
+    "no": "isn2",
+    "codigo": "ISPN100012",
+    "cache": "counters",
+    "ts": "2026-11-06 17:12:17,299"
+   },
+   {
+    "no": "isn2",
+    "codigo": "ISPN100012",
+    "cache": "canario-async",
+    "ts": "2026-11-06 17:12:17,299"
+   },
+   {
+    "no": "isn2",
+    "codigo": "ISPN100012",
+    "cache": "sessions",
+    "ts": "2026-11-06 17:12:17,299"
+   },
+   {
+    "no": "isn2",
+    "codigo": "ISPN100012",
+    "cache": "counters-async",
+    "ts": "2026-11-06 17:12:17,299"
+   },
+   {
+    "no": "isn2",
+    "codigo": "ISPN100012",
+    "cache": "canario",
+    "ts": "2026-11-06 17:12:17,300"
+   },
+   {
+    "no": "isn2",
+    "codigo": "ISPN100013",
+    "cache": "sessions",
+    "ts": "2026-11-06 17:12:17,475"
+   },
+   {
+    "no": "isn2",
+    "codigo": "ISPN100013",
+    "cache": "counters",
+    "ts": "2026-11-06 17:12:17,484"
+   },
+   {
+    "no": "isn2",
+    "codigo": "ISPN100013",
+    "cache": "canario-async",
+    "ts": "2026-11-06 17:12:17,485"
+   },
+   {
+    "no": "isn2",
+    "codigo": "ISPN100013",
+    "cache": "counters-async",
+    "ts": "2026-11-06 17:12:17,489"
+   },
+   {
+    "no": "isn2",
+    "codigo": "ISPN100013",
+    "cache": "canario",
+    "ts": "2026-11-06 17:12:17,490"
+   },
+   {
+    "no": "isn2",
+    "codigo": "ISPN100013",
+    "cache": "sessions-async",
+    "ts": "2026-11-06 17:12:17,532"
+   }
+  ],
+  "ispn000466": 0,
+  "erros_servidor": [
+   "isn3: 2026-11-06T14:10:41-03:00 \u001b[1;31m2026-11-06 17:10:41,327 ERROR [o.i.CLUSTER] [Context=sessions-async]ISPN000319: After merge (or coordinator change), cache still hasn't recovered all its data and must stay in degraded mode. Current members are [isn3-20312], lost members are [isn1-59600, isn2-10747],",
+   "isn3: 2026-11-06T14:10:41-03:00 \u001b[1;31m2026-11-06 17:10:41,328 ERROR [o.i.CLUSTER] [Context=counters]ISPN000319: After merge (or coordinator change), cache still hasn't recovered all its data and must stay in degraded mode. Current members are [isn3-20312], lost members are [isn1-59600, isn2-10747], stabl",
+   "isn3: 2026-11-06T14:10:41-03:00 \u001b[1;31m2026-11-06 17:10:41,327 ERROR [o.i.CLUSTER] [Context=sessions]ISPN000319: After merge (or coordinator change), cache still hasn't recovered all its data and must stay in degraded mode. Current members are [isn3-20312], lost members are [isn1-59600, isn2-10747], stabl",
+   "isn3: 2026-11-06T14:10:41-03:00 \u001b[1;31m2026-11-06 17:10:41,328 ERROR [o.i.CLUSTER] [Context=canario-async]ISPN000319: After merge (or coordinator change), cache still hasn't recovered all its data and must stay in degraded mode. Current members are [isn3-20312], lost members are [isn1-59600, isn2-10747], ",
+   "isn3: 2026-11-06T14:10:41-03:00 \u001b[1;31m2026-11-06 17:10:41,328 ERROR [o.i.CLUSTER] [Context=counters-async]ISPN000319: After merge (or coordinator change), cache still hasn't recovered all its data and must stay in degraded mode. Current members are [isn3-20312], lost members are [isn2-10747, isn1-59600],",
+   "isn3: 2026-11-06T14:10:41-03:00 \u001b[1;31m2026-11-06 17:10:41,328 ERROR [o.i.CLUSTER] [Context=canario]ISPN000319: After merge (or coordinator change), cache still hasn't recovered all its data and must stay in degraded mode. Current members are [isn3-20312], lost members are [isn1-59600, isn2-10747], stable"
+  ],
+  "erros_por_codigo": {
+   "ISPN000136": 635,
+   "ISPN000319": 6,
+   "ISPN005003": 503
+  },
+  "avisos_fusao": []
+ },
+ {
+  "mecanismo": null,
+  "janela": {
+   "nft_aplicado_rel_marcador_s": 2.36,
+   "isn3_degradado_rel_corte_s": 47.36,
+   "corte_efetivo_s": 93.9,
+   "cr_sessions_async_depois_da_cura_s": 49.4,
+   "cr_antes_do_fim_da_carga": true,
+   "cr_no": "isn3",
+   "cr_antes_da_cura": 0
+  },
+  "candidatos_i1": 6,
+  "candidatos_i1_preexistentes": 2,
+  "candidatos_i1_destino": {
+   "10e5f18e-9d2e-4a1e-a9f3-d5697c78e56d": {
+    "logout": {
+     "no": "isn3",
+     "t_rel_corte_s": 41.57
+    },
+    "i1_real": false,
+    "existia_antes_do_corte": false,
+    "i1_online": false,
+    "a1": {
+     "escolhida": "INVALID/LOGOUT/v2@2026-11-06T17:25:21.760469400Z",
+     "pnn": "INVALID/LOGOUT/v2@2026-11-06T17:25:21.760469400Z",
+     "igual_pnn": "sim"
+    },
+    "saida_seguranca": null
+   },
+   "4c2891d6-c4f1-44ff-8a9d-ccdf5148ecf1": {
+    "logout": {
+     "no": "isn3",
+     "t_rel_corte_s": 19.36
+    },
+    "i1_real": false,
+    "existia_antes_do_corte": true,
+    "i1_online": false,
+    "a1": {
+     "escolhida": "INVALID/LOGOUT/v2@2026-11-06T17:24:59.541681Z",
+     "pnn": "VALID/NONE/v1@2026-11-06T17:24:40.565654800Z",
+     "igual_pnn": "nao"
+    },
+    "saida_seguranca": null
+   },
+   "5c2623ae-0b4c-4c7d-b245-f24a56cca633": {
+    "logout": {
+     "no": "isn3",
+     "t_rel_corte_s": 14.06
+    },
+    "i1_real": false,
+    "existia_antes_do_corte": false,
+    "i1_online": false,
+    "a1": {
+     "escolhida": "INVALID/LOGOUT/v2@2026-11-06T17:24:54.251327300Z",
+     "pnn": "INVALID/LOGOUT/v2@2026-11-06T17:24:54.251327300Z",
+     "igual_pnn": "sim"
+    },
+    "saida_seguranca": null
+   },
+   "5ea22de4-238f-4faf-bb29-177430a02116": {
+    "logout": {
+     "no": "isn3",
+     "t_rel_corte_s": 30.94
+    },
+    "i1_real": false,
+    "existia_antes_do_corte": true,
+    "i1_online": false,
+    "a1": {
+     "escolhida": "INVALID/LOGOUT/v2@2026-11-06T17:25:11.129102700Z",
+     "pnn": "VALID/NONE/v1@2026-11-06T17:24:32.768840900Z",
+     "igual_pnn": "nao"
+    },
+    "saida_seguranca": null
+   },
+   "818a79b1-ef01-4019-bf5e-c0668082fd9d": {
+    "logout": {
+     "no": "isn3",
+     "t_rel_corte_s": 32.31
+    },
+    "i1_real": false,
+    "existia_antes_do_corte": false,
+    "i1_online": false,
+    "a1": {
+     "escolhida": "INVALID/LOGOUT/v2@2026-11-06T17:25:12.498651900Z",
+     "pnn": "INVALID/LOGOUT/v2@2026-11-06T17:25:12.498651900Z",
+     "igual_pnn": "sim"
+    },
+    "saida_seguranca": null
+   },
+   "b6078c26-1d85-49df-a16d-ae857da63695": {
+    "logout": {
+     "no": "isn3",
+     "t_rel_corte_s": 12.3
+    },
+    "i1_real": false,
+    "existia_antes_do_corte": false,
+    "i1_online": false,
+    "a1": {
+     "escolhida": "INVALID/LOGOUT/v2@2026-11-06T17:24:52.486224800Z",
+     "pnn": "INVALID/LOGOUT/v2@2026-11-06T17:24:52.486224800Z",
+     "igual_pnn": "sim"
+    },
+    "saida_seguranca": null
+   }
+  },
+  "execucao": "a1-s701300",
+  "condicao": "a1",
+  "semente": "701300",
+  "exit": "exit=0",
+  "corte_s": 96.6,
+  "merge_policy_sessions_async": {
+   "isn1": "br.unipampa.tcc.servidor.PoliticaFusaoSessoes",
+   "isn2": "br.unipampa.tcc.servidor.PoliticaFusaoSessoes",
+   "isn3": "br.unipampa.tcc.servidor.PoliticaFusaoSessoes"
+  },
+  "merge_policy_counters_async": {
+   "isn1": "PREFERRED_NON_NULL",
+   "isn2": "PREFERRED_NON_NULL",
+   "isn3": "PREFERRED_NON_NULL"
+  },
+  "varredura_linha": "Varredura final: sessoes=551, identidades=50, achados=2; REAL={}; BLOCKED por motivo={ADMINISTRATIVO=1, POR_LIMITE=8, INCERTO=2, INEXPLICADO=1}",
+  "convergencia_linha": "Convergencia: convergiu=true, persistente=false, rodadas=3, t_convergencia=303505247900 ns",
+  "sonda_linha": "Sonda violacoes: I1=2 I4=0 total=2",
+  "i1_real_varredura": 0,
+  "i1_real_sids": [],
+  "i1_real_detalhe": [],
+  "achados_varredura": {
+   "I2/INCERTA": 2
+  },
+  "i1_sonda": {
+   "linhas": 2,
+   "sids": 2,
+   "linhas_por_fase": {
+    "durante": 2
+   },
+   "sids_por_fase": {
+    "durante": 2
+   },
+   "lista_sids": [
+    "4c2891d6-c4f1-44ff-8a9d-ccdf5148ecf1",
+    "5ea22de4-238f-4faf-bb29-177430a02116"
+   ]
+  },
+  "i1_online": {
+   "linhas": 0,
+   "sids": 0,
+   "linhas_por_fase": {},
+   "sids_por_fase": {},
+   "lista_sids": []
+  },
+  "logouts_confirmados": 382,
+  "logouts_confirmados_isn3_na_janela": 8,
+  "politica": {
+   "por_no": {
+    "isn1": {
+     "politica_carregada": 2,
+     "fusao": 0,
+     "saida_seguranca": 0
+    },
+    "isn2": {
+     "politica_carregada": 1,
+     "fusao": 0,
+     "saida_seguranca": 0
+    },
+    "isn3": {
+     "politica_carregada": 1,
+     "fusao": 82,
+     "saida_seguranca": 0
+    }
+   },
+   "fusao_total": 82,
+   "fusao_por_resultado": {
+    "ESCOLHIDA": 82
+   },
+   "fusao_vencedora": {
+    "preferida": 75,
+    "outra": 7
+   },
+   "fusao_igual_pnn": {
+    "sim": 80,
+    "nao": 2
+   },
+   "diferente_do_pnn": [
+    {
+     "sid": "4c2891d6-c4f1-44ff-8a9d-ccdf5148ecf1",
+     "escolhida": "INVALID/LOGOUT/v2@2026-11-06T17:24:59.541681Z",
+     "pnn": "VALID/NONE/v1@2026-11-06T17:24:40.565654800Z",
+     "logout": {
+      "no": "isn3",
+      "t_rel_corte_s": 19.36
+     }
+    },
+    {
+     "sid": "5ea22de4-238f-4faf-bb29-177430a02116",
+     "escolhida": "INVALID/LOGOUT/v2@2026-11-06T17:25:11.129102700Z",
+     "pnn": "VALID/NONE/v1@2026-11-06T17:24:32.768840900Z",
+     "logout": {
+      "no": "isn3",
+      "t_rel_corte_s": 30.94
+     }
+    }
+   ],
+   "invalid_sobre_valid": 2,
+   "saida_seguranca_total": 0,
+   "saida_por_motivo": {},
+   "saida_detalhe": [],
+   "formato": [
+    {
+     "no": "isn3",
+     "classe": "org.infinispan.commons.marshall.WrappedByteArray",
+     "bytes": 575,
+     "cabecalho_java": true,
+     "classe_no_fluxo": true
+    }
+   ]
+  },
+  "cr_linhas": [
+   {
+    "no": "isn3",
+    "codigo": "ISPN100012",
+    "cache": "sessions",
+    "ts": "2026-11-06 17:27:05,913"
+   },
+   {
+    "no": "isn3",
+    "codigo": "ISPN100012",
+    "cache": "canario",
+    "ts": "2026-11-06 17:27:05,913"
+   },
+   {
+    "no": "isn3",
+    "codigo": "ISPN100012",
+    "cache": "canario-async",
+    "ts": "2026-11-06 17:27:05,913"
+   },
+   {
+    "no": "isn3",
+    "codigo": "ISPN100012",
+    "cache": "counters-async",
+    "ts": "2026-11-06 17:27:05,913"
+   },
+   {
+    "no": "isn3",
+    "codigo": "ISPN100012",
+    "cache": "sessions-async",
+    "ts": "2026-11-06 17:27:05,913"
+   },
+   {
+    "no": "isn3",
+    "codigo": "ISPN100012",
+    "cache": "counters",
+    "ts": "2026-11-06 17:27:05,913"
+   },
+   {
+    "no": "isn3",
+    "codigo": "ISPN100013",
+    "cache": "canario",
+    "ts": "2026-11-06 17:27:06,086"
+   },
+   {
+    "no": "isn3",
+    "codigo": "ISPN100013",
+    "cache": "counters",
+    "ts": "2026-11-06 17:27:06,086"
+   },
+   {
+    "no": "isn3",
+    "codigo": "ISPN100013",
+    "cache": "sessions",
+    "ts": "2026-11-06 17:27:06,092"
+   },
+   {
+    "no": "isn3",
+    "codigo": "ISPN100013",
+    "cache": "counters-async",
+    "ts": "2026-11-06 17:27:06,094"
+   },
+   {
+    "no": "isn3",
+    "codigo": "ISPN100013",
+    "cache": "canario-async",
+    "ts": "2026-11-06 17:27:06,099"
+   },
+   {
+    "no": "isn3",
+    "codigo": "ISPN100013",
+    "cache": "sessions-async",
+    "ts": "2026-11-06 17:27:06,197"
+   }
+  ],
+  "ispn000466": 0,
+  "erros_servidor": [
+   "isn3: 2026-11-06T14:25:29-03:00 \u001b[1;31m2026-11-06 17:25:29,901 ERROR [o.i.CLUSTER] [Context=sessions-async]ISPN000319: After merge (or coordinator change), cache still hasn't recovered all its data and must stay in degraded mode. Current members are [isn3-39732], lost members are [isn1-35874, isn2-45722],",
+   "isn3: 2026-11-06T14:25:29-03:00 \u001b[1;31m2026-11-06 17:25:29,901 ERROR [o.i.CLUSTER] [Context=sessions]ISPN000319: After merge (or coordinator change), cache still hasn't recovered all its data and must stay in degraded mode. Current members are [isn3-39732], lost members are [isn1-35874, isn2-45722], stabl",
+   "isn3: 2026-11-06T14:25:29-03:00 \u001b[1;31m2026-11-06 17:25:29,901 ERROR [o.i.CLUSTER] [Context=counters]ISPN000319: After merge (or coordinator change), cache still hasn't recovered all its data and must stay in degraded mode. Current members are [isn3-39732], lost members are [isn2-45722, isn1-35874], stabl",
+   "isn3: 2026-11-06T14:25:29-03:00 \u001b[1;31m2026-11-06 17:25:29,902 ERROR [o.i.CLUSTER] [Context=canario-async]ISPN000319: After merge (or coordinator change), cache still hasn't recovered all its data and must stay in degraded mode. Current members are [isn3-39732], lost members are [isn1-35874, isn2-45722], ",
+   "isn3: 2026-11-06T14:25:29-03:00 \u001b[1;31m2026-11-06 17:25:29,902 ERROR [o.i.CLUSTER] [Context=counters-async]ISPN000319: After merge (or coordinator change), cache still hasn't recovered all its data and must stay in degraded mode. Current members are [isn3-39732], lost members are [isn1-35874, isn2-45722],",
+   "isn3: 2026-11-06T14:25:29-03:00 \u001b[1;31m2026-11-06 17:25:29,902 ERROR [o.i.CLUSTER] [Context=canario]ISPN000319: After merge (or coordinator change), cache still hasn't recovered all its data and must stay in degraded mode. Current members are [isn3-39732], lost members are [isn1-35874, isn2-45722], stable"
+  ],
+  "erros_por_codigo": {
+   "ISPN000136": 521,
+   "ISPN000319": 6,
+   "ISPN005003": 403
+  },
+  "avisos_fusao": []
+ },
+ {
+  "mecanismo": null,
+  "janela": {
+   "nft_aplicado_rel_marcador_s": 2.35,
+   "isn3_degradado_rel_corte_s": 43.66,
+   "corte_efetivo_s": 102.6,
+   "cr_sessions_async_depois_da_cura_s": 38.0,
+   "cr_antes_do_fim_da_carga": true,
+   "cr_no": "isn3",
+   "cr_antes_da_cura": 1
+  },
+  "candidatos_i1": 5,
+  "candidatos_i1_preexistentes": 2,
+  "candidatos_i1_destino": {
+   "78855e1c-21f3-4037-9a9b-814b85324994": {
+    "logout": {
+     "no": "isn3",
+     "t_rel_corte_s": 42.14
+    },
+    "i1_real": false,
+    "existia_antes_do_corte": false,
+    "i1_online": false,
+    "a1": null,
+    "saida_seguranca": null
+   },
+   "87cc9e63-7512-433c-8a8e-91e63c1ddf17": {
+    "logout": {
+     "no": "isn3",
+     "t_rel_corte_s": 32.16
+    },
+    "i1_real": false,
+    "existia_antes_do_corte": false,
+    "i1_online": false,
+    "a1": null,
+    "saida_seguranca": null
+   },
+   "9a761f13-8f2a-4cbc-9114-eec9f8bddf04": {
+    "logout": {
+     "no": "isn3",
+     "t_rel_corte_s": 11.92
+    },
+    "i1_real": false,
+    "existia_antes_do_corte": true,
+    "i1_online": true,
+    "a1": null,
+    "saida_seguranca": null
+   },
+   "9b7bb12d-f2c6-436b-9236-48a61d8a6bcf": {
+    "logout": {
+     "no": "isn3",
+     "t_rel_corte_s": 9.7
+    },
+    "i1_real": true,
+    "existia_antes_do_corte": true,
+    "i1_online": false,
+    "a1": null,
+    "saida_seguranca": null
+   },
+   "ab4c88a7-3baf-4fa7-b4f7-709175685789": {
+    "logout": {
+     "no": "isn3",
+     "t_rel_corte_s": 19.42
+    },
+    "i1_real": false,
+    "existia_antes_do_corte": false,
+    "i1_online": false,
+    "a1": null,
+    "saida_seguranca": null
+   }
+  },
+  "execucao": "controle-s701300",
+  "condicao": "controle",
+  "semente": "701300",
+  "exit": "exit=0",
+  "corte_s": 105.1,
+  "merge_policy_sessions_async": {
+   "isn1": "PREFERRED_NON_NULL",
+   "isn2": "PREFERRED_NON_NULL",
+   "isn3": "PREFERRED_NON_NULL"
+  },
+  "merge_policy_counters_async": {
+   "isn1": "PREFERRED_NON_NULL",
+   "isn2": "PREFERRED_NON_NULL",
+   "isn3": "PREFERRED_NON_NULL"
+  },
+  "varredura_linha": "Varredura final: sessoes=573, identidades=50, achados=1; REAL={I1=1}; BLOCKED por motivo={ADMINISTRATIVO=1, POR_LIMITE=10, INCERTO=0, INEXPLICADO=0}",
+  "convergencia_linha": "Convergencia: convergiu=true, persistente=false, rodadas=3, t_convergencia=294495318300 ns",
+  "sonda_linha": "Sonda violacoes: I1=3 I4=0 total=3",
+  "i1_real_varredura": 1,
+  "i1_real_sids": [
+   "9b7bb12d-f2c6-436b-9236-48a61d8a6bcf"
+  ],
+  "i1_real_detalhe": [
+   {
+    "sid": "9b7bb12d-f2c6-436b-9236-48a61d8a6bcf",
+    "logout": {
+     "no": "isn3",
+     "t_rel_corte_s": 9.7
+    },
+    "a1": null
+   }
+  ],
+  "achados_varredura": {
+   "I1/REAL": 1
+  },
+  "i1_sonda": {
+   "linhas": 3,
+   "sids": 2,
+   "linhas_por_fase": {
+    "durante": 2,
+    "recuperacao": 1
+   },
+   "sids_por_fase": {
+    "durante": 2,
+    "recuperacao": 1
+   },
+   "lista_sids": [
+    "9a761f13-8f2a-4cbc-9114-eec9f8bddf04",
+    "9b7bb12d-f2c6-436b-9236-48a61d8a6bcf"
+   ]
+  },
+  "i1_online": {
+   "linhas": 1,
+   "sids": 1,
+   "linhas_por_fase": {
+    "recuperacao": 1
+   },
+   "sids_por_fase": {
+    "recuperacao": 1
+   },
+   "lista_sids": [
+    "9a761f13-8f2a-4cbc-9114-eec9f8bddf04"
+   ]
+  },
+  "logouts_confirmados": 394,
+  "logouts_confirmados_isn3_na_janela": 7,
+  "politica": {
+   "por_no": {
+    "isn1": {
+     "politica_carregada": 0,
+     "fusao": 0,
+     "saida_seguranca": 0
+    },
+    "isn2": {
+     "politica_carregada": 0,
+     "fusao": 0,
+     "saida_seguranca": 0
+    },
+    "isn3": {
+     "politica_carregada": 0,
+     "fusao": 0,
+     "saida_seguranca": 0
+    }
+   },
+   "fusao_total": 0,
+   "fusao_por_resultado": {},
+   "fusao_vencedora": {},
+   "fusao_igual_pnn": {},
+   "diferente_do_pnn": [],
+   "invalid_sobre_valid": 0,
+   "saida_seguranca_total": 0,
+   "saida_por_motivo": {},
+   "saida_detalhe": [],
+   "formato": []
+  },
+  "cr_linhas": [
+   {
+    "no": "isn1",
+    "codigo": "ISPN100012",
+    "cache": "canario",
+    "ts": "2026-11-06 17:34:26,303"
+   },
+   {
+    "no": "isn1",
+    "codigo": "ISPN100012",
+    "cache": "counters-async",
+    "ts": "2026-11-06 17:34:26,304"
+   },
+   {
+    "no": "isn1",
+    "codigo": "ISPN100012",
+    "cache": "canario-async",
+    "ts": "2026-11-06 17:34:26,304"
+   },
+   {
+    "no": "isn1",
+    "codigo": "ISPN100012",
+    "cache": "sessions-async",
+    "ts": "2026-11-06 17:34:26,304"
+   },
+   {
+    "no": "isn1",
+    "codigo": "ISPN100012",
+    "cache": "counters",
+    "ts": "2026-11-06 17:34:26,305"
+   },
+   {
+    "no": "isn1",
+    "codigo": "ISPN100012",
+    "cache": "sessions",
+    "ts": "2026-11-06 17:34:26,305"
+   },
+   {
+    "no": "isn1",
+    "codigo": "ISPN100013",
+    "cache": "sessions",
+    "ts": "2026-11-06 17:34:31,735"
+   },
+   {
+    "no": "isn1",
+    "codigo": "ISPN100013",
+    "cache": "counters",
+    "ts": "2026-11-06 17:34:31,736"
+   },
+   {
+    "no": "isn1",
+    "codigo": "ISPN100013",
+    "cache": "canario-async",
+    "ts": "2026-11-06 17:34:31,736"
+   },
+   {
+    "no": "isn1",
+    "codigo": "ISPN100013",
+    "cache": "canario",
+    "ts": "2026-11-06 17:34:31,737"
+   },
+   {
+    "no": "isn1",
+    "codigo": "ISPN100013",
+    "cache": "sessions-async",
+    "ts": "2026-11-06 17:34:31,739"
+   },
+   {
+    "no": "isn1",
+    "codigo": "ISPN100013",
+    "cache": "counters-async",
+    "ts": "2026-11-06 17:34:31,739"
+   },
+   {
+    "no": "isn3",
+    "codigo": "ISPN100012",
+    "cache": "sessions",
+    "ts": "2026-11-06 17:36:03,231"
+   },
+   {
+    "no": "isn3",
+    "codigo": "ISPN100012",
+    "cache": "canario",
+    "ts": "2026-11-06 17:36:03,231"
+   },
+   {
+    "no": "isn3",
+    "codigo": "ISPN100012",
+    "cache": "sessions-async",
+    "ts": "2026-11-06 17:36:03,231"
+   },
+   {
+    "no": "isn3",
+    "codigo": "ISPN100012",
+    "cache": "counters-async",
+    "ts": "2026-11-06 17:36:03,231"
+   },
+   {
+    "no": "isn3",
+    "codigo": "ISPN100012",
+    "cache": "counters",
+    "ts": "2026-11-06 17:36:03,231"
+   },
+   {
+    "no": "isn3",
+    "codigo": "ISPN100012",
+    "cache": "canario-async",
+    "ts": "2026-11-06 17:36:03,231"
+   },
+   {
+    "no": "isn3",
+    "codigo": "ISPN100013",
+    "cache": "canario",
+    "ts": "2026-11-06 17:36:03,395"
+   },
+   {
+    "no": "isn3",
+    "codigo": "ISPN100013",
+    "cache": "canario-async",
+    "ts": "2026-11-06 17:36:03,405"
+   },
+   {
+    "no": "isn3",
+    "codigo": "ISPN100013",
+    "cache": "sessions",
+    "ts": "2026-11-06 17:36:03,406"
+   },
+   {
+    "no": "isn3",
+    "codigo": "ISPN100013",
+    "cache": "counters",
+    "ts": "2026-11-06 17:36:03,406"
+   },
+   {
+    "no": "isn3",
+    "codigo": "ISPN100013",
+    "cache": "counters-async",
+    "ts": "2026-11-06 17:36:03,406"
+   },
+   {
+    "no": "isn3",
+    "codigo": "ISPN100013",
+    "cache": "sessions-async",
+    "ts": "2026-11-06 17:36:03,434"
+   }
+  ],
+  "ispn000466": 0,
+  "erros_servidor": [],
+  "erros_por_codigo": {
+   "ISPN000136": 644,
+   "ISPN000317": 5,
+   "ISPN005003": 555
+  },
+  "avisos_fusao": []
+ },
+ {
+  "mecanismo": {
+   "criadas": 60,
+   "logout_confirmado_pelo_isn3": 26,
+   "leitura_depois_da_fusao": {
+    "isn1": "RESUMO servidor=127.0.0.1:12801 VALID=0 INVALID=26 AUSENTE=0 ERRO=0",
+    "isn2": "RESUMO servidor=127.0.0.1:12802 VALID=0 INVALID=26 AUSENTE=0 ERRO=0",
+    "isn3": "RESUMO servidor=127.0.0.1:12803 VALID=0 INVALID=26 AUSENTE=0 ERRO=0"
+   },
+   "a1_decisoes_nas_confirmadas": 26,
+   "a1_invalid_sobre_valid_nas_confirmadas": 26,
+   "saida_nas_confirmadas": 0
+  },
+  "janela": {
+   "nft_aplicado_rel_marcador_s": null,
+   "isn3_degradado_rel_corte_s": 47.58,
+   "corte_efetivo_s": 92.4,
+   "cr_sessions_async_depois_da_cura_s": 51.0,
+   "cr_antes_do_fim_da_carga": false,
+   "cr_no": "isn1",
+   "cr_antes_da_cura": 0
+  },
+  "candidatos_i1": 0,
+  "candidatos_i1_preexistentes": 0,
+  "candidatos_i1_destino": {},
+  "execucao": "mecanismo-a1",
+  "condicao": "a1",
+  "semente": null,
+  "exit": null,
+  "corte_s": null,
+  "merge_policy_sessions_async": {
+   "isn1": "br.unipampa.tcc.servidor.PoliticaFusaoSessoes",
+   "isn2": "br.unipampa.tcc.servidor.PoliticaFusaoSessoes",
+   "isn3": "br.unipampa.tcc.servidor.PoliticaFusaoSessoes"
+  },
+  "merge_policy_counters_async": {},
+  "varredura_linha": null,
+  "convergencia_linha": null,
+  "sonda_linha": null,
+  "i1_real_varredura": 0,
+  "i1_real_sids": [],
+  "i1_real_detalhe": [],
+  "achados_varredura": {},
+  "i1_sonda": {
+   "linhas": 0,
+   "sids": 0,
+   "linhas_por_fase": {},
+   "sids_por_fase": {},
+   "lista_sids": []
+  },
+  "i1_online": {
+   "linhas": 0,
+   "sids": 0,
+   "linhas_por_fase": {},
+   "sids_por_fase": {},
+   "lista_sids": []
+  },
+  "logouts_confirmados": 0,
+  "logouts_confirmados_isn3_na_janela": 0,
+  "politica": {
+   "por_no": {
+    "isn1": {
+     "politica_carregada": 2,
+     "fusao": 26,
+     "saida_seguranca": 0
+    },
+    "isn2": {
+     "politica_carregada": 1,
+     "fusao": 0,
+     "saida_seguranca": 0
+    },
+    "isn3": {
+     "politica_carregada": 1,
+     "fusao": 0,
+     "saida_seguranca": 0
+    }
+   },
+   "fusao_total": 26,
+   "fusao_por_resultado": {
+    "ESCOLHIDA": 26
+   },
+   "fusao_vencedora": {
+    "outra": 26
+   },
+   "fusao_igual_pnn": {
+    "nao": 26
+   },
+   "diferente_do_pnn": [
+    {
+     "sid": "9045e84b-b69e-4554-a0f3-ddb5d3ab2277",
+     "escolhida": "INVALID/LOGOUT/v2@2026-11-06T17:17:50.628790400Z",
+     "pnn": "VALID/NONE/v1@2026-11-06T17:17:39.155466600Z",
+     "logout": null
+    },
+    {
+     "sid": "f76ea998-48bc-4a43-ae64-6b5a129b9042",
+     "escolhida": "INVALID/LOGOUT/v2@2026-11-06T17:17:50.537190300Z",
+     "pnn": "VALID/NONE/v1@2026-11-06T17:17:39.143505700Z",
+     "logout": null
+    },
+    {
+     "sid": "0b703727-e3d8-4f90-a126-ebc0f5d0b802",
+     "escolhida": "INVALID/LOGOUT/v2@2026-11-06T17:17:50.629791200Z",
+     "pnn": "VALID/NONE/v1@2026-11-06T17:17:39.170610700Z",
+     "logout": null
+    },
+    {
+     "sid": "c7ddbb80-3600-4af5-b306-59eb3eb95f4e",
+     "escolhida": "INVALID/LOGOUT/v2@2026-11-06T17:17:50.556787300Z",
+     "pnn": "VALID/NONE/v1@2026-11-06T17:17:39.157468900Z",
+     "logout": null
+    },
+    {
+     "sid": "1cc1f26d-1054-4122-9522-d7658736242b",
+     "escolhida": "INVALID/LOGOUT/v2@2026-11-06T17:17:50.610474600Z",
+     "pnn": "VALID/NONE/v1@2026-11-06T17:17:39.177612300Z",
+     "logout": null
+    },
+    {
+     "sid": "25f74c3e-e563-4546-b593-cdd07669d167",
+     "escolhida": "INVALID/LOGOUT/v2@2026-11-06T17:17:50.632790500Z",
+     "pnn": "VALID/NONE/v1@2026-11-06T17:17:39.174613200Z",
+     "logout": null
+    },
+    {
+     "sid": "d0e24d19-a912-47a6-a55b-d03b9531a6bd",
+     "escolhida": "INVALID/LOGOUT/v2@2026-11-06T17:17:50.682496500Z",
+     "pnn": "VALID/NONE/v1@2026-11-06T17:17:39.202141500Z",
+     "logout": null
+    },
+    {
+     "sid": "e80b4504-6bda-463d-bc79-a4a714d0c15b",
+     "escolhida": "INVALID/LOGOUT/v2@2026-11-06T17:17:50.654447600Z",
+     "pnn": "VALID/NONE/v1@2026-11-06T17:17:39.122997900Z",
+     "logout": null
+    },
+    {
+     "sid": "cbf62c87-0f54-4657-a23f-054660740c4c",
+     "escolhida": "INVALID/LOGOUT/v2@2026-11-06T17:17:50.687826300Z",
+     "pnn": "VALID/NONE/v1@2026-11-06T17:17:39.211140Z",
+     "logout": null
+    },
+    {
+     "sid": "0d48a1f3-26ef-49e4-9cd4-604b4a641999",
+     "escolhida": "INVALID/LOGOUT/v2@2026-11-06T17:17:50.622754500Z",
+     "pnn": "VALID/NONE/v1@2026-11-06T17:17:39.158610400Z",
+     "logout": null
+    },
+    {
+     "sid": "68b0151a-5645-4604-86f2-768c0144e636",
+     "escolhida": "INVALID/LOGOUT/v2@2026-11-06T17:17:50.628790400Z",
+     "pnn": "VALID/NONE/v1@2026-11-06T17:17:39.181119200Z",
+     "logout": null
+    },
+    {
+     "sid": "42400230-d9dd-4ce8-8a55-a72bab22cc28",
+     "escolhida": "INVALID/LOGOUT/v2@2026-11-06T17:17:50.684007Z",
+     "pnn": "VALID/NONE/v1@2026-11-06T17:17:39.205140300Z",
+     "logout": null
+    },
+    {
+     "sid": "f15e5422-a7bb-45eb-a071-973ccb63ef75",
+     "escolhida": "INVALID/LOGOUT/v2@2026-11-06T17:17:50.582945800Z",
+     "pnn": "VALID/NONE/v1@2026-11-06T17:17:39.148629Z",
+     "logout": null
+    },
+    {
+     "sid": "3994a316-0547-430e-b21b-dce49a213329",
+     "escolhida": "INVALID/LOGOUT/v2@2026-11-06T17:17:50.634794800Z",
+     "pnn": "VALID/NONE/v1@2026-11-06T17:17:39.165618700Z",
+     "logout": null
+    },
+    {
+     "sid": "5ebb2d95-5f5d-4fe2-9b82-282883e0bc2e",
+     "escolhida": "INVALID/LOGOUT/v2@2026-11-06T17:17:50.682496500Z",
+     "pnn": "VALID/NONE/v1@2026-11-06T17:17:39.201142400Z",
+     "logout": null
+    },
+    {
+     "sid": "13170126-b851-4b5a-a316-1d0936820e44",
+     "escolhida": "INVALID/LOGOUT/v2@2026-11-06T17:17:50.682496500Z",
+     "pnn": "VALID/NONE/v1@2026-11-06T17:17:39.206140700Z",
+     "logout": null
+    },
+    {
+     "sid": "bc9a06a3-cdc0-4fb3-9782-e0fca65260f0",
+     "escolhida": "INVALID/LOGOUT/v2@2026-11-06T17:17:50.628790400Z",
+     "pnn": "VALID/NONE/v1@2026-11-06T17:17:39.142002200Z",
+     "logout": null
+    },
+    {
+     "sid": "0191ae7d-46d0-4bde-84d1-79de8b012ca7",
+     "escolhida": "INVALID/LOGOUT/v2@2026-11-06T17:17:50.585946600Z",
+     "pnn": "VALID/NONE/v1@2026-11-06T17:17:39.186121200Z",
+     "logout": null
+    },
+    {
+     "sid": "8cfd3166-d7ef-4f2c-9a54-90e333ad7b45",
+     "escolhida": "INVALID/LOGOUT/v2@2026-11-06T17:17:52.090741200Z",
+     "pnn": "VALID/NONE/v1@2026-11-06T17:17:39.218143400Z",
+     "logout": null
+    },
+    {
+     "sid": "8fad058a-bea8-4cb5-8743-ae47e6e4828a",
+     "escolhida": "INVALID/LOGOUT/v2@2026-11-06T17:17:50.535190300Z",
+     "pnn": "VALID/NONE/v1@2026-11-06T17:17:39.140001100Z",
+     "logout": null
+    },
+    {
+     "sid": "4d2ed59d-90a5-423c-9f59-0fbc8c37861b",
+     "escolhida": "INVALID/LOGOUT/v2@2026-11-06T17:17:50.547730300Z",
+     "pnn": "VALID/NONE/v1@2026-11-06T17:17:39.184121300Z",
+     "logout": null
+    },
+    {
+     "sid": "8e3c8afb-cd1b-4a92-8de4-ef2ca6d243ad",
+     "escolhida": "INVALID/LOGOUT/v2@2026-11-06T17:17:50.686018100Z",
+     "pnn": "VALID/NONE/v1@2026-11-06T17:17:39.210141400Z",
+     "logout": null
+    },
+    {
+     "sid": "be85738e-c68a-4455-9310-a62066905394",
+     "escolhida": "INVALID/LOGOUT/v2@2026-11-06T17:17:50.637310700Z",
+     "pnn": "VALID/NONE/v1@2026-11-06T17:17:39.137999200Z",
+     "logout": null
+    },
+    {
+     "sid": "69a789bf-2293-4804-a75f-33f4b007c817",
+     "escolhida": "INVALID/LOGOUT/v2@2026-11-06T17:17:50.498580400Z",
+     "pnn": "VALID/NONE/v1@2026-11-06T17:17:39.178610800Z",
+     "logout": null
+    },
+    {
+     "sid": "22b823cc-4bf9-4ea2-91e2-26cb6365f155",
+     "escolhida": "INVALID/LOGOUT/v2@2026-11-06T17:17:50.583944900Z",
+     "pnn": "VALID/NONE/v1@2026-11-06T17:17:39.164606900Z",
+     "logout": null
+    },
+    {
+     "sid": "17893c45-699c-49ca-942a-0ddb93ef701e",
+     "escolhida": "INVALID/LOGOUT/v2@2026-11-06T17:17:50.628790400Z",
+     "pnn": "VALID/NONE/v1@2026-11-06T17:17:39.153460100Z",
+     "logout": null
+    }
+   ],
+   "invalid_sobre_valid": 26,
+   "saida_seguranca_total": 0,
+   "saida_por_motivo": {},
+   "saida_detalhe": [],
+   "formato": [
+    {
+     "no": "isn1",
+     "classe": "org.infinispan.commons.marshall.WrappedByteArray",
+     "bytes": 552,
+     "cabecalho_java": true,
+     "classe_no_fluxo": true
+    }
+   ]
+  },
+  "cr_linhas": [
+   {
+    "no": "isn1",
+    "codigo": "ISPN100012",
+    "cache": "sessions",
+    "ts": "2026-11-06 17:20:12,302"
+   },
+   {
+    "no": "isn1",
+    "codigo": "ISPN100012",
+    "cache": "counters-async",
+    "ts": "2026-11-06 17:20:12,302"
+   },
+   {
+    "no": "isn1",
+    "codigo": "ISPN100012",
+    "cache": "canario",
+    "ts": "2026-11-06 17:20:12,302"
+   },
+   {
+    "no": "isn1",
+    "codigo": "ISPN100012",
+    "cache": "canario-async",
+    "ts": "2026-11-06 17:20:12,302"
+   },
+   {
+    "no": "isn1",
+    "codigo": "ISPN100012",
+    "cache": "sessions-async",
+    "ts": "2026-11-06 17:20:12,302"
+   },
+   {
+    "no": "isn1",
+    "codigo": "ISPN100012",
+    "cache": "counters",
+    "ts": "2026-11-06 17:20:12,303"
+   },
+   {
+    "no": "isn1",
+    "codigo": "ISPN100013",
+    "cache": "canario-async",
+    "ts": "2026-11-06 17:20:12,504"
+   },
+   {
+    "no": "isn1",
+    "codigo": "ISPN100013",
+    "cache": "counters-async",
+    "ts": "2026-11-06 17:20:12,516"
+   },
+   {
+    "no": "isn1",
+    "codigo": "ISPN100013",
+    "cache": "canario",
+    "ts": "2026-11-06 17:20:12,516"
+   },
+   {
+    "no": "isn1",
+    "codigo": "ISPN100013",
+    "cache": "sessions",
+    "ts": "2026-11-06 17:20:12,530"
+   },
+   {
+    "no": "isn1",
+    "codigo": "ISPN100013",
+    "cache": "counters",
+    "ts": "2026-11-06 17:20:12,530"
+   },
+   {
+    "no": "isn1",
+    "codigo": "ISPN100013",
+    "cache": "sessions-async",
+    "ts": "2026-11-06 17:20:12,594"
+   }
+  ],
+  "ispn000466": 0,
+  "erros_servidor": [
+   "isn3: 2026-11-06T14:18:36-03:00 \u001b[1;31m2026-11-06 17:18:36,417 ERROR [o.i.CLUSTER] [Context=sessions]ISPN000319: After merge (or coordinator change), cache still hasn't recovered all its data and must stay in degraded mode. Current members are [isn3-48621], lost members are [isn2-44939, isn1-1646], stable",
+   "isn3: 2026-11-06T14:18:36-03:00 \u001b[1;31m2026-11-06 17:18:36,417 ERROR [o.i.CLUSTER] [Context=sessions-async]ISPN000319: After merge (or coordinator change), cache still hasn't recovered all its data and must stay in degraded mode. Current members are [isn3-48621], lost members are [isn1-1646, isn2-44939], ",
+   "isn3: 2026-11-06T14:18:36-03:00 \u001b[1;31m2026-11-06 17:18:36,417 ERROR [o.i.CLUSTER] [Context=counters]ISPN000319: After merge (or coordinator change), cache still hasn't recovered all its data and must stay in degraded mode. Current members are [isn3-48621], lost members are [isn2-44939, isn1-1646], stable",
+   "isn3: 2026-11-06T14:18:36-03:00 \u001b[1;31m2026-11-06 17:18:36,417 ERROR [o.i.CLUSTER] [Context=canario-async]ISPN000319: After merge (or coordinator change), cache still hasn't recovered all its data and must stay in degraded mode. Current members are [isn3-48621], lost members are [isn1-1646, isn2-44939], s",
+   "isn3: 2026-11-06T14:18:36-03:00 \u001b[1;31m2026-11-06 17:18:36,418 ERROR [o.i.CLUSTER] [Context=counters-async]ISPN000319: After merge (or coordinator change), cache still hasn't recovered all its data and must stay in degraded mode. Current members are [isn3-48621], lost members are [isn1-1646, isn2-44939], ",
+   "isn3: 2026-11-06T14:18:36-03:00 \u001b[1;31m2026-11-06 17:18:36,418 ERROR [o.i.CLUSTER] [Context=canario]ISPN000319: After merge (or coordinator change), cache still hasn't recovered all its data and must stay in degraded mode. Current members are [isn3-48621], lost members are [isn2-44939, isn1-1646], stable "
+  ],
+  "erros_por_codigo": {
+   "ISPN000136": 34,
+   "ISPN000319": 6
+  },
+  "avisos_fusao": []
+ },
+ {
+  "mecanismo": {
+   "criadas": 60,
+   "logout_confirmado_pelo_isn3": 23,
+   "leitura_depois_da_fusao": {
+    "isn1": "RESUMO servidor=127.0.0.1:12801 VALID=21 INVALID=2 AUSENTE=0 ERRO=0",
+    "isn2": "RESUMO servidor=127.0.0.1:12802 VALID=23 INVALID=0 AUSENTE=0 ERRO=0",
+    "isn3": "RESUMO servidor=127.0.0.1:12803 VALID=21 INVALID=2 AUSENTE=0 ERRO=0"
+   },
+   "a1_decisoes_nas_confirmadas": 0,
+   "a1_invalid_sobre_valid_nas_confirmadas": 0,
+   "saida_nas_confirmadas": 0
+  },
+  "janela": {
+   "nft_aplicado_rel_marcador_s": null,
+   "isn3_degradado_rel_corte_s": 41.33,
+   "corte_efetivo_s": 92.3,
+   "cr_sessions_async_depois_da_cura_s": 44.9,
+   "cr_antes_do_fim_da_carga": false,
+   "cr_no": "isn1",
+   "cr_antes_da_cura": 0
+  },
+  "candidatos_i1": 0,
+  "candidatos_i1_preexistentes": 0,
+  "candidatos_i1_destino": {},
+  "execucao": "mecanismo-controle-r1",
+  "condicao": "controle",
+  "semente": null,
+  "exit": null,
+  "corte_s": null,
+  "merge_policy_sessions_async": {
+   "isn1": "PREFERRED_NON_NULL",
+   "isn2": "PREFERRED_NON_NULL",
+   "isn3": "PREFERRED_NON_NULL"
+  },
+  "merge_policy_counters_async": {},
+  "varredura_linha": null,
+  "convergencia_linha": null,
+  "sonda_linha": null,
+  "i1_real_varredura": 0,
+  "i1_real_sids": [],
+  "i1_real_detalhe": [],
+  "achados_varredura": {},
+  "i1_sonda": {
+   "linhas": 0,
+   "sids": 0,
+   "linhas_por_fase": {},
+   "sids_por_fase": {},
+   "lista_sids": []
+  },
+  "i1_online": {
+   "linhas": 0,
+   "sids": 0,
+   "linhas_por_fase": {},
+   "sids_por_fase": {},
+   "lista_sids": []
+  },
+  "logouts_confirmados": 0,
+  "logouts_confirmados_isn3_na_janela": 0,
+  "politica": {
+   "por_no": {
+    "isn1": {
+     "politica_carregada": 0,
+     "fusao": 0,
+     "saida_seguranca": 0
+    },
+    "isn2": {
+     "politica_carregada": 0,
+     "fusao": 0,
+     "saida_seguranca": 0
+    },
+    "isn3": {
+     "politica_carregada": 0,
+     "fusao": 0,
+     "saida_seguranca": 0
+    }
+   },
+   "fusao_total": 0,
+   "fusao_por_resultado": {},
+   "fusao_vencedora": {},
+   "fusao_igual_pnn": {},
+   "diferente_do_pnn": [],
+   "invalid_sobre_valid": 0,
+   "saida_seguranca_total": 0,
+   "saida_por_motivo": {},
+   "saida_detalhe": [],
+   "formato": []
+  },
+  "cr_linhas": [
+   {
+    "no": "isn1",
+    "codigo": "ISPN100012",
+    "cache": "sessions",
+    "ts": "2026-11-06 17:43:45,762"
+   },
+   {
+    "no": "isn1",
+    "codigo": "ISPN100012",
+    "cache": "canario",
+    "ts": "2026-11-06 17:43:45,762"
+   },
+   {
+    "no": "isn1",
+    "codigo": "ISPN100012",
+    "cache": "canario-async",
+    "ts": "2026-11-06 17:43:45,763"
+   },
+   {
+    "no": "isn1",
+    "codigo": "ISPN100012",
+    "cache": "sessions-async",
+    "ts": "2026-11-06 17:43:45,763"
+   },
+   {
+    "no": "isn1",
+    "codigo": "ISPN100012",
+    "cache": "counters",
+    "ts": "2026-11-06 17:43:45,763"
+   },
+   {
+    "no": "isn1",
+    "codigo": "ISPN100012",
+    "cache": "counters-async",
+    "ts": "2026-11-06 17:43:45,763"
+   },
+   {
+    "no": "isn1",
+    "codigo": "ISPN100013",
+    "cache": "counters",
+    "ts": "2026-11-06 17:43:45,932"
+   },
+   {
+    "no": "isn1",
+    "codigo": "ISPN100013",
+    "cache": "canario",
+    "ts": "2026-11-06 17:43:45,936"
+   },
+   {
+    "no": "isn1",
+    "codigo": "ISPN100013",
+    "cache": "canario-async",
+    "ts": "2026-11-06 17:43:45,936"
+   },
+   {
+    "no": "isn1",
+    "codigo": "ISPN100013",
+    "cache": "sessions",
+    "ts": "2026-11-06 17:43:45,946"
+   },
+   {
+    "no": "isn1",
+    "codigo": "ISPN100013",
+    "cache": "counters-async",
+    "ts": "2026-11-06 17:43:45,951"
+   },
+   {
+    "no": "isn1",
+    "codigo": "ISPN100013",
+    "cache": "sessions-async",
+    "ts": "2026-11-06 17:43:45,955"
+   }
+  ],
+  "ispn000466": 0,
+  "erros_servidor": [
+   "isn3: 2026-11-06T14:42:09-03:00 \u001b[1;31m2026-11-06 17:42:09,901 ERROR [o.i.CLUSTER] [Context=sessions-async]ISPN000319: After merge (or coordinator change), cache still hasn't recovered all its data and must stay in degraded mode. Current members are [isn3-22466], lost members are [isn1-18454, isn2-41059],",
+   "isn3: 2026-11-06T14:42:09-03:00 \u001b[1;31m2026-11-06 17:42:09,901 ERROR [o.i.CLUSTER] [Context=sessions]ISPN000319: After merge (or coordinator change), cache still hasn't recovered all its data and must stay in degraded mode. Current members are [isn3-22466], lost members are [isn1-18454, isn2-41059], stabl",
+   "isn3: 2026-11-06T14:42:09-03:00 \u001b[1;31m2026-11-06 17:42:09,901 ERROR [o.i.CLUSTER] [Context=counters]ISPN000319: After merge (or coordinator change), cache still hasn't recovered all its data and must stay in degraded mode. Current members are [isn3-22466], lost members are [isn2-41059, isn1-18454], stabl",
+   "isn3: 2026-11-06T14:42:09-03:00 \u001b[1;31m2026-11-06 17:42:09,902 ERROR [o.i.CLUSTER] [Context=counters-async]ISPN000319: After merge (or coordinator change), cache still hasn't recovered all its data and must stay in degraded mode. Current members are [isn3-22466], lost members are [isn1-18454, isn2-41059],",
+   "isn3: 2026-11-06T14:42:09-03:00 \u001b[1;31m2026-11-06 17:42:09,902 ERROR [o.i.CLUSTER] [Context=canario-async]ISPN000319: After merge (or coordinator change), cache still hasn't recovered all its data and must stay in degraded mode. Current members are [isn3-22466], lost members are [isn1-18454, isn2-41059], ",
+   "isn3: 2026-11-06T14:42:09-03:00 \u001b[1;31m2026-11-06 17:42:09,902 ERROR [o.i.CLUSTER] [Context=canario]ISPN000319: After merge (or coordinator change), cache still hasn't recovered all its data and must stay in degraded mode. Current members are [isn3-22466], lost members are [isn1-18454, isn2-41059], stable"
+  ],
+  "erros_por_codigo": {
+   "ISPN000136": 37,
+   "ISPN000319": 6
+  },
+  "avisos_fusao": []
+ },
+ {
+  "mecanismo": null,
+  "janela": {
+   "nft_aplicado_rel_marcador_s": null,
+   "isn3_degradado_rel_corte_s": 46.73,
+   "corte_efetivo_s": null,
+   "cr_sessions_async_depois_da_cura_s": null,
+   "cr_antes_do_fim_da_carga": false,
+   "cr_no": null,
+   "cr_antes_da_cura": 0
+  },
+  "candidatos_i1": 2,
+  "candidatos_i1_preexistentes": 1,
+  "candidatos_i1_destino": {
+   "06b5ec0d-fa20-4a14-87c0-36169dc747e5": {
+    "logout": {
+     "no": "isn3",
+     "t_rel_corte_s": 1.94
+    },
+    "i1_real": false,
+    "existia_antes_do_corte": false,
+    "i1_online": false,
+    "a1": null,
+    "saida_seguranca": null
+   },
+   "2fd057a7-49d9-427d-bd44-72c8fcbeba5c": {
+    "logout": {
+     "no": "isn3",
+     "t_rel_corte_s": 1.38
+    },
+    "i1_real": false,
+    "existia_antes_do_corte": true,
+    "i1_online": false,
+    "a1": null,
+    "saida_seguranca": null
+   }
+  },
+  "execucao": "preparo-a1-s700400-d300",
+  "condicao": "a1",
+  "semente": "700400",
+  "exit": "exit=0",
+  "corte_s": 132.6,
+  "merge_policy_sessions_async": {
+   "isn1": "br.unipampa.tcc.servidor.PoliticaFusaoSessoes",
+   "isn2": "br.unipampa.tcc.servidor.PoliticaFusaoSessoes",
+   "isn3": "br.unipampa.tcc.servidor.PoliticaFusaoSessoes"
+  },
+  "merge_policy_counters_async": {
+   "isn1": "PREFERRED_NON_NULL",
+   "isn2": "PREFERRED_NON_NULL",
+   "isn3": "PREFERRED_NON_NULL"
+  },
+  "varredura_linha": "Varredura final: sessoes=344, identidades=50, achados=1; REAL={}; BLOCKED por motivo={ADMINISTRATIVO=0, POR_LIMITE=6, INCERTO=1, INEXPLICADO=0}",
+  "convergencia_linha": "Convergencia: convergiu=true, persistente=false, rodadas=3, t_convergencia=113650558550 ns",
+  "sonda_linha": "Sonda violacoes: I1=5 I4=0 total=5",
+  "i1_real_varredura": 0,
+  "i1_real_sids": [],
+  "i1_real_detalhe": [],
+  "achados_varredura": {
+   "I2/ESPERADA-POR-DESENHO": 1
+  },
+  "i1_sonda": {
+   "linhas": 5,
+   "sids": 5,
+   "linhas_por_fase": {
+    "durante": 5
+   },
+   "sids_por_fase": {
+    "durante": 5
+   },
+   "lista_sids": [
+    "6d1b484b-4dc1-422a-afb6-315b879cb91d",
+    "84177e95-d774-4e81-b377-e6734bd5374c",
+    "96701fd7-7a25-4d22-844c-9b671b6b17ee",
+    "ae0b649b-325c-4d3a-8dca-3ae032ab04e7",
+    "e042e0b7-aab2-45d1-9e90-883c004b4f39"
+   ]
+  },
+  "i1_online": {
+   "linhas": 0,
+   "sids": 0,
+   "linhas_por_fase": {},
+   "sids_por_fase": {},
+   "lista_sids": []
+  },
+  "logouts_confirmados": 221,
+  "logouts_confirmados_isn3_na_janela": 2,
+  "politica": {
+   "por_no": {
+    "isn1": {
+     "politica_carregada": 2,
+     "fusao": 0,
+     "saida_seguranca": 0
+    },
+    "isn2": {
+     "politica_carregada": 1,
+     "fusao": 0,
+     "saida_seguranca": 0
+    },
+    "isn3": {
+     "politica_carregada": 1,
+     "fusao": 0,
+     "saida_seguranca": 0
+    }
+   },
+   "fusao_total": 0,
+   "fusao_por_resultado": {},
+   "fusao_vencedora": {},
+   "fusao_igual_pnn": {},
+   "diferente_do_pnn": [],
+   "invalid_sobre_valid": 0,
+   "saida_seguranca_total": 0,
+   "saida_por_motivo": {},
+   "saida_detalhe": [],
+   "formato": []
+  },
+  "cr_linhas": [],
+  "ispn000466": 0,
+  "erros_servidor": [
+   "isn3: 2026-11-06T13:51:03-03:00 \u001b[1;31m2026-11-06 16:51:03,421 ERROR [o.i.CLUSTER] [Context=sessions-async]ISPN000319: After merge (or coordinator change), cache still hasn't recovered all its data and must stay in degraded mode. Current members are [isn3-39633], lost members are [isn1-31479, isn2-21351],",
+   "isn3: 2026-11-06T13:51:03-03:00 \u001b[1;31m2026-11-06 16:51:03,421 ERROR [o.i.CLUSTER] [Context=sessions]ISPN000319: After merge (or coordinator change), cache still hasn't recovered all its data and must stay in degraded mode. Current members are [isn3-39633], lost members are [isn1-31479, isn2-21351], stabl",
+   "isn3: 2026-11-06T13:51:03-03:00 \u001b[1;31m2026-11-06 16:51:03,421 ERROR [o.i.CLUSTER] [Context=counters]ISPN000319: After merge (or coordinator change), cache still hasn't recovered all its data and must stay in degraded mode. Current members are [isn3-39633], lost members are [isn1-31479, isn2-21351], stabl",
+   "isn3: 2026-11-06T13:51:03-03:00 \u001b[1;31m2026-11-06 16:51:03,421 ERROR [o.i.CLUSTER] [Context=canario-async]ISPN000319: After merge (or coordinator change), cache still hasn't recovered all its data and must stay in degraded mode. Current members are [isn3-39633], lost members are [isn1-31479, isn2-21351], ",
+   "isn3: 2026-11-06T13:51:03-03:00 \u001b[1;31m2026-11-06 16:51:03,422 ERROR [o.i.CLUSTER] [Context=counters-async]ISPN000319: After merge (or coordinator change), cache still hasn't recovered all its data and must stay in degraded mode. Current members are [isn3-39633], lost members are [isn1-31479, isn2-21351],",
+   "isn3: 2026-11-06T13:51:03-03:00 \u001b[1;31m2026-11-06 16:51:03,422 ERROR [o.i.CLUSTER] [Context=canario]ISPN000319: After merge (or coordinator change), cache still hasn't recovered all its data and must stay in degraded mode. Current members are [isn3-39633], lost members are [isn1-31479, isn2-21351], stable"
+  ],
+  "erros_por_codigo": {
+   "ISPN000136": 341,
+   "ISPN000319": 6,
+   "ISPN005003": 203
+  },
+  "avisos_fusao": []
+ }
+]

@@ -78,7 +78,7 @@ class AcaoClusterTiposTest {
         var n2 = FormatoJsonl.acao(r2);
         assertTrue(n2.has("reversao"), "campo nunca omitido");
         assertTrue(n2.get("reversao").isNull());
-        assertEquals("decisoes-controlador/1.2", FormatoJsonl.ESQUEMA_DECISOES);
+        assertEquals("decisoes-controlador/1.3", FormatoJsonl.ESQUEMA_DECISOES); // V-2 (06/11): AC-7 explicito
     }
 
     @Test

@@ -30,7 +30,7 @@ REAL_SLEEP="$(command -v sleep)"
 REAL_TIMEOUT="$(command -v timeout)"
 TMP="$(mktemp -d)"
 trap '[[ -n "${CS_TESTE_MANTER:-}" ]] && echo "(CS_TESTE_MANTER: ${TMP} mantido)" || rm -rf "${TMP}"' EXIT
-SELECAO=" ${*:-S1 S2 S3 S4 S5 S6 S7 S8 S9 S10 S11 S12 S13 S14 S15 S16 S17 S18 S19 S20 S21 S22 S23 S24 S25 S26 S26h S27 S28 S29 S30 S31 S32} "
+SELECAO=" ${*:-S1 S2 S3 S4 S5 S6 S7 S8 S9 S10 S11 S12 S13 S14 S15 S16 S17 S18 S19 S20 S21 S22 S23 S24 S25 S26 S26h S27 S28 S29 S30 S31 S32 SP1IC} "
 
 PASS=0
 FAIL=0
@@ -127,9 +127,11 @@ sha="$(sha256sum "${cfg}" | cut -d' ' -f1)"
 atu="por-tipo(AC-2=rest-infinispan,AC-5=rest-infinispan)"; [[ -f "${ST}/meta-atuador" ]] && atu="$(cat "${ST}/meta-atuador")"
 pol="por-assinatura"; [[ -f "${ST}/meta-politica" ]] && pol="$(cat "${ST}/meta-politica")"
 p2=false; [[ -f "${ST}/meta-p2" ]] && p2="$(cat "${ST}/meta-p2")"
+# P1-IC (V-2, V-3): trilha 1.3 e acao_p1 na meta; meta-acao-p1 troca o valor (S-P1IC)
+ap1=AC-7; [[ -f "${ST}/meta-acao-p1" ]] && ap1="$(cat "${ST}/meta-acao-p1")"
 escrever_meta() {
-printf '{"tipo":"meta","esquema":"decisoes-controlador/1.2","modo":"%s","param_sha256":"%s","atuador":"%s","politica":"%s","parametros_politica":{"k_lag":2,"p2_habilitada":%s}}\n' \
-    "${ctl}" "${sha}" "${atu}" "${pol}" "${p2}" > "${csv}/decisoes-rep-001.jsonl"
+printf '{"tipo":"meta","esquema":"decisoes-controlador/1.3","modo":"%s","param_sha256":"%s","atuador":"%s","politica":"%s","parametros_politica":{"k_lag":2,"p2_habilitada":%s,"acao_p1":"%s"}}\n' \
+    "${ctl}" "${sha}" "${atu}" "${pol}" "${p2}" "${ap1}" > "${csv}/decisoes-rep-001.jsonl"
 }
 # I-1 da V-W6 (S29): no W-2b a TrilhaJsonl grava por uma thread, e a meta pode chegar ao disco depois da ancora.
 # java-meta-atraso (N s virtuais): a meta so sai depois da ancora, passados N s e depois de uma leitura da meta que
@@ -177,6 +179,14 @@ if [[ "${ctl}" == active && -f "${ST}/ac5-alvo" ]]; then
     alvo="$(cat "${ST}/ac5-alvo")"; no="$(no_porta "${alvo##*:}")"
     echo exited > "${ST}/status-${no}"; echo parou >> "${ST}/parou-${no}"
     printf '{"tipo":"acao","operacao":"APLICAR","executada":true,"acao":{"tipo":"AC-5","caches":["sessions-async"],"alvo":"%s","valor":null},"resultado":"APLICADA"}\n' "${alvo}" >> "${csv}/decisoes-rep-001.jsonl"
+fi
+# P1-IC: AC-7 no braco B (ac7-alvo); sem ac7-sem-reversao, a politica o desfaz antes do fim
+if [[ "${ctl}" == active && -f "${ST}/ac7-alvo" ]]; then
+    a7="$(cat "${ST}/ac7-alvo")"
+    printf '{"tipo":"acao","operacao":"APLICAR","executada":true,"acao":{"tipo":"AC-7","caches":["sessions-async"],"alvo":"%s","valor":null},"origem":"POLITICA","resultado":"APLICADA"}\n' "${a7}" >> "${csv}/decisoes-rep-001.jsonl"
+    if [[ ! -f "${ST}/ac7-sem-reversao" ]]; then
+        printf '{"tipo":"acao","operacao":"REVERTER","executada":true,"acao":{"tipo":"AC-7","caches":["sessions-async"],"alvo":"%s","valor":null},"origem":"POLITICA","resultado":"APLICADA"}\n' "${a7}" >> "${csv}/decisoes-rep-001.jsonl"
+    fi
 fi
 [[ -f "${ST}/sinal-alvo" ]] && alvo="$(cat "${ST}/sinal-alvo")"
 if [[ -f "${ST}/ac5-apos-start" ]]; then
@@ -588,7 +598,7 @@ controlador() {  # controlador [sem-politica]
     if [[ "${1:-}" == sem-politica ]]; then
         echo '{"versao":"t","wNs":5000000000,"defasagem":{"lagInMs":2000,"lagOutMs":1000,"passoLeituraMs":20,"origem":{}}}' > "${CASO}/controlador.json"
     else
-        echo '{"versao":"t","wNs":5000000000,"politica":{"kLag":2,"tetoLagMs":2000,"tRebNs":60000000000,"cotaAc5":1,"p2Habilitada":false,"origem":{}},"defasagem":{"lagInMs":2000,"lagOutMs":1000,"passoLeituraMs":20,"origem":{}}}' > "${CASO}/controlador.json"
+        echo '{"versao":"t","wNs":5000000000,"politica":{"kLag":2,"tetoLagMs":2000,"tRebNs":60000000000,"cotaAc5":1,"p2Habilitada":false,"acaoP1":"AC-7","origem":{"acaoP1":"teste"}},"defasagem":{"lagInMs":2000,"lagOutMs":1000,"passoLeituraMs":20,"origem":{}}}' > "${CASO}/controlador.json"
     fi
     CTRL="${CASO}/controlador.json"; CTRL_SHA="$(sha256sum "${CTRL}" | cut -d' ' -f1)"
     # B2 da V-W6: uma referencia por perfil (o programa recusa a de outro perfil; o duble de java tambem)
@@ -1785,6 +1795,47 @@ ok "S32 a carga e o pre-voo recebem --s3-replay-late-max 268" "$(grep -cF ' java
 ok "S32 execucao.json: carga_s3 com o late-max" "{'s3_replay_late_max': 268}" "$(json "${D}/execucao.json" 'd["carga_s3"]')"
 contem "S32 bundle com o late-max" "carga_s3:--s3-replay-late-max 268" "$(cat "${OUT}/calibracao/bundle.sha256")"
 contem "S32 bundle com a sonda nas opcoes" "sonda_replay=sim" "$(cat "${OUT}/calibracao/bundle.sha256")"
+fi
+
+# ============================================================================= S-P1IC
+if quer SP1IC; then
+echo "== S-P1IC: AC-7 no P1 (V-2..V-4, 06/11): acaoP1 explicito no braco B, meta 1.3 com acao_p1, AC-7 ativo no fim descarta =="
+novo_caso sp1ic
+matriz_aval "ASYNC-none:descritiva:1"
+"${REAL_PY}" -I -c "import json,sys; p=sys.argv[1]; o=json.load(open(p)); del o['politica']['acaoP1']; del o['politica']['origem']['acaoP1']; open(p,'w').write(json.dumps(o))" "${CTRL}"
+CTRL_SHA="$(sha256sum "${CTRL}" | cut -d' ' -f1)"
+printf 'go nucleo %s\n' "${HOJE}" > "${CS_TTY_ARQUIVO}"
+rodar nucleo
+ok "S-P1IC braco B sem acaoP1 explicito -> exit 4 no pre-voo" "4" "${RC}"
+contem "S-P1IC motivo acaoP1" "acaoP1" "${SAIDA_TXT}"
+ok "S-P1IC sem compose nem carga" "0" "$(( $(conta 'podman-compose|') + $(cargas) ))"
+novo_caso sp1icb
+matriz_aval "ASYNC-none:descritiva:1"
+echo AC-5 > "${ST}/meta-acao-p1"
+printf 'go nucleo %s\n' "${HOJE}" > "${CS_TTY_ARQUIVO}"
+rodar nucleo
+ok "S-P1IC meta com acao_p1 AC-5 -> exit 6" "6" "${RC}"
+contem "S-P1IC motivo acao_p1" "acao_p1" "$(tail -1 "${OUT}/nucleo/orquestrador.log")"
+novo_caso sp1icc
+matriz_aval "ASYNC-F2:teste:1"
+echo "127.0.0.1:11224" > "${ST}/ac7-alvo"
+printf 'go nucleo %s\ngo rede 0\n' "${HOJE}" > "${CS_TTY_ARQUIVO}"
+rodar nucleo
+ok "S-P1IC AC-7 desfeito: exit 0" "0" "${RC}"
+DB="$(ls -d "${OUT}"/exec-*-ASYNC-F2-B)"
+ok "S-P1IC B ACEITA" "ACEITA" "$(json "${DB}/checagem.json" 'd["veredito"]')"
+ok "S-P1IC sem religamento com o AC-7" "None" "$(json "${DB}/execucao.json" 'd["religamento"]')"
+contem "S-P1IC trilha do AC-7" $'trilha_ac7\t127.0.0.1:11224' "$(cat "${DB}/trilha-ac5.txt")"
+contem "S-P1IC AC-7 desfeito" $'ac7_ativa_no_fim\tnao' "$(cat "${DB}/trilha-ac5.txt")"
+novo_caso sp1icd
+matriz_aval "ASYNC-F2:teste:1"
+echo "127.0.0.1:11224" > "${ST}/ac7-alvo"
+: > "${ST}/ac7-sem-reversao"
+printf 'go nucleo %s\ngo rede 0\n' "${HOJE}" > "${CS_TTY_ARQUIVO}"
+rodar nucleo
+DB="$(ls -d "${OUT}"/exec-*-ASYNC-F2-B)"
+ok "S-P1IC AC-7 ativo no fim -> B DESCARTADA-INFRA" "DESCARTADA-INFRA" "$(json "${DB}/checagem.json" 'd["veredito"]')"
+contem "S-P1IC motivo AC-7 ativo" "AC-7" "$(json "${DB}/checagem.json" 'd["motivos"]')"
 fi
 
 echo

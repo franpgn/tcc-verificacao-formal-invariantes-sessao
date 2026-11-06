@@ -73,7 +73,7 @@ def escrever(d, nome, obj):
 
 
 def meta(modo="active", atuador="por-tipo(AC-2=rest-infinispan,AC-5=rest-infinispan)", politica="por-assinatura",
-         pp=True, sha=SHA, esquema="decisoes-controlador/1.2", p2="ausente"):
+         pp=True, sha=SHA, esquema="decisoes-controlador/1.3", p2="ausente"):
     pol = {"k_lag": 2, "teto_lag_ms": 2000, "t_reb_ns": 60000000000, "cota_ac5": 1, "origem": {}}
     if p2 != "ausente":
         pol["p2_habilitada"] = p2

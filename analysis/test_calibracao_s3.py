@@ -343,6 +343,22 @@ class CampanhaBase(unittest.TestCase):
             self.assertTrue(lt[i]["situacao"].startswith("confirmada"), i)
         self.assertIn("DT-022", self.r["pre_registro"])
 
+    def test_emendas_e_texto_do_m(self):
+        # W-9c: o texto do m descreve a leitura cortada no end (R-3), e as emendas listam a R-4 e o 3a
+        t = self.P["m"]["texto"]
+        self.assertNotIn("comeca em ou depois", t)
+        self.assertIn("cortado no end", t)
+        em = {x["id"]: x for x in self.r["emendas_vw9"]}
+        self.assertEqual(["R-1", "R-2", "R-3", "R-4", "3a"], [x["id"] for x in self.r["emendas_vw9"]])
+        for i, x in em.items():
+            self.assertIn("DT-024", x["situacao"], i)
+        self.assertIn("639966c", em["3a"]["situacao"])
+        self.assertIn("N = 0", em["R-2"]["leitura"])
+        self.assertIn("menor double acima de 1", em["R-2"]["leitura"])
+        self.assertIn("5/W", em["R-4"]["leitura"])
+        for x in ("DT-024", "3a"):
+            self.assertIn(x, self.r["pre_registro"])
+
     # ---- 7.1, 7.2, 7.3, 7.4, 7.5
     def test_7_1_referencias_por_perfil(self):
         ra = self.P["referencia_p99_async"]["valor"]

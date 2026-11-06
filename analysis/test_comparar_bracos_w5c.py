@@ -305,7 +305,7 @@ class ParesDistintos(BaseI):
         self.assertEqual(2, det["pares_multiplas_origens"])
         self.assertTrue(det["sonda"])
         self.assertEqual("presente", det["varredura"])
-        self.assertEqual(3, det["varredura_fora_de_v"])
+        self.assertEqual(2, det["varredura_fora_de_v"])     # I2 INCERTA e I2-PERDIDO INCERTA
         a = [p for p in det["pares_lista"] if p["chave"] == "sid-A"][0]
         self.assertEqual(["online", "sonda", "varredura"], a["origens"])
         self.assertEqual(["imediata", "online", "tardia", "varredura"], sorted(x["tipo"] for x in a["deteccoes"]))

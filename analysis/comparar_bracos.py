@@ -5,6 +5,12 @@ regra de intersecao-uniao fixa (decisao D-1 do Gestor) e os acrescimos do W-5 de
 docs/plano-execucao-2026-11-04.md, secao 9 (desfechos descritivos do controlador, tipos de celula,
 k e p minimo, Holm entre celulas).
 
+W-5c (rascunho do pre-registro do benchmark refeito, a5ddac9, secao 2): V = pares distintos (chave, invariante)
+por execucao, somando o auditor online, a sonda de replay do W-10 (origem = sonda) e a varredura final (REAL);
+replay tardio e varredura atribuidos as fases pelo instante da invalidacao confirmada; formas 1 e 2 de I1 e a
+sensibilidade sem a forma 2; ReplayValidate fora de latencia, vazao, taxa de erro e denominador (ver
+apurar_violacoes_execucao e docs/relatorio-w5c-2026-11-06.md).
+
 Correcoes da V-W5 (docs/validacao-w5-2026-11-05.md; decisoes do coordenador em nome do Gestor, 05/11):
 instante do evento anomalo = inicio da operacao (P-2); sem t_fim_carga_ns o Delta_rec fica ausente (P-3);
 taxa_erro e falhas_percebidas em diferenca (P-4, G3 de 28/10); --w-recovery-s sem padrao (P-5); Delta_conv
@@ -29,8 +35,9 @@ B-33, nunca fixado). Cada celula do manifesto tem de estar em exatamente uma das
 --celulas-teste/--celulas-descritivas/--celulas-referencia (exit 2 se nao). A celula sem falha roda em
 chamada propria com --fases antes: sem marcadores tudo e "antes", e uma celula sem nenhum evento nas fases
 pedidas e recusada (exit 2). Celula de teste: no maximo 16 blocos (permutacao exata), trilha
-decisoes-rep-NNN.jsonl nos dois bracos, braco B com atuador != nulo e politica != nenhuma, e o mesmo
-param_sha256 em A e B de cada bloco (exit 2 se nao).
+decisoes-rep-NNN.jsonl nos dois bracos, braco B com atuador != nulo e politica != nenhuma, o mesmo
+param_sha256 em A e B de cada bloco e os mesmos instrumentos de observacao (sonda de replay e varredura; W-5c)
+nos dois bracos de cada bloco (exit 2 se nao).
 
 Manifesto TSV com cabecalho exato `bloco<TAB>celula<TAB>braco<TAB>execucao`, braco em {A, B}, um par
 A/B por (celula, bloco); `execucao` e um diretorio (relativo ao manifesto, se nao for absoluto) com:
@@ -42,11 +49,20 @@ A/B por (celula, bloco); `execucao` e um diretorio (relativo ao manifesto, se na
                                                          em que a carga viu os tres nos de volta),
                                                          divergencia
   energia-rep-NNN.json (energia_proxy.py)                CPU e energia (opcional; B39-R1 confere W e fases)
-  violacoes-rep-NNN.csv (InvariantAuditor.dumpCsv)       taxa de violacoes (sem ele: desfecho ausente)
+  violacoes-rep-NNN.csv (InvariantAuditor.dumpCsv)       taxa de violacoes (sem ele: desfecho ausente); coluna
+                                                         origem = sonda com a sonda de replay (W-10)
+  varredura-rep-NNN.csv (VarreduraFinal; --sweep)        achados REAL somados a V (opcional; com
+                                                         varredura-rep-NNN.erro.txt, V ausente)
+  execucao.json (orquestrador)                           --servers (isn1, isn2, isn3): replica do no da falha,
+                                                         para as formas de I1 (opcional)
+  s3-resumo-rep-NNN.json                                 sonda_tardia_max (teto do replay tardio; opcional)
   decisoes-rep-NNN.jsonl (controlador, contrato v1.x)    descritivos do controlador e rastreabilidade
 
 Desfechos por execucao e escala da estatistica por bloco:
-  taxa_violacoes_por_1000   (I1 + I4 + I2 REAL) x 1000 / acoes S3, fases selecionadas    diferenca
+  taxa_violacoes_por_1000   pares distintos (chave, invariante) de I1, I4 e I2 REAL das tres
+                            origens x 1000 / acoes S3, fases selecionadas (W-5c)         diferenca
+  taxa_violacoes_por_1000:sem_forma2  o mesmo sem os pares de I1 da forma 2 (sensibilidade; so
+                            com sonda ou varredura)                                      diferenca
   acao_s3_p99_com_espera    p99 da acao S3 (n >= 1000)                                   log da razao
   vazao_util                acoes uteis por s nas fases selecionadas                     log da razao
   delta_rec_s               ultima operacao iniciada depois do fim da falha que terminou
@@ -61,8 +77,8 @@ Desfechos por execucao e escala da estatistica por bloco:
   demais (evento_p99:*, acao_s3_p99_sem_espera, cpu_por_1000_uteis)                      log da razao
 
 Familias: co-principal-V (taxa de violacoes), co-principal-L (p99 da acao S3), nao-inferioridade (vazao
-util), secundario (Holm dentro da celula) e sensibilidade (sem Holm: Delta_rec da Metodologia, <taxa>:razao e
-energia com r diferente do central).
+util), secundario (Holm dentro da celula) e sensibilidade (sem Holm: Delta_rec da Metodologia, <taxa>:razao,
+taxa de violacoes sem a forma 2 e energia com r diferente do central).
 
 Energia (so com --p-max-w e --razao-ocioso-central, juntos): o P_max de cada energia-rep-NNN.json tem de ser
 o passado (exit 2 se nao) e a razao central tem de existir no JSON. Valores da campanha (decisao do Gestor
@@ -162,6 +178,38 @@ RESULTADOS_ATIVA = ("APLICADA", "PREVISTA", "NAO_EXECUTADA")
 # Origens de linha acao que vem de uma decisao (regra e t_fim_janela_ns obrigatorios): LacoDeControle
 # (:313, :324, :327) e ExecutorDeAcoes (:454). ENCERRAMENTO e GANCHO_JVM saem com null (contrato v1.1).
 ORIGENS_COM_DECISAO = ("POLITICA", "R4", "FALHA_NA_APLICACAO")
+# W-5c: metodo de observacao do benchmark refeito (rascunho do pre-registro, docs/pre-registro-benchmark-refeito-
+# 2026-11-06.md, commit a5ddac9, secao 2). V soma tres origens: o auditor online (coluna origem vazia), a sonda de
+# replay do W-10 (origem = sonda, docs/contrato-csv-v2.md secao 7) e a varredura final (varredura-rep-NNN.csv,
+# VarreduraFinal.escreverAchados, so REAL). Numerador = pares distintos (chave, invariante) por execucao (2.3).
+ORIGEM_ONLINE, ORIGEM_SONDA, ORIGEM_VARREDURA = "online", "sonda", "varredura"
+ORIGENS = (ORIGEM_ONLINE, ORIGEM_SONDA, ORIGEM_VARREDURA)
+TIPO_ONLINE, TIPO_IMEDIATA, TIPO_TARDIA, TIPO_VARREDURA = "online", "imediata", "tardia", "varredura"
+ATRIB_DETECCAO, ATRIB_INVALIDACAO, ATRIB_SEM = "deteccao", "invalidacao", "sem_invalidacao_localizada"
+ATRIBUICOES = (ATRIB_DETECCAO, ATRIB_INVALIDACAO, ATRIB_SEM)
+FORMA_1, FORMA_2, FORMA_OUTRA, FORMA_INDET = "forma1", "forma2", "outra", "indeterminada"
+FORMAS_I1 = (FORMA_1, FORMA_2, FORMA_OUTRA, FORMA_INDET)
+DESFECHO_V_SEM_F2 = DESFECHO_V + ":sem_forma2"
+# a sensibilidade sem a forma 2 vai em diferenca, como V; fica fora de ESCALA_DIFERENCA para que o
+# parametros.escala_diferenca das execucoes sem sonda e sem varredura continue o da base (nao regressao)
+ESCALA_DIFERENCA_SENS_V = frozenset((DESFECHO_V_SEM_F2,))
+OP_REPLAY = "ReplayValidate"          # SessionOps.OP_REPLAY_VALIDATE; referencia_p99.OPERACOES_INSTRUMENTACAO
+RC_CONFIRMADO = "NONE"                # OK_NOOP: Logout e Block confirmados (contrato 2, docs/contrato-csv-v2.md)
+COLUNAS_VARREDURA = ("invariante", "chave", "classificacao", "detalhe")
+# Tolerancia para casar uma violacao (instante de Instant.now(), InvariantAuditor) com a leitura que a revelou no
+# rep-NNN.csv (EpochClock, ancorado uma vez no inicio): no smoke F2 do W-10 o instante ficou de 0 a 7,4 ms depois do
+# fim da leitura nas 6 violacoes da sonda. 1 s fica duas ordens acima desse desvio; entre os candidatos da mesma sid
+# (Validate/Logout na online, ReplayValidate na imediata) casa-se o mais proximo, e acima de 1 s nenhum (leitura
+# fora do CSV, como a imediata no warm-up): sem leitura casada, a deteccao nao e forma 2.
+TOL_CASAMENTO_NS = 1_000_000_000
+REGRA_V = ("pares distintos (chave, invariante) com ao menos uma deteccao nas fases selecionadas, por execucao, "
+           "somando as origens online, sonda (W-10) e varredura (so REAL); I1, I4 e I2 REAL (varredura: I2 "
+           "administrativo e I2-PERDIDO REAL); linhas e contagem por origem so descritivas; online e replay "
+           "imediato pelo instante da deteccao, replay tardio e varredura pelo instante da invalidacao confirmada "
+           "(Logout NONE da sid; I2 e I2-PERDIDO: ultimo Block NONE da identidade); sem invalidacao localizada no "
+           "CSV de eventos, conta sem filtro de fase (pre-registro do benchmark refeito, 2.3 e 2.4)")
+REGRA_V_SEM_F2 = ("sensibilidade sem a forma 2 de I1 (Logout confirmado por outro no e releitura VALID servida pelo "
+                  "no da falha entre o start e o end); so com sonda ou varredura (pre-registro 2.5)")
 
 
 class ErroUso(Exception):
@@ -801,35 +849,357 @@ def instante_ns(txt):
     return seg * 1_000_000_000 + int((m.group(2) or "").ljust(9, "0"))
 
 
-def contar_violacoes(caminho, filtro=None):
-    """{"I1","I2_REAL","I4"} do violacoes-rep-NNN.csv, com a regra da DT-009 (rebaseline.py:256-276).
+_RX_MOTIVO = re.compile(r"confirmad[ao] \(?([A-Z_]+)\)?")
+_RX_IDENTIDADE = re.compile(r"de identidade (\S+) BLOCKED")
+
+
+def _classe_v(invariante, classificacao):
+    """Classe de V da linha (DT-009; DT-001/DT-002) ou None: I1 e I4 exatos, I2 so com classificacao REAL."""
+    if invariante == "I2":
+        return "I2_REAL" if classificacao == "REAL" else None
+    if invariante in ("I1", "I4"):
+        return invariante
+    return None
+
+
+def ler_violacoes(caminho):
+    """(deteccoes de V, sonda_ligada) do violacoes-rep-NNN.csv, ou None se o arquivo nao existe.
 
     Formato: InvariantAuditor.dumpCsv (:251-278), cabecalho instante,invariante,chave,mensagem[,fase]
-    [,classificacao]. I1 e I4 com rotulo exato; I2 so com rotulo exato "I2" e classificacao "REAL".
-    I2_JANELA_CASCATA, I2_CASCATA_INCOMPLETA, I2 de outra classe e os contadores *_concorrentes (que so
-    existem no stdout, SessionOps.java:246-260) nao contam (DT-001/DT-002). filtro(t_ns) -> bool
-    restringe pelas fases.
+    [,classificacao][,origem]. A coluna origem so existe com a sonda de replay (W-10): vazia = auditor online,
+    "sonda" = sonda; outro valor: ErroUso. I1 e I4 com rotulo exato; I2 so com rotulo exato "I2" e
+    classificacao "REAL"; I2_JANELA_CASCATA, I2_CASCATA_INCOMPLETA, I2 de outra classe, I3, I5, I6 e os
+    contadores *_concorrentes (so no stdout, SessionOps.java:246-260) ficam fora (DT-001/DT-002). Cada deteccao:
+    {"origem", "classe", "rotulo", "chave", "t_ns", "motivo" (o motivo confirmado lido da mensagem), "identidade"}.
     """
-    out = {k: 0 for k in INVARIANTES_VIOL}
     p = Path(caminho)
     if not p.exists():
         return None
+    dets = []
     with open(p, newline="", encoding="utf-8") as fh:
-        for x in csv.DictReader(fh):
-            inv = (x.get("invariante") or "").strip()
-            cl = (x.get("classificacao") or "").strip()
-            if inv == "I2":
-                chave = "I2_REAL" if cl == "REAL" else None
-            elif inv in ("I1", "I4"):
-                chave = inv
+        r = csv.DictReader(fh)
+        sonda = "origem" in (r.fieldnames or ())
+        for x in r:
+            orig = (x.get("origem") or "").strip()
+            if orig not in ("", ORIGEM_SONDA):
+                raise ErroUso("origem desconhecida no CSV de violacoes %s: %r" % (p, orig))
+            classe = _classe_v((x.get("invariante") or "").strip(), (x.get("classificacao") or "").strip())
+            if classe is None:
+                continue
+            m = _RX_MOTIVO.search(x.get("mensagem") or "")
+            dets.append({"origem": ORIGEM_SONDA if orig else ORIGEM_ONLINE, "classe": classe,
+                         "rotulo": (x.get("invariante") or "").strip(), "chave": (x.get("chave") or "").strip(),
+                         "t_ns": instante_ns(x.get("instante") or ""), "motivo": m.group(1) if m else None,
+                         "identidade": None})
+    return dets, sonda
+
+
+def contar_violacoes(caminho, filtro=None):
+    """{"I1","I2_REAL","I4"}: pares distintos (chave, classe) do violacoes-rep-NNN.csv (W-5c, pre-registro 2.3).
+
+    Mesma selecao de linhas da DT-009 (ler_violacoes), todas as origens do arquivo; filtro(t_ns) -> bool sobre o
+    instante da deteccao. Nao atribui o replay tardio pela invalidacao nem le a varredura: a contagem de V de uma
+    execucao e a de apurar_violacoes_execucao. Sem o arquivo: None.
+    """
+    lido = ler_violacoes(caminho)
+    if lido is None:
+        return None
+    pares = {k: set() for k in INVARIANTES_VIOL}
+    for x in lido[0]:
+        if filtro is None or filtro(x["t_ns"]):
+            pares[x["classe"]].add(x["chave"])
+    return {k: len(v) for k, v in pares.items()}
+
+
+def ler_varredura(caminho):
+    """(deteccoes REAL de V, achados fora de V) do varredura-rep-NNN.csv, ou None se o arquivo nao existe.
+
+    Formato: VarreduraFinal.escreverAchados, cabecalho invariante,chave,classificacao,detalhe (virgulas do detalhe
+    trocadas por ';'). Contam I1 REAL e I4 REAL (chave = sid), I2 REAL (chave = sid; a identidade sai do detalhe,
+    "de identidade X BLOCKED") e I2-PERDIDO REAL (chave = identidade), os dois na classe I2_REAL (pre-registro
+    2.2). INCERTA, ESPERADA-POR-DESENHO, INEXPLICADA e rotulos desconhecidos ficam fora e sao contados.
+    """
+    p = Path(caminho)
+    if not p.exists():
+        return None
+    dets, fora = [], 0
+    with open(p, newline="", encoding="utf-8") as fh:
+        r = csv.reader(fh)
+        cab = next(r, None)
+        if cab is None or tuple(c.strip() for c in cab) != COLUNAS_VARREDURA:
+            raise ErroUso("cabecalho da varredura inesperado em %s: %r" % (p, cab))
+        for x in r:
+            if not x or not any(c.strip() for c in x):
+                continue
+            if len(x) < 3:
+                raise ErroUso("linha da varredura invalida em %s: %r" % (p, x))
+            inv, chave, cl, detalhe = x[0].strip(), x[1].strip(), x[2].strip(), ",".join(x[3:])
+            if cl != "REAL" or inv not in ("I1", "I4", "I2", "I2-PERDIDO"):
+                fora += 1
+                continue
+            if inv in ("I1", "I4"):
+                m = _RX_MOTIVO.search(detalhe)
+                classe, motivo, ident = inv, (m.group(1) if m else None), None
             else:
-                chave = None
-            if chave is None:
+                m = _RX_IDENTIDADE.search(detalhe)
+                classe, motivo = "I2_REAL", None
+                ident = chave if inv == "I2-PERDIDO" else (m.group(1) if m else None)
+            dets.append({"origem": ORIGEM_VARREDURA, "classe": classe, "rotulo": inv, "chave": chave, "t_ns": None,
+                         "motivo": motivo, "identidade": ident})
+    return dets, fora
+
+
+def ler_eventos_por_chave(caminho, chaves, t_fim_carga_obs_ns):
+    """({chave: [(operation, start_ns, end_ns, replica, return_code)]}, custo da sonda) do rep-NNN.csv.
+
+    So guarda as chaves pedidas (sids e identidades das deteccoes). Le tambem os ReplayValidate (que as analises de
+    desempenho descartam, energia_proxy.ler_eventos_inicio) e devolve o custo da sonda: eventos, imediatos (inicio
+    ate o fim observado da carga), tardios (depois dele) e sids distintas no tardio. O arquivo ja passou pela
+    conferencia de contrato de ler_eventos_inicio.
+    """
+    out = {}
+    custo = {"eventos": 0, "imediatos": 0, "tardios": 0, "sids_tardios": 0}
+    tardias = set()
+    with open(caminho, newline="", encoding="utf-8") as fh:
+        r = csv.reader(fh)
+        next(r, None)
+        for x in r:
+            if len(x) < 7:
                 continue
-            if filtro is not None and not filtro(instante_ns(x.get("instante") or "")):
-                continue
-            out[chave] += 1
-    return out
+            try:
+                ini, fim = int(x[2]), int(x[3])
+            except ValueError:
+                raise ErroUso("linha de eventos invalida em %s: %s" % (caminho, x)) from None
+            if x[1] == OP_REPLAY:
+                custo["eventos"] += 1
+                if ini > t_fim_carga_obs_ns:
+                    custo["tardios"] += 1
+                    tardias.add(x[6])
+                else:
+                    custo["imediatos"] += 1
+            if x[6] in chaves:
+                out.setdefault(x[6], []).append((x[1], ini, fim, x[4], x[5]))
+    custo["sids_tardios"] = len(tardias)
+    return out, custo
+
+
+def no_da_falha(caminho_marcadores):
+    """node= do primeiro marcador start (fault=F2 node=isn3 event=start t_epoch_ns=..., inject-*.sh) ou None."""
+    p = Path(caminho_marcadores)
+    if not p.exists():
+        return None
+    for bruta in p.read_text(encoding="utf-8").splitlines():
+        linha = bruta.strip()
+        if not linha or linha.startswith("#"):
+            continue
+        toks = dict(t.split("=", 1) for t in linha.split() if "=" in t)
+        if toks.get("event") == "start":
+            return toks.get("node") or None
+    return None
+
+
+def servidores_da_execucao(execucao):
+    """Lista do --servers do execucao.json do orquestrador (run-campanha-s3.sh: ordem isn1, isn2, isn3) ou None."""
+    p = Path(execucao) / "execucao.json"
+    if not p.exists():
+        return None
+    try:
+        j = json.loads(p.read_text(encoding="utf-8"))
+    except ValueError:
+        raise ErroUso("execucao.json ilegivel: %s" % p) from None
+    cmd = j.get("comando") if isinstance(j, dict) else None
+    if not isinstance(cmd, list):
+        return None
+    for i, a in enumerate(cmd[:-1]):
+        if a == "--servers" and isinstance(cmd[i + 1], str):
+            return [s.strip() for s in cmd[i + 1].split(",")]
+    return None
+
+
+def replica_do_no(no, servidores):
+    """Rotulo da coluna replica do no isnK (K-esimo item do --servers) ou None."""
+    m = re.fullmatch(r"isn(\d+)", no or "")
+    if not m or not servidores:
+        return None
+    k = int(m.group(1)) - 1
+    return servidores[k] if 0 <= k < len(servidores) else None
+
+
+def _instante_invalidacao(det, ev):
+    """Instante (end_ns) da invalidacao confirmada da deteccao no CSV de eventos, ou None (pre-registro 2.4).
+
+    I1/I4: o Logout NONE mais antigo da sid, se o motivo confirmado for LOGOUT ou ilegivel (a cascata de uma sid,
+    motivo ADMIN_BLOCK, nao tem evento com a chave da sid). I2 e I2-PERDIDO: o ultimo Block NONE da identidade.
+    """
+    if det["classe"] in ("I1", "I4"):
+        if det["motivo"] not in (None, "LOGOUT"):
+            return None
+        ts = [e[2] for e in ev.get(det["chave"], ()) if e[0] == "Logout" and e[4] == RC_CONFIRMADO]
+        return min(ts) if ts else None
+    if not det["identidade"]:
+        return None
+    ts = [e[2] for e in ev.get(det["identidade"], ()) if e[0] == "Block" and e[4] == RC_CONFIRMADO]
+    return max(ts) if ts else None
+
+
+def _leitura_da_deteccao(det, tipo, ev):
+    """(replica, start_ns) da leitura que revelou a deteccao (evento mais proximo da mesma sid, ate
+    TOL_CASAMENTO_NS) ou (None, None). Online: Validate ou Logout; imediata: ReplayValidate; tardia e varredura
+    leem depois da carga e nao tem leitura na janela da falha."""
+    if tipo == TIPO_ONLINE:
+        ops = ("Validate", "Logout")
+    elif tipo == TIPO_IMEDIATA:
+        ops = (OP_REPLAY,)
+    else:
+        return None, None
+    t, melhor = det["t_ns"], None
+    for e in ev.get(det["chave"], ()):
+        if e[0] not in ops:
+            continue
+        gap = max(0, e[1] - t, t - e[2])
+        if gap <= TOL_CASAMENTO_NS and (melhor is None or (gap, -e[1]) < melhor[0]):
+            melhor = ((gap, -e[1]), e)
+    return (melhor[1][3], melhor[1][1]) if melhor else (None, None)
+
+
+def apurar_violacoes_execucao(d, nnn, ev_path, t_fim_carga_obs_ns, dentro, args_fase, marcadores_nome):
+    """Numerador de V de uma execucao pela regra do benchmark refeito (W-5c), ou None sem violacoes-rep.
+
+    Pre-registro (rascunho a5ddac9): 2.3 pares distintos (chave, classe) das tres origens; 2.4 online e replay
+    imediato pelo instante da deteccao, replay tardio (deteccao da sonda depois do fim observado da carga, a maior
+    end_ns das acoes S3 e dos eventos da carga) e varredura pelo instante da invalidacao confirmada; sem ela no
+    CSV, conta sem filtro de fase; 2.5 formas de I1 pelo no que confirmou o Logout (coluna replica) e pela leitura
+    que revelou a deteccao. Devolve os totais, as descritivas e a lista dos pares (pares_lista).
+    """
+    lido = ler_violacoes(d / ("violacoes-rep-%s.csv" % nnn))
+    if lido is None:
+        return None
+    viol, sonda = lido
+    lv = ler_varredura(d / ("varredura-rep-%s.csv" % nnn))
+    if (d / ("varredura-rep-%s.erro.txt" % nnn)).exists():
+        estado_varr = "erro"
+    else:
+        estado_varr = "presente" if lv is not None else "ausente"
+    varr, fora = lv if lv is not None else ([], 0)
+    dets = viol + varr
+    chaves = {x["chave"] for x in dets} | {x["identidade"] for x in dets if x["identidade"]}
+    if ev_path.exists():
+        ev, custo = ler_eventos_por_chave(ev_path, chaves, t_fim_carga_obs_ns)
+    else:
+        ev, custo = {}, {"eventos": 0, "imediatos": 0, "tardios": 0, "sids_tardios": 0}
+
+    no = no_da_falha(d / marcadores_nome)
+    replica_falha, avaliaveis, motivo_formas = None, True, None
+    if args_fase[0] is None:
+        motivo_formas = "sem marcador start: sem janela de falha (nenhuma forma 1 ou 2)"
+    elif no is None:
+        avaliaveis, motivo_formas = False, "formas nao avaliaveis: marcador start sem node="
+    else:
+        replica_falha = replica_do_no(no, servidores_da_execucao(d))
+        if replica_falha is None:
+            avaliaveis = False
+            motivo_formas = ("formas nao avaliaveis: sem a replica do no da falha %s (execucao.json com --servers na "
+                             "ordem isn1, isn2, isn3)" % no)
+    familia_durante = _fases.FAMILIAS[_fases.DURANTE]
+
+    def na_janela_falha(t):
+        return _fases.fase_de(t, *args_fase) in familia_durante
+
+    def replica_do_logout(sid):
+        lo = [e for e in ev.get(sid, ()) if e[0] == "Logout" and e[4] == RC_CONFIRMADO]
+        return min(lo, key=lambda e: e[2])[3] if lo else None
+
+    pares = {}
+    for det in dets:
+        if det["origem"] == ORIGEM_ONLINE:
+            tipo = TIPO_ONLINE
+        elif det["origem"] == ORIGEM_SONDA:
+            tipo = TIPO_TARDIA if det["t_ns"] > t_fim_carga_obs_ns else TIPO_IMEDIATA
+        else:
+            tipo = TIPO_VARREDURA
+        if tipo in (TIPO_ONLINE, TIPO_IMEDIATA):
+            atrib, t_at = ATRIB_DETECCAO, det["t_ns"]
+        else:
+            t_at = _instante_invalidacao(det, ev)
+            atrib = ATRIB_INVALIDACAO if t_at is not None else ATRIB_SEM
+        forma, rep_leitura = None, None
+        if det["classe"] == "I1":
+            rep_leitura, t_leitura = _leitura_da_deteccao(det, tipo, ev)
+            if not avaliaveis:
+                forma = FORMA_INDET
+            elif replica_falha is None:
+                forma = FORMA_OUTRA
+            else:
+                rep_logout = replica_do_logout(det["chave"])
+                if rep_logout == replica_falha:
+                    forma = FORMA_1
+                elif rep_logout is not None and rep_leitura == replica_falha and na_janela_falha(t_leitura):
+                    forma = FORMA_2
+                else:
+                    forma = FORMA_OUTRA
+        pares.setdefault((det["chave"], det["classe"]), []).append(
+            {"origem": det["origem"], "tipo": tipo, "rotulo": det["rotulo"], "t_ns": det["t_ns"], "atribuicao": atrib,
+             "t_atribuido_ns": t_at, "conta": atrib == ATRIB_SEM or dentro(t_at), "forma": forma,
+             "replica_leitura": rep_leitura})
+
+    tot_pares = {k: 0 for k in INVARIANTES_VIOL}
+    tot_linhas = {k: 0 for k in INVARIANTES_VIOL}
+    por_origem = {o: {"linhas": 0, "pares": 0} for o in ORIGENS}
+    atribuicao = {a: 0 for a in ATRIBUICOES}
+    formas = {f: 0 for f in FORMAS_I1}
+    multiplas = 0
+    lista = []
+    for (chave, classe), ds in sorted(pares.items(), key=lambda kv: (kv[0][1], kv[0][0])):
+        cont = [x for x in ds if x["conta"]]
+        base = cont or ds
+        origens = [o for o in ORIGENS if any(x["origem"] == o for x in base)]
+        forma = None
+        if classe == "I1":
+            fs = [x["forma"] for x in base]
+            if FORMA_INDET in fs:
+                forma = FORMA_INDET
+            elif FORMA_1 in fs:
+                forma = FORMA_1
+            elif all(f == FORMA_2 for f in fs):
+                forma = FORMA_2
+            else:
+                forma = FORMA_OUTRA
+        if cont:
+            tot_pares[classe] += 1
+            tot_linhas[classe] += len(cont)
+            for o in origens:
+                por_origem[o]["pares"] += 1
+            for x in cont:
+                por_origem[x["origem"]]["linhas"] += 1
+                atribuicao[x["atribuicao"]] += 1
+            multiplas += 1 if len(origens) > 1 else 0
+            if forma is not None:
+                formas[forma] += 1
+        lista.append({"chave": chave, "classe": classe, "conta": bool(cont), "origens": origens, "forma": forma,
+                      "deteccoes": sorted(ds, key=lambda x: (x["t_atribuido_ns"] is None, x["t_atribuido_ns"] or 0,
+                                                              x["tipo"]))})
+    total = sum(tot_pares.values())
+    if avaliaveis:
+        sem_f2 = total - formas[FORMA_2]
+    else:
+        sem_f2 = total if tot_pares["I1"] == 0 else None
+    teto = None
+    s3r = d / ("s3-resumo-rep-%s.json" % nnn)
+    if s3r.exists():
+        try:
+            j = json.loads(s3r.read_text(encoding="utf-8"))
+        except ValueError:
+            raise ErroUso("s3-resumo ilegivel: %s" % s3r) from None
+        teto = _int_ou_none(((j.get("parametros") if isinstance(j, dict) else None) or {}).get("sonda_tardia_max"))
+    return {"regra": REGRA_V, "sonda": bool(sonda), "varredura": estado_varr,
+            "instrumentos": bool(sonda) or estado_varr != "ausente",
+            "pares": tot_pares, "total_pares": total, "linhas": tot_linhas, "total_linhas": sum(tot_linhas.values()),
+            "por_origem": por_origem, "pares_multiplas_origens": multiplas, "atribuicao": atribuicao,
+            "formas_i1": formas, "formas_avaliaveis": avaliaveis, "formas_motivo": motivo_formas,
+            "no_falha": no, "replica_no_falha": replica_falha, "total_pares_sem_forma2": sem_f2,
+            "varredura_fora_de_v": fora, "replay_validate": custo, "sonda_tardia_max": teto,
+            "sonda_tardia_no_teto": None if teto is None else custo["sids_tardios"] >= teto,
+            "t_fim_carga_obs_ns": t_fim_carga_obs_ns, "pares_lista": lista}
 
 
 def _p99_desfecho(valores):
@@ -1001,13 +1371,28 @@ def desfechos_execucao(execucao, rep, fases_sel, w_recovery_ns, marcadores_nome=
             out[DESFECHO_CPU] = _taxa(sum(cpus), n_uteis, 1000.0)
         if energia is not None:
             out.update(_desfechos_energia(en, en_path, rot, n_uteis, energia))
-    viol = contar_violacoes(d / ("violacoes-rep-%s.csv" % nnn), dentro)
+    # W-5c (pre-registro do benchmark refeito, 2.3 a 2.6): pares distintos das tres origens; os ReplayValidate
+    # ficam fora do denominador (acoes S3), da latencia, da vazao e da taxa de erro (ler_eventos_inicio os descarta)
+    apur = apurar_violacoes_execucao(d, nnn, ev_path, t1 - 1, dentro, args, marcadores_nome)
+    varredura_erro = apur is not None and apur["varredura"] == "erro"
+    viol = None if apur is None or varredura_erro else apur["pares"]
     if acoes is not None:
-        if viol is None:
+        if apur is None:
             out[DESFECHO_V] = dict(_ausente("sem violacoes-rep (contagem desconhecida)", n_acoes), contagem=None)
+        elif varredura_erro:
+            out[DESFECHO_V] = dict(_ausente("varredura com erro (varredura-rep-%s.erro.txt): contagem incompleta"
+                                            % nnn, n_acoes), contagem=None)
         else:
-            c = sum(viol[k] for k in INVARIANTES_VIOL)
-            out[DESFECHO_V] = dict(_taxa(c, n_acoes, 1000.0), contagem=c)
+            c = apur["total_pares"]
+            out[DESFECHO_V] = dict(_taxa(c, n_acoes, 1000.0), contagem=c, linhas=apur["total_linhas"])
+        if apur is not None and apur["instrumentos"]:
+            if varredura_erro:
+                out[DESFECHO_V_SEM_F2] = dict(out[DESFECHO_V])
+            elif apur["total_pares_sem_forma2"] is None:
+                out[DESFECHO_V_SEM_F2] = dict(_ausente(apur["formas_motivo"], n_acoes), contagem=None)
+            else:
+                c2 = apur["total_pares_sem_forma2"]
+                out[DESFECHO_V_SEM_F2] = dict(_taxa(c2, n_acoes, 1000.0), contagem=c2)
 
     # P-4 da V-W5 (G3 de 28/10): as taxas com zeros vao em diferenca; a razao com exclusao e sensibilidade
     for nome in (DESFECHO_ERRO, DESFECHO_FALHAS):
@@ -1079,7 +1464,7 @@ def desfechos_execucao(execucao, rep, fases_sel, w_recovery_ns, marcadores_nome=
                 out[DESFECHO_DCONV] = dict(_ausente(motivo), origem=None)
 
     info = {"n_eventos": len(ev_sel), "n_acoes": n_acoes, "steal_excluida": excluida,
-            "energia_presente": en_path.exists(), "violacoes": viol,
+            "energia_presente": en_path.exists(), "violacoes": viol, "violacoes_detalhe": apur,
             "n_violacoes_base": n_acoes if n_acoes is not None else len(ev_sel),
             "fim_medicao_ns": fim_med, "fim_medicao_origem": origem_fim,
             "t_inicio_falha_ns": mk["inicio"], "t_fim_falha_ns": mk["fim"],
@@ -1115,7 +1500,7 @@ def familia_de(nome, razao_central=None):
         return FAMILIA_L
     if nome == DESFECHO_NI:
         return FAMILIA_NI
-    if nome == DESFECHO_DREC_MET or nome.endswith(SUFIXO_RAZAO):
+    if nome == DESFECHO_DREC_MET or nome == DESFECHO_V_SEM_F2 or nome.endswith(SUFIXO_RAZAO):
         return FAMILIA_SENS
     if nome.startswith(PREFIXO_ENERGIA):
         central = razao_central is not None and nome == PREFIXO_ENERGIA + repr(float(razao_central))
@@ -1165,6 +1550,60 @@ def _violacoes_celula(blocos, infos, semente, indice_base, n_boot):
     out["presente"] = True
     out["blocos_com_arquivo"] = len(por_bloco)
     return out
+
+
+def _instrumentos(det):
+    """(sonda ligada, varredura pedida) de uma execucao; None sem violacoes-rep."""
+    if det is None:
+        return None
+    return bool(det["sonda"]), det["varredura"] != "ausente"
+
+
+def _instrumentos_divergentes(blocos, infos):
+    """Blocos em que A e B tem instrumentos de observacao diferentes (pre-registro do benchmark refeito, 2.1)."""
+    out = []
+    for b in blocos:
+        ia, ib = (_instrumentos(infos[b][br]["violacoes_detalhe"]) for br in BRACOS)
+        if ia is not None and ib is not None and ia != ib:
+            out.append(b)
+    return out
+
+
+def _detalhe_v_celula(blocos, infos, divergentes):
+    """Descritivas de V por braco (W-5c): linhas, pares por origem, atribuicao, formas de I1, custo da sonda.
+
+    Sem teste: a contagem de V (pares distintos) ja entra no desfecho e no co_principal_v; aqui ficam as somas por
+    braco e o detalhe de cada execucao (por_execucao, com a lista dos pares).
+    """
+    totais = {}
+    for br in BRACOS:
+        ds = [infos[b][br]["violacoes_detalhe"] for b in blocos if infos[b][br]["violacoes_detalhe"] is not None]
+        if not ds:
+            totais[br] = None
+            continue
+        t = {"execucoes": len(ds),
+             "execucoes_com_sonda": sum(1 for x in ds if x["sonda"]),
+             "execucoes_com_varredura": sum(1 for x in ds if x["varredura"] == "presente"),
+             "execucoes_varredura_com_erro": sum(1 for x in ds if x["varredura"] == "erro"),
+             "execucoes_tardio_no_teto": sum(1 for x in ds if x["sonda_tardia_no_teto"]),
+             "total_pares": sum(x["total_pares"] for x in ds),
+             "total_linhas": sum(x["total_linhas"] for x in ds),
+             "pares": {k: sum(x["pares"][k] for x in ds) for k in INVARIANTES_VIOL},
+             "linhas": {k: sum(x["linhas"][k] for x in ds) for k in INVARIANTES_VIOL},
+             "por_origem": {o: {m: sum(x["por_origem"][o][m] for x in ds) for m in ("linhas", "pares")}
+                            for o in ORIGENS},
+             "pares_multiplas_origens": sum(x["pares_multiplas_origens"] for x in ds),
+             "atribuicao": {a: sum(x["atribuicao"][a] for x in ds) for a in ATRIBUICOES},
+             "formas_i1": {f: sum(x["formas_i1"][f] for x in ds) for f in FORMAS_I1},
+             "total_pares_sem_forma2": (None if any(x["total_pares_sem_forma2"] is None for x in ds)
+                                        else sum(x["total_pares_sem_forma2"] for x in ds)),
+             "varredura_fora_de_v": sum(x["varredura_fora_de_v"] for x in ds),
+             "replay_validate": {k: sum(x["replay_validate"][k] for x in ds)
+                                 for k in ("eventos", "imediatos", "tardios", "sids_tardios")}}
+        totais[br] = t
+    por_exec = {b: {br: infos[b][br]["violacoes_detalhe"] for br in BRACOS} for b in blocos}
+    return {"regra": REGRA_V, "totais": totais, "instrumentos_divergentes": list(divergentes),
+            "por_execucao": por_exec}
 
 
 def _wilson_por_1000(c, n):
@@ -1383,10 +1822,14 @@ def comparar(manifesto, semente, *, delta_latencia, w_analise_s, w_recovery_s, t
                                   % (br, b, celula, ctl["modo"], MODO_ESPERADO[br], par[br]))
         if teste:
             _conferir_trilhas_do_teste(celula, blocos, infos)
+        divergentes = _instrumentos_divergentes(blocos, infos)
+        if teste and divergentes:
+            raise ErroUso("celula de teste %s, bloco(s) %s: instrumentos de observacao diferentes entre A e B (sonda "
+                          "de replay ou varredura; pre-registro do benchmark refeito, 2.1)" % (celula, ",".join(divergentes)))
         nomes = sorted({n for b in blocos for br in BRACOS for n in res[b][br]})
         desf, usados_por = {}, {}
         for indice, nome in enumerate(nomes):
-            escala = ESCALA_DIF if nome in ESCALA_DIFERENCA else ESCALA_LOG
+            escala = ESCALA_DIF if (nome in ESCALA_DIFERENCA or nome in ESCALA_DIFERENCA_SENS_V) else ESCALA_LOG
             y_a, y_b, pares, excl, ns, usados = [], [], [], [], {}, []
             for b in blocos:
                 ra, rb = res[b]["A"].get(nome), res[b]["B"].get(nome)
@@ -1482,6 +1925,7 @@ def comparar(manifesto, semente, *, delta_latencia, w_analise_s, w_recovery_s, t
                                       el["ic_t"] if el else None, el["nao_inferioridade"]["p"] if el else None,
                                       delta_latencia, vz, rast["B"]["integral"])
             c["regra_iu"] = regras[celula]
+        c["violacoes"]["detalhe"] = _detalhe_v_celula(list(blocos), infos, divergentes)
         celulas[celula] = c
     script = Path(__file__).resolve()
     return _f({"esquema": ESQUEMA,
@@ -1491,6 +1935,7 @@ def comparar(manifesto, semente, *, delta_latencia, w_analise_s, w_recovery_s, t
                               "delta_latencia": float(delta_latencia), "w_analise_s": float(w_analise_s),
                               "alfa": ALFA, "quantil_linha_de_base": QUANTIL_LINHA_DE_BASE,
                               "co_principal_v": DESFECHO_V, "co_principal_l": DESFECHO_L,
+                              "regra_v": REGRA_V, "v_sem_forma2": REGRA_V_SEM_F2,
                               "tipos_celula": dict(sorted(tipos.items())),
                               "referencias_erro": refs,
                               "energia": (energia if energia is None else
@@ -1599,6 +2044,33 @@ def tabela_markdown(resultado):
                     txt += "; razao de taxas B/A = %s, IC %s" % (_fmt(rk["razao_de_taxas"]["estimativa"]),
                                                                  _fmt_ic(rk["razao_de_taxas"]["ic_boot_blocos"]))
                 linhas.append("- " + txt)
+        dv = vi.get("detalhe") or {}
+        if dv.get("totais"):
+            linhas.append("- Regra de V (pre-registro do benchmark refeito, 2.3): pares distintos (chave, invariante) "
+                          "por execucao, somando online, sonda e varredura REAL; as linhas sao so descritivas.")
+            for br in BRACOS:
+                t = dv["totais"].get(br)
+                if not t:
+                    continue
+                po, fm = t["por_origem"], t["formas_i1"]
+                linhas.append(
+                    "- V, braco %s: %d pares em %d linhas (pares/linhas: online %d/%d, sonda %d/%d, varredura %d/%d; "
+                    "%d pares em mais de uma origem); I1 por forma: forma 1 = %d, forma 2 = %d, outra = %d, "
+                    "indeterminada = %d; sem a forma 2: %s pares; sonda em %d de %d execucoes, varredura em %d (%d "
+                    "com erro); ReplayValidate: %d eventos (%d tardios)%s." % (
+                        br, t["total_pares"], t["total_linhas"], po["online"]["pares"], po["online"]["linhas"],
+                        po["sonda"]["pares"], po["sonda"]["linhas"], po["varredura"]["pares"],
+                        po["varredura"]["linhas"], t["pares_multiplas_origens"], fm[FORMA_1], fm[FORMA_2],
+                        fm[FORMA_OUTRA], fm[FORMA_INDET],
+                        "—" if t["total_pares_sem_forma2"] is None else "%d" % t["total_pares_sem_forma2"],
+                        t["execucoes_com_sonda"], t["execucoes"], t["execucoes_com_varredura"],
+                        t["execucoes_varredura_com_erro"], t["replay_validate"]["eventos"],
+                        t["replay_validate"]["tardios"],
+                        ("; replay tardio no teto em %d execucao(oes)" % t["execucoes_tardio_no_teto"])
+                        if t["execucoes_tardio_no_teto"] else ""))
+            if dv.get("instrumentos_divergentes"):
+                linhas.append("- Instrumentos diferentes entre A e B nos blocos %s."
+                              % ", ".join(dv["instrumentos_divergentes"]))
         tot = c["controlador"]["totais"]
         for br in BRACOS:
             t = tot.get(br)

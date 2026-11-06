@@ -231,12 +231,13 @@ class FusaoVista(unittest.TestCase):
     fusao (ISPN000093) depois do marcador end em qualquer no (DT-027 secao 2.2), pelo carimbo do servidor (UTC, ms)."""
 
     def vista(self, linhas, marcadores=("fault=F2 node=isn3 event=start t_epoch_ns=1793966472285958813",
-                                         "fault=F2 node=isn3 event=end t_epoch_ns=%d" % END_NS), *extra):
+                                         "fault=F2 node=isn3 event=end t_epoch_ns=%d" % END_NS), log_driver=None):
         with tempfile.TemporaryDirectory() as d:
             lg, mk = Path(d) / "logs.txt", Path(d) / "marcadores.txt"
             lg.write_bytes(("".join("%s\t%s\n" % x for x in linhas)).encode("utf-8"))
             if marcadores is not None:
                 mk.write_text("".join(m + "\n" for m in marcadores), encoding="utf-8")
+            extra = ("--log-driver", log_driver) if log_driver else ()
             rc, out, err = rodar("fusao-vista", "--logs", str(lg), "--marcadores", str(mk), *extra)
             self.assertEqual(0, rc, err)
             return json.loads(out)
@@ -244,7 +245,7 @@ class FusaoVista(unittest.TestCase):
     def test_primeira_depois_do_end_em_qualquer_no(self):
         j = self.vista([("isn1", linha_vista("2026-11-06 12:03:32,541")),
                         ("isn3", linha_vista("2026-11-06 12:03:32,537")),
-                        ("isn2", linha_vista("2026-11-06 12:03:32,539", cor=False))], *("--log-driver", "k8s-file"))
+                        ("isn2", linha_vista("2026-11-06 12:03:32,539", cor=False))], log_driver="k8s-file")
         self.assertEqual("isn3", j["no"])
         self.assertEqual(1793966612537, j["primeira_apos_end_ms"])
         self.assertEqual(round((1793966612537 * 10**6 - END_NS) / 1e9, 3), j["desde_end_s"])
@@ -264,7 +265,7 @@ class FusaoVista(unittest.TestCase):
         self.assertEqual(0, j["por_no"]["isn2"]["linhas"])
 
     def test_sem_linha_depois_do_end(self):
-        j = self.vista([("isn1", linha_vista("2026-11-06 12:01:00,000"))], *("--log-driver", "journald"))
+        j = self.vista([("isn1", linha_vista("2026-11-06 12:01:00,000"))], log_driver="journald")
         self.assertIsNone(j["primeira_apos_end_ms"])
         self.assertIsNone(j["desde_end_s"])
         self.assertIn("ISPN000093", j["motivo"])

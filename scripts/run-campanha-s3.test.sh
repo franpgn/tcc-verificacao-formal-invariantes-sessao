@@ -21,7 +21,10 @@
 # sessions-async do braco (CS_DIR_CACHES: diretorio de caches do caso com o sessions-async-a1.json), o JAR da extensao
 # montado no compose (CS_COMPOSE_ARQ: compose do caso), a politica lida de volta e a linha "A1-POLITICA carregada" nos
 # tres nos (o shim de curl grava a linha no log do shim de podman quando cria o sessions-async com a classe da A1), a
-# vista de fusao ISPN000093 (o duble de F2 a grava 44 s depois do end) e o --sweep-merge-timeout-sec do fusao_teto_s.
+# vista de fusao ISPN000093 (o duble de F2 a grava 44 s depois do end) e o --sweep-merge-timeout-sec do fusao_teto_s (o
+# duble de java grava o fusao-rep-001.json da checagem de fusao; java-sem-fusao: sem fusao, com o erro da varredura).
+# Nomes combinados com o W-5e (wt-w5e, d1bb887): fusao = pnn|a1, controller, bloco e t_fusao_ns no execucao.json, e os
+# bracos PO, PL, AO e AL no manifesto-bracos.tsv. Com CS_TESTE_GUARDAR, o S34 copia a saida (s34-saida/).
 #
 # Uso: bash scripts/run-campanha-s3.test.sh [S1 S4 ...]   (sem argumentos: todos). Exit 0 se todos passarem.
 set -uo pipefail
@@ -103,12 +106,12 @@ source "${CS_SHIM_DIR}/_comum.sh"
 registrar java "$@"
 ST="${CS_ESTADO}"
 case "$1" in -version) echo 'openjdk version "21" (shim)' >&2; exit 0 ;; esac
-csv=""; seed=""; ctl=off; dry=0; dur=60; cfg=""; ref=""; repl=""; marker=""
+csv=""; seed=""; ctl=off; dry=0; dur=60; cfg=""; ref=""; repl=""; marker=""; fteto=""
 while [[ $# -gt 0 ]]; do
     case "$1" in
         --csv-dir) csv="$2" ;; --seed) seed="$2" ;; --controller) ctl="$2" ;; --dry-run) dry=1 ;;
         --duration) dur="$2" ;; --controller-config) cfg="$2" ;; --controller-reference) ref="$2" ;;
-        --replication) repl="$2" ;; --marker) marker="$2" ;;
+        --replication) repl="$2" ;; --marker) marker="$2" ;; --sweep-merge-timeout-sec) fteto="$2" ;;
     esac; shift
 done
 if [[ -n "${ref}" ]]; then  # como LigacaoControlador.java:204 (B2 da V-W6)
@@ -227,6 +230,18 @@ estado=convergiu
 echo "op_id,operation,start_ns,end_ns,replica,return_code,key" > "${csv}/rep-001.csv"
 printf '{\n  "t_fim_carga_ns" : 1,\n  "convergencia_estado" : "%s",\n  "t_religamento_ns" : %s\n}\n' "${estado}" "${relig}" \
     > "${csv}/convergencia-resumo-rep-001.json"
+# DT-027: com --sweep-merge-timeout-sec, a checagem de fusao antes da varredura (EsperaFusao) grava fusao-rep-001.json;
+# java-sem-fusao: sem fusao no teto, a varredura nao roda e varredura-rep-001.erro.txt traz o motivo
+if [[ -n "${fteto}" ]]; then
+    tv="$(vms)000000"
+    if [[ -f "${ST}/java-sem-fusao" ]]; then
+        printf '{\n  "fundiu" : false,\n  "teto_s" : %s,\n  "t_vista_ns" : null\n}\n' "${fteto}" > "${csv}/fusao-rep-001.json"
+        echo "sem fusao antes da varredura: os tres nos nao mostraram a mesma vista de 3 membros ate end + ${fteto} s (shim)" \
+            > "${csv}/varredura-rep-001.erro.txt"
+    else
+        printf '{\n  "fundiu" : true,\n  "teto_s" : %s,\n  "t_vista_ns" : %s\n}\n' "${fteto}" "${tv}" > "${csv}/fusao-rep-001.json"
+    fi
+fi
 # artefato do podman machine ssh no Git Bash (known_hosts num arquivo NUL no diretorio corrente)
 [[ -f "${ST}/java-cria-nul" ]] && : > "${csv}/NUL"
 echo "Total de operacoes: 1"
@@ -1926,27 +1941,33 @@ printf 'go nucleo %s\n' "${HOJE}" > "${CS_TTY_ARQUIVO}"
 rodar nucleo --sonda-replay --extensao-sha256 "${EXT_SHA}"
 ok "S34 exit 0" "0" "${RC}"
 POL_A1="br.unipampa.tcc.servidor.PoliticaFusaoSessoes"
+declare -A CTL_DE=([PO]=shadow [PL]=active [AO]=shadow [AL]=active)
 for br in PO:pnn:PREFERRED_NON_NULL PL:pnn:PREFERRED_NON_NULL AO:a1:${POL_A1} AL:a1:${POL_A1}; do
     IFS=: read -r b f pol <<< "${br}"
     D="$(ls -d "${OUT}"/exec-*-ASYNC-none-"${b}")"
     ok "S34 ${b} ACEITA" "ACEITA" "$(json "${D}/checagem.json" 'd["veredito"]')"
     ok "S34 ${b} checagem com a fusao" "${f}" "$(json "${D}/checagem.json" 'd["fusao"]')"
-    ok "S34 ${b} execucao.json: variante e arquivo" "${f} sessions-async$([[ ${f} == a1 ]] && echo -a1).json" "$(json "${D}/execucao.json" 'd["fusao"]["variante"] + " " + d["fusao"]["arquivo"]')"
-    ok "S34 ${b} SHA-256 do arquivo da variante" "$(sha256sum "${CACHES_T}/$(json "${D}/execucao.json" 'd["fusao"]["arquivo"]')" | cut -d' ' -f1)" "$(json "${D}/execucao.json" 'd["fusao"]["arquivo_sha256"]')"
-    ok "S34 ${b} politica lida de volta nos tres nos" "${pol} ${pol} ${pol}" "$(json "${D}/execucao.json" '" ".join(d["fusao"]["politica_lida"])')"
-    ok "S34 ${b} counters-async PREFERRED_NON_NULL nos tres (TD-020 da A1)" "PREFERRED_NON_NULL PREFERRED_NON_NULL PREFERRED_NON_NULL" "$(json "${D}/execucao.json" '" ".join(d["fusao"]["counters_async_lida"])')"
+    ok "S34 ${b} execucao.json: fusao (nome combinado com o W-5e)" "${f}" "$(json "${D}/execucao.json" 'd["fusao"]')"
+    ok "S34 ${b} execucao.json: controller e bloco" "${CTL_DE[${b}]} 0" "$(json "${D}/execucao.json" 'd["controller"] + " " + d["bloco"]')"
+    ok "S34 ${b} execucao.json: arquivo da variante" "sessions-async$([[ ${f} == a1 ]] && echo -a1).json" "$(json "${D}/execucao.json" 'd["fusao_config"]["arquivo"]')"
+    ok "S34 ${b} SHA-256 do arquivo da variante" "$(sha256sum "${CACHES_T}/$(json "${D}/execucao.json" 'd["fusao_config"]["arquivo"]')" | cut -d' ' -f1)" "$(json "${D}/execucao.json" 'd["fusao_config"]["arquivo_sha256"]')"
+    ok "S34 ${b} politica lida de volta nos tres nos" "${pol} ${pol} ${pol}" "$(json "${D}/execucao.json" '" ".join(d["fusao_config"]["politica_lida"])')"
+    ok "S34 ${b} counters-async PREFERRED_NON_NULL nos tres (TD-020 da A1)" "PREFERRED_NON_NULL PREFERRED_NON_NULL PREFERRED_NON_NULL" "$(json "${D}/execucao.json" '" ".join(d["fusao_config"]["counters_async_lida"])')"
     if [[ "${f}" == a1 ]]; then n=1; else n=0; fi
-    ok "S34 ${b} A1-POLITICA carregada por no" "${n} ${n} ${n}" "$(json "${D}/execucao.json" '" ".join(str(x) for x in d["fusao"]["a1_politica_carregada"])')"
-    ok "S34 ${b} fusao ok" "True" "$(json "${D}/execucao.json" 'd["fusao"]["ok"]')"
+    ok "S34 ${b} A1-POLITICA carregada por no" "${n} ${n} ${n}" "$(json "${D}/execucao.json" '" ".join(str(x) for x in d["fusao_config"]["a1_politica_carregada"])')"
+    ok "S34 ${b} fusao_config ok" "True" "$(json "${D}/execucao.json" 'd["fusao_config"]["ok"]')"
+    ok "S34 ${b} t_fusao_ns = o instante da checagem de fusao do programa (fusao-rep-001.json)" "$(json "${D}/fusao-rep-001.json" 'd["t_vista_ns"]')" "$(json "${D}/execucao.json" 'd.get("t_fusao_ns")')"
+    ok "S34 ${b} t_fusao_ns inteiro" "True" "$(json "${D}/execucao.json" 'isinstance(d.get("t_fusao_ns"), int)')"
     verdade "S34 ${b} sessions-async criado com o JSON do braco" cmp -s "${D}/caches/sessions-async.json" "${CACHES_T}/sessions-async$([[ ${f} == a1 ]] && echo -a1).json"
     ok "S34 ${b} extensao_sha256" "${EXT_SHA}" "$(json "${D}/execucao.json" 'd["extensao_sha256"]')"
     ok "S34 ${b} camada 3 antes sem divergencia (contra o JSON do braco)" "None" "$(json "${D}/execucao.json" 'd["camada3_pre"]["divergencias"]')"
     contem "S34 ${b} linha do programa com --sweep-merge-timeout-sec 20" "'--sweep', '--sweep-merge-timeout-sec', '20'" "$(json "${D}/execucao.json" 'd["comando"]')"
 done
 ok "S34 mesma semente nos quatro bracos" "1" "$(cat "${OUT}"/exec-*/execucao.json | grep -o '"seed": [0-9]*' | sort -u | wc -l | tr -d ' ')"
-ok "S34 manifesto-fatorial.tsv: cabecalho" $'bloco\tcelula\tbraco\tfusao\tcontrolador\texecucao' "$(head -1 "${OUT}/manifesto-fatorial.tsv" 2>/dev/null)"
-ok "S34 manifesto-fatorial.tsv: os quatro bracos do bloco 0" "AL AO PL PO" "$(awk -F'\t' 'NR > 1 {print $3}' "${OUT}/manifesto-fatorial.tsv" 2>/dev/null | sort -r | paste -sd' ')"
-verdade "S34 sem manifesto-bracos.tsv (nenhum bloco A/B)" test ! -e "${OUT}/manifesto-bracos.tsv"
+ok "S34 manifesto-bracos.tsv: o cabecalho de sempre (comparar_bracos.py)" $'bloco\tcelula\tbraco\texecucao' "$(head -1 "${OUT}/manifesto-bracos.tsv" 2>/dev/null)"
+ok "S34 manifesto-bracos.tsv: os quatro bracos do bloco 0 (PO, PL, AO, AL)" "0 ASYNC-none AL|0 ASYNC-none AO|0 ASYNC-none PL|0 ASYNC-none PO" "$(awk -F'\t' 'NR > 1 {print $1 " " $2 " " $3}' "${OUT}/manifesto-bracos.tsv" 2>/dev/null | sort | paste -sd'|')"
+ok "S34 manifesto-bracos.tsv: cada braco aponta o seu diretorio" "4" "$(awk -F'\t' 'NR > 1 && $4 ~ ("^exec-[0-9]+-ASYNC-none-" $3 "$")' "${OUT}/manifesto-bracos.tsv" 2>/dev/null | wc -l | tr -d ' ')"
+if [[ -n "${CS_TESTE_GUARDAR:-}" ]]; then rm -rf "${CS_TESTE_GUARDAR}/s34-saida"; cp -r "${OUT}" "${CS_TESTE_GUARDAR}/s34-saida"; fi
 contem "S34 bundle com o sessions-async-a1.json" "sessions-async-a1.json" "$(cat "${OUT}/nucleo/bundle.sha256")"
 contem "S34 bundle com o JAR da extensao" "${EXT_SHA}  tcc-extensao-servidor.jar" "$(cat "${OUT}/nucleo/bundle.sha256")"
 contem "S34 ambiente.md com o JAR da extensao" "extensao: ${EXT}" "$(cat "${OUT}/nucleo/ambiente.md")"
@@ -1975,7 +1996,9 @@ for caso in post-falha sem-log-isn2 log-no-pnn; do
     IALVO="$(json "${D}/checagem.json" 'd["i"]')"
     ok "S35 ${caso}: ${ALVO} DESCARTADA-INFRA" "DESCARTADA-INFRA" "$(json "${D}/checagem.json" 'd["veredito"]')"
     contem "S35 ${caso}: motivo infra: fusao" "infra: fusao" "$(json "${D}/checagem.json" '"; ".join(d["motivos"])')"
-    ok "S35 ${caso}: fusao ok false no execucao.json" "False" "$(json "${D}/execucao.json" 'd["fusao"]["ok"]')"
+    ok "S35 ${caso}: fusao_config ok false no execucao.json" "False" "$(json "${D}/execucao.json" 'd["fusao_config"]["ok"]')"
+    ok "S35 ${caso}: fusao e controller do braco descartado no execucao.json" "$([[ ${ALVO} == A* ]] && echo a1 || echo pnn)" "$(json "${D}/execucao.json" 'd["fusao"]')"
+    ok "S35 ${caso}: sem t_fusao_ns no braco sem carga" "False" "$(json "${D}/execucao.json" '"t_fusao_ns" in d')"
     verdade "S35 ${caso}: sem carga no braco descartado (sem stdout.log)" test ! -e "${D}/stdout.log"
     verdade "S35 ${caso}: MANIFEST do braco descartado" test -s "${D}/MANIFEST.sha256"
     ok "S35 ${caso}: cargas = bracos antes do descartado" "${IALVO}" "$(cargas)"
@@ -1987,7 +2010,7 @@ for caso in post-falha sem-log-isn2 log-no-pnn; do
     case "${caso}" in
         post-falha) contem "S35 post-falha: motivo cita a criacao do sessions-async" "sessions-async" "$(json "${D}/checagem.json" '"; ".join(d["motivos"])')" ;;
         sem-log-isn2) contem "S35 sem-log-isn2: motivo cita isn2 e a linha" "A1-POLITICA carregada" "$(json "${D}/checagem.json" '"; ".join(d["motivos"])')"
-                      ok "S35 sem-log-isn2: contagem por no" "1 0 1" "$(json "${D}/execucao.json" '" ".join(str(x) for x in d["fusao"]["a1_politica_carregada"])')" ;;
+                      ok "S35 sem-log-isn2: contagem por no" "1 0 1" "$(json "${D}/execucao.json" '" ".join(str(x) for x in d["fusao_config"]["a1_politica_carregada"])')" ;;
         log-no-pnn) contem "S35 log-no-pnn: motivo cita a linha no braco PNN" "A1-POLITICA carregada" "$(json "${D}/checagem.json" '"; ".join(d["motivos"])')" ;;
     esac
     ok "S35 ${caso}: repor refaz o bloco com os quatro" "4" "$("${REAL_PY}" -I "${MATRIZ_PY}" repor --matriz "${MAT}" --saida "${OUT}" --ordem-seed 7 --s0 80000 --passo-semente 100 --teto-h4 5 > /dev/null && awk 'NR > 1' "${OUT}/reposicoes/reposicoes.tsv" | wc -l | tr -d ' ')"
@@ -2013,19 +2036,23 @@ for b in A B; do
     ok "S36 ${b} fonte da vista" "ISPN000093" "$(json "${D}/execucao.json" 'd["fusao_vista"]["fonte"].split()[0]')"
     ok "S36 ${b} driver de log" "k8s-file" "$(json "${D}/execucao.json" 'd["fusao_vista"]["log_driver"]')"
     verdade "S36 ${b} linhas ISPN000093 guardadas" test "$(grep -c ISPN000093 "${D}/fusao-ispn000093.txt")" -eq 3
+    ok "S36 ${b} t_fusao_ns presente (checagem do programa)" "True" "$(json "${D}/execucao.json" 'isinstance(d.get("t_fusao_ns"), int)')"
 done
 verdade "S36 manifesto-bracos.tsv (bloco A/B da matriz fatorial)" test "$(wc -l < "${OUT}/manifesto-bracos.tsv")" -eq 3
 novo_caso s36b
 parametros exec_teto_s=900 fusao_teto_s=20
 caches_fat; compose_fat
 matriz_fat "ASYNC-F2:descritiva:1"
-: > "${ST}/sem-fusao-log"; echo journald > "${ST}/log-driver"
+: > "${ST}/sem-fusao-log"; echo journald > "${ST}/log-driver"; : > "${ST}/java-sem-fusao"
 printf 'go nucleo %s\ngo rede 0\n' "${HOJE}" > "${CS_TTY_ARQUIVO}"
 rodar nucleo --sonda-replay --extensao-sha256 "${EXT_SHA}"
 D="$(exec_dir 0)"
 ok "S36b sem a linha de fusao no log: exit 0, ACEITA (so registro)" "0 ACEITA" "${RC} $(json "${D}/checagem.json" 'd["veredito"]')"
 ok "S36b instante da fusao nulo" "None" "$(json "${D}/execucao.json" 'd["fusao_vista"]["primeira_apos_end_ms"]')"
 contem "S36b motivo com o driver de log" "journald" "$(json "${D}/execucao.json" 'd["fusao_vista"]["motivo"]')"
+ok "S36b sem fusao no teto da checagem do programa: t_fusao_ns ausente" "False" "$(json "${D}/execucao.json" '"t_fusao_ns" in d')"
+verdade "S36b varredura-rep-001.erro.txt do programa guardado na execucao" test -s "${D}/varredura-rep-001.erro.txt"
+ok "S36b registro da checagem no execucao.json" "False" "$(json "${D}/execucao.json" 'd["fusao_checagem"]["fundiu"]')"
 fi
 
 echo

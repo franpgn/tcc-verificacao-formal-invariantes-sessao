@@ -149,6 +149,14 @@ Decisões:
    quaisquer que sejam; no bloco afetado a perda permanente fica não avaliável em todos os braços (DT-027, 5.3). O
    detalhe traz o número de blocos por braço da falha e a sensibilidade descritiva dos três contrastes de V sem esses
    blocos.
+8. **W-5f: sem fusão registrada conta como varredura com erro** (V-W5e, seção 3; DT-027, 5.3). Na célula fatorial,
+   uma execução com varredura, sem `varredura-rep-NNN.erro.txt` e com `t_fusao_ns` ausente ou nulo tem a varredura
+   tratada como com erro (`varredura_erro_origem = "sem_fusao"`), porque ela pode ter rodado antes da fusão. Isso
+   não depende do orquestrador e segue o mesmo tratamento simétrico. O detalhe marca `sem_fusao` em cada bloco e
+   conta por braço. As células de 2 braços não convertem, porque sem falha, F3, F1 e F4 não têm fusão a esperar.
+9. **W-5f: mesma semente nos braços do bloco** (DT-027, 1; DT-021). O `seed` do `execucao.json` tem de ser o mesmo
+   nos braços. No fatorial ele é obrigatório nos quatro; em 2 braços, só é conferido quando os dois o têm (os
+   `execucao.json` antigos e os goldens não o têm). Divergente: exit 2.
 
 ### TD-019 — W-5c: V com a sonda de *replay* e a varredura no `comparar_bracos.py` (2026-11-06)
 

@@ -1555,3 +1555,17 @@ Arquivo novo `analysis/test_comparar_bracos_fatorial.py`:
 | `IdentificacaoDosBracos` | 11 | válido; `fusao`, `controller` e `bloco` divergentes, campo ou `execucao.json` ausentes, trilha no modo trocado, trilha ausente no teste, instrumentos diferentes entre os quatro, bloco com braços misturados e célula com blocos de 2 e de 4 braços: exit 2 |
 | `NaoRegressaoComFatorial` | 1 | a célula de 2 braços dá o mesmo resultado sozinha e junto de uma célula fatorial no manifesto; a conclusão global passa a m = 3 (F2, FAT:A1, FAT:A4) |
 | `SaidaFatorial` | 2 | tabela Markdown da célula fatorial; CLI com exit 0 e `parametros.fatorial` |
+
+### W-5f: sem fusão como varredura com erro e mesma semente nos braços (2026-11-06)
+
+Mesma branch, depois da V-W5e (`0583455`). TDD: `e8adfbd` (`test:`, 7 vermelhos; 4 prendem o que não muda) e `9065994`
+(`feat:`).
+
+| Suíte | Resultado |
+|---|---|
+| `python -E -P -m unittest discover -s analysis` | **528 OK, 1 *skip*** (517 + 11); goldens da base intactos |
+
+| Classe | Testes | O que prende |
+|---|---|---|
+| `SemFusaoComoVarreduraComErro` | 6 | no fatorial, `t_fusao_ns` nulo ou ausente com varredura e sem `.erro.txt` dá o tratamento simétrico do bloco, com os mesmos d e as mesmas contagens do `.erro.txt` no mesmo braço; `sem_fusao` por bloco e por braço; sem varredura não converte; célula de 2 braços não converte; na execução isolada, só com `fusao_obrigatoria` |
+| `MesmaSemente` | 5 | mesma `seed` passa; divergente ou ausente no fatorial: exit 2; divergente em 2 braços: exit 2; 2 braços sem `seed`: sem conferência |

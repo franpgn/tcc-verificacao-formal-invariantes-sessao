@@ -564,6 +564,7 @@ class Bordas(unittest.TestCase):
         for sinal in ("lat", "err"):
             x = P["theta_%s_in" % sinal]
             self.assertEqual(cal.THETA_SEM_COBERTURA, x["valor"])
+            self.assertEqual((0, 0.0), (x["dados"]["janelas_determinadas"], x["dados"]["fracao_determinada"]))
             self.assertGreater(x["valor"], 1.0)
             self.assertTrue(x["dados"]["sem_cobertura"])
             self.assertIsNone(x["motivo"])
@@ -584,6 +585,8 @@ class Bordas(unittest.TestCase):
         # cobertura parcial: theta_in sai da 7.7 normal (sem_cobertura falso)
         P = self.derivar({})
         self.assertFalse(P["theta_lat_in"]["dados"]["sem_cobertura"])
+        self.assertEqual((60, 1.0), (P["theta_lat_in"]["dados"]["janelas_determinadas"],
+                                     P["theta_lat_in"]["dados"]["fracao_determinada"]))
         self.assertFalse(P["theta_lat_out"]["dados"]["sem_cobertura"])
 
     def test_reserva_de_w_com_cobertura_parcial(self):
@@ -875,6 +878,26 @@ class Funcoes(unittest.TestCase):
         # complemento 3 §2 e 3a §3: o menor double acima de 1, nao so "acima de 1"
         self.assertEqual(math.nextafter(1.0, math.inf), cal.THETA_SEM_COBERTURA)
         self.assertEqual(1.0, cal.THETA_OUT_SEM_COBERTURA)
+
+    def test_sem_cobertura_quando_n_e_zero(self):
+        # complemento 3a §2: sem cobertura sempre que a 7.7 tiver N = 0, mesmo com janelas determinadas
+        r = cal.limiar_entrada_com_cobertura([[0.01, None, 0.02, None], [None, 0.5]], 2)
+        self.assertTrue(r["sem_cobertura"])
+        self.assertEqual(cal.THETA_SEM_COBERTURA, r["valor"])
+        self.assertEqual((0, 3, 6), (r["N"], r["janelas_determinadas"], r["n_janelas_total"]))
+        self.assertEqual(0.5, r["fracao_determinada"])
+        self.assertIsNone(r["motivo"])
+        r = cal.limiar_entrada_com_cobertura([[None, None]], 2)
+        self.assertTrue(r["sem_cobertura"])
+        self.assertEqual(0.0, r["fracao_determinada"])
+        r = cal.limiar_entrada_com_cobertura([[]], 2)            # nenhuma janela: nao e "sem cobertura", nao deriva
+        self.assertFalse(r["sem_cobertura"])
+        self.assertIsNone(r["valor"])
+        self.assertIsNone(r["fracao_determinada"])
+        r = cal.limiar_entrada_com_cobertura([[0.01, 0.04, None]], 2)
+        self.assertFalse(r["sem_cobertura"])
+        self.assertEqual(math.nextafter(0.01, math.inf), r["valor"])
+        self.assertAlmostEqual(2 / 3, r["fracao_determinada"])
 
     def test_problemas_de_carga(self):
         ok = {"wNs": 5 * S, "nLat": 100, "nErr": 100, "thetaLatIn": 0.05, "thetaLatOut": 0.0, "thetaErrIn": 5e-324,

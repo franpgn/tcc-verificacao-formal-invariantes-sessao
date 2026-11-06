@@ -1128,3 +1128,23 @@ tinham a ASYNC). As duas são conferidas (SHA-256 e perfil), mesmo com a fase s�
 `--controller-reference` com a referência ASYNC nas duas, `--rejoin-timeout-sec` presente, senha mascarada e "nada
 executado (sem java, podman, sudo, tty)". O diretório `--saida` não foi criado. Comando em `dry-run/comando.out` e
 SHA-256 das entradas em `dry-run/entradas.sha256`.
+
+### P-48: topologia do `rcm` principal antes das leituras por réplica (06/11)
+
+Branch `fix/p48-topologia-convergencia`, sobre `2c44aa0` (o registro do smoke do P-48, *fast-forward* de `494ccce`).
+Commits: `ce5583f` (`test:`, vermelho por compilação sem `AtualizacaoTopologia`) e `3c57447` (`fix:`).
+
+| Suíte | Resultado |
+|---|---|
+| Surefire (`cd workload && mvn -o -q -T1 test`) | **1152 testes, 0 falhas, 0 erros, 1 *skip*** (162 classes), com 10 novos; a primeira rodada pegou o guarda `NomesDeCacheSoNoResolvedorTest.chamadasUsamOPerfil` (o parâmetro do adaptador passou a se chamar `nomeCache`, o nome aceito pelo guarda) |
+| `AtualizacaoTopologiaTest` (8) | toca cada *cache* na ordem com a chave fora do modelo; prazo, falha e interrupção viram `IllegalStateException` (cache e P-48 na mensagem; os seguintes não são tocados; interrupção preservada); linha de diagnóstico só quando o `topology_id` muda; formato da linha; parâmetros; chave e prazo |
+| `WorkloadMainP48FonteTest` (2) | a sonda do laço embrulha a de antes com `atualizacao.atualizar()`; o religamento usa a de antes; rodada única e varredura atualizam antes de ler, com a falha como aviso |
+
+*Smoke* no *cluster* local (`runs/p48-fix-smoke/`, mesmo *cluster* e mesma sonda do `runs/p48-smoke/`):
+
+| Parte | O quê | Resultado |
+|---|---|---|
+| antes (`runs/p48-smoke/`, 1f65a02) | leituras por réplica com a topologia velha depois de um F1 | cada nó perde 174 a 441 das suas chaves (13 a 33 %) e acrescenta 245 a 399 alheias |
+| A (jar da correção) | a mesma sonda: antes e depois de `AtualizacaoTopologia.atualizar()` | antes, 12,0 a 22,8 % perdidas e 12,3 a 23,2 % acrescentadas; **depois, 0** nos 3 nós e nos 2 *caches*, e a topologia do principal igual à de um cliente novo |
+| B (programa com a correção) | S3 ASYNC 90 s, `--convergence`, F1 do `isn2` no meio da carga | as duas linhas `Topologia do principal` (ids trocados) na primeira rodada; o laço achou 1 chave divergente persistente (I5) em 24 rodadas: `divergente` |
+| C (programa sem a correção, 1f65a02) | o mesmo cenário, com a sonda de divergência ao lado | o laço convergiu; 0 chaves divergentes nos mesmos dados com a topologia velha e com a atualizada (sem divergência nesse sorteio: a leitura velha não fabrica divergência) |

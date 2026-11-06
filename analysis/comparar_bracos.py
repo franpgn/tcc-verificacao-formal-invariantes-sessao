@@ -9,7 +9,9 @@ W-5c (rascunho do pre-registro do benchmark refeito, a5ddac9, secao 2): V = pare
 por execucao, somando o auditor online, a sonda de replay do W-10 (origem = sonda) e a varredura final (REAL);
 replay tardio e varredura atribuidos as fases pelo instante da invalidacao confirmada; formas 1 e 2 de I1 e a
 sensibilidade sem a forma 2; ReplayValidate fora de latencia, vazao, taxa de erro e denominador (ver
-apurar_violacoes_execucao e docs/relatorio-w5c-2026-11-06.md).
+apurar_violacoes_execucao e docs/relatorio-w5c-2026-11-06.md). W-5d (V-W5c, secao 5): bloco com varredura com
+erro em qualquer braco usa V e :sem_forma2 sem a varredura nos dois bracos e fica no teste; sensibilidade
+descritiva sem esses blocos em violacoes.detalhe.varredura_com_erro.
 
 Correcoes da V-W5 (docs/validacao-w5-2026-11-05.md; decisoes do coordenador em nome do Gestor, 05/11):
 instante do evento anomalo = inicio da operacao (P-2); sem t_fim_carga_ns o Delta_rec fica ausente (P-3);
@@ -52,7 +54,9 @@ A/B por (celula, bloco); `execucao` e um diretorio (relativo ao manifesto, se na
   violacoes-rep-NNN.csv (InvariantAuditor.dumpCsv)       taxa de violacoes (sem ele: desfecho ausente); coluna
                                                          origem = sonda com a sonda de replay (W-10)
   varredura-rep-NNN.csv (VarreduraFinal; --sweep)        achados REAL somados a V (opcional; com
-                                                         varredura-rep-NNN.erro.txt, V ausente)
+                                                         varredura-rep-NNN.erro.txt, V ausente na execucao
+                                                         isolada e, no bloco, V sem a varredura nos dois
+                                                         bracos: W-5d)
   execucao.json (orquestrador)                           --servers (isn1, isn2, isn3): replica do no da falha,
                                                          para as formas de I1 (opcional)
   s3-resumo-rep-NNN.json                                 sonda_tardia_max (teto do replay tardio; opcional)
@@ -208,6 +212,10 @@ REGRA_V = ("pares distintos (chave, invariante) com ao menos uma deteccao nas fa
            "imediato pelo instante da deteccao, replay tardio e varredura pelo instante da invalidacao confirmada "
            "(Logout NONE da sid; I2 e I2-PERDIDO: ultimo Block NONE da identidade); sem invalidacao localizada no "
            "CSV de eventos, conta sem filtro de fase (pre-registro do benchmark refeito, 2.3 e 2.4)")
+REGRA_VARREDURA_ERRO = ("varredura com erro (varredura-rep-NNN.erro.txt) em qualquer braco do bloco: V e "
+                        ":sem_forma2 dos dois bracos sem as deteccoes da varredura (online e sonda), bloco no teste; "
+                        "subestima V nos dois bracos desses blocos; sensibilidade descritiva sem esses blocos, sem p e "
+                        "sem Holm (V-W5c, secao 5; W-5d)")
 REGRA_V_SEM_F2 = ("sensibilidade sem a forma 2 de I1 (Logout confirmado por outro no e releitura VALID servida pelo "
                   "no da falha entre o start e o end); so com sonda ou varredura (pre-registro 2.5)")
 
@@ -1062,6 +1070,18 @@ def _leitura_da_deteccao(det, tipo, ev):
     return (melhor[1][3], melhor[1][1]) if melhor else (None, None)
 
 
+def _forma_do_par(fs):
+    """Forma de um par de I1 pelas formas das suas deteccoes: indeterminada se alguma for; forma 1 se alguma for
+    (depende do Logout, comum ao par); forma 2 so se todas forem; senao outra (pre-registro 2.5)."""
+    if FORMA_INDET in fs:
+        return FORMA_INDET
+    if FORMA_1 in fs:
+        return FORMA_1
+    if all(f == FORMA_2 for f in fs):
+        return FORMA_2
+    return FORMA_OUTRA
+
+
 def apurar_violacoes_execucao(d, nnn, ev_path, t_fim_carga_obs_ns, dentro, args_fase, marcadores_nome):
     """Numerador de V de uma execucao pela regra do benchmark refeito (W-5c), ou None sem violacoes-rep.
 
@@ -1069,7 +1089,10 @@ def apurar_violacoes_execucao(d, nnn, ev_path, t_fim_carga_obs_ns, dentro, args_
     imediato pelo instante da deteccao, replay tardio (deteccao da sonda depois do fim observado da carga, a maior
     end_ns das acoes S3 e dos eventos da carga) e varredura pelo instante da invalidacao confirmada; sem ela no
     CSV, conta sem filtro de fase; 2.5 formas de I1 pelo no que confirmou o Logout (coluna replica) e pela leitura
-    que revelou a deteccao. Devolve os totais, as descritivas e a lista dos pares (pares_lista).
+    que revelou a deteccao. Devolve os totais, as descritivas e a lista dos pares (pares_lista). W-5d: devolve
+    tambem os totais sem as deteccoes da varredura (pares_sem_varredura, total_pares_sem_varredura,
+    total_linhas_sem_varredura, total_pares_sem_forma2_sem_varredura), que o comparar usa nos dois bracos do bloco
+    em que a varredura falhou em algum braco.
     """
     lido = ler_violacoes(d / ("violacoes-rep-%s.csv" % nnn))
     if lido is None:
@@ -1147,23 +1170,22 @@ def apurar_violacoes_execucao(d, nnn, ev_path, t_fim_carga_obs_ns, dentro, args_
     por_origem = {o: {"linhas": 0, "pares": 0} for o in ORIGENS}
     atribuicao = {a: 0 for a in ATRIBUICOES}
     formas = {f: 0 for f in FORMAS_I1}
+    # W-5d (V-W5c, secao 5): os mesmos totais sem as deteccoes da varredura, para o bloco com varredura com erro
+    sv_pares = {k: 0 for k in INVARIANTES_VIOL}
+    sv_linhas, sv_forma2 = 0, 0
     multiplas = 0
     lista = []
     for (chave, classe), ds in sorted(pares.items(), key=lambda kv: (kv[0][1], kv[0][0])):
         cont = [x for x in ds if x["conta"]]
         base = cont or ds
         origens = [o for o in ORIGENS if any(x["origem"] == o for x in base)]
-        forma = None
-        if classe == "I1":
-            fs = [x["forma"] for x in base]
-            if FORMA_INDET in fs:
-                forma = FORMA_INDET
-            elif FORMA_1 in fs:
-                forma = FORMA_1
-            elif all(f == FORMA_2 for f in fs):
-                forma = FORMA_2
-            else:
-                forma = FORMA_OUTRA
+        forma = _forma_do_par([x["forma"] for x in base]) if classe == "I1" else None
+        cont_sv = [x for x in cont if x["origem"] != ORIGEM_VARREDURA]
+        if cont_sv:
+            sv_pares[classe] += 1
+            sv_linhas += len(cont_sv)
+            if classe == "I1" and _forma_do_par([x["forma"] for x in cont_sv]) == FORMA_2:
+                sv_forma2 += 1
         if cont:
             tot_pares[classe] += 1
             tot_linhas[classe] += len(cont)
@@ -1183,6 +1205,11 @@ def apurar_violacoes_execucao(d, nnn, ev_path, t_fim_carga_obs_ns, dentro, args_
         sem_f2 = total - formas[FORMA_2]
     else:
         sem_f2 = total if tot_pares["I1"] == 0 else None
+    total_sv = sum(sv_pares.values())
+    if avaliaveis:
+        sem_f2_sv = total_sv - sv_forma2
+    else:
+        sem_f2_sv = total_sv if sv_pares["I1"] == 0 else None
     teto = None
     s3r = d / ("s3-resumo-rep-%s.json" % nnn)
     if s3r.exists():
@@ -1197,6 +1224,8 @@ def apurar_violacoes_execucao(d, nnn, ev_path, t_fim_carga_obs_ns, dentro, args_
             "por_origem": por_origem, "pares_multiplas_origens": multiplas, "atribuicao": atribuicao,
             "formas_i1": formas, "formas_avaliaveis": avaliaveis, "formas_motivo": motivo_formas,
             "no_falha": no, "replica_no_falha": replica_falha, "total_pares_sem_forma2": sem_f2,
+            "pares_sem_varredura": sv_pares, "total_pares_sem_varredura": total_sv,
+            "total_linhas_sem_varredura": sv_linhas, "total_pares_sem_forma2_sem_varredura": sem_f2_sv,
             "varredura_fora_de_v": fora, "replay_validate": custo, "sonda_tardia_max": teto,
             "sonda_tardia_no_teto": None if teto is None else custo["sids_tardios"] >= teto,
             "t_fim_carga_obs_ns": t_fim_carga_obs_ns, "pares_lista": lista}
@@ -1569,7 +1598,7 @@ def _instrumentos_divergentes(blocos, infos):
     return out
 
 
-def _detalhe_v_celula(blocos, infos, divergentes):
+def _detalhe_v_celula(blocos, infos, divergentes, afetados=(), sens_varredura=None):
     """Descritivas de V por braco (W-5c): linhas, pares por origem, atribuicao, formas de I1, custo da sonda.
 
     Sem teste: a contagem de V (pares distintos) ja entra no desfecho e no co_principal_v; aqui ficam as somas por
@@ -1602,8 +1631,57 @@ def _detalhe_v_celula(blocos, infos, divergentes):
                                  for k in ("eventos", "imediatos", "tardios", "sids_tardios")}}
         totais[br] = t
     por_exec = {b: {br: infos[b][br]["violacoes_detalhe"] for br in BRACOS} for b in blocos}
+    vc = {"regra": REGRA_VARREDURA_ERRO, "blocos": len(afetados),
+          "so_A": sum(1 for x in afetados if x["bracos_com_erro"] == ["A"]),
+          "so_B": sum(1 for x in afetados if x["bracos_com_erro"] == ["B"]),
+          "nos_dois": sum(1 for x in afetados if len(x["bracos_com_erro"]) == 2),
+          "lista": list(afetados), "sensibilidade_blocos_excluidos": sens_varredura}
     return {"regra": REGRA_V, "totais": totais, "instrumentos_divergentes": list(divergentes),
-            "por_execucao": por_exec}
+            "varredura_com_erro": vc, "por_execucao": por_exec}
+
+
+def _aplicar_varredura_simetrica(blocos, res, infos):
+    """W-5d (V-W5c, secao 5): no bloco em que a varredura falhou em algum braco, V e :sem_forma2 dos DOIS bracos
+    passam aos totais sem a varredura (online e sonda); o bloco fica no teste. Troca tambem as contagens por
+    invariante (info["violacoes"]). Devolve a lista dos blocos afetados, com o braco da falha e os dois V de cada
+    braco (com a varredura, None no braco em que ela falhou; sem ela)."""
+    afetados = []
+    for b in blocos:
+        dets = {br: infos[b][br]["violacoes_detalhe"] for br in BRACOS}
+        erro = [br for br in BRACOS if dets[br] is not None and dets[br]["varredura"] == "erro"]
+        if not erro:
+            continue
+        v = {}
+        for br in BRACOS:
+            det, r, n = dets[br], res[b][br].get(DESFECHO_V), infos[b][br]["n_acoes"]
+            com, sem = (None if r is None else r["y"]), None
+            if det is not None and r is not None and n is not None:
+                c = det["total_pares_sem_varredura"]
+                res[b][br][DESFECHO_V] = dict(_taxa(c, n, 1000.0), contagem=c, linhas=det["total_linhas_sem_varredura"])
+                sem = res[b][br][DESFECHO_V]["y"]
+                if DESFECHO_V_SEM_F2 in res[b][br]:
+                    c2 = det["total_pares_sem_forma2_sem_varredura"]
+                    res[b][br][DESFECHO_V_SEM_F2] = (dict(_ausente(det["formas_motivo"], n), contagem=None)
+                                                     if c2 is None else dict(_taxa(c2, n, 1000.0), contagem=c2))
+                infos[b][br]["violacoes"] = dict(det["pares_sem_varredura"])
+            v[br] = {"com_varredura": com, "sem_varredura": sem}
+        afetados.append({"bloco": b, "bracos_com_erro": erro, "v": v})
+    return afetados
+
+
+def _sensibilidade_sem_blocos_varredura_erro(afetados, usados_v, res, semente, indice, n_boot):
+    """Sensibilidade descritiva de V sem os blocos com varredura com erro (o comportamento do W-5c): estimativa,
+    IC t e IC bootstrap de blocos na escala diferenca, sem p e sem Holm. None sem bloco afetado."""
+    if not afetados:
+        return None
+    excl = [x["bloco"] for x in afetados]
+    bl = [b for b in usados_v if b not in excl]
+    an = analisar_desfecho([res[b]["A"][DESFECHO_V]["y"] for b in bl], [res[b]["B"][DESFECHO_V]["y"] for b in bl],
+                           semente, indice, n_boot, escala=ESCALA_DIF, permutar=False)
+    return {"desfecho": DESFECHO_V, "familia": FAMILIA_SENS, "escala": ESCALA_DIF, "indice_semente": indice,
+            "blocos": bl, "blocos_excluidos": excl, "n_blocos": an["n_blocos"], "estimativa": an["estimativa"],
+            "ic_t": an["ic_t"], "ic_boot_blocos": an["ic_boot_blocos"], "p_permutacao": None, "p_holm": None,
+            "d_b": dict(zip(bl, an["d_b"])), "nota": "descritiva: sem p e sem Holm"}
 
 
 def _wilson_por_1000(c, n):
@@ -1826,6 +1904,7 @@ def comparar(manifesto, semente, *, delta_latencia, w_analise_s, w_recovery_s, t
         if teste and divergentes:
             raise ErroUso("celula de teste %s, bloco(s) %s: instrumentos de observacao diferentes entre A e B (sonda "
                           "de replay ou varredura; pre-registro do benchmark refeito, 2.1)" % (celula, ",".join(divergentes)))
+        afetados_varr = _aplicar_varredura_simetrica(list(blocos), res, infos)
         nomes = sorted({n for b in blocos for br in BRACOS for n in res[b][br]})
         desf, usados_por = {}, {}
         for indice, nome in enumerate(nomes):
@@ -1925,7 +2004,9 @@ def comparar(manifesto, semente, *, delta_latencia, w_analise_s, w_recovery_s, t
                                       el["ic_t"] if el else None, el["nao_inferioridade"]["p"] if el else None,
                                       delta_latencia, vz, rast["B"]["integral"])
             c["regra_iu"] = regras[celula]
-        c["violacoes"]["detalhe"] = _detalhe_v_celula(list(blocos), infos, divergentes)
+        sens_varr = _sensibilidade_sem_blocos_varredura_erro(afetados_varr, usados_por.get(DESFECHO_V, []), res,
+                                                             semente, len(nomes) + len(INVARIANTES_VIOL) + 1, n_boot)
+        c["violacoes"]["detalhe"] = _detalhe_v_celula(list(blocos), infos, divergentes, afetados_varr, sens_varr)
         celulas[celula] = c
     script = Path(__file__).resolve()
     return _f({"esquema": ESQUEMA,
@@ -1936,6 +2017,7 @@ def comparar(manifesto, semente, *, delta_latencia, w_analise_s, w_recovery_s, t
                               "alfa": ALFA, "quantil_linha_de_base": QUANTIL_LINHA_DE_BASE,
                               "co_principal_v": DESFECHO_V, "co_principal_l": DESFECHO_L,
                               "regra_v": REGRA_V, "v_sem_forma2": REGRA_V_SEM_F2,
+                              "varredura_com_erro": REGRA_VARREDURA_ERRO,
                               "tipos_celula": dict(sorted(tipos.items())),
                               "referencias_erro": refs,
                               "energia": (energia if energia is None else
@@ -2068,6 +2150,16 @@ def tabela_markdown(resultado):
                         t["replay_validate"]["tardios"],
                         ("; replay tardio no teto em %d execucao(oes)" % t["execucoes_tardio_no_teto"])
                         if t["execucoes_tardio_no_teto"] else ""))
+            vc = dv.get("varredura_com_erro") or {}
+            if vc:
+                txt = ("- Blocos com varredura com erro: %d bloco(s) (so A: %d, so B: %d, nos dois: %d); V e "
+                       ":sem_forma2 dos dois bracos sem a varredura, bloco no teste" % (
+                           vc["blocos"], vc["so_A"], vc["so_B"], vc["nos_dois"]))
+                sv = vc.get("sensibilidade_blocos_excluidos")
+                if sv:
+                    txt += ("; sensibilidade sem esses blocos (descritiva, sem Holm): %d blocos, estimativa %s, IC t %s"
+                            % (sv["n_blocos"], _fmt(sv["estimativa"]), _fmt_ic(sv["ic_t"])))
+                linhas.append(txt + ".")
             if dv.get("instrumentos_divergentes"):
                 linhas.append("- Instrumentos diferentes entre A e B nos blocos %s."
                               % ", ".join(dv["instrumentos_divergentes"]))

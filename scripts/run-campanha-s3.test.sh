@@ -17,6 +17,12 @@
 # o no sair de running (R8); o duble de F4 faz a verificacao por ping (40 s por padrao, f4-ping-s) e sai com 6 no fim
 # dela se o alvo parou, como o real (N1), e escreve a linha "degradacao aplicada: alvo <no>" (R4).
 #
+# DT-027 (complemento 1 do benchmark refeito; S33..S36): matriz fatorial (coluna fusao, blocos PO/PL/AO/AL e A/B), o
+# sessions-async do braco (CS_DIR_CACHES: diretorio de caches do caso com o sessions-async-a1.json), o JAR da extensao
+# montado no compose (CS_COMPOSE_ARQ: compose do caso), a politica lida de volta e a linha "A1-POLITICA carregada" nos
+# tres nos (o shim de curl grava a linha no log do shim de podman quando cria o sessions-async com a classe da A1), a
+# vista de fusao ISPN000093 (o duble de F2 a grava 44 s depois do end) e o --sweep-merge-timeout-sec do fusao_teto_s.
+#
 # Uso: bash scripts/run-campanha-s3.test.sh [S1 S4 ...]   (sem argumentos: todos). Exit 0 se todos passarem.
 set -uo pipefail
 
@@ -30,7 +36,7 @@ REAL_SLEEP="$(command -v sleep)"
 REAL_TIMEOUT="$(command -v timeout)"
 TMP="$(mktemp -d)"
 trap '[[ -n "${CS_TESTE_MANTER:-}" ]] && echo "(CS_TESTE_MANTER: ${TMP} mantido)" || rm -rf "${TMP}"' EXIT
-SELECAO=" ${*:-S1 S2 S3 S4 S5 S6 S7 S8 S9 S10 S11 S12 S13 S14 S15 S16 S17 S18 S19 S20 S21 S22 S23 S24 S25 S26 S26h S27 S28 S29 S30 S31 S32} "
+SELECAO=" ${*:-S1 S2 S3 S4 S5 S6 S7 S8 S9 S10 S11 S12 S13 S14 S15 S16 S17 S18 S19 S20 S21 S22 S23 S24 S25 S26 S26h S27 S28 S29 S30 S31 S32 S33 S34 S35 S36} "
 
 PASS=0
 FAIL=0
@@ -244,6 +250,7 @@ case "${cmd}" in
             *StartedAt.UnixMilli*) cat "${ST}/iniciado-ms-${no}" 2>/dev/null || echo 1000 ;;
             *FinishedAt.UnixMilli*) cat "${ST}/parado-ms-${no}" 2>/dev/null || echo 0 ;;
             *State.ExitCode*) cat "${ST}/exitcode-${no}" 2>/dev/null || echo 0 ;;
+            *LogConfig.Type*) cat "${ST}/log-driver" 2>/dev/null || echo k8s-file ;;
             *) echo '[{}]' ;;
         esac ;;
     kill) no="$1"; echo exited > "${ST}/status-${no}"; vms > "${ST}/parado-ms-${no}"; echo 137 > "${ST}/exitcode-${no}"; echo parou >> "${ST}/parou-${no}" ;;
@@ -254,6 +261,8 @@ case "${cmd}" in
         if [[ "$(cat "${ST}/status-${no}" 2>/dev/null || echo running)" != running ]]; then vms > "${ST}/iniciado-ms-${no}"; fi
         echo running > "${ST}/status-${no}"; rm -f "${ST}/link-$(pid_no "${no}")" "${ST}/netem-$(pid_no "${no}")"; echo "${no}" ;;
     version) echo "Version: 5.0.0 (shim)" ;;
+    # DT-027: o log do servidor (A1-POLITICA carregada na criacao do sessions-async, ISPN000093 na fusao); o down apaga
+    logs) cat "${ST}/logs-${@: -1}" 2>/dev/null ;;
     *) exit 0 ;;
 esac
 EOF
@@ -265,7 +274,7 @@ ST="${CS_ESTADO}"
 acao="${@: -1}"; [[ "${acao}" == "-d" ]] && acao=up
 case "${acao}" in
     down) for n in isn1 isn2 isn3; do echo ausente > "${ST}/status-${n}"; done
-          rm -rf "${ST}/caches"; rm -f "${ST}"/netem-* "${ST}"/clsact-* "${ST}"/prio-* "${ST}"/link-*
+          rm -rf "${ST}/caches"; rm -f "${ST}"/netem-* "${ST}"/clsact-* "${ST}"/prio-* "${ST}"/link-* "${ST}"/logs-*
           # W-6c: o down solta o swap das JVMs; meminfo-apos-down-<n> vira o /proc/meminfo depois do n-esimo down
           nd=$(( $(cat "${ST}/downs" 2>/dev/null || echo 0) + 1 )); echo "${nd}" > "${ST}/downs"
           [[ -f "${ST}/meminfo-apos-down-${nd}" ]] && cp "${ST}/meminfo-apos-down-${nd}" "${CS_SHIM_DIR}/meminfo" ;;
@@ -400,7 +409,16 @@ case "${caminho}" in
     rest/v2/caches/*)
         c="${caminho#rest/v2/caches/}"
         if [[ "${metodo}" == POST ]]; then
-            mkdir -p "${ST}/caches"; tr -d '\r\n' < "${dados}" > "${ST}/caches/${c}.json"; corpo ""; codigo 200
+            if [[ "${c}" == sessions-async && -f "${ST}/a1-post-falha" ]] && grep -q PoliticaFusaoSessoes "${dados}"; then
+                corpo "ISPN000327: Cannot find class br.unipampa.tcc.servidor.PoliticaFusaoSessoes (shim)"; codigo 500; exit 0
+            fi
+            mkdir -p "${ST}/caches"; tr -d '\r\n' < "${dados}" > "${ST}/caches/${c}.json"
+            if [[ "${c}" == sessions-async ]] && { grep -q PoliticaFusaoSessoes "${dados}" || [[ -f "${ST}/a1-log-sempre" ]]; }; then
+                for n in isn1 isn2 isn3; do
+                    [[ -f "${ST}/a1-sem-log-${n}" ]] || echo "2026-11-07 12:00:00,000 INFO  [b.u.t.s.PoliticaFusaoSessoes] A1-POLITICA carregada classe=br.unipampa.tcc.servidor.PoliticaFusaoSessoes versao=0.1.0-SNAPSHOT (shim)" >> "${ST}/logs-${n}"
+                done
+            fi
+            corpo ""; codigo 200
         else corpo "{}"; codigo 200; fi ;;
     *) corpo "?"; codigo 404 ;;
 esac
@@ -464,6 +482,16 @@ while [[ $# -gt 0 ]]; do
         --marker) marker="$2"; shift 2 ;; *) shift ;; esac
 done
 if [[ "${heal}" -eq 1 ]]; then [[ -f "${ST}/heal-falha" ]] && exit 1; rm -f "${ST}"/clsact-*; exit 0; fi
+# DT-027 (S36): o end e, 44 s depois dele, a linha de fusao do servidor (UTC, ms, com o codigo de cor), nos tres nos
+fim_f2() {
+    local te t ts n
+    te="$(vms)"; echo "fault=F2 node=${no} event=end t_epoch_ns=${te}000000" >> "${marker}"
+    [[ -f "${ST}/sem-fusao-log" ]] && return 0
+    t=$(( te + 44000 )); ts="$(date -u -d "@$(( t / 1000 ))" '+%Y-%m-%d %H:%M:%S'),$(printf '%03d' $(( t % 1000 )))"
+    for n in isn1 isn2 isn3; do
+        printf '\033[0m%s INFO  [o.i.CLUSTER] ISPN000093: Received new, MERGED cluster view for channel cluster-tcc: MergeView::[isn2-1|6] (3) [isn2-1, isn1-2, isn3-3], 2 subgroups: [isn3-3|5] (1) [isn3-3], [isn2-1|5] (2) [isn2-1, isn1-2]\033[m\n' "${ts}" >> "${ST}/logs-${n}"
+    done
+}
 p="$(pid_no "${no}")"
 # R4: inj-sem-start omite o marcador de inicio (o real nunca omite; e o caso negativo do B1)
 [[ -f "${ST}/inj-sem-start" ]] || echo "fault=F2 node=${no} event=start t_epoch_ns=$(vms)000000" >> "${marker}"
@@ -481,11 +509,11 @@ fi
 # nsenter falha sob set -euo pipefail (inject-partition.sh:495) e o trap sai com 1, gravando o end
 if [[ "$(cat "${ST}/status-${no}" 2>/dev/null || echo running)" != running ]]; then
     rm -f "${ST}/clsact-${p}"
-    echo "fault=F2 node=${no} event=end t_epoch_ns=$(vms)000000" >> "${marker}"
+    fim_f2
     exit 1
 fi
 [[ -f "${ST}/del-falha" ]] || rm -f "${ST}/clsact-${p}"
-echo "fault=F2 node=${no} event=end t_epoch_ns=$(vms)000000" >> "${marker}"
+fim_f2
 exit "$(cat "${ST}/inj-rc" 2>/dev/null || echo 0)"
 EOF
     cat > "${SH}/inject-netdegrade-falso.sh" <<'EOF'
@@ -547,6 +575,7 @@ novo_caso() {  # novo_caso <nome> [escala]
         PODMAN_COMPOSE="sudo podman-compose" JAVA="java" CS_H4_RUN="${H4R}" CS_COLETOR="${SH}/coletor-falso.sh" \
         CS_INJ_PART="${SH}/inject-partition-falso.sh" CS_INJ_DEGR="${SH}/inject-netdegrade-falso.sh"
     export PATH_TESTE="${SH}:${PATH}"
+    unset CS_DIR_CACHES CS_COMPOSE_ARQ   # DT-027: so os casos fatoriais os definem
     : > "${ST}/chamadas.log"
     HOJE="$("${REAL_DATE}" +%F)"
     BOOT="$(cat "${SH}/boot_id")"
@@ -635,6 +664,42 @@ matriz_aval() {  # matriz_aval "<CELULA:teste:N>,..."
     "${REAL_PY}" -I "${MATRIZ_PY}" gerar --modo avaliacao --nucleo "$1" --ordem-seed 7 --s0 70000 \
         --passo-semente 100 --i0 0 --b0 1 --saida "${CASO}/matriz.tsv" > /dev/null
     MAT="${CASO}/matriz.tsv"; MAT_SHA="$(sha256sum "${MAT}" | cut -d' ' -f1)"
+}
+
+# ---- DT-027 (complemento 1 do benchmark refeito)
+matriz_fat() {  # matriz_fat "<nucleo>" ["<extras>"]: matriz fatorial (14 colunas, coluna fusao)
+    "${REAL_PY}" -I "${MATRIZ_PY}" gerar --modo fatorial --nucleo "$1" ${2:+--extras "$2"} --ordem-seed 7 --s0 80000 \
+        --passo-semente 100 --i0 0 --b0 0 --saida "${CASO}/matriz.tsv" > /dev/null
+    MAT="${CASO}/matriz.tsv"; MAT_SHA="$(sha256sum "${MAT}" | cut -d' ' -f1)"
+}
+caches_fat() {  # caches_fat [sem-a1|a1-pnn]: os seis JSON do repositorio e o sessions-async-a1.json (A1) em CS_DIR_CACHES
+    CACHES_T="${CASO}/caches"; mkdir -p "${CACHES_T}"
+    cp "${RAIZ}"/cluster/caches/{sessions,counters,sessions-async,counters-async,canario,canario-async}.json "${CACHES_T}/"
+    case "${1:-}" in
+        sem-a1) rm -f "${CACHES_T}/sessions-async-a1.json" ;;
+        a1-pnn) cp "${CACHES_T}/sessions-async.json" "${CACHES_T}/sessions-async-a1.json" ;;
+        *) sed 's/"merge-policy":"PREFERRED_NON_NULL"/"merge-policy":"br.unipampa.tcc.servidor.PoliticaFusaoSessoes"/' \
+               "${CACHES_T}/sessions-async.json" > "${CACHES_T}/sessions-async-a1.json" ;;
+    esac
+    export CS_DIR_CACHES="${CACHES_T}"
+}
+compose_fat() {  # compose_fat [sem-jar|dois-nos|sem-arquivo]: compose do caso com o JAR da extensao em server/lib dos tres nos
+    mkdir -p "${CASO}/cluster" "${CASO}/extensao-servidor/target"
+    EXT="${CASO}/extensao-servidor/target/tcc-extensao-servidor.jar"; echo "jar da extensao falso" > "${EXT}"
+    EXT_SHA="$(sha256sum "${EXT}" | cut -d' ' -f1)"
+    local n=3
+    case "${1:-}" in sem-jar) n=0 ;; dois-nos) n=2 ;; sem-arquivo) rm -f "${EXT}" ;; esac
+    # sem o volume que o compose do repositorio ja tiver (A1, 04719ee): o caso decide quantos nos montam o JAR
+    awk -v n="${n}" '/tcc-extensao-servidor[.]jar/ {next} {print} /jgroups-tcp.xml:\/opt\/infinispan\/server\/conf\/jgroups-tcp.xml:ro/ && k < n {k++
+        print "      - ../extensao-servidor/target/tcc-extensao-servidor.jar:/opt/infinispan/server/lib/tcc-extensao-servidor.jar:ro"}' \
+        "${RAIZ}/cluster/podman-compose-sem-caches.yml" > "${CASO}/cluster/podman-compose-sem-caches.yml"
+    export CS_COMPOSE_ARQ="${CASO}/cluster/podman-compose-sem-caches.yml"
+}
+dry_fat() {  # dry_fat <fase> [args extras]: RC e OUTD do --dry-run
+    local fase="$1"; shift
+    OUTD="$(PATH="${PATH_TESTE}" bash "${ORQ}" --dry-run --matriz "${MAT}" --matriz-sha256 "${MAT_SHA}" --fase "${fase}" \
+        --parametros "${PARAMS}" --parametros-sha256 "${PARAMS_SHA}" --controlador "${CTRL}" --controlador-sha256 "${CTRL_SHA}" \
+        "${REFS[@]}" --saida "${OUT}" "$@" 2>&1)"; RC=$?
 }
 
 rodar() {  # rodar <fase> [args extras]: RC e SAIDA_TXT
@@ -1785,6 +1850,182 @@ ok "S32 a carga e o pre-voo recebem --s3-replay-late-max 268" "$(grep -cF ' java
 ok "S32 execucao.json: carga_s3 com o late-max" "{'s3_replay_late_max': 268}" "$(json "${D}/execucao.json" 'd["carga_s3"]')"
 contem "S32 bundle com o late-max" "carga_s3:--s3-replay-late-max 268" "$(cat "${OUT}/calibracao/bundle.sha256")"
 contem "S32 bundle com a sonda nas opcoes" "sonda_replay=sim" "$(cat "${OUT}/calibracao/bundle.sha256")"
+fi
+
+# ============================================================================= S33
+if quer S33; then
+echo "== S33: DT-027: --dry-run da matriz fatorial: fusao no plano, os dois JSON e o JAR conferidos, teto da fusao na linha =="
+novo_caso s33
+parametros fusao_teto_s=20
+caches_fat; compose_fat
+matriz_fat "ASYNC-F2:teste:1,ASYNC-none:descritiva:1"
+dry_fat nucleo --sonda-replay --extensao-sha256 "${EXT_SHA}"
+ok "S33 dry-run fatorial: exit 0" "0" "${RC}"
+ok "S33 seis execucoes no plano (4 + 2)" "6" "$(grep -c '^PLANO i=' <<< "${OUTD}")"
+ok "S33 fusao no plano: 4 pnn (PO, PL, A, B) e 2 a1 (AO, AL)" "4 2" "$(grep -c '^PLANO i=.* fusao=pnn ' <<< "${OUTD}") $(grep -c '^PLANO i=.* fusao=a1 ' <<< "${OUTD}")"
+for br in PO:shadow:pnn PL:active:pnn AO:shadow:a1 AL:active:a1 A:shadow:pnn B:active:pnn; do
+    IFS=: read -r b c f <<< "${br}"
+    ok "S33 braco ${b}: controller=${c} fusao=${f}" "1" "$(grep -c "^PLANO i=.* braco=${b} controller=${c} fusao=${f} " <<< "${OUTD}")"
+done
+contem "S33 linha do programa com o teto da fusao depois do --sweep" "--s3-replay-probe --sweep --sweep-merge-timeout-sec 20" "${OUTD}"
+contem "S33 os dois JSON da regra de fusao conferidos" "DRY-RUN fusao: pnn=sessions-async.json PREFERRED_NON_NULL" "${OUTD}"
+contem "S33 o JSON da A1 com a classe" "a1=sessions-async-a1.json br.unipampa.tcc.servidor.PoliticaFusaoSessoes" "${OUTD}"
+contem "S33 teto da fusao antes da varredura" "DRY-RUN fusao antes da varredura: fusao_teto_s=20" "${OUTD}"
+contem "S33 JAR da extensao montado nos tres nos, SHA-256 conferido" "DRY-RUN extensao: ${EXT} montado nos 3 nos (SHA-256 confere)" "${OUTD}"
+dry_fat nucleo --extensao-sha256 "${EXT_SHA}"
+ok "S33 matriz fatorial sem --sonda-replay -> exit 4" "4" "${RC}"
+contem "S33 motivo: instrumentos da DT-026" "--sonda-replay" "${OUTD}"
+parametros
+dry_fat nucleo --sonda-replay --extensao-sha256 "${EXT_SHA}"
+ok "S33 matriz fatorial sem fusao_teto_s -> exit 4" "4" "${RC}"
+contem "S33 motivo: fusao_teto_s" "fusao_teto_s" "${OUTD}"
+parametros fusao_teto_s=31
+dry_fat nucleo --sonda-replay --extensao-sha256 "${EXT_SHA}"
+ok "S33 fusao_teto_s que passa do fim da carga (10 + 20 + 31 > 60) -> exit 4" "4" "${RC}"
+parametros fusao_teto_s=20
+dry_fat nucleo --sonda-replay --extensao-sha256 "$(printf 'c%.0s' {1..64})"
+ok "S33 SHA-256 do JAR da extensao errado -> exit 4" "4" "${RC}"
+contem "S33 motivo: JAR da extensao" "extensao" "${OUTD}"
+caches_fat sem-a1
+dry_fat nucleo --sonda-replay --extensao-sha256 "${EXT_SHA}"
+ok "S33 sem o sessions-async-a1.json -> exit 4" "4" "${RC}"
+contem "S33 motivo cita o arquivo" "sessions-async-a1.json" "${OUTD}"
+caches_fat a1-pnn
+dry_fat nucleo --sonda-replay --extensao-sha256 "${EXT_SHA}"
+ok "S33 sessions-async-a1.json com PREFERRED_NON_NULL -> exit 4" "4" "${RC}"
+contem "S33 motivo: politica do arquivo" "PoliticaFusaoSessoes" "${OUTD}"
+caches_fat
+for c in sem-jar dois-nos sem-arquivo; do
+    compose_fat "${c}"
+    dry_fat nucleo --sonda-replay --extensao-sha256 "${EXT_SHA}"
+    ok "S33 compose ${c} com braco A1 -> exit 4" "4" "${RC}"
+    contem "S33 compose ${c}: motivo extensao" "extensao" "${OUTD}"
+done
+compose_fat
+awk -F'\t' 'NR > 1 && $10 == "AL" {next} {print}' "${MAT}" > "${MAT}.x"; mv "${MAT}.x" "${MAT}"; MAT_SHA="$(sha256sum "${MAT}" | cut -d' ' -f1)"
+dry_fat nucleo --sonda-replay --extensao-sha256 "${EXT_SHA}"
+ok "S33 bloco fatorial sem o AL -> exit 4" "4" "${RC}"
+contem "S33 motivo pareamento" "pareamento" "${OUTD}"
+ok "S33 dry-runs nao chamam java/podman/sudo/curl" "0" "$(grep -cE ' (java|podman|podman-compose|sudo|curl|systemd-run)([|]|$)' "${ST}/chamadas.log")"
+matriz_calib "ASYNC-none:calibracao:1"
+compose_fat sem-jar; unset CS_DIR_CACHES
+parametros
+dry_fat calibracao
+ok "S33 matriz de 13 colunas sem o JAR nem o JSON da A1: como antes (exit 0)" "0" "${RC}"
+nao_contem "S33 matriz de 13 colunas: sem fusao= no plano" "fusao=" "$(grep '^PLANO i=' <<< "${OUTD}")"
+fi
+
+# ============================================================================= S34
+if quer S34; then
+echo "== S34: DT-027: bloco 2x2 executado: JSON do braco criado e lido de volta, politica e A1-POLITICA nos tres nos, manifesto fatorial =="
+novo_caso s34
+parametros fusao_teto_s=20
+caches_fat; compose_fat
+matriz_fat "ASYNC-none:teste:1"
+printf 'go nucleo %s\n' "${HOJE}" > "${CS_TTY_ARQUIVO}"
+rodar nucleo --sonda-replay --extensao-sha256 "${EXT_SHA}"
+ok "S34 exit 0" "0" "${RC}"
+POL_A1="br.unipampa.tcc.servidor.PoliticaFusaoSessoes"
+for br in PO:pnn:PREFERRED_NON_NULL PL:pnn:PREFERRED_NON_NULL AO:a1:${POL_A1} AL:a1:${POL_A1}; do
+    IFS=: read -r b f pol <<< "${br}"
+    D="$(ls -d "${OUT}"/exec-*-ASYNC-none-"${b}")"
+    ok "S34 ${b} ACEITA" "ACEITA" "$(json "${D}/checagem.json" 'd["veredito"]')"
+    ok "S34 ${b} checagem com a fusao" "${f}" "$(json "${D}/checagem.json" 'd["fusao"]')"
+    ok "S34 ${b} execucao.json: variante e arquivo" "${f} sessions-async$([[ ${f} == a1 ]] && echo -a1).json" "$(json "${D}/execucao.json" 'd["fusao"]["variante"] + " " + d["fusao"]["arquivo"]')"
+    ok "S34 ${b} SHA-256 do arquivo da variante" "$(sha256sum "${CACHES_T}/$(json "${D}/execucao.json" 'd["fusao"]["arquivo"]')" | cut -d' ' -f1)" "$(json "${D}/execucao.json" 'd["fusao"]["arquivo_sha256"]')"
+    ok "S34 ${b} politica lida de volta nos tres nos" "${pol} ${pol} ${pol}" "$(json "${D}/execucao.json" '" ".join(d["fusao"]["politica_lida"])')"
+    ok "S34 ${b} counters-async PREFERRED_NON_NULL nos tres (TD-020 da A1)" "PREFERRED_NON_NULL PREFERRED_NON_NULL PREFERRED_NON_NULL" "$(json "${D}/execucao.json" '" ".join(d["fusao"]["counters_async_lida"])')"
+    if [[ "${f}" == a1 ]]; then n=1; else n=0; fi
+    ok "S34 ${b} A1-POLITICA carregada por no" "${n} ${n} ${n}" "$(json "${D}/execucao.json" '" ".join(str(x) for x in d["fusao"]["a1_politica_carregada"])')"
+    ok "S34 ${b} fusao ok" "True" "$(json "${D}/execucao.json" 'd["fusao"]["ok"]')"
+    verdade "S34 ${b} sessions-async criado com o JSON do braco" cmp -s "${D}/caches/sessions-async.json" "${CACHES_T}/sessions-async$([[ ${f} == a1 ]] && echo -a1).json"
+    ok "S34 ${b} extensao_sha256" "${EXT_SHA}" "$(json "${D}/execucao.json" 'd["extensao_sha256"]')"
+    ok "S34 ${b} camada 3 antes sem divergencia (contra o JSON do braco)" "None" "$(json "${D}/execucao.json" 'd["camada3_pre"]["divergencias"]')"
+    contem "S34 ${b} linha do programa com --sweep-merge-timeout-sec 20" "'--sweep', '--sweep-merge-timeout-sec', '20'" "$(json "${D}/execucao.json" 'd["comando"]')"
+done
+ok "S34 mesma semente nos quatro bracos" "1" "$(cat "${OUT}"/exec-*/execucao.json | grep -o '"seed": [0-9]*' | sort -u | wc -l | tr -d ' ')"
+ok "S34 manifesto-fatorial.tsv: cabecalho" $'bloco\tcelula\tbraco\tfusao\tcontrolador\texecucao' "$(head -1 "${OUT}/manifesto-fatorial.tsv" 2>/dev/null)"
+ok "S34 manifesto-fatorial.tsv: os quatro bracos do bloco 0" "AL AO PL PO" "$(awk -F'\t' 'NR > 1 {print $3}' "${OUT}/manifesto-fatorial.tsv" 2>/dev/null | sort -r | paste -sd' ')"
+verdade "S34 sem manifesto-bracos.tsv (nenhum bloco A/B)" test ! -e "${OUT}/manifesto-bracos.tsv"
+contem "S34 bundle com o sessions-async-a1.json" "sessions-async-a1.json" "$(cat "${OUT}/nucleo/bundle.sha256")"
+contem "S34 bundle com o JAR da extensao" "${EXT_SHA}  tcc-extensao-servidor.jar" "$(cat "${OUT}/nucleo/bundle.sha256")"
+contem "S34 ambiente.md com o JAR da extensao" "extensao: ${EXT}" "$(cat "${OUT}/nucleo/ambiente.md")"
+rodar nucleo --sonda-replay
+ok "S34 sem --extensao-sha256 fora do --dry-run (JAR montado) -> exit 2" "2" "${RC}"
+contem "S34 motivo --extensao-sha256" "--extensao-sha256" "${SAIDA_TXT}"
+fi
+
+# ============================================================================= S35
+if quer S35; then
+echo "== S35: DT-027: politica que nao ficou (criacao recusada, A1-POLITICA ausente num no, classe carregada no braco PNN) -> DESCARTADA-INFRA sem carga, a fase segue =="
+for caso in post-falha sem-log-isn2 log-no-pnn; do
+    novo_caso "s35-${caso}"
+    parametros fusao_teto_s=20
+    caches_fat; compose_fat
+    matriz_fat "ASYNC-none:teste:1"
+    case "${caso}" in
+        post-falha) : > "${ST}/a1-post-falha"; ALVO="$(awk -F'\t' 'NR > 1 && $14 == "a1" {print $10; exit}' "${MAT}")" ;;
+        sem-log-isn2) : > "${ST}/a1-sem-log-isn2"; ALVO="$(awk -F'\t' 'NR > 1 && $14 == "a1" {print $10; exit}' "${MAT}")" ;;
+        log-no-pnn) : > "${ST}/a1-log-sempre"; ALVO="$(awk -F'\t' 'NR > 1 && $14 == "pnn" {print $10; exit}' "${MAT}")" ;;
+    esac
+    printf 'go nucleo %s\n' "${HOJE}" > "${CS_TTY_ARQUIVO}"
+    rodar nucleo --sonda-replay --extensao-sha256 "${EXT_SHA}"
+    ok "S35 ${caso}: exit 0 (a fase segue)" "0" "${RC}"
+    D="$(ls -d "${OUT}"/exec-*-ASYNC-none-"${ALVO}")"
+    IALVO="$(json "${D}/checagem.json" 'd["i"]')"
+    ok "S35 ${caso}: ${ALVO} DESCARTADA-INFRA" "DESCARTADA-INFRA" "$(json "${D}/checagem.json" 'd["veredito"]')"
+    contem "S35 ${caso}: motivo infra: fusao" "infra: fusao" "$(json "${D}/checagem.json" '"; ".join(d["motivos"])')"
+    ok "S35 ${caso}: fusao ok false no execucao.json" "False" "$(json "${D}/execucao.json" 'd["fusao"]["ok"]')"
+    verdade "S35 ${caso}: sem carga no braco descartado (sem stdout.log)" test ! -e "${D}/stdout.log"
+    verdade "S35 ${caso}: MANIFEST do braco descartado" test -s "${D}/MANIFEST.sha256"
+    ok "S35 ${caso}: cargas = bracos antes do descartado" "${IALVO}" "$(cargas)"
+    for d2 in "${OUT}"/exec-*-ASYNC-none-*; do
+        i2="$(json "${d2}/checagem.json" 'd["i"]')"
+        if [[ "${i2}" -gt "${IALVO}" ]]; then ok "S35 ${caso}: i=${i2} depois do descartado PULADA (bloco refeito inteiro)" "PULADA" "$(json "${d2}/checagem.json" 'd["veredito"]')"; fi
+        if [[ "${i2}" -lt "${IALVO}" ]]; then ok "S35 ${caso}: i=${i2} antes do descartado ACEITA" "ACEITA" "$(json "${d2}/checagem.json" 'd["veredito"]')"; fi
+    done
+    case "${caso}" in
+        post-falha) contem "S35 post-falha: motivo cita a criacao do sessions-async" "sessions-async" "$(json "${D}/checagem.json" '"; ".join(d["motivos"])')" ;;
+        sem-log-isn2) contem "S35 sem-log-isn2: motivo cita isn2 e a linha" "A1-POLITICA carregada" "$(json "${D}/checagem.json" '"; ".join(d["motivos"])')"
+                      ok "S35 sem-log-isn2: contagem por no" "1 0 1" "$(json "${D}/execucao.json" '" ".join(str(x) for x in d["fusao"]["a1_politica_carregada"])')" ;;
+        log-no-pnn) contem "S35 log-no-pnn: motivo cita a linha no braco PNN" "A1-POLITICA carregada" "$(json "${D}/checagem.json" '"; ".join(d["motivos"])')" ;;
+    esac
+    ok "S35 ${caso}: repor refaz o bloco com os quatro" "4" "$("${REAL_PY}" -I "${MATRIZ_PY}" repor --matriz "${MAT}" --saida "${OUT}" --ordem-seed 7 --s0 80000 --passo-semente 100 --teto-h4 5 > /dev/null && awk 'NR > 1' "${OUT}/reposicoes/reposicoes.tsv" | wc -l | tr -d ' ')"
+done
+fi
+
+# ============================================================================= S36
+if quer S36; then
+echo "== S36: DT-027: F2 na matriz fatorial: instante da fusao (ISPN000093 depois do end) e driver de log no execucao.json =="
+novo_caso s36
+parametros exec_teto_s=900 fusao_teto_s=20
+caches_fat; compose_fat
+matriz_fat "ASYNC-F2:descritiva:1"
+printf 'go nucleo %s\ngo rede 0\n' "${HOJE}" > "${CS_TTY_ARQUIVO}"
+rodar nucleo --sonda-replay --extensao-sha256 "${EXT_SHA}"
+ok "S36 exit 0" "0" "${RC}"
+for b in A B; do
+    D="$(ls -d "${OUT}"/exec-*-ASYNC-F2-"${b}")"
+    ok "S36 ${b} ACEITA" "ACEITA" "$(json "${D}/checagem.json" 'd["veredito"]')"
+    ok "S36 ${b} fusao pnn" "pnn" "$(json "${D}/checagem.json" 'd["fusao"]')"
+    ok "S36 ${b} vista de fusao 44 s depois do end" "44.0" "$(json "${D}/execucao.json" 'd["fusao_vista"]["desde_end_s"]')"
+    ok "S36 ${b} os tres nos com a linha" "3" "$(json "${D}/execucao.json" 'sum(1 for v in d["fusao_vista"]["por_no"].values() if v["primeira_apos_end_ms"] is not None)')"
+    ok "S36 ${b} fonte da vista" "ISPN000093" "$(json "${D}/execucao.json" 'd["fusao_vista"]["fonte"].split()[0]')"
+    ok "S36 ${b} driver de log" "k8s-file" "$(json "${D}/execucao.json" 'd["fusao_vista"]["log_driver"]')"
+    verdade "S36 ${b} linhas ISPN000093 guardadas" test "$(grep -c ISPN000093 "${D}/fusao-ispn000093.txt")" -eq 3
+done
+verdade "S36 manifesto-bracos.tsv (bloco A/B da matriz fatorial)" test "$(wc -l < "${OUT}/manifesto-bracos.tsv")" -eq 3
+novo_caso s36b
+parametros exec_teto_s=900 fusao_teto_s=20
+caches_fat; compose_fat
+matriz_fat "ASYNC-F2:descritiva:1"
+: > "${ST}/sem-fusao-log"; echo journald > "${ST}/log-driver"
+printf 'go nucleo %s\ngo rede 0\n' "${HOJE}" > "${CS_TTY_ARQUIVO}"
+rodar nucleo --sonda-replay --extensao-sha256 "${EXT_SHA}"
+D="$(exec_dir 0)"
+ok "S36b sem a linha de fusao no log: exit 0, ACEITA (so registro)" "0 ACEITA" "${RC} $(json "${D}/checagem.json" 'd["veredito"]')"
+ok "S36b instante da fusao nulo" "None" "$(json "${D}/execucao.json" 'd["fusao_vista"]["primeira_apos_end_ms"]')"
+contem "S36b motivo com o driver de log" "journald" "$(json "${D}/execucao.json" 'd["fusao_vista"]["motivo"]')"
 fi
 
 echo

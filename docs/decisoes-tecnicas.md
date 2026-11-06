@@ -1043,6 +1043,11 @@ Transmitidas ao Senior pelo coordenador, sobre o parecer de conferência do text
 > A4-5: `counters-async` fora (G-2). Risco de h4 registrado: 13,8 % de h4a na recalibração; a P-64 reduz a principal
 > fonte de escrita; reposição sem mudança (teto de 24, uma vez); reavaliação antes da metade 2 se o piloto embutido
 > mostrar taxa alta. `--ordem-seed` da matriz = 20261106.
+>
+> **Nota (2026-11-06, decisão do coordenador, antes de qualquer dado):** o teto de reposições h4 da avaliação fatorial é
+> **20 blocos**, na unidade do `repor`, e não 24 (que vinha do desenho de 96 execuções); parada de segurança contra
+> ambiente doente, não limite de orçamento (previsão de 5 a 9 blocos repostos); reposição uma vez só (complemento,
+> versão `6bc28fd`).
 
 - **Desenho:** fatorial 2×2 por bloco na célula ASYNC F2 + L+ com os instrumentos da DT-026 (regra de fusão do
   `sessions-async` atual ou A1 × controlador `shadow` ou `active` com a A4), quatro braços com a mesma semente, 12

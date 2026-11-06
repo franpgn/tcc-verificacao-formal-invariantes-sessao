@@ -1371,6 +1371,64 @@ branch) foram trocadas pelos da integração (+2). As mensagens de commit da bra
 - **Status:** `RESOLVIDO` no W-6c, exceto a regra da análise do N1 (fim nominal ou `end` do injetor nas execuções com o
   aviso do B1), que é decisão do Gestor no B-40 §9 e uso no W-5b.
 
+## 2026-11-06 — A4, `ignored-caches` como ação rápida (só medição)
+
+Branch `test/a4-ignored-caches` (base `int/2026-11-06-bench`, `cc2b71c`). Relatório: `docs/relatorio-a4-2026-11-06.md`;
+brutos em `runs/a4-teste/`. Números provisórios **P-A4.1 a P-A4.4**: o número definitivo sai na integração, depois
+dos P das outras branches de 06/11. Nenhum é defeito do código do repositório; são fatos do Infinispan 15.0.21 e do
+ambiente que restringem como o atuador pode usar a ação.
+
+### P-A4.1 — pedidos simultâneos de `ignored-caches` no mesmo nó perdem atualização, e todo pedido publica a lista inteira do nó
+
+- **Sintoma:** dois POST simultâneos ao mesmo nó responderam 204, mas só um cache ficou ignorado, nos três nós
+  (`semcorte-ignorar-r1`). Dois DELETE simultâneos ao alvo depois da fusão deixaram o `sessions-async` ignorado **nos
+  três nós** até o fim da execução (`corte-ignorar-r2`). Com DELETE em sequência, a sobra da lista do alvo
+  (`counters-async`) foi publicada à maioria por ~0,1 a 0,2 s entre os dois pedidos (`corte-sequencial-r1`).
+- **Causa (código):** `ignoreCache`/`unignoreCache` mudam o conjunto em memória e gravam o **conjunto inteiro** do nó
+  numa só chave do cache de estado REPL_SYNC (`ServerStateManagerImpl.java:94-112`); o ouvinte clusterizado copia o
+  valor gravado para a memória dos outros nós, inclusive do próprio nó, quando o evento vem do dono primário
+  (`:282-296`). Duas gravações concorrentes do mesmo objeto mutável podem chegar fora de ordem.
+- **Regra para o atuador:** um pedido por vez no cluster inteiro (fila única), conferido pelo efeito (GET da lista nos
+  três nós), não pelo código HTTP. De preferência um cache só por nó (`sessions-async`).
+- **Status:** `ABERTO` (regra de uso; decisão do Gestor sobre a forma da ação).
+
+### P-A4.2 — com o log do Podman no `journald`, as recusas Hot Rod apagam linhas de log de todos os contêineres
+
+- **Sintoma:** cada operação Hot Rod recusada (por `CacheUnavailableException` ou por `AvailabilityException` no nó
+  `DEGRADED`) grava um ERROR com pilha (`ISPN005003`, ~30 linhas). Na `corte-ignorar-r1`, o `journald` da máquina do
+  Podman registrou "Suppressed N messages from podman.service" (até 164 869 por 30 s), e os logs dos três servidores
+  ficaram sem as vistas do corte. O limite é do `podman.service` inteiro: alcança os contêineres de **outros projetos**
+  na mesma máquina (o cluster `a1` rodava ao mesmo tempo depois das 16:49Z; até então, só o `a4` estava de pé).
+- **Contorno no harness A4:** `logging: driver: k8s-file` no `podman-compose.a4.yml` (só o destino do log muda).
+- **Para o coordenador:** qualquer harness que dependa das linhas `ISPN000094`/`ISPN100012` do log e rode sondas que
+  recebam recusas deve usar `k8s-file`, ou contar com perda de linhas. O volume não é só da ação: o controle sem
+  ação teve 13 694 `ISPN005003` no alvo (recusas do `DEGRADED`), e as execuções com a ação e log completo, 11 483 a
+  19 641 (sonda de 25 ms no alvo). A ação antecipa as recusas (do pedido à detecção) e as estende (da fusão ao desfazer).
+- **Status:** `CONTORNADO` no harness A4; `ABERTO` para os demais harnesses locais.
+
+### P-A4.3 — `GET /rest/v2/container` no nó isolado prende uma thread "non-blocking" da REST
+
+- **Sintoma:** o despejo de threads do alvo 3 s depois do pedido (`corte-ignorar-r2/threads-alvo-mais3s.txt.gz`)
+  mostra threads `non-blocking-thread--p2-*` paradas em `CacheManagerInfo.isRebalancingEnabled` →
+  `CompletionStages.join`, chamadas pelo `GET /rest/v2/container` do vigia, esperando o cluster. Na `corte-ignorar-r1`
+  (vigia com esse GET), o segundo POST só teve efeito na detecção (46,4 s depois), enquanto o primeiro teve em 20 ms.
+- **Leitura:** pedidos de administração que caem num laço de eventos preso esperam junto. Não reproduzi de propósito
+  (n = 1 com atraso); o vigia foi trocado para não fazer esse GET a partir da `corte-ignorar-r2`.
+- **Regra para o atuador:** não mandar ao nó suspeito pedidos REST que dependem do cluster (`/rest/v2/container`,
+  `?action=distribution`) antes ou junto da ação; a leitura de efeito usa `GET /rest/v2/server/ignored-caches` e
+  `?action=get-availability`, que são locais.
+- **Status:** `ABERTO` (regra de uso).
+
+### P-A4.4 — o programa de carga conta a recusa do cache ignorado como `ERROR_TRANSPORT`
+
+- **Sintoma:** a `CacheUnavailableException` não casa com as marcas do `ClassificadorDeErro`
+  (`AvailabilityException`, `ISPN000306`, `ISPN000305`, `degraded mode`), então vira `ERROR_TRANSPORT`, não
+  `ERROR_UNAVAILABLE` (`S3 acao|...|ERROR_TRANSPORT` no `stdout.log` das execuções com a ação; `ISPN004005` com
+  `motivo=CacheUnavailableException` na contenção de log do cliente).
+- **Efeito:** se a A4 entrar no controlador, os sensores que usam a coluna `return_code` (erros e indisponíveis por
+  janela) leem a recusa provocada pela própria ação como erro de transporte no nó suspeito.
+- **Status:** `ABERTO` (decisão: marca nova no classificador, ou o sensor descontar o nó sob ação).
+
 ## Observação de modelagem (não é defeito)
 
 Com 8 *threads* = 8 identidades fixas (`user-<tid>`), `incrementFailure`

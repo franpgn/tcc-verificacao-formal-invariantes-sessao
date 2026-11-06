@@ -281,6 +281,10 @@ O F3 na matriz depende do W-6c (seção 4.3).
   (DT-023): com *swap* ≥ 1 GiB no portão, recriar o *cluster* e rodar a mesma execução com o mesmo i e a mesma
   semente, sem recusa (`--swap-limite-kb 1048576`); se o *swap* continuar ≥ 1 GiB depois da recriação, a fase para
   com código próprio (P-56, DT-023).
+- **Latência sem cobertura (complemento 3 da calibração, DT-024, R-2).** Se a calibração não tiver nenhuma janela
+  determinada para a latência nas ASYNC sem falha na W final, θ_lat_in vai a um valor acima de 1 (inalcançável) e
+  θ_lat_out = 1. Nesse caso **S_lat não atua na avaliação**, e o CONSERVADOR só é alcançado por defasagem, topologia ou
+  violação; o mesmo vale para S_err, se ocorrer. A parte 2 diz se o caso ocorreu, e o texto declara isso como limitação.
 - DT-014 para execução interrompida.
 - Célula que fechar com menos blocos que o planejado entra com o que tem; o relatório dá k e `2/2^k`.
 
@@ -323,7 +327,8 @@ os brutos, **sem nenhuma comparação entre braços**:
 | Item | Regra (pré-registro da calibração) |
 |---|---|
 | W, λ₅, atraso máximo de início | 7.2, 7.3 |
-| viabilidade do AC-5 (se inviável, este B-40 é revisto antes da N4) | 7.4 |
+| viabilidade do AC-5 com `max(k, kLag)` (se inviável, este B-40 é revisto antes da N4) | 7.4 e complemento 3 (R-1) |
+| cobertura da latência e do erro ("sem cobertura" ou não) | complemento 3 (R-2) |
 | θ_lat_in/out, θ_err_in/out, k = 2, m, `T_cooldown`, `n_err` | 7.6 a 7.9 |
 | `lag_in`, `lag_out`, `kLag` | 7.11 a 7.13 |
 | `T_estavel`, `T_hold_viol` | 7.14, 7.15 |

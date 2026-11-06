@@ -871,6 +871,11 @@ class Funcoes(unittest.TestCase):
         self.assertFalse(cal.viavel_em(6, 5))       # 43,3
         self.assertFalse(hasattr(cal, "viabilidade"))   # R-5: a funcao sem uso saiu
 
+    def test_theta_sem_cobertura_do_complemento_3(self):
+        # complemento 3 §2 e 3a §3: o menor double acima de 1, nao so "acima de 1"
+        self.assertEqual(math.nextafter(1.0, math.inf), cal.THETA_SEM_COBERTURA)
+        self.assertEqual(1.0, cal.THETA_OUT_SEM_COBERTURA)
+
     def test_problemas_de_carga(self):
         ok = {"wNs": 5 * S, "nLat": 100, "nErr": 100, "thetaLatIn": 0.05, "thetaLatOut": 0.0, "thetaErrIn": 5e-324,
               "thetaErrOut": 0.0, "k": 2, "m": 5, "cooldownNs": 25 * S, "estavelNs": 34 * S, "holdViolNs": 26 * S,

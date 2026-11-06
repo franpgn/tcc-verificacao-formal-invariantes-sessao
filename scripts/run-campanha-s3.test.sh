@@ -24,7 +24,11 @@
 # vista de fusao ISPN000093 (o duble de F2 a grava 44 s depois do end) e o --sweep-merge-timeout-sec do fusao_teto_s (o
 # duble de java grava o fusao-rep-001.json da checagem de fusao; java-sem-fusao: sem fusao, com o erro da varredura).
 # Nomes combinados com o W-5e (wt-w5e, d1bb887): fusao = pnn|a1, controller, bloco e t_fusao_ns no execucao.json, e os
-# bracos PO, PL, AO e AL no manifesto-bracos.tsv. Com CS_TESTE_GUARDAR, o S34 copia a saida (s34-saida/).
+# bracos PO, PL, AO e AL no manifesto-bracos.tsv. Com CS_TESTE_GUARDAR, o S34 e o S36 copiam a saida (s34-saida/,
+# s36-saida/). P-61 (decisao do coordenador): t_fusao_ns sai da trilha de observaveis (primeira amostra da sonda de
+# topologia depois do end com os tres nos em 3); com --sweep-merge-timeout-sec, o duble de java grava a trilha com a
+# fusao a end + obs-fusao-s (padrao 44; a amostra cai em +44,1 s) ou sem fusao (obs-sem-fusao). S37: parada depois de 3
+# falhas seguidas da politica da mesma variante.
 #
 # Uso: bash scripts/run-campanha-s3.test.sh [S1 S4 ...]   (sem argumentos: todos). Exit 0 se todos passarem.
 set -uo pipefail
@@ -39,7 +43,7 @@ REAL_SLEEP="$(command -v sleep)"
 REAL_TIMEOUT="$(command -v timeout)"
 TMP="$(mktemp -d)"
 trap '[[ -n "${CS_TESTE_MANTER:-}" ]] && echo "(CS_TESTE_MANTER: ${TMP} mantido)" || rm -rf "${TMP}"' EXIT
-SELECAO=" ${*:-S1 S2 S3 S4 S5 S6 S7 S8 S9 S10 S11 S12 S13 S14 S15 S16 S17 S18 S19 S20 S21 S22 S23 S24 S25 S26 S26h S27 S28 S29 S30 S31 S32 S33 S34 S35 S36} "
+SELECAO=" ${*:-S1 S2 S3 S4 S5 S6 S7 S8 S9 S10 S11 S12 S13 S14 S15 S16 S17 S18 S19 S20 S21 S22 S23 S24 S25 S26 S26h S27 S28 S29 S30 S31 S32 S33 S34 S35 S36 S37} "
 
 PASS=0
 FAIL=0
@@ -230,6 +234,29 @@ estado=convergiu
 echo "op_id,operation,start_ns,end_ns,replica,return_code,key" > "${csv}/rep-001.csv"
 printf '{\n  "t_fim_carga_ns" : 1,\n  "convergencia_estado" : "%s",\n  "t_religamento_ns" : %s\n}\n' "${estado}" "${relig}" \
     > "${csv}/convergencia-resumo-rep-001.json"
+# P-61: com --sweep-merge-timeout-sec, a trilha de observaveis com a sonda de topologia (2 s, de end - 4 s a end + 60 s,
+# em +0,1 s): antes de end + obs-fusao-s, isn3 em 1 e os outros em 2; depois, os tres em 3 (obs-sem-fusao: nunca). Sem
+# end, tres amostras com os tres em 3
+if [[ -n "${fteto}" && "${ctl}" != off ]]; then
+    te="$(sed -n 's/.* event=end t_epoch_ns=\([0-9]*\).*/\1/p' "${marker}" 2>/dev/null | head -1)"
+    fus="$(cat "${ST}/obs-fusao-s" 2>/dev/null || echo 44)"
+    obs_linha() {  # obs_linha <t_ms> <n1> <n2> <n3>
+        printf '{"tipo":"topologia","t_ns":%s000000,"anomala":%s,"nos_min":%s,"por_no":[{"no":"127.0.0.1:11222","respondeu":true,"numero_de_nos":%s,"motivo":"m","anomalo":false},{"no":"127.0.0.1:11223","respondeu":true,"numero_de_nos":%s,"motivo":"m","anomalo":false},{"no":"127.0.0.1:11224","respondeu":true,"numero_de_nos":%s,"motivo":"m","anomalo":false}]}\n' \
+            "$1" "$([[ "$4" == 3 ]] && echo false || echo true)" "$4" "$2" "$3" "$4"
+    }
+    {
+        printf '{"tipo":"meta","esquema":"observaveis-controlador/1.2","nos_esperados":3}\n'
+        if [[ -n "${te}" ]]; then
+            for ((k = -4; k <= 60; k += 2)); do
+                t=$(( te / 1000000 + k * 1000 + 100 ))
+                if [[ ! -f "${ST}/obs-sem-fusao" && $(( k * 1000 + 100 )) -ge $(( fus * 1000 )) ]]; then obs_linha "${t}" 3 3 3
+                else obs_linha "${t}" 2 2 1; fi
+            done
+        else
+            for k in 0 2 4; do obs_linha "$(( $(vms) - 10000 + k * 1000 ))" 3 3 3; done
+        fi
+    } > "${csv}/observaveis-rep-001.jsonl"
+fi
 # DT-027: com --sweep-merge-timeout-sec, a checagem de fusao antes da varredura (EsperaFusao) grava fusao-rep-001.json;
 # java-sem-fusao: sem fusao no teto, a varredura nao roda e varredura-rep-001.erro.txt traz o motivo
 if [[ -n "${fteto}" ]]; then
@@ -502,7 +529,7 @@ fim_f2() {
     local te t ts n
     te="$(vms)"; echo "fault=F2 node=${no} event=end t_epoch_ns=${te}000000" >> "${marker}"
     [[ -f "${ST}/sem-fusao-log" ]] && return 0
-    t=$(( te + 44000 )); ts="$(date -u -d "@$(( t / 1000 ))" '+%Y-%m-%d %H:%M:%S'),$(printf '%03d' $(( t % 1000 )))"
+    t=$(( te + $(cat "${ST}/ispn-fusao-s" 2>/dev/null || echo 44) * 1000 )); ts="$(date -u -d "@$(( t / 1000 ))" '+%Y-%m-%d %H:%M:%S'),$(printf '%03d' $(( t % 1000 )))"
     for n in isn1 isn2 isn3; do
         printf '\033[0m%s INFO  [o.i.CLUSTER] ISPN000093: Received new, MERGED cluster view for channel cluster-tcc: MergeView::[isn2-1|6] (3) [isn2-1, isn1-2, isn3-3], 2 subgroups: [isn3-3|5] (1) [isn3-3], [isn2-1|5] (2) [isn2-1, isn1-2]\033[m\n' "${ts}" >> "${ST}/logs-${n}"
     done
@@ -1956,8 +1983,9 @@ for br in PO:pnn:PREFERRED_NON_NULL PL:pnn:PREFERRED_NON_NULL AO:a1:${POL_A1} AL
     if [[ "${f}" == a1 ]]; then n=1; else n=0; fi
     ok "S34 ${b} A1-POLITICA carregada por no" "${n} ${n} ${n}" "$(json "${D}/execucao.json" '" ".join(str(x) for x in d["fusao_config"]["a1_politica_carregada"])')"
     ok "S34 ${b} fusao_config ok" "True" "$(json "${D}/execucao.json" 'd["fusao_config"]["ok"]')"
-    ok "S34 ${b} t_fusao_ns = o instante da checagem de fusao do programa (fusao-rep-001.json)" "$(json "${D}/fusao-rep-001.json" 'd["t_vista_ns"]')" "$(json "${D}/execucao.json" 'd.get("t_fusao_ns")')"
-    ok "S34 ${b} t_fusao_ns inteiro" "True" "$(json "${D}/execucao.json" 'isinstance(d.get("t_fusao_ns"), int)')"
+    ok "S34 ${b} t_vista_checagem_ns = o instante da checagem do programa (fusao-rep-001.json), so registro" "$(json "${D}/fusao-rep-001.json" 'd["t_vista_ns"]')" "$(json "${D}/execucao.json" 'd.get("t_vista_checagem_ns")')"
+    ok "S34 ${b} sem falha (sem end): t_fusao_ns ausente (P-61: o instante vem da trilha, depois do end)" "False" "$(json "${D}/execucao.json" '"t_fusao_ns" in d')"
+    contem "S34 ${b} fusao_trilha diz por que" "end" "$(json "${D}/execucao.json" 'd["fusao_trilha"]["motivo"]')"
     verdade "S34 ${b} sessions-async criado com o JSON do braco" cmp -s "${D}/caches/sessions-async.json" "${CACHES_T}/sessions-async$([[ ${f} == a1 ]] && echo -a1).json"
     ok "S34 ${b} extensao_sha256" "${EXT_SHA}" "$(json "${D}/execucao.json" 'd["extensao_sha256"]')"
     ok "S34 ${b} camada 3 antes sem divergencia (contra o JSON do braco)" "None" "$(json "${D}/execucao.json" 'd["camada3_pre"]["divergencias"]')"
@@ -2019,40 +2047,72 @@ fi
 
 # ============================================================================= S36
 if quer S36; then
-echo "== S36: DT-027: F2 na matriz fatorial: instante da fusao (ISPN000093 depois do end) e driver de log no execucao.json =="
+echo "== S36: DT-027/P-61: F2 no bloco fatorial: t_fusao_ns pela trilha de observaveis, conferido pela ISPN000093, e o instante da checagem a parte =="
 novo_caso s36
 parametros exec_teto_s=900 fusao_teto_s=20
 caches_fat; compose_fat
-matriz_fat "ASYNC-F2:descritiva:1"
+matriz_fat "ASYNC-F2:teste:1"
+# a fusao 20 s depois do end na trilha e no log (dentro da carga de 60 s virtuais do caso; na VM, ~44 s)
+echo 20 > "${ST}/obs-fusao-s"; echo 20 > "${ST}/ispn-fusao-s"
 printf 'go nucleo %s\ngo rede 0\n' "${HOJE}" > "${CS_TTY_ARQUIVO}"
 rodar nucleo --sonda-replay --extensao-sha256 "${EXT_SHA}"
 ok "S36 exit 0" "0" "${RC}"
-for b in A B; do
+for b in PO PL AO AL; do
     D="$(ls -d "${OUT}"/exec-*-ASYNC-F2-"${b}")"
     ok "S36 ${b} ACEITA" "ACEITA" "$(json "${D}/checagem.json" 'd["veredito"]')"
     ok "S36 ${b} fusao pnn" "pnn" "$(json "${D}/checagem.json" 'd["fusao"]')"
-    ok "S36 ${b} vista de fusao 44 s depois do end" "44.0" "$(json "${D}/execucao.json" 'd["fusao_vista"]["desde_end_s"]')"
+    ok "S36 ${b} vista de fusao (ISPN000093) 20 s depois do end" "20.0" "$(json "${D}/execucao.json" 'd["fusao_vista"]["desde_end_s"]')"
     ok "S36 ${b} os tres nos com a linha" "3" "$(json "${D}/execucao.json" 'sum(1 for v in d["fusao_vista"]["por_no"].values() if v["primeira_apos_end_ms"] is not None)')"
     ok "S36 ${b} fonte da vista" "ISPN000093" "$(json "${D}/execucao.json" 'd["fusao_vista"]["fonte"].split()[0]')"
     ok "S36 ${b} driver de log" "k8s-file" "$(json "${D}/execucao.json" 'd["fusao_vista"]["log_driver"]')"
     verdade "S36 ${b} linhas ISPN000093 guardadas" test "$(grep -c ISPN000093 "${D}/fusao-ispn000093.txt")" -eq 3
-    ok "S36 ${b} t_fusao_ns presente (checagem do programa)" "True" "$(json "${D}/execucao.json" 'isinstance(d.get("t_fusao_ns"), int)')"
+    END_B="$(sed -n 's/.* event=end t_epoch_ns=\([0-9]*\).*/\1/p' "${D}/marcadores.txt" | head -1)"
+    ok "S36 ${b} t_fusao_ns = primeira amostra da trilha com os tres em 3 depois do end (end + 20,1 s)" "$(( END_B / 1000000 + 20100 ))000000" "$(json "${D}/execucao.json" 'd.get("t_fusao_ns")')"
+    ok "S36 ${b} fusao_trilha: 20,1 s depois do end" "20.1" "$(json "${D}/execucao.json" 'd["fusao_trilha"]["desde_end_s"]')"
+    ok "S36 ${b} diferenca para a ISPN000093 (20,0 s): 0,1 s" "0.1" "$(json "${D}/execucao.json" 'd["fusao_trilha"]["dif_ispn000093_s"]')"
+    ok "S36 ${b} t_vista_checagem_ns a parte (fusao-rep-001.json)" "$(json "${D}/fusao-rep-001.json" 'd["t_vista_ns"]')" "$(json "${D}/execucao.json" 'd.get("t_vista_checagem_ns")')"
+    ok "S36 ${b} t_vista_checagem_ns inteiro" "True" "$(json "${D}/execucao.json" 'isinstance(d.get("t_vista_checagem_ns"), int)')"
 done
-verdade "S36 manifesto-bracos.tsv (bloco A/B da matriz fatorial)" test "$(wc -l < "${OUT}/manifesto-bracos.tsv")" -eq 3
+ok "S36 manifesto-bracos.tsv com os quatro bracos" "5" "$(wc -l < "${OUT}/manifesto-bracos.tsv" | tr -d ' ')"
+if [[ -n "${CS_TESTE_GUARDAR:-}" ]]; then rm -rf "${CS_TESTE_GUARDAR}/s36-saida"; cp -r "${OUT}" "${CS_TESTE_GUARDAR}/s36-saida"; fi
 novo_caso s36b
 parametros exec_teto_s=900 fusao_teto_s=20
 caches_fat; compose_fat
 matriz_fat "ASYNC-F2:descritiva:1"
-: > "${ST}/sem-fusao-log"; echo journald > "${ST}/log-driver"; : > "${ST}/java-sem-fusao"
+: > "${ST}/sem-fusao-log"; echo journald > "${ST}/log-driver"; : > "${ST}/java-sem-fusao"; : > "${ST}/obs-sem-fusao"
 printf 'go nucleo %s\ngo rede 0\n' "${HOJE}" > "${CS_TTY_ARQUIVO}"
 rodar nucleo --sonda-replay --extensao-sha256 "${EXT_SHA}"
 D="$(exec_dir 0)"
 ok "S36b sem a linha de fusao no log: exit 0, ACEITA (so registro)" "0 ACEITA" "${RC} $(json "${D}/checagem.json" 'd["veredito"]')"
 ok "S36b instante da fusao nulo" "None" "$(json "${D}/execucao.json" 'd["fusao_vista"]["primeira_apos_end_ms"]')"
 contem "S36b motivo com o driver de log" "journald" "$(json "${D}/execucao.json" 'd["fusao_vista"]["motivo"]')"
-ok "S36b sem fusao no teto da checagem do programa: t_fusao_ns ausente" "False" "$(json "${D}/execucao.json" '"t_fusao_ns" in d')"
+ok "S36b sem fusao na trilha: t_fusao_ns ausente" "False" "$(json "${D}/execucao.json" '"t_fusao_ns" in d')"
+contem "S36b fusao_trilha diz por que" "nenhuma amostra" "$(json "${D}/execucao.json" 'd["fusao_trilha"]["motivo"]')"
+ok "S36b sem a ISPN000093, sem diferenca" "None" "$(json "${D}/execucao.json" 'd["fusao_trilha"]["dif_ispn000093_s"]')"
+ok "S36b sem fusao na checagem do programa: t_vista_checagem_ns nulo" "None" "$(json "${D}/execucao.json" 'd["t_vista_checagem_ns"]')"
 verdade "S36b varredura-rep-001.erro.txt do programa guardado na execucao" test -s "${D}/varredura-rep-001.erro.txt"
 ok "S36b registro da checagem no execucao.json" "False" "$(json "${D}/execucao.json" 'd["fusao_checagem"]["fundiu"]')"
+fi
+
+# ============================================================================= S37
+if quer S37; then
+echo "== S37: DT-027: 3 falhas seguidas da politica da mesma variante -> a fase para (exit 6) depois do terceiro DESCARTADA-INFRA =="
+novo_caso s37
+parametros fusao_teto_s=20
+caches_fat; compose_fat
+matriz_fat "ASYNC-none:teste:3"
+: > "${ST}/a1-post-falha"   # o braco a1 nunca fica (classe que nao carrega); o pnn fica
+# em cada bloco, o primeiro braco a1 falha e os seguintes viram PULADA; os pnn antes dele rodam
+CARGAS_ESP="$(awk -F'\t' 'NR > 1 {if (!($9 in vista)) {if ($14 == "a1") vista[$9] = 1; else n++}} END {print n + 0}' "${MAT}")"
+I3="$(awk -F'\t' 'NR > 1 && $14 == "a1" && !($9 in vista) {vista[$9] = 1; k++; if (k == 3) {print $1; exit}}' "${MAT}")"
+printf 'go nucleo %s\n' "${HOJE}" > "${CS_TTY_ARQUIVO}"
+rodar nucleo --sonda-replay --extensao-sha256 "${EXT_SHA}"
+ok "S37 exit 6 (parada de infraestrutura)" "6" "${RC}"
+contem "S37 motivo: 3 falhas seguidas da politica de fusao" "3 falhas seguidas da politica de fusao (fusao=a1)" "$(tail -1 "${OUT}/nucleo/orquestrador.log")"
+ok "S37 a terceira falha do a1 (i=${I3}) gravada DESCARTADA-INFRA" "DESCARTADA-INFRA" "$(json "$(exec_dir "${I3}")/checagem.json" 'd["veredito"]')"
+ok "S37 nenhuma execucao depois da terceira falha" "0" "$(ls -d "${OUT}"/exec-* | awk -F'exec-' '{split($2, a, "-"); if (a[1] + 0 > '"${I3}"') n++} END {print n + 0}')"
+ok "S37 so os bracos pnn antes do primeiro a1 de cada bloco rodaram carga" "${CARGAS_ESP}" "$(cargas)"
+ok "S37 tres DESCARTADA-INFRA por fusao" "3" "$(cat "${OUT}"/exec-*/checagem.json | grep -c 'infra: fusao')"
 fi
 
 echo

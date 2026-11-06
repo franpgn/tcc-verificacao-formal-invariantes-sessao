@@ -285,5 +285,101 @@ class FusaoVista(unittest.TestCase):
         self.assertIsNone(cc.carimbo_ms("ISPN000093 sem carimbo"))
 
 
+FIXTURE_X19 = AQUI / "testdata" / "fusao-x19"
+# primeira amostra da sonda de topologia com os tres nos em 3 depois do end, nas F2 da recalibracao X-19 (P-61)
+ESPERADO_X19 = {"exec-0001-SYNC-F2-A": 44.1, "exec-0004-ASYNC-F2-A": 42.2, "exec-0008-SYNC-F2-A": 44.2,
+                "exec-0010-ASYNC-F2-A": 44.2, "exec-0013-ASYNC-F2-A": 44.3, "exec-0016-SYNC-F2-A": 46.2,
+                "exec-0018-ASYNC-F2-A": 44.2, "exec-0022-ASYNC-F2-A": 44.2, "exec-0027-ASYNC-F2-A": 46.1}
+
+
+def amostra(t_ns, ns=(3, 3, 3), resp=(True, True, True)):
+    por = [{"no": "127.0.0.1:1122%d" % (k + 2), "respondeu": r, "numero_de_nos": n if r else None,
+            "motivo": "ok" if n == 3 else "nos:%d<3" % n, "anomalo": n != 3} for k, (n, r) in enumerate(zip(ns, resp))]
+    return json.dumps({"tipo": "topologia", "t_ns": t_ns, "anomala": min(ns) < 3, "nos_min": min(ns), "por_no": por})
+
+
+META_OBS = json.dumps({"tipo": "meta", "esquema": "observaveis-controlador/1.2", "nos_esperados": 3})
+PART = (2, 2, 1)
+
+
+class FusaoTrilha(unittest.TestCase):
+    """fusao-trilha --observaveis <observaveis-rep-NNN.jsonl> --marcadores <marcadores.txt> (P-61, decisao do
+    coordenador de 06/11): t_fusao_ns = primeira amostra da sonda de topologia do controlador depois do end em que os
+    tres nos respondem com a mesma vista de 3 membros (a trilha so traz number_of_nodes por no: tres nos em 3)."""
+
+    def trilha(self, linhas, marcadores=("fault=F2 node=isn3 event=start t_epoch_ns=1793966472285958813",
+                                          "fault=F2 node=isn3 event=end t_epoch_ns=%d" % END_NS), bruto=None):
+        with tempfile.TemporaryDirectory() as d:
+            ob, mk = Path(d) / "observaveis-rep-001.jsonl", Path(d) / "marcadores.txt"
+            ob.write_bytes((bruto if bruto is not None else "".join(l + "\n" for l in linhas)).encode("utf-8"))
+            if marcadores is not None:
+                mk.write_text("".join(m + "\n" for m in marcadores), encoding="utf-8")
+            rc, out, err = rodar("fusao-trilha", "--observaveis", str(ob), "--marcadores", str(mk))
+            self.assertEqual(0, rc, err)
+            return json.loads(out)
+
+    def test_primeira_amostra_com_os_tres_em_3_depois_do_end(self):
+        S = 10**9
+        ls = [META_OBS, amostra(END_NS - 50 * S)] + [amostra(END_NS - 4 * S + k * 2 * S, PART) for k in range(24)]
+        ls += [amostra(END_NS + 44 * S + 100_000_000), amostra(END_NS + 46 * S + 100_000_000)]
+        j = self.trilha(ls)
+        self.assertEqual(END_NS + 44 * S + 100_000_000, j["t_fusao_ns"])
+        self.assertEqual(44.1, j["desde_end_s"])
+        self.assertEqual(END_NS, j["end_ns"])
+        self.assertEqual(3, j["nos_esperados"])
+        self.assertEqual(23, j["amostras_apos_end"])
+        self.assertAlmostEqual(2.0, j["periodo_amostras_s"], places=1)
+        self.assertIsNone(j["motivo"])
+        self.assertIn("observaveis", j["fonte"])
+
+    def test_no_sem_resposta_ou_vista_incompleta_nao_e_fusao(self):
+        S = 10**9
+        ls = [META_OBS, amostra(END_NS + 2 * S, (3, 3, 3), (True, True, False)),
+              amostra(END_NS + 4 * S, (3, 3, 2)), amostra(END_NS + 6 * S)]
+        self.assertEqual(END_NS + 6 * S, self.trilha(ls)["t_fusao_ns"])
+
+    def test_sem_fusao_depois_do_end(self):
+        S = 10**9
+        j = self.trilha([META_OBS] + [amostra(END_NS + k * 2 * S, PART) for k in range(10)])
+        self.assertIsNone(j["t_fusao_ns"])
+        self.assertIsNone(j["desde_end_s"])
+        self.assertIn("nenhuma amostra", j["motivo"])
+
+    def test_sem_end(self):
+        j = self.trilha([META_OBS, amostra(END_NS)], ("fault=F2 node=isn3 event=start t_epoch_ns=1",))
+        self.assertIsNone(j["t_fusao_ns"])
+        self.assertIn("end", j["motivo"])
+        j = self.trilha([META_OBS, amostra(END_NS)], None)
+        self.assertIsNone(j["end_ns"])
+
+    def test_sem_trilha_e_linha_truncada(self):
+        S = 10**9
+        bruto = META_OBS + "\n" + '{"tipo":"janela","t_ns":1}\n' + amostra(END_NS + 2 * S) + "\n" + '{"tipo":"topol'
+        self.assertEqual(END_NS + 2 * S, self.trilha(None, bruto=bruto)["t_fusao_ns"])
+        with tempfile.TemporaryDirectory() as d:
+            mk = Path(d) / "marcadores.txt"
+            mk.write_text("fault=F2 node=isn3 event=end t_epoch_ns=%d\n" % END_NS, encoding="utf-8")
+            rc, out, err = rodar("fusao-trilha", "--observaveis", str(Path(d) / "nao.jsonl"), "--marcadores", str(mk))
+            self.assertEqual(0, rc, err)
+            j = json.loads(out)
+            self.assertIsNone(j["t_fusao_ns"])
+            self.assertIn("observaveis", j["motivo"])
+
+    def test_x19_fusao_44_s_depois_do_end_nas_f2(self):
+        """Brutos da recalibracao X-19 (fixture com a origem em testdata/fusao-x19/ORIGEM.txt): a regra da ~44 s."""
+        vistos = {}
+        for d in sorted(FIXTURE_X19.glob("exec-*")):
+            rc, out, err = rodar("fusao-trilha", "--observaveis", str(d / "observaveis-rep-001.jsonl"),
+                                 "--marcadores", str(d / "marcadores.txt"))
+            self.assertEqual(0, rc, err)
+            j = json.loads(out)
+            vistos[d.name] = round(j["desde_end_s"], 1)
+            self.assertTrue(42.0 <= j["desde_end_s"] <= 48.0, (d.name, j))
+            self.assertAlmostEqual(2.0, j["periodo_amostras_s"], delta=0.1)
+        self.assertEqual(ESPERADO_X19, vistos)
+        asinc = sorted(v for k, v in vistos.items() if "ASYNC" in k)
+        self.assertEqual(44.2, asinc[len(asinc) // 2], "mediana das seis ASYNC F2")
+
+
 if __name__ == "__main__":
     unittest.main()

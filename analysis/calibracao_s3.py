@@ -62,7 +62,9 @@ from referencia_p99 import percentil  # noqa: E402  (posto mais proximo; copia d
 
 ESQUEMA = "calibracao-s3/1"
 PRE_REGISTRO = ("docs/pre-registro-calibracao-s3-2026-11-05.md, secao 7 (DT-020), com o complemento 1 "
-                "(docs/pre-registro-calibracao-s3-complemento-1-2026-11-05.md, DT-022, 744e6e8)")
+                "(docs/pre-registro-calibracao-s3-complemento-1-2026-11-05.md, DT-022, 744e6e8), o complemento 3 "
+                "(docs/pre-registro-calibracao-s3-complemento-3-2026-11-06.md, DT-024, 45e7800) e o 3a "
+                "(docs/pre-registro-calibracao-s3-complemento-3a-2026-11-06.md, 639966c)")
 C1 = "complemento 1 (DT-022)"
 S = 1_000_000_000
 MS = 1_000_000
@@ -171,15 +173,24 @@ LEITURAS = [
 # Ajustes da V-W9 (docs/validacao-w9-2026-11-05.md, 8d6ebfc), aprovados pelo coordenador (W-9b); o Senior escreve o
 # complemento 3 (DT-024) com o mesmo conteudo
 EMENDAS_VW9 = [
-    {"id": "R-1", "regras": ["7.4", "7.13", "C1 §4.3"], "situacao": "aprovada pelo coordenador (W-9b); complemento 3",
+    {"id": "R-1", "regras": ["7.4", "7.13", "C1 §4.3"], "situacao": "complemento 3 (DT-024, 45e7800), secao 1",
      "leitura": "viavel em W' = max(k, kLag_min(W')) W' + 13,3 < 39,8, k = 2 (o P1 so age em CONSERVADOR, que pede k "
                 "janelas de lag ALTA)"},
-    {"id": "R-2", "regras": ["7.7", "7.8", "C1 §4.3"], "situacao": "aprovada pelo coordenador (W-9b); complemento 3",
-     "leitura": "sinal de latencia (ou erro) sem nenhuma janela determinada nas ASYNC sem falha no W final: theta_in = "
-                "%s (acima de 1, inalcancavel) e theta_out = %s; m e T_cooldown derivam com eles"
+    {"id": "R-2", "regras": ["7.7", "7.8", "C1 §4.3"],
+     "situacao": "complemento 3 (DT-024, 45e7800), secao 2, com o 3a",
+     "leitura": "sinal de latencia (ou erro) sem cobertura sempre que a 7.7 tiver N = 0 nas ASYNC sem falha no W final "
+                "(nenhuma posicao de k janelas determinadas seguidas, inclusive sem janela determinada): theta_in = o "
+                "menor double acima de 1 (%r) e theta_out = %s; m e T_cooldown derivam com eles"
                 % (THETA_SEM_COBERTURA, THETA_OUT_SEM_COBERTURA)},
-    {"id": "R-3", "regras": ["7.8", "C1 §3"], "situacao": "aprovada pelo coordenador (W-9b); complemento 3",
+    {"id": "R-3", "regras": ["7.8", "C1 §3"], "situacao": "complemento 3 (DT-024, 45e7800), secao 3",
      "leitura": "no m, o trecho sem alto que atravessa o end e cortado no end e conta so a parte depois dele"},
+    {"id": "R-4", "regras": ["7.8", "7.12", "7.13", "C1 §4.1"], "situacao": "complemento 3 (DT-024, 45e7800), secao 4",
+     "leitura": "com W final abaixo de 5 s (periodo da sonda na calibracao), pular as janelas sem rodada subestima kLag, "
+                "m e o trecho do lag_out em cerca de 5/W; a regra de pular fica e a subestimacao e declarada em "
+                "W_s.dados.subestimacao_w_menor_que_5_s"},
+    {"id": "3a", "regras": ["7.7", "C3 §2"], "situacao": "complemento 3a (nota a DT-024, 639966c)",
+     "leitura": "a condicao da R-2 e N = 0 na 7.7, o que inclui janelas determinadas sem nenhum par seguido; o JSON da "
+                "o numero e a fracao de janelas determinadas; theta_in sem cobertura = o menor double acima de 1"},
 ]
 
 
@@ -1370,8 +1381,9 @@ def derivar(campanha, parametros):
         rm = m_reentrada(seqs)
     m = rm["valor"]
     P["m"] = _entrada(
-        "7.8", m, "m = 1 + L, L = maior trecho maximo de janelas sem sinal alto que comeca em ou depois do end e "
-        "termina numa janela alta, nas ASYNC F1, F2 e F4 (complemento 1 §3)", execs=fm, celulas=CEL_M,
+        "7.8", m, "m = 1 + L, L = maior trecho de janelas sem sinal alto depois do end que termina imediatamente "
+        "numa janela alta, nas ASYNC F1, F2 e F4 (complemento 1 §3); o trecho que atravessa o end e cortado no end e "
+        "conta so a parte depois dele (complemento 3 §3, R-3)", execs=fm, celulas=CEL_M,
         dados={"maior_trecho": rm["maior_trecho"], "trechos_seguidos_de_alta": rm["trechos_seguidos_de_alta"],
                "trechos_cortados_no_end": rm.get("trechos_cortados_no_end"),
                "limiares_usados": {k: lim[k] for k in sorted(lim)},

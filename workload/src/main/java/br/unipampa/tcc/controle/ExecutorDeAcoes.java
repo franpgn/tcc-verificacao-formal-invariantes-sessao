@@ -275,6 +275,18 @@ public final class ExecutorDeAcoes implements AutoCloseable {
 
     /** Pede a reversao de uma acao ativa; inativa, nao faz nada. */
     public void reverter(AcaoCluster acao, RegistroAcao.Origem origem, Decisao.Regra regra, long fimJanelaNs) {
+        reverterCom(acao, origem, regra, fimJanelaNs);
+    }
+
+    /**
+     * P1-IC (trilha 1.3): reversao pedida pela guarda continua do AC-7. Nao vem de uma decisao: a linha {@code acao} sai
+     * com origem {@code GUARDA}, {@code regra} e {@code t_fim_janela_ns} nulos. Inativa, nao faz nada.
+     */
+    public void reverterPelaGuarda(AcaoCluster acao) {
+        reverterCom(acao, RegistroAcao.Origem.GUARDA, null, null);
+    }
+
+    private void reverterCom(AcaoCluster acao, RegistroAcao.Origem origem, Decisao.Regra regra, Long fimJanelaNs) {
         Objects.requireNonNull(acao, "acao");
         Objects.requireNonNull(origem, "origem");
         synchronized (trava) {

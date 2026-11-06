@@ -100,6 +100,12 @@ e H_L rejeitadas, vazao util nao inferior e rastreabilidade integral da trilha d
 global: Holm sobre os p_IU das celulas de teste (celula nao avaliavel entra com p = 1). H_V nao
 avaliavel quando o braco A nao tem violacao em nenhum bloco (regra de tres por braco).
 
+P1-IC (P-63; V-2 e V-4 do coordenador, 06/11): a acao do P1 e o AC-7 (o suspeito ignora o cache de sessoes),
+trilha decisoes-controlador/1.3. A rastreabilidade (a mesma que as guardas de PL e AL usam na IU) confere o AC-7
+contra as linhas politica (P1 e motivos de desfazer), a origem GUARDA, a cota do P1 e a linha REVERTER de todo AC-7
+aplicado (_problemas_ac7). O descritivo traz o resumo do AC-7 (resumo_ac7) ao lado do ac5_aplicada, que fica para
+a comparacao; AC-7 que termina ativo deixa Delta_conv e divergencia nao avaliaveis, como o AC-5 sem religamento.
+
 Grava o JSON e uma tabela Markdown (mesmo nome, .md); nunca sobrescreve.
 
 Exit: 0 ok, 2 uso/contrato/saida existente.
@@ -175,6 +181,16 @@ SUFIXO_RAZAO = ":razao"
 # antes de iniciar o laco de convergencia; t_religamento_ns e o instante em que ele viu os tres nos de volta.
 CAMPO_RELIGAMENTO = "t_religamento_ns"
 TIPO_AC5 = "AC-5"
+# P1-IC (P-63; V-2 e V-4 do coordenador, 06/11): a acao do P1 e o AC-7 (o no suspeito ignora o cache de sessoes,
+# POST/DELETE /rest/v2/server/ignored-caches; reversivel, um no, um cache). Trilha decisoes-controlador/1.3: tipo
+# AC-7, origem GUARDA (a guarda continua, sem decisao: regra e t_fim_janela_ns nulos, so REVERTER), acao_p1 em
+# parametros_politica, usadas_p1 na linha politica (cota = cota_ac5) e os motivos de desfazer da politica
+# (PoliticaPorAssinatura.java:81-85).
+TIPO_AC7 = "AC-7"
+ORIGEM_GUARDA = "GUARDA"
+ESQUEMA_DECISOES_AC7 = "decisoes-controlador/1.3"
+POLITICA_P1 = "P1"
+MOTIVOS_DESFAZER_AC7 = ("desfazer-alvo-sozinho", "desfazer-apos-fusao", "suspeita-desfeita")
 ATUADOR_NULO = "nulo"
 POLITICA_NENHUMA = "nenhuma"
 FAMILIA_V = "co-principal-V"
@@ -733,6 +749,68 @@ def ac5_aplicada(trilha):
     return False
 
 
+def _lido_int(lido, campo):
+    """Inteiro de "campo=N" no lido de uma linha acao (formato do AtuadorIgnorarCache: chave=valor;...), ou None."""
+    if not isinstance(lido, str):
+        return None
+    for parte in lido.split(";"):
+        k, _, v = parte.partition("=")
+        if k.strip() == campo:
+            try:
+                return int(v.strip())
+            except ValueError:
+                return None
+    return None
+
+
+def _executada(a):
+    return a.get("executada") is True
+
+
+def resumo_ac7(trilha):
+    """Descritivo do AC-7 numa execucao (P1-IC; V-4): o que a politica fez no lugar da parada.
+
+    aplicada: alguma aplicacao executada com APLICADA; alvo: o primeiro alvo aplicado; efeito_ms: o efeito_ms do lido
+    dessa aplicacao (tempo do POST ate o alvo recusar o cache; P-62); falhou_executada: aplicacoes executadas com
+    FALHOU (o executor as reverte em seguida, FALHA_NA_APLICACAO); desfazer: cada REVERTER executado, em ordem, com a
+    origem, o motivo da linha politica da mesma janela (so origem POLITICA) e o resultado; ativa_no_fim: alguma
+    aplicacao executada (APLICADA ou FALHOU) sem REVERTER executado com sucesso depois dela, no mesmo alvo (o alvo pode
+    ter terminado a carga ignorando o cache de sessoes). PREVISTA (shadow) e NAO_EXECUTADA nao contam.
+    """
+    linhas = trilha["linhas"] if trilha is not None else []
+    motivos = {(o.get("t_fim_janela_ns"), str(o.get("no"))): o.get("motivo") for o in linhas
+               if o["tipo"] == "politica" and TIPO_AC7 in (o.get("reverter") or ())}
+    aplicada, alvo, efeito, falhou, desfazer, ativa = False, None, None, 0, [], {}
+    for a in linhas:
+        ac = a.get("acao") if isinstance(a.get("acao"), dict) else {}
+        if a["tipo"] != "acao" or ac.get("tipo") != TIPO_AC7 or not _executada(a):
+            continue
+        res, alvo_a = a.get("resultado"), ac.get("alvo")
+        if a.get("operacao") == "APLICAR":
+            if res == "APLICADA":
+                if not aplicada:
+                    aplicada, alvo, efeito = True, alvo_a, _lido_int(a.get("lido"), "efeito_ms")
+                ativa[alvo_a] = True
+            elif res == "FALHOU":
+                falhou += 1
+                ativa[alvo_a] = True
+        elif a.get("operacao") == "REVERTER":
+            origem = a.get("origem")
+            desfazer.append({"origem": origem,
+                             "motivo": motivos.get((a.get("t_fim_janela_ns"), str(alvo_a))) if origem == "POLITICA"
+                             else None,
+                             "resultado": res})
+            if res != "FALHOU":
+                ativa[alvo_a] = False
+    return {"aplicada": aplicada, "alvo": alvo, "efeito_ms": efeito, "falhou_executada": falhou,
+            "desfazer": desfazer, "ativa_no_fim": any(ativa.values())}
+
+
+def ac7_aplicada(trilha):
+    """True se a trilha tem uma aplicacao do AC-7 executada (APLICADA): o alvo recusou o cache de sessoes."""
+    return trilha is not None and resumo_ac7(trilha)["aplicada"]
+
+
 def descrever_controlador(trilha, inicio_falha_ns, fim_medicao_ns=None):
     """Desfechos descritivos do controlador numa execucao (sem teste; W-5 item 1, plano 3.1).
 
@@ -814,7 +892,7 @@ def descrever_controlador(trilha, inicio_falha_ns, fim_medicao_ns=None):
         politicas[k] = politicas.get(k, 0) + 1
     return {"modo": meta.get("modo"), "esquema": meta.get("esquema"), "completo": trilha["completo"],
             "atuador": meta.get("atuador"), "politica": meta.get("politica"), "param_sha256": meta.get("param_sha256"),
-            "ac5_aplicada": ac5_aplicada(trilha), "reversoes_por_origem": rev_origem,
+            "ac5_aplicada": ac5_aplicada(trilha), "ac7": resumo_ac7(trilha), "reversoes_por_origem": rev_origem,
             "decisoes": len(decs), "transicoes": sum(1 for o in decs if o.get("transicao") is True),
             "entradas_conservador": len(entradas),
             "entradas_antes_da_falha": sum(1 for o in entradas if antes(_int_ou_none(o.get("t_fim_ns")))),
@@ -833,7 +911,7 @@ def conferir_rastreabilidade(trilha):
     Problemas: trilha incompleta (sem fim ou truncada); decisao sem regra ou sem sinais; acao de origem
     POLITICA, R4 ou FALHA_NA_APLICACAO sem regra ou com t_fim_janela_ns que nao e o t_fim_ns de nenhuma
     decisao; linhas_perdidas diferente de 0; acoes_pedidas do fim diferente do numero de linhas APLICAR
-    (conservacao do contrato v1.1).
+    (conservacao do contrato v1.1). AC-7 (P1-IC, trilha 1.3): ver _problemas_ac7.
     """
     problemas = list(trilha["problemas"])
     linhas = trilha["linhas"]
@@ -859,7 +937,79 @@ def conferir_rastreabilidade(trilha):
             problemas.append("linhas_perdidas = %r" % (fim.get("linhas_perdidas"),))
         if fim.get("acoes_pedidas") != n_aplicar:
             problemas.append("acoes_pedidas = %r, linhas APLICAR = %d" % (fim.get("acoes_pedidas"), n_aplicar))
+    problemas += _problemas_ac7(trilha)
     return {"integral": not problemas, "problemas": problemas[:20], "n_problemas": len(problemas)}
+
+
+def _problemas_ac7(trilha):
+    """Rastreabilidade do AC-7 e da guarda continua (P1-IC; V-4 do coordenador, 06/11).
+
+    - AC-7 ou origem GUARDA so na trilha decisoes-controlador/1.3 (V-2: a troca da acao do P1 fica explicita).
+    - APLICAR do AC-7 de origem POLITICA: linha politica P1 da mesma janela (t_fim_janela_ns), no mesmo no, com AC-7
+      em "aplicar".
+    - REVERTER do AC-7 de origem POLITICA: linha politica da mesma janela, no mesmo no, com AC-7 em "reverter" e um
+      motivo de desfazer (MOTIVOS_DESFAZER_AC7).
+    - GUARDA: so REVERTER do AC-7, e com uma aplicacao do AC-7 (APLICADA) antes, no mesmo alvo, ainda nao desfeita.
+    - usadas_p1 da linha politica <= cota_ac5 de parametros_politica (a cota do P1, PoliticaPorAssinatura.java:279).
+    - AC-7 aplicado (APLICADA ou PREVISTA) tem linha REVERTER depois, no mesmo alvo: o executor desfaz a pilha no
+      encerramento (ExecutorDeAcoes.encerrar), entao a falta da linha e falta de rastro. Uma reversao que FALHOU esta
+      rastreada: e desfecho (ativa_no_fim em resumo_ac7), nao problema daqui.
+    """
+    linhas = trilha["linhas"]
+    meta = trilha["meta"]
+    acoes = [o for o in linhas if o["tipo"] == "acao"]
+    pols = [o for o in linhas if o["tipo"] == "politica"]
+    tipo_de = lambda a: (a.get("acao") or {}).get("tipo") if isinstance(a.get("acao"), dict) else None  # noqa: E731
+    alvo_de = lambda a: (a.get("acao") or {}).get("alvo") if isinstance(a.get("acao"), dict) else None  # noqa: E731
+    com_ac7 = [a for a in acoes if tipo_de(a) == TIPO_AC7]
+    com_guarda = [a for a in acoes if a.get("origem") == ORIGEM_GUARDA]
+    problemas = []
+    if (com_ac7 or com_guarda) and meta.get("esquema") != ESQUEMA_DECISOES_AC7:
+        problemas.append("AC-7 ou GUARDA em trilha %r (exige %s)" % (meta.get("esquema"), ESQUEMA_DECISOES_AC7))
+
+    def politica_da(a, lado):
+        return [o for o in pols if o.get("t_fim_janela_ns") == a.get("t_fim_janela_ns")
+                and str(o.get("no")) == str(alvo_de(a)) and TIPO_AC7 in (o.get(lado) or ())]
+
+    aberta = {}
+    for a in acoes:
+        tipo, op, origem, res = tipo_de(a), a.get("operacao"), a.get("origem"), a.get("resultado")
+        alvo = alvo_de(a)
+        if origem == ORIGEM_GUARDA:
+            if op != "REVERTER" or tipo != TIPO_AC7:
+                problemas.append("GUARDA so reverte o AC-7: linha %s %s com origem GUARDA" % (op, tipo))
+                continue
+            if not aberta.get(alvo):
+                problemas.append("GUARDA sem AC-7 aplicado antes no alvo %s" % (alvo,))
+        if tipo != TIPO_AC7:
+            continue
+        if op == "APLICAR":
+            if origem == "POLITICA" and not any(o.get("politica") == POLITICA_P1 for o in politica_da(a, "aplicar")):
+                problemas.append("AC-7 APLICAR sem linha politica P1 na janela %r (alvo %s)"
+                                 % (a.get("t_fim_janela_ns"), alvo))
+            if res in ("APLICADA", "PREVISTA"):
+                aberta[alvo] = True
+        elif op == "REVERTER":
+            if origem == "POLITICA" and not any(o.get("motivo") in MOTIVOS_DESFAZER_AC7
+                                                for o in politica_da(a, "reverter")):
+                problemas.append("AC-7 REVERTER sem linha politica de desfazer na janela %r (alvo %s)"
+                                 % (a.get("t_fim_janela_ns"), alvo))
+            aberta[alvo] = False
+    for alvo, ab in aberta.items():
+        if ab:
+            problemas.append("AC-7 aplicado sem linha REVERTER depois (alvo %s): o encerramento desfaz a pilha" % alvo)
+    pp = meta.get("parametros_politica")
+    cota = pp.get("cota_ac5") if isinstance(pp, dict) else None
+    for o in pols:
+        u = o.get("usadas_p1")
+        if u is None:
+            continue
+        if isinstance(cota, bool) or not isinstance(cota, int):
+            problemas.append("usadas_p1 na linha politica sem cota_ac5 em parametros_politica")
+            break
+        if isinstance(u, bool) or not isinstance(u, int) or u < 0 or u > cota:
+            problemas.append("usadas_p1 = %r acima da cota do P1 (%d) na janela %r" % (u, cota, o.get("t_fim_janela_ns")))
+    return problemas
 
 
 # ============================================================================= leitura de uma execucao
@@ -1151,6 +1301,10 @@ def desfechos_execucao(execucao, rep, fases_sel, w_recovery_ns, marcadores_nome=
     # nunca ve todos os nos (ConvergenciaLoop.java:20-24), entao Delta_conv e divergencia nao sao avaliaveis.
     trilha = ler_trilha_decisoes(d / ("decisoes-rep-%s.jsonl" % nnn))
     com_ac5 = ac5_aplicada(trilha)
+    # P1-IC (V-4): o AC-7 nao para no nenhum (sem religamento); se termina ativo (reversao que falhou), o alvo pode ter
+    # terminado a carga ignorando o cache de sessoes, e a convergencia e a varredura leem um cluster que nao e o do
+    # protocolo: Delta_conv e divergencia nao avaliaveis, como no AC-5 sem o registro do religamento
+    r7 = resumo_ac7(trilha)
     origem_conv = None
     if resumo is None:
         out[DESFECHO_DCONV] = dict(_ausente("sem resumo de convergencia"), origem=None)
@@ -1167,6 +1321,11 @@ def desfechos_execucao(execucao, rep, fases_sel, w_recovery_ns, marcadores_nome=
         elif com_ac5 and t_relig is None:
             motivo = ("AC-5 parou um no e o resumo nao tem %s (religamento do W-6): nao avaliavel"
                       % CAMPO_RELIGAMENTO)
+            out[DESFECHO_DCONV] = dict(_ausente(motivo), origem=None)
+            out[DESFECHO_DIV] = _ausente(motivo)
+        elif r7["ativa_no_fim"]:
+            motivo = ("AC-7 ativo no fim (sem reversao executada com sucesso; alvo %s): o alvo pode ter ficado "
+                      "ignorando o cache de sessoes na convergencia e na varredura; nao avaliavel" % (r7["alvo"],))
             out[DESFECHO_DCONV] = dict(_ausente(motivo), origem=None)
             out[DESFECHO_DIV] = _ausente(motivo)
         else:
@@ -1197,7 +1356,8 @@ def desfechos_execucao(execucao, rep, fases_sel, w_recovery_ns, marcadores_nome=
             "n_violacoes_base": n_acoes if n_acoes is not None else len(ev_sel),
             "fim_medicao_ns": fim_med, "fim_medicao_origem": origem_fim,
             "t_inicio_falha_ns": mk["inicio"], "t_fim_falha_ns": mk["fim"],
-            "ac5_aplicada": com_ac5, "delta_conv_origem": origem_conv,
+            "ac5_aplicada": com_ac5, "ac7_aplicada": r7["aplicada"], "ac7_ativa_no_fim": r7["ativa_no_fim"],
+            "delta_conv_origem": origem_conv,
             "execucao_json": ej, "fusao": fusao,
             "controlador": None if trilha is None else descrever_controlador(trilha, mk["inicio"], fim_med),
             "rastreabilidade": None if trilha is None else conferir_rastreabilidade(trilha)}
@@ -1496,6 +1656,8 @@ def _resumo_controlador(blocos, infos, bracos=BRACOS):
                                      else sum(x["tempo_conservador_s"] for x in ds)),
              "reversoes": {k: sum(x["reversoes"][k] for x in ds) for k in ("sucesso", "falha")},
              "execucoes_com_ac5_aplicada": sum(1 for x in ds if x["ac5_aplicada"]),
+             "execucoes_com_ac7_aplicada": sum(1 for x in ds if x["ac7"]["aplicada"]),
+             "execucoes_com_ac7_ativa_no_fim": sum(1 for x in ds if x["ac7"]["ativa_no_fim"]),
              "atrasos_entrada_s": [x["atraso_entrada_conservador_s"] for x in ds],
              "atrasos_primeira_acao_s": [x["atraso_primeira_acao_s"] for x in ds]}
         por_tipo = {}
@@ -1796,7 +1958,11 @@ def _comparar_celula_fatorial(celula, blocos, tipo, *, semente, rep, fases_sel, 
                          "delta_conv_origem": {b: {br: infos[b][br]["delta_conv_origem"] for br in BRACOS_FATORIAL}
                                                for b in blocos},
                          "ac5_aplicada": {b: {br: infos[b][br]["ac5_aplicada"] for br in BRACOS_FATORIAL}
-                                          for b in blocos}}}
+                                          for b in blocos},
+                         "ac7_aplicada": {b: {br: infos[b][br]["ac7_aplicada"] for br in BRACOS_FATORIAL}
+                                          for b in blocos},
+                         "ac7_ativa_no_fim": {b: {br: infos[b][br]["ac7_ativa_no_fim"] for br in BRACOS_FATORIAL}
+                                              for b in blocos}}}
     return c, regras
 
 
@@ -1972,7 +2138,11 @@ def comparar(manifesto, semente, *, delta_latencia, w_analise_s, w_recovery_s, t
                              "delta_conv_origem": {b: {br: infos[b][br]["delta_conv_origem"] for br in BRACOS}
                                                    for b in blocos},
                              "ac5_aplicada": {b: {br: infos[b][br]["ac5_aplicada"] for br in BRACOS}
-                                              for b in blocos}}}
+                                              for b in blocos},
+                             "ac7_aplicada": {b: {br: infos[b][br]["ac7_aplicada"] for br in BRACOS}
+                                              for b in blocos},
+                             "ac7_ativa_no_fim": {b: {br: infos[b][br]["ac7_ativa_no_fim"] for br in BRACOS}
+                                                  for b in blocos}}}
         if DESFECHO_V in desf:
             c["co_principal_v"] = _co_principal_v(desf[DESFECHO_V], res, usados_por[DESFECHO_V], semente,
                                                   len(nomes) + len(INVARIANTES_VIOL), n_boot, teste)

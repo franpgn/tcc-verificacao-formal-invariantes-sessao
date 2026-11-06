@@ -25,7 +25,6 @@ import br.unipampa.tcc.controle.ParametrosDefasagem;
 import br.unipampa.tcc.controle.ParametrosPolitica;
 import br.unipampa.tcc.controle.PoliticaDeAcao;
 import br.unipampa.tcc.controle.PoliticaPorAssinatura;
-import br.unipampa.tcc.controle.RegistroAcao;
 import br.unipampa.tcc.controle.Referencia;
 import br.unipampa.tcc.controle.SondaDefasagem;
 import br.unipampa.tcc.controle.SondaTopologia;
@@ -659,7 +658,7 @@ final class LigacaoControlador implements AutoCloseable, WorkloadMain.ControleDa
                 && c.parametros().politica().acaoP1() == AcaoCluster.Tipo.AC_7) {
             // P1-IC: guarda continua do AC-7; o desfazer vai pela fila unica do executor (origem GUARDA)
             l.guarda = new GuardaContinuaIgnorados(c.urlsAdmin(), new ClienteAdminRest(cli.usuario, cli.senha),
-                    executor::ativas, a -> executor.reverter(a, RegistroAcao.Origem.GUARDA, null, tempo.agoraNs()),
+                    executor::ativas, executor::reverterPelaGuarda,
                     System::nanoTime, CARENCIA_GUARDA_NS, PRAZO_LEITURA_GUARDA_NS);
             l.guarda.iniciar(PERIODO_GUARDA_NS);
         }

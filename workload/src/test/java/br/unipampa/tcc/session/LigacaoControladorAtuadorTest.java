@@ -236,7 +236,7 @@ class LigacaoControladorAtuadorTest {
 
         List<JsonNode> dec = LigacaoControladorTest.ler(dir.resolve("decisoes-rep-001.jsonl"));
         JsonNode meta = dec.get(0);
-        assertEquals("decisoes-controlador/1.2", meta.get("esquema").asText());
+        assertEquals("decisoes-controlador/1.3", meta.get("esquema").asText());
         assertEquals("por-tipo(AC-2=rest-infinispan,AC-5=rest-infinispan,AC-7=rest-ignored-caches)", meta.get("atuador").asText());
         assertEquals("AC-7", meta.get("parametros_politica").get("acao_p1").asText());
         assertEquals("por-assinatura", meta.get("politica").asText());

@@ -2,7 +2,8 @@
 #
 # run-campanha-s3.test.sh
 #
-# Testes S1..S32 do scripts/run-campanha-s3.sh (W-6, B-46; W-6c; I-1; W-10; carga S3 parametrizada; D-1), no estilo do run-rebaseline.test.sh: sem cluster, sem
+# Testes S1..S37, SP1IC e SP64 do scripts/run-campanha-s3.sh (W-6, B-46; W-6c; I-1; W-10; carga S3; D-1; fatorial;
+# P1-IC), no estilo do run-rebaseline.test.sh: sem cluster, sem
 # rede, sem VM, sem tc real. Shims em PATH para java, podman, podman-compose, sudo, nsenter, tc, ip, iptables, curl,
 # systemd-run, systemctl, flock, pgrep, df, sleep, date e timeout. Relogio acelerado: o shim de sleep dorme s/ESCALA de
 # verdade, o de timeout divide os prazos por ESCALA e o de date devolve T0 + (agora - T0) * ESCALA. O injetor de F1 e
@@ -43,7 +44,7 @@ REAL_SLEEP="$(command -v sleep)"
 REAL_TIMEOUT="$(command -v timeout)"
 TMP="$(mktemp -d)"
 trap '[[ -n "${CS_TESTE_MANTER:-}" ]] && echo "(CS_TESTE_MANTER: ${TMP} mantido)" || rm -rf "${TMP}"' EXIT
-SELECAO=" ${*:-S1 S2 S3 S4 S5 S6 S7 S8 S9 S10 S11 S12 S13 S14 S15 S16 S17 S18 S19 S20 S21 S22 S23 S24 S25 S26 S26h S27 S28 S29 S30 S31 S32 S33 S34 S35 S36 S37} "
+SELECAO=" ${*:-S1 S2 S3 S4 S5 S6 S7 S8 S9 S10 S11 S12 S13 S14 S15 S16 S17 S18 S19 S20 S21 S22 S23 S24 S25 S26 S26h S27 S28 S29 S30 S31 S32 S33 S34 S35 S36 S37 SP1IC SP64} "
 
 PASS=0
 FAIL=0
@@ -140,9 +141,11 @@ sha="$(sha256sum "${cfg}" | cut -d' ' -f1)"
 atu="por-tipo(AC-2=rest-infinispan,AC-5=rest-infinispan)"; [[ -f "${ST}/meta-atuador" ]] && atu="$(cat "${ST}/meta-atuador")"
 pol="por-assinatura"; [[ -f "${ST}/meta-politica" ]] && pol="$(cat "${ST}/meta-politica")"
 p2=false; [[ -f "${ST}/meta-p2" ]] && p2="$(cat "${ST}/meta-p2")"
+# P1-IC (V-2, V-3): trilha 1.3 e acao_p1 na meta; meta-acao-p1 troca o valor (S-P1IC)
+ap1=AC-7; [[ -f "${ST}/meta-acao-p1" ]] && ap1="$(cat "${ST}/meta-acao-p1")"
 escrever_meta() {
-printf '{"tipo":"meta","esquema":"decisoes-controlador/1.2","modo":"%s","param_sha256":"%s","atuador":"%s","politica":"%s","parametros_politica":{"k_lag":2,"p2_habilitada":%s}}\n' \
-    "${ctl}" "${sha}" "${atu}" "${pol}" "${p2}" > "${csv}/decisoes-rep-001.jsonl"
+printf '{"tipo":"meta","esquema":"decisoes-controlador/1.3","modo":"%s","param_sha256":"%s","atuador":"%s","politica":"%s","parametros_politica":{"k_lag":2,"p2_habilitada":%s,"acao_p1":"%s"}}\n' \
+    "${ctl}" "${sha}" "${atu}" "${pol}" "${p2}" "${ap1}" > "${csv}/decisoes-rep-001.jsonl"
 }
 # I-1 da V-W6 (S29): no W-2b a TrilhaJsonl grava por uma thread, e a meta pode chegar ao disco depois da ancora.
 # java-meta-atraso (N s virtuais): a meta so sai depois da ancora, passados N s e depois de uma leitura da meta que
@@ -190,6 +193,14 @@ if [[ "${ctl}" == active && -f "${ST}/ac5-alvo" ]]; then
     alvo="$(cat "${ST}/ac5-alvo")"; no="$(no_porta "${alvo##*:}")"
     echo exited > "${ST}/status-${no}"; echo parou >> "${ST}/parou-${no}"
     printf '{"tipo":"acao","operacao":"APLICAR","executada":true,"acao":{"tipo":"AC-5","caches":["sessions-async"],"alvo":"%s","valor":null},"resultado":"APLICADA"}\n' "${alvo}" >> "${csv}/decisoes-rep-001.jsonl"
+fi
+# P1-IC: AC-7 no braco B (ac7-alvo); sem ac7-sem-reversao, a politica o desfaz antes do fim
+if [[ "${ctl}" == active && -f "${ST}/ac7-alvo" ]]; then
+    a7="$(cat "${ST}/ac7-alvo")"
+    printf '{"tipo":"acao","operacao":"APLICAR","executada":true,"acao":{"tipo":"AC-7","caches":["sessions-async"],"alvo":"%s","valor":null},"origem":"POLITICA","resultado":"APLICADA"}\n' "${a7}" >> "${csv}/decisoes-rep-001.jsonl"
+    if [[ ! -f "${ST}/ac7-sem-reversao" ]]; then
+        printf '{"tipo":"acao","operacao":"REVERTER","executada":true,"acao":{"tipo":"AC-7","caches":["sessions-async"],"alvo":"%s","valor":null},"origem":"POLITICA","resultado":"APLICADA"}\n' "${a7}" >> "${csv}/decisoes-rep-001.jsonl"
+    fi
 fi
 [[ -f "${ST}/sinal-alvo" ]] && alvo="$(cat "${ST}/sinal-alvo")"
 if [[ -f "${ST}/ac5-apos-start" ]]; then
@@ -306,7 +317,8 @@ case "${cmd}" in
         [[ -f "${ST}/start-falha-${no}" ]] && { echo "Error: start (shim)" >&2; exit 125; }
         [[ -f "${ST}/start-nao-volta-${no}" ]] && exit 0
         if [[ "$(cat "${ST}/status-${no}" 2>/dev/null || echo running)" != running ]]; then vms > "${ST}/iniciado-ms-${no}"; fi
-        echo running > "${ST}/status-${no}"; rm -f "${ST}/link-$(pid_no "${no}")" "${ST}/netem-$(pid_no "${no}")"; echo "${no}" ;;
+        echo running > "${ST}/status-${no}"; rm -f "${ST}/link-$(pid_no "${no}")" "${ST}/netem-$(pid_no "${no}")"; echo "${no}"
+        rm -f "${ST}/loggers-${no}" ;;  # P-64: o nivel posto pela REST nao sobrevive ao reinicio (medido no p1ic)
     version) echo "Version: 5.0.0 (shim)" ;;
     # DT-027: o log do servidor (A1-POLITICA carregada na criacao do sessions-async, ISPN000093 na fusao); o down apaga
     logs) cat "${ST}/logs-${@: -1}" 2>/dev/null ;;
@@ -321,7 +333,7 @@ ST="${CS_ESTADO}"
 acao="${@: -1}"; [[ "${acao}" == "-d" ]] && acao=up
 case "${acao}" in
     down) for n in isn1 isn2 isn3; do echo ausente > "${ST}/status-${n}"; done
-          rm -rf "${ST}/caches"; rm -f "${ST}"/netem-* "${ST}"/clsact-* "${ST}"/prio-* "${ST}"/link-* "${ST}"/logs-*
+          rm -rf "${ST}/caches"; rm -f "${ST}"/netem-* "${ST}"/clsact-* "${ST}"/prio-* "${ST}"/link-* "${ST}"/logs-* "${ST}"/loggers-*
           # W-6c: o down solta o swap das JVMs; meminfo-apos-down-<n> vira o /proc/meminfo depois do n-esimo down
           nd=$(( $(cat "${ST}/downs" 2>/dev/null || echo 0) + 1 )); echo "${nd}" > "${ST}/downs"
           [[ -f "${ST}/meminfo-apos-down-${nd}" ]] && cp "${ST}/meminfo-apos-down-${nd}" "${CS_SHIM_DIR}/meminfo" ;;
@@ -453,6 +465,22 @@ case "${caminho}" in
         b="$(cat "${ST}/caches/${c}.json")"
         [[ -f "${ST}/config-diverge-${c}" ]] && b="${b/17500/15000}"
         corpo "{\"${c}\":${b}}"; codigo 200 ;;
+    rest/v2/logging/loggers/*)
+        # P-64: PUT .../loggers/<categoria>?level=<nivel> por no; logger-put-falha -> 400
+        cat="${caminho#rest/v2/logging/loggers/}"; nivel="${cat#*\?level=}"; cat="${cat%%\?*}"
+        if [[ -f "${ST}/logger-put-falha" ]]; then corpo "ISPN080036: Invalid level"; codigo 400; exit 0; fi
+        f="${ST}/loggers-${alvo}"; touch "${f}"; grep -v "^${cat} " "${f}" > "${f}.n"; echo "${cat} ${nivel}" >> "${f}.n"; mv "${f}.n" "${f}"
+        corpo ""; codigo 204 ;;
+    rest/v2/logging/loggers)
+        # formato do 15.0.21 (lido no p1ic); logger-diverge-<no>: ERROR no lugar do nivel guardado
+        b='[{"name":"","level":"INFO","appenders":["STDOUT","FILE"]}'
+        if [[ -f "${ST}/loggers-${alvo}" ]]; then
+            while read -r c n; do
+                [[ -f "${ST}/logger-diverge-${alvo}" ]] && n=ERROR
+                b+=",{\"name\":\"${c}\",\"level\":\"${n}\",\"appenders\":[]}"
+            done < "${ST}/loggers-${alvo}"
+        fi
+        corpo "${b}]"; codigo 200 ;;
     rest/v2/caches/*)
         c="${caminho#rest/v2/caches/}"
         if [[ "${metodo}" == POST ]]; then
@@ -664,7 +692,7 @@ controlador() {  # controlador [sem-politica]
     if [[ "${1:-}" == sem-politica ]]; then
         echo '{"versao":"t","wNs":5000000000,"defasagem":{"lagInMs":2000,"lagOutMs":1000,"passoLeituraMs":20,"origem":{}}}' > "${CASO}/controlador.json"
     else
-        echo '{"versao":"t","wNs":5000000000,"politica":{"kLag":2,"tetoLagMs":2000,"tRebNs":60000000000,"cotaAc5":1,"p2Habilitada":false,"origem":{}},"defasagem":{"lagInMs":2000,"lagOutMs":1000,"passoLeituraMs":20,"origem":{}}}' > "${CASO}/controlador.json"
+        echo '{"versao":"t","wNs":5000000000,"politica":{"kLag":2,"tetoLagMs":2000,"tRebNs":60000000000,"cotaAc5":1,"p2Habilitada":false,"acaoP1":"AC-7","origem":{"acaoP1":"teste"}},"defasagem":{"lagInMs":2000,"lagOutMs":1000,"passoLeituraMs":20,"origem":{}}}' > "${CASO}/controlador.json"
     fi
     CTRL="${CASO}/controlador.json"; CTRL_SHA="$(sha256sum "${CTRL}" | cut -d' ' -f1)"
     # B2 da V-W6: uma referencia por perfil (o programa recusa a de outro perfil; o duble de java tambem)
@@ -1994,6 +2022,9 @@ for br in PO:pnn:PREFERRED_NON_NULL PL:pnn:PREFERRED_NON_NULL AO:a1:${POL_A1} AL
     verdade "S34 ${b} sessions-async criado com o JSON do braco" cmp -s "${D}/caches/sessions-async.json" "${CACHES_T}/sessions-async$([[ ${f} == a1 ]] && echo -a1).json"
     ok "S34 ${b} extensao_sha256" "${EXT_SHA}" "$(json "${D}/execucao.json" 'd["extensao_sha256"]')"
     ok "S34 ${b} camada 3 antes sem divergencia (contra o JSON do braco)" "None" "$(json "${D}/execucao.json" 'd["camada3_pre"]["divergencias"]')"
+    # P-64 na integracao com o fatorial: o ajusta-log.sh roda depois dos caches de cada execucao, tambem com a variante a1
+    ok "S34 ${b} P-64: ajusta-log.sh depois dos caches (dois PUT 204 por no)" "6" "$(awk -F'\t' '$3 == "PUT" && $5 == 204' "${D}/loggers.tsv" 2>/dev/null | wc -l | tr -d ' ')"
+    ok "S34 ${b} P-64: niveis lidos de volta nos tres nos" "3" "$(awk -F'\t' '$3 == "GET" && $5 == 200' "${D}/loggers.tsv" 2>/dev/null | wc -l | tr -d ' ')"
     contem "S34 ${b} linha do programa com --sweep-merge-timeout-sec 20" "'--sweep', '--sweep-merge-timeout-sec', '20'" "$(json "${D}/execucao.json" 'd["comando"]')"
 done
 ok "S34 mesma semente nos quatro bracos" "1" "$(cat "${OUT}"/exec-*/execucao.json | grep -o '"seed": [0-9]*' | sort -u | wc -l | tr -d ' ')"
@@ -2118,6 +2149,97 @@ ok "S37 a terceira falha do a1 (i=${I3}) gravada DESCARTADA-INFRA" "DESCARTADA-I
 ok "S37 nenhuma execucao depois da terceira falha" "0" "$(ls -d "${OUT}"/exec-* | awk -F'exec-' '{split($2, a, "-"); if (a[1] + 0 > '"${I3}"') n++} END {print n + 0}')"
 ok "S37 so os bracos pnn antes do primeiro a1 de cada bloco rodaram carga" "${CARGAS_ESP}" "$(cargas)"
 ok "S37 tres DESCARTADA-INFRA por fusao" "3" "$(cat "${OUT}"/exec-*/checagem.json | grep -c 'infra: fusao')"
+fi
+
+# ============================================================================= S-P1IC
+if quer SP1IC; then
+echo "== S-P1IC: AC-7 no P1 (V-2..V-4, 06/11): acaoP1 explicito no braco B, meta 1.3 com acao_p1, AC-7 ativo no fim e aviso =="
+novo_caso sp1ic
+matriz_aval "ASYNC-none:descritiva:1"
+"${REAL_PY}" -I -c "import json,sys; p=sys.argv[1]; o=json.load(open(p)); del o['politica']['acaoP1']; del o['politica']['origem']['acaoP1']; open(p,'w').write(json.dumps(o))" "${CTRL}"
+CTRL_SHA="$(sha256sum "${CTRL}" | cut -d' ' -f1)"
+printf 'go nucleo %s\n' "${HOJE}" > "${CS_TTY_ARQUIVO}"
+rodar nucleo
+ok "S-P1IC braco B sem acaoP1 explicito -> exit 4 no pre-voo" "4" "${RC}"
+contem "S-P1IC motivo acaoP1" "acaoP1" "${SAIDA_TXT}"
+ok "S-P1IC sem compose nem carga" "0" "$(( $(conta 'podman-compose|') + $(cargas) ))"
+novo_caso sp1icb
+matriz_aval "ASYNC-none:descritiva:1"
+echo AC-5 > "${ST}/meta-acao-p1"
+printf 'go nucleo %s\n' "${HOJE}" > "${CS_TTY_ARQUIVO}"
+rodar nucleo
+ok "S-P1IC meta com acao_p1 AC-5 -> exit 6" "6" "${RC}"
+contem "S-P1IC motivo acao_p1" "acao_p1" "$(tail -1 "${OUT}/nucleo/orquestrador.log")"
+novo_caso sp1icc
+matriz_aval "ASYNC-F2:teste:1"
+echo "127.0.0.1:11224" > "${ST}/ac7-alvo"
+printf 'go nucleo %s\ngo rede 0\n' "${HOJE}" > "${CS_TTY_ARQUIVO}"
+rodar nucleo
+ok "S-P1IC AC-7 desfeito: exit 0" "0" "${RC}"
+DB="$(ls -d "${OUT}"/exec-*-ASYNC-F2-B)"
+ok "S-P1IC B ACEITA" "ACEITA" "$(json "${DB}/checagem.json" 'd["veredito"]')"
+ok "S-P1IC sem religamento com o AC-7" "None" "$(json "${DB}/execucao.json" 'd["religamento"]')"
+contem "S-P1IC trilha do AC-7" $'trilha_ac7\t127.0.0.1:11224' "$(cat "${DB}/trilha-ac5.txt")"
+contem "S-P1IC AC-7 desfeito" $'ac7_ativa_no_fim\tnao' "$(cat "${DB}/trilha-ac5.txt")"
+novo_caso sp1icd
+matriz_aval "ASYNC-F2:teste:1"
+echo "127.0.0.1:11224" > "${ST}/ac7-alvo"
+: > "${ST}/ac7-sem-reversao"
+printf 'go nucleo %s\ngo rede 0\n' "${HOJE}" > "${CS_TTY_ARQUIVO}"
+rodar nucleo
+DB="$(ls -d "${OUT}"/exec-*-ASYNC-F2-B)"
+# aviso, nao descarte: a analise tira Delta_conv e divergencia (descartar tiraria do braco ativo as falhas do controlador)
+ok "S-P1IC AC-7 ativo no fim -> B ACEITA com aviso" "ACEITA" "$(json "${DB}/checagem.json" 'd["veredito"]')"
+contem "S-P1IC aviso AC-7 ativo" "AC-7 ativo no fim" "$(json "${DB}/checagem.json" 'd["avisos"]')"
+contem "S-P1IC aviso com o alvo" "trilha_ac7=127.0.0.1:11224" "$(json "${DB}/checagem.json" 'd["avisos"]')"
+fi
+
+# ============================================================================= S-P64
+if quer SP64; then
+echo "== S-P64: log das pilhas reduzido na origem pela REST (ajusta-log.sh) nos tres nos, depois dos caches, conferido na camada 3 e reposto no no do F1 =="
+dry64() {  # o dry() do S1 so existe quando o S1 roda
+    PATH="${PATH_TESTE}" bash "${ORQ}" --dry-run --matriz "${MAT}" --matriz-sha256 "${MAT_SHA}" --fase "$1"         --parametros "${PARAMS}" --parametros-sha256 "${PARAMS_SHA}" --controlador "${CTRL}" --controlador-sha256 "${CTRL_SHA}"         "${REFS[@]}" --saida "${OUT}" 2>&1
+}
+novo_caso sp64
+matriz_calib "ASYNC-F1:calibracao:1"
+OUTD="$(dry64 calibracao)"; RC=$?
+ok "S-P64 dry-run exit 0" "0" "${RC}"
+contem "S-P64 dry-run mostra as categorias" "DRY-RUN loggers: org.infinispan.server.hotrod.BaseRequestProcessor=FATAL org.infinispan.interceptors.impl.InvocationContextInterceptor=FATAL" "${OUTD}"
+printf 'go calibracao %s\n' "${HOJE}" > "${CS_TTY_ARQUIVO}"
+rodar calibracao
+ok "S-P64 exit 0" "0" "${RC}"
+D="$(exec_dir 0)"
+ok "S-P64 ACEITA" "ACEITA" "$(json "${D}/checagem.json" 'd["veredito"]')"
+ok "S-P64 loggers.tsv: dois PUT 204 por no" "6" "$(awk -F'\t' '$3 == "PUT" && $5 == 204' "${D}/loggers.tsv" | wc -l | tr -d ' ')"
+ok "S-P64 loggers.tsv: leitura de volta nos tres nos" "3" "$(awk -F'\t' '$3 == "GET" && $5 == 200' "${D}/loggers.tsv" | wc -l | tr -d ' ')"
+L_CACHE="$(linha_de 'rest/v2/caches/canario-async')"; L_LOG="$(linha_de 'rest/v2/logging/loggers/')"
+verdade "S-P64 os niveis depois dos seis caches" test "${L_LOG:-0}" -gt "${L_CACHE:-0}"
+ok "S-P64 camada 3 antes sem divergencia" "None" "$(json "${D}/execucao.json" 'd["camada3_pre"]["divergencias"]')"
+ok "S-P64 no do F1 recebe os niveis de novo depois da volta (2 + 2 PUT no isn2)" "4" "$(grep -c 'curl|PUT|http://127.0.0.1:11223/rest/v2/logging/loggers/' "${ST}/chamadas.log")"
+ok "S-P64 reposicao registrada" "2" "$(awk -F'\t' '$3 == "PUT" && $5 == 204' "${D}/loggers-volta-f1.tsv" | wc -l | tr -d ' ')"
+ok "S-P64 camada 3 depois sem divergencia (o isn2 religado tem os niveis)" "None" "$(json "${D}/execucao.json" 'd["camada3_pos"]["divergencias"]')"
+contem "S-P64 bundle com o ajusta-log.sh e o arquivo das categorias" "loggers-avaliacao.tsv" "$(cat "${OUT}/calibracao/bundle.sha256")"
+novo_caso sp64b
+matriz_calib "ASYNC-none:calibracao:1"
+: > "${ST}/logger-put-falha"
+printf 'go calibracao %s\n' "${HOJE}" > "${CS_TTY_ARQUIVO}"
+rodar calibracao
+ok "S-P64 PUT recusado -> exit 6 antes da carga" "6" "${RC}"
+contem "S-P64 motivo ajusta-log.sh" "ajusta-log.sh saiu com 3" "$(tail -1 "${OUT}/calibracao/orquestrador.log")"
+ok "S-P64 sem carga" "0" "$(cargas)"
+novo_caso sp64c
+matriz_calib "ASYNC-none:calibracao:1"
+: > "${ST}/logger-diverge-isn3"
+printf 'go calibracao %s\n' "${HOJE}" > "${CS_TTY_ARQUIVO}"
+rodar calibracao
+ok "S-P64 leitura de volta divergente -> exit 6" "6" "${RC}"
+contem "S-P64 motivo com o no" "http://127.0.0.1:11224" "$(tail -1 "${OUT}/calibracao/orquestrador.log")"
+novo_caso sp64d
+matriz_calib "ASYNC-none:calibracao:1"
+printf 'org.x.Y\tSILENT\to\n' > "${CASO}/loggers-ruim.tsv"
+OUTD="$(CS_LOGGERS_ARQ="${CASO}/loggers-ruim.tsv" dry64 calibracao)"; RC=$?
+ok "S-P64 arquivo de categorias invalido -> exit 4 no dry-run" "4" "${RC}"
+contem "S-P64 motivo do arquivo" "arquivo de loggers recusado" "${OUTD}"
 fi
 
 echo

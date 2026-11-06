@@ -1,0 +1,8 @@
+# P-64 (decisao do coordenador, 06/11): categorias de log do servidor reduzidas na origem pela REST
+# (PUT /rest/v2/logging/loggers/<categoria>?level=<nivel>) nos tres nos, depois de criar os caches, igual nos quatro
+# bracos. scripts/ajusta-log.sh aplica e le de volta; o orquestrador repoe no no que reinicia (o nivel posto pela REST
+# vale so no no que recebe o pedido e nao sobrevive ao reinicio; medido no cluster local p1ic, 06/11).
+# FATAL tira a linha ERROR e as ~50 linhas de pilha de cada uma; nao muda o que o servidor faz nem o que o cliente
+# recebe (o erro chega ao cliente e entra no CSV da carga). Formato: categoria<TAB>nivel<TAB>origem.
+org.infinispan.server.hotrod.BaseRequestProcessor	FATAL	ISPN005003 (CacheUnavailableException do cache ignorado pelo AC-7): ERROR com ~50 linhas de pilha por pedido recusado; 20 647 no alvo do corte-r1 do smoke do P1-IC (runs/p1ic-smoke), so nos bracos ativos
+org.infinispan.interceptors.impl.InvocationContextInterceptor	FATAL	ISPN000136 (AvailabilityException do no em DEGRADED_MODE, pilha pelo PartitionHandlingManagerImpl): ERROR com ~54 linhas por comando; 18 131 no alvo do corte-r1; nos quatro bracos durante a F2

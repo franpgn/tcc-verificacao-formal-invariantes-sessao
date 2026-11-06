@@ -27,6 +27,14 @@
 #   - P2 fora do braco B (D-B do coordenador, 05/11): toda fase deste orquestrador e de calibracao ou avaliacao, entao
 #     o --controller-config tem de ter politica.p2Habilitada = false (pre-voo) e a meta de cada execucao, nos dois
 #     bracos, parametros_politica.p2_habilitada = false (senao a carga e parada, exit 6);
+#   - P1-IC (V-2 a V-4 do coordenador, 06/11; P-63): trilha decisoes-controlador/1.3; com braco B na fila, o
+#     --controller-config tem de trazer politica.acaoP1 = "AC-7" explicito, com origem (pre-voo), e a meta de cada
+#     execucao, nos dois bracos, parametros_politica.acao_p1 = "AC-7" (senao a carga e parada, exit 6); AC-7 que
+#     termina ativo (ac7_ativa_no_fim na trilha-ac5.txt) e aviso: a analise tira Delta_conv e divergencia;
+#   - P-64 (decisao do coordenador, 06/11): depois dos seis caches, scripts/ajusta-log.sh poe nos tres nos, pela REST,
+#     os niveis de cluster/log/loggers-avaliacao.tsv (pilhas das recusas do AC-7 e do modo degradado fora do log),
+#     com leitura de volta; a camada 3 confere de novo antes e depois; o no do F1 os recebe de novo quando volta
+#     (o nivel da REST nao sobrevive ao reinicio). O compose sem caches grava o log em k8s-file com teto;
 #   - volta do no depois do F1 conferida pela REST, nao pelo exit do inject-crash.sh (P-35; requisito 5);
 #   - criterio h4 do C3 e da DT-019 pelo scripts/campanha_s3_h4.py (sobre analysis/h4.py) depois de cada execucao,
 #     com a parada do C3 secao 4.3 e a unit do amostrador conferida antes e depois (requisito 6);
@@ -134,9 +142,10 @@
 # CS_SHIM_DIR (marca .cs-shim; PODMAN e PODMAN_COMPOSE tem de ser shims dele), CS_TTY_ARQUIVO (no lugar de
 # /dev/tty), CS_H4_RUN (no lugar de /run/tccdiag), CS_COLETOR (no lugar de scripts/collect-resources.sh) e
 # CS_INJ_PART/CS_INJ_DEGR (duble dos injetores de F2 e F4; o F1 roda o inject-crash.sh real contra os shims, e o F3 o
-# inject-jitter.sh real) e CS_NETEM_EFETIVA_MS (no lugar dos 2 s da conferencia do netem). No modo de teste o
-# /proc/meminfo e o arquivo meminfo de CS_SHIM_DIR. DT-027: CS_DIR_CACHES (no lugar de cluster/caches) e CS_COMPOSE_ARQ
-# (no lugar de cluster/podman-compose-sem-caches.yml), tambem no --dry-run.
+# inject-jitter.sh real), CS_NETEM_EFETIVA_MS (no lugar dos 2 s da conferencia do netem) e CS_LOGGERS_ARQ (no lugar
+# de cluster/log/loggers-avaliacao.tsv). No modo de teste o /proc/meminfo e o arquivo meminfo de CS_SHIM_DIR. DT-027:
+# CS_DIR_CACHES (no lugar de cluster/caches) e CS_COMPOSE_ARQ (no lugar de cluster/podman-compose-sem-caches.yml),
+# tambem no --dry-run.
 #
 # Exit codes (os do runner do rebaseline):
 #   0  fase concluida ou parada por PARAR     2  uso      3  dependencia ausente     4  pre-voo recusado
@@ -153,6 +162,8 @@ REPO_DIR="$(cd "${SCRIPT_DIR}/.." && pwd)"
 CONFERIR="${SCRIPT_DIR}/campanha_s3_conferir.py"
 H4S3="${SCRIPT_DIR}/campanha_s3_h4.py"
 CRIA_CACHES="${SCRIPT_DIR}/cria-caches.sh"
+AJUSTA_LOG="${SCRIPT_DIR}/ajusta-log.sh"                   # P-64
+LOGGERS_ARQ="${REPO_DIR}/cluster/log/loggers-avaliacao.tsv"
 INJ_CRASH="${SCRIPT_DIR}/inject-crash.sh"
 INJ_PART="${SCRIPT_DIR}/inject-partition.sh"
 INJ_DEGR="${SCRIPT_DIR}/inject-netdegrade.sh"
@@ -324,6 +335,7 @@ py() {  # python3 -I com stdout e stderr sem CR (o python do Windows dos testes 
 if [[ "${CS_MODO_TESTE:-}" == 1 ]]; then
     [[ -n "${CS_SHIM_DIR:-}" && -f "${CS_SHIM_DIR}/.cs-shim" ]] \
         || { echo "Erro: CS_MODO_TESTE=1 exige CS_SHIM_DIR com a marca .cs-shim" >&2; exit 4; }
+    [[ -z "${CS_LOGGERS_ARQ:-}" ]] || LOGGERS_ARQ="${CS_LOGGERS_ARQ}"   # P-64, tambem no --dry-run
     if [[ "${DRY_RUN}" -eq 0 ]]; then
         for palavra in ${PODMAN} ${PODMAN_COMPOSE}; do
             cam="$(command -v "${palavra}" 2>/dev/null)" || cam=""
@@ -496,11 +508,19 @@ conferir_referencias() {  # B2 da V-W6: a referencia de cada perfil da fila exis
         [[ "${rc}" -eq 0 ]] || { echo "Erro: --referencia-${perf} recusada: ${out}" >&2; exit 4; }
     done
 }
+LOGGERS_INFO=""
+conferir_loggers() {  # P-64: o arquivo das categorias de log reduzidas na origem e valido (sem rede)
+    local rc=0 out=""
+    out="$(bash "${AJUSTA_LOG}" --validar --arquivo "${LOGGERS_ARQ}" 2>&1)" || rc=$?
+    [[ "${rc}" -eq 0 ]] || { echo "Erro: arquivo de loggers recusado (${LOGGERS_ARQ}): ${out}" >&2; exit 4; }
+    LOGGERS_INFO="$(tr '\t' '=' <<< "${out}" | paste -sd' ')"
+}
 CTRL_INFO=""
 conferir_controlador() {  # politica obrigatoria com braco B; p2Habilitada = false e tetoLagMs = hotrod_timeout_ms (D-B, R7)
+    # P1-IC (V-3, 06/11): com braco B (avaliacao), acaoP1 = AC-7 explicito no arquivo, com origem
     local rc=0 out=""
     out="$(py "${CONFERIR}" controlador --arquivo "${CTRL}" --hotrod-timeout-ms "${P[hotrod_timeout_ms]}" \
-        --exigir-p2-desabilitada $([[ "${TEM_B}" -eq 1 ]] && echo --exigir-politica))" || rc=$?
+        --exigir-p2-desabilitada $([[ "${TEM_B}" -eq 1 ]] && echo --exigir-politica --exigir-acao-p1 AC-7))" || rc=$?
     [[ "${rc}" -eq 0 ]] || { echo "Erro: --controlador recusado: ${out}" >&2; exit 4; }
     CTRL_INFO="${out}"
 }
@@ -602,9 +622,11 @@ if [[ "${DRY_RUN}" -eq 1 ]]; then
     conferir_referencias
     conferir_fusao_arquivos
     conferir_extensao
+    conferir_loggers
     echo "DRY-RUN fase=${FASE} matriz=${MATRIZ} (SHA-256 confere) parametros=${PARAMS} ($(grep -c . <<< "$(printf '%s\n' "${!P[@]}")") numeros, todos com origem) controlador=${CTRL}"
     echo "DRY-RUN controlador conferido: $(tr '\t\n' '= ' <<< "${CTRL_INFO}" | sed 's/ *$//')"
     echo "DRY-RUN perfis da fase:${PERFIS% } (referencia de cada um conferida)"
+    echo "DRY-RUN loggers: ${LOGGERS_INFO} (P-64: postos pela REST nos tres nos depois dos caches)"
     echo "DRY-RUN opcoes: ${OPCOES_PROTOCOLO//,/ }"
     if [[ ${#CARGA_S3[@]} -eq 0 ]]; then
         echo "DRY-RUN carga S3: padrao do programa (nenhum s3_* no --parametros)"
@@ -684,6 +706,7 @@ conferir_esquema_f3
 conferir_referencias
 conferir_fusao_arquivos
 conferir_extensao
+conferir_loggers
 
 # ------------------------------------------------------------------ pre-voo 3: controlador, h4, bundle
 conferir_controlador
@@ -729,6 +752,7 @@ bundle_lista() {  # SHA-256 de tudo o que a fase usa; a retomada recusa se mudar
     [[ -z "${REF_SYNC}" ]] || refs+=("${REF_SYNC}")
     for f in "${SELF}" "${CONFERIR}" "${H4S3}" "${SCRIPT_DIR}/campanha_s3_matriz.py" "${REPO_DIR}/analysis/h4.py" \
              "${CRIA_CACHES}" "${INJ_CRASH}" "${INJ_PART}" "${INJ_DEGR}" "${INJ_JITTER}" "${COLETOR}" "${COMPOSE_ARQ}" \
+             "${AJUSTA_LOG}" "${LOGGERS_ARQ}" \
              "${REPO_DIR}/cluster/infinispan-sem-caches.xml" "${REPO_DIR}/cluster/jgroups-tcp.xml" \
              "${DIR_CACHES}"/*.json "${JAR}" "${MATRIZ}" "${PARAMS}" "${CTRL}" "${refs[@]}" \
              $([[ "${FATORIAL}" -eq 1 && -n "${EXT_SHA_LIDO}" ]] && printf '%s' "${EXTENSAO_JAR}"); do
@@ -942,6 +966,7 @@ cmd_txt() { local rc=0 o=""; o="$("$@" 2>&1)" || rc=$?; printf '%s' "${o}"; [[ "
     echo "podman version:"; cmd_txt ${PODMAN} version; echo
     echo "python3: $(cmd_txt "${PYTHON}" --version)"
     echo "bundle_sha256: ${BUNDLE_SHA} (lista em ${FASE}/bundle.sha256)"
+    echo "loggers (P-64): ${LOGGERS_INFO}"
     echo "controlador: ${CTRL} ${CTRL_INFO//$'\n'/ }"
     echo "parametros:"; for k in "${!P[@]}"; do echo "  ${k}=${P[${k}]}"; done | sort
     echo "constantes: K1=${K1_JANELA_S}/${K1_PERIODO_S}/${K1_TIMEOUT_S}s volta=${VOLTA_TIMEOUT_S}s recriar=${RECRIAR_TIMEOUT_S}s ancora=${ANCORA_TIMEOUT_S}s dead-man=+${DEADMAN_MARGEM_S}s ${DEADMAN_PRECISAO} T_enc_pior=${T_ENC_PIOR_S}s netem_F3=+$(ms_para_s "${NETEM_EFETIVA_MS}")s do disparo"
@@ -1105,6 +1130,11 @@ camada3() {  # camada3 <pre|pos>: rebalanceamento, disponibilidade e configuraca
             fi
         done
     done
+    # P-64: os niveis de log das categorias do arquivo, lidos de volta nos tres nos
+    if ! AJUSTA_LOG_SENHA="${PASSWORD_REAL}" bash "${AJUSTA_LOG}" --so-conferir --nos "${ADM[0]},${ADM[1]},${ADM[2]}" \
+            --usuario "${USERNAME}" --arquivo "${LOGGERS_ARQ}" --prazo-s "${REST_PRAZO_S}" > /dev/null 2> "${TMPC}/c3log"; then
+        CAM3_DIVERGE+="${CAM3_DIVERGE:+; }loggers: $(head -c 200 "${TMPC}/c3log" | tr '\n' ' ' | sed 's/ *$//')"
+    fi
     CAM3_JSON="{\"momento\":$(json_str "$1"),\"utc\":$(json_str "$(iso_ms "$(agora_ms)")"),\"divergencias\":$(json_str_ou_null "${CAM3_DIVERGE}")}"
     [[ -z "${CAM3_DIVERGE}" ]]
 }
@@ -1145,7 +1175,20 @@ recriar_cluster() {  # recriar_cluster <dir>: down/up com o XML sem caches, 3 HE
             E_AVISOS+=("criacao de ${nome} levou ${dur} s (> 8,0 s, acoes-controlador secao 6.4; anotado, sem abortar)")
         fi
     done < "${d}/caches.tsv"
+    # P-64: pilhas das recusas e do modo degradado fora do log, nos tres nos, igual nos quatro bracos
+    rc=0
+    AJUSTA_LOG_SENHA="${PASSWORD_REAL}" bash "${AJUSTA_LOG}" --nos "${ADM[0]},${ADM[1]},${ADM[2]}" --usuario "${USERNAME}" \
+        --arquivo "${LOGGERS_ARQ}" --prazo-s "${REST_PRAZO_S}" > "${d}/loggers.tsv" 2> "${d}/loggers.err" || rc=$?
+    [[ "${rc}" -eq 0 ]] || finalizar 6 "infra: ajusta-log.sh saiu com ${rc} antes de i=${E_I} ($(head -c 200 "${d}/loggers.err" | tr '\n' ' '))"
     E_STARTED_PRE="$(started_at)"
+}
+
+reaplicar_log() {  # reaplicar_log <no> <rotulo>: P-64, repoe os niveis no no que reiniciou (a REST nao os guarda)
+    local k rc=0
+    k=$(( ${1#isn} - 1 ))
+    AJUSTA_LOG_SENHA="${PASSWORD_REAL}" bash "${AJUSTA_LOG}" --nos "${ADM[$k]}" --usuario "${USERNAME}" \
+        --arquivo "${LOGGERS_ARQ}" --prazo-s "${REST_PRAZO_S}" > "${E_DIR}/loggers-$2.tsv" 2> "${E_DIR}/loggers-$2.err" || rc=$?
+    [[ "${rc}" -eq 0 ]] || E_AVISOS+=("niveis de log do P-64 nao repostos em $1 depois de $2 (ajusta-log.sh saiu com ${rc}: $(head -c 200 "${E_DIR}/loggers-$2.err" | tr '\n' ' '))")
 }
 
 preparar_cluster() {  # preparar_cluster <dir> <passo>: recriacao, camada 3 antes e portao K1 (o caminho de toda execucao)
@@ -1171,7 +1214,7 @@ portao_swap() {  # W-6c: swap usado no portao; com --swap-limite-kb e swap >= li
     if [[ -n "${kb}" && -n "${SWAP_LIMITE_KB}" && "${kb}" -ge "${SWAP_LIMITE_KB}" ]]; then
         log "exec i=${E_I}: swap ${kb} kB >= ${SWAP_LIMITE_KB} kB no portao; recriando o cluster antes da execucao (mesmo i, mesma semente; nao e recusa)"
         mkdir -p "${d}/antes-recriacao-swap"
-        for f in compose-down.log compose-up.log caches.tsv caches.err portao.json; do
+        for f in compose-down.log compose-up.log caches.tsv caches.err loggers.tsv loggers.err portao.json; do
             if [[ -e "${d}/${f}" ]]; then mv -f "${d}/${f}" "${d}/antes-recriacao-swap/"; fi
         done
         E_SWAP_RECRIADO=true
@@ -1569,6 +1612,7 @@ amostra_volta_f1() {
         VOLTA_ESTADO=ok
         E_VOLTA_F1="{\"ok\":true,\"espera_s\":$(ms_para_s $(( agora - VOLTA_T0 ))),\"metodo\":\"REST (P-35)\"}"
         log "exec i=${E_I}: ${P[f1_no]} de volta (3 HEALTHY pela REST) em $(ms_para_s $(( agora - VOLTA_T0 ))) s"
+        reaplicar_log "${P[f1_no]}" volta-f1
     elif [[ $(( agora - VOLTA_T0 )) -ge $(( VOLTA_TIMEOUT_S * 1000 )) ]]; then
         VOLTA_ESTADO=falhou
         E_VOLTA_F1="{\"ok\":false,\"espera_s\":$(ms_para_s $(( agora - VOLTA_T0 ))),\"metodo\":\"REST (P-35)\",\"ultima\":${AM_JSON}}"
@@ -1643,7 +1687,8 @@ conferir_meta() {  # conferir_meta <decisoes>: braco certo e, no B, que ele atua
     t0="$(agora_ms)"
     while :; do
         rc=0; out=""; leituras=$(( leituras + 1 ))
-        out="$(py "${CONFERIR}" meta --decisoes "$1" --braco "$([[ "${E_CTL}" == active ]] && echo B || echo A)" --param-sha256 "${CTRL_SHA}" --exigir-p2-desabilitada)" || rc=$?
+        # P-63 (V-3): com braco active na fase (B, PL ou AL: TEM_B), a meta dos dois bracos exige acao_p1 = AC-7
+        out="$(py "${CONFERIR}" meta --decisoes "$1" --braco "$([[ "${E_CTL}" == active ]] && echo B || echo A)" --param-sha256 "${CTRL_SHA}" --exigir-p2-desabilitada $([[ "${TEM_B}" -eq 1 ]] && echo --exigir-acao-p1 AC-7))" || rc=$?
         [[ "${rc}" -eq 4 && $(( $(agora_ms) - t0 )) -lt $(( META_PRAZO_S * 1000 )) ]] || break
         dormir "${META_PERIODO_S}"
     done
@@ -1802,6 +1847,12 @@ pos_execucao() {  # pos-checagem igual a pre: boot, StartedAt explicado, saude, 
             5) E_MOTIVOS+=("infra: trilha e linha de fim da carga discordam sobre o AC-5: ${out//$'\n'/ }") ;;
             *) E_MOTIVOS+=("infra: trilha ilegivel (exit ${rc})") ;;
         esac
+        # P1-IC (V-4, 06/11): AC-7 que termina ativo (reversao que falhou) e aviso, nao descarte: a trilha o explica,
+        # o cluster e recriado antes da proxima execucao e a analise tira Delta_conv e divergencia desta execucao
+        # (comparar_bracos.py, resumo_ac7); descartar tiraria do braco ativo justamente as falhas do controlador
+        if [[ "${out}" == *$'ac7_ativa_no_fim\tsim'* ]]; then
+            E_AVISOS+=("AC-7 ativo no fim (sem reversao executada com sucesso; $(grep -E '^(trilha_ac7|ac7_desfazer)' <<< "${out}" | tr '\t\n' '= ' | sed 's/ *$//')): Delta_conv e divergencia nao avaliaveis na analise")
+        fi
         if [[ "${rc}" -eq 0 || "${rc}" -eq 5 ]]; then
             t_fim="$(awk -F'\t' '$1 == "fim" {print $2; exit}' <<< "${out}")"
             t_lp="$(awk -F'\t' '$1 == "linhas_perdidas" {print $2; exit}' <<< "${out}")"

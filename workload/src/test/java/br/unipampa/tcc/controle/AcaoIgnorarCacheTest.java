@@ -133,6 +133,31 @@ class AcaoIgnorarCacheTest {
         assertEquals(1, e.contadores().falhas());
     }
 
+    @Test
+    @DisplayName("trilha 1.3 (V-2): a reversao pela guarda continua sai com origem GUARDA, sem regra e sem janela (nao e decisao)")
+    void reversaoPelaGuarda() throws Exception {
+        AtuadorFalso a = new AtuadorFalso();
+        ExecutorDeAcoes e = executor(a);
+        e.iniciar();
+        e.reverterPelaGuarda(AC7_ISN3); // inativa: nada
+        e.aplicar(AC7_ISN3, Decisao.Regra.R3, 5 * S);
+        assertTrue(e.aguardarFilaVazia(5 * S));
+        e.reverterPelaGuarda(AC7_ISN3);
+        assertTrue(e.aguardarFilaVazia(5 * S));
+        assertEquals(List.of(), e.ativas());
+        assertTrue(e.encerrar());
+        List<RegistroAcao> t = List.copyOf(trilha);
+        assertEquals(2, t.size());
+        RegistroAcao g = t.get(1);
+        assertEquals(RegistroAcao.Operacao.REVERTER, g.operacao());
+        assertEquals(RegistroAcao.Origem.GUARDA, g.origem());
+        assertEquals(null, g.regra());
+        assertEquals(null, g.fimJanelaNs());
+        var n = FormatoJsonl.acao(g);
+        assertTrue(n.get("regra").isNull() && n.get("t_fim_janela_ns").isNull(), n.toString());
+        assertEquals("GUARDA", n.get("origem").asText());
+    }
+
     // ------------------------------------------------------------------ parametros
 
     static final ObjectMapper JSON = new ObjectMapper();

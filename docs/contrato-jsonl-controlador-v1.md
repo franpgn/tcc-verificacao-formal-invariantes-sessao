@@ -1,9 +1,9 @@
-# Contrato dos JSONL do controlador, versão 1.2 (W-3, B-28.2, 2026-11-04; W-2a, B-44.2, 2026-11-05; W-4, B-26.3, 2026-11-05)
+# Contrato dos JSONL do controlador, versão 1.3 de `decisoes` (W-3, B-28.2, 2026-11-04; W-2a, B-44.2, 2026-11-05; W-4, B-26.3, 2026-11-05; P1-IC, 2026-11-06)
 
 Com `--controller shadow|active`, cada repetição grava dois arquivos em `--csv-dir`:
 
 - `observaveis-rep-NNN.jsonl` (esquema `observaveis-controlador/1.2`): o que o laço viu.
-- `decisoes-rep-NNN.jsonl` (esquema `decisoes-controlador/1.2`): o que o núcleo decidiu e o que o executor fez.
+- `decisoes-rep-NNN.jsonl` (esquema `decisoes-controlador/1.3`): o que o núcleo decidiu e o que o executor fez.
 
 **Histórico.** v1 (`b883397`): primeira versão. v1.1 (V-W3, `docs/validacao-w3-2026-11-04.md`, antes de qualquer
 dado): `t_decisao_ns` na linha `decisao`; `linhas_perdidas` nas duas linhas `fim`; `acoes_ja_ativas`,
@@ -38,6 +38,14 @@ foram ao laço; 0 em shadow); `guarda_ac7_desfazeres` no mesmo `fim` (desfazeres
 guarda contínua). O `lido` da linha `acao` do AC-7 segue o formato de `session.AtuadorIgnorarCache`
 (`efeito_ms`, `guarda`, `post`, `anterior`, `rota` e as listas por nó). O bloco `politica` aceita o campo opcional
 `acaoP1` (com a origem dele); sem o campo, a ação do P1 é o `AC-7`.
+**decisoes 1.3** (`feature/p1ic-conferidor-analise`, 06/11, V-2 do coordenador: a troca da ação do P1 fica explícita
+na versão; P-63): o esquema de `decisoes` passa a `decisoes-controlador/1.3`, com os mesmos campos do P1-IC acima
+(nenhum campo novo além deles, nenhum retirado). A linha `acao` da reversão pedida pela guarda contínua sai com
+`origem` = `GUARDA`, `regra` = `null` e `t_fim_janela_ns` = `null` (não vem de decisão; antes saía com o instante do
+pedido no lugar da janela). `observaveis` continua 1.2. O conferidor do orquestrador (`scripts/campanha_s3_conferir.py
+meta`) recusa a 1.2; o `analysis/comparar_bracos.py` lê as duas e só exige a 1.3 quando a trilha tem AC-7 ou
+`GUARDA`. Com braço B (avaliação), o orquestrador exige `acaoP1` = `"AC-7"` explícito no arquivo, com origem (V-3), e
+`acao_p1` = `"AC-7"` na `meta` dos dois braços.
 
 Com `--controller off` nenhum dos dois existe. Código: `workload/src/main/java/br/unipampa/tcc/controle/FormatoJsonl.java`
 (formato), `TrilhaJsonl.java` (gravação), `LacoDeControle.java` (ordem das linhas). Teste de contrato:
@@ -92,7 +100,7 @@ mesma em que antes eram gravadas.
 
 | Campo | Tipo | Conteúdo |
 |---|---|---|
-| `esquema` | texto | `observaveis-controlador/1.2` ou `decisoes-controlador/1.2` |
+| `esquema` | texto | `observaveis-controlador/1.2` ou `decisoes-controlador/1.3` |
 | `versao_programa` | texto | `session-workload 0.1.0-SNAPSHOT` |
 | `rep` | inteiro | número da repetição |
 | `modo` | texto | `shadow` ou `active` |
@@ -107,7 +115,7 @@ mesma em que antes eram gravadas.
 | `origem_ns` | inteiro | início da primeira janela = início da medição |
 | `atuador` | texto | `nulo` sem o bloco `politica` no `--controller-config`; com ele, `por-tipo(AC-2=rest-infinispan,AC-5=rest-infinispan)` (W-2a) |
 | `politica` | texto | `nenhuma` sem o bloco; `por-assinatura` com ele (W-2a) |
-| `parametros_politica` | objeto ou `null` | **só em `decisoes` (1.2).** `k_lag`, `teto_lag_ms`, `t_reb_ns`, `cota_ac5`, `p2_habilitada` (booleano, D-B) e `origem` (texto por parâmetro); `null` sem o bloco |
+| `parametros_politica` | objeto ou `null` | **só em `decisoes` (1.2).** `k_lag`, `teto_lag_ms`, `t_reb_ns`, `cota_ac5` (cota do P1, qualquer que seja a ação), `p2_habilitada` (booleano, D-B), `acao_p1` (`"AC-7"` ou `"AC-5"`; 1.3) e `origem` (texto por parâmetro); `null` sem o bloco |
 | `parametros_defasagem` | objeto ou `null` | **só em `observaveis` (1.2, W-4).** `lag_in_ms`, `lag_out_ms`, `passo_leitura_ms`, `periodo_ns` (= W) e `origem` (texto por parâmetro); `null` sem o bloco `defasagem`. O prazo de leitura (o "não viu") é o `--hotrod-timeout-ms` e vai em `teto_ms` de cada linha `defasagem` |
 | `sonda_topologia`, `sonda_defasagem` | booleano | sondas ligadas (`sonda_defasagem` = `true` só com o bloco `defasagem`, W-4) |
 
@@ -262,7 +270,7 @@ se nenhum), `severidade`, `sinais`, `param_sha256`.
 | `executada` | houve chamada ao *cluster*. Sempre `false` em shadow e com o atuador nulo |
 | `modo`, `atuador` | `shadow`/`active`; nome do atuador |
 | `acao` | `tipo` (`AC-2`, `AC-5`; W-2a. `AC-1`/`AC-3` fora do braço B), `caches` (lista), `alvo` (nó ou `null` = *cluster*; obrigatório no AC-5, proibido no AC-2), `valor` |
-| `origem` | `POLITICA`, `R4` (saída para NORMAL desfaz tudo), `FALHA_NA_APLICACAO` (reversão automática), `ENCERRAMENTO` (fim da carga), `GANCHO_JVM` (desligamento sem encerramento normal) |
+| `origem` | `POLITICA`, `R4` (saída para NORMAL desfaz tudo), `FALHA_NA_APLICACAO` (reversão automática), `ENCERRAMENTO` (fim da carga), `GANCHO_JVM` (desligamento sem encerramento normal), `GUARDA` (1.3: reversão do AC-7 pedida pela guarda contínua; só `REVERTER`, com `regra` e `t_fim_janela_ns` nulos) |
 | `regra`, `t_fim_janela_ns` | regra e fim da janela da decisão que pediu; `null` no encerramento |
 | `t_pedido_ns` | instante do pedido |
 | `t_inicio_ns`, `duracao_ns` | início e duração da chamada; `null` sem chamada |

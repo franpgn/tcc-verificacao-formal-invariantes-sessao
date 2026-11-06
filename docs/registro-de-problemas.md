@@ -1401,13 +1401,43 @@ como transporte) fica resolvido aqui pela G-4, e o P-A4.1 e o P-A4.3 viram regra
   (religamento do nó parado, `ac5_aplicada`, `trilha_ac5`). Com o AC-7 nada é religado e o AC-5 não aparece; os dois
   continuam aceitando a trilha (o esquema é 1.2), mas não sabem da ação nova nem das origens `GUARDA` e dos motivos de
   desfazer.
-- **Status:** `ABERTO` (integração: ensinar o AC-7 ao conferidor e à análise, ou passar o `decisoes` a 1.3).
+- **Status:** `RESOLVIDO` em `feature/p1ic-conferidor-analise` (06/11, V-2 a V-4 do coordenador): trilha
+  `decisoes-controlador/1.3` (a reversão da guarda sai com `regra` e `t_fim_janela_ns` nulos); o conferidor recusa a
+  1.2, exige `acaoP1 = AC-7` explícito com origem no braço B (`controlador`) e `acao_p1 = AC-7` na `meta` dos dois
+  braços, e imprime o AC-7 da trilha (`trilha_ac7`, `ac7_desfazer`, `ac7_ativa_no_fim`); o orquestrador avisa quando
+  o AC-7 termina ativo; o `comparar_bracos.py` descreve o AC-7 (`resumo_ac7`), confere a rastreabilidade dele
+  (`_problemas_ac7`, a mesma que as guardas de PL e AL usam) e tira Δ_conv e divergência da execução com AC-7 ativo
+  no fim. Detalhes no complemento do TD-022 (`docs/implementacao.md`).
 
 ### P-64 (P1-IC; P-P1IC.4 na branch, renumerado na integração) — volume de log no alvo
 
 - **Sintoma:** com a sonda de 25 ms, o alvo gravou 20 647 `ISPN005003` (ERROR com pilha) no `corte-r1`. É o P-A4.2: o
   harness usa `k8s-file` (G-5); na VM, o destino do log do Podman decide se isso apaga linhas de outros contêineres.
-- **Status:** `ABERTO` (conferir o *log driver* na VM antes da campanha).
+- **Medida nos brutos do smoke** (`runs/p1ic-smoke/*/servidores/*.log.gz`, texto do `podman logs`, sem o prefixo do
+  `k8s-file`): o alvo do AC-7 sob corte gravou **2 073 585 linhas, 268 MB** (`corte-r1`, isn2: 20 647 `ISPN005003`,
+  72 036 linhas com `PartitionHandlingManagerImpl`) e **2 038 512 linhas, 264 MB** (`corte-r2`, isn3); os outros nós,
+  0,1 a 0,2 MB. Corte curto: 8,4 MB (`curto-r1`) e 3,9 MB (`curto-r2`) no isn3; falso alarme, 0,07 MB.
+- **Na VM:** Podman 4.9.3 rootful (`docs/relatorio-tb-gate-g0-2026-10-16.md`) e `podman-compose` **1.0.6**, unidade
+  `podman-compose@cluster.service` (rótulos dos contêineres nos eventos de `dados-vm/cs3-2026-11/x18-*/cs3-infra/x18-fim-*.txt`).
+  O *driver* `journald` e a cópia no rsyslog vêm das notas do vigia da calibração (X-18: ~55 a 65 mil entradas, ~40 a
+  70 MB de journald e ~15 MB de rsyslog por F2 no isn3), não de um `podman inspect` que eu tenha lido. Proposta do
+  `k8s-file` com teto por contêiner: `docs/configuracao-infinispan.md`, seção "Log dos contêineres na avaliação (P-64)".
+- **Leitura do coordenador (06/11):** o problema é maior que o journald: a carga de disco do alvo só existe nos braços
+  ativos (PL, AL) e pode enviesar o p99 e provocar h4 só neles. Decisão: `k8s-file` com teto e redução na origem,
+  iguais nos quatro braços.
+- **Causa no log:** duas categorias gravam uma pilha por pedido: `BaseRequestProcessor` (`ISPN005003`, recusa do cache
+  ignorado, ~50 linhas) e `InvocationContextInterceptor` (`ISPN000136`, `AvailabilityException` do nó em modo
+  degradado, ~54 linhas). No `corte-r1` foram 20 647 e 18 131 entradas e 1 995 141 linhas de pilha.
+- **Correção** (`feature/p1ic-conferidor-analise`): `k8s-file` com `max-size: "512mb"` no compose sem caches;
+  `scripts/ajusta-log.sh` põe as duas categorias em `FATAL` pela REST de logging nos três nós depois dos caches, com
+  leitura de volta; a camada 3 confere antes e depois; o nó do F1 recebe os níveis de novo quando volta (a REST vale
+  por nó e não sobrevive ao reinício, lido no cluster local).
+- **Medida** (`runs/p64-log/`, n = 1): no mesmo corte com o AC-7, o log do alvo caiu de 268,3 e 263,7 MB para
+  **0,09 MB**, com o servidor recusando igual (a sonda viu 2 868 recusas do cache ignorado e 6 276
+  `AvailabilityException` no alvo) e o controlador agindo igual.
+- **Status:** `RESOLVIDO` no código; desvio de ambiente em relação à recalibração, a declarar no pré-registro (texto
+  proposto em `docs/configuracao-infinispan.md`). Na VM, conferir só por leitura que o `podman-compose` 1.0.6 passa o
+  `max-size` (`--dry-run`) antes da campanha.
 
 ## 2026-11-06 — Orquestrador da avaliação fatorial 2×2 (DT-027)
 

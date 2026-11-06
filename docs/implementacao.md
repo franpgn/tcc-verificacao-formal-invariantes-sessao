@@ -212,6 +212,51 @@ calibração continuar válido com o mesmo SHA-256; (4) os esquemas continuam 1.
 (5) os parâmetros do adaptador e da guarda contínua são constantes do código com a origem no comentário (medidas do
 A4 e do smoke), não do `controlador-*.json`.
 
+#### Complemento do TD-022 (06/11): trilha 1.3, conferidor e análise (P-63)
+
+Branch `feature/p1ic-conferidor-analise`, a partir da ponta integrada `9de2d37`. Decisões do coordenador: V-1 (regra
+`suspeita-desfeita` e guarda contínua aprovadas), V-2 (trilha 1.3 junto com o conferidor), V-3 (`acaoP1` opcional com
+padrão AC-7, mas explícito no arquivo da avaliação), V-4 (conferidor, orquestrador e análise sabem do AC-7).
+
+| Peça | O que muda | Onde |
+|---|---|---|
+| `FormatoJsonl.ESQUEMA_DECISOES` | `decisoes-controlador/1.3`; nenhum campo novo além dos do P1-IC | `controle/FormatoJsonl.java` |
+| `ExecutorDeAcoes.reverterPelaGuarda` | a reversão da guarda contínua sai com origem `GUARDA`, `regra` e `t_fim_janela_ns` nulos (antes, o instante do pedido ia no lugar da janela) | `controle/ExecutorDeAcoes.java`, `session/LigacaoControlador.java` |
+| conferidor `controlador` | `--exigir-acao-p1 AC-7`: recusa sem `politica.acaoP1`, com outro valor ou sem `politica.origem.acaoP1`; imprime `acao_p1` | `scripts/campanha_s3_conferir.py` |
+| conferidor `meta` | recusa a 1.2; `--exigir-acao-p1 AC-7` confere `parametros_politica.acao_p1` nos dois braços; imprime `acao_p1` | idem |
+| conferidor `trilha` | além do AC-5: `trilha_ac7`, `ac7_falhou_executada`, `ac7_falhou_erros`, `ac7_desfazer` (origem:resultado) e `ac7_ativa_no_fim` | idem |
+| orquestrador | com braço B, passa `--exigir-acao-p1 AC-7` ao `controlador` (pré-voo) e à `meta` (os dois braços); `ac7_ativa_no_fim = sim` vira aviso na checagem, não descarte | `scripts/run-campanha-s3.sh` |
+| análise | `resumo_ac7` (aplicada, alvo, `efeito_ms`, desfazeres com origem e motivo, `falhou_executada`, `ativa_no_fim`) no descritivo do controlador; `ac7_aplicada` e `ac7_ativa_no_fim` na info da execução e em `recuperacao`; totais por braço; regras de rastreabilidade do AC-7 (`_problemas_ac7`); AC-7 ativo no fim deixa Δ_conv e divergência não avaliáveis | `analysis/comparar_bracos.py` |
+
+**Escolhas (para validação):** (1) AC-7 que termina ativo (reversão que falhou) é **aviso** no orquestrador e, na
+análise, tira Δ_conv e divergência daquela execução (como o AC-5 sem o registro do religamento), em vez de descartar a
+execução: o descarte tiraria do braço ativo justamente as falhas do controlador, e o *cluster* é recriado antes da
+execução seguinte. (2) A reversão que falhou **não** é problema de rastreabilidade (a trilha diz o que aconteceu); a
+falta de qualquer linha `REVERTER` depois de um AC-7 aplicado é (o executor desfaz a pilha no encerramento). (3) A
+análise continua lendo trilhas 1.2 (calibração e dados anteriores) e só exige a 1.3 quando a trilha tem AC-7 ou
+`GUARDA`. (4) Não há arquivo de controlador da avaliação no repositório: ele sai da calibração; o orquestrador recusa o
+braço B sem `"acaoP1": "AC-7"` com origem, e o arquivo da calibração fica como está (mesmo SHA-256).
+
+#### Complemento do TD-022 (06/11): log do *cluster* da avaliação (P-64)
+
+Decisão do coordenador (06/11): o log das pilhas do alvo do AC-7 (~268 MB por execução, só nos braços ativos) sai do
+journald e é reduzido na origem, igual nos quatro braços. Detalhes, medida e nota para o pré-registro em
+`docs/configuracao-infinispan.md`, seção "Log dos contêineres na avaliação (P-64)".
+
+| Peça | O que faz | Onde |
+|---|---|---|
+| `logging: k8s-file, max-size 512mb` | log de cada nó num arquivo do contêiner, com teto; o compose do *rebaseline* sem mudança | `cluster/podman-compose-sem-caches.yml` |
+| `loggers-avaliacao.tsv` | `BaseRequestProcessor` (`ISPN005003`) e `InvocationContextInterceptor` (`ISPN000136`) em `FATAL`, com a origem de cada uma | `cluster/log/` |
+| `ajusta-log.sh` | `PUT /rest/v2/logging/loggers/<categoria>?level=` em cada nó e leitura de volta; `--so-conferir`, `--validar`; exits como o `cria-caches.sh` | `scripts/` |
+| orquestrador | aplica depois dos caches (falha = infra, exit 6); camada 3 confere antes e depois; repõe no nó do F1 quando ele volta (aviso se falhar); arquivo e script no *bundle*; `--dry-run` e pré-voo validam o arquivo (exit 4) | `scripts/run-campanha-s3.sh` |
+
+**Escolhas:** (1) REST e não arquivo de log montado: a REST serviu (nível por nó, leitura de volta, sem mexer na
+imagem nem no XML); o custo é repor no nó que reinicia, o que o orquestrador faz no F1. Um nó religado no fim da carga
+(AC-5 ou O8) fica sem os níveis até a recriação, e a camada 3 depois o registra. (2) `FATAL`, não `OFF`: tira os
+`ERROR` dessas duas categorias e deixa um eventual `FATAL`. (3) Some também o resto do que essas duas categorias
+gravam em `ERROR` (por exemplo as 122 `ISPN000136` de `TimeoutException` do `corte-r1`); o cliente continua vendo
+esses erros.
+
 ### TD-021 — W-5e: análise do fatorial 2×2 (regra de fusão × controlador) no `comparar_bracos.py` (2026-11-06)
 
 Numeração: na base `edfa8b6` o último é o TD-019; o TD-020 já é da A1 (`wt-a1`). Na integração (06/11) a A1 entrou

@@ -43,17 +43,26 @@ So biblioteca padrao; roda com python3 -I. Cada subcomando imprime linhas "nome<
       PARAMETROS_CARGA, os da sonda depois deles, na ordem de PARAMETROS_SONDA, e o fusao_teto_s por ultimo).
 
   controlador --arquivo <controlador-*.json> --hotrod-timeout-ms N [--exigir-politica] [--exigir-p2-desabilitada]
+              [--exigir-acao-p1 AC-5|AC-7]
       Le o --controller-config. Com --exigir-politica (braco B na avaliacao), recusa (5) sem o bloco "politica"
       (A-3 da V-W5; O10 da V-W2a: sem o bloco o braco B vira o W-3 sem aviso). Com o bloco, recusa se tetoLagMs !=
       --hotrod-timeout-ms (R7 da V-W2a). Com --exigir-p2-desabilitada (calibracao e avaliacao: D-B do coordenador,
-      05/11, contrato JSONL 1.2), recusa sem o bloco ou com politica.p2Habilitada diferente de false. Imprime sha256,
-      politica (sim/nao), p2_habilitada (true/false/-) e defasagem (sim/nao).
+      05/11, contrato JSONL 1.2), recusa sem o bloco ou com politica.p2Habilitada diferente de false. Com
+      --exigir-acao-p1 X (braco B na avaliacao; V-3 do coordenador, 06/11: o acaoP1 e opcional no programa, com
+      padrao AC-7, mas o arquivo da avaliacao o traz explicito), recusa sem o bloco, sem politica.acaoP1, com outro
+      valor ou sem politica.origem.acaoP1 (origem obrigatoria, como os demais numeros). Imprime sha256, politica
+      (sim/nao), p2_habilitada (true/false/-), acao_p1 (o valor do arquivo ou "-": o programa usa o padrao AC-7) e
+      defasagem (sim/nao).
 
   meta --decisoes <decisoes-rep-NNN.jsonl> --braco A|B --param-sha256 <hex> [--exigir-p2-desabilitada]
-      Primeira linha da trilha (contrato decisoes-controlador/1.2). Braco A: modo shadow. Braco B: modo active,
+       [--exigir-acao-p1 AC-5|AC-7]
+      Primeira linha da trilha (contrato decisoes-controlador/1.3; V-2 do coordenador, 06/11: a 1.3 traz o AC-7, a
+      origem GUARDA, acao_p1 e usadas_p1; a 1.2 e recusada). Braco A: modo shadow. Braco B: modo active,
       atuador != "nulo", politica != "nenhuma", parametros_politica nao nulo. Nos dois: param_sha256 igual ao dado
       (o SHA-256 do --controller-config, o mesmo arquivo nos dois bracos do bloco). Com --exigir-p2-desabilitada, nos
-      dois bracos, parametros_politica.p2_habilitada tem de ser false (D-B).
+      dois bracos, parametros_politica.p2_habilitada tem de ser false (D-B). Com --exigir-acao-p1 X, nos dois
+      bracos (o arquivo e o mesmo no bloco), parametros_politica.acao_p1 tem de ser X. Imprime modo, atuador,
+      politica, param_sha256 e acao_p1.
 
   trilha --decisoes <decisoes-rep-NNN.jsonl> --sinal-alvo <host:porta|->
       Alvo do AC-5 APLICADA na trilha (a regra de ac5_aplicada do comparar_bracos.py: APLICAR, AC-5, APLICADA) e o
@@ -63,6 +72,12 @@ So biblioteca padrao; roda com python3 -I. Cada subcomando imprime linhas "nome<
       trilha_completa. W-6c (B-7 do B-40): imprime tambem fim (sim/nao), linhas_perdidas (o valor da linha fim de
       decisoes, contrato 1.1+, ou "-"), trilha_incompleta (sim se faltar o fim ou se linhas_perdidas nao for 0) e
       trilha_incompleta_motivo. So marca: o exit nao muda; o veredito e do orquestrador (--exigir-trilha-completa).
+      P1-IC (V-4 do coordenador, 06/11; o AC-5 continua conferido, para a comparacao): imprime tambem trilha_ac7
+      (alvos do AC-7 APLICADA executado, ou "-"), ac7_falhou_executada, ac7_falhou_erros, ac7_desfazer
+      (origem:resultado de cada REVERTER executado do AC-7, na ordem, ou "-") e ac7_ativa_no_fim (sim se uma
+      aplicacao executada, APLICADA ou FALHOU, ficou sem REVERTER executado com sucesso depois dela no mesmo alvo:
+      o alvo pode ter terminado a carga ignorando o cache de sessoes). PREVISTA e nao executada nao contam. O AC-7
+      nao muda o exit nem o sinal (ele nao para no nenhum: a linha de fim da carga continua com ac5_alvo).
 
   pareamento --matriz <tsv>
       Complemento 1 do benchmark refeito (DT-027, secao 5, item 4; plano de execucao 5.2): pareamento da matriz ou do
@@ -201,11 +216,13 @@ NOS = ("isn1", "isn2", "isn3")
 COR_RE = re.compile(r"\x1b\[[0-9;]*m")
 CARIMBO_RE = re.compile(r"(\d{4}-\d{2}-\d{2}) (\d{2}):(\d{2}):(\d{2}),(\d{3})")
 END_RE = re.compile(r"^fault=\S+ node=\S+ event=end t_epoch_ns=(\d+)\s*$")
-ESQUEMA_DECISOES = "decisoes-controlador/1.2"
+ESQUEMA_DECISOES = "decisoes-controlador/1.3"   # V-2 (06/11): AC-7, GUARDA, acao_p1, usadas_p1
 ESQUEMA_REFERENCIA = "referencia-p99/1"   # controle/ArquivoReferencia.java (ESQUEMA)
 ATUADOR_NULO = "nulo"
 POLITICA_NENHUMA = "nenhuma"
 TIPO_AC5 = "AC-5"
+TIPO_AC7 = "AC-7"   # P1-IC: o no suspeito ignora o cache de sessoes (reversivel)
+ACOES_P1 = (TIPO_AC5, TIPO_AC7)   # valores de politica.acaoP1 (ParametrosPolitica.java)
 
 
 class ErroUso(Exception):
@@ -391,9 +408,22 @@ def cmd_controlador(a):
     if a.exigir_p2_desabilitada and p2 is not False:
         raise Recusa("politica.p2Habilitada = %r: na calibracao e na avaliacao tem de ser false (D-B do coordenador, "
                      "05/11: a P2/AC-2 e exploratoria e fica fora do braco B)" % (p2,))
+    ap1 = pol.get("acaoP1") if tem_pol else None
+    if a.exigir_acao_p1:
+        if not tem_pol or ap1 is None:
+            raise Recusa("politica.acaoP1 ausente: na avaliacao o --controller-config traz %s explicito (V-3 do "
+                         "coordenador, 06/11)" % a.exigir_acao_p1)
+        if ap1 != a.exigir_acao_p1:
+            raise Recusa("politica.acaoP1 = %r difere de %s (V-3: o P1 da avaliacao e o %s)"
+                         % (ap1, a.exigir_acao_p1, a.exigir_acao_p1))
+        org = pol.get("origem")
+        o_ap1 = org.get("acaoP1") if isinstance(org, dict) else None
+        if not isinstance(o_ap1, str) or not o_ap1.strip():
+            raise Recusa("politica.origem.acaoP1 ausente ou vazio (origem obrigatoria, como a dos demais numeros)")
     print("sha256\t%s" % sha256(a.arquivo))
     print("politica\t%s" % ("sim" if tem_pol else "nao"))
     print("p2_habilitada\t%s" % (("true" if p2 else "false") if isinstance(p2, bool) else "-"))
+    print("acao_p1\t%s" % (ap1 if isinstance(ap1, str) else "-"))
     print("defasagem\t%s" % ("sim" if isinstance(obj.get("defasagem"), dict) else "nao"))
 
 
@@ -433,10 +463,14 @@ def cmd_meta(a):
     p2 = pp.get("p2_habilitada", "ausente") if isinstance(pp, dict) else "sem parametros_politica"
     if a.exigir_p2_desabilitada and p2 is not False:
         problemas.append("parametros_politica.p2_habilitada = %r (D-B: false na calibracao e na avaliacao)" % (p2,))
+    ap1 = pp.get("acao_p1", "ausente") if isinstance(pp, dict) else "sem parametros_politica"
+    if a.exigir_acao_p1 and ap1 != a.exigir_acao_p1:
+        problemas.append("parametros_politica.acao_p1 = %r (V-3: %s na avaliacao)" % (ap1, a.exigir_acao_p1))
     print("modo\t%s" % m.get("modo"))
     print("atuador\t%s" % m.get("atuador"))
     print("politica\t%s" % m.get("politica"))
     print("param_sha256\t%s" % m.get("param_sha256"))
+    print("acao_p1\t%s" % (ap1 if isinstance(pp, dict) and isinstance(pp.get("acao_p1"), str) else "-"))
     if problemas:
         raise Recusa("meta do braco %s: %s" % (a.braco, "; ".join(problemas)))
 
@@ -487,6 +521,35 @@ def completude(linhas, completa):
     return "sim", "0", None
 
 
+def _campo(x):
+    return " ".join(str(x).split()) or "-"
+
+
+def resumo_ac7(linhas):
+    """(alvos APLICADA, erros dos FALHOU executados, desfazeres "origem:resultado", ativa no fim) do AC-7 executado.
+    Mesma regra do resumo_ac7 do comparar_bracos.py: aplicacao executada (APLICADA ou FALHOU) sem REVERTER executado
+    com sucesso depois dela, no mesmo alvo, fica ativa no fim."""
+    alvos, erros, desfazer, ativa = [], [], [], {}
+    for o in linhas:
+        ac = o.get("acao") if isinstance(o.get("acao"), dict) else {}
+        if o.get("tipo") != "acao" or ac.get("tipo") != TIPO_AC7 or o.get("executada") is not True:
+            continue
+        alvo, res = ac.get("alvo"), o.get("resultado")
+        if o.get("operacao") == "APLICAR":
+            if res == "APLICADA":
+                if str(alvo) not in alvos:
+                    alvos.append(str(alvo))
+                ativa[alvo] = True
+            elif res == "FALHOU":
+                erros.append(_campo(o.get("erro")))
+                ativa[alvo] = True
+        elif o.get("operacao") == "REVERTER":
+            desfazer.append("%s:%s" % (_campo(o.get("origem")), _campo(res)))
+            if res != "FALHOU":
+                ativa[alvo] = False
+    return alvos, erros, desfazer, any(ativa.values())
+
+
 def cmd_trilha(a):
     linhas, completa = ler_trilha(a.decisoes)
     fim, perdidas, motivo = completude(linhas, completa)
@@ -507,6 +570,12 @@ def cmd_trilha(a):
     print("linhas_perdidas\t%s" % perdidas)
     print("trilha_incompleta\t%s" % ("sim" if motivo else "nao"))
     print("trilha_incompleta_motivo\t%s" % (motivo or "-"))
+    alvos7, erros7, desf7, ativa7 = resumo_ac7(linhas)
+    print("trilha_ac7\t%s" % (",".join(alvos7) or "-"))
+    print("ac7_falhou_executada\t%d" % len(erros7))
+    print("ac7_falhou_erros\t%s" % (",".join(erros7) or "-"))
+    print("ac7_desfazer\t%s" % (",".join(desf7) or "-"))
+    print("ac7_ativa_no_fim\t%s" % ("sim" if ativa7 else "nao"))
     if (aplicada or "-") != a.sinal_alvo:
         raise Recusa("AC-5 APLICADA na trilha = %s, na linha de fim da carga = %s" % (aplicada or "-", a.sinal_alvo))
 
@@ -734,11 +803,13 @@ def main(argv):
     c.add_argument("--hotrod-timeout-ms", type=int, required=True)
     c.add_argument("--exigir-politica", action="store_true")
     c.add_argument("--exigir-p2-desabilitada", action="store_true")
+    c.add_argument("--exigir-acao-p1", choices=ACOES_P1)
     m = sub.add_parser("meta")
     m.add_argument("--decisoes", required=True)
     m.add_argument("--braco", required=True, choices=("A", "B"))
     m.add_argument("--param-sha256", required=True)
     m.add_argument("--exigir-p2-desabilitada", action="store_true")
+    m.add_argument("--exigir-acao-p1", choices=ACOES_P1)
     t = sub.add_parser("trilha")
     t.add_argument("--decisoes", required=True)
     t.add_argument("--sinal-alvo", required=True)

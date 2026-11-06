@@ -1774,3 +1774,38 @@ Decisões do coordenador depois do primeiro relatório (TD-023 itens 2 e 5; P-65
   `DESCARTADA-INFRA` e a fase sai com 6 ("3 falhas seguidas da politica de fusao (fusao=a1)"), sem execução depois; só os
   braços `pnn` antes do primeiro `a1` de cada bloco rodam carga.
 - Conferência com o W-5e de novo sobre a saída do S36: exit 0, e exit 2 com `fusao` ou `t_fusao_ns` adulterados.
+
+## P-63: trilha 1.3, conferidor, orquestrador e análise com o AC-7 (2026-11-06)
+
+Branch `feature/p1ic-conferidor-analise`, a partir de `9de2d37` (ponta integrada de `feature/controlador-integracao`).
+Decisões V-2 a V-4 do coordenador. TDD: testes vermelhos em `5c6899e`, ajuste do desenho em `ca2216d` (AC-7 ativo no
+fim é desfecho e aviso, não problema de rastreabilidade nem descarte), implementação em `46cad7c`, `7ef4b7e` e `bd6a052`.
+
+| Suíte | Comando | Resultado |
+|---|---|---|
+| Surefire do `workload` | `mvn -q -o -T1 clean test` (em `workload/`) | **1210/0/0/1 em 173 classes** (1209 + `AcaoIgnorarCacheTest.reversaoPelaGuarda`; esquema 1.3 em `AcaoClusterTiposTest`, `LacoDeControleTest` e `LigacaoControladorAtuadorTest`) |
+| `analysis` | `python -E -m unittest discover -s analysis -p "test_*.py"` | **538 OK, 1 *skip*** (528 + 10 de `test_comparar_bracos_ac7.py`) |
+| `analysis/test_calibracao_s3.py` em `-I` | `python -I -m unittest discover -s analysis -p "test_calibracao_s3.py"` | OK, 3 pulados (sem mudança) |
+| conferidor | `python -I -m unittest discover -s scripts -p "test_campanha_s3_conferir*.py"` | **69 OK** (59 + 10 de `test_campanha_s3_conferir_ac7.py`; a meta padrão do teste antigo passou a 1.3) |
+| `_h4`, `_matriz`, `test_rebaseline_matriz` | idem, `-p "<nome>.py"` | OK (sem mudança) |
+| orquestrador, caso novo | `bash scripts/run-campanha-s3.test.sh SP1IC` | **13/13** (sem `acaoP1` → exit 4 no pré-voo; `acao_p1` AC-5 na meta → exit 6; AC-7 desfeito → ACEITA com `trilha_ac7` e `ac7_ativa_no_fim nao`; AC-7 ativo no fim → ACEITA com aviso e alvo) |
+| orquestrador, casos que tocam o controlador, a meta e a trilha | `bash scripts/run-campanha-s3.test.sh S1 S2 S5 S6 S18` | **73/0** (duble com meta 1.3 e `acao_p1`, controlador com `acaoP1` explícito); a suíte inteira S1..S32 não foi rodada nesta branch |
+
+`test_comparar_bracos_ac7.py`: resumo do AC-7 (efeito, desfazeres com origem e motivo, guarda, falso alarme, shadow),
+`ac7_aplicada`/`ac7_ativa_no_fim` na info da execução, rastreabilidade integral do corte desfeito e da guarda sem
+decisão, nove trilhas quebradas (cada uma com o problema esperado), Δ_conv e divergência não avaliáveis com a reversão
+que falhou e Δ_conv do fim da carga com o AC-7 desfeito, trilha 1.2 sem AC-7 ainda integral.
+`test_campanha_s3_conferir_ac7.py`: constante 1.3, meta 1.2 recusada, `--exigir-acao-p1` no `controlador` (campo,
+valor, origem) e na `meta` (dois braços), e os campos `ac7_*` da `trilha`.
+
+### P-64: log do *cluster* da avaliação (06/11)
+
+TDD: vermelho em `f367b7e`. A suíte inteira S1..S32 do orquestrador não foi rodada nesta branch.
+
+| Suíte | Comando | Resultado |
+|---|---|---|
+| `ClusterSemCachesXmlTest` | `mvn -o -q test -Dtest=ClusterSemCachesXmlTest` (em `workload/`) | 4/0 (`logK8sFileComTeto` novo; `composeSoTrocaOXml` com o bloco `logging`) |
+| `ajusta-log.sh` | `bash scripts/ajusta-log.test.sh` | **36/0** (aplicar e ler nos três nós, senha só pela entrada padrão, `--so-conferir`, PUT recusado = 3, leitura divergente = 4 com o nó, `--validar` sem rede, arquivo inválido = 2, uso = 1, arquivo da avaliação) |
+| orquestrador | `bash scripts/run-campanha-s3.test.sh SP64` | **19/0** (dry-run com as categorias; níveis depois dos seis caches; camada 3 antes e depois limpa; reposição no nó do F1; PUT recusado e leitura divergente = exit 6; arquivo inválido = exit 4) |
+| orquestrador | `bash scripts/run-campanha-s3.test.sh S1 S4 SP64` | 102/1 antes da correção do gancho `CS_LOGGERS_ARQ` no `--dry-run` (o único FAIL era o do arquivo inválido); S1 e S4 sem falha |
+| medida local | `runs/p64-log/` (`comandos.md`) | log do alvo do AC-7 sob corte: 268,3 e 263,7 MB antes, **0,09 MB** depois (n = 1) |

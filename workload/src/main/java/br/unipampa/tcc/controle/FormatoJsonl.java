@@ -20,9 +20,12 @@ public final class FormatoJsonl {
     public static final String ESQUEMA_OBSERVAVEIS = "observaveis-controlador/1.2";
     /**
      * v1.1 (V-W3): {@code t_decisao_ns} na linha {@code decisao}; linha {@code fim} com prazos e perdas. v1.2 (W-2a):
-     * {@code reversao} em toda linha {@code acao}, linha {@code politica}, tipos AC-2 e AC-5.
+     * {@code reversao} em toda linha {@code acao}, linha {@code politica}, tipos AC-2 e AC-5. v1.3 (P-63, V-2 do
+     * coordenador, 06/11: a troca da acao do P1 fica explicita): tipo AC-7, origem GUARDA (sem regra e sem janela),
+     * {@code acao_p1} em {@code parametros_politica}, {@code usadas_p1} na linha {@code politica} e os motivos de
+     * desfazer do AC-7.
      */
-    public static final String ESQUEMA_DECISOES = "decisoes-controlador/1.2";
+    public static final String ESQUEMA_DECISOES = "decisoes-controlador/1.3";
 
     private static final ObjectMapper JSON = new ObjectMapper();
 
@@ -82,7 +85,7 @@ public final class FormatoJsonl {
                 q.put("t_reb_ns", pp.tRebNs());
                 q.put("cota_ac5", pp.cotaAc5());
                 q.put("p2_habilitada", pp.p2Habilitada()); // D-B (aditivo na 1.2, antes de dado de campanha)
-                q.put("acao_p1", pp.acaoP1().rotulo()); // P1-IC (aditivo na 1.2): AC-7 (G-1) ou AC-5 (comparacao)
+                q.put("acao_p1", pp.acaoP1().rotulo()); // P1-IC (1.3, V-2): AC-7 (G-1) ou AC-5 (comparacao)
                 ObjectNode org = q.putObject("origem");
                 pp.origem().forEach(org::put);
             }
@@ -300,7 +303,7 @@ public final class FormatoJsonl {
         p.reverter().forEach(x -> rev.add(x.tipo().rotulo()));
         ArrayNode apl = o.putArray("aplicar");
         p.aplicar().forEach(x -> apl.add(x.tipo().rotulo()));
-        // P1-IC (aditivo na 1.2): acoes de P1 ja pedidas depois desta janela (a cota fica em parametros_politica)
+        // P1-IC (1.3, V-2): acoes de P1 ja pedidas depois desta janela (a cota fica em parametros_politica)
         o.put("usadas_p1", p.usadasP1());
         return o;
     }

@@ -1,3 +1,8 @@
+# P-64 (decisao do coordenador, 06/11): log de cada no em arquivo do conteiner (k8s-file) com teto de 512 MB, em vez
+# do journald (que a VM copia para o rsyslog). O teto cobre o pior caso medido no smoke do P1-IC (268 MB de texto no
+# alvo do AC-7 sob corte); passou dele, o conmon recomeca o arquivo (perde o comeco, nao o fim). O arquivo some com o
+# conteiner no down da recriacao seguinte. As pilhas das recusas e do modo degradado sao reduzidas na origem pela REST
+# (scripts/ajusta-log.sh, cluster/log/loggers-avaliacao.tsv), depois de criar os caches.
 # W-6 (B-46): igual ao podman-compose.yml, mas cada no monta o infinispan-sem-caches.xml (nenhum cache no XML;
 # os seis caches sao criados pela REST por scripts/cria-caches.sh). ClusterSemCachesXmlTest confere que so o
 # volume do XML muda. Usado por scripts/run-campanha-s3.sh na recriacao do cluster antes de cada execucao.
@@ -38,6 +43,10 @@ services:
       - "11222:11222"
     networks:
       - infinispan-net
+    logging:
+      driver: k8s-file
+      options:
+        max-size: "512mb"
     healthcheck:
       test: ["CMD", "curl", "-f", "--digest", "-u", "admin:infinispan", "http://localhost:11222/rest/v2/cache-managers/default/health/status"]
       interval: 5s
@@ -61,6 +70,10 @@ services:
       - "11223:11222"
     networks:
       - infinispan-net
+    logging:
+      driver: k8s-file
+      options:
+        max-size: "512mb"
     healthcheck:
       test: ["CMD", "curl", "-f", "--digest", "-u", "admin:infinispan", "http://localhost:11222/rest/v2/cache-managers/default/health/status"]
       interval: 5s
@@ -86,6 +99,10 @@ services:
       - "11224:11222"
     networks:
       - infinispan-net
+    logging:
+      driver: k8s-file
+      options:
+        max-size: "512mb"
     healthcheck:
       test: ["CMD", "curl", "-f", "--digest", "-u", "admin:infinispan", "http://localhost:11222/rest/v2/cache-managers/default/health/status"]
       interval: 5s

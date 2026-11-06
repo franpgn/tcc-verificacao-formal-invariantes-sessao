@@ -25,8 +25,9 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  * {@code distributed-cache} do XML com caches, os comentarios e o texto so de espaco, os dois documentos sao
  * iguais no-a-no. O {@code cluster/podman-compose-sem-caches.yml} e o {@code podman-compose.yml} com o volume do
  * XML trocado e, desde o A1 (2026-11-06), o JAR da extensao do servidor ({@code extensao-servidor}, politica de fusao
- * do {@code sessions-async}) montado em {@code server/lib} nos tres servicos, e nada mais (mesmos nomes de conteiner,
- * portas, imagem e {@code external-port}).
+ * do {@code sessions-async}) montado em {@code server/lib} nos tres servicos e, desde o P-64 (2026-11-06), o log dos
+ * conteineres em {@code k8s-file} com {@code max-size} (fora do journald, igual nos quatro bracos), e nada mais (mesmos
+ * nomes de conteiner, portas, imagem e {@code external-port}). O compose do rebaseline fica sem {@code logging}.
  */
 class ClusterSemCachesXmlTest {
 
@@ -100,8 +101,30 @@ class ClusterSemCachesXmlTest {
     static final String VOLUME_JAR =
             "      - ../extensao-servidor/target/tcc-extensao-servidor.jar:/opt/infinispan/server/lib/tcc-extensao-servidor.jar:ro";
 
+    /**
+     * P-64 (decisao do coordenador, 06/11): log de cada no em arquivo do conteiner ({@code k8s-file}), com teto, em vez
+     * do journald (que a VM copia para o rsyslog). O teto cobre o pior caso medido no smoke do P1-IC (alvo do AC-7 sob
+     * corte: 268 MB de texto por execucao). Logo depois da lista de redes de cada servico.
+     */
+    static final List<String> LOGGING = List.of(
+            "    logging:",
+            "      driver: k8s-file",
+            "      options:",
+            "        max-size: \"512mb\"");
+
     @Test
-    @DisplayName("compose sem caches = compose versionado com o volume do XML trocado e o JAR do A1, nos tres servicos")
+    @DisplayName("P-64: k8s-file com max-size nos tres servicos do compose sem caches; o do rebaseline sem logging")
+    void logK8sFileComTeto() throws Exception {
+        List<String> base = semComentarios(dirCluster().resolve("podman-compose.yml"));
+        List<String> sem = semComentarios(dirCluster().resolve("podman-compose-sem-caches.yml"));
+        assertEquals(0, base.stream().filter(l -> l.strip().startsWith("logging")).count(), "rebaseline intacto");
+        assertEquals(3, sem.stream().filter("    logging:"::equals).count());
+        assertEquals(3, sem.stream().filter("      driver: k8s-file"::equals).count());
+        assertEquals(3, sem.stream().filter("        max-size: \"512mb\""::equals).count());
+    }
+
+    @Test
+    @DisplayName("compose sem caches = compose versionado com o volume do XML trocado, o JAR do A1 e o log do P-64")
     void composeSoTrocaOXml() throws Exception {
         List<String> base = semComentarios(dirCluster().resolve("podman-compose.yml"));
         List<String> sem = semComentarios(dirCluster().resolve("podman-compose-sem-caches.yml"));
@@ -115,6 +138,9 @@ class ClusterSemCachesXmlTest {
             trocado.add(l.replace(velho, novo));
             if (l.contains(jgroups)) {
                 trocado.add(VOLUME_JAR);
+            }
+            if (l.equals("      - infinispan-net")) {
+                trocado.addAll(LOGGING);
             }
         }
         assertEquals(trocado, sem);

@@ -517,16 +517,27 @@ class CampanhaBase(unittest.TestCase):
         self.assertEqual({"A"}, {e["braco"] for e in self.r["execucoes"]["usadas"]})
         self.assertEqual({"shadow"}, {e["controller"] for e in self.r["execucoes"]["usadas"]})
 
+    def test_valores_b40_carregam_no_java(self):
+        b40 = self.r["valores_b40_parte2"]
+        self.assertEqual([], b40["carga"]["problemas"])
+        self.assertTrue(b40["carga"]["carrega_no_controlador"])
+        # o JSON gravado (floats por repr, inteiros como inteiros) tambem carrega
+        j = json.loads(cal.serializar(self.r).decode("utf-8"))["valores_b40_parte2"]
+        self.assertEqual([], cal.problemas_de_carga(j, 2000))
+        for campo in ("wNs", "nLat", "nErr", "k", "m", "cooldownNs", "estavelNs", "holdViolNs", "politica.kLag"):
+            self.assertIs(type(j[campo]), int, campo)
+
 
 class Bordas(unittest.TestCase):
     """Variacoes da campanha base: limite do kLag, zero ocorrencias, nenhuma janela valida, lambda5."""
 
-    def derivar(self, mud):
+    def derivar(self, mud, tudo=False):
         with tempfile.TemporaryDirectory() as tmp:
             base = Path(tmp) / "c"
             base.mkdir()
             montar_campanha(base, mud)
-            return cal.derivar(base, parametros_campanha(tmp))["parametros"]
+            r = cal.derivar(base, parametros_campanha(tmp))
+            return r if tudo else r["parametros"]
 
     def test_reserva_de_w_aplicada(self):
         # persistencia 5 em W = 5: kLag 6, 6 x 5 + 13,3 >= 39,8. Em W' = 4 a janela [36, 40) fica sem rodada e e
@@ -547,11 +558,32 @@ class Bordas(unittest.TestCase):
         self.assertEqual(1.0, cob["fracao_indeterminada"])     # 80 elegiveis por janela de 4 s < n_lat
         self.assertTrue(cob["passa_de_5_por_cento"])
         self.assertIn("perdeu cobertura", cob["declaracao"])
-        # cobertura perdida por inteiro: theta_lat_in nao deriva, e m (que usa theta_lat_in) tambem nao
-        self.assertIsNone(P["theta_lat_in"]["valor"])
-        self.assertIsNone(P["m"]["valor"])
-        self.assertIn("theta_lat_in", P["m"]["motivo"])
-        self.assertIsNone(P["T_cooldown_s"]["valor"])
+        # R-2 da V-W9: cobertura nula -> theta_in "sem cobertura" (> 1, inalcancavel) e theta_out = 1; m e
+        # T_cooldown derivam. Com 80 + 2 eventos por janela de 4 s, o erro tambem fica sem cobertura
+        for sinal in ("lat", "err"):
+            x = P["theta_%s_in" % sinal]
+            self.assertEqual(cal.THETA_SEM_COBERTURA, x["valor"])
+            self.assertGreater(x["valor"], 1.0)
+            self.assertTrue(x["dados"]["sem_cobertura"])
+            self.assertIsNone(x["motivo"])
+            self.assertEqual(1.0, P["theta_%s_out" % sinal]["valor"])
+            self.assertTrue(P["theta_%s_out" % sinal]["dados"]["sem_cobertura"])
+        self.assertIsNotNone(P["m"]["valor"])
+        self.assertEqual(4 * P["m"]["valor"], P["T_cooldown_s"]["valor"])
+
+    def test_reserva_sem_cobertura_carrega_no_java(self):
+        r = self.derivar({"n0": dict(lag_teto={j: ISN3 for j in range(4, 9)})}, tudo=True)
+        b40 = r["valores_b40_parte2"]
+        self.assertEqual([], b40["carga"]["problemas"])
+        self.assertTrue(b40["carga"]["carrega_no_controlador"])
+        self.assertEqual([], cal.problemas_de_carga(b40, 2000))
+        self.assertEqual(cal.THETA_SEM_COBERTURA, b40["thetaLatIn"])
+
+    def test_nem_sempre_sem_cobertura(self):
+        # cobertura parcial: theta_in sai da 7.7 normal (sem_cobertura falso)
+        P = self.derivar({})
+        self.assertFalse(P["theta_lat_in"]["dados"]["sem_cobertura"])
+        self.assertFalse(P["theta_lat_out"]["dados"]["sem_cobertura"])
 
     def test_reserva_de_w_com_cobertura_parcial(self):
         # 3 operacoes (30/s) e 3 janelas de 5 s com 100 elegiveis: lambda5 = 20/s, W da 7.3 = 5. Em W' = 4, so as 3
@@ -831,6 +863,28 @@ class Funcoes(unittest.TestCase):
         self.assertTrue(cal.viavel_em(5, 5))        # 38,3
         self.assertFalse(cal.viavel_em(6, 5))       # 43,3
         self.assertFalse(hasattr(cal, "viabilidade"))   # R-5: a funcao sem uso saiu
+
+    def test_problemas_de_carga(self):
+        ok = {"wNs": 5 * S, "nLat": 100, "nErr": 100, "thetaLatIn": 0.05, "thetaLatOut": 0.0, "thetaErrIn": 5e-324,
+              "thetaErrOut": 0.0, "k": 2, "m": 5, "cooldownNs": 25 * S, "estavelNs": 34 * S, "holdViolNs": 26 * S,
+              "politica.kLag": 2, "defasagem.lagInMs": 2000.0, "defasagem.lagOutMs": 1.5}
+        self.assertEqual([], cal.problemas_de_carga(ok, 2000))
+        ruins = [("thetaLatOut", 0.05), ("thetaErrOut", 1e-3), ("thetaLatIn", math.inf), ("thetaLatIn", None),
+                 ("m", None), ("m", 0), ("k", 0), ("wNs", 5e9), ("wNs", 2 * S), ("cooldownNs", None),
+                 ("estavelNs", -1), ("holdViolNs", 1.5), ("politica.kLag", 0), ("defasagem.lagOutMs", 2000.0),
+                 ("defasagem.lagInMs", 0.0), ("defasagem.lagInMs", 2500.0), ("nErr", -1)]
+        for campo, v in ruins:
+            x = dict(ok)
+            x[campo] = v
+            self.assertTrue(cal.problemas_de_carga(x, 2000), "%s = %r passou" % (campo, v))
+
+    def test_guardas_lidos_do_codigo_java(self):
+        # cada guarda que problemas_de_carga espelha existe no codigo do controlador (se o Java mudar, isto falha)
+        raiz = AQUI.parent / "workload" / "src" / "main" / "java" / "br" / "unipampa" / "tcc" / "controle"
+        self.assertTrue(cal.GUARDAS_JAVA)
+        for arquivo, trecho in cal.GUARDAS_JAVA:
+            fonte = (raiz / arquivo).read_text(encoding="utf-8")
+            self.assertIn(trecho, fonte, "%s sem o guarda %r" % (arquivo, trecho))
 
     def test_exec_teto(self):
         r = cal.exec_teto(300, 60, 600, 5, 2.4, 13.5)

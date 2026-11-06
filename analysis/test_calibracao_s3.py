@@ -741,8 +741,14 @@ class Funcoes(unittest.TestCase):
         r = cal.m_reentrada([("HHHNNHNNNNHNNN", 2), ("NHN", 0)])
         self.assertEqual(5, r["valor"])
         self.assertEqual(4, r["maior_trecho"])
-        r = cal.m_reentrada([("NNNNHNH", 2)])     # o trecho 0..3 comeca antes do end: nao conta
-        self.assertEqual(2, r["valor"])
+        # R-3 da V-W9: o trecho 0..3 atravessa o end (indice 2) e conta so a parte depois dele (2 e 3): L = 2
+        r = cal.m_reentrada([("NNNNHNH", 2)])
+        self.assertEqual(3, r["valor"])
+        self.assertEqual(1, r["trechos_cortados_no_end"])
+        # trecho longo desde o comeco da carga (F4): so a janela 7 conta, nao as 8 (nem zero, como na leitura antiga)
+        r = cal.m_reentrada([("NNNNNNNNHN", 7)])
+        self.assertEqual((2, 1), (r["valor"], r["maior_trecho"]))
+        self.assertEqual(0, cal.m_reentrada([("HHNNH", 2)])["trechos_cortados_no_end"])
         self.assertEqual(3, cal.m_reentrada([("NNH", 0)])["valor"])
         r = cal.m_reentrada([("HNNNN", 0)])       # nenhum trecho termina em alta
         self.assertEqual(1, r["valor"])

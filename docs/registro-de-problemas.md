@@ -1118,7 +1118,47 @@ W-6 são P-47..P-55 aqui. As mensagens de commit da branch ficam com a numeraç�
 - **Conferir no *smoke* local do controlador:** `getCacheTopologyInfo()` do `rcm` antes e depois de um F1 em S3.
 - **Relação com o P-41 da integração** (leitura por réplica com prazo, `b61c803`): o P-41 resolve o travamento da
   leitura final no nó parado; este item é sobre qual topologia escolhe os segmentos lidos de cada nó, e continua aberto.
-- **Status:** `ABERTO` (só registro; nenhuma mudança no laço de convergência neste item).
+- **Smoke local (06/11, 05:11 a 05:15Z, ponta `1f65a02`, a da calibração; `runs/p48-smoke/`).** Cluster local de três
+  nós com o XML sem *caches* e os seis *caches* da ponta; a sonda (`runs/p48-smoke/scripts/SondaP48.java`, *harness*,
+  nenhum código do programa mudou) usa o `rcm` principal com a configuração do `WorkloadMain`, faz o *clear* e a carga
+  inicial (2000 chaves em `sessions-async` e `counters-async`) e depois nenhuma operação nele, como no S3. F1 =
+  `podman kill` do `isn2`, 60 s, `podman start` (o JGroups dá endereço novo ao nó: `isn2-2701` antes, `isn2-20801`
+  depois). Resultado (`runs/p48-smoke/execucao/sonda.out`):
+  - **A topologia fica velha.** Depois do F1, o `rcm` principal continua com a da abertura (`topology_id` 2135538279,
+    43/42/43 segmentos por nó), e um cliente novo vê outra (−1218010633, 44/43/41). Um único `get` pelo principal traz a
+    topologia nova (T3 igual a T2). Na calibração o `stdout.log` das execuções F1 tem o mesmo sinal: o cliente só
+    registra `ISPN004006` (topologia nova) na abertura (3 linhas em cada uma das 5, nenhuma depois do F1).
+  - **As leituras por réplica erram de 13 a 33 % das chaves de cada nó depois do F1.** Com a topologia velha, cada
+    nó tem 8 a 13 segmentos a mais e 6 a 14 a menos do que os seus: a leitura dele perde 174 a 441 das ~1300 chaves que possui e
+    acrescenta 245 a 399 chaves de segmentos que não são mais dele. O servidor devolve essas chaves (busca no dono
+    atual), então, nessa parte, a "réplica" lida não é a cópia local do nó.
+  - **Sem reinício a distribuição não muda.** Numa F2 sem reinício (`isn3` isolado por 40 s, fusão às 05:15:02Z), a
+    distribuição depois da fusão é a mesma de antes (T5 igual a T2) e as leituras com a topologia velha e com a nova são
+    idênticas nos três nós. Vale também para F4 (sem troca de membros). O erro só aparece quando um nó **reinicia**:
+    F1 e, na avaliação, o religamento depois do AC-5.
+  - **O erro só pode esconder divergência.** O laço conta como divergente a chave lida em duas réplicas com valores
+    diferentes (`InvariantAuditor.divergenciasI5/I6`); chave que falta não conta. Uma leitura com segmentos errados ou
+    traz a cópia do dono atual (igual à dele) ou deixa a chave de fora, nunca fabrica divergência. A convergência medida
+    num F1 é, então, no máximo cedo demais, nunca tarde demais.
+- **Efeito na calibração e na regra 7.10.** Nas 27 execuções do X-18, toda rodada válida teve 0 chaves divergentes.
+  Δ_conv: F1 196,9 a 197,1 s (5 execuções; 190 s disso são o intervalo entre o `end` do F1 (reinício do `isn2`)
+  em +109,5 a +109,7 s, e o fim da carga, e o resto é a primeira rodada, inválida nas 5 por "leitura de 1 réplica
+  falhou", mais um período), F2 153,5 a 154,0 s e F4 159,3 a 160,3 s, estes dois sem efeito do P-48. A 7.10 dá 600 s porque o maior Δ_conv (197,1 s) fica abaixo de
+  400 s. Para o P-48 mudar essa decisão, uma leitura correta teria de mostrar, em alguma execução F1, divergência por
+  mais ~203 s depois da primeira rodada limpa, toda dentro da parte mal lida (13 a 33 % das chaves de cada nó),
+  enquanto o resto, lido certo, teve 0 chaves divergentes em três rodadas seguidas nas cinco execuções. **Veredito para a calibração: o teto
+  de 600 s da 7.10 não muda.** O maior Δ_conv das F1 é limite inferior, não valor exato.
+- **Para a avaliação (antes de qualquer dado do B-40):** o defeito vale para toda célula F1 e para toda execução do
+  braço B com AC-5 e religamento (o nó volta com endereço novo), e aí pode encurtar o Δ_conv e esconder divergência só
+  num braço. A mitigação da V-W6 §5.4 (uma operação barata pelo `rcm` principal no início de cada rodada do laço, por
+  exemplo `containsKey` de uma chave inexistente em cada *cache* lido) basta, pelo smoke: um `get` atualizou a
+  topologia. O I-3b `ativo-religar` (Δ_conv 35,3 s, citado na origem do `convergencia_teto_s`) foi medido com o mesmo
+  laço de leitura e tem a mesma ressalva. Não alterei código (pedido do coordenador).
+- **Observação à parte (não é o P-48):** nas 5 execuções F1 da calibração, e em nenhuma F2/F4, a primeira rodada do
+  laço é inválida ("leitura de 1 réplica(s) falhou (DEGRADED?)"), provavelmente a conexão do leitor BASIC com o `isn2`
+  derrubada pelo F1. Custa um período (~5 s) no Δ_conv das F1.
+- **Status:** `CONFIRMADO` pelo smoke; sem efeito na decisão da 7.10 da calibração; correção pendente antes da avaliação
+  (decisão do coordenador).
 
 ### P-49 (W-6; P-47 na branch do W-6, P-43 antes do rebase; renumerado na integração) — o `python3` do Windows escreve CRLF e o `\r` entrava nos parâmetros lidos pelo orquestrador
 

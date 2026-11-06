@@ -1455,3 +1455,70 @@ passava, porque só prende o comportamento que não muda) e `bc9cfdd` (`feat:`).
 |---|---|---|
 | `TotaisSemVarredura` | 3 | totais sem a varredura na execução: pares por classe, pares, linhas; a forma do par recalculada sem a varredura (o par com leitura cruzada e I1 `REAL` da varredura, "outra" com ela, vira forma 2 sem ela); indeterminada sem `execucao.json` |
 | `VarreduraSimetrica` | 8 | célula de 6 blocos com erro só em A (bloco 2), só em B (3) e nos dois (4): V e `:sem_forma2` dos dois braços sem a varredura, `d_b` de cada bloco, os 6 blocos no teste, `co_principal_v` e contagens por invariante trocadas; também na célula descritiva; `varredura_com_erro` com o braço da falha e os dois V; sensibilidade sem os blocos 2 a 4 (média dos blocos 1, 5 e 6, sem p e sem Holm); célula só com os blocos sem falha igual à de antes; linha na tabela Markdown; guarda de instrumentos com `erro` = varredura pedida |
+
+## Integração do lote do *benchmark* (W-10, P-48, W-9, carga S3, W-5c/W-5d e fonte única da apuração de V) (2026-11-06)
+
+Branch `feature/controlador-integracao` (worktree `wt-ctrl-integ`), a partir de `9a66e7e` (tag `int/2026-11-06-w6c`).
+Merges `--no-ff` em ordem, com a numeração pela regra "depois do que existe" (tabela em cada commit de merge):
+
+| Commit | O que entra | Numeração na integração |
+|---|---|---|
+| `c6fef4b` | W-10, sonda de *replay* (`7c94cfb`) | TD-016, caso S30 |
+| `daa18a2` | correção do P-48 (`a97675f`) | TD-015 item 26 |
+| `e2a220a` | W-9 em `b42741a` (derivação da calibração) | TD-016 da branch → TD-017 |
+| `2d9d6b1` | carga S3 parametrizada (`a733282`) | TD-017 da branch → TD-018, caso S31 |
+| `300a6e4` | W-5c e W-5d (`dba7320`) | TD-017 da branch → TD-019 |
+| `ef0b06c` | W-9 em `6d154c6` (V por pares, `apuracao_v.py`) | sem troca |
+| `0acfb44`, `ade376e` | `test:` (vermelho) e `refactor:`: o `comparar_bracos` importa do `apuracao_v` as 13 funções, as 26 constantes e o `ErroUso`, e apaga a cópia | — |
+| `9df4594`, `acd079d` | `test:` (vermelho) e `feat:`: D-1 do roteiro da recalibração, `s3_replay_late_max`, `s3_replay_min_sec` e `s3_replay_max_sec` no `--parametros`, só com `--sonda-replay` | TD-018 (parágrafo novo), caso S32 |
+
+Suítes rodadas depois que o piloto terminou na VM (~08:20Z), uma vez cada: Surefire, Python e injetores na ponta
+`ade376e` (o D-1 não toca `workload/`, `analysis/` nem os injetores); o teste do conferidor e o subconjunto do
+orquestrador na ponta `acd079d`, com o D-1. JDK 22.0.2, Maven
+3.9.16, Python 3.12.6. Sem VM.
+
+| Suíte | Comando | Resultado |
+|---|---|---|
+| Surefire | `mvn -q -o -T1 clean test` (em `workload/`) | **1175/0/0/1 em 167 classes** (1142 + 23 do W-10 + 10 do P-48) |
+| `test_campanha_s3_conferir`, `_h4`, `_matriz`; `test_rebaseline_matriz` | `python3 -I -m unittest discover -s scripts -p "<nome>.py"` | 52 OK em `ade376e` (44 + 8 da carga) e **59 OK** em `acd079d` (+ 7 do D-1); 11 OK; 16 OK; 8 OK |
+| `analysis` | `python -E -P -m unittest discover -s analysis` | **486 OK, 1 *skip*** (66 s). O teste de identidade do `apuracao_v` roda e passa (não é o *skip*) |
+| `analysis/test_calibracao_s3.py` em `-I` | `python3 -I -m unittest discover -s analysis -p "test_calibracao_s3.py"` | 79 testes, OK, 3 pulados (os de paridade, que exigem numpy) |
+| `inject-crash.test.sh` | `bash scripts/inject-crash.test.sh` | 141 PASS, 0 FAIL (43 s) |
+| `inject-partition.test.sh` | idem | 125 PASS, 0 FAIL, 2 SKIP (111 s) |
+| `inject-netdegrade.test.sh` | idem | 298 PASS, 0 FAIL, 1 SKIP (254 s) |
+| `inject-jitter.test.sh` | idem | 35 PASS, 0 FAIL (2 s) |
+| `run-campanha-s3.test.sh`, **subconjunto** | `bash scripts/run-campanha-s3.test.sh S1 S4 S11 S22 S24 S25 S26 S27 S29 S30 S31 S32` | **338 PASS, 0 FAIL** (10:23:04Z a 11:20:11Z, 3426 s, sozinho no *host*; `runs/bench-int/suite-s3-subconjunto.out`) |
+
+**Subconjunto do orquestrador, não a suíte completa.** Por decisão do coordenador (06/11), para ganhar cerca de 1,5 h
+antes da recalibração, rodaram só os casos tocados neste lote e os básicos: S1 (pré-voo e `--dry-run`), S4
+(calibração com F1 e F2), S11, S22 (B1), S24 (referência por perfil), S25 (F1 em curso na linha de fim), S26 (F3 do
+W-6c), S27 (swap), S29 (I-1), S30 (sonda de *replay* do W-10), S31 (carga parametrizada) e S32 (D-1). **A suíte completa
+(S1..S31) roda depois da recalibração e antes da avaliação**, quando o coordenador avisar.
+
+**Fonte única da apuração de V.** O `comparar_bracos.py` deixou de ter a cópia: importa do `analysis/apuracao_v.py`
+(que roda em `python3 -I`, sem numpy, para o `calibracao_s3`) as 13 funções de `COPIADAS`, os 26 nomes de `CONSTANTES` e
+o `ErroUso`. O `ErroUso` é o mesmo objeto para que o erro de contrato dos leitores continue saindo com exit 2 por
+`ERROS_USO`. O teste `test_apuracao_v_igual_a_do_comparar_bracos` passou a conferir identidade de objeto e que o
+`comparar_bracos` não define nenhum desses nomes (vermelho em `0acfb44`: `_int_ou_none` era outra função). O
+`comparar_bracos` continua importável em `-E -P`, e o golden do W-5c passa (`test_comparar_bracos*.py`, 71 OK).
+
+**Congelados**, iguais a `9a66e7e`: `run-rebaseline.sh` `d95305fe…`, `inject-netdegrade.sh` `4ebdd8a3…`,
+`inject-partition.sh` `59dd2bee…`, `inject-crash.sh` `531a98a1…`, `inject-jitter.sh` `7e68962b…`, lista do h4
+(`e4cc5c79…`, `1e7462f4…`, `53d7e7cb…`), `cria-caches.sh`, `collect-resources.sh`, `analysis/rebaseline.py`,
+`scripts/rebaseline_matriz.py` e `runs/rebaseline/matriz.tsv`.
+
+**D-1 do roteiro da recalibração** (`9df4594` test, `acd079d` feat; TD-018). Vermelho: conferidor com 59 testes, 24
+falhas e 2 erros, todos da classe nova `ParametrosSondaReplay`; S32 com 15 PASS e 11 FAIL
+(`runs/bench-int/s32-vermelho.out`). Verde: conferidor 59 OK e S32 26 PASS, 0 FAIL (`s32-verde.out`), e de novo no
+subconjunto. O `test_sem_origem_e_desconhecido` deixou de usar `s3_replay_min_sec` como exemplo de campo desconhecido,
+porque o campo agora tem motivo próprio. *Dry-run* (`runs/bench-int/dry-run/`, matriz de calibração com uma linha
+`ASYNC-F2`, semente 700000; parâmetros com os 19 números, os cinco `s3_*` da L+ do piloto e `s3_replay_late_max` = 268
+com a origem da DT-026; `--swap-limite-kb 1048576`):
+- com `--sonda-replay`, exit 0, `DRY-RUN opcoes: swap_limite_kb=1048576 exigir_trilha_completa=nao sonda_replay=sim`,
+  `DRY-RUN carga S3: --s3-users 40 --s3-think-ms 500 --s3-session-median-sec 10 --s3-logout-prob 0.9
+  --s3-admin-mean-sec 5 --s3-replay-late-max 268` e a linha do programa terminando em `--rejoin-timeout-sec 60
+  --s3-users 40 … --s3-admin-mean-sec 5 --s3-replay-late-max 268 --s3-replay-probe --sweep`;
+- sem `--sonda-replay`, exit 4: "s3_replay_late_max so vale com a sonda de replay (--sonda-replay do orquestrador)";
+- a linha do programa do plano, com o jar construído da ponta e `--dry-run` do próprio programa, sai com 0
+  (`programa-dry-run.out`): o picocli e o `S3Parametros.validar` aceitam `--s3-replay-late-max 268` com
+  `--s3-replay-probe` e `--sweep`.

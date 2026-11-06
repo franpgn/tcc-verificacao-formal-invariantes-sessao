@@ -169,6 +169,12 @@ Decisões:
    outro é recusado (exit 2; pré-registro 2.1). Nas outras células, os blocos ficam listados em
    `instrumentos_divergentes`.
 
+**Fonte única da apuração (na integração, 06/11; `0acfb44` test, `ade376e` refactor).** Depois do merge do W-9 em
+`6d154c6`, que trouxe o `analysis/apuracao_v.py` como cópia sem numpy, o `comparar_bracos.py` passou a importar dele as
+13 funções e as 26 constantes da apuração de V, e o `ErroUso` (o mesmo objeto, para o exit 2 por `ERROS_USO` continuar
+igual), e apagou a própria cópia. `test_calibracao_s3.Paridade.test_apuracao_v_igual_a_do_comparar_bracos` confere
+identidade de objeto e que o `comparar_bracos` não define nenhum desses nomes.
+
 ### TD-018 — Carga S3 parametrizada no orquestrador (2026-11-06)
 
 Numeração: TD-017 na branch `feature/s3-carga-parametrizada`; na integração (06/11) o W-9 entrou antes com o TD-017,
@@ -220,6 +226,17 @@ de `--rejoin-timeout-sec` e antes das opções da sonda (`--sonda-replay`). Tamb
 com a linha completa, e o `S3Parametros.validar` confere de novo. **Sem nenhum `s3_*`, a linha do jar é a de antes**
 (S31: a linha com os campos é a sem eles mais o sufixo). Decisão: sem `campanha-s3/3`, porque os campos são opcionais
 e nenhum arquivo válido de hoje muda de sentido. Se o Gestor preferir um esquema novo, a troca fica no conferidor.
+
+**Campos da sonda de *replay* (D-1 do roteiro da recalibração, na integração, 06/11; `9df4594` test, `acd079d` feat).**
+`s3_replay_min_sec`, `s3_replay_max_sec` e `s3_replay_late_max` (`PARAMETROS_SONDA`, um por opção `--s3-replay-*` com
+valor; o `--s3-replay-probe` continua sendo o `--sonda-replay` do orquestrador) entram na mesma forma, com origem e com
+a faixa de `S3Parametros.validar`: mínimo > 0, máximo ≥ mínimo (o ausente vale o padrão do programa, 1 s e 3 s) e
+late-max inteiro ≥ 0. **Só valem com `--sonda-replay`**: o orquestrador repassa a opção ao conferidor, que recusa o
+campo presente sem ela (exit 4 no pré-voo e no `--dry-run`, com o nome e a opção no motivo), porque o programa só lê os
+`--s3-replay-*` com `--s3-replay-probe` e o arquivo não pode registrar um valor que não valeu. Com a sonda, seguem o
+caminho dos `s3_*` da carga: linha do jar (antes de `--s3-replay-probe --sweep`), `DRY-RUN carga S3:`, `carga_s3` do
+`execucao.json` e linha `carga_s3:` do *bundle*. A DT-026 fixa o late-max em 268. Caso S32 e
+`test_campanha_s3_conferir.ParametrosSondaReplay`.
 
 ### TD-017 — W-9: derivação da calibração S3 por *script* determinístico (2026-11-05)
 

@@ -153,3 +153,19 @@ pulados); `python3 -E -P` **PASS** (67 OK). Detalhe em `docs/testes.md`.
   `ParametrosDefasagem.java:57-63/:110/:118` (`GUARDAS_JAVA`); um teste procura cada trecho no código Java.
 - **R-3.** O trecho do m que atravessa o `end` é cortado no `end`; `trechos_cortados_no_end` vai ao JSON.
 - **R-5.** O §6, item 3, foi atualizado, e `viabilidade()` saiu do código.
+
+## 10. W-9c: adendo da V-W9 e complemento 3a
+
+Adendo da V-W9 (§8, `330c321`) e complemento 3a (`639966c`). Commits: `83b952b`/`6c0fa8e`, `da91d1b`/`da4b7f2`,
+`0629f62`/`0a65637` e `b5ccc41`/`aa81e38`. Testes: `python3 -I` **PASS** (70: 68 OK, 2 pulados); `python3 -E -P`
+**PASS** (70 OK).
+
+1. θ_in sem cobertura = o menor *double* acima de 1 (`math.nextafter(1.0, inf)`), como no complemento 3 §2. A
+   observação da seção 9 sobre o 2,0 fica superada.
+2. Sem cobertura sempre que a 7.7 tiver N = 0 e houver janelas, o que inclui janelas determinadas sem nenhum par
+   seguido (3a §2). O JSON dá `janelas_determinadas` e `fracao_determinada`. O caso "não derivado" da seção 9 fica
+   superado; só sobra quando não há janela nenhuma.
+3. R-4: com W final abaixo do período da sonda na calibração (5 s), `W_s.dados.subestimacao_w_menor_que_5_s` traz o
+   fator 5/W, o caso (7.3 ou reserva), os parâmetros afetados e a declaração.
+4. O texto do m descreve a leitura cortada no `end`. `EMENDAS_VW9` traz R-1 a R-4 e o 3a, com a situação no
+   complemento 3 (DT-024).

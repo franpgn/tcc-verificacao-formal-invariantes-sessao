@@ -791,3 +791,18 @@ limite da 7.13 com `_cabe(kLag, W)`, sem cobertura desligado, θ_out sem cobertu
 histerese, carga aceitando inteiro como *float*, m sem o corte no `end`, m com o trecho inteiro e m contando trecho
 que chega ao fim: as dez morrem. Antes do `6786244`, o teste dos guardas Java dava erro na cópia e matava todo
 mutante; a contagem acima é a de depois.
+
+### W-9c: adendo da V-W9 e complemento 3a (2026-11-06)
+
+Adendo `docs/validacao-w9-2026-11-05.md` §8 (`330c321`) e complemento 3a (`639966c`). Um `test:` vermelho antes de cada
+`fix:`:
+
+| Par | Vermelho | O quê |
+|---|---|---|
+| `83b952b` → `6c0fa8e` | 68: 1 falha | θ_in sem cobertura = `math.nextafter(1.0, inf)` (complemento 3 §2, 3a §3) |
+| `da91d1b` → `da4b7f2` | 69: 3 erros | sem cobertura sempre que a 7.7 tem N = 0 (3a §2), por `limiar_entrada_com_cobertura`; `janelas_determinadas` e `fracao_determinada` |
+| `0629f62` → `0a65637` | 69: 3 erros | R-4: `W_s.dados.subestimacao_w_menor_que_5_s` com o fator 5/W, o caso e os parâmetros afetados |
+| `b5ccc41` → `aa81e38` | 70: 1 falha | texto do m (cortado no `end`), `EMENDAS_VW9` com R-4 e 3a, `pre_registro` com os complementos 3 e 3a |
+
+Ponta `aa81e38`: `python3 -I` **PASS** (70: 68 OK, 2 pulados); `python3 -E -P` **PASS** (70 OK). Três mutantes (θ sem
+cobertura = 2,0, sem cobertura só com zero janela determinada, R-4 nunca declarada) são pegos.

@@ -1,0 +1,28 @@
+# Rodada TLC da variante MesclarJoin (spec/run-tlc-join.sh). Uma execucao por linha, na ordem.
+# Prefixo do id: c = controle com o Mesclar publicado (MCSession, mesma revisao); j = MesclarJoin, ordem de conteudo
+# (INVALID > VALID); i = MesclarJoin com a ordem invertida (VALID > INVALID, controle negativo).
+# Grupos: ctrl-w1, join-w1, inv-w1 (1 worker: traco minimo) | join (4 workers, cotas do catalogo) | join-red (4 workers,
+# cotas reduzidas, para fechar). Cotas do catalogo = as de runs/tlc/prop-particao-w1/ e prop-livre-particao-w1/:
+# IDS={u1}, SIDS={s1,s2}, LIMITE=2, MaxCanal=3, MaxRelogio=5, MaxEventosFalha=2, SoParticao, simetria.
+# id	grupo	modulo	spec	card	limite	maxcanal	maxrelogio	maxeventosfalha	restricao	propriedade	ordem	simetria	workers	timeout_s	coverage_min
+c1-particao-r3-I1F	ctrl-w1	MCSession	SpecSemeada	r3	2	3	5	2	SoParticao	I1F	-	S	1	600	-
+c1-particao-r3-I1M	ctrl-w1	MCSession	SpecSemeada	r3	2	3	5	2	SoParticao	I1M	-	S	1	600	-
+c1-particao-r3-I4M	ctrl-w1	MCSession	SpecSemeada	r3	2	3	5	2	SoParticao	I4M	-	S	1	600	-
+c1-particao-r3-I4Mp	ctrl-w1	MCSession	SpecSemeada	r3	2	3	5	2	SoParticao	I4Mp	-	S	1	600	-
+c1-particao-r3-I2Fa	ctrl-w1	MCSession	SpecSemeada	r3	2	3	5	2	SoParticao	I2Fa	-	S	1	600	-
+c1-livre-particao-r3-MesclarPerdeChave	ctrl-w1	MCSession	Spec	r3	2	3	5	2	SoParticao	MesclarPerdeChave	-	S	1	600	-
+j1-particao-r3-I1F	join-w1	MCSessionJoin	SpecSemeadaJoin	r3	2	3	5	2	SoParticao	I1F	conteudo	S	1	300	-
+j1-particao-r3-I1MJ	join-w1	MCSessionJoin	SpecSemeadaJoin	r3	2	3	5	2	SoParticao	I1MJ	conteudo	S	1	300	-
+j1-particao-r3-I4MJ	join-w1	MCSessionJoin	SpecSemeadaJoin	r3	2	3	5	2	SoParticao	I4MJ	conteudo	S	1	300	-
+j1-particao-r3-I4MpJ	join-w1	MCSessionJoin	SpecSemeadaJoin	r3	2	3	5	2	SoParticao	I4MpJ	conteudo	S	1	300	-
+j1-particao-r3-I2FaJ	join-w1	MCSessionJoin	SpecSemeadaJoin	r3	2	3	5	2	SoParticao	I2FaJ	conteudo	S	1	300	-
+j1-livre-particao-r3-MesclarPerdeChaveJ	join-w1	MCSessionJoin	SpecJoin	r3	2	3	5	2	SoParticao	MesclarPerdeChaveJ	conteudo	S	1	300	-
+i1-particao-r3-I1F	inv-w1	MCSessionJoin	SpecSemeadaJoin	r3	2	3	5	2	SoParticao	I1F	invertida	S	1	300	-
+i1-particao-r3-I1MJ	inv-w1	MCSessionJoin	SpecSemeadaJoin	r3	2	3	5	2	SoParticao	I1MJ	invertida	S	1	300	-
+j-particao-r3-I1F	join	MCSessionJoin	SpecSemeadaJoin	r3	2	3	5	2	SoParticao	I1F	conteudo	S	4	600	-
+j-particao-r3-I1MJ	join	MCSessionJoin	SpecSemeadaJoin	r3	2	3	5	2	SoParticao	I1MJ	conteudo	S	4	600	1
+j-livre-particao-r3-MesclarPerdeChaveJ	join	MCSessionJoin	SpecJoin	r3	2	3	5	2	SoParticao	MesclarPerdeChaveJ	conteudo	S	4	600	-
+jr-particao-r2c2r3-I1MJ	join-red	MCSessionJoin	SpecSemeadaJoin	r2	2	2	3	2	SoParticao	I1MJ	conteudo	S	4	1200	1
+jr-particao-r2c2r3-I1F	join-red	MCSessionJoin	SpecSemeadaJoin	r2	2	2	3	2	SoParticao	I1F	conteudo	S	4	1200	-
+jr-livre-particao-r2c2r3-MesclarPerdeChaveJ	join-red	MCSessionJoin	SpecJoin	r2	2	2	3	2	SoParticao	MesclarPerdeChaveJ	conteudo	S	4	1200	1
+jr-particao-r2c2r3-I1MJ-inv	join-red	MCSessionJoin	SpecSemeadaJoin	r2	2	2	3	2	SoParticao	I1MJ	invertida	S	1	600	-

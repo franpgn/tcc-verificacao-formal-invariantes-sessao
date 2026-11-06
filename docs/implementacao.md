@@ -381,6 +381,19 @@ flowchart TD
     cabeçalho até a linha `set -euo pipefail`. *C-6*: o mínimo do teto com os números do pré-registro continua 986 s, e
     1010 s passa (teste). R3 e R8 são da suíte (`docs/testes.md`).
 
+26. **P-48, topologia do `rcm` principal antes das leituras por réplica** (06/11, branch
+    `fix/p48-topologia-convergencia`; mitigação da V-W6 §5.4). No S3 o principal só faz o *reset* e a carga inicial;
+    depois de um nó reiniciar (F1, religamento do AC-5) ele fica com a topologia da abertura, e `segmentosDoServidor`
+    escolhia por ela os segmentos de cada réplica (smoke de 06/11: 13 a 33 % das chaves de cada nó no lugar errado).
+    `AtualizacaoTopologia` toca cada *cache* lido com `containsKeyAsync` de uma chave fora do modelo
+    (`__p48-topologia__`), prazo de 5 s (`HealthRest.PRAZO_CONSULTA_NS`), e a resposta traz a topologia nova. Onde:
+    na sonda de cada rodada do laço de convergência (antes da REST e das leituras; falha deixa a rodada inválida), e
+    antes da rodada única e da varredura (falha vira aviso). A espera do religamento **não** atualiza: continua com a
+    sonda de antes, em que a REST decide, para `t_religamento_ns` (origem do Δ_conv do braço B, A-16 do complemento 1)
+    não mudar de significado; o laço, logo depois, fica inválido enquanto a topologia nova não tiver os três
+    servidores. Uma linha `Topologia do principal: cache=<c> topology_id <a> -> <b> (P-48)` no stdout marca cada troca.
+    Custo: uma ida e volta Hot Rod por *cache* e por rodada (a cada 5 s). `S3Clientes` e `SessionOps` não mudam.
+
 ### TD-014 — W-2b (P-5): caminho crítico do controlador sem disco e sem processo (2026-11-05)
 
 Branch `fix/p5-caminho-critico` a partir de `17f2bd4` (`feature/controlador-integracao`), plano do Senior em

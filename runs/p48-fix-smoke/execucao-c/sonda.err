@@ -1,0 +1,308 @@
+Nov 06, 2026 3:07:02 AM org.infinispan.client.hotrod.RemoteCacheManager actualStart
+INFO: ISPN004021: Infinispan version: Infinispan 'I'm Still Standing' 15.0.0.Final
+Nov 06, 2026 3:07:02 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=-547239065, age=0) containing 3 addresses: [127.0.0.1/<unresolved>:12901, 127.0.0.1/<unresolved>:12903, 127.0.0.1/<unresolved>:12902]
+Nov 06, 2026 3:07:02 AM org.infinispan.client.hotrod.impl.RemoteCacheImpl init
+INFO: ISPN004113: Query module not found. Queries are disabled.
+Nov 06, 2026 3:07:02 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=-384849395, age=0) containing 3 addresses: [127.0.0.1/<unresolved>:12901, 127.0.0.1/<unresolved>:12903, 127.0.0.1/<unresolved>:12902]
+Nov 06, 2026 3:07:02 AM org.infinispan.client.hotrod.impl.RemoteCacheImpl init
+INFO: ISPN004113: Query module not found. Queries are disabled.
+Nov 06, 2026 3:08:43 AM org.infinispan.client.hotrod.RemoteCacheManager actualStart
+INFO: ISPN004021: Infinispan version: Infinispan 'I'm Still Standing' 15.0.0.Final
+Nov 06, 2026 3:08:43 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=-97552603, age=0) containing 3 addresses: [127.0.0.1/<unresolved>:12901, 127.0.0.1/<unresolved>:12902, 127.0.0.1/<unresolved>:12903]
+Nov 06, 2026 3:08:43 AM org.infinispan.client.hotrod.impl.RemoteCacheImpl init
+INFO: ISPN004113: Query module not found. Queries are disabled.
+Nov 06, 2026 3:08:43 AM org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory receiveTopology
+INFO: ISPN004006: Server sent new topology view (id=-97552603, age=0) containing 3 addresses: [127.0.0.1/<unresolved>:12901, 127.0.0.1/<unresolved>:12902, 127.0.0.1/<unresolved>:12903]
+Nov 06, 2026 3:08:43 AM org.infinispan.client.hotrod.impl.RemoteCacheImpl init
+INFO: ISPN004113: Query module not found. Queries are disabled.
+Nov 06, 2026 3:08:43 AM org.infinispan.client.hotrod.RemoteCacheManager actualStart
+INFO: ISPN004021: Infinispan version: Infinispan 'I'm Still Standing' 15.0.0.Final
+Nov 06, 2026 3:08:43 AM org.infinispan.client.hotrod.impl.RemoteCacheImpl init
+INFO: ISPN004113: Query module not found. Queries are disabled.
+Nov 06, 2026 3:08:43 AM org.infinispan.client.hotrod.RemoteCacheManager actualStart
+INFO: ISPN004021: Infinispan version: Infinispan 'I'm Still Standing' 15.0.0.Final
+Nov 06, 2026 3:08:43 AM org.infinispan.client.hotrod.impl.RemoteCacheImpl init
+INFO: ISPN004113: Query module not found. Queries are disabled.
+Nov 06, 2026 3:08:43 AM org.infinispan.client.hotrod.impl.iteration.RemotePublisher lambda$sendCancel$6
+WARN: ISPN004061: Ignoring error when closing iteration '7'
+org.infinispan.client.hotrod.exceptions.TransportException:: ISPN004071: Connection to /127.0.0.1:12902 was closed while waiting for response.
+	at org.infinispan.client.hotrod.impl.operations.HotRodOperation.channelInactive(HotRodOperation.java:98)
+	at org.infinispan.client.hotrod.impl.transport.netty.HeaderDecoder.channelInactive(HeaderDecoder.java:232)
+	at io.netty.channel.AbstractChannelHandlerContext.invokeChannelInactive(AbstractChannelHandlerContext.java:303)
+	at io.netty.channel.AbstractChannelHandlerContext.invokeChannelInactive(AbstractChannelHandlerContext.java:281)
+	at io.netty.channel.AbstractChannelHandlerContext.fireChannelInactive(AbstractChannelHandlerContext.java:274)
+	at io.netty.channel.ChannelInboundHandlerAdapter.channelInactive(ChannelInboundHandlerAdapter.java:81)
+	at io.netty.handler.timeout.IdleStateHandler.channelInactive(IdleStateHandler.java:280)
+	at io.netty.channel.AbstractChannelHandlerContext.invokeChannelInactive(AbstractChannelHandlerContext.java:303)
+	at io.netty.channel.AbstractChannelHandlerContext.invokeChannelInactive(AbstractChannelHandlerContext.java:281)
+	at io.netty.channel.AbstractChannelHandlerContext.fireChannelInactive(AbstractChannelHandlerContext.java:274)
+	at io.netty.channel.DefaultChannelPipeline$HeadContext.channelInactive(DefaultChannelPipeline.java:1405)
+	at io.netty.channel.AbstractChannelHandlerContext.invokeChannelInactive(AbstractChannelHandlerContext.java:301)
+	at io.netty.channel.AbstractChannelHandlerContext.invokeChannelInactive(AbstractChannelHandlerContext.java:281)
+	at io.netty.channel.DefaultChannelPipeline.fireChannelInactive(DefaultChannelPipeline.java:901)
+	at io.netty.channel.AbstractChannel$AbstractUnsafe$7.run(AbstractChannel.java:813)
+	at io.netty.util.concurrent.AbstractEventExecutor.runTask(AbstractEventExecutor.java:173)
+	at io.netty.util.concurrent.AbstractEventExecutor.safeExecute(AbstractEventExecutor.java:166)
+	at io.netty.util.concurrent.SingleThreadEventExecutor.runAllTasksFrom(SingleThreadEventExecutor.java:426)
+	at io.netty.util.concurrent.SingleThreadEventExecutor.runAllTasks(SingleThreadEventExecutor.java:375)
+	at io.netty.util.concurrent.SingleThreadEventExecutor.confirmShutdown(SingleThreadEventExecutor.java:763)
+	at io.netty.channel.nio.NioEventLoop.run(NioEventLoop.java:596)
+	at io.netty.util.concurrent.SingleThreadEventExecutor$4.run(SingleThreadEventExecutor.java:997)
+	at io.netty.util.internal.ThreadExecutorMap$2.run(ThreadExecutorMap.java:74)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1144)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:642)
+	at java.base/java.lang.Thread.run(Thread.java:1570)
+
+Nov 06, 2026 3:08:43 AM org.infinispan.client.hotrod.RemoteCacheManager actualStart
+INFO: ISPN004021: Infinispan version: Infinispan 'I'm Still Standing' 15.0.0.Final
+Nov 06, 2026 3:08:43 AM org.infinispan.client.hotrod.impl.RemoteCacheImpl init
+INFO: ISPN004113: Query module not found. Queries are disabled.
+Nov 06, 2026 3:08:43 AM org.infinispan.client.hotrod.RemoteCacheManager actualStart
+INFO: ISPN004021: Infinispan version: Infinispan 'I'm Still Standing' 15.0.0.Final
+Nov 06, 2026 3:08:43 AM org.infinispan.client.hotrod.impl.RemoteCacheImpl init
+INFO: ISPN004113: Query module not found. Queries are disabled.
+Nov 06, 2026 3:08:43 AM org.infinispan.client.hotrod.RemoteCacheManager actualStart
+INFO: ISPN004021: Infinispan version: Infinispan 'I'm Still Standing' 15.0.0.Final
+Nov 06, 2026 3:08:43 AM org.infinispan.client.hotrod.impl.RemoteCacheImpl init
+INFO: ISPN004113: Query module not found. Queries are disabled.
+Nov 06, 2026 3:08:43 AM org.infinispan.client.hotrod.impl.iteration.RemotePublisher lambda$sendCancel$6
+WARN: ISPN004061: Ignoring error when closing iteration '8'
+org.infinispan.client.hotrod.exceptions.TransportException:: ISPN004071: Connection to /127.0.0.1:12902 was closed while waiting for response.
+	at org.infinispan.client.hotrod.impl.operations.HotRodOperation.channelInactive(HotRodOperation.java:98)
+	at org.infinispan.client.hotrod.impl.transport.netty.HeaderDecoder.channelInactive(HeaderDecoder.java:232)
+	at io.netty.channel.AbstractChannelHandlerContext.invokeChannelInactive(AbstractChannelHandlerContext.java:303)
+	at io.netty.channel.AbstractChannelHandlerContext.invokeChannelInactive(AbstractChannelHandlerContext.java:281)
+	at io.netty.channel.AbstractChannelHandlerContext.fireChannelInactive(AbstractChannelHandlerContext.java:274)
+	at io.netty.channel.ChannelInboundHandlerAdapter.channelInactive(ChannelInboundHandlerAdapter.java:81)
+	at io.netty.handler.timeout.IdleStateHandler.channelInactive(IdleStateHandler.java:280)
+	at io.netty.channel.AbstractChannelHandlerContext.invokeChannelInactive(AbstractChannelHandlerContext.java:303)
+	at io.netty.channel.AbstractChannelHandlerContext.invokeChannelInactive(AbstractChannelHandlerContext.java:281)
+	at io.netty.channel.AbstractChannelHandlerContext.fireChannelInactive(AbstractChannelHandlerContext.java:274)
+	at io.netty.channel.DefaultChannelPipeline$HeadContext.channelInactive(DefaultChannelPipeline.java:1405)
+	at io.netty.channel.AbstractChannelHandlerContext.invokeChannelInactive(AbstractChannelHandlerContext.java:301)
+	at io.netty.channel.AbstractChannelHandlerContext.invokeChannelInactive(AbstractChannelHandlerContext.java:281)
+	at io.netty.channel.DefaultChannelPipeline.fireChannelInactive(DefaultChannelPipeline.java:901)
+	at io.netty.channel.AbstractChannel$AbstractUnsafe$7.run(AbstractChannel.java:813)
+	at io.netty.util.concurrent.AbstractEventExecutor.runTask(AbstractEventExecutor.java:173)
+	at io.netty.util.concurrent.AbstractEventExecutor.safeExecute(AbstractEventExecutor.java:166)
+	at io.netty.util.concurrent.SingleThreadEventExecutor.runAllTasksFrom(SingleThreadEventExecutor.java:426)
+	at io.netty.util.concurrent.SingleThreadEventExecutor.runAllTasks(SingleThreadEventExecutor.java:375)
+	at io.netty.util.concurrent.SingleThreadEventExecutor.confirmShutdown(SingleThreadEventExecutor.java:763)
+	at io.netty.channel.nio.NioEventLoop.run(NioEventLoop.java:596)
+	at io.netty.util.concurrent.SingleThreadEventExecutor$4.run(SingleThreadEventExecutor.java:997)
+	at io.netty.util.internal.ThreadExecutorMap$2.run(ThreadExecutorMap.java:74)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1144)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:642)
+	at java.base/java.lang.Thread.run(Thread.java:1570)
+
+Nov 06, 2026 3:08:43 AM org.infinispan.client.hotrod.RemoteCacheManager actualStart
+INFO: ISPN004021: Infinispan version: Infinispan 'I'm Still Standing' 15.0.0.Final
+Nov 06, 2026 3:08:43 AM org.infinispan.client.hotrod.impl.RemoteCacheImpl init
+INFO: ISPN004113: Query module not found. Queries are disabled.
+Nov 06, 2026 3:08:43 AM org.infinispan.client.hotrod.impl.iteration.RemotePublisher lambda$sendCancel$6
+WARN: ISPN004061: Ignoring error when closing iteration '8'
+org.infinispan.client.hotrod.exceptions.TransportException:: ISPN004071: Connection to /127.0.0.1:12903 was closed while waiting for response.
+	at org.infinispan.client.hotrod.impl.operations.HotRodOperation.channelInactive(HotRodOperation.java:98)
+	at org.infinispan.client.hotrod.impl.transport.netty.HeaderDecoder.channelInactive(HeaderDecoder.java:232)
+	at io.netty.channel.AbstractChannelHandlerContext.invokeChannelInactive(AbstractChannelHandlerContext.java:303)
+	at io.netty.channel.AbstractChannelHandlerContext.invokeChannelInactive(AbstractChannelHandlerContext.java:281)
+	at io.netty.channel.AbstractChannelHandlerContext.fireChannelInactive(AbstractChannelHandlerContext.java:274)
+	at io.netty.channel.ChannelInboundHandlerAdapter.channelInactive(ChannelInboundHandlerAdapter.java:81)
+	at io.netty.handler.timeout.IdleStateHandler.channelInactive(IdleStateHandler.java:280)
+	at io.netty.channel.AbstractChannelHandlerContext.invokeChannelInactive(AbstractChannelHandlerContext.java:303)
+	at io.netty.channel.AbstractChannelHandlerContext.invokeChannelInactive(AbstractChannelHandlerContext.java:281)
+	at io.netty.channel.AbstractChannelHandlerContext.fireChannelInactive(AbstractChannelHandlerContext.java:274)
+	at io.netty.channel.DefaultChannelPipeline$HeadContext.channelInactive(DefaultChannelPipeline.java:1405)
+	at io.netty.channel.AbstractChannelHandlerContext.invokeChannelInactive(AbstractChannelHandlerContext.java:301)
+	at io.netty.channel.AbstractChannelHandlerContext.invokeChannelInactive(AbstractChannelHandlerContext.java:281)
+	at io.netty.channel.DefaultChannelPipeline.fireChannelInactive(DefaultChannelPipeline.java:901)
+	at io.netty.channel.AbstractChannel$AbstractUnsafe$7.run(AbstractChannel.java:813)
+	at io.netty.util.concurrent.AbstractEventExecutor.runTask(AbstractEventExecutor.java:173)
+	at io.netty.util.concurrent.AbstractEventExecutor.safeExecute(AbstractEventExecutor.java:166)
+	at io.netty.util.concurrent.SingleThreadEventExecutor.runAllTasksFrom(SingleThreadEventExecutor.java:426)
+	at io.netty.util.concurrent.SingleThreadEventExecutor.runAllTasks(SingleThreadEventExecutor.java:375)
+	at io.netty.util.concurrent.SingleThreadEventExecutor.confirmShutdown(SingleThreadEventExecutor.java:763)
+	at io.netty.channel.nio.NioEventLoop.run(NioEventLoop.java:596)
+	at io.netty.util.concurrent.SingleThreadEventExecutor$4.run(SingleThreadEventExecutor.java:997)
+	at io.netty.util.internal.ThreadExecutorMap$2.run(ThreadExecutorMap.java:74)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1144)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:642)
+	at java.base/java.lang.Thread.run(Thread.java:1570)
+
+Nov 06, 2026 3:08:43 AM org.infinispan.client.hotrod.RemoteCacheManager actualStart
+INFO: ISPN004021: Infinispan version: Infinispan 'I'm Still Standing' 15.0.0.Final
+Nov 06, 2026 3:08:43 AM org.infinispan.client.hotrod.impl.RemoteCacheImpl init
+INFO: ISPN004113: Query module not found. Queries are disabled.
+Nov 06, 2026 3:08:43 AM org.infinispan.client.hotrod.RemoteCacheManager actualStart
+INFO: ISPN004021: Infinispan version: Infinispan 'I'm Still Standing' 15.0.0.Final
+Nov 06, 2026 3:08:43 AM org.infinispan.client.hotrod.impl.RemoteCacheImpl init
+INFO: ISPN004113: Query module not found. Queries are disabled.
+Nov 06, 2026 3:08:43 AM org.infinispan.client.hotrod.impl.iteration.RemotePublisher lambda$sendCancel$6
+WARN: ISPN004061: Ignoring error when closing iteration '9'
+org.infinispan.client.hotrod.exceptions.TransportException:: ISPN004071: Connection to /127.0.0.1:12902 was closed while waiting for response.
+	at org.infinispan.client.hotrod.impl.operations.HotRodOperation.channelInactive(HotRodOperation.java:98)
+	at org.infinispan.client.hotrod.impl.transport.netty.HeaderDecoder.channelInactive(HeaderDecoder.java:232)
+	at io.netty.channel.AbstractChannelHandlerContext.invokeChannelInactive(AbstractChannelHandlerContext.java:303)
+	at io.netty.channel.AbstractChannelHandlerContext.invokeChannelInactive(AbstractChannelHandlerContext.java:281)
+	at io.netty.channel.AbstractChannelHandlerContext.fireChannelInactive(AbstractChannelHandlerContext.java:274)
+	at io.netty.channel.ChannelInboundHandlerAdapter.channelInactive(ChannelInboundHandlerAdapter.java:81)
+	at io.netty.handler.timeout.IdleStateHandler.channelInactive(IdleStateHandler.java:280)
+	at io.netty.channel.AbstractChannelHandlerContext.invokeChannelInactive(AbstractChannelHandlerContext.java:303)
+	at io.netty.channel.AbstractChannelHandlerContext.invokeChannelInactive(AbstractChannelHandlerContext.java:281)
+	at io.netty.channel.AbstractChannelHandlerContext.fireChannelInactive(AbstractChannelHandlerContext.java:274)
+	at io.netty.channel.DefaultChannelPipeline$HeadContext.channelInactive(DefaultChannelPipeline.java:1405)
+	at io.netty.channel.AbstractChannelHandlerContext.invokeChannelInactive(AbstractChannelHandlerContext.java:301)
+	at io.netty.channel.AbstractChannelHandlerContext.invokeChannelInactive(AbstractChannelHandlerContext.java:281)
+	at io.netty.channel.DefaultChannelPipeline.fireChannelInactive(DefaultChannelPipeline.java:901)
+	at io.netty.channel.AbstractChannel$AbstractUnsafe$7.run(AbstractChannel.java:813)
+	at io.netty.util.concurrent.AbstractEventExecutor.runTask(AbstractEventExecutor.java:173)
+	at io.netty.util.concurrent.AbstractEventExecutor.safeExecute(AbstractEventExecutor.java:166)
+	at io.netty.util.concurrent.SingleThreadEventExecutor.runAllTasksFrom(SingleThreadEventExecutor.java:426)
+	at io.netty.util.concurrent.SingleThreadEventExecutor.runAllTasks(SingleThreadEventExecutor.java:375)
+	at io.netty.util.concurrent.SingleThreadEventExecutor.confirmShutdown(SingleThreadEventExecutor.java:763)
+	at io.netty.channel.nio.NioEventLoop.run(NioEventLoop.java:596)
+	at io.netty.util.concurrent.SingleThreadEventExecutor$4.run(SingleThreadEventExecutor.java:997)
+	at io.netty.util.internal.ThreadExecutorMap$2.run(ThreadExecutorMap.java:74)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1144)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:642)
+	at java.base/java.lang.Thread.run(Thread.java:1570)
+
+Nov 06, 2026 3:08:43 AM org.infinispan.client.hotrod.RemoteCacheManager actualStart
+INFO: ISPN004021: Infinispan version: Infinispan 'I'm Still Standing' 15.0.0.Final
+Nov 06, 2026 3:08:43 AM org.infinispan.client.hotrod.impl.RemoteCacheImpl init
+INFO: ISPN004113: Query module not found. Queries are disabled.
+Nov 06, 2026 3:08:43 AM org.infinispan.client.hotrod.impl.iteration.RemotePublisher lambda$sendCancel$6
+WARN: ISPN004061: Ignoring error when closing iteration '9'
+org.infinispan.client.hotrod.exceptions.TransportException:: ISPN004071: Connection to /127.0.0.1:12903 was closed while waiting for response.
+	at org.infinispan.client.hotrod.impl.operations.HotRodOperation.channelInactive(HotRodOperation.java:98)
+	at org.infinispan.client.hotrod.impl.transport.netty.HeaderDecoder.channelInactive(HeaderDecoder.java:232)
+	at io.netty.channel.AbstractChannelHandlerContext.invokeChannelInactive(AbstractChannelHandlerContext.java:303)
+	at io.netty.channel.AbstractChannelHandlerContext.invokeChannelInactive(AbstractChannelHandlerContext.java:281)
+	at io.netty.channel.AbstractChannelHandlerContext.fireChannelInactive(AbstractChannelHandlerContext.java:274)
+	at io.netty.channel.ChannelInboundHandlerAdapter.channelInactive(ChannelInboundHandlerAdapter.java:81)
+	at io.netty.handler.timeout.IdleStateHandler.channelInactive(IdleStateHandler.java:280)
+	at io.netty.channel.AbstractChannelHandlerContext.invokeChannelInactive(AbstractChannelHandlerContext.java:303)
+	at io.netty.channel.AbstractChannelHandlerContext.invokeChannelInactive(AbstractChannelHandlerContext.java:281)
+	at io.netty.channel.AbstractChannelHandlerContext.fireChannelInactive(AbstractChannelHandlerContext.java:274)
+	at io.netty.channel.DefaultChannelPipeline$HeadContext.channelInactive(DefaultChannelPipeline.java:1405)
+	at io.netty.channel.AbstractChannelHandlerContext.invokeChannelInactive(AbstractChannelHandlerContext.java:301)
+	at io.netty.channel.AbstractChannelHandlerContext.invokeChannelInactive(AbstractChannelHandlerContext.java:281)
+	at io.netty.channel.DefaultChannelPipeline.fireChannelInactive(DefaultChannelPipeline.java:901)
+	at io.netty.channel.AbstractChannel$AbstractUnsafe$7.run(AbstractChannel.java:813)
+	at io.netty.util.concurrent.AbstractEventExecutor.runTask(AbstractEventExecutor.java:173)
+	at io.netty.util.concurrent.AbstractEventExecutor.safeExecute(AbstractEventExecutor.java:166)
+	at io.netty.util.concurrent.SingleThreadEventExecutor.runAllTasksFrom(SingleThreadEventExecutor.java:426)
+	at io.netty.util.concurrent.SingleThreadEventExecutor.runAllTasks(SingleThreadEventExecutor.java:375)
+	at io.netty.util.concurrent.SingleThreadEventExecutor.confirmShutdown(SingleThreadEventExecutor.java:763)
+	at io.netty.channel.nio.NioEventLoop.run(NioEventLoop.java:596)
+	at io.netty.util.concurrent.SingleThreadEventExecutor$4.run(SingleThreadEventExecutor.java:997)
+	at io.netty.util.internal.ThreadExecutorMap$2.run(ThreadExecutorMap.java:74)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1144)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:642)
+	at java.base/java.lang.Thread.run(Thread.java:1570)
+
+Nov 06, 2026 3:08:44 AM org.infinispan.client.hotrod.RemoteCacheManager actualStart
+INFO: ISPN004021: Infinispan version: Infinispan 'I'm Still Standing' 15.0.0.Final
+Nov 06, 2026 3:08:44 AM org.infinispan.client.hotrod.impl.RemoteCacheImpl init
+INFO: ISPN004113: Query module not found. Queries are disabled.
+Nov 06, 2026 3:08:44 AM org.infinispan.client.hotrod.impl.iteration.RemotePublisher lambda$sendCancel$6
+WARN: ISPN004061: Ignoring error when closing iteration '12'
+org.infinispan.client.hotrod.exceptions.TransportException:: ISPN004071: Connection to /127.0.0.1:12901 was closed while waiting for response.
+	at org.infinispan.client.hotrod.impl.operations.HotRodOperation.channelInactive(HotRodOperation.java:98)
+	at org.infinispan.client.hotrod.impl.transport.netty.HeaderDecoder.channelInactive(HeaderDecoder.java:232)
+	at io.netty.channel.AbstractChannelHandlerContext.invokeChannelInactive(AbstractChannelHandlerContext.java:303)
+	at io.netty.channel.AbstractChannelHandlerContext.invokeChannelInactive(AbstractChannelHandlerContext.java:281)
+	at io.netty.channel.AbstractChannelHandlerContext.fireChannelInactive(AbstractChannelHandlerContext.java:274)
+	at io.netty.channel.ChannelInboundHandlerAdapter.channelInactive(ChannelInboundHandlerAdapter.java:81)
+	at io.netty.handler.timeout.IdleStateHandler.channelInactive(IdleStateHandler.java:280)
+	at io.netty.channel.AbstractChannelHandlerContext.invokeChannelInactive(AbstractChannelHandlerContext.java:303)
+	at io.netty.channel.AbstractChannelHandlerContext.invokeChannelInactive(AbstractChannelHandlerContext.java:281)
+	at io.netty.channel.AbstractChannelHandlerContext.fireChannelInactive(AbstractChannelHandlerContext.java:274)
+	at io.netty.channel.DefaultChannelPipeline$HeadContext.channelInactive(DefaultChannelPipeline.java:1405)
+	at io.netty.channel.AbstractChannelHandlerContext.invokeChannelInactive(AbstractChannelHandlerContext.java:301)
+	at io.netty.channel.AbstractChannelHandlerContext.invokeChannelInactive(AbstractChannelHandlerContext.java:281)
+	at io.netty.channel.DefaultChannelPipeline.fireChannelInactive(DefaultChannelPipeline.java:901)
+	at io.netty.channel.AbstractChannel$AbstractUnsafe$7.run(AbstractChannel.java:813)
+	at io.netty.util.concurrent.AbstractEventExecutor.runTask(AbstractEventExecutor.java:173)
+	at io.netty.util.concurrent.AbstractEventExecutor.safeExecute(AbstractEventExecutor.java:166)
+	at io.netty.util.concurrent.SingleThreadEventExecutor.runAllTasksFrom(SingleThreadEventExecutor.java:426)
+	at io.netty.util.concurrent.SingleThreadEventExecutor.runAllTasks(SingleThreadEventExecutor.java:375)
+	at io.netty.util.concurrent.SingleThreadEventExecutor.confirmShutdown(SingleThreadEventExecutor.java:763)
+	at io.netty.channel.nio.NioEventLoop.run(NioEventLoop.java:596)
+	at io.netty.util.concurrent.SingleThreadEventExecutor$4.run(SingleThreadEventExecutor.java:997)
+	at io.netty.util.internal.ThreadExecutorMap$2.run(ThreadExecutorMap.java:74)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1144)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:642)
+	at java.base/java.lang.Thread.run(Thread.java:1570)
+
+Nov 06, 2026 3:08:44 AM org.infinispan.client.hotrod.RemoteCacheManager actualStart
+INFO: ISPN004021: Infinispan version: Infinispan 'I'm Still Standing' 15.0.0.Final
+Nov 06, 2026 3:08:44 AM org.infinispan.client.hotrod.impl.RemoteCacheImpl init
+INFO: ISPN004113: Query module not found. Queries are disabled.
+Nov 06, 2026 3:08:44 AM org.infinispan.client.hotrod.impl.iteration.RemotePublisher lambda$sendCancel$6
+WARN: ISPN004061: Ignoring error when closing iteration '10'
+org.infinispan.client.hotrod.exceptions.TransportException:: ISPN004071: Connection to /127.0.0.1:12902 was closed while waiting for response.
+	at org.infinispan.client.hotrod.impl.operations.HotRodOperation.channelInactive(HotRodOperation.java:98)
+	at org.infinispan.client.hotrod.impl.transport.netty.HeaderDecoder.channelInactive(HeaderDecoder.java:232)
+	at io.netty.channel.AbstractChannelHandlerContext.invokeChannelInactive(AbstractChannelHandlerContext.java:303)
+	at io.netty.channel.AbstractChannelHandlerContext.invokeChannelInactive(AbstractChannelHandlerContext.java:281)
+	at io.netty.channel.AbstractChannelHandlerContext.fireChannelInactive(AbstractChannelHandlerContext.java:274)
+	at io.netty.channel.ChannelInboundHandlerAdapter.channelInactive(ChannelInboundHandlerAdapter.java:81)
+	at io.netty.handler.timeout.IdleStateHandler.channelInactive(IdleStateHandler.java:280)
+	at io.netty.channel.AbstractChannelHandlerContext.invokeChannelInactive(AbstractChannelHandlerContext.java:303)
+	at io.netty.channel.AbstractChannelHandlerContext.invokeChannelInactive(AbstractChannelHandlerContext.java:281)
+	at io.netty.channel.AbstractChannelHandlerContext.fireChannelInactive(AbstractChannelHandlerContext.java:274)
+	at io.netty.channel.DefaultChannelPipeline$HeadContext.channelInactive(DefaultChannelPipeline.java:1405)
+	at io.netty.channel.AbstractChannelHandlerContext.invokeChannelInactive(AbstractChannelHandlerContext.java:301)
+	at io.netty.channel.AbstractChannelHandlerContext.invokeChannelInactive(AbstractChannelHandlerContext.java:281)
+	at io.netty.channel.DefaultChannelPipeline.fireChannelInactive(DefaultChannelPipeline.java:901)
+	at io.netty.channel.AbstractChannel$AbstractUnsafe$7.run(AbstractChannel.java:813)
+	at io.netty.util.concurrent.AbstractEventExecutor.runTask(AbstractEventExecutor.java:173)
+	at io.netty.util.concurrent.AbstractEventExecutor.safeExecute(AbstractEventExecutor.java:166)
+	at io.netty.util.concurrent.SingleThreadEventExecutor.runAllTasksFrom(SingleThreadEventExecutor.java:426)
+	at io.netty.util.concurrent.SingleThreadEventExecutor.runAllTasks(SingleThreadEventExecutor.java:375)
+	at io.netty.util.concurrent.SingleThreadEventExecutor.confirmShutdown(SingleThreadEventExecutor.java:763)
+	at io.netty.channel.nio.NioEventLoop.run(NioEventLoop.java:596)
+	at io.netty.util.concurrent.SingleThreadEventExecutor$4.run(SingleThreadEventExecutor.java:997)
+	at io.netty.util.internal.ThreadExecutorMap$2.run(ThreadExecutorMap.java:74)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1144)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:642)
+	at java.base/java.lang.Thread.run(Thread.java:1570)
+
+Nov 06, 2026 3:08:44 AM org.infinispan.client.hotrod.RemoteCacheManager actualStart
+INFO: ISPN004021: Infinispan version: Infinispan 'I'm Still Standing' 15.0.0.Final
+Nov 06, 2026 3:08:44 AM org.infinispan.client.hotrod.impl.RemoteCacheImpl init
+INFO: ISPN004113: Query module not found. Queries are disabled.
+Nov 06, 2026 3:08:44 AM org.infinispan.client.hotrod.impl.iteration.RemotePublisher lambda$sendCancel$6
+WARN: ISPN004061: Ignoring error when closing iteration '10'
+org.infinispan.client.hotrod.exceptions.TransportException:: ISPN004071: Connection to /127.0.0.1:12903 was closed while waiting for response.
+	at org.infinispan.client.hotrod.impl.operations.HotRodOperation.channelInactive(HotRodOperation.java:98)
+	at org.infinispan.client.hotrod.impl.transport.netty.HeaderDecoder.channelInactive(HeaderDecoder.java:232)
+	at io.netty.channel.AbstractChannelHandlerContext.invokeChannelInactive(AbstractChannelHandlerContext.java:303)
+	at io.netty.channel.AbstractChannelHandlerContext.invokeChannelInactive(AbstractChannelHandlerContext.java:281)
+	at io.netty.channel.AbstractChannelHandlerContext.fireChannelInactive(AbstractChannelHandlerContext.java:274)
+	at io.netty.channel.ChannelInboundHandlerAdapter.channelInactive(ChannelInboundHandlerAdapter.java:81)
+	at io.netty.handler.timeout.IdleStateHandler.channelInactive(IdleStateHandler.java:280)
+	at io.netty.channel.AbstractChannelHandlerContext.invokeChannelInactive(AbstractChannelHandlerContext.java:303)
+	at io.netty.channel.AbstractChannelHandlerContext.invokeChannelInactive(AbstractChannelHandlerContext.java:281)
+	at io.netty.channel.AbstractChannelHandlerContext.fireChannelInactive(AbstractChannelHandlerContext.java:274)
+	at io.netty.channel.DefaultChannelPipeline$HeadContext.channelInactive(DefaultChannelPipeline.java:1405)
+	at io.netty.channel.AbstractChannelHandlerContext.invokeChannelInactive(AbstractChannelHandlerContext.java:301)
+	at io.netty.channel.AbstractChannelHandlerContext.invokeChannelInactive(AbstractChannelHandlerContext.java:281)
+	at io.netty.channel.DefaultChannelPipeline.fireChannelInactive(DefaultChannelPipeline.java:901)
+	at io.netty.channel.AbstractChannel$AbstractUnsafe$7.run(AbstractChannel.java:813)
+	at io.netty.util.concurrent.AbstractEventExecutor.runTask(AbstractEventExecutor.java:173)
+	at io.netty.util.concurrent.AbstractEventExecutor.safeExecute(AbstractEventExecutor.java:166)
+	at io.netty.util.concurrent.SingleThreadEventExecutor.runAllTasksFrom(SingleThreadEventExecutor.java:426)
+	at io.netty.util.concurrent.SingleThreadEventExecutor.runAllTasks(SingleThreadEventExecutor.java:375)
+	at io.netty.util.concurrent.SingleThreadEventExecutor.confirmShutdown(SingleThreadEventExecutor.java:763)
+	at io.netty.channel.nio.NioEventLoop.run(NioEventLoop.java:596)
+	at io.netty.util.concurrent.SingleThreadEventExecutor$4.run(SingleThreadEventExecutor.java:997)
+	at io.netty.util.internal.ThreadExecutorMap$2.run(ThreadExecutorMap.java:74)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1144)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:642)
+	at java.base/java.lang.Thread.run(Thread.java:1570)
+

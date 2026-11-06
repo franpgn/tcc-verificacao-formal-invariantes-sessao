@@ -1,0 +1,12 @@
+{
+  "t_fim_ns" : 1793945275776286800,
+  "convergiu" : true,
+  "divergencia_persistente" : false,
+  "t_convergencia_ns" : 35136858000,
+  "t_convergencia_abs_ns" : 1793945310913144800,
+  "rodadas" : 3,
+  "rodadas_validas" : 3,
+  "t_fim_carga_ns" : 1793945310844846400,
+  "t_fim_controle_ns" : null,
+  "convergencia_estado" : "convergiu"
+}

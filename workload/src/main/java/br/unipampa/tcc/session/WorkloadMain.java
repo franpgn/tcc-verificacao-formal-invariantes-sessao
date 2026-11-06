@@ -463,6 +463,8 @@ public final class WorkloadMain {
                 marcadores = executarConvergencia(cli, rcm, leitores, auditor, relogio,
                         lerMarcadores(cli), fimCargaNs, fimControleNs, rep, tSinalNs, ac5Alvo);
             } else {
+                // P-48: os segmentos de cada replica saem da topologia do principal; atualiza antes de ler
+                atualizarTopologiaOuAvisar(rcm, cli, "rodada unica");
                 auditor.rodadaUnica(leitores.leitoresSessao(), leitores.leitoresIdentidade());
                 marcadores = lerMarcadores(cli);
             }
@@ -711,6 +713,18 @@ public final class WorkloadMain {
             return new ConvergenciaLoop.EstadoCluster(Math.min(h.numeroDeNos(), topologia),
                     h.healthy(cli.replicacao.cacheSessoes()), h.healthy(cli.replicacao.cacheContadores()));
         };
+        // P-48 (smoke de 06/11): depois de um no reiniciar (F1, religamento do AC-5), a topologia do principal fica a da
+        // abertura, e segmentosDoServidor escolhia por ela os segmentos lidos de cada replica (13 a 33 % das chaves de
+        // cada no no lugar errado). Cada rodada do laco atualiza antes a topologia (V-W6 5.4: containsKey de uma chave
+        // que nao existe em cada cache lido); uma falha sai pela sonda e a rodada fica invalida. A espera do
+        // religamento continua com a sonda de antes: quem decide e a REST, e t_religamento_ns (origem do Delta_conv do
+        // braco B) nao muda de significado.
+        AtualizacaoTopologia atualizacao = AtualizacaoTopologia.doPrincipal(rcm,
+                List.of(cli.replicacao.cacheSessoes(), cli.replicacao.cacheContadores()), System.out::println);
+        ConvergenciaLoop.SondaCluster sondaLaco = () -> {
+            atualizacao.atualizar();
+            return sonda.ler();
+        };
         long tFimNs = marcadores != null && marcadores.fimNs() != null ? marcadores.fimNs() : fimCargaNs;
         // W-6 (P-6 da V-W5): com AC-5 aplicado, espera a topologia completa (o orquestrador religou o no ao ler a
         // linha de fim da carga) antes do laco; sem ele, nenhuma espera. Sem controlador (tSinalNs nulo), nada.
@@ -724,7 +738,7 @@ public final class WorkloadMain {
             }
         }
         ConvergenciaLoop laco = new ConvergenciaLoop(auditor,
-                leitores.leitoresSessao(), leitores.leitoresIdentidade(), sonda, esperados,
+                leitores.leitoresSessao(), leitores.leitoresIdentidade(), sondaLaco, esperados,
                 ConvergenciaLoop.Relogio.sistema(relogio),
                 cli.convergenciaPeriodoSeg * 1_000_000_000L,
                 cli.convergenciaTetoSeg * 1_000_000_000L, 3);
@@ -759,6 +773,8 @@ public final class WorkloadMain {
     private static void executarVarredura(Cli cli, RemoteCacheManager rcm,
             Supplier<Map<String, SessionState.Motivo>> invalidacoes,
             RastroCliente rastro, int rep) throws java.io.IOException {
+        // P-48: a leitura global tambem vai pelos donos que a topologia do principal indica; atualiza antes
+        atualizarTopologiaOuAvisar(rcm, cli, "varredura");
         try {
             Map<String, SessionState> sessoes = materializarTudo(rcm.getCache(cli.replicacao.cacheSessoes()));
             Map<String, IdentityState> identidades = materializarTudo(rcm.getCache(cli.replicacao.cacheContadores()));
@@ -779,6 +795,22 @@ public final class WorkloadMain {
                         Path.of(cli.csvDir, String.format("varredura-rep-%03d.erro.txt", rep)),
                         String.valueOf(e) + System.lineSeparator());
             }
+        }
+    }
+
+    /**
+     * P-48: atualiza a topologia do principal antes de uma leitura que nao e rodada do laco de convergencia (rodada
+     * unica, varredura). Ali nao ha rodada para invalidar: a falha vira aviso no stdout e a leitura segue com a
+     * topologia que o cliente tem (no S1/S2 o principal opera durante a carga e ja a tem atualizada).
+     */
+    private static void atualizarTopologiaOuAvisar(RemoteCacheManager rcm, Cli cli, String onde) {
+        try {
+            AtualizacaoTopologia.doPrincipal(rcm,
+                    List.of(cli.replicacao.cacheSessoes(), cli.replicacao.cacheContadores()), System.out::println)
+                    .atualizar();
+        } catch (IllegalStateException e) {
+            System.out.println("AVISO: " + e.getMessage() + " antes da " + onde
+                    + "; leitura com a topologia que o cliente tem");
         }
     }
 

@@ -1,0 +1,41 @@
+== S6: braco B que nao atua (atuador nulo / politica nenhuma / sha diferente) -> carga parada, exit 6 ==
+PASS: S6 atuador: exit 6
+PASS: S6 atuador: motivo meta
+PASS: S6 atuador: uma execucao DESCARTADA-INFRA (a recusada)
+PASS: S6 atuador: carga morta antes do fim
+PASS: S6 politica: exit 6
+PASS: S6 politica: motivo meta
+PASS: S6 politica: uma execucao DESCARTADA-INFRA (a recusada)
+PASS: S6 politica: carga morta antes do fim
+PASS: S6 sha: exit 6
+PASS: S6 sha: motivo meta
+PASS: S6 sha: uma execucao DESCARTADA-INFRA (a recusada)
+PASS: S6 sha: carga morta antes do fim
+== S18: D-B: p2Habilitada != false no controlador recusa no pre-voo; p2_habilitada != false na meta para a carga ==
+PASS: S18 p2Habilitada true -> exit 4 no pre-voo
+PASS: S18 motivo p2Habilitada
+PASS: S18 sem compose nem carga
+PASS: S18 sem bloco politica -> exit 4 (calibracao tambem exige p2Habilitada = false)
+PASS: S18 motivo do sem bloco
+PASS: S18 meta com p2_habilitada true -> exit 6
+PASS: S18 motivo p2_habilitada
+PASS: S18 carga parada
+PASS: S18 a primeira execucao (qualquer braco) e DESCARTADA-INFRA
+== S26: I-1 da V-W6: meta da trilha 1 s depois da ancora (gravadora com fila do W-2b): releitura a cada 0,2 s ate 5 s ==
+PASS: S26 meta atrasada: exit 0 (a fase nao para)
+PASS: S26 meta atrasada: ACEITA
+PASS: S26 primeira leitura da meta saiu com 4 (arquivo ainda ausente)
+PASS: S26 ultima leitura da meta saiu com 0
+PASS: S26 carga nao foi parada
+PASS: S26 log da releitura
+== S26n: meta que nao chega em 5 s: carga parada, DESCARTADA-INFRA sem injecao, e a fase segue (exit 0, nao 6) ==
+PASS: S26n exit 0 (disco lento nao e erro de configuracao)
+PASS: S26n i=0 DESCARTADA-INFRA
+PASS: S26n i=0 motivo meta ausente
+PASS: S26n i=1 ACEITA (a fase seguiu)
+PASS: S26n uma carga parada (a de i=0)
+PASS: S26n i=0 releu a meta (mais de uma leitura com 4)
+PASS: S26n i=0 sem injecao (marcadores vazios)
+FAIL: S26n um so podman kill (o F1 de i=1) (esperado='1' obtido='2')
+
+==== RESULTADO: 34 PASS, 1 FAIL ====

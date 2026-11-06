@@ -1,0 +1,3 @@
+i	fase	rodada	posicao	celula	modo	falha	papel	bloco	braco	controlador	seed	repoe
+0	nucleo	1	0.0	ASYNC-F2	async	F2	teste	1	B	active	400100	-
+1	nucleo	1	0.1	ASYNC-F2	async	F2	teste	1	A	shadow	400100	-

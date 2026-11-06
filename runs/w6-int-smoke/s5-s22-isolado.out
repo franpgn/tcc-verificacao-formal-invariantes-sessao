@@ -1,0 +1,48 @@
+== S5: bloco A/B com F2; AC-5 no braco B: podman start do no parado ao ler a linha de fim da carga ==
+PASS: S5 exit 0
+PASS: S5 A ACEITA
+PASS: S5 B ACEITA
+PASS: S5 B: religamento de isn3
+PASS: S5 A: sem religamento
+PASS: S5 o programa viu isn3 de volta (t_religamento_ns)
+PASS: S5 podman start isn3 depois da linha de fim da carga
+PASS: S5 podman start dentro do prazo do religamento (< 30 s virtuais depois do sinal)
+PASS: S5 convergencia_estado do braco B
+PASS: S5 mesma semente nos dois bracos do bloco
+PASS: S5 trilha e linha de fim concordam
+PASS: S5 manifesto-bracos.tsv para o comparar_bracos.py
+PASS: S5 cabecalho do manifesto
+== S22: B1 da V-W6: injetor de F2/F4 sai com 1/6 porque o AC-5 parou o no da falha -> pendente, nao recusa ==
+PASS: S22 f2: exit 0 (a fase segue)
+PASS: S22 f2: o injetor do braco B saiu com 1 (duble fiel ao real)
+PASS: S22 f2: alvo parado registrado na execucao
+PASS: S22 f2: braco B ACEITA
+PASS: S22 f2: aviso da falha efetiva ate o AC-5
+PASS: S22 f2: religamento de isn3 pela linha de fim
+PASS: S22 f2: braco A (no de pe) com injetor 0 e ACEITA
+PASS: S22 f2: braco A sem alvo parado
+PASS: S22 f4: exit 0 (a fase segue)
+PASS: S22 f4: o injetor do braco B saiu com 6 (duble fiel ao real)
+PASS: S22 f4: alvo parado registrado na execucao
+PASS: S22 f4: braco B ACEITA
+PASS: S22 f4: aviso da falha efetiva ate o AC-5
+PASS: S22 f4: religamento de isn3 pela linha de fim
+PASS: S22 f4: braco A (no de pe) com injetor 0 e ACEITA
+PASS: S22 f4: braco A sem alvo parado
+PASS: S22 f2-sem-ok: exit 0 (a fase segue)
+PASS: S22 f2-sem-ok: o injetor do braco B saiu com 1 (duble fiel ao real)
+PASS: S22 f2-sem-ok: alvo parado registrado na execucao
+PASS: S22 f2-sem-ok: sem a linha OK do corte, a recusa de antes
+PASS: S22 f2-sem-ok: motivo cita a linha OK
+PASS: S22 negativo: exit 0
+PASS: S22 negativo: injetor 1 com o no de pe -> RECUSADA
+PASS: S22 negativo: motivo injetor
+PASS: S22 negativo: sem alvo parado
+PASS: S22 no parado sem AC-5: exit 0 (a fase segue)
+PASS: S22 no parado sem AC-5: injetor 1 com isn3 parado
+PASS: S22 no parado sem AC-5: DESCARTADA-INFRA (religamento do O8)
+PASS: S22 no parado sem AC-5: recusa do injetor mantida
+PASS: S22 no parado sem AC-5: motivo O8 marcado como infra
+PASS: S22 no parado sem AC-5: isn3 religado
+
+==== RESULTADO: 44 PASS, 0 FAIL ====

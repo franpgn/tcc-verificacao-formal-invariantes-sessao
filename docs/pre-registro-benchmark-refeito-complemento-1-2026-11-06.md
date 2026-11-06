@@ -213,3 +213,26 @@ o bloqueio da mesma sessão acontecem em lados opostos da partição (traço de 
 `MesclarJoin`; a sessão segue INVALID). É consequência da própria ordem (ADMIN_BLOCK vence LOGOUT). **A definição da I4 não
 muda.** Se isso acontecer na avaliação, a I4 conta em V como qualquer outra e é **relatada como custo da A1**, à parte,
 nos descritivos da A1 (linhas `A1-FUSAO` em que a escolha trocou o motivo).
+
+## 8. Nota (2026-11-06, antes de qualquer dado da avaliação): fechamento dos pontos [A4] e risco de h4
+
+Fontes: `wt-p1ic/docs/relatorio-p1-ignorar-cache-2026-11-06.md` (P1-IC, `6e7a13c`), `wt-p1ic-ca/docs/configuracao-infinispan.md`
+e o registro da P-64 (`e672051`), `wt-a4/docs/relatorio-a4-2026-11-06.md` (`290ff40`). Decisões do coordenador sobre a A4
+(G-1 a G-5) e sobre o P1-IC (V-1 a V-4), sob a autorização do Gestor.
+
+| # | Ponto | Como fecha |
+|---|---|---|
+| A4-1 | regras R1 a R8 no código, com testes | **Fechado.** P1-IC: o AC-7 (`ignored-caches/sessions-async` no suspeito) é a ação do P1, com R1 a R8 implementadas e testadas (tabela da seção 2 do relatório P1-IC; Surefire 1207 testes, 0 falhas, 1 ignorado, com TDD), mais duas regras que o A4 não fixava e que o coordenador aprovou (V-1): a **guarda contínua** (depois da guarda de 1 s, a lista da maioria continua vigiada; se o *cache* aparecer nela, desfazer pela maioria) e a **`suspeita-desfeita`** (sem partição vista desde a ação e o S_lag abaixo do teto, com vista completa, por `kLag` janelas seguidas: desfazer). Sem elas, um falso alarme por corte curto derrubava o *cache* de sessões no *cluster* inteiro até o fim da execução (P-61) |
+| A4-2 | mais execuções de R6 e R7 | **Fechado sem execuções extras (G-3 do coordenador).** A R6 (desfazer no alvo quando ele se vê em minoria, `desfazer-alvo-sozinho`) foi exercitada nos dois *smokes* de corte do P1-IC, `corte-r1` e `corte-r2`: o desfazer veio em +49,59 e +49,97 s, com DELETE 204 em 3 e 2 ms, e o alvo passou a recusar pelo `DENY_READ_WRITES` até a fusão. A R7 (desfazer pela maioria depois da fusão, `desfazer-apos-fusao`) fica como **reserva**, verificada no teste da A4 (seção 6.2 de lá, n = 1). O coordenador decidiu não rodar as execuções extras que o A4 pedia |
+| A4-3 | teto de espera da R7 | **Fechado com a origem do código.** O P1-IC não usa teto de tempo para disparar a R7: as regras de desfazer são por evento (R6 quando o alvo informa vista de minoria; R7 quando uma partição foi vista depois da ação e a vista volta completa; `suspeita-desfeita` quando o S_lag volta abaixo do teto sem partição vista), avaliadas a cada janela (`PoliticaPorAssinatura.motivoDesfazerAc7`). O único tempo do caminho da R7 é o **`esperaOuvinteNs` = 1 s** do adaptador: a espera pela lista do alvo antes de mandar o DELETE também a ele, com a origem escrita no código (`AtuadorIgnorarCache.java`, `Parametros.PADRAO`): o maior atraso do alvo depois do DELETE pela maioria foi ~1,08 s no A4, com o alvo parado ~1 s antes do pedido. Num corte assimétrico em que nenhuma das três regras vale, o AC-7 fica até o encerramento do processo, quando a reversão de tudo roda, e o orquestrador recria o *cluster* antes da execução seguinte. Esse caso, se ocorrer, aparece na trilha (ação sem desfazer até o fim) e é relatado |
+| A4-4 | recusa do *cache* ignorado na carga | **Fechado (G-4).** A `CacheUnavailableException` passa a ser classificada como indisponibilidade (`ERROR_UNAVAILABLE`, `ClassificadorDeErro`), e o sensor desconta os erros do servidor de aplicação do nó sob o AC-7 (`DescontoSobAcao`, só no braço ativo; `eventos_descontados_sob_acao` na linha `fim`). O conferidor e a análise reconhecem o AC-7 (P-63, resolvido em `feature/p1ic-conferidor-analise`) |
+| A4-5 | `counters-async` | **Fechado (G-2):** fora da A4. Só o `sessions-async` é ignorado (R1) |
+
+**Risco de h4 registrado antes dos dados (G-3 do roteiro da avaliação, pedido do executor).** Na recalibração, 4 de 29
+execuções saíram DESCARTADA-INFRA por h4a (13,8 %; i = 0, 10, 17 e 27, conferência da derivação da recalibração §1). A
+P-64 tira a principal fonte de escrita em disco ligada às execuções com falha, o log via journald e rsyslog na F2 e
+nas recusas do *cache* ignorado (de ~268 MB para 0,09 MB no alvo do AC-7; DT-028 §5), mas não se prevê a taxa de h4 da
+avaliação. **As regras de reposição não mudam:** teto de 24 reposições h4, como no roteiro da avaliação, e uma reposição
+por execução perdida. *Observação para o coordenador:* a fração de 25 % do C3 §4.4 daria 20 para as 80 execuções da
+DT-027; o 24 vem das 96 execuções do desenho anterior. Se o piloto embutido (os 3 primeiros blocos) mostrar taxa de h4
+alta, o coordenador reavalia antes da metade 2.

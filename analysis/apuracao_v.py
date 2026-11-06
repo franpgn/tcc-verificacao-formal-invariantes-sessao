@@ -5,9 +5,12 @@ analysis/comparar_bracos.py do W-5c (branch feature/w5c-v-com-sonda, commit bc9c
 (chave, classe) por execucao, somando o auditor online, a sonda de replay do W-10 (origem = sonda) e a varredura final
 (so REAL), com as fases do replay tardio e da varredura pelo instante da invalidacao confirmada e as formas de I1
 (pre-registro do benchmark refeito, rascunho a5ddac9, 2.3 a 2.5). O comparar_bracos importa numpy e nao roda em -I;
-por isso a copia. Na integracao com o W-5c, o comparar_bracos pode importar daqui; ate la, test_calibracao_s3.Paridade
-confere que o codigo-fonte de cada funcao de COPIADAS e o valor de cada nome de CONSTANTES sao iguais aos do
-comparar_bracos (quando ele os tiver). Nao editar sem editar o comparar_bracos do mesmo jeito.
+por isso o modulo sem numpy.
+
+Fonte unica desde a integracao (06/11, feature/controlador-integracao): o comparar_bracos importa daqui as funcoes de
+COPIADAS, os nomes de CONSTANTES e o ErroUso, e nao tem mais copia. test_calibracao_s3.Paridade confere que cada nome
+e o mesmo objeto nos dois modulos e que o comparar_bracos nao os define. Os nomes COPIADAS e CONSTANTES ficam como a
+lista do que o comparar_bracos importa.
 """
 import calendar
 import csv
@@ -37,6 +40,10 @@ class ErroUso(Exception):
 
 
 INVARIANTES_VIOL = ("I1", "I2_REAL", "I4")
+# W-5c: metodo de observacao do benchmark refeito (rascunho do pre-registro, docs/pre-registro-benchmark-refeito-
+# 2026-11-06.md, commit a5ddac9, secao 2). V soma tres origens: o auditor online (coluna origem vazia), a sonda de
+# replay do W-10 (origem = sonda, docs/contrato-csv-v2.md secao 7) e a varredura final (varredura-rep-NNN.csv,
+# VarreduraFinal.escreverAchados, so REAL). Numerador = pares distintos (chave, invariante) por execucao (2.3).
 ORIGEM_ONLINE, ORIGEM_SONDA, ORIGEM_VARREDURA = "online", "sonda", "varredura"
 ORIGENS = (ORIGEM_ONLINE, ORIGEM_SONDA, ORIGEM_VARREDURA)
 TIPO_ONLINE, TIPO_IMEDIATA, TIPO_TARDIA, TIPO_VARREDURA = "online", "imediata", "tardia", "varredura"
@@ -44,9 +51,14 @@ ATRIB_DETECCAO, ATRIB_INVALIDACAO, ATRIB_SEM = "deteccao", "invalidacao", "sem_i
 ATRIBUICOES = (ATRIB_DETECCAO, ATRIB_INVALIDACAO, ATRIB_SEM)
 FORMA_1, FORMA_2, FORMA_OUTRA, FORMA_INDET = "forma1", "forma2", "outra", "indeterminada"
 FORMAS_I1 = (FORMA_1, FORMA_2, FORMA_OUTRA, FORMA_INDET)
-OP_REPLAY = "ReplayValidate"
-RC_CONFIRMADO = "NONE"
+OP_REPLAY = "ReplayValidate"          # SessionOps.OP_REPLAY_VALIDATE; referencia_p99.OPERACOES_INSTRUMENTACAO
+RC_CONFIRMADO = "NONE"                # OK_NOOP: Logout e Block confirmados (contrato 2, docs/contrato-csv-v2.md)
 COLUNAS_VARREDURA = ("invariante", "chave", "classificacao", "detalhe")
+# Tolerancia para casar uma violacao (instante de Instant.now(), InvariantAuditor) com a leitura que a revelou no
+# rep-NNN.csv (EpochClock, ancorado uma vez no inicio): no smoke F2 do W-10 o instante ficou de 0 a 7,4 ms depois do
+# fim da leitura nas 6 violacoes da sonda. 1 s fica duas ordens acima desse desvio; entre os candidatos da mesma sid
+# (Validate/Logout na online, ReplayValidate na imediata) casa-se o mais proximo, e acima de 1 s nenhum (leitura
+# fora do CSV, como a imediata no warm-up): sem leitura casada, a deteccao nao e forma 2.
 TOL_CASAMENTO_NS = 1_000_000_000
 REGRA_V = ("pares distintos (chave, invariante) com ao menos uma deteccao nas fases selecionadas, por execucao, "
            "somando as origens online, sonda (W-10) e varredura (so REAL); I1, I4 e I2 REAL (varredura: I2 "

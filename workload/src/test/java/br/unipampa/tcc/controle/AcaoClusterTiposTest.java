@@ -90,7 +90,7 @@ class AcaoClusterTiposTest {
         List<String> campos = new java.util.ArrayList<>();
         n.fieldNames().forEachRemaining(campos::add);
         assertEquals(List.of("tipo", "t_fim_janela_ns", "t_decisao_ns", "modo", "perfil", "regra", "politica", "motivo",
-                "no", "reverter", "aplicar"), campos);
+                "no", "reverter", "aplicar", "usadas_p1"), campos); // usadas_p1: P1-IC, aditivo na 1.2
         assertEquals("isn3:11222", n.get("no").asText(), "V-7: no da escolha (suspeito do P1)");
         var sem = FormatoJsonl.politica(d, new PlanoDeAcao(List.of(), List.of(), "P0", "sem-assinatura"),
                 ModoAtuacao.SHADOW, 11 * S);

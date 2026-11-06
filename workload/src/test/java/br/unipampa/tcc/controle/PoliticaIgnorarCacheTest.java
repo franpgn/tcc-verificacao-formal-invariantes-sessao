@@ -41,6 +41,8 @@ class PoliticaIgnorarCacheTest {
     static final List<String> CACHES = List.of("sessions-async", "counters-async");
     /** Modo de avaliacao (P2 desligada), acao de P1 = AC-7 (padrao do G-1). */
     static final ParametrosPolitica P = new ParametrosPolitica(2, 2000, 60 * S, 1, false);
+    /** S_lag determinado e abaixo do teto (a sonda voltou a ver o isn3). */
+    static final EstadoDefasagem CALMA = new EstadoDefasagem(EstadoDefasagem.Nivel.CALMA, "isn1", 30.0, 6);
 
     static final class Sim {
         final PoliticaPorAssinatura pol;
@@ -138,15 +140,17 @@ class PoliticaIgnorarCacheTest {
     }
 
     @Test
-    @DisplayName("suspeita desfeita: sem particao vista, S_lag abaixo do teto com vista completa em kLag janelas -> desfazer")
+    @DisplayName("suspeita desfeita: sem particao vista, S_lag determinado abaixo do teto com vista completa em kLag janelas -> desfazer")
     void suspeitaDesfeita() {
         Sim s = new Sim();
         s.disparar();
-        assertEquals("P0:sem-assinatura", resumo(s.c(COMPLETA, SEM)), "1 de kLag = 2");
+        assertEquals("P0:sem-assinatura", resumo(s.c(COMPLETA, CALMA)), "1 de kLag = 2");
         assertEquals("P0:sem-assinatura", resumo(s.c(COMPLETA, TETO_ISN3)), "voltou ao teto: zera a contagem");
         assertEquals(1, s.ativas.size());
-        assertEquals("P0:sem-assinatura", resumo(s.c(COMPLETA, SEM)));
-        PlanoDeAcao p = s.c(COMPLETA, SEM);
+        assertEquals("P0:sem-assinatura", resumo(s.c(COMPLETA, SEM)), "S_lag indeterminado nao conta como desfeita");
+        assertEquals("P0:sem-assinatura", resumo(s.c(COMPLETA, CALMA)));
+        assertEquals(1, s.ativas.size());
+        PlanoDeAcao p = s.c(COMPLETA, CALMA);
         assertEquals("P0:suspeita-desfeita -AC-7", resumo(p));
         assertEquals("isn3", p.no());
         assertTrue(s.ativas.isEmpty());

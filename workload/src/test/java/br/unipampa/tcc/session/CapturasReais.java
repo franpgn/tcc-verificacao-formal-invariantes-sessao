@@ -14,7 +14,8 @@ import br.unipampa.tcc.session.OpResult.Code;
  * Infinispan 15.0.0.Final); {@code REP2} = {@code runs/gate-b29/g1-rep2/hotrod/sonda-isn3.csv} (wt-tb,
  * 2026-10-16). Cada fixture e a primeira ocorrencia de (cache, operacao, tipo) no arquivo.
  * {@code esperado} e a decisao de classificacao (nao vem da captura): so as excecoes cuja mensagem do
- * servidor e {@code AvailabilityException} sao {@code ERROR_UNAVAILABLE}.</p>
+ * servidor e {@code AvailabilityException} sao {@code ERROR_UNAVAILABLE}, e desde o P1-IC (G-4, 06/11) tambem a
+ * {@code CacheUnavailableException} do cache ignorado ({@code A4}, ultima captura).</p>
  */
 final class CapturasReais {
 
@@ -126,7 +127,15 @@ final class CapturasReais {
                 "org.infinispan.client.hotrod.exceptions.HotRodClientException",
                 "java.lang.InterruptedException",
                 "java.lang.InterruptedException",
-                Code.ERROR_TRANSPORT)
+                Code.ERROR_TRANSPORT),
+        // P1-IC (G-4, P-A4.4): recusa do cache ignorado pelo no (POST /rest/v2/server/ignored-caches/sessions-async),
+        // captura da sonda do A4 (runs/a4-teste/corte-sessoes-r1/sonda-isn3.tsv.gz, wt-a4, 06/11, Infinispan
+        // 15.0.21 no servidor e cliente 15.0.0.Final; a sonda grava a classe pelo nome simples e sem causas)
+        new Captura("A4", "ignorado", 4588, "32.4", "sessions-async", "put",
+                "org.infinispan.client.hotrod.exceptions.HotRodClientException",
+                "org.infinispan.server.hotrod.CacheUnavailableException",
+                "",
+                Code.ERROR_UNAVAILABLE)
     );
 
     private CapturasReais() { }

@@ -271,7 +271,7 @@ OFAT="--swap-limite-kb 1048576 --exigir-trilha-completa --sonda-replay --extensa
 lancar_fat() {  # lancar_fat <fase> <tsv da fila> <cmd> <janela do supervisor> [<parar antes de i>]
   if pgrep -f 'run-campanha-s3[.]sh' > /dev/null; then echo "orquestrador ainda rodando: nao lancar"; return 1; fi
   if pgrep -f '^bash /home/[^ ]+/fat-infra/supervisor-cs3[.]sh' > /dev/null; then echo "supervisor anterior ainda rodando: esperar SUP_FIM"; return 1; fi
-  local lim; lim=$(( $(python3 -I -c 'import json,sys; print(json.load(open(sys.argv[1]))["parametros"]["exec_teto_s"]["valor"])' "$PFAT") + 90 ))
+  local lim; lim=${LIM_FAT:-$(( $(python3 -I -c 'import json,sys; print(json.load(open(sys.argv[1]))["parametros"]["exec_teto_s"]["valor"])' "$PFAT") + 90 ))}
   tmux has-session -t fat 2>/dev/null || tmux new-session -d -s fat -n orq -x 220 -y 50
   tmux send-keys -t fat:orq clear Enter; sleep 1; tmux clear-history -t fat:orq
   tmux new-window -d -t fat -n "$4" "SUP_JANELA=fat:orq SUP_INFRA=$HOME/fat-infra SUP_VOLATIL=/run/tccdiag/coord-fat bash $HOME/fat-infra/supervisor-cs3.sh $SFAT $1 $2 $3 $lim registrar $CS3 $5; echo SUP_FIM; sleep 86400"
@@ -410,7 +410,7 @@ Sem `k8s-file` confirmado, não dar o GO: a DT-028 §5 declara o log em `k8s-fil
 | `volume_exec_mb` | 14 | DT-028 §2 |
 | `s3_*` (L+), `s3_replay_late_max`, `fusao_teto_s` | 40, 500, 10, 0,9, 5; 306; 72 s | DT-026 P-1; DT-028 §3 |
 | `acaoP1` | `"AC-7"`, com a origem | DT-028 §3 |
-| *jars* do programa e da extensão, T | do 2.1 (`bundle-<S7>.sha256`) | não reprodutíveis entre *builds*; registrados na entrega |
+| *jars* do programa e da extensão, T | na execução de 06/11: T `4b96798140e43cdea17ef083bdd3167301d30a1c`; tar `e880fd6e…`; programa `6fda93306421d0d4e3cc5dabaa8f5d97296b3d3c4ce6795ccd4db09c8ca2e54c`; extensão **montada nos três nós** `8358812783305339f779e7fea559321a18c20c59f09bdde2d48f255e75279751` (2.6 b) | não reprodutíveis entre *builds*; o `bundle-4b96798.sha256` do 2.1 |
 
 ## 4. Metade 1: fase `nucleo` (64 execuções, 20 blocos)
 
@@ -460,7 +460,7 @@ cat ~/fat-infra/cmd-fat-nucleo.sh
 # VM
 source ~/fat-infra/vars.sh
 test ! -e $SFAT && echo "saida da avaliacao nova"
-lancar_fat nucleo $MFAT ~/fat-infra/cmd-fat-nucleo.sh supn1 8
+LIM_FAT=600 lancar_fat nucleo $MFAT ~/fat-infra/cmd-fat-nucleo.sh supn1 8   # watchdog de 600 s (coordenador, 06/11)
 sleep 30; cat ~/fat-infra/supervisor-nucleo-*.log
 ```
 
@@ -1375,6 +1375,21 @@ def main(argv):
 if __name__ == "__main__":
     sys.exit(main(sys.argv[1:]))
 ```
+
+## 12. Registro da execução (Senior, 06-07/11, GO do coordenador)
+
+| Passo | Resultado | Desvio |
+|---|---|---|
+| conferências contra a tag | `04aea52..int/2026-11-06-aval` = 1 commit (`4b96798`), só `docs/testes.md` e `runs/aval-int/`; nada em `scripts/`, `cluster/`, `workload/`, `extensao-servidor/` nem `analysis/`. Com a árvore da tag: matriz `406a845c…`, `pareamento` igual, entradas com os 4 SHA da seção 3, `parametros` com 31 números, `controlador` com `acao_p1 AC-7`, `--dry-run` das duas fases com exit 0 e as linhas do P-64, da fusão e da extensão | nenhum SHA da seção 3 mudou |
+| 2.1 | bundle `e880fd6e…`, programa `6fda9330…`, extensão `83588127…`; 21 OK no `congelados-fat.sha256` | **CRLF na *worktree*:** os 8 JSON deram `FAILED` na *worktree* (`core.autocrlf=true`; por exemplo, o `sessions-async.json` com 312 bytes e `
+` no fim, contra 311 no *tar*). O roteiro passou a conferir na cópia LF do *tar* (`69eab57`); ali, 21 OK |
+| 2.2 | gerador rc 0; os 4 SHA da seção 3; conferidores OK | — |
+| 2.3 e 2.4 | 3 + 4 + 4 OK; sem CR; 21 OK; `vars.sh` ok; matriz `406a845c…`; `pareamento` com 80 linhas, 12 fatoriais e 16 de dois braços; `--dry-run` de 64 e 16 com todas as linhas esperadas | — |
+| 2.5 | `RECRIAR-CS3 OK` (00:26:42Z, 07/11); *swap* 38 MB; livre 11,4 GB | — |
+| 2.6 (a) | `podman-compose` 1.0.6: o `--dry-run` mostra 3 `--log-driver=k8s-file` e 3 `--log-opt=max-size=512mb`; `podman inspect`: `k8s-file 512MB` nos três | nenhuma alternativa foi necessária |
+| 2.6 (b) | EXT montado de `$CS3/extensao-servidor/target/` nos três, com `83588127…` na fonte e dentro do contêiner | — |
+| 2.6 (c) | `DELETE` 200; `cria-caches` rc 0; `PoliticaFusaoSessoes` lida nos três; `A1-POLITICA carregada` 2, 1 e 1 | — |
+| supervisor | limiar de progresso de **600 s** (`LIM_FAT=600`), pela instrução do coordenador, no lugar de `exec_teto_s` + 90 s | o limiar só grava `ALERTA-PROGRESSO`, sem ação; uma convergência longa pode dar alerta falso |
 
 ---
 

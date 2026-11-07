@@ -538,18 +538,186 @@ Duração: 64 × ~395 s (medida da recalibração) ≈ 7,0 h, mais o intervalo d
 
 ## 5. Metade 2: fase `extra` (16 execuções, 8 blocos)
 
+### 5.0 Retomada da fase `extra` depois da queda de 07/11 (Senior, 07/11)
+
+**Fatos.** A fase `nucleo` terminou antes da queda: `FIM exit=0 motivo=fase nucleo concluida` às 07:41:17,988Z,
+`resumo.md` com ACEITA=64, `progresso.json` no passo `fim`, `nucleo/MANIFEST.sha256` conferido (só a linha do `.tmp`
+falha, como no 7.1) e `fat-conferir.py piloto --ate-i 63` com `PILOTO: PROTOCOLO OK`, 897 OK e 0 FALHA
+(`~/fat-infra/conferencia-nucleo-0-63-pos-queda.txt`). O *host* caiu entre ~07:54Z e 08:00Z (Kernel-Power 41) e voltou
+às 14:06Z. A VM reiniciou: `boot_id` `0c1b7856-b5c3-4a33-b067-c00e1d87c38b` (o `BOOTFAT` era `f9e98b74…`), IP
+172.21.30.247, sem `tmux`, `/run/tccdiag` perdido com a *unit* h4 `diag-20261107T002832Z` e o progresso do `supn2`.
+O espelho do h4 do `nucleo` ficou inteiro em `~/fat-infra/diag-20261107T002832Z/amostras.txt` (27 001 amostras, de
+00:28:33Z a 07:58:32Z, depois do FIM). Os `cmd-fat-extra.sh` e `cmd-fat-reposicoes.sh` do 4.2 levam o boot e o h4
+antigos, e o pré-voo os recusaria (exit 4).
+
+**Decisão do Senior: retomar na `extra` com amostrador e boot novos, sem repetir nada do `nucleo`.** A parada por
+`boot_id` mudado (orquestrador, linhas 675-676 e 2030; paradas da fase do pré-registro da calibração) protege uma fase
+em curso, e a regra do X-17 §8 ("não retomar sem o Senior") existe porque o h4 das execuções anteriores precisaria de
+dois arquivos. Aqui a queda caiu **entre** fases. Nenhuma execução atravessou o boot, o h4 de cada execução do
+`nucleo` foi lido do arquivo do boot dela (o `h4.txt` de cada pasta, conferido no `fat-conferir.py`), e cada execução
+recria o *cluster* (down/up e *caches* pela REST) antes da carga. Os blocos ficam inteiros numa fase (`nucleo` tem
+F2, sem falha e F3; `extra` tem F1 e F4), então nenhum contraste dentro de bloco atravessa o boot. O `bundle_sha256` de
+uma fase não inclui boot nem h4 (`bundle_lista`, linhas 749-766), então a `extra` tem de sair com o mesmo `c5a6825f…`
+do `nucleo` (5.1).
+
+**Supervisor do `nucleo` sem `FIM-nucleo-OK`.** O `supn2` não viu `^ORQ_RC=` no painel `fat:orq` em ~19 min (do FIM
+até a queda); o último evento é o `ALERTA-PROGRESSO-nucleo` falso das 07:51:52Z. Hipóteses conferidas:
+
+- painel errado: **descartada**. O `go nucleo` e o `go rede 8` do mesmo `supn2` foram para `fat:orq` e o orquestrador
+  os leu do `/dev/tty` dele;
+- orquestrador que não saiu: **improvável**. Depois da linha FIM, o `limpar` só roda o `gravar_manifesto` e o `exit`
+  (linhas 868-870, com os *traps* já tirados na 835). O `MANIFEST.sha256` foi renomeado às 07:41:18,121Z, e o
+  *journal* do boot anterior não tem nenhum comando do `pts/16` depois das 07:41:17. O `bash cmd-fat-*.sh` espera só
+  o PID do orquestrador, não os netos;
+- linha que não começa com `ORQ_RC=`: **não dá para fechar**. O `log()` termina sempre em `\n`, e o
+  `gravar_manifesto` só escreve no terminal se falhar, o que não aconteceu. O pane não pode ter ficado travado: o eco
+  do `log()` vai ao terminal antes do arquivo, e o arquivo chegou ao FIM. Sobra texto de fora no pane, por exemplo
+  teclas digitadas e ecoadas pelo tty na mesma linha. O pane se perdeu no *reboot*, então não há como ver.
+
+Salvaguardas, sem mexer no `supervisor-cs3.sh` nem no orquestrador: (1) os `cmd-fat-*.sh` regenerados abaixo imprimem
+`\nORQ_RC=…`, com uma quebra de linha antes, então um prefixo solto não esconde mais o fim; (2) o vigia do fim (5.0 e)
+confere a linha FIM do log e guarda o pane com `cat -A`, o que fecha o diagnóstico se acontecer de novo.
+
+**Ordem.** 2.5 e 2.6 do coordenador (em curso) → (a) *host*: H0 → (b) VM → 5 min de H0 → 5.1 → (e) no fim da fase.
+
+(a) *Host*, PowerShell. A cópia da série do `nucleo` vem antes do H0, e o `typeperf` usa um arquivo novo:
+
+```powershell
+# host, PowerShell (5.0 a)
+$D = "$env:LOCALAPPDATA\Temp\claude\98c9abffb040f610\0786b06c-748d-4829-8e8b-152396a994ac\scratchpad\diag-io"
+$V = "C:\Users\Francesco\Development\tcc\dados-vm\cs3-2026-11"
+Copy-Item "$D\host-proc-io-fat.csv" "$V\host-proc-io-fat.csv"      # a serie do nucleo, parada na queda (antes do H0)
+Get-FileHash "$D\host-proc-io-fat.csv","$V\host-proc-io-fat.csv" | Format-Table Hash,Path -AutoSize   # iguais
+"H0 ate o fim do fatorial (retomada da extra depois da queda de 07/11; inicio $((Get-Date).ToUniversalTime().ToString('HH:mm'))Z)" | Set-Content C:\Users\Francesco\Development\tcc\HOST-PERFIL.txt
+Add-Content C:\Users\Francesco\Development\tcc\HOST-PERFIL.log "$((Get-Date).ToUniversalTime().ToString('o')) H0 (fatorial, retomada da extra; host caiu ~07:54-08:00Z, voltou 14:06Z)"
+if (Test-Path "$D\host-proc-io-fat-extra.csv") { 'host-proc-io-fat-extra.csv JA EXISTE: nao sobrescrever' } else {
+  Get-Process typeperf -ErrorAction SilentlyContinue | Stop-Process
+  Start-Process typeperf -WindowStyle Hidden -ArgumentList @('-cf', "$D\contadores-proc.txt", '-si', '2', '-f', 'CSV', '-y', '-o', "$D\host-proc-io-fat-extra.csv") }
+$H = "$V\fat-host-inicio-extra-$((Get-Date).ToUniversalTime().ToString('yyyyMMddTHHmmssZ')).txt"
+& {
+  Get-Date -Format o
+  'ultimo boot do host:'; (Get-CimInstance Win32_OperatingSystem).LastBootUpTime
+  Get-WinEvent -FilterHashtable @{LogName='System'; ProviderName='Microsoft-Windows-Kernel-Power'; Id=41} -MaxEvents 2 -ErrorAction SilentlyContinue | Select-Object TimeCreated,Id | Format-List
+  Get-PSDrive C | Select-Object Used,Free | Format-List
+  Get-Process typeperf | Select-Object Id,StartTime | Format-List
+  Get-Service WSearch | Select-Object Status,StartType | Format-List
+  'aplicativos (esperado vazio):'
+  Get-Process -Name VALORANT*,RiotClient*,Discord*,steam*,Spotify*,msedge* -ErrorAction SilentlyContinue | Select-Object Name,Id,StartTime
+  Get-Process | Sort-Object CPU -Descending | Select-Object -First 15 Name,Id,CPU | Format-Table -AutoSize
+} *>&1 | Tee-Object -FilePath $H
+```
+
+Depois do *reboot*, o `WSearch` e os aplicativos podem ter voltado sozinhos. Com `WSearch` em `Running` ou algum
+aplicativo na lista, o Gestor fecha os aplicativos, roda `wsl --shutdown` e `Stop-Service WSearch` como administrador,
+e o bloco `& { … }` roda de novo. Os 5 min de H0 contam a partir daí. No Git Bash do *host*, `VMIP=172.21.30.247`.
+
+(b) VM, depois do `RECRIAR-CS3 OK` do 2.5 e do 2.6. O bloco registra o fim do `nucleo`, inicia o h4 novo, regrava o
+`vars.sh` sem apagar nada e regenera os comandos:
+
+```bash
+# VM (5.0 b)
+source ~/fat-infra/vars.sh; cd $CS3
+[ "$(cat /proc/sys/kernel/random/boot_id)" = 0c1b7856-b5c3-4a33-b067-c00e1d87c38b ] || { echo "boot_id diferente do da retomada: PARAR, Senior"; exit 1; }
+[ "$H4FAT" = diag-20261107T002832Z ] && [ "$BOOTFAT" = f9e98b74-bf1f-4192-9770-b40285877292 ] || { echo "vars.sh ja mudou (o 5.0 b ja rodou?): nao repetir"; exit 1; }
+flock -n /var/lock/tcc-vm.lock true && echo "lock livre" || { echo "LOCK OCUPADO: parar"; exit 1; }
+pgrep -af 'run-rebaseline|run-campanha-s3|supervisor-|session-workload|inject-' || echo "nenhum processo residual"
+systemctl list-timers --all --no-legend 'tcc-heal*' | grep -c .       # 0
+systemctl list-units --all --no-legend 'tcc-amostrador-*' | grep -c . # 0
+tail -n 1 $(ls -td ~/fat-infra/recriacao-2* | head -1)/conferencia.txt   # RECRIAR-CS3 OK (o 2.5 de agora)
+df -Pm $CS3/runs | tail -1; free -m | tail -2
+# 1) fim do nucleo: espelho do h4 congelado (a unit morreu com a VM; o 7.1 nao a para) e registro no lugar do FIM-nucleo-OK
+N=~/fat-infra/$H4FAT
+(cd $N && sha256sum amostras.txt | tee amostras.txt.sha256)
+awk 'substr($0,1,1)!="#"{n++; if(n==1)p=$1; if(n>1 && $1-u>mi){mi=$1-u; mt=$1}; u=$1} END{printf "h4 nucleo: amostras=%d primeira=%s ultima=%s maior_intervalo_s=%.3f (ate %s)\n", n, p, u, mi, mt}' $N/amostras.txt
+#   esperado: amostras=27001, ultima 1794038312.x (07:58:32Z) > 1794037278 (FIM do nucleo, 07:41:18Z)
+{ echo "fim da fase nucleo conferido depois da queda do host (roteiro 5.0), no lugar do FIM-nucleo-OK que o supn2 nao gravou"
+  echo "boot da fase: $BOOTFAT; h4: $H4FAT (espelho $N/amostras.txt); MANIFEST e fat-conferir 0-63 conferidos pelo coordenador"
+  tail -n 1 $SFAT/nucleo/orquestrador.log; grep '^Contagem' $SFAT/nucleo/resumo.md; grep -o '"passo": "[^"]*"' $SFAT/nucleo/progresso.json
+  grep -o 'bundle=[0-9a-f]*' $SFAT/nucleo/orquestrador.log | sort | uniq -c
+  tail -n 1 ~/fat-infra/conferencia-nucleo-0-63-pos-queda.txt; sha256sum ~/fat-infra/conferencia-nucleo-0-63-pos-queda.txt
+  cat $N/amostras.txt.sha256
+} > ~/fat-infra/nucleo-fim-conferido-posqueda.txt 2>&1; cat ~/fat-infra/nucleo-fim-conferido-posqueda.txt
+source ~/rebaseline-infra/bloco.sh
+bloco ~/fat-infra/fim-nucleo-posqueda-$(date -u +%Y%m%dT%H%M%SZ).txt "$(cat ~/fat-infra/abertura-iso.txt)" | grep -A3 'list-boots'
+# 2) vars novos: os do nucleo ficam com outro nome; H4FAT e BOOTFAT passam a ser os da extra e das reposicoes
+cp -p ~/fat-infra/vars.sh ~/fat-infra/vars.sh.antes-retomada
+printf '# 5.0: retomada depois da queda do host de 07/11 (nucleo no boot anterior; extra e reposicoes neste)\nH4FAT_NUCLEO=%s\nBOOTFAT_NUCLEO=%s\nH4FAT=%s\nBOOTFAT=%s\n' \
+  "$H4FAT" "$BOOTFAT" "diag-$(date -u +%Y%m%dT%H%M%SZ)" "$(cat /proc/sys/kernel/random/boot_id)" >> ~/fat-infra/vars.sh
+source ~/fat-infra/vars.sh
+echo "nucleo: $H4FAT_NUCLEO $BOOTFAT_NUCLEO | extra e reposicoes: $H4FAT $BOOTFAT"
+# 3) h4 novo, pasta volatil e bloco de abertura (o 4.2 com o ID e o boot novos)
+bash scripts/amostrador-infra.sh iniciar --id $H4FAT --espelho-dir ~/fat-infra/$H4FAT
+bash scripts/amostrador-infra.sh estado --id $H4FAT
+sudo install -d -m 0755 -o "$(id -un)" -g "$(id -gn)" /run/tccdiag/coord-fat
+date -Is > ~/fat-infra/abertura-extra-iso.txt
+bloco ~/fat-infra/inicio-extra-$(date -u +%Y%m%dT%H%M%SZ).txt > /dev/null
+# 4) comandos da extra e das reposicoes: os antigos ficam com o sufixo do boot; os novos so trocam boot e h4 e o ORQ_RC
+for F in extra reposicoes; do
+mv ~/fat-infra/cmd-fat-$F.sh ~/fat-infra/cmd-fat-$F.sh.boot-f9e98b74
+cat > ~/fat-infra/cmd-fat-$F.sh <<EOF
+#!/bin/bash
+# avaliacao fatorial, fase $F (roteiro-avaliacao-fatorial-2026-11-06.md, 5.0, retomada depois da queda); gerado em $(date -u +%FT%TZ)
+cd $CS3 || { echo "ORQ_RC=2 cd falhou"; exit 2; }
+export CS_PASSWORD="\$(sed -n 's/^ *- PASS=//p' cluster/podman-compose-sem-caches.yml | head -1)"
+bash scripts/run-campanha-s3.sh --matriz $MFAT --matriz-sha256 $MFAT_SHA --fase $F \\
+  --parametros $PFAT --parametros-sha256 $PFAT_SHA --controlador $CTRL --controlador-sha256 $CTRL_SHA \\
+  --referencia-async $REF_A --referencia-async-sha256 $REF_A_SHA --referencia-sync $REF_S --referencia-sync-sha256 $REF_S_SHA \\
+  --jar $JAR --jar-sha256 $JAR_SHA --boot-esperado $BOOTFAT --h4-id $H4FAT --saida $SFAT $OFAT
+rc=\$?; printf '\nORQ_RC=%s %s\n' "\$rc" "\$(date -u +%FT%TZ)"
+EOF
+bash -n ~/fat-infra/cmd-fat-$F.sh || echo "ERRO em cmd-fat-$F.sh"
+diff <(sed "2d; \$d; s/$BOOTFAT_NUCLEO/$BOOTFAT/; s/$H4FAT_NUCLEO/$H4FAT/" ~/fat-infra/cmd-fat-$F.sh.boot-f9e98b74) <(sed '2d; $d' ~/fat-infra/cmd-fat-$F.sh) > /dev/null \
+  && echo "cmd-fat-$F.sh: so boot e h4 mudaram (fora o comentario e o ORQ_RC)" || echo "cmd-fat-$F.sh DIFERE alem do boot e do h4: PARAR, Senior"
+done
+grep -oE -- '--boot-esperado [^ ]+ --h4-id [^ ]+' ~/fat-infra/cmd-fat-extra.sh ~/fat-infra/cmd-fat-reposicoes.sh
+echo 63 > ~/fat-infra/vigia-ultimo-i       # o vigia do 4.5 comeca na i = 64 (0 a 63 ja conferidas depois da queda)
+```
+
+Esperado: `boot_id` certo, lock livre, nada residual, 0 e 0, `RECRIAR-CS3 OK`, o h4 do `nucleo` com 27001 amostras,
+o registro com `FIM exit=0 motivo=fase nucleo concluida`, `ACEITA=64`, `fim`, um só `bundle=c5a6825f…` (2 linhas, do
+piloto e da retomada) e `PROTOCOLO OK`, a lista de boots com os dois, o amostrador novo com a primeira amostra, e as
+duas linhas "so boot e h4 mudaram" com `0c1b7856…` e o `diag-<agora>`. Qualquer outra coisa: parar e chamar o Senior.
+
+(e) Vigia do fim, para a `extra` (e igual nas reposições, com `F=reposicoes`). Rodar quando a última linha do log da
+fase for `FIM exit=…` e, 2 min depois, não houver `FIM-<fase>-OK` nem `ALERTA-FIM-<fase>`:
+
+```bash
+# VM, vigia do fim (5.0 e)
+source ~/fat-infra/vars.sh; F=extra; L=$SFAT/$F/orquestrador.log; TS=$(date -u +%Y%m%dT%H%M%SZ)
+{ echo "== $TS"; ls ~/fat-infra/ | grep -E "^(FIM|ALERTA-FIM)-$F" || echo "sem FIM-$F-OK nem ALERTA-FIM-$F"
+  tail -n 1 $L; grep -o '"passo": "[^"]*"' $SFAT/$F/progresso.json; stat -c '%y %n' $L $SFAT/$F/MANIFEST.sha256
+  echo "== processos"; pgrep -af 'run-campanha-s3|cmd-fat-|supervisor-cs3' || echo "nenhum"
+  for p in $(pgrep -f 'run-campanha-s3[.]sh'); do echo "pid $p wchan=$(cat /proc/$p/wchan) etimes=$(ps -o etimes= -p $p)"; ls -l /proc/$p/fd; done
+  echo "== painel fat:orq (cat -A, ultimas 30 linhas)"; tmux capture-pane -p -J -S -200 -t fat:orq | tail -n 30 | cat -A
+} > ~/fat-infra/painel-fim-$F-$TS.txt 2>&1; cat ~/fat-infra/painel-fim-$F-$TS.txt
+```
+
+- Log com `FIM exit=0 motivo=fase <F> concluida`, passo `fim`, `MANIFEST.sha256` com hora igual ou depois da linha FIM
+  e nenhum `run-campanha-s3`: a fase terminou e vale como `FIM-<F>-OK`. O `painel-fim-*` fica como registro. Se o
+  supervisor ainda roda, ele é parado pelo PID, para o `lancar_fat` seguinte não recusar:
+  `kill $(pgrep -f "^bash /home/[^ ]+/fat-infra/supervisor-cs3[.]sh $SFAT $F ")`. Nunca `pkill`. Depois, o 6 (ou o 7).
+- `run-campanha-s3` vivo 5 min depois da linha FIM, com o MANIFEST já gravado: rodar o bloco de novo (guarda `wchan` e
+  `fd`), depois `tmux send-keys -t fat:orq C-c`. Isso é seguro porque o `limpar` já tirou os *traps* e gravou o
+  MANIFEST (linhas 835 e 868-869). Em seguida, o item acima.
+- FIM com outro exit: a seção 9, como sempre.
+
+### 5.1 Lançamento
+
 ```bash
 # VM
 source ~/fat-infra/vars.sh
-ls ~/fat-infra/ | grep -E '^(ALERTA|FIM)-'                          # FIM-nucleo-OK
-lancar_fat extra $MFAT ~/fat-infra/cmd-fat-extra.sh supx1
+head -3 ~/fat-infra/nucleo-fim-conferido-posqueda.txt              # 5.0 b (no lugar do FIM-nucleo-OK)
+LIM_FAT=600 lancar_fat extra $MFAT ~/fat-infra/cmd-fat-extra.sh supx1   # o limiar de 600 s do coordenador, como no nucleo
 sleep 30; cat ~/fat-infra/supervisor-extra-*.log
+grep -m1 'inicio fase=extra' $SFAT/extra/orquestrador.log | grep -oE 'bundle=[0-9a-f]+|boot=[0-9a-f-]+|h4=[^ ]+'
+#   esperado: bundle=c5a6825f1219cf70c953e3e8a65bf963a1a7ffda88a1838e7f30866399eea010 (o do nucleo), boot=0c1b7856-..., h4=$H4FAT
 ```
 
 GO pelo supervisor: `go extra <data>` e `go rede 66` (na ordem de 20261106 a primeira F4 é a i = 66; F1 não pede GO de
-rede). O vigia do 4.5 continua. Duração: 16 × ~395 s ≈ 1,8 h.
+rede). Com `bundle` diferente do `nucleo`: `touch $SFAT/PARAR` (a fase para depois da i = 64) e chamar o Senior. O
+vigia do 4.5 continua da i = 64. No fim, (e) se o supervisor não gravar o `FIM-extra-OK`. Duração: 16 × ~395 s ≈ 1,8 h.
 
-## 6. Reposições (depois de `FIM-extra-OK`; uma vez)
+## 6. Reposições (depois de `FIM-extra-OK` ou do vigia do fim do 5.0 e; uma vez)
 
 Bloco perdido é refeito inteiro (os quatro braços no fatorial, os dois nas descritivas), com o próximo bloco livre e
 semente nova; **teto de reposições h4 = 20 blocos** (decisão do coordenador de 06/11; 25 % das 80 execuções, a fração
@@ -583,7 +751,8 @@ GO: `go reposicoes <data>` e `go rede <i>` da primeira F2/F3/F4 das reposições
 ```bash
 # VM
 source ~/fat-infra/vars.sh; cd $SFAT
-ls ~/fat-infra/ | grep -E '^(ALERTA|FIM|PILOTO)-'
+ls ~/fat-infra/ | grep -E '^(ALERTA|FIM|PILOTO)-'   # ALERTA-PROGRESSO-nucleo e o alerta falso do fim do nucleo (5.0)
+ls ~/fat-infra/ | grep -E 'fim-conferido|^painel-fim-' # o registro do nucleo (5.0 b) e, se houver, o vigia do fim (5.0 e)
 for F in nucleo extra reposicoes; do
   [ -f $F/MANIFEST.sha256 ] || continue
   echo "$F: linhas .tmp = $(grep -c " $F/MANIFEST.sha256.tmp\$" $F/MANIFEST.sha256)"
@@ -596,13 +765,20 @@ done
 python3 -I ~/fat-infra/fat-conferir.py execucoes $SFAT --tsv ~/fat-infra/execucoes-final.tsv | grep -E '^BLOCOS'
 awk -F'\t' 'NR>1{print $2, $3}' $SFAT/manifesto-bracos.tsv | sort | uniq -c   # bloco, celula, braco, execucao: so blocos completos
 systemctl list-timers --all --no-legend 'tcc-heal*' | grep -c .       # 0
-bash $CS3/scripts/amostrador-infra.sh parar --id $H4FAT --espelho-dir ~/fat-infra/$H4FAT
+# dois boots e dois h4 (5.0): nucleo no boot f9e98b74 com o $H4FAT_NUCLEO; extra e reposicoes no 0c1b7856 com o $H4FAT
+grep -h 'inicio fase=' */orquestrador.log | grep -oE 'fase=[a-z]+|bundle=[0-9a-f]{12}|boot=[0-9a-f-]+|h4=[^ ]+' | paste -d' ' - - - -
+#   esperado: nucleo (2 linhas) com f9e98b74 e diag-20261107T002832Z; extra e reposicoes com 0c1b7856 e o $H4FAT; bundle c5a6825f1219 no nucleo e na extra
+[ "$(cat /proc/sys/kernel/random/boot_id)" = "$BOOTFAT" ] && echo "boot igual ao da retomada" || echo "BOOT MUDOU depois do 5.0: nao parar o amostrador; Senior"
+bash $CS3/scripts/amostrador-infra.sh parar --id $H4FAT --espelho-dir ~/fat-infra/$H4FAT   # so o da extra e das reposicoes
+(cd ~/fat-infra/$H4FAT_NUCLEO && sha256sum -c amostras.txt.sha256)   # o do nucleo: a unit morreu na queda; vale o espelho congelado no 5.0 b
 source ~/rebaseline-infra/bloco.sh
-bloco ~/fat-infra/fim-$(date -u +%Y%m%dT%H%M%SZ).txt "$(cat ~/fat-infra/abertura-iso.txt)" > /dev/null
-cp -p /run/tccdiag/coord-fat/progresso-*.log ~/fat-infra/ 2>/dev/null
+bloco ~/fat-infra/fim-$(date -u +%Y%m%dT%H%M%SZ).txt "$(cat ~/fat-infra/abertura-extra-iso.txt)" > /dev/null   # o do nucleo: fim-nucleo-posqueda-* (5.0 b)
+cp -p /run/tccdiag/coord-fat/progresso-*.log ~/fat-infra/ 2>/dev/null   # extra e reposicoes; do nucleo so o do supn1 (o do supn2 se perdeu no tmpfs)
 ```
 
-Aqui termina o H0 (`HOST-PERFIL.txt` a H2; covariáveis de fim do *host*, como no X-19).
+Aqui termina o H0 (`HOST-PERFIL.txt` a H2; covariáveis de fim do *host*, como no X-19). O `typeperf` da retomada grava
+em `host-proc-io-fat-extra.csv`; a série do `nucleo` é a `host-proc-io-fat.csv`, copiada para `dados-vm/cs3-2026-11/`
+no 5.0 (a). As duas vão para a entrega.
 
 ### 7.2 Cópia ao *host* com `sha256sum -c` dos dois lados
 
@@ -644,7 +820,28 @@ Gravar `"$H/fat-$TS/ENTREGA-ANALISE.txt"` com:
    resto da linha de comando ficam com a análise;
 6. as execuções com `t_fusao_ns` ausente (fusão não registrada até o teto: varredura com erro, tratamento simétrico
    nos quatro braços do bloco), as com AC-7 ativo no fim e as com `tardias_candidatas` ≥ 306;
-7. a frase "o `comparar_bracos.py` roda com `python -E -P` (G2 de 28/10)".
+7. a frase "o `comparar_bracos.py` roda com `python -E -P` (G2 de 28/10)";
+8. o desvio da queda (5.0), com esta frase, trocando `<H4>` pelo `$H4FAT` da retomada e `<pausa>` pelo intervalo
+   entre o FIM do `nucleo` e o `inicio fase=extra`:
+
+   > Desvio do roteiro, sem mudança de protocolo. O *host* perdeu energia entre ~07:54Z e 08:00Z de 07/11
+   > (Kernel-Power 41), 13 min depois do fim da fase `nucleo` (`FIM exit=0` às 07:41:17,988Z; 64 ACEITA; MANIFEST
+   > conferido) e antes do lançamento da fase `extra`. A VM reiniciou, então a fase `nucleo` (i = 0 a 63) rodou no
+   > boot `f9e98b74-bf1f-4192-9770-b40285877292` com o amostrador h4 `diag-20261107T002832Z`, e as fases `extra` e
+   > `reposicoes` rodaram no boot `0c1b7856-b5c3-4a33-b067-c00e1d87c38b` com o amostrador `<H4>`. Nenhuma execução
+   > foi interrompida, retomada ou repetida, e o h4 de cada execução vem de um só arquivo. Não mudam as entradas, os
+   > *jars*, o EXT, a matriz e as sementes (o `bundle_sha256` é `c5a6825f…` nas duas fases), nem o estado do
+   > *cluster* entre execuções, porque cada execução recria o *cluster* (down/up e *caches* pela REST) antes da carga.
+   > Mudam o sistema da VM e o do *host*, reiniciados (cache de páginas, *tmpfs*, processos de fundo, IP da VM; o
+   > *swap* usado no portão K1 passou de 38 MB, constante no `nucleo`, para o valor registrado na `extra`). O *host*
+   > voltou a H0 com outra série do `typeperf` (`host-proc-io-fat-extra.csv`; a do `nucleo`, `host-proc-io-fat.csv`,
+   > cobre até a queda), e houve uma pausa de `<pausa>` entre as fases. Para a análise, cada bloco fica inteiro numa
+   > fase e o pareamento por braço é dentro do bloco. As células da `extra` (F1 e F4) não têm execução no `nucleo`.
+   > Assim, nenhum contraste dentro de bloco e nenhuma célula mistura os dois boots. Como as 64 execuções do `nucleo`
+   > saíram ACEITA, nenhum bloco do `nucleo` vai às reposições.
+
+   Se o `repor` do 6 listar um bloco do `nucleo`, chamar o Senior antes de repor: esse bloco rodaria inteiro no boot
+   novo, e a última frase deixaria de valer.
 
 ## 8. Tempo estimado
 
@@ -684,6 +881,8 @@ O que não está aqui segue a seção 9 do roteiro do B-40, trocando `av` por `f
 | aviso `AC-7 ativo no fim` | nada na hora (V-4: aviso, não descarte); o vigia anota; duas seguidas: chamar o Senior |
 | exit 11 (`parada swap … depois da recriacao`) | não retomar; diagnóstico de memória em `~/fat-infra/memoria-exit11-<UTC>.txt`; Senior |
 | `ALERTA-PROGRESSO-*`, `ALERTA-FIM-*`, `ALERTA-GO-*` | como no roteiro do X-17/X-18 (seção 8) |
+| log da fase com `FIM exit=…` e, 2 min depois, sem `FIM-<fase>-OK` nem `ALERTA-FIM-<fase>` (como o `supn2` no fim do `nucleo`) | vigia do fim (5.0 e) |
+| `boot_id` mudado entre fases (queda da VM ou do *host* depois de um FIM) | 5.0: amostrador e boot novos, comandos regenerados, desvio na entrega (7.3, item 8). Com exit 10 no meio de uma fase, vale a regra do X-17 §8: Senior |
 
 ## 10. Pontos para o coordenador e o Gestor
 
@@ -1390,6 +1589,9 @@ if __name__ == "__main__":
 | 2.6 (b) | EXT montado de `$CS3/extensao-servidor/target/` nos três, com `83588127…` na fonte e dentro do contêiner | — |
 | 2.6 (c) | `DELETE` 200; `cria-caches` rc 0; `PoliticaFusaoSessoes` lida nos três; `A1-POLITICA carregada` 2, 1 e 1 | — |
 | supervisor | limiar de progresso de **600 s** (`LIM_FAT=600`), pela instrução do coordenador, no lugar de `exec_teto_s` + 90 s | o limiar só grava `ALERTA-PROGRESSO`, sem ação; uma convergência longa pode dar alerta falso |
+| `nucleo` (07/11) | piloto `PROTOCOLO OK`; retomada `supn2` de 01:27Z; `FIM exit=0 motivo=fase nucleo concluida` às 07:41:17,988Z; ACEITA=64; MANIFEST confere; `fat-conferir` 0 a 63 com 897 OK e 0 FALHA | o `supn2` não gravou `FIM-nucleo-OK`: nenhum `^ORQ_RC=` no pane até a queda, e o `ALERTA-PROGRESSO-nucleo` das 07:51:52Z é falso (5.0) |
+| queda (07/11) | *host* fora de ~07:54Z a 14:06Z (Kernel-Power 41), entre as fases; VM com boot `0c1b7856…` e IP 172.21.30.247; `/run/tccdiag`, a *unit* h4 e o `tmux` perdidos; espelho h4 do `nucleo` inteiro (27 001 amostras até 07:58:32Z) | **5.0** (Senior): retomada na `extra` com amostrador e boot novos (`H4FAT_NUCLEO` e `BOOTFAT_NUCLEO` no `vars.sh`), `cmd-fat-extra.sh` e `cmd-fat-reposicoes.sh` regenerados com `
+ORQ_RC=`, novo H0 e `host-proc-io-fat-extra.csv`, vigia do fim, 7.1 com os dois h4 e 7.3 com o desvio (item 8) |
 
 ---
 

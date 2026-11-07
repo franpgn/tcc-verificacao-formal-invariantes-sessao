@@ -122,6 +122,7 @@ grep -c -- 'conferir_loggers' scripts/run-campanha-s3.sh              # >= 1 (P-
 grep -c -- 'sweep-merge-timeout-sec' workload/src/main/java/br/unipampa/tcc/session/Cli.java    # >= 1
 H=$TCC/dados-vm/cs3-2026-11; D=$H/bundle-fat-$S7; mkdir -p "$D/aux"
 git -c core.autocrlf=false archive --format=tar --prefix="cs3-$S7/" "$T" -o "$D/cs3-$S7.tar"
+mkdir -p "$D/arv" && tar -xf "$D/cs3-$S7.tar" -C "$D/arv"                # copia LF do bundle, para as conferencias
 (cd workload && mvn -o -q -T1 -DskipTests package)                   # faltando plugin offline: o mesmo sem -o
 (cd extensao-servidor && mvn -o -q -T1 -DskipTests package)          # idem
 cp workload/target/session-workload-0.1.0-SNAPSHOT.jar extensao-servidor/target/tcc-extensao-servidor.jar "$D/"
@@ -129,11 +130,13 @@ cp workload/target/session-workload-0.1.0-SNAPSHOT.jar extensao-servidor/target/
 #   os dois jars nao sao reprodutiveis (timestamps): o SHA que vale e o deste arquivo, do 2.3 ate a entrega
 ```
 
-Conferências de configuração na *worktree* da tag (só leitura):
+Conferências de configuração na cópia do *bundle* extraída do *tar* (só leitura). Não na *worktree*: com
+`core.autocrlf=true`, o checkout do Windows põe CRLF nos `*.json` (desvio achado na execução de 06/11: os 8 JSON deram
+`FAILED` na *worktree* e conferem no *tar*).
 
 ```bash
 # host
-cd "$TCC/wt-cs3-$S7"
+cd "$D/arv/cs3-$S7"
 sha256sum cluster/caches/sessions-async.json cluster/caches/sessions-async-a1.json cluster/caches/counters-async.json | cut -c1-64
 #   b68c3ca52433a1eec38f8aab9d7e5ff3ef14945a640e79468bc6da197af6154c  (pnn, o mesmo da recalibracao)
 #   df3c290dfe424ab8ea4d3f3677c868b7a24078c9611e0ee3040ebc14db7f9a7a  (a1, igual em 9cf777a e e672051)
@@ -196,7 +199,7 @@ PB=$H/bundle-rc-cc2b71c/entrada/campanha-s3-recalibracao.json
 sha256sum "$PB" | cut -c1-64                                         # 1ca5877f3b2ea01982477fd45e52befb9a794a71d5bf7d39f025560942d7222b
 python -I "$D/aux/gerar-entradas-fatorial.py" --derivacao "$DR/calibracao-s3-derivacao.json" \
   --derivacao-sha256 b183527a4c88476a1feda51bfd6e7fedb832949344d04ad59c80606b25126121 --referencias-dir "$DR/referencias" \
-  --controlador-base "$TCC/wt-cs3-$S7/cluster/controlador/controlador-calibracao-s3.json" \
+  --controlador-base "$D/arv/cs3-$S7/cluster/controlador/controlador-calibracao-s3.json" \
   --parametros-base "$PB" --saida-dir "$D/entradas"; echo "gerador rc=$?"
 cat > "$D/entradas-dt028.sha256" <<'EOF2'
 163b88b01a6d049eab86cdebe4357e2ea17f738166f1710f9ce561f3c52ff032  controlador-avaliacao-s3.json
@@ -205,7 +208,7 @@ dec07fb76352e85ea014def9f8c52f5b0b416663ddda4f3c60f4676c660fd396  referencia-S3-
 32bb1c60d13611eed70b4ffae3a276e0e318dbee9f3d2393a3545a653e6ad741  referencia-S3-sync.json
 EOF2
 (cd "$D/entradas" && sha256sum -c ../entradas-dt028.sha256)         # 4 OK: as entradas registradas na secao 3
-C=$TCC/wt-cs3-$S7/scripts/campanha_s3_conferir.py
+C=$D/arv/cs3-$S7/scripts/campanha_s3_conferir.py
 python -I $C parametros --arquivo "$D/entradas/campanha-s3-avaliacao.json" --t-enc-pior-s 21 --sonda-replay | tail -9
 #   ... exec_teto_s 1019 ... volume_exec_mb 14 ... s3_replay_late_max 306, fusao_teto_s 72
 python -I $C controlador --arquivo "$D/entradas/controlador-avaliacao-s3.json" --hotrod-timeout-ms 2000 \

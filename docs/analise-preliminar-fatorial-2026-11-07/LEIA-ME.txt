@@ -1,0 +1,9 @@
+Consultas da analise preliminar do nucleo da avaliacao fatorial (Senior, 2026-11-07).
+Relatorio: docs/analise-preliminar-avaliacao-fatorial-2026-11-07.md. So leitura na copia do host
+(dados-vm/cs3-2026-11/fat-nucleo-previa-20261107T150934Z/campanha-s3-fatorial/); nada e gravado na copia.
+
+1. python -E -P extrai.py <dir>/extrato.json      (usa analysis/ da arvore da tag 4b96798; ~12 s, ~185 MB lidos)
+2. python -I q1_execucoes.py <dir> (e q2 a q6, q3b, q4b): cada um le <dir>/extrato.json
+   q5b_contrastes.py e q3c_forma1_ic.py precisam de python -E -P (scipy)
+3. q7_isn3_por_janela.py <dir> le os rep-001.csv das 48 F2 (~55 MB); q7b, q7c e q7d recebem nomes de execucao
+Registro de leitura no host: docs/atividade-host.txt.

@@ -1809,3 +1809,33 @@ TDD: vermelho em `f367b7e`. A suíte inteira S1..S32 do orquestrador não foi ro
 | orquestrador | `bash scripts/run-campanha-s3.test.sh SP64` | **19/0** (dry-run com as categorias; níveis depois dos seis caches; camada 3 antes e depois limpa; reposição no nó do F1; PUT recusado e leitura divergente = exit 6; arquivo inválido = exit 4) |
 | orquestrador | `bash scripts/run-campanha-s3.test.sh S1 S4 SP64` | 102/1 antes da correção do gancho `CS_LOGGERS_ARQ` no `--dry-run` (o único FAIL era o do arquivo inválido); S1 e S4 sem falha |
 | medida local | `runs/p64-log/` (`comandos.md`) | log do alvo do AC-7 sob corte: 268,3 e 263,7 MB antes, **0,09 MB** depois (n = 1) |
+
+## Integração do orquestrador fatorial e da adaptação ao AC-7 (2026-11-06, tag `int/2026-11-06-aval`)
+
+Branch `feature/controlador-integracao`, a partir de `9de2d37`. `merge --no-ff` de `feature/orquestrador-fatorial`
+(`b56b1ae`) em `9cf777a`, com o TD-022 e o P-61 provisórios da branch renumerados para TD-023 e P-65 (o TD-022 e os
+P-61 a P-64 já eram do P1-IC). Depois, `merge --no-ff` de `feature/p1ic-conferidor-analise` (`e672051`) em `04aea52`,
+que já usava os números da integração (TD-022, P-62 a P-64). Na resolução: a meta usa o `--braco` do fatorial e
+recebe `--exigir-acao-p1 AC-7` quando a fila tem braço `active` (`TEM_B`: B, PL ou AL); o controlador já recebia o
+mesmo com `TEM_B`; o `ajusta-log.sh` fica no `recriar_cluster`, depois do `cria-caches.sh` com o diretório da variante
+do braço, e vale para `pnn` e `a1`; o S34 ganhou duas asserções por braço (o `loggers.tsv` da execução com dois `PUT`
+204 por nó e a leitura de volta nos três nós). Todas as suítes rodaram na ponta `04aea52`, uma vez cada.
+
+| Suíte | Comando | Resultado |
+|---|---|---|
+| Surefire do `workload` | `mvn -q -o -T1 clean test` (em `workload/`) | **1224/0/0/1 em 174 classes** (1209 + 13 do `EsperaFusaoTest` + 2 do AC-7) |
+| `extensao-servidor` | `mvn -q -o clean test` (em `extensao-servidor/`) | **47/0/0/0 em 5 classes** |
+| `analysis` | `python -E -P -m unittest discover -s analysis` | **538 OK, 1 *skip*** (89 s); a identidade do `apuracao_v` roda e passa |
+| `analysis/test_calibracao_s3.py` em `-I` | `python3 -I -m unittest discover -s analysis -p "test_calibracao_s3.py"` | 79 testes, OK, 3 pulados |
+| Python de `scripts/` | `python3 -I -m unittest discover -s scripts -p "test_*.py"` | **150 OK**: conferir 59, conferir_ac7 10, conferir_fatorial 34, h4 11, matriz 16, matriz_fatorial 12, rebaseline_matriz 8 |
+| `ajusta-log.test.sh` | `bash scripts/ajusta-log.test.sh` | 36 PASS, 0 FAIL |
+| `cria-caches.test.sh` | `bash scripts/cria-caches.test.sh` | 26 PASS, 0 FAIL |
+| injetores | `bash scripts/inject-{crash,partition,netdegrade,jitter}.test.sh` | 141; 125 (2 SKIP); 298 (1 SKIP); 35; todos com 0 FAIL |
+| `run-campanha-s3.test.sh` completo (S1..S37, SP1IC, SP64) | `bash scripts/run-campanha-s3.test.sh` | **760 PASS, 0 FAIL** (21:33:52Z a 00:22:38Z, 10126 s), sozinha no *host*, de primeira (`runs/aval-int/suite-s3-completa.out`) |
+
+**Congelados**, iguais a `9de2d37`: `run-rebaseline.sh` `d95305fe…`, `inject-netdegrade.sh` `4ebdd8a3…`, os demais
+injetores, a lista do h4, `cria-caches.sh`, `collect-resources.sh` e os arquivos do *rebaseline*.
+
+A primeira tentativa da suíte do orquestrador (21:30:48Z) foi interrompida por mim depois de alguns segundos, porque
+outra sessão rodava `run-campanha-s3.test.sh S36` no mesmo *host*; a rodada que vale começou às 21:33:52Z, depois que
+ela terminou, sem nenhuma outra suíte ao mesmo tempo.

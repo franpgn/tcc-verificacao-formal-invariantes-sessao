@@ -6,6 +6,9 @@
 > Sem push. A VM não foi acessada; a atividade de leitura no *host* está em `docs/atividade-host.txt`.
 >
 > **Fase extra e reposições (F1 e F4): a completar.** Ainda rodando, fora do *host*. Ver a seção 8.
+>
+> **Decisões do Gestor de 2026-11-07 na seção 10:** nada daqui entra no texto oficial agora; pontos 1 a 4 aprovados;
+> explicação do efeito da A1 sobre V (ponto 3) em 10.1.
 
 ## 0. Fontes e como os números foram tirados
 
@@ -474,6 +477,78 @@ Ainda não estão no *host*. Quando o coordenador copiar, completar por execuç�
    2 de 8 na sem falha e nunca saia (R4 = 0 em 64).
 10. Nenhum efeito em CPU ou energia (A4 ×1,019 na energia por ação útil, p = 0,14); a energia do modelo é dominada pelo termo
     ocioso e a VM fica a ~5,7 % de utilização.
+
+## 10. Decisões do Gestor sobre esta pré-análise (2026-11-07, ~19:05Z)
+
+**Regra geral: nada desta pré-análise entra no texto oficial agora.** Ela orienta a análise oficial (roteiro 7.3) e a
+escrita, que só começa com todos os dados (núcleo, extra e reposições) e a análise oficial validada.
+
+Os quatro pontos de validação levados ao Gestor foram **aprovados**:
+
+1. **`exec-0037` (bloco 13, AL).** O bloco fica na análise, como manda a regra pré-registrada; a análise oficial relata
+   o resultado com ele e, como sensibilidade, sem ele; a hipótese de cérebro dividido depois do desfazer pela rota da
+   maioria fica registrada como risco do AC-7 até haver causa (item 2).
+2. **Ensaio local do achado 7.** Aprovado, **depois** que a VM terminar (um *cluster* local no *host* durante as
+   execuções disputaria o SSD, a causa dos h4 de hoje). Sequência: AC-7 aplicado → partição detectada → DELETE pela
+   maioria e no alvo; ler o `get-availability` e a lista de caches ignorados do `sessions-async` no alvo antes e depois;
+   ver se o nó isolado volta a aceitar escritas antes da fusão. Planejamento do Senior, execução do Worker
+   (branch sugerida `test/ac7-desfazer-maioria`).
+3. **A1 na escrita (explicação abaixo).** A regra principal pré-registrada continua dizendo "A1: sem melhoria" e é isso
+   que se relata; a perda permanente, desfecho secundário pré-registrado na DT-027 com Holm, é apresentada como a
+   resposta ao efeito da A1, com o mecanismo explicado. Proibido redefinir V ou trocar o desfecho principal.
+4. **p99 só das ações bem-sucedidas.** Entra como descritivo, marcado como não pré-registrado, porque o p99
+   co-principal fica preso no patamar do *backoff* (1,503–1,505 s em 47 das 48 F2).
+
+### 10.1 Por que a A1 não aparece em V (explicação aprovada pelo Gestor para o ponto 3)
+
+**O que é a A1.** Quando a partição termina, os dois lados podem ter versões diferentes da mesma sessão, e a fusão
+escolhe uma. O `PREFERRED_NON_NULL` fica com qualquer versão não vazia (pode ser a antiga); a A1
+(`PoliticaFusaoSessoes`) escolhe a versão mais avançada da sessão, por exemplo a que já registrou o logout.
+
+**O caso típico nos dados.**
+
+1. Durante a partição, o usuário faz logout pelo `isn3` (isolado). O `isn3` registra a sessão como encerrada; `isn1` e
+   `isn2` continuam com ela aberta.
+2. De 1 a 3 s depois, a sonda imediata relê a sessão pelo `isn1` e recebe `VALID`: violação de I1 (sessão encerrada
+   aceita), e o par (sid, I1) **já conta em V** nesse momento.
+3. A partição termina e há a fusão. Com o `PREFERRED_NON_NULL`, muitas vezes fica a versão aberta e o logout se perde
+   para sempre (**perda permanente**). Com a A1, fica a versão com o logout e tudo volta a ficar consistente.
+
+Como V soma **pares distintos** (sid, invariante), o mesmo problema persistindo depois da fusão não conta de novo. **V
+mede, na prática, a exposição** (sessões que o cliente viu inconsistentes durante a partição); a A1 age no estado
+final, que V não separa.
+
+| Braço | V (pares) | Sessões expostas | Perdidas de vez |
+|---|---|---|---|
+| PO (`pnn`, shadow) | 37 | 37 | 11 |
+| PL (`pnn`, active) | 16 | 16 | 9 |
+| AO (`a1`, shadow) | 36 | 36 | **0** |
+| AL (`a1`, active) | 20 (19 I1 + 1 I2 REAL sem relação com a A1) | 19 | **0** |
+
+Fonte: seções 3.2 e 3.3. Com `PREFERRED_NON_NULL`, 20 das 21 formas 1 viraram perda; com a A1, 0 de 26. Toda sid perdida
+foi exposta antes, por isso V é praticamente igual com e sem a A1 (37 contra 36).
+
+**Para a análise oficial e a escrita.** (a) A regra principal pré-registrada dá "A1: sem melhoria" e isso é relatado.
+(b) A perda permanente é secundária pré-registrada (DT-027, Holm m = 9 por efeito) e mostra o efeito da A1 (Holm
+0,035); não é número escolhido depois de ver os dados. (c) Relatam-se as duas coisas juntas, com o mecanismo acima.
+
+**Ressalva obrigatória: o resultado depende do instrumento que define V.** A sonda de *replay* está em 104 dos 109 pares;
+foi incluída antes dos dados (W-5c/W-10), então a definição oficial vale. Mas, só com os instrumentos antigos (online e
+varredura), V mediria quase só a perda permanente e as conclusões se inverteriam:
+
+| | V oficial (com a sonda) | Só online + varredura (descritivo, Q5b) |
+|---|---|---|
+| A4 (controlador) | −0,1885 por mil, p = 0,0005 | −0,029, p = 0,17 |
+| A1 (fusão) | +0,0186, p = 0,72 | −0,0915, p = 0,0068 |
+
+Não é contradição: os dois mecanismos atacam momentos diferentes do mesmo problema. **O controlador encurta a exposição
+durante a partição** (age 32 a 40 s antes da detecção do *cluster*, ao custo de erros visíveis ao cliente). **A A1
+elimina a perda depois da fusão**, sem custo medido: a troca LOGOUT → ADMIN_BLOCK prevista pelo TLC não apareceu nas 24
+execuções `a1`. O braço AL fica com os dois benefícios; interação nula (p = 0,66).
+
+**Lacuna a verificar no fechamento (coordenador).** As linhas `A1-FUSAO` (cada escolha da A1 na fusão) não estão na
+cópia; sem elas não se conta quantas vezes a A1 escolheu diferente do `PREFERRED_NON_NULL` (DT-027 §2.2). Procurar na VM
+(logs `k8s-file` dos contêineres ou pastas das execuções) antes de recriar o *cluster* de novo.
 
 ## Análise do Senior (formato da frente prática)
 

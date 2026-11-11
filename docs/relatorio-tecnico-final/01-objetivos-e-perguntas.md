@@ -376,8 +376,9 @@ objetivo, execução e ressalva. É a seção 1.1 condensada.
 - **Família de secundários (11 em vez de 9).** Conferência feita por mim com os valores-p brutos arredondados a quatro
   casas (`comparacao-principal.md`, tabela F2): com a família de 9, Holm do efeito A1 na perda permanente ≈ 0,035
   (oficial com 11: 0,043); efeito A4 na exposição ≈ 0,018 (oficial 0,0215); efeito A4 em falhas percebidas e taxa de
-  erro ≈ 0,054 (oficial 0,0684). As conclusões a 0,05 não mudam. O cálculo exato, com os valores-p sem arredondamento
-  do `comparacao-principal.json`, fica para o coordenador antes de citar números; o desvio vai ao capítulo 8.
+  erro ≈ 0,054 (oficial 0,0684). As conclusões a 0,05 não mudam. **Fechado pelo coordenador em 11/11** com os
+  valores-p sem arredondamento do `comparacao-principal.json`: 0,0352, 0,0176 e 0,0547 (validação, seção 4b). O
+  capítulo 5 usa a família de 9, e o desvio vai ao capítulo 8.
 - **Perguntas operacionais (seção 1.2).** São formulação deste relatório, não de documento aprovado pelo Gestor.
 - **Datas do TCC I.** Uso "julho de 2026" para a versão da banca, pela memória do projeto
   (`fusao-banca-tcc1-2026-11-01.md`); a data exata da defesa não foi conferida em documento.

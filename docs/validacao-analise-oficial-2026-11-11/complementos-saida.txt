@@ -1,0 +1,39 @@
+== 1. Sensibilidade sem o bloco 13 (11 blocos)
+   V por 1000               A1 0.0022 [-0.1167; 0.1211] p 0.9541 | A4 -0.1865 [-0.2747; -0.0984] p 0.0010 | inter 0.0660 [-0.1719; 0.3039] p 0.5547
+   p99 com espera           A1 1.0000 [0.9997; 1.0002] p 0.8330 | A4 1.0001 [1.0001; 1.0002] p 0.0010 | inter 1.0000 [0.9996; 1.0004] p 0.9551
+   vazao util               A1 0.9929 [0.9737; 1.0126] p 0.4297 | A4 0.9768 [0.9518; 1.0025] p 0.0713 | inter 0.9914 [0.9640; 1.0195] p 0.5215
+   falhas percebidas/1000   A1 -0.1783 [-1.0592; 0.7027] p 0.6621 | A4 4.0545 [2.8451; 5.2640] p 0.0010 | inter 0.5138 [-1.5114; 2.5390] p 0.5898
+   taxa de erro             A1 -0.0005 [-0.0029; 0.0019] p 0.6357 | A4 0.0110 [0.0078; 0.0142] p 0.0010 | inter 0.0014 [-0.0042; 0.0071] p 0.5811
+   exposicao                A1 -0.0455 [-1.0357; 0.9448] p 1.0000 | A4 -1.5909 [-2.3240; -0.8578] p 0.0039 | inter 0.4545 [-1.4542; 2.3633] p 0.6875
+   perda permanente         A1 -0.9091 [-1.3552; -0.4630] p 0.0039 | A4 -0.0909 [-0.4832; 0.3013] p 0.8125 | inter 0.1818 [-0.6027; 0.9663] p 0.8125
+   IU sem bloco 13: A1 p_IU 1.0000 Holm 1.0000 | A4 p_IU 0.0010 Holm 0.0020; limite sup. p99 A4 1.0002
+
+== 2. p99 so das acoes bem-sucedidas (descritivo, nao pre-registrado)
+   PO: p99 sucesso media 0.520 s (min 0.005, max 0.753) | p99 co-principal media 1.504 s (min 1.503, max 1.505)
+   PL: p99 sucesso media 0.752 s (min 0.751, max 0.753) | p99 co-principal media 1.504 s (min 1.504, max 1.505)
+   AO: p99 sucesso media 0.505 s (min 0.006, max 0.753) | p99 co-principal media 1.504 s (min 1.503, max 1.505)
+   AL: p99 sucesso media 0.536 s (min 0.006, max 0.753) | p99 co-principal media 1.442 s (min 0.755, max 1.505)
+   efeitos (razao): A1 0.4720 [0.2147; 1.0375] p 0.0796 | A4 2.0383 [0.5272; 7.8802] p 0.2773 | inter 0.4128 [0.0408; 4.1726] p 0.4043
+   execucoes F2 com p99 co-principal entre 1,50 e 1,51 s: 47 de 48
+
+== 3. V sem a sonda de replay (so auditor online + varredura; descritivo)
+   A1 -0.0915 [-0.1438; -0.0391] p 0.0068 | A4 -0.0286 [-0.0682; 0.0110] p 0.1699 | inter 0.0404 [-0.0992; 0.1801] p 0.5947
+
+== 4. Pares de V por invariante e por origem, por braco (12 blocos)
+   PO: por invariante {'I1': 37} | pares com deteccao por origem {'sonda': 35, 'online': 3, 'varredura': 11} | pares so pela sonda 23 | sessoes perdidas sem exposicao antes 0
+   PL: por invariante {'I1': 16} | pares com deteccao por origem {'sonda': 16, 'varredura': 9} | pares so pela sonda 7 | sessoes perdidas sem exposicao antes 0
+   AO: por invariante {'I1': 36} | pares com deteccao por origem {'sonda': 35, 'online': 3} | pares so pela sonda 33 | sessoes perdidas sem exposicao antes 0
+   AL: por invariante {'I1': 19, 'I2_REAL': 1} | pares com deteccao por origem {'sonda': 18, 'online': 2} | pares so pela sonda 18 | sessoes perdidas sem exposicao antes 0
+
+== 5. Divergencia persistente, delta_rec e delta_conv (oficial, y_por_bloco)
+   PO: blocos com divergencia persistente [('12', 'exec-0034-ASYNC-F2-PO')]
+   PL: blocos com divergencia persistente []
+   AO: blocos com divergencia persistente []
+   AL: blocos com divergencia persistente []
+   delta_rec_s media por braco: {'PO': 43.579, 'PL': 43.799, 'AO': 43.682, 'AL': 40.746}
+   delta_conv_s media por braco: {'PO': 0.012, 'PL': 0.012, 'AO': 0.012, 'AL': 0.012}
+   ASYNC-F1 divergencia persistente d_b: {'28': 1.0, '29': 0.0, '30': 0.0}
+      divergencia persistente em exec-0081-ASYNC-F1-B
+   ASYNC-F3 divergencia persistente d_b: {'11': 0.0, '2': 0.0, '5': 0.0, '6': 0.0}
+   ASYNC-F4 divergencia persistente d_b: {'21': 0.0, '22': 0.0, '25': 0.0, '32': 0.0}
+   ASYNC-none divergencia persistente d_b: {'1': 0.0, '10': 0.0, '4': 0.0, '7': 0.0}

@@ -1,0 +1,125 @@
+== 1. Valores por execucao (F2) e diferencas por bloco (celulas de 2 bracos)
+   ASYNC-F1    taxa_violacoes_por_1000      n=3   maior dif=0 OK
+   ASYNC-F1    acao_s3_p99_com_espera       n=3   maior dif=0 OK
+   ASYNC-F1    acao_s3_p99_sem_espera       n=3   maior dif=0 OK
+   ASYNC-F1    vazao_util                   n=3   maior dif=0 OK
+   ASYNC-F1    falhas_percebidas_por_1000   n=3   maior dif=0 OK
+   ASYNC-F1    taxa_erro                    n=3   maior dif=0 OK
+   ASYNC-F1    exposicao_janela_sids        n=3   maior dif=0 OK
+   ASYNC-F1    perda_permanente_sids        n=3   maior dif=0 OK
+   ASYNC-F1    divergencia_persistente      n=3   maior dif=0 OK
+   ASYNC-F1    evento_p99:Validate          n=3   maior dif=2.22e-16 OK
+   ASYNC-F2    taxa_violacoes_por_1000      n=48  maior dif=0 OK
+   ASYNC-F2    acao_s3_p99_com_espera       n=48  maior dif=0 OK
+   ASYNC-F2    acao_s3_p99_sem_espera       n=48  maior dif=0 OK
+   ASYNC-F2    vazao_util                   n=48  maior dif=0 OK
+   ASYNC-F2    falhas_percebidas_por_1000   n=48  maior dif=0 OK
+   ASYNC-F2    taxa_erro                    n=48  maior dif=0 OK
+   ASYNC-F2    exposicao_janela_sids        n=48  maior dif=0 OK
+   ASYNC-F2    perda_permanente_sids        n=48  maior dif=0 OK
+   ASYNC-F2    divergencia_persistente      n=48  maior dif=0 OK
+   ASYNC-F2    evento_p99:Validate          n=48  maior dif=1.19e-16 OK
+   ASYNC-F3    taxa_violacoes_por_1000      n=4   maior dif=0 OK
+   ASYNC-F3    acao_s3_p99_com_espera       n=4   maior dif=2.22e-16 OK
+   ASYNC-F3    acao_s3_p99_sem_espera       n=4   maior dif=2.22e-16 OK
+   ASYNC-F3    vazao_util                   n=4   maior dif=0 OK
+   ASYNC-F3    falhas_percebidas_por_1000   n=4   maior dif=0 OK
+   ASYNC-F3    taxa_erro                    n=4   maior dif=0 OK
+   ASYNC-F3    divergencia_persistente      n=4   maior dif=0 OK
+   ASYNC-F3    evento_p99:Validate          n=4   maior dif=0 OK
+   ASYNC-F4    taxa_violacoes_por_1000      n=4   maior dif=0 OK
+   ASYNC-F4    acao_s3_p99_com_espera       n=4   maior dif=3.33e-16 OK
+   ASYNC-F4    acao_s3_p99_sem_espera       n=4   maior dif=3.33e-16 OK
+   ASYNC-F4    vazao_util                   n=4   maior dif=0 OK
+   ASYNC-F4    falhas_percebidas_por_1000   n=4   maior dif=0 OK
+   ASYNC-F4    taxa_erro                    n=4   maior dif=0 OK
+   ASYNC-F4    exposicao_janela_sids        n=4   maior dif=0 OK
+   ASYNC-F4    perda_permanente_sids        n=4   maior dif=0 OK
+   ASYNC-F4    divergencia_persistente      n=4   maior dif=0 OK
+   ASYNC-F4    evento_p99:Validate          n=4   maior dif=1.11e-16 OK
+   ASYNC-none  taxa_violacoes_por_1000      n=4   maior dif=0 OK
+   ASYNC-none  acao_s3_p99_com_espera       n=4   maior dif=1.18e-16 OK
+   ASYNC-none  acao_s3_p99_sem_espera       n=4   maior dif=1.18e-16 OK
+   ASYNC-none  vazao_util                   n=4   maior dif=0 OK
+   ASYNC-none  falhas_percebidas_por_1000   n=4   maior dif=0 OK
+   ASYNC-none  taxa_erro                    n=4   maior dif=0 OK
+   ASYNC-none  divergencia_persistente      n=4   maior dif=0 OK
+   ASYNC-none  evento_p99:Validate          n=4   maior dif=2.15e-16 OK
+
+== 2. Efeitos da F2 (oficial x recalculo)
+   taxa_violacoes_por_1000      A1        est 0.0186 (of 0.0186) IC [-0.0946; 0.1317] p 0.7173 (of 0.7173) OK
+   taxa_violacoes_por_1000      A4        est -0.1885 (of -0.1885) IC [-0.2681; -0.1089] p 0.0005 (of 0.0005) OK
+   taxa_violacoes_por_1000      interacao est 0.0450 (of 0.0450) IC [-0.1744; 0.2645] p 0.6602 (of 0.6602) OK
+   acao_s3_p99_com_espera       A1        est 0.9717 (of 0.9717) IC [0.9122; 1.0351] p 0.4165 (of 0.4165) OK
+   acao_s3_p99_com_espera       A4        est 0.9718 (of 0.9718) IC [0.9122; 1.0353] p 1.0000 (of 1.0000) OK
+   acao_s3_p99_com_espera       interacao est 0.9441 (of 0.9441) IC [0.8319; 1.0715] p 0.5229 (of 0.5229) OK
+   acao_s3_p99_sem_espera       A1        est 0.9717 (of 0.9717) IC [0.9122; 1.0351] p 0.4165 (of 0.4165) OK
+   acao_s3_p99_sem_espera       A4        est 0.9718 (of 0.9718) IC [0.9122; 1.0353] p 1.0000 (of 1.0000) OK
+   acao_s3_p99_sem_espera       interacao est 0.9441 (of 0.9441) IC [0.8319; 1.0715] p 0.5229 (of 0.5229) OK
+   vazao_util                   A1        est 0.9948 (of 0.9948) IC [0.9769; 1.0131] p 0.5361 (of 0.5361) OK
+   vazao_util                   A4        est 0.9823 (of 0.9823) IC [0.9567; 1.0086] p 0.1650 (of 0.1650) OK
+   vazao_util                   interacao est 1.0092 (of 1.0092) IC [0.9632; 1.0573] p 0.7437 (of 0.7437) OK
+   falhas_percebidas_por_1000   A1        est -0.8451 (of -0.8451) IC [-2.5141; 0.8238] p 0.3311 (of 0.3311) OK
+   falhas_percebidas_por_1000   A4        est 3.3038 (of 3.3038) IC [1.3239; 5.2836] p 0.0068 (of 0.0068) OK
+   falhas_percebidas_por_1000   interacao est -1.0384 (of -1.0384) IC [-4.9121; 2.8354] p 0.7056 (of 0.7056) OK
+   taxa_erro                    A1        est -0.0024 (of -0.0024) IC [-0.0072; 0.0023] p 0.3179 (of 0.3179) OK
+   taxa_erro                    A4        est 0.0089 (of 0.0089) IC [0.0034; 0.0144] p 0.0068 (of 0.0068) OK
+   taxa_erro                    interacao est -0.0029 (of -0.0029) IC [-0.0137; 0.0079] p 0.7100 (of 0.7100) OK
+   exposicao_janela_sids        A1        est 0.0833 (of 0.0833) IC [-0.8535; 1.0202] p 0.9219 (of 0.9219) OK
+   exposicao_janela_sids        A4        est -1.5833 (of -1.5833) IC [-2.2446; -0.9220] p 0.0020 (of 0.0020) OK
+   exposicao_janela_sids        interacao est 0.3333 (of 0.3333) IC [-1.4085; 2.0751] p 0.7656 (of 0.7656) OK
+   perda_permanente_sids        A1        est -0.8333 (of -0.8333) IC [-1.2688; -0.3979] p 0.0039 (of 0.0039) OK
+   perda_permanente_sids        A4        est -0.0833 (of -0.0833) IC [-0.4374; 0.2708] p 0.8125 (of 0.8125) OK
+   perda_permanente_sids        interacao est 0.1667 (of 0.1667) IC [-0.5415; 0.8749] p 0.8125 (of 0.8125) OK
+   divergencia_persistente      A1        est -0.0417 (of -0.0417) IC [-0.1334; 0.0500] p 1.0000 (of 1.0000) OK
+   divergencia_persistente      A4        est -0.0417 (of -0.0417) IC [-0.1334; 0.0500] p 1.0000 (of 1.0000) OK
+   divergencia_persistente      interacao est 0.0833 (of 0.0833) IC [-0.1001; 0.2667] p 1.0000 (of 1.0000) OK
+   evento_p99:Validate          A1        est 0.8542 (of 0.8542) IC [0.4032; 1.8094] p 0.7759 (of 0.7759) OK
+   evento_p99:Validate          A4        est 0.8681 (of 0.8681) IC [0.4091; 1.8418] p 0.8809 (of 0.8809) OK
+   evento_p99:Validate          interacao est 0.3266 (of 0.3266) IC [0.0871; 1.2248] p 0.2109 (of 0.2109) OK
+
+== 3. Regra intersecao-uniao e Holm
+   A1: recalculo p_IU 1.0000 Holm 1.0000 sem-melhoria | oficial p_IU 1.0000 Holm 1.0000 sem-melhoria
+      p_V 0.7173 p_L(nao-inferioridade p99) 0.001213 H_V False H_L True vazao NI True
+   A4: recalculo p_IU 0.0012 Holm 0.0025 melhoria | oficial p_IU 0.0012 Holm 0.0025 melhoria
+      p_V 0.0005 p_L(nao-inferioridade p99) 0.001235 H_V True H_L True vazao NI True
+   Holm dos secundarios (recalculo; cpu, energia, delta_rec e delta_conv com p oficial):
+      A1 acao_s3_p99_sem_espera               1.0000 (oficial 1.0000)
+      A1 divergencia_persistente              1.0000 (oficial 1.0000)
+      A1 exposicao_janela_sids                1.0000 (oficial 1.0000)
+      A1 falhas_percebidas_por_1000           1.0000 (oficial 1.0000)
+      A1 perda_permanente_sids                0.0430 (oficial 0.0430)
+      A1 taxa_erro                            1.0000 (oficial 1.0000)
+      A1 evento_p99:Validate                  1.0000 (oficial 1.0000)
+      A1 cpu_por_1000_uteis                   1.0000 (oficial 1.0000)
+      A1 energia_total_j_por_1000_uteis:0.3   1.0000 (oficial 1.0000)
+      A1 delta_rec_s                          1.0000 (oficial 1.0000)
+      A1 delta_conv_s                         1.0000 (oficial 1.0000)
+      A4 acao_s3_p99_sem_espera               1.0000 (oficial 1.0000)
+      A4 divergencia_persistente              1.0000 (oficial 1.0000)
+      A4 exposicao_janela_sids                0.0215 (oficial 0.0215)
+      A4 falhas_percebidas_por_1000           0.0684 (oficial 0.0684)
+      A4 perda_permanente_sids                1.0000 (oficial 1.0000)
+      A4 taxa_erro                            0.0684 (oficial 0.0684)
+      A4 evento_p99:Validate                  1.0000 (oficial 1.0000)
+      A4 cpu_por_1000_uteis                   1.0000 (oficial 1.0000)
+      A4 energia_total_j_por_1000_uteis:0.3   1.0000 (oficial 1.0000)
+      A4 delta_rec_s                          1.0000 (oficial 1.0000)
+      A4 delta_conv_s                         1.0000 (oficial 1.0000)
+
+== 4. Medias por braco na F2 (recalculo)
+   taxa_violacoes_por_1000      PO 0.3776 PL 0.1666 AO 0.3736 AL 0.2077
+   perda_permanente_sids        PO 0.9167 PL 0.7500 AO 0.0000 AL 0.0000
+   exposicao_janela_sids        PO 3.0833 PL 1.3333 AO 3.0000 AL 1.5833
+   falhas_percebidas_por_1000   PO 22.7134 PL 26.5363 AO 22.3874 AL 25.1720
+   taxa_erro                    PO 0.0655 PL 0.0759 AO 0.0645 AL 0.0720
+   acao_s3_p99_com_espera       PO 1.5040 PL 1.5042 AO 1.5041 AL 1.4418
+   vazao_util                   PO 31.8281 PL 31.1279 AO 31.5378 AL 31.1373
+   acoes do controlador executadas na F2: {'PO': {}, 'PL': {'APLICAR AC-7': 12, 'REVERTER AC-7': 12}, 'AO': {}, 'AL': {'APLICAR AC-7': 12, 'REVERTER AC-7': 12}}
+   totais F2 (pares V, acoes, perda permanente, exposicao): {'PO': (37, 97675, 11, 37), 'PL': (16, 95898, 9, 16), 'AO': (36, 96741, 0, 36), 'AL': (20, 95780, 0, 19)}
+
+== 5. Celulas descritivas
+   ASYNC-F1: V pares A=0 B=0; acoes A=25960 B=26137; acoes do controlador A={} B={}; p99 B/A 1.000 IC [0.9998163550813601, 1.0002527299640587]
+   ASYNC-F3: V pares A=0 B=0; acoes A=39004 B=38823; acoes do controlador A={} B={}; p99 B/A 0.981 IC [0.8885376612466928, 1.0833527424173806]
+   ASYNC-F4: V pares A=0 B=0; acoes A=38778 B=39599; acoes do controlador A={} B={}; p99 B/A 0.624 IC [0.38075916303778734, 1.0226955185739734]
+   ASYNC-none: V pares A=0 B=0; acoes A=49143 B=48668; acoes do controlador A={} B={}; p99 B/A 0.979 IC [0.9504537933810906, 1.0082348298080874]

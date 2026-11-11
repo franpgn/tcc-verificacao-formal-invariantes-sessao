@@ -20,7 +20,7 @@ A inicialização ocorre via `cd cluster && podman-compose up -d`. O *health che
 | **T1** Modo de replicação | `cluster/infinispan-cluster.xml` | `sessions`/`counters` em `mode="SYNC"` (controle) e os irmãos `sessions-async`/`counters-async` em `mode="ASYNC"` (alvo), implementado em B-42.1 (antigo B-03); o *workload* escolhe o par por `--replication sync\|async` (padrão `sync`), resolvido em `PerfilReplicacao.java` |
 | **T2** Número de nós: 3 | `cluster/podman-compose.yml` | Serviços `isn1`, `isn2`, `isn3` |
 | **T3** `numOwners` = 2 | `cluster/infinispan-cluster.xml` | `owners="2"` em ambos os *caches* |
-| **T4** `numSegments` | `cluster/infinispan-cluster.xml` | `segments="64"` (valor herdado do esqueleto; T4 da tabela cita 256 como padrão Infinispan; o esqueleto adota 64 para reduzir tempo de *state transfer* em ambiente com três nós — desvio justificado a registrar em `docs/decisoes-tecnicas.md` em B-04 ou ajustar para 256 se o autor preferir aderência estrita à Tabela 1) |
+| **T4** `numSegments` | `cluster/infinispan-cluster.xml` | `segments="64"` em todos os *caches* (valor herdado do esqueleto de 25/05; T4 da tabela cita 256, o padrão do Infinispan). **Decidido em 2026-10-27 (DT-016):** 64 é mantido em todas as execuções (junho, gate, *rebaseline*) por comparabilidade, e o afastamento de T4 é declarado. A justificativa informal do esqueleto ("menos *state transfer* com 3 nós") não tem fonte nem medição e não é usada como argumento |
 | **T15** MTU | herdado da configuração de rede do Podman (*bridge* default 1500) | sem ajuste explícito; equivale ao parâmetro T15 |
 | **T16** Detecção de falha FD\_ALL3 | herdada do *stack* JGroups padrão (`default-jgroups-tcp.xml`) | `<stack-file name="cluster-stack" path="default-jgroups-tcp.xml"/>` aplica os defaults (8000 ms / 40000 ms) |
 | **T17** Falha F1 (*crash*) | `scripts/inject-crash.sh` (modo padrão `silencioso`, 2026-10-28): cala o `eth0` de `isn2` no *netns* dele e mata o *container* com SIGKILL logo em seguida; 60 s depois, `podman start`. A pilha (`cluster/jgroups-tcp.xml`) tem **FD\_SOCK2** além do FD\_ALL3: o FD\_SOCK2 suspeita do vizinho assim que a conexão TCP com ele fecha, e um processo morto por SIGKILL tem os *sockets* fechados pelo *kernel* (FIN/RST) enquanto o *netns* existe. Sem o isolamento prévio a queda seria detectada em ~1 s pelo FD\_SOCK2 (modo `kill`); com ele nenhum FIN sai e só o FD\_ALL3 (40 s + 1 s do VERIFY\_SUSPECT2) decide, como em T16. O F1 de junho (`podman stop`, saída ordenada com *leave*) continua disponível como `--modo stop` | *smoke* local de 2026-10-28: Δdet de 36,5 a 41,9 s no modo `silencioso` e de ~1 s nos modos `kill` e `stop` (`docs/relatorio-f1-silencioso-2026-10-27.md`); falta o ensaio da VM |
@@ -102,7 +102,7 @@ state-transfer: enabled=true, timeout=60000
 |---|---|---|
 | Perfil `DIST_ASYNC` | implementado em B-42.1 (antigo B-03): *caches* `sessions-async` e `counters-async` (`mode="ASYNC"`, mesmos `owners`, `segments`, `partition-handling` e `merge-policy` de `sessions`/`counters`, conferidos por `ClusterXmlIrmaosTest`); seleção por `--replication async`. Na VM só depois de S7 | `feature/b42-1-perfil-async` |
 | Stack JGroups customizado (parâmetros explícitos de FD\_ALL3) | a decidir | — |
-| Pacote `numSegments=256` alinhado ao default Infinispan | a decidir (vide T4) | — |
+| Pacote `numSegments=256` alinhado ao default Infinispan | descartado (DT-016, 2026-10-27: 64 mantido) | — |
 
 ## Como subir o *cluster* localmente
 
@@ -270,5 +270,5 @@ done
 
 ## Decisões a registrar em `docs/decisoes-tecnicas.md`
 
-- T4: aceitar `numSegments=64` do esqueleto ou ajustar para 256.
+- T4: resolvido em 2026-10-27 pela DT-016 (`numSegments=64` mantido, desvio declarado).
 - Persistir credenciais `admin/infinispan` por enquanto; revisar para variável de ambiente em B-05.

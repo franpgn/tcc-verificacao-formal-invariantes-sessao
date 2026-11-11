@@ -864,6 +864,61 @@ correspondente adicionado em `Mesclar` (`spec/SessionStore.tla`, commit `b7d8e0a
   (3) Pergunta aberta Q-3: isso é intencional no domínio?
 - **Status:** `ACEITO` (D1); registrado no catálogo `docs/catalogo-operacao-falha-invariante.md`.
 
+## 2026-10-27 — S1 do gate v4 na VM: desligamento abrupto do *host* em 18/10
+
+> Achado do S1 (`docs/relatorio-s1-2026-10-27.md`, `6834311`) e causa fechada na V-S1
+> (`docs/validacao-v-s1-2026-10-27.md`, `012a621`), ambos na branch `test/b29-gate-v4`. Registrado
+> aqui por decisão do Gestor (P-4 da V-S1, 27/10), na branch `docs/plano-implementacao-controlador`,
+> que leva este arquivo para a integração junto com o pré-registro do *rebaseline*.
+
+### P-28 — o *host* Windows caiu sem desligamento ordenado em 2026-10-18 07:49:35 UTC; a VM ficou fora até 2026-10-20 16:31 UTC, o *cluster* do gate v3 perdeu o histórico e o kernel da VM mudou
+
+- **Sintoma (S1, 27/10).** Os três contêineres em `created`, `Pid 0`, `RestartPolicy` vazia, `StartedAt` de 16/10 (o da recriação
+  R4 de 16/10 08:54:38–41). O *boot* anterior da VM termina em 18/10 07:49:49 UTC sem linha de desligamento ordenado; não há
+  `ISPN080002` depois de 16/10 08:54, e o último `health_status` é de 07:49:49. Kernel `6.8.0-147-generic`, contra
+  `6.8.0-124-generic` nas REP=1..3, G-5 e G-6.
+- **Causa (V-S1 seção 3, leitura só de eventos do Windows).** `Kernel-Power 41` em 2026-10-20 13:31:14 local ("rebooted without
+  cleanly shutting down first"; `BugcheckCode=0`, `PowerButtonTimestamp=0`, `SleepInProgress=0`) e `EventLog 6008` ("The previous
+  system shutdown at 04:49:35 on 18/10/2026 was unexpected", 07:49:35 UTC). Sem `WER-SystemErrorReporting 1001`. O *host* voltou
+  em 2026-10-20T16:31:04Z e a VM deu *boot* às 16:31:46Z (`AutomaticStartAction` ativo). Conclusão: **o *host* caiu** (perda de
+  energia ou travamento duro, sem tela azul nem botão), não a VM. O 6008 usa o último registro periódico do *host* e pode ficar
+  alguns segundos antes do instante real; a VM registrou eventos até 07:49:49.
+- **Efeitos.**
+  1. O *cluster* com histórico (uma partição e um *merge* acumulados desde 16/10) se perdeu. A pergunta da REP=4B (histórico
+     contra coleta pesada) deixou de ter resposta com os meios atuais.
+  2. Os três contêineres guardam `___global.lck` e `___global.state` de 16/10 08:54:4x na camada gravável
+     (`/opt/infinispan/server/data/`), resíduo do desligamento sem `ISPN080002`. O efeito no Infinispan 15.0.21 não foi verificado.
+  3. O kernel foi trocado por `unattended-upgrade` (`APT::Periodic::Unattended-Upgrade "1"`, timer `apt-daily-upgrade` ativo).
+     `uname -r` passa a ser covariável.
+  4. A V-S1 não registra perda de brutos. Os 4 caminhos não versionados da ressalva R-4 (brutos da REP=3/R4) continuam na VM.
+- **Decisões (Gestor, 27/10, V-S1 P-1..P-3, P-5, P-6).** *Cluster* recriado com o XML atual da v4 como preâmbulo do S2. S4
+  redefinida como REP=4R (réplica da célula da REP=3). REP=2 (188 s) fica como limitação declarada; REP=5 dispensada. Parada (h)
+  por `boot_id`/`StartedAt` no *rebaseline* (`docs/pre-registro-rebaseline-complemento-1-2026-10-27.md`, item (a)), sem política
+  de reinício nos contêineres. Registro em `docs/decisoes-tecnicas.md`, seção "Decisões do Gestor sobre a V-S1".
+- **Mitigação (P-6, aprovada).** *Host*: alimentação conferida, suspensão e hibernação desligadas nas noites, Windows Update
+  pausado na janela da campanha, `AutomaticStopAction=ShutDown` na VM. VM: `apt-mark hold` do kernel e `unattended-upgrades`
+  pausado durante a campanha, aplicados numa sessão de VM aprovada antes do piloto.
+- **Recorrência em 2026-10-28 (S4, V-S4 P-7).** O *host* caiu de novo durante a primeira tentativa do S4: a execução
+  `vm-20261028T063554Z` ficou abortada (`wt-gate-v4/runs/vm-s4-2026-10-28/vm-20261028T063554Z.abortada-host-crash/`) e o S4 foi
+  refeito em `vm-20261028T070600Z`. Pelo 6008 a queda foi às 03:35 local (06:35 UTC); `Kernel-Power 41` às 03:38:27 local com
+  `BugcheckCode=0x154` (`UNEXPECTED_STORE_EXCEPTION`), WER 1001 às 03:39:12 com *minidump*
+  `C:\WINDOWS\Minidumps\102826-88640-01.dmp`. Na VM, `journalctl -b -1 -k` e `-p warning` desde 06:34 UTC vieram vazios
+  ("-- No entries --", `journal-b-1-kernel-warning-pos-queda.log`): a VM não registrou nada antes de cair. Depois do *boot*, os
+  contêineres ficaram em `Created` e o *netns* foi recriado, como em 18/10.
+- **Histórico do *host* (V-S4, seção "Host", `host-eventos-desligamentos.log`, leitura só de eventos do Windows em
+  2026-10-28T07:33Z).** 34 `Kernel-Power 41` desde 01/08, **17 desde 01/09**. Só 2 (agosto) têm `PowerButtonTimestamp`. Só 2 têm
+  *bugcheck*: 0x1CA em 2026-09-13 21:24:43 local (*dump* `C:\WINDOWS\MEMORY.DMP`) e 0x154 em 2026-10-28; os demais têm
+  `BugcheckCode=0`. Rajadas em 06/08 (8 em ~2 h) e 27/09 (8 em ~10 h). Pelo 6008, ao menos 4 quedas de madrugada (12/09 01:15,
+  08/10 02:21, 18/10 04:49, 28/10 03:35, local). 0 eventos WHEA desde 01/08. Hardware: i5-14600KF, MSI PRO H610M-G DDR4, BIOS 1.O0
+  de 31/07/2025.
+- **Decisão do Gestor (2026-10-28, tarde).** O Gestor atribui os desligamentos abruptos do *host* a quedas de energia na região e
+  decidiu que não serão feitas verificações de hardware (*dumps*, *microcode*, *memtest*). Registrado sem contestar: os eventos de
+  13/09 (0x1CA) e de 28/10 (0x154) têm *bugcheck* registrado. Consequência operacional: as salvaguardas das campanhas são a parada
+  (h) por `boot_id`/`StartedAt` (complemento 1, item (a), checklist manual da seção 1.3) e a DT-014 (execução interrompida). Registro
+  em `docs/decisoes-tecnicas.md`, seção "Decisões do Gestor de 2026-10-28 (tarde)".
+- **Status:** `ABERTO-MITIGADO`. Fecha quando as medidas da P-6 estiverem aplicadas e conferidas nos brutos (leitura elevada de
+  `Get-VM tcc-f3` e saída de `apt-mark showhold` na VM).
+
 ## 2026-11-05 — W-2a (B-44.2), atuador REST do *cluster*
 
 > Numeração: P-29..P-35 estão na branch `docs/b44-1-reconfiguracao-infinispan`; estas entradas começam em P-36.

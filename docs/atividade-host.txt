@@ -1,0 +1,16 @@
+# Atividade do host durante a analise preliminar (Senior), 2026-11-07
+# Formato: inicio_utc | fim_utc | comando | volume lido aproximado
+# So comandos que leem muitos arquivos da copia do nucleo entram aqui.
+2026-11-07T18:24:44Z | 2026-11-07T18:24:45Z | python extrai.py (teste, 2 execucoes do nucleo: execucao.json, trilhas, rep-001.csv, s3-acoes, recursos) | ~6 MB
+2026-11-07T18:25:04Z | 2026-11-07T18:25:17Z | python extrai.py (64 execucoes do nucleo: json, trilhas, observaveis, rep-001.csv, s3-acoes, recursos, varredura, violacoes) | ~185 MB lidos da copia, em cache | 1 JSON no scratchpad
+2026-11-07T18:28:26Z | 2026-11-07T18:28:26Z | python bins.py (rep-001.csv de exec-0037 e exec-0038) | ~2,3 MB
+2026-11-07T18:28:33Z | 2026-11-07T18:28:33Z | python bins.py (rep-001.csv de exec-0037 e exec-0038) | ~2,3 MB
+2026-11-07T18:29:37Z | 2026-11-07T18:29:37Z | python e37.py (rep-001.csv de exec-0037 e exec-0038) | ~2,3 MB
+2026-11-07T18:32:27Z | 2026-11-07T18:32:27Z | python (rep-001.csv de exec-0034, sid divergente) | ~1,1 MB
+2026-11-07T18:33:21Z | 2026-11-07T18:33:21Z | python (s3-acoes e rep-001.csv de exec-0011, caso I2 REAL) | ~2,4 MB
+2026-11-07T18:34:09Z | 2026-11-07T18:34:09Z | python (rep-001.csv de exec-0059, logout tardio no isolado) | ~1,1 MB
+2026-11-07T18:34:26Z | 2026-11-07T18:34:26Z | python (rep-001.csv de exec-0059, eventos do isn3 de +55 a +80 s) | ~1,1 MB
+2026-11-07T18:34:54Z | 2026-11-07T18:34:54Z | python isn3ok.py (rep-001.csv das 48 F2: operacoes do isn3 por janela) | ~55 MB, em cache
+2026-11-07T18:42:36Z | 2026-11-07T18:42:36Z | python (rep-001.csv de exec-0037, releituras das sids) | ~1,1 MB
+# fim da analise preliminar: 2026-11-07T18:43:02Z; nenhuma leitura grande depois desta linha
+# nota: leituras pequenas (cada uma < 2 MB: json, stdout, uma trilha, um s3-acoes) entre 18:18Z e 18:43Z nao foram listadas uma a uma; a linha de 18:28:26Z falhou por erro de sintaxe antes de ler

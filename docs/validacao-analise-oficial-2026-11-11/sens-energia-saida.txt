@@ -1,0 +1,22 @@
+steal (usec) do 1o ao ultimo ponto valido na janela, por execucao: valores distintos = [0]
+execucoes com steal oficial None: 41 | minimo de amostras na janela: 299
+cpu_por_1000_uteis                   4 blocos (oficial)         A1        razao 1.0033 IC [0.9574; 1.0513] p 0.8750 | oficial 1.0033 p 0.8750
+cpu_por_1000_uteis                   4 blocos (oficial)         A4        razao 1.0376 IC [0.9609; 1.1205] p 0.3750 | oficial 1.0376 p 0.3750
+cpu_por_1000_uteis                   4 blocos (oficial)         interacao razao 0.9685 IC [0.8756; 1.0711] p 0.5000 | oficial 0.9685 p 0.5000
+cpu_por_1000_uteis                   12 blocos (sensibilidade)  A1        razao 1.0061 IC [0.9865; 1.0261] p 0.5029
+cpu_por_1000_uteis                   12 blocos (sensibilidade)  A4        razao 1.0278 IC [0.9973; 1.0593] p 0.0752
+cpu_por_1000_uteis                   12 blocos (sensibilidade)  interacao razao 0.9925 IC [0.9561; 1.0302] p 0.6641
+energia_total_j_por_1000_uteis:0.3   4 blocos (oficial)         A1        razao 1.0001 IC [0.9495; 1.0533] p 1.0000 | oficial 1.0001 p 1.0000
+energia_total_j_por_1000_uteis:0.3   4 blocos (oficial)         A4        razao 1.0237 IC [0.9447; 1.1094] p 0.3750 | oficial 1.0237 p 0.3750
+energia_total_j_por_1000_uteis:0.3   4 blocos (oficial)         interacao razao 0.9658 IC [0.8017; 1.1635] p 0.7500 | oficial 0.9658 p 0.7500
+energia_total_j_por_1000_uteis:0.3   12 blocos (sensibilidade)  A1        razao 1.0053 IC [0.9873; 1.0236] p 0.5269
+energia_total_j_por_1000_uteis:0.3   12 blocos (sensibilidade)  A4        razao 1.0191 IC [0.9925; 1.0465] p 0.1421
+energia_total_j_por_1000_uteis:0.3   12 blocos (sensibilidade)  interacao razao 0.9911 IC [0.9493; 1.0347] p 0.7476
+energia_total_j_por_1000_uteis:0.5   4 blocos (oficial)         A1        razao 0.9998 IC [0.9486; 1.0539] p 1.0000 | oficial 0.9998 p 1.0000
+energia_total_j_por_1000_uteis:0.5   4 blocos (oficial)         A4        razao 1.0227 IC [0.9429; 1.1093] p 0.3750 | oficial 1.0227 p 0.3750
+energia_total_j_por_1000_uteis:0.5   4 blocos (oficial)         interacao razao 0.9656 IC [0.7942; 1.1739] p 0.7500 | oficial 0.9656 p 0.7500
+energia_total_j_por_1000_uteis:0.5   12 blocos (sensibilidade)  A1        razao 1.0052 IC [0.9872; 1.0236] p 0.5327
+energia_total_j_por_1000_uteis:0.5   12 blocos (sensibilidade)  A4        razao 1.0185 IC [0.9920; 1.0458] p 0.1558
+energia_total_j_por_1000_uteis:0.5   12 blocos (sensibilidade)  interacao razao 0.9910 IC [0.9475; 1.0365] p 0.7495
+energia J por 1000 uteis (0,3), media por braco, 12 blocos: {'PO': np.float64(1934.4), 'PL': np.float64(1980.5), 'AO': np.float64(1954.5), 'AL': np.float64(1983.8)}
+CPU-s por 1000 uteis, media por braco, 12 blocos: {'PO': np.float64(7.182), 'PL': np.float64(7.408), 'AO': np.float64(7.257), 'AL': np.float64(7.426)}

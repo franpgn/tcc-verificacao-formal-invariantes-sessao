@@ -1,0 +1,12 @@
+rotulo=I3-corte-async-com cenario=corte replicacao=async acao=com alvo=isn3 coordenador=isn1 semente=53001
+== 2026-11-05T09:37:02.800Z carga-inicio
+== 2026-11-05T09:37:33.042Z pre-corte saude-alvo=HEALTHY
+== 2026-11-05T09:37:35.041Z corte isn3
+== 2026-11-05T09:37:40.293Z pre-acao saude-alvo=HEALTHY (N-11)
+== 2026-11-05T09:37:40.413Z ac5-pedido
+== 2026-11-05T09:37:46.953Z ac5-retorno
+== 2026-11-05T09:38:47.407Z cura-dispensada (isn3 parado)
+== 2026-11-05T09:38:48.364Z religado-para-a-leitura-final isn3
+exit=0
+== 2026-11-05T09:39:06.801Z carga-fim
+pronto I3-corte-async-com

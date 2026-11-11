@@ -1,0 +1,8 @@
+rotulo=I4-semcorte-async-sem cenario=semcorte replicacao=async acao=sem alvo=isn3 coordenador=isn1 semente=54001
+== 2026-11-05T09:30:45.816Z carga-inicio
+== 2026-11-05T09:31:20.965Z escritor-inicio isn3
+== 2026-11-05T09:31:35.984Z escritor-fim
+== 2026-11-05T09:31:50.850Z verificacao confirmadas=368
+exit=0
+== 2026-11-05T09:32:50.204Z carga-fim
+pronto I4-semcorte-async-sem

@@ -1,0 +1,10 @@
+rotulo=I2-pausa-async-shadow tipo=pause qual=comum alvo=isn3 coordenador=isn2 replicacao=async modo=shadow semente=52001 t_falha=40 dur_falha=52 duracao=160 warmup=15
+== 2026-11-05T09:08:49.119Z carga-inicio
+== 2026-11-05T09:09:29.256Z falha-inicio pause isn3
+== 2026-11-05T09:09:29.825Z falha-aplicada pause isn3
+== 2026-11-05T09:10:21.912Z falha-fim pause isn3
+== 2026-11-05T09:10:22.416Z falha-desfeita pause isn3
+== 2026-11-05T09:10:22.550Z rest-volta isn3 http=200
+exit=0
+== 2026-11-05T09:11:33.593Z carga-fim
+pronto I2-pausa-async-shadow

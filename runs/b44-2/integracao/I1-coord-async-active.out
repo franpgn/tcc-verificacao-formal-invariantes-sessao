@@ -1,0 +1,10 @@
+rotulo=I1-coord-async-active tipo=kill qual=coord alvo=isn2 coordenador=isn2 replicacao=async modo=active semente=51002 t_falha=40 dur_falha=55 duracao=150 warmup=15
+== 2026-11-05T08:53:06.178Z carga-inicio
+== 2026-11-05T08:53:46.368Z falha-inicio kill isn2
+== 2026-11-05T08:53:46.948Z falha-aplicada kill isn2
+== 2026-11-05T08:54:42.043Z falha-fim kill isn2
+== 2026-11-05T08:54:42.577Z falha-desfeita kill isn2
+== 2026-11-05T08:54:45.303Z rest-volta isn2 http=200
+exit=0
+== 2026-11-05T08:55:40.303Z carga-fim
+pronto I1-coord-async-active

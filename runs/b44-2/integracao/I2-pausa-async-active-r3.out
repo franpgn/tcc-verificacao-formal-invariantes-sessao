@@ -1,0 +1,10 @@
+rotulo=I2-pausa-async-active-r3 tipo=pause qual=comum alvo=isn3 coordenador=isn1 replicacao=async modo=active semente=52003 t_falha=40 dur_falha=52 duracao=160 warmup=15
+== 2026-11-05T09:05:40.795Z carga-inicio
+== 2026-11-05T09:06:21.000Z falha-inicio pause isn3
+== 2026-11-05T09:06:21.497Z falha-aplicada pause isn3
+== 2026-11-05T09:07:13.576Z falha-fim pause isn3
+== 2026-11-05T09:07:14.132Z falha-desfeita pause isn3
+== 2026-11-05T09:07:14.293Z rest-volta isn3 http=200
+exit=0
+== 2026-11-05T09:08:25.339Z carga-fim
+pronto I2-pausa-async-active-r3

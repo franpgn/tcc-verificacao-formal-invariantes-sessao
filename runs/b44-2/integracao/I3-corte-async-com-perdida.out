@@ -1,0 +1,12 @@
+rotulo=I3-corte-async-com cenario=corte replicacao=async acao=com alvo=isn3 coordenador=isn1 semente=53001
+== 2026-11-05T09:12:15.552Z carga-inicio
+== 2026-11-05T09:12:45.712Z pre-corte saude-alvo=HEALTHY
+== 2026-11-05T09:12:47.954Z corte isn3
+== 2026-11-05T09:12:53.097Z pre-acao saude-alvo=HEALTHY (N-11)
+== 2026-11-05T09:12:53.202Z ac5-pedido
+== 2026-11-05T09:12:59.683Z ac5-retorno
+== 2026-11-05T09:14:00.155Z cura-dispensada (isn3 parado)
+exit=1
+/c/Users/Francesco/Development/tcc/wt-w2a/runs/b44-2/scripts/parada.sh: line 73: isn3: command not found
+/c/Users/Francesco/Development/tcc/wt-w2a/runs/b44-2/scripts/parada.sh: line 74: syntax error near unexpected token `fi'
+/c/Users/Francesco/Development/tcc/wt-w2a/runs/b44-2/scripts/parada.sh: line 74: `  fi'

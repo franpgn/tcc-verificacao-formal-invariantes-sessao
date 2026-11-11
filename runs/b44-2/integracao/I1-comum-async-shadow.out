@@ -1,0 +1,10 @@
+rotulo=I1-comum-async-shadow tipo=kill qual=comum alvo=isn3 coordenador=isn1 replicacao=async modo=shadow semente=51001 t_falha=40 dur_falha=55 duracao=150 warmup=15
+== 2026-11-05T08:50:07.947Z carga-inicio
+== 2026-11-05T08:50:48.106Z falha-inicio kill isn3
+== 2026-11-05T08:50:48.683Z falha-aplicada kill isn3
+== 2026-11-05T08:51:43.777Z falha-fim kill isn3
+== 2026-11-05T08:51:44.390Z falha-desfeita kill isn3
+== 2026-11-05T08:51:47.034Z rest-volta isn3 http=200
+exit=0
+== 2026-11-05T08:52:41.958Z carga-fim
+pronto I1-comum-async-shadow

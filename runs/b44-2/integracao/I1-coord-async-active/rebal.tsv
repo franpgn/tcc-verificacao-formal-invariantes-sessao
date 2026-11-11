@@ -1,0 +1,138 @@
+2026-11-05T08:53:05.911Z	antes	isn1	True False 3
+2026-11-05T08:53:06.021Z	antes	isn2	True True 3
+2026-11-05T08:53:06.117Z	antes	isn3	True False 3
+2026-11-05T08:53:06.340Z	amostra	isn1	True False 3
+2026-11-05T08:53:06.424Z	amostra	isn2	True True 3
+2026-11-05T08:53:06.564Z	amostra	isn3	True False 3
+2026-11-05T08:53:09.775Z	amostra	isn1	True False 3
+2026-11-05T08:53:09.852Z	amostra	isn2	True True 3
+2026-11-05T08:53:09.984Z	amostra	isn3	True False 3
+2026-11-05T08:53:13.145Z	amostra	isn1	True False 3
+2026-11-05T08:53:13.222Z	amostra	isn2	True True 3
+2026-11-05T08:53:13.298Z	amostra	isn3	True False 3
+2026-11-05T08:53:16.501Z	amostra	isn1	True False 3
+2026-11-05T08:53:16.583Z	amostra	isn2	True True 3
+2026-11-05T08:53:16.663Z	amostra	isn3	True False 3
+2026-11-05T08:53:19.827Z	amostra	isn1	True False 3
+2026-11-05T08:53:19.948Z	amostra	isn2	True True 3
+2026-11-05T08:53:20.021Z	amostra	isn3	True False 3
+2026-11-05T08:53:23.172Z	amostra	isn1	True False 3
+2026-11-05T08:53:23.251Z	amostra	isn2	True True 3
+2026-11-05T08:53:23.363Z	amostra	isn3	True False 3
+2026-11-05T08:53:26.535Z	amostra	isn1	True False 3
+2026-11-05T08:53:26.617Z	amostra	isn2	True True 3
+2026-11-05T08:53:26.692Z	amostra	isn3	True False 3
+2026-11-05T08:53:29.854Z	amostra	isn1	True False 3
+2026-11-05T08:53:29.933Z	amostra	isn2	True True 3
+2026-11-05T08:53:30.006Z	amostra	isn3	True False 3
+2026-11-05T08:53:33.179Z	amostra	isn1	True False 3
+2026-11-05T08:53:33.322Z	amostra	isn2	True True 3
+2026-11-05T08:53:33.401Z	amostra	isn3	True False 3
+2026-11-05T08:53:36.560Z	amostra	isn1	True False 3
+2026-11-05T08:53:36.673Z	amostra	isn2	True True 3
+2026-11-05T08:53:36.746Z	amostra	isn3	True False 3
+2026-11-05T08:53:39.956Z	amostra	isn1	True False 3
+2026-11-05T08:53:40.037Z	amostra	isn2	True True 3
+2026-11-05T08:53:40.132Z	amostra	isn3	True False 3
+2026-11-05T08:53:43.329Z	amostra	isn1	True False 3
+2026-11-05T08:53:43.412Z	amostra	isn2	True True 3
+2026-11-05T08:53:43.503Z	amostra	isn3	True False 3
+2026-11-05T08:53:46.671Z	amostra	isn1	True False 3
+2026-11-05T08:53:46.745Z	amostra	isn2	True True 3
+2026-11-05T08:53:46.858Z	amostra	isn3	True False 3
+2026-11-05T08:53:52.643Z	amostra	isn1	True False 2
+2026-11-05T08:53:52.723Z	amostra	isn2	sem-resposta
+2026-11-05T08:53:52.798Z	amostra	isn3	True True 2
+2026-11-05T08:53:56.360Z	amostra	isn1	False False 2
+2026-11-05T08:53:56.438Z	amostra	isn2	sem-resposta
+2026-11-05T08:53:56.517Z	amostra	isn3	False True 2
+2026-11-05T08:53:59.674Z	amostra	isn1	False False 2
+2026-11-05T08:53:59.751Z	amostra	isn2	sem-resposta
+2026-11-05T08:53:59.829Z	amostra	isn3	False True 2
+2026-11-05T08:54:03.040Z	amostra	isn1	False False 2
+2026-11-05T08:54:03.111Z	amostra	isn2	sem-resposta
+2026-11-05T08:54:03.185Z	amostra	isn3	False True 2
+2026-11-05T08:54:06.351Z	amostra	isn1	False False 2
+2026-11-05T08:54:06.433Z	amostra	isn2	sem-resposta
+2026-11-05T08:54:06.505Z	amostra	isn3	False True 2
+2026-11-05T08:54:09.726Z	amostra	isn1	False False 2
+2026-11-05T08:54:09.923Z	amostra	isn2	sem-resposta
+2026-11-05T08:54:10.084Z	amostra	isn3	False True 2
+2026-11-05T08:54:13.258Z	amostra	isn1	False False 2
+2026-11-05T08:54:13.347Z	amostra	isn2	sem-resposta
+2026-11-05T08:54:13.434Z	amostra	isn3	False True 2
+2026-11-05T08:54:16.581Z	amostra	isn1	False False 2
+2026-11-05T08:54:16.663Z	amostra	isn2	sem-resposta
+2026-11-05T08:54:16.796Z	amostra	isn3	False True 2
+2026-11-05T08:54:19.975Z	amostra	isn1	False False 2
+2026-11-05T08:54:20.100Z	amostra	isn2	sem-resposta
+2026-11-05T08:54:20.258Z	amostra	isn3	False True 2
+2026-11-05T08:54:23.507Z	amostra	isn1	False False 2
+2026-11-05T08:54:23.591Z	amostra	isn2	sem-resposta
+2026-11-05T08:54:23.670Z	amostra	isn3	False True 2
+2026-11-05T08:54:26.871Z	amostra	isn1	False False 2
+2026-11-05T08:54:26.992Z	amostra	isn2	sem-resposta
+2026-11-05T08:54:27.080Z	amostra	isn3	False True 2
+2026-11-05T08:54:30.271Z	amostra	isn1	False False 2
+2026-11-05T08:54:30.346Z	amostra	isn2	sem-resposta
+2026-11-05T08:54:30.458Z	amostra	isn3	False True 2
+2026-11-05T08:54:33.691Z	amostra	isn1	False False 2
+2026-11-05T08:54:33.771Z	amostra	isn2	sem-resposta
+2026-11-05T08:54:33.849Z	amostra	isn3	False True 2
+2026-11-05T08:54:37.003Z	amostra	isn1	False False 2
+2026-11-05T08:54:37.082Z	amostra	isn2	sem-resposta
+2026-11-05T08:54:37.193Z	amostra	isn3	False True 2
+2026-11-05T08:54:40.398Z	amostra	isn1	False False 2
+2026-11-05T08:54:40.586Z	amostra	isn2	sem-resposta
+2026-11-05T08:54:40.741Z	amostra	isn3	False True 2
+2026-11-05T08:54:43.954Z	amostra	isn1	False False 2
+2026-11-05T08:54:44.035Z	amostra	isn2	sem-resposta
+2026-11-05T08:54:44.201Z	amostra	isn3	False True 2
+2026-11-05T08:54:47.476Z	amostra	isn1	False False 3
+2026-11-05T08:54:47.554Z	amostra	isn2	False False 3
+2026-11-05T08:54:47.633Z	amostra	isn3	False True 3
+2026-11-05T08:54:50.818Z	amostra	isn1	True False 3
+2026-11-05T08:54:50.892Z	amostra	isn2	True False 3
+2026-11-05T08:54:50.976Z	amostra	isn3	True True 3
+2026-11-05T08:54:54.130Z	amostra	isn1	True False 3
+2026-11-05T08:54:54.236Z	amostra	isn2	True False 3
+2026-11-05T08:54:54.321Z	amostra	isn3	True True 3
+2026-11-05T08:54:57.481Z	amostra	isn1	True False 3
+2026-11-05T08:54:57.568Z	amostra	isn2	True False 3
+2026-11-05T08:54:57.648Z	amostra	isn3	True True 3
+2026-11-05T08:55:00.835Z	amostra	isn1	True False 3
+2026-11-05T08:55:00.911Z	amostra	isn2	True False 3
+2026-11-05T08:55:00.992Z	amostra	isn3	True True 3
+2026-11-05T08:55:04.254Z	amostra	isn1	True False 3
+2026-11-05T08:55:04.466Z	amostra	isn2	True False 3
+2026-11-05T08:55:04.544Z	amostra	isn3	True True 3
+2026-11-05T08:55:07.726Z	amostra	isn1	True False 3
+2026-11-05T08:55:07.797Z	amostra	isn2	True False 3
+2026-11-05T08:55:07.910Z	amostra	isn3	True True 3
+2026-11-05T08:55:11.082Z	amostra	isn1	True False 3
+2026-11-05T08:55:11.160Z	amostra	isn2	True False 3
+2026-11-05T08:55:11.280Z	amostra	isn3	True True 3
+2026-11-05T08:55:14.466Z	amostra	isn1	True False 3
+2026-11-05T08:55:14.660Z	amostra	isn2	True False 3
+2026-11-05T08:55:14.818Z	amostra	isn3	True True 3
+2026-11-05T08:55:17.981Z	amostra	isn1	True False 3
+2026-11-05T08:55:18.075Z	amostra	isn2	True False 3
+2026-11-05T08:55:18.190Z	amostra	isn3	True True 3
+2026-11-05T08:55:21.480Z	amostra	isn1	True False 3
+2026-11-05T08:55:21.602Z	amostra	isn2	True False 3
+2026-11-05T08:55:21.732Z	amostra	isn3	True True 3
+2026-11-05T08:55:25.053Z	amostra	isn1	True False 3
+2026-11-05T08:55:25.147Z	amostra	isn2	True False 3
+2026-11-05T08:55:25.241Z	amostra	isn3	True True 3
+2026-11-05T08:55:28.838Z	amostra	isn1	True False 3
+2026-11-05T08:55:29.482Z	amostra	isn2	True False 3
+2026-11-05T08:55:29.570Z	amostra	isn3	True True 3
+2026-11-05T08:55:32.843Z	amostra	isn1	True False 3
+2026-11-05T08:55:32.929Z	amostra	isn2	True False 3
+2026-11-05T08:55:33.005Z	amostra	isn3	True True 3
+2026-11-05T08:55:36.348Z	amostra	isn1	True False 3
+2026-11-05T08:55:36.447Z	amostra	isn2	True False 3
+2026-11-05T08:55:36.540Z	amostra	isn3	True True 3
+2026-11-05T08:55:40.375Z	depois	isn1	True False 3
+2026-11-05T08:55:40.463Z	depois	isn2	True False 3
+2026-11-05T08:55:40.558Z	depois	isn3	True True 3

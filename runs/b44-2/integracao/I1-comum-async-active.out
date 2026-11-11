@@ -1,0 +1,10 @@
+rotulo=I1-comum-async-active tipo=kill qual=comum alvo=isn3 coordenador=isn1 replicacao=async modo=active semente=51001 t_falha=40 dur_falha=55 duracao=150 warmup=15
+== 2026-11-05T08:47:12.131Z carga-inicio
+== 2026-11-05T08:47:52.333Z falha-inicio kill isn3
+== 2026-11-05T08:47:53.121Z falha-aplicada kill isn3
+== 2026-11-05T08:48:48.224Z falha-fim kill isn3
+== 2026-11-05T08:48:49.103Z falha-desfeita kill isn3
+== 2026-11-05T08:48:51.573Z rest-volta isn3 http=200
+exit=0
+== 2026-11-05T08:49:46.596Z carga-fim
+pronto I1-comum-async-active

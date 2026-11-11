@@ -1,0 +1,7 @@
+rotulo=I5-frio modo=frio alvo=isn3 coordenador=isn2 prazo_ms=2000
+== 2026-11-05T09:33:12.641Z pausa isn3
+== 2026-11-05T09:33:14.933Z ac5-pedido (frio)
+== 2026-11-05T09:33:17.332Z ac5-retorno (frio)
+== 2026-11-05T09:33:25.822Z retomada isn3
+== 2026-11-05T09:34:06.263Z fim parou=nao
+pronto I5-frio parou=nao

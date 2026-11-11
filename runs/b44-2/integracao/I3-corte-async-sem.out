@@ -1,0 +1,9 @@
+rotulo=I3-corte-async-sem cenario=corte replicacao=async acao=sem alvo=isn3 coordenador=isn2 semente=53001
+== 2026-11-05T09:20:42.277Z carga-inicio
+== 2026-11-05T09:21:12.577Z pre-corte saude-alvo=HEALTHY
+== 2026-11-05T09:21:14.559Z corte isn3
+== 2026-11-05T09:21:19.716Z pre-acao saude-alvo=HEALTHY (N-11)
+== 2026-11-05T09:22:22.091Z cura isn3
+exit=0
+== 2026-11-05T09:22:53.045Z carga-fim
+pronto I3-corte-async-sem

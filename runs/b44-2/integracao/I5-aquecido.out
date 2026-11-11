@@ -1,0 +1,8 @@
+rotulo=I5-aquecido modo=aquecido alvo=isn2 coordenador=isn3 prazo_ms=2000
+== 2026-11-05T09:34:31.958Z aquecido: aquecimento GET /rest/v2/container http=200 t_epoch_ns=1793871271696953900
+== 2026-11-05T09:34:32.447Z pausa isn2
+== 2026-11-05T09:34:41.484Z ac5-retorno (aquecido)
+== 2026-11-05T09:34:50.031Z retomada isn2
+== 2026-11-05T09:34:55.107Z alvo-parou (exited)
+== 2026-11-05T09:34:55.214Z fim parou=sim
+pronto I5-aquecido parou=sim

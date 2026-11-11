@@ -1,0 +1,10 @@
+rotulo=I1-coord-async-shadow tipo=kill qual=coord alvo=isn1 coordenador=isn1 replicacao=async modo=shadow semente=51002 t_falha=40 dur_falha=55 duracao=150 warmup=15
+== 2026-11-05T08:56:27.330Z carga-inicio
+== 2026-11-05T08:57:07.578Z falha-inicio kill isn1
+== 2026-11-05T08:57:08.238Z falha-aplicada kill isn1
+== 2026-11-05T08:58:03.386Z falha-fim kill isn1
+== 2026-11-05T08:58:03.965Z falha-desfeita kill isn1
+== 2026-11-05T08:58:06.868Z rest-volta isn1 http=200
+exit=0
+== 2026-11-05T08:59:01.672Z carga-fim
+pronto I1-coord-async-shadow

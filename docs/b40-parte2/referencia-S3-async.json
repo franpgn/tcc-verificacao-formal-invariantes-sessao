@@ -1,0 +1,54 @@
+{
+ "cenario": "S3",
+ "esquema": "referencia-p99/1",
+ "gerado_por": {
+  "script": "analysis/referencia_p99.py",
+  "sha256": "5ae122b4f79ec11b8459145c799850292e0241bd3bef149780b02243e458ba55"
+ },
+ "metodo": "posto-mais-proximo",
+ "n": {
+  "IncrementFailure": 1138,
+  "Validate": 14343
+ },
+ "n_min": 1000,
+ "omitidas": {
+  "Block": 26,
+  "Login": 782,
+  "Logout": 369,
+  "ResetFailures": 176,
+  "Unblock": 175
+ },
+ "origem": [
+  {
+   "arquivo": "../dados-vm/cs3-2026-11/x18-20261106T050100Z/campanha-s3-calibracao/exec-0003-ASYNC-none-A/rep-001.csv",
+   "linhas": 3272,
+   "sha256": "47666b1bc6cfd47b17786cbd1888c09c24b31c8b97b37c9ee588ade707554ae7"
+  },
+  {
+   "arquivo": "../dados-vm/cs3-2026-11/x18-20261106T050100Z/campanha-s3-calibracao/exec-0010-ASYNC-none-A/rep-001.csv",
+   "linhas": 3463,
+   "sha256": "6d8f9afcb5efdab49cfafc68e3ec32427d4e035469e1c2abafc7f9a41f68a3ca"
+  },
+  {
+   "arquivo": "../dados-vm/cs3-2026-11/x18-20261106T050100Z/campanha-s3-calibracao/exec-0012-ASYNC-none-A/rep-001.csv",
+   "linhas": 3404,
+   "sha256": "8ccde144e1546935965a022bffd1a2b0a19640a3783374702b2569a3372d6c81"
+  },
+  {
+   "arquivo": "../dados-vm/cs3-2026-11/x18-20261106T050100Z/campanha-s3-calibracao/exec-0019-ASYNC-none-A/rep-001.csv",
+   "linhas": 3352,
+   "sha256": "f36f882c3176cf2aa5684063ac9990ee2a67b7758e782fa1cc2042b3adcd96a1"
+  },
+  {
+   "arquivo": "../dados-vm/cs3-2026-11/x18-20261106T050100Z/campanha-s3-calibracao/exec-0024-ASYNC-none-A/rep-001.csv",
+   "linhas": 3518,
+   "sha256": "8213e5a69314574c5dc8e49ef3fbbc6a7e48047876c22b254d11d3bcd107e1cb"
+  }
+ ],
+ "p99_ns": {
+  "IncrementFailure": 5204240,
+  "Validate": 5658612
+ },
+ "perfil": "async",
+ "populacao": "todos-os-eventos-por-operation"
+}

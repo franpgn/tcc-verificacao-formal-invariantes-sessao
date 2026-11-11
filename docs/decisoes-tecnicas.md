@@ -841,3 +841,247 @@ Transmitidas ao Senior pelo coordenador, sobre o parecer de conferência do text
   condicionada a falha da nova medição e foi aplicada antes dela. Fica registrado, e o Gestor confirma se a exclusão
   fica até o fim da campanha (C3-4). M2 (APST) e M5 (apagar o *checkpoint*) não foram aplicadas.
 - **S7:** válido na terceira tentativa (`wt-gate-v4/runs/vm-s7-2026-11-04/V-S7t.md`). S1..S7 aprovados, PR §5 satisfeito.
+
+## DT-020: calibração do controlador na campanha S3, PRÉ-REGISTRO (2026-11-05)
+
+> **Aprovado** pelo coordenador em nome do Gestor em 2026-11-05 (decisões finais de ~22:30Z), antes de qualquer
+> execução da calibração. Texto completo e vinculante: `docs/pre-registro-calibracao-s3-2026-11-05.md`, na versão do
+> commit **`1e4ff2c`** (branch `docs/pre-registro-calibracao-s3`). Rascunhos anteriores: `0180dbd`, `254380a`, `4139ee4`.
+>
+> **Nota de fechamento (2026-11-05, coordenador sob a autorização do Gestor de ~22:30Z).** Os três itens que ficaram sem
+> origem rastreável nesta entrada estão fechados no documento, versão do commit que acrescenta esta nota: **C-10**
+> aprovado (G-3 aprovada pelo Gestor; 1 GiB entre o *swap* normal no K1, ≤ 404 344 kB, e o nível depois do salto do fim
+> da carga, 1 651 268 a 2 042 596 kB, no log do supervisor da noite 1); **`convergencia_periodo_s` = 5 s** por derivação
+> (= W; na avaliação acompanha o W calibrado); **`convergencia_teto_s` = 600 s** como limite de censura (execução no teto
+> = "não convergiu em 600 s", nunca descartada nem imputada), ≥ 6 × a espera máxima de fusão do MERGE3, ~96 s
+> (`opcoes-arquitetura-configuracao-2026-11-05.md` §9.5). O último item da lista abaixo fica superado por esta nota.
+
+- **Objeto:** campanha S3 só com o braço A (`shadow`), mesmo jar, XML sem *caches* e JSON da avaliação; os dados não
+  entram na avaliação (D-12). 26 execuções: ASYNC sem falha × 5, F1 × 5 (controle negativo do P1), F2 × 5, F4 × 5;
+  SYNC F2 × 3 (R3); SYNC sem falha × 3 (referência SYNC). F3 fora (C-1). Matriz com `--ordem-seed 20261105`,
+  `--s0 300000`, passo 100.
+- **Parâmetros:** arquivo `campanha-s3/1` da seção 4.1, cada um com a origem; `exec_teto_s` = 1010 s pela fórmula com o
+  período da convergência (R2 da V-W6b, `wt-w6/docs/validacao-w6b-2026-11-05.md` §5, `081e1c4`).
+- **Decisões do Gestor:** critério de falso acionamento = **zero ocorrências**, com 3/N reportado (C-8). Registro pedido
+  pelo Gestor: validar o alvo de ~10⁻³ por par de janelas exigiria ~60 execuções sem falha (~8 h de VM), custo grande
+  demais para o tempo disponível; a taxa de acionamento indevido é medida de novo na avaliação (células sem falha, F1 e
+  F3). Número de blocos da avaliação = 12 (DT-021).
+- **Correções da V-W6b aceitas pelo coordenador** (origem rastreável): R2 (teto de 1010 s), opções
+  `--referencia-async`/`--referencia-sync` (B2, feito no W-6b), veredictos novos do orquestrador (O8 e carga sem linha
+  de fim viram DESCARTADA-INFRA; *timer* sobrando recusa no pré-voo com 4).
+- **Regras de derivação:** 7.1 a 7.18 do documento, executadas pelo W-9 (`analysis/calibracao_s3.py`), escrito e
+  validado antes do X-18. A 7.13 (`kLag`) usa a condição exata da política P1 (`PoliticaPorAssinatura.java:158` em
+  `17f2bd4`), com contagem à parte das assinaturas sem resposta.
+- **Aprovados pela regra permanente do Gestor** (origem rastreável): C-1 a C-7 e C-9, com a origem na seção 10 do
+  documento. **Sem origem rastreável, não aprovados por essa regra:** C-10 (limiar de *swap* de 1 GiB, provisório na
+  G-3; segue a aprovação da G-3), `convergencia_teto_s` = 600 s e `convergencia_periodo_s` = 5 s (só padrão do código
+  do B-33; ficam na calibração como estão e a avaliação usa o teto da regra 7.10).
+
+## DT-021: avaliação do controlador na campanha S3 (B-40), parte 1, PRÉ-REGISTRO (2026-11-05)
+
+> **Aprovado** pelo coordenador em nome do Gestor em 2026-11-05 (decisões finais de ~22:30Z), antes da calibração e de
+> qualquer execução da avaliação. Texto completo e vinculante: `docs/pre-registro-b40-avaliacao-2026-11-05.md`, na versão
+> do commit **`2c06890`** (branch `docs/b40-pre-registro-avaliacao`). Rascunhos anteriores: `ebfee35`, `8567bab`. A
+> parte 2 (valores calibrados, seção 11) vira entrada própria, commitada antes da N4, sem comparar braços.
+
+- **Desenho:** braço A (`shadow`) × braço B (`active`, controlador completo: P0/P1 com P1 = AC-5, P2 fora,
+  `p2Habilitada = false`), blocos pareados com a mesma semente e ordem sorteada, *cluster* recriado antes de cada
+  execução. Células: ASYNC F2 e ASYNC F4 de teste com **12 blocos**; ASYNC F1 descritiva com 4 (sem ação para a
+  queda); ASYNC sem falha descritiva com 8; ASYNC F3 descritiva com 4 (falso alarme, *jitter* 20 ± 13 ms em `isn2`);
+  SYNC F2 (limitação R3) e SYNC F4 de referência com 4. **96 execuções.** Piloto embutido nos 3 primeiros blocos.
+- **Estatística:** co-principais V (taxa de violações I1 + I4 + I2 real por mil ações S3, diferença pareada) e L (p99 da
+  ação S3, log da razão); IU (Berger) por célula com `p_IU = max(p_V, p_L)`, δ_L = 10 %; **Holm sobre 2** (F2, F4);
+  "melhoria" exige ainda vazão útil não inferior (δ = 10 %) e rastreabilidade integral; secundários em família fixa de 7
+  com Holm na célula.
+- **Decisões do Gestor:** n = 12 fixo; F1 descritiva; critério de falso acionamento = zero ocorrências com 3/N
+  reportado (DT-020); **nenhuma expectativa numérica de efeito**: ganhos e custos com IC lado a lado, qualquer que seja o
+  sinal, e "melhora" só se a regra passar.
+- **Correções da V-W6b aceitas pelo coordenador** (`wt-w6/docs/validacao-w6b-2026-11-05.md`, `081e1c4`): as quatro
+  condições do B1 para aceitar F2/F4 do braço B com o AC-5 no nó da falha; **N1**, fim nominal da falha no Δ_rec e nas
+  fases dessas execuções; **R4**, limitação da evidência de severidade do F4 quando o AC-5 corta o *ping*; **O1**, AC-5
+  precoce antes do disparo para a fase com 6 até o X-17; veredictos novos do orquestrador do W-6b.
+- **Aprovados pela regra permanente do Gestor** (origem rastreável): B-1, B-2, B-5 a B-9, com a origem na seção 15 do
+  documento. Nenhum item da parte 1 ficou sem origem.
+- **Pré-requisitos:** DT-020 executada (X-18) e parte 2 commitada; integração do W-2b com o W-6b e o I-1; W-6c (F3,
+  *swap*, trilha, fim nominal, linhas do F4); W-9; W-5 com a família de secundários.
+
+## DT-022: complemento 1 da DT-020, leituras das regras de derivação da calibração S3, PRÉ-REGISTRO (2026-11-05)
+
+> Registrado em 2026-11-05, ~23:00Z, **antes de qualquer dado da calibração** (X-18 previsto para ~01:30Z de 06/11),
+> pelo Senior a pedido do coordenador. Texto vinculante: `docs/pre-registro-calibracao-s3-complemento-1-2026-11-05.md`.
+> Origem: ambiguidades A-1 a A-17 do W-9 (`wt-w9/docs/relatorio-w9-2026-11-05.md`, ponta `4bcca11`). A DT-020 não é
+> editada; onde divergirem, vale esta.
+
+- **A-3:** θ_out e `lag_out` = o **menor** valor que mantém, sem falha, todo trecho de janelas intermediárias com no
+  máximo m janelas (a maior histerese que não prende o controlador); a leitura literal ("maior valor") era degenerada.
+- **A-4, A-5:** m = 1 + o maior trecho máximo de janelas sem nenhum sinal alto (`algumAlto`) que começa em ou depois do
+  `end` e termina numa janela alta, nas ASYNC F1, F2 e F4; m não usa θ_out, o que quebra o ciclo e é conservador.
+- **A-1, A-17:** todas as regras na grade do W derivado (defasagem da janela por `SondaDefasagem.resumir`; com W < 5 s,
+  janelas sem rodada são puladas); `W_min = ⌊tetoLag + atraso_max⌋ + 1`, estrito como o código exige.
+- **W e `kLag`:** sem reserva, o AC-5 ficaria inviável por construção com λ₅ < ~3,85 eventos/s e limitado a `kLag` = 1
+  com λ₅ < ~7,7. **Regra de reserva:** se `kLag_min(W)·W + 13,3 ≥ 39,8`, W passa ao maior inteiro em [W_min, W − 1]
+  viável, com a perda de cobertura do sinal de latência declarada (latência e erro não levam a ação, P2 fora); sem W
+  viável, o AC-5 é declarado inviável antes da avaliação e a DT-021 volta ao Gestor.
+- **Demais:** A-2, A-6 a A-11, A-14 a A-16 confirmadas como o W-9 leu; A-12 e A-13 confirmadas com acréscimo (ciclo
+  completo de execução; `poder.py` com `-E -P`, `--semente 20261105`, `--n-sim 10000`, `--m-celulas 2`, `--blocos 12`).
+
+## DT-023: complemento 2 da DT-020, efeito da regra de memória no portão, PRÉ-REGISTRO (2026-11-05)
+
+> Registrado em 2026-11-05, antes de qualquer dado da calibração. Texto vinculante:
+> `docs/pre-registro-calibracao-s3-complemento-2-2026-11-05.md`. Alinha a §5 e o item 3 da §9 do pré-registro à C-10
+> aprovada (nota de fechamento da DT-020, `2c8b7b8`) e à G-3(b) do Gestor; a DT-020 não é editada.
+
+- Com *swap* usado ≥ 1 048 576 kB no portão (depois do K1), o *cluster* é recriado de novo e a execução roda com o
+  **mesmo i e a mesma semente, sem contar como recusa**; uma recriação por portão; se o *swap* continuar alto, a
+  execução roda com aviso. **A fase não para por *swap*.** Opção `--swap-limite-kb 1048576` (W-6c).
+- Em aberto para o Gestor: o caso em que a segunda leitura repete a primeira (P-56 do W-6c). Até a decisão, vale o
+  aviso; uma mudança depois de haver dados vira entrada nova.
+
+> **Nota (2026-11-05, P-56 decidido pelo coordenador, antes de qualquer dado):** se o *swap* continuar ≥ 1 GiB depois
+> da recriação, **a fase para**, com código de saída próprio (fixado pelo W-6c), e não roda com aviso; a execução volta
+> com o mesmo i e a mesma semente na retomada. Origem: as quatro recriações da noite 1 baixaram o *swap* para 39 a 51 MB
+> (`prep-seg2-20261105T114805Z.log` e `supervisor-n1s2b.log`). O item "a fase não para por *swap*" acima fica superado
+> só nesse caso; a primeira leitura alta continua levando à recriação.
+
+## DT-024: complemento 3 da DT-020, viabilidade do AC-5, latência sem cobertura e cortes no `end`, PRÉ-REGISTRO (2026-11-06)
+
+> Registrado em 2026-11-06, ~00:05Z, **antes de qualquer dado da calibração**. Texto vinculante:
+> `docs/pre-registro-calibracao-s3-complemento-3-2026-11-06.md`. Origem: R-1 a R-4 da V-W9
+> (`wt-w9/docs/validacao-w9-2026-11-05.md`, `8d6ebfc`), aprovados pelo coordenador pela regra permanente do Gestor.
+> DT-020, DT-022 e DT-023 não são editadas; onde divergirem, vale esta.
+
+- **R-1:** "viável em W'" ⟺ `max(k, kLag_min(W'))·W' + 13,3 < 39,8`, k = 2 (o P1 só age em CONSERVADOR,
+  `PoliticaPorAssinatura.java:152`, e o núcleo só entra depois de k janelas de lag ALTA). Vale na 7.4, na 7.13 e na
+  reserva do complemento 1. Dá W' ≤ 13 s com `kLag` ≤ 2; com `kLag_min` ≥ 9, inviável. A fase do corte dentro da
+  janela continua fora da conta, declarada.
+- **R-2:** sem janela determinada para a latência nas ASYNC sem falha na W final, θ_lat_in = o menor *double* acima de 1
+  (inalcançável) e θ_lat_out = 1; m e `T_cooldown` derivados pela 7.8 com esses valores; o mesmo para θ_err. O B-40 declara
+  que S_lat não atua e o CONSERVADOR vem só de defasagem, topologia ou violação.
+- **R-3:** no m, o trecho que atravessa o `end` é cortado no `end` (como a 7.14).
+- **R-4:** com W final < 5 s, pular janelas sem rodada subestima `kLag` e m em ~5/W (corrige o complemento 1 §4.1);
+  declarado. Ocorre com a 7.3 já abaixo de 5 s, ou na reserva só com `kLag_min` > 5.
+- **Complemento 3a** (`docs/pre-registro-calibracao-s3-complemento-3a-2026-11-06.md`, 2026-11-06, antes de
+  qualquer dado): a R-2 vale sempre que a 7.7 tiver N = 0 (nenhuma posição de k janelas determinadas seguidas), o que
+  inclui o caso sem janela determinada; θ_in "sem cobertura" = o menor *double* acima de 1, como no texto.
+
+
+## DT-025: avaliação do controlador na campanha S3 (B-40), parte 2, valores calibrados, PRÉ-REGISTRO (2026-11-06)
+
+> **Aprovado** pelo coordenador em nome do Gestor (regra permanente, valores com origem rastreável), depois da calibração
+> e **antes da N4**, sem nenhuma comparação entre braços. Texto vinculante:
+> `docs/pre-registro-b40-avaliacao-parte2-2026-11-06.md`, com os arquivos de entrada em `docs/b40-parte2/`
+> (`SHA256SUMS`). Completa a seção 11 da DT-021.
+
+- **Derivação:** `dados-vm/cs3-2026-11/derivacao-20261106T050404Z/calibracao-s3-derivacao.json`
+  (`e904b0149a779ae01cbb4506e05f5789935229d4cec0ab344cbf10ddc79f8eed`), regras da DT-020 com os complementos 1
+  (DT-022), 3 (DT-024) e 3a. **Conferência:** `wt-w9/docs/validacao-derivacao-calibracao-2026-11-06.md` (`0c6b7c0`),
+  valores confirmados.
+- **Valores:** W 12 s; `kLag` 1 (viável: 37,3 s < 39,8 s); θ_lat_in 0,030769230769230774 e θ_lat_out 0; θ_err_in
+  5 × 10⁻³²⁴ e θ_err_out 0; `lag_in` 6,932448 ms e `lag_out` 3,424438 ms; m 7; `T_cooldown` 84 s; `T_estavel` 2 s;
+  `T_hold_viol` 12 s; teto da convergência 600 s; período da convergência 12 s; `exec_teto_s` 1014 s; n_lat = n_err = 100;
+  k = 2. Cada limiar com N e 3/N no documento.
+- **Guarda de disco:** `volume_exec_mb` = 14 (maior medido, I-3b braço B, 13,6 MB), no lugar dos 2 MiB da 7.17, pela
+  ressalva 3 da conferência, aceita pelo coordenador.
+- **Declarações:** a saída R4 praticamente não ocorre (uma vez em CONSERVADOR, fica até o fim; oscilação, reentrada,
+  `T_cooldown` e `T_estavel` descritivos); q̂ = 0/5 nas duas células de teste, poder 0 (Clopper-Pearson até 0,52), e, se
+  a avaliação repetir isso, a redução de V é "não avaliável" pela regra da DT-021. **Ressalva:** *smoke* do P-48 antes
+  da N4.
+- **Entradas (SHA-256):** controlador `2f0d46c8…f9f63`; `campanha-s3/2` `1bb3879f…bc46`; referência ASYNC
+  `c5ad8687…85cb`; SYNC `5ced3dc5…dea9`; matriz com `--ordem-seed 20261106` `813159a1…06ab`.
+
+## DT-026: benchmark refeito (recalibração e avaliação do controlador na S3 com observação de violações), PRÉ-REGISTRO (2026-11-06)
+
+> **Aprovado** pelo coordenador sob a autorização do Gestor para seguir o plano durante a noite (o Gestor revisa ao
+> acordar), depois do piloto de violações e **antes de qualquer dado da recalibração**. Texto vinculante:
+> `docs/pre-registro-benchmark-refeito-2026-11-06.md`, versão `37a1099` (rascunho em `a5ddac9`). Substitui, para o
+> benchmark refeito, os valores da DT-025 (calibração cega) e as partes da DT-021 listadas na seção 5 do documento; as
+> DT-020 a DT-025 não são editadas.
+
+- **Motivo:** a calibração X-18 não tinha `--sweep` nem releitura da sessão por outro nó depois do logout; o q̂ = 0/5 da
+  DT-025 é um zero de observação. O piloto (`dados-vm/piloto-2026-11-06/p-20261106T081543Z/piloto/`, tar
+  `80a79265…`) é a etapa de seleção do ponto de operação, relatada com todos os números.
+- **Método (sonda e varredura são instrumentação, não desfecho):** `--sweep --s3-replay-probe --s3-replay-min-sec 1
+  --s3-replay-max-sec 3 --s3-replay-late-max 268` em todas as execuções das duas campanhas e dos dois braços. V =
+  I1 + I4 + I2 REAL por mil ações S3, **por par distinto (chave, invariante)** somando auditor *online*, sonda e
+  varredura, com a forma 2 de I1 contando e a sensibilidade `:sem_forma2`; `ReplayValidate` fora de latência, vazão,
+  erro e denominador; leituras da V-W5c §4 (1, 3 a 8, 10 e a nota da 14); varredura com erro pelo tratamento simétrico
+  nos dois braços do bloco, com sensibilidade sem esses blocos, sem Holm.
+- **Ponto de operação (P-1):** p2-d, F2 `isn3` DENY 90 s com carga L+ (`--s3-users 40 --s3-think-ms 500
+  --s3-session-median-sec 10 --s3-logout-prob 0.9 --s3-admin-mean-sec 5`), pela regra 6.5 do piloto; b1 (ARW) não
+  adotada, porque muda a configuração do *cluster*. **P-2:** pausa fora. **P-3:** late-max 268 (maior número de
+  logouts confirmados por execução no piloto, 267, mais 1). **P-4:** a V *online* da d, execução 2, é I1 REAL legítima
+  (leitura defasada na troca de vista). **P-5:** a regra de V acima.
+- **Recalibração:** as regras da DT-020 com os complementos 1, 2, 3 e 3a; as mesmas 26 células da X-18 com L+ e os
+  instrumentos; sementes a partir de 700000; `--ordem-seed` = data deste commit. Nova parte 2 com conferência
+  independente antes da avaliação.
+- **Avaliação:** ASYNC F2 teste com 12 blocos (Holm sobre 1); F4, F1, F3 e sem falha descritivas; SYNC F2 e F4 de
+  referência; 80 execuções, todas com L+ e os instrumentos; sementes a partir de 800000.
+- **Riscos registrados, sem previsão de efeito:** o AC-5 só corta o trecho final da janela; das 11 perdas da forma 1
+  medidas no piloto, um nó parado em +2, +5, +10 e +20 s teria evitado 11, 7, 3 e 1, e na detecção, 0.
+
+## DT-027: complemento 1 da DT-026, avaliação da regra de fusão A1 e do controlador com a ação A4, PRÉ-REGISTRO (2026-11-06)
+
+> Registrado em 2026-11-06, **antes de qualquer dado da avaliação**, por decisão do Gestor (comparar a regra de fusão
+> atual × A1 e o controlador desligado × ligado com a A4). Texto vinculante:
+> `docs/pre-registro-benchmark-refeito-complemento-1-2026-11-06.md`, versão `4fa4546`. Substitui a seção 5 da DT-026
+> (desenho da avaliação). Os pontos marcados [A4] fecham numa nota a esta entrada, antes dos dados, quando a
+> implementação da A4 for validada.
+>
+> **Nota (2026-11-06, antes de qualquer dado):** a seção 7 do complemento (versão `3a1db1d`) registra as escolhas da análise
+> do fatorial aceitas na V-W5e (`0583455`): perda permanente e exposição só com detecções que contam em V, sem o *replay*
+> imediato depois da fusão; H_V não avaliável por efeito (A1: PO e PL; A4: PO e AO), rastreabilidade de PL e AL nos dois
+> efeitos; contrato `fusao`/`controller`/`bloco`/`t_fusao_ns` no `execucao.json` e PO/PL/AO/AL no manifesto, sem fusão =
+> varredura com erro; sem IC hierárquico do p99. E a decisão do coordenador sobre a I4 com a A1 (TLC `MesclarJoin`,
+> `4abd157`): a definição não muda, e a troca LOGOUT → ADMIN_BLOCK, se ocorrer, conta em V e é relatada como custo da A1.
+>
+> **Nota (2026-11-06, antes de qualquer dado): pontos [A4] fechados** (seção 8 do complemento, versão `3fcd8df`). A4-1: R1 a
+> R8 no código do P1-IC com testes (Surefire 1207/0/1), mais a guarda contínua e a `suspeita-desfeita` (V-1). A4-2: R6
+> exercitada nos *smokes* `corte-r1` e `corte-r2`; R7 como reserva, verificada no teste da A4; sem execuções extras
+> (G-3). A4-3: sem teto de tempo para a R7, regras por evento a cada janela; espera de 1 s pela lista do alvo no caminho
+> da R7 (`esperaOuvinteNs`, origem no `AtuadorIgnorarCache`: ~1,08 s medido no A4); corte assimétrico sem regra válida
+> mantém o AC-7 até o encerramento. A4-4: recusa como indisponibilidade e desconto do nó sob ação no sensor (G-4).
+> A4-5: `counters-async` fora (G-2). Risco de h4 registrado: 13,8 % de h4a na recalibração; a P-64 reduz a principal
+> fonte de escrita; reposição sem mudança (teto de 24, uma vez); reavaliação antes da metade 2 se o piloto embutido
+> mostrar taxa alta. `--ordem-seed` da matriz = 20261106.
+>
+> **Nota (2026-11-06, decisão do coordenador, antes de qualquer dado):** o teto de reposições h4 da avaliação fatorial é
+> **20 blocos**, na unidade do `repor`, e não 24 (que vinha do desenho de 96 execuções); parada de segurança contra
+> ambiente doente, não limite de orçamento (previsão de 5 a 9 blocos repostos); reposição uma vez só (complemento,
+> versão `6bc28fd`).
+
+- **Desenho:** fatorial 2×2 por bloco na célula ASYNC F2 + L+ com os instrumentos da DT-026 (regra de fusão do
+  `sessions-async` atual ou A1 × controlador `shadow` ou `active` com a A4), quatro braços com a mesma semente, 12
+  blocos (48 execuções). Contrastes por bloco: efeito da A1, efeito da A4 e interação, pela troca de sinal.
+- **Regra de sucesso:** V (DT-026) e p99 co-principais, IU por efeito principal, Holm sobre os dois efeitos (m = 2);
+  interação reportada sem Holm. **Secundárias novas:** perda permanente (união por sid, depois da fusão, de varredura
+  REAL, I1 *online* pós-fusão e sonda tardia) e exposição na janela (sonda imediata e I1 *online* antes da fusão).
+- **Descritivas da A4** (regra atual, controlador desligado × ligado, 4 blocos cada): sem falha e F3 no núcleo; F1 e F4
+  nas extras. Total de 80 execuções, ~8,8 h a ~395 s cada, ~11,0 h com a margem h4.
+- **Registro do risco da A4:** o falso alarme tira o `sessions-async` do ar no *cluster* inteiro até o desfazer; a
+  guarda R4 desfaz ao ver a lista replicada; desfazer pela R6 (no alvo, em `DEGRADED_MODE`) e pela R7 (reserva, pela
+  maioria, depois da fusão). Tempo de indisponibilidade e erros medidos por execução.
+- **Recalibração válida** (`b183527a…`): a A1 não muda sinais, a A4 só troca a ação.
+- **Orquestrador antes de rodar:** `sessions-async.json` por braço, JAR da extensão no *bundle* em todos os braços,
+  checagem de fusão antes da varredura (sem fusão = varredura com erro, tratamento simétrico nos quatro braços),
+  matriz de quatro braços, controlador com a A4 [A4], análise 2×2 no `comparar_bracos.py`.
+
+## DT-028: B-40 parte 2 revisada, valores da recalibração para a avaliação fatorial, PRÉ-REGISTRO (2026-11-06)
+
+> Registrada antes de qualquer dado da avaliação fatorial (DT-027). Texto vinculante:
+> `docs/pre-registro-benchmark-refeito-parte2-2026-11-06.md`, versão `8eadca7`. **Substitui a DT-025 no benchmark
+> refeito**; a DT-025 não é editada.
+
+- **Derivação:** `dados-vm/cs3-2026-11/derivacao-recal-20261106T145106Z/calibracao-s3-derivacao.json` (`b183527a…`),
+  referências ASYNC `dec07fb7…` e SYNC `32bb1c60…`. **Conferência:** `wt-w9/docs/validacao-derivacao-recalibracao-2026-11-06.md`
+  (`ddc7700`), valores confirmados.
+- **Valores:** W 4 s; `kLag` 1; θ_lat_in 0,05780346820809249 e θ_lat_out 0; θ_err_in 5 × 10⁻³²⁴ e θ_err_out 0;
+  `lag_in` 6,881289 ms e `lag_out` 0,939831 ms; m 35; `T_cooldown` 140 s; `T_estavel` 2 s; `T_hold_viol` 69,5 s;
+  teto da convergência 600 s; período 4 s; `exec_teto_s` 1019 s; k 2; `n_lat` = `n_err` = 100.
+- **Guarda de disco:** `volume_exec_mb` 14 (maior medido), não os 3 MiB derivados.
+- **Novos:** `s3_replay_late_max` 306 (305 candidatas na recalibração + 1; as 5 F4 bateram no teto de 268);
+  `fusao_teto_s` 72 (48 s, a maior fusão medida no X-18 e no X-19, × 1,5); `acaoP1` = AC-7 explícito (G-1, V-3).
+- **Declarações:** R-4 aplicada (W < 5 s, subestimação de ~1,25 vez); a saída R4 praticamente não ocorre; P1 a +9,9 a
+  +10,1 s do corte na reprodução.
+- **Ambiente (P-64):** log em `k8s-file` e os *loggers* `BaseRequestProcessor` e `InvocationContextInterceptor` em
+  FATAL pela REST, iguais nos quatro braços; desvio de ambiente em relação à recalibração (journald), sem mudança de
+  semântica; 268 MB → 0,09 MB no alvo do AC-7.

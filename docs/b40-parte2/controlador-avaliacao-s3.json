@@ -1,0 +1,39 @@
+{
+ "versao": "avaliacao-s3 (B-40 parte 2; derivacao e904b0149a779ae0)",
+ "wNs": 12000000000,
+ "nLat": 100,
+ "nErr": 100,
+ "thetaLatIn": 0.030769230769230774,
+ "thetaLatOut": 0.0,
+ "thetaErrIn": 5e-324,
+ "thetaErrOut": 0.0,
+ "k": 2,
+ "m": 7,
+ "cooldownNs": 84000000000,
+ "estavelNs": 2000000000,
+ "holdViolNs": 12000000000,
+ "politica": {
+  "kLag": 1,
+  "tetoLagMs": 2000,
+  "tRebNs": 60000000000,
+  "cotaAc5": 1,
+  "p2Habilitada": false,
+  "origem": {
+   "kLag": "B-40 parte 2, regra 7.13 da calibracao (derivacao e904b0149a779ae0)",
+   "tetoLagMs": "--hotrod-timeout-ms da campanha (2000 ms, padrao de S3Parametros), igual pela R7 do W-2a",
+   "tRebNs": "state-transfer.timeout do XML (60000 ms), acima da deteccao medida de 46,8 s (local) e 46,4 s (VM)",
+   "cotaAc5": "desenho: uma vez por execucao (owners=2 tolera um no fora)",
+   "p2Habilitada": "D-B do coordenador (05/11): P2/AC-2 fora do braco B, exploratoria (P-39 em 3 de 3 e P-40 do relatorio do B-44.2)"
+  }
+ },
+ "defasagem": {
+  "lagInMs": 6.932448,
+  "lagOutMs": 3.424438,
+  "passoLeituraMs": 20,
+  "origem": {
+   "lagInMs": "B-40 parte 2, regra 7.11 da calibracao (derivacao e904b0149a779ae0)",
+   "lagOutMs": "B-40 parte 2, regra 7.12 da calibracao (complemento 1) (derivacao e904b0149a779ae0)",
+   "passoLeituraMs": "wada_consistency_cloud_2011 secao 2 (leitores a 50 leituras por segundo)"
+  }
+ }
+}

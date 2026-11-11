@@ -1,0 +1,43 @@
+{
+ "cenario": "S3",
+ "esquema": "referencia-p99/1",
+ "gerado_por": {
+  "script": "analysis/referencia_p99.py",
+  "sha256": "5ae122b4f79ec11b8459145c799850292e0241bd3bef149780b02243e458ba55"
+ },
+ "metodo": "posto-mais-proximo",
+ "n": {
+  "Validate": 8488
+ },
+ "n_min": 1000,
+ "omitidas": {
+  "Block": 18,
+  "IncrementFailure": 671,
+  "Login": 478,
+  "Logout": 215,
+  "ResetFailures": 90,
+  "Unblock": 101
+ },
+ "origem": [
+  {
+   "arquivo": "../dados-vm/cs3-2026-11/x18-20261106T050100Z/campanha-s3-calibracao/exec-0002-SYNC-none-A/rep-001.csv",
+   "linhas": 3379,
+   "sha256": "04760ded96d372dcba24f322dfecace5223f2942069627d49a1a8738c299782a"
+  },
+  {
+   "arquivo": "../dados-vm/cs3-2026-11/x18-20261106T050100Z/campanha-s3-calibracao/exec-0007-SYNC-none-A/rep-001.csv",
+   "linhas": 3242,
+   "sha256": "f8143abfb3a281759769e516d8628a0f0925d89a20c098c5715b8610a3d4a924"
+  },
+  {
+   "arquivo": "../dados-vm/cs3-2026-11/x18-20261106T050100Z/campanha-s3-calibracao/exec-0014-SYNC-none-A/rep-001.csv",
+   "linhas": 3440,
+   "sha256": "5d92787cf57b413fc7b3cb4d92621dd98c7086d631860312ebcd7df7521a474e"
+  }
+ ],
+ "p99_ns": {
+  "Validate": 5684615
+ },
+ "perfil": "sync",
+ "populacao": "todos-os-eventos-por-operation"
+}

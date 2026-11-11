@@ -1,0 +1,10 @@
+id	a-inv1-full-I1
+rev	20805b0 (ANTES)
+modulo	MCSession
+spec	Spec
+workers	1
+timeout	600
+java	/c/Program Files/Java/jdk-17.0.2/bin/java.exe
+inicio	2026-11-04T23:50:22
+892e44be1789496269559fcdb6a0508f5c7d745c1e59e0fa49c4854519ecb0f7 *./MCSession.tla
+7dde4bb146aca82d42d48f8090493e395dc1ab7b0961a1800f53735917ab9ec0 *./SessionStore.tla

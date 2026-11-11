@@ -1,0 +1,48 @@
+TLC2 Version 2.19 of 08 August 2024 (rev: 5a47802)
+Running breadth-first search Model-Checking with fp 93 and seed -87907545114684431 with 4 workers on 20 cores with 2731MB heap and 64MB offheap memory [pid: 26092] (Windows 11 10.0 amd64, Oracle Corporation 17.0.2 x86_64, MSBDiskFPSet, DiskStateQueue).
+Parsing file C:\Users\Francesco\Development\tcc\wt-b45\spec\states\b45\snap-a2ce4c9\MCSession.tla
+Parsing file C:\Users\Francesco\Development\tcc\wt-b45\spec\states\b45\snap-a2ce4c9\SessionStore.tla
+Parsing file C:\Users\Francesco\Development\tcc\wt-b45\spec\states\b45\jtmp\d-inv-full-I3\TLC.tla
+Parsing file C:\Users\Francesco\Development\tcc\wt-b45\spec\states\b45\jtmp\d-inv-full-I3\Naturals.tla
+Parsing file C:\Users\Francesco\Development\tcc\wt-b45\spec\states\b45\jtmp\d-inv-full-I3\Sequences.tla
+Parsing file C:\Users\Francesco\Development\tcc\wt-b45\spec\states\b45\jtmp\d-inv-full-I3\FiniteSets.tla
+Semantic processing of module Naturals
+Semantic processing of module Sequences
+Semantic processing of module FiniteSets
+Semantic processing of module SessionStore
+Semantic processing of module TLC
+Semantic processing of module MCSession
+Starting... (2026-11-04 23:50:48)
+Computing initial states...
+Finished computing initial states: 1 distinct state generated at 2026-11-04 23:50:48.
+Progress(8) at 2026-11-04 23:50:51: 590,738 states generated (590,738 s/min), 29,678 distinct states found (29,678 ds/min), 20,747 states left on queue.
+Progress(11) at 2026-11-04 23:51:51: 15,474,487 states generated (14,883,749 s/min), 713,345 distinct states found (683,667 ds/min), 470,929 states left on queue.
+Progress(12) at 2026-11-04 23:52:51: 31,253,165 states generated (15,778,678 s/min), 1,308,787 distinct states found (595,442 ds/min), 824,516 states left on queue.
+Progress(12) at 2026-11-04 23:53:51: 45,133,543 states generated (13,880,378 s/min), 2,222,918 distinct states found (914,131 ds/min), 1,502,977 states left on queue.
+Progress(12) at 2026-11-04 23:54:51: 59,319,173 states generated (14,185,630 s/min), 3,037,326 distinct states found (814,408 ds/min), 2,096,250 states left on queue.
+Checkpointing of run C:\Users\Francesco\Development\tcc\wt-b45\spec\states\b45\meta\d-inv-full-I3\26-11-04-23-50-48
+Checkpointing completed at (2026-11-04 23:55:51)
+Progress(13) at 2026-11-04 23:55:51: 72,548,217 states generated (13,229,044 s/min), 4,014,043 distinct states found (976,717 ds/min), 2,839,113 states left on queue.
+Progress(13) at 2026-11-04 23:56:51: 88,207,095 states generated (15,658,878 s/min), 4,616,597 distinct states found (602,554 ds/min), 3,169,648 states left on queue.
+Progress(13) at 2026-11-04 23:57:51: 102,809,589 states generated (14,602,494 s/min), 5,330,091 distinct states found (713,494 ds/min), 3,657,482 states left on queue.
+Progress(13) at 2026-11-04 23:58:51: 118,395,685 states generated (15,586,096 s/min), 6,015,933 distinct states found (685,842 ds/min), 4,083,059 states left on queue.
+Progress(13) at 2026-11-04 23:59:51: 134,483,345 states generated (16,087,660 s/min), 6,730,083 distinct states found (714,150 ds/min), 4,517,936 states left on queue.
+== d-inv-full-I3: retomando de /c/Users/Francesco/Development/tcc/wt-b45/spec/states/b45/meta/d-inv-full-I3/26-11-04-23-50-48 (saldo 44s)
+TLC2 Version 2.19 of 08 August 2024 (rev: 5a47802)
+Running breadth-first search Model-Checking with fp 78 and seed -2646499725931931371 with 4 workers on 20 cores with 2731MB heap and 64MB offheap memory [pid: 24772] (Windows 11 10.0 amd64, Oracle Corporation 17.0.2 x86_64, MSBDiskFPSet, DiskStateQueue).
+Parsing file C:\Users\Francesco\Development\tcc\wt-b45\spec\states\b45\snap-a2ce4c9\MCSession.tla
+Parsing file C:\Users\Francesco\Development\tcc\wt-b45\spec\states\b45\snap-a2ce4c9\SessionStore.tla
+Parsing file C:\Users\Francesco\Development\tcc\wt-b45\spec\states\b45\jtmp\d-inv-full-I3\TLC.tla
+Parsing file C:\Users\Francesco\Development\tcc\wt-b45\spec\states\b45\jtmp\d-inv-full-I3\Naturals.tla
+Parsing file C:\Users\Francesco\Development\tcc\wt-b45\spec\states\b45\jtmp\d-inv-full-I3\Sequences.tla
+Parsing file C:\Users\Francesco\Development\tcc\wt-b45\spec\states\b45\jtmp\d-inv-full-I3\FiniteSets.tla
+Semantic processing of module Naturals
+Semantic processing of module Sequences
+Semantic processing of module FiniteSets
+Semantic processing of module SessionStore
+Semantic processing of module TLC
+Semantic processing of module MCSession
+Starting... (2026-11-05 02:23:49)
+Starting recovery from checkpoint C:\Users\Francesco\Development\tcc\wt-b45\spec\states\b45\meta\d-inv-full-I3\26-11-04-23-50-48\
+Recovery completed. 4013749 states examined. 2838955 states on queue.
+Progress(13) at 2026-11-05 02:23:53: 4,919,048 states generated (4,919,048 s/min), 4,055,524 distinct states found (4,055,524 ds/min), 2,864,978 states left on queue.

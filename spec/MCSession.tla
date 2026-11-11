@@ -79,7 +79,15 @@ LimiteCanal        == \A r \in REPLICAS: Len(canal[r]) =< MaxCanal
 LimiteRelogio      == \A r \in REPLICAS: relogio[r] =< MaxRelogio
 LimiteEventosFalha == quedas + particoes =< MaxEventosFalha
 
-Simetria == Permutations(IDS) \cup Permutations(SIDS) \cup Permutations(REPLICAS)
+\* B-45 (2026-11-04, P-16, decisao D-8 = T2): o desempate de `ts` pelo conteudo do registro
+\* (VenceSessao em SessionStore.tla) ordena o campo `identidade` por uma bijecao fixa
+\* PosId : IDS -> 1..|IDS|. Permutar IDS deixa de levar comportamento valido em comportamento
+\* valido (dois Login concorrentes na mesma sid, com ids diferentes e o mesmo ts, tem vencedor
+\* fixo por PosId), entao Permutations(IDS) SAI da simetria. SIDS e REPLICAS continuam
+\* simetricos: a ordem nao usa sid nem replica. Com |IDS| = 1 (tiny e todo o cenario semeado)
+\* o grupo e o mesmo de antes. Versao anterior (git 20805b0):
+\*   Simetria == Permutations(IDS) \cup Permutations(SIDS) \cup Permutations(REPLICAS)
+Simetria == Permutations(SIDS) \cup Permutations(REPLICAS)
 
 (***************************************************************************)
 (* B-32 (2026-10-09 -- ver docs/plano-b29-particao-real-e-contraexemplos-  *)

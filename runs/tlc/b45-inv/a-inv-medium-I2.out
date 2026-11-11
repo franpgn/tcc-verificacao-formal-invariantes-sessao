@@ -1,0 +1,278 @@
+TLC2 Version 2.19 of 08 August 2024 (rev: 5a47802)
+Running breadth-first search Model-Checking with fp 63 and seed -754182329826917823 with 4 workers on 20 cores with 2731MB heap and 64MB offheap memory [pid: 10172] (Windows 11 10.0 amd64, Oracle Corporation 17.0.2 x86_64, MSBDiskFPSet, DiskStateQueue).
+Parsing file C:\Users\Francesco\Development\tcc\wt-b45\spec\states\b45\snap-20805b0\MCSession.tla
+Parsing file C:\Users\Francesco\Development\tcc\wt-b45\spec\states\b45\snap-20805b0\SessionStore.tla
+Parsing file C:\Users\Francesco\Development\tcc\wt-b45\spec\states\b45\jtmp\a-inv-medium-I2\TLC.tla
+Parsing file C:\Users\Francesco\Development\tcc\wt-b45\spec\states\b45\jtmp\a-inv-medium-I2\Naturals.tla
+Parsing file C:\Users\Francesco\Development\tcc\wt-b45\spec\states\b45\jtmp\a-inv-medium-I2\Sequences.tla
+Parsing file C:\Users\Francesco\Development\tcc\wt-b45\spec\states\b45\jtmp\a-inv-medium-I2\FiniteSets.tla
+Semantic processing of module Naturals
+Semantic processing of module Sequences
+Semantic processing of module FiniteSets
+Semantic processing of module SessionStore
+Semantic processing of module TLC
+Semantic processing of module MCSession
+Starting... (2026-11-04 22:48:53)
+Computing initial states...
+Finished computing initial states: 1 distinct state generated at 2026-11-04 22:48:54.
+Error: Invariant I2 is violated.
+Error: The behavior up to this point is:
+State 1: <Initial predicate>
+/\ sessoes = ( r1 :>
+      ( s1 :>
+            [ estado |-> "NONE",
+              motivo |-> "NONE",
+              identidade |-> "NONE",
+              ts |-> 0 ] @@
+        s2 :>
+            [ estado |-> "NONE",
+              motivo |-> "NONE",
+              identidade |-> "NONE",
+              ts |-> 0 ] @@
+        s3 :>
+            [ estado |-> "NONE",
+              motivo |-> "NONE",
+              identidade |-> "NONE",
+              ts |-> 0 ] ) @@
+  r2 :>
+      ( s1 :>
+            [ estado |-> "NONE",
+              motivo |-> "NONE",
+              identidade |-> "NONE",
+              ts |-> 0 ] @@
+        s2 :>
+            [ estado |-> "NONE",
+              motivo |-> "NONE",
+              identidade |-> "NONE",
+              ts |-> 0 ] @@
+        s3 :>
+            [ estado |-> "NONE",
+              motivo |-> "NONE",
+              identidade |-> "NONE",
+              ts |-> 0 ] ) )
+/\ canal = (r1 :> <<>> @@ r2 :> <<>>)
+/\ quedas = 0
+/\ identidades = ( r1 :>
+      ( u1 :> [status |-> "OPEN", ts |-> 0, contador |-> 0] @@
+        u2 :> [status |-> "OPEN", ts |-> 0, contador |-> 0] @@
+        u3 :> [status |-> "OPEN", ts |-> 0, contador |-> 0] ) @@
+  r2 :>
+      ( u1 :> [status |-> "OPEN", ts |-> 0, contador |-> 0] @@
+        u2 :> [status |-> "OPEN", ts |-> 0, contador |-> 0] @@
+        u3 :> [status |-> "OPEN", ts |-> 0, contador |-> 0] ) )
+/\ ladoDe = (r1 :> 1 @@ r2 :> 1)
+/\ relogio = (r1 :> 0 @@ r2 :> 0)
+/\ particaoAtiva = FALSE
+/\ particoes = 0
+/\ vivo = (r1 :> TRUE @@ r2 :> TRUE)
+
+State 2: <Login line 291, col 3 to line 300, col 65 of module SessionStore>
+/\ sessoes = ( r1 :>
+      ( s1 :>
+            [ estado |-> "VALID",
+              motivo |-> "NONE",
+              identidade |-> u1,
+              ts |-> 1 ] @@
+        s2 :>
+            [ estado |-> "NONE",
+              motivo |-> "NONE",
+              identidade |-> "NONE",
+              ts |-> 0 ] @@
+        s3 :>
+            [ estado |-> "NONE",
+              motivo |-> "NONE",
+              identidade |-> "NONE",
+              ts |-> 0 ] ) @@
+  r2 :>
+      ( s1 :>
+            [ estado |-> "NONE",
+              motivo |-> "NONE",
+              identidade |-> "NONE",
+              ts |-> 0 ] @@
+        s2 :>
+            [ estado |-> "NONE",
+              motivo |-> "NONE",
+              identidade |-> "NONE",
+              ts |-> 0 ] @@
+        s3 :>
+            [ estado |-> "NONE",
+              motivo |-> "NONE",
+              identidade |-> "NONE",
+              ts |-> 0 ] ) )
+/\ canal = ( r1 :> <<>> @@
+  r2 :>
+      << [ tipo |-> "SESSAO_VALIDA",
+           chave |-> s1,
+           sessao |->
+               [ estado |-> "VALID",
+                 motivo |-> "NONE",
+                 identidade |-> u1,
+                 ts |-> 1 ],
+           ident |-> [status |-> "OPEN", ts |-> 0, contador |-> 0],
+           sessoesAfetadas |-> {} ] >> )
+/\ quedas = 0
+/\ identidades = ( r1 :>
+      ( u1 :> [status |-> "OPEN", ts |-> 0, contador |-> 0] @@
+        u2 :> [status |-> "OPEN", ts |-> 0, contador |-> 0] @@
+        u3 :> [status |-> "OPEN", ts |-> 0, contador |-> 0] ) @@
+  r2 :>
+      ( u1 :> [status |-> "OPEN", ts |-> 0, contador |-> 0] @@
+        u2 :> [status |-> "OPEN", ts |-> 0, contador |-> 0] @@
+        u3 :> [status |-> "OPEN", ts |-> 0, contador |-> 0] ) )
+/\ ladoDe = (r1 :> 1 @@ r2 :> 1)
+/\ relogio = (r1 :> 1 @@ r2 :> 0)
+/\ particaoAtiva = FALSE
+/\ particoes = 0
+/\ vivo = (r1 :> TRUE @@ r2 :> TRUE)
+
+State 3: <Login line 291, col 3 to line 300, col 65 of module SessionStore>
+/\ sessoes = ( r1 :>
+      ( s1 :>
+            [ estado |-> "VALID",
+              motivo |-> "NONE",
+              identidade |-> u1,
+              ts |-> 1 ] @@
+        s2 :>
+            [ estado |-> "NONE",
+              motivo |-> "NONE",
+              identidade |-> "NONE",
+              ts |-> 0 ] @@
+        s3 :>
+            [ estado |-> "NONE",
+              motivo |-> "NONE",
+              identidade |-> "NONE",
+              ts |-> 0 ] ) @@
+  r2 :>
+      ( s1 :>
+            [ estado |-> "VALID",
+              motivo |-> "NONE",
+              identidade |-> u1,
+              ts |-> 1 ] @@
+        s2 :>
+            [ estado |-> "NONE",
+              motivo |-> "NONE",
+              identidade |-> "NONE",
+              ts |-> 0 ] @@
+        s3 :>
+            [ estado |-> "NONE",
+              motivo |-> "NONE",
+              identidade |-> "NONE",
+              ts |-> 0 ] ) )
+/\ canal = ( r1 :>
+      << [ tipo |-> "SESSAO_VALIDA",
+           chave |-> s1,
+           sessao |->
+               [ estado |-> "VALID",
+                 motivo |-> "NONE",
+                 identidade |-> u1,
+                 ts |-> 1 ],
+           ident |-> [status |-> "OPEN", ts |-> 0, contador |-> 0],
+           sessoesAfetadas |-> {} ] >> @@
+  r2 :>
+      << [ tipo |-> "SESSAO_VALIDA",
+           chave |-> s1,
+           sessao |->
+               [ estado |-> "VALID",
+                 motivo |-> "NONE",
+                 identidade |-> u1,
+                 ts |-> 1 ],
+           ident |-> [status |-> "OPEN", ts |-> 0, contador |-> 0],
+           sessoesAfetadas |-> {} ] >> )
+/\ quedas = 0
+/\ identidades = ( r1 :>
+      ( u1 :> [status |-> "OPEN", ts |-> 0, contador |-> 0] @@
+        u2 :> [status |-> "OPEN", ts |-> 0, contador |-> 0] @@
+        u3 :> [status |-> "OPEN", ts |-> 0, contador |-> 0] ) @@
+  r2 :>
+      ( u1 :> [status |-> "OPEN", ts |-> 0, contador |-> 0] @@
+        u2 :> [status |-> "OPEN", ts |-> 0, contador |-> 0] @@
+        u3 :> [status |-> "OPEN", ts |-> 0, contador |-> 0] ) )
+/\ ladoDe = (r1 :> 1 @@ r2 :> 1)
+/\ relogio = (r1 :> 1 @@ r2 :> 1)
+/\ particaoAtiva = FALSE
+/\ particoes = 0
+/\ vivo = (r1 :> TRUE @@ r2 :> TRUE)
+
+State 4: <Block line 389, col 3 to line 399, col 65 of module SessionStore>
+/\ sessoes = ( r1 :>
+      ( s1 :>
+            [ estado |-> "INVALID",
+              motivo |-> "ADMIN_BLOCK",
+              identidade |-> u1,
+              ts |-> 2 ] @@
+        s2 :>
+            [ estado |-> "NONE",
+              motivo |-> "NONE",
+              identidade |-> "NONE",
+              ts |-> 0 ] @@
+        s3 :>
+            [ estado |-> "NONE",
+              motivo |-> "NONE",
+              identidade |-> "NONE",
+              ts |-> 0 ] ) @@
+  r2 :>
+      ( s1 :>
+            [ estado |-> "VALID",
+              motivo |-> "NONE",
+              identidade |-> u1,
+              ts |-> 1 ] @@
+        s2 :>
+            [ estado |-> "NONE",
+              motivo |-> "NONE",
+              identidade |-> "NONE",
+              ts |-> 0 ] @@
+        s3 :>
+            [ estado |-> "NONE",
+              motivo |-> "NONE",
+              identidade |-> "NONE",
+              ts |-> 0 ] ) )
+/\ canal = ( r1 :>
+      << [ tipo |-> "SESSAO_VALIDA",
+           chave |-> s1,
+           sessao |->
+               [ estado |-> "VALID",
+                 motivo |-> "NONE",
+                 identidade |-> u1,
+                 ts |-> 1 ],
+           ident |-> [status |-> "OPEN", ts |-> 0, contador |-> 0],
+           sessoesAfetadas |-> {} ] >> @@
+  r2 :>
+      << [ tipo |-> "SESSAO_VALIDA",
+           chave |-> s1,
+           sessao |->
+               [ estado |-> "VALID",
+                 motivo |-> "NONE",
+                 identidade |-> u1,
+                 ts |-> 1 ],
+           ident |-> [status |-> "OPEN", ts |-> 0, contador |-> 0],
+           sessoesAfetadas |-> {} ],
+         [ tipo |-> "ID_BLOQUEIA",
+           chave |-> u1,
+           sessao |->
+               [ estado |-> "INVALID",
+                 motivo |-> "ADMIN_BLOCK",
+                 identidade |-> u1,
+                 ts |-> 2 ],
+           ident |-> [status |-> "BLOCKED", ts |-> 2, contador |-> 0],
+           sessoesAfetadas |-> {s1} ] >> )
+/\ quedas = 0
+/\ identidades = ( r1 :>
+      ( u1 :> [status |-> "BLOCKED", ts |-> 2, contador |-> 0] @@
+        u2 :> [status |-> "OPEN", ts |-> 0, contador |-> 0] @@
+        u3 :> [status |-> "OPEN", ts |-> 0, contador |-> 0] ) @@
+  r2 :>
+      ( u1 :> [status |-> "OPEN", ts |-> 0, contador |-> 0] @@
+        u2 :> [status |-> "OPEN", ts |-> 0, contador |-> 0] @@
+        u3 :> [status |-> "OPEN", ts |-> 0, contador |-> 0] ) )
+/\ ladoDe = (r1 :> 1 @@ r2 :> 1)
+/\ relogio = (r1 :> 2 @@ r2 :> 1)
+/\ particaoAtiva = FALSE
+/\ particoes = 0
+/\ vivo = (r1 :> TRUE @@ r2 :> TRUE)
+
+237 states generated, 13 distinct states found, 7 states left on queue.
+The depth of the complete state graph search is 3.
+The average outdegree of the complete state graph is 5 (minimum is 5, the maximum 5 and the 95th percentile is 5).
+Checkpointing of run C:\Users\Francesco\Development\tcc\wt-b45\spec\states\b45\meta\a-inv-medium-I2\26-11-04-22-48-53
+Checkpointing completed at (2026-11-04 22:48:54)
+Finished in 00s at (2026-11-04 22:48:54)

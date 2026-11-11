@@ -1,0 +1,231 @@
+TLC2 Version 2.19 of 08 August 2024 (rev: 5a47802)
+Running breadth-first search Model-Checking with fp 43 and seed 3224159517324282990 with 1 worker on 20 cores with 2731MB heap and 64MB offheap memory [pid: 17020] (Windows 11 10.0 amd64, Oracle Corporation 17.0.2 x86_64, MSBDiskFPSet, DiskStateQueue).
+Parsing file C:\Users\Francesco\Development\tcc\wt-b45\spec\states\b45\snap-8f25803\MCFifo.tla
+Parsing file C:\Users\Francesco\Development\tcc\wt-b45\spec\states\b45\jtmp\f-sem1-sem-r2-I5\Naturals.tla
+Parsing file C:\Users\Francesco\Development\tcc\wt-b45\spec\states\b45\jtmp\f-sem1-sem-r2-I5\Sequences.tla
+Parsing file C:\Users\Francesco\Development\tcc\wt-b45\spec\states\b45\jtmp\f-sem1-sem-r2-I5\FiniteSets.tla
+Parsing file C:\Users\Francesco\Development\tcc\wt-b45\spec\states\b45\jtmp\f-sem1-sem-r2-I5\TLC.tla
+Semantic processing of module Naturals
+Semantic processing of module Sequences
+Semantic processing of module FiniteSets
+Semantic processing of module TLC
+Semantic processing of module MCFifo
+Starting... (2026-11-04 22:48:38)
+Computing initial states...
+Finished computing initial states: 1 distinct state generated at 2026-11-04 22:48:39.
+Error: Invariant I5 is violated.
+Error: The behavior up to this point is:
+State 1: <Initial predicate>
+/\ sessoes = ( r1 :>
+      ( s1 :>
+            [ estado |-> "VALID",
+              motivo |-> "NONE",
+              identidade |-> u1,
+              ts |-> 1 ] @@
+        s2 :>
+            [ estado |-> "VALID",
+              motivo |-> "NONE",
+              identidade |-> u1,
+              ts |-> 1 ] ) @@
+  r2 :>
+      ( s1 :>
+            [ estado |-> "VALID",
+              motivo |-> "NONE",
+              identidade |-> u1,
+              ts |-> 1 ] @@
+        s2 :>
+            [ estado |-> "VALID",
+              motivo |-> "NONE",
+              identidade |-> u1,
+              ts |-> 1 ] ) )
+/\ canal = (r1 :> <<>> @@ r2 :> <<>>)
+/\ quedas = 0
+/\ identidades = ( r1 :> (u1 :> [ts |-> 1, contador |-> 0, status |-> "OPEN"]) @@
+  r2 :> (u1 :> [ts |-> 1, contador |-> 0, status |-> "OPEN"]) )
+/\ ladoDe = (r1 :> 1 @@ r2 :> 1)
+/\ relogio = (r1 :> 1 @@ r2 :> 1)
+/\ particaoAtiva = FALSE
+/\ particoes = 0
+/\ vivo = (r1 :> TRUE @@ r2 :> TRUE)
+
+State 2: <Logout line 126, col 3 to line 134, col 65 of module MCFifo>
+/\ sessoes = ( r1 :>
+      ( s1 :>
+            [ estado |-> "INVALID",
+              motivo |-> "LOGOUT",
+              identidade |-> u1,
+              ts |-> 2 ] @@
+        s2 :>
+            [ estado |-> "VALID",
+              motivo |-> "NONE",
+              identidade |-> u1,
+              ts |-> 1 ] ) @@
+  r2 :>
+      ( s1 :>
+            [ estado |-> "VALID",
+              motivo |-> "NONE",
+              identidade |-> u1,
+              ts |-> 1 ] @@
+        s2 :>
+            [ estado |-> "VALID",
+              motivo |-> "NONE",
+              identidade |-> u1,
+              ts |-> 1 ] ) )
+/\ canal = ( r1 :> <<>> @@
+  r2 :>
+      << [ tipo |-> "SESSAO_INVALIDA",
+           chave |-> s1,
+           sessao |->
+               [ estado |-> "INVALID",
+                 motivo |-> "LOGOUT",
+                 identidade |-> u1,
+                 ts |-> 2 ],
+           ident |-> [ts |-> 0, contador |-> 0, status |-> "OPEN"],
+           sessoesAfetadas |-> {},
+           origem |-> r1 ] >> )
+/\ quedas = 0
+/\ identidades = ( r1 :> (u1 :> [ts |-> 1, contador |-> 0, status |-> "OPEN"]) @@
+  r2 :> (u1 :> [ts |-> 1, contador |-> 0, status |-> "OPEN"]) )
+/\ ladoDe = (r1 :> 1 @@ r2 :> 1)
+/\ relogio = (r1 :> 2 @@ r2 :> 1)
+/\ particaoAtiva = FALSE
+/\ particoes = 0
+/\ vivo = (r1 :> TRUE @@ r2 :> TRUE)
+
+State 3: <Block line 181, col 3 to line 191, col 65 of module MCFifo>
+/\ sessoes = ( r1 :>
+      ( s1 :>
+            [ estado |-> "INVALID",
+              motivo |-> "LOGOUT",
+              identidade |-> u1,
+              ts |-> 2 ] @@
+        s2 :>
+            [ estado |-> "VALID",
+              motivo |-> "NONE",
+              identidade |-> u1,
+              ts |-> 1 ] ) @@
+  r2 :>
+      ( s1 :>
+            [ estado |-> "INVALID",
+              motivo |-> "ADMIN_BLOCK",
+              identidade |-> u1,
+              ts |-> 2 ] @@
+        s2 :>
+            [ estado |-> "INVALID",
+              motivo |-> "ADMIN_BLOCK",
+              identidade |-> u1,
+              ts |-> 2 ] ) )
+/\ canal = ( r1 :>
+      << [ tipo |-> "ID_BLOQUEIA",
+           chave |-> u1,
+           sessao |->
+               [ estado |-> "INVALID",
+                 motivo |-> "ADMIN_BLOCK",
+                 identidade |-> u1,
+                 ts |-> 2 ],
+           ident |-> [ts |-> 2, contador |-> 0, status |-> "BLOCKED"],
+           sessoesAfetadas |-> {s1, s2},
+           origem |-> r2 ] >> @@
+  r2 :>
+      << [ tipo |-> "SESSAO_INVALIDA",
+           chave |-> s1,
+           sessao |->
+               [ estado |-> "INVALID",
+                 motivo |-> "LOGOUT",
+                 identidade |-> u1,
+                 ts |-> 2 ],
+           ident |-> [ts |-> 0, contador |-> 0, status |-> "OPEN"],
+           sessoesAfetadas |-> {},
+           origem |-> r1 ] >> )
+/\ quedas = 0
+/\ identidades = ( r1 :> (u1 :> [ts |-> 1, contador |-> 0, status |-> "OPEN"]) @@
+  r2 :> (u1 :> [ts |-> 2, contador |-> 0, status |-> "BLOCKED"]) )
+/\ ladoDe = (r1 :> 1 @@ r2 :> 1)
+/\ relogio = (r1 :> 2 @@ r2 :> 2)
+/\ particaoAtiva = FALSE
+/\ particoes = 0
+/\ vivo = (r1 :> TRUE @@ r2 :> TRUE)
+
+State 4: <EntregaMensagem line 243, col 3 to line 282, col 60 of module MCFifo>
+/\ sessoes = ( r1 :>
+      ( s1 :>
+            [ estado |-> "INVALID",
+              motivo |-> "LOGOUT",
+              identidade |-> u1,
+              ts |-> 2 ] @@
+        s2 :>
+            [ estado |-> "INVALID",
+              motivo |-> "ADMIN_BLOCK",
+              identidade |-> u1,
+              ts |-> 2 ] ) @@
+  r2 :>
+      ( s1 :>
+            [ estado |-> "INVALID",
+              motivo |-> "ADMIN_BLOCK",
+              identidade |-> u1,
+              ts |-> 2 ] @@
+        s2 :>
+            [ estado |-> "INVALID",
+              motivo |-> "ADMIN_BLOCK",
+              identidade |-> u1,
+              ts |-> 2 ] ) )
+/\ canal = ( r1 :> <<>> @@
+  r2 :>
+      << [ tipo |-> "SESSAO_INVALIDA",
+           chave |-> s1,
+           sessao |->
+               [ estado |-> "INVALID",
+                 motivo |-> "LOGOUT",
+                 identidade |-> u1,
+                 ts |-> 2 ],
+           ident |-> [ts |-> 0, contador |-> 0, status |-> "OPEN"],
+           sessoesAfetadas |-> {},
+           origem |-> r1 ] >> )
+/\ quedas = 0
+/\ identidades = ( r1 :> (u1 :> [ts |-> 2, contador |-> 0, status |-> "BLOCKED"]) @@
+  r2 :> (u1 :> [ts |-> 2, contador |-> 0, status |-> "BLOCKED"]) )
+/\ ladoDe = (r1 :> 1 @@ r2 :> 1)
+/\ relogio = (r1 :> 2 @@ r2 :> 2)
+/\ particaoAtiva = FALSE
+/\ particoes = 0
+/\ vivo = (r1 :> TRUE @@ r2 :> TRUE)
+
+State 5: <EntregaMensagem line 243, col 3 to line 282, col 60 of module MCFifo>
+/\ sessoes = ( r1 :>
+      ( s1 :>
+            [ estado |-> "INVALID",
+              motivo |-> "LOGOUT",
+              identidade |-> u1,
+              ts |-> 2 ] @@
+        s2 :>
+            [ estado |-> "INVALID",
+              motivo |-> "ADMIN_BLOCK",
+              identidade |-> u1,
+              ts |-> 2 ] ) @@
+  r2 :>
+      ( s1 :>
+            [ estado |-> "INVALID",
+              motivo |-> "ADMIN_BLOCK",
+              identidade |-> u1,
+              ts |-> 2 ] @@
+        s2 :>
+            [ estado |-> "INVALID",
+              motivo |-> "ADMIN_BLOCK",
+              identidade |-> u1,
+              ts |-> 2 ] ) )
+/\ canal = (r1 :> <<>> @@ r2 :> <<>>)
+/\ quedas = 0
+/\ identidades = ( r1 :> (u1 :> [ts |-> 2, contador |-> 0, status |-> "BLOCKED"]) @@
+  r2 :> (u1 :> [ts |-> 2, contador |-> 0, status |-> "BLOCKED"]) )
+/\ ladoDe = (r1 :> 1 @@ r2 :> 1)
+/\ relogio = (r1 :> 2 @@ r2 :> 2)
+/\ particaoAtiva = FALSE
+/\ particoes = 0
+/\ vivo = (r1 :> TRUE @@ r2 :> TRUE)
+
+1144 states generated, 257 distinct states found, 198 states left on queue.
+The depth of the complete state graph search is 5.
+The average outdegree of the complete state graph is 4 (minimum is 1, the maximum 9 and the 95th percentile is 8).
+Checkpointing of run C:\Users\Francesco\Development\tcc\wt-b45\spec\states\b45\meta\f-sem1-sem-r2-I5\26-11-04-22-48-38
+Checkpointing completed at (2026-11-04 22:48:39)
+Finished in 00s at (2026-11-04 22:48:39)

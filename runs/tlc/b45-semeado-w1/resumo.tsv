@@ -1,0 +1,10 @@
+a-sem1-sem-r2-I5	ANTES	20805b0	MCSession	SpecSemeada	r2	SemFalha	I5	S	1	VIOLADA	traco_de_5_estados	1288	307	245	2s
+a-sem1-sem-r2-I6	ANTES	20805b0	MCSession	SpecSemeada	r2	SemFalha	I6	S	1	VIOLADA	traco_de_5_estados	2096	454	357	2s
+a-sem1-queda-r2-I5	ANTES	20805b0	MCSession	SpecSemeada	r2	SoQueda	I5	S	1	VIOLADA	traco_de_5_estados	1490	443	362	1s
+a-sem1-queda-r2-I6	ANTES	20805b0	MCSession	SpecSemeada	r2	SoQueda	I6	S	1	VIOLADA	traco_de_5_estados	2462	676	545	1s
+a-sem1-particao-r2-I5	ANTES	20805b0	MCSession	SpecSemeada	r2	SoParticao	I5	S	1	VIOLADA	traco_de_5_estados	1488	461	381	2s
+a-sem1-particao-r2-I6	ANTES	20805b0	MCSession	SpecSemeada	r2	SoParticao	I6	S	1	VIOLADA	traco_de_5_estados	2518	735	603	2s
+d-sem1-particao-r2-I5	DEPOIS	a2ce4c9	MCSession	SpecSemeada	r2	SoParticao	I5	S	1	VIOLADA	traco_de_5_estados	1594	493	405	2s
+d-sem1-particao-r2-I6	DEPOIS	a2ce4c9	MCSession	SpecSemeada	r2	SoParticao	I6	S	1	VIOLADA	traco_de_5_estados	2702	781	639	2s
+f-sem1-sem-r2-I5	FIFO	8f25803	MCFifo	SpecSemeada	r2	SemFalha	I5	S	1	VIOLADA	traco_de_5_estados	1144	257	198	2s
+f-sem1-sem-r2-I6	FIFO	8f25803	MCFifo	SpecSemeada	r2	SemFalha	I6	S	1	VIOLADA	traco_de_5_estados	1798	361	271	2s

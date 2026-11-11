@@ -7,8 +7,10 @@ estão marcados com a fonte; os resultados da comparação ficam no capítulo 5.
 
 ## 8.1 Desvios declarados
 
-Desvio é o que a execução fez diferente do roteiro ou do pré-registro. **Nenhum mudou regra, desfecho, matriz,
-semente, *jar* ou parâmetro da análise** (ENTREGA itens 8 e 9: "sem mudança de protocolo").
+Desvio é o que a execução fez diferente do roteiro ou do pré-registro. **D1 a D12 não mudaram regra, desfecho,
+matriz, semente, *jar* ou parâmetro da análise** (ENTREGA itens 8 e 9: "sem mudança de protocolo"). O D13 é da
+ferramenta de análise, que usou uma família de Holm maior que a pré-registrada; foi achado na redação deste relatório,
+conferido pelo coordenador em 11/11 e corrigido no capítulo 5, sem mudar conclusão.
 
 | # | Desvio | O que aconteceu | Por que não invalida a comparação | Fonte |
 |---|---|---|---|---|
@@ -24,6 +26,7 @@ semente, *jar* ou parâmetro da análise** (ENTREGA itens 8 e 9: "sem mudança d
 | D10 | limite de progresso do supervisor de 600 s | instrução do coordenador, no lugar de `exec_teto_s` + 90 s | só gera alerta, sem ação | roteiro §12 (`d101090`) |
 | D11 | sonda tardia no teto | a `exec-0089` (F4, bloco 32) teve 309 candidatas, acima do teto de 306; as excedentes não foram sondadas | célula descritiva; nenhuma violação na F4 | ENTREGA item 6 |
 | D12 | CPU e energia com 4 de 12 blocos na F2 | a regra que tira o bloco sem medida de *steal* excluiu 8 blocos porque o coletor começa 0,01 a 0,13 s depois da primeira operação; *steal* real zero | regra pré-registrada aplicada; sensibilidade de 12 blocos, não pré-registrada, com a mesma conclusão | validação de 11/11 §4 |
+| D13 | família de Holm dos secundários com 11 hipóteses em vez de 9 | o pré-registro fixa 9 por efeito (os 7 da DT-021 §5.3 mais perda permanente e exposição, da DT-027 §2.2), com p99 por operação e cada invariante só descritivos; o `comparar_bracos.py` não foi ajustado e incluiu o p99 sem espera e o p99 do `Validate`, chegando a 11 | desvio da ferramenta, conservador (valores-p ajustados maiores); com a família de 9 nenhuma conclusão muda; o capítulo 5 reporta a família pré-registrada com o valor do *script* ao lado | validação de 11/11 §4b; `pre-registro-b40-avaliacao-2026-11-05.md` §5.3 |
 
 **Desvios de plano fora da avaliação**, que o texto também precisa declarar:
 
@@ -82,7 +85,8 @@ buscar, seção 8.6).
   ausência de sobreposição.
 - F1 com 3 blocos (menor valor-p possível 0,25) e F4 com 4 (0,125): só descritivas, sem teste.
 - Contagens nulas (V = 0 nas descritivas) relatadas como "não observadas em N ações", com 3/N.
-- Holm m = 2 nos co-principais e m = 11 nos secundários; sensibilidades sem correção, marcadas como tais.
+- Holm m = 2 nos co-principais e m = 9 por efeito nos secundários, pelo pré-registro (a ferramenta usou 11, desvio
+  conservador D13); sensibilidades sem correção, marcadas como tais.
 - O desenho foi revisto depois de dados de calibração e de piloto (P3 da seção 8.1). As revisões foram registradas
   antes dos dados da avaliação, mas a escolha do ponto de operação e da ação usou informação de execuções anteriores
   no mesmo ambiente; a comparação continua válida para o ponto escolhido, e a generalização fica limitada.
@@ -145,6 +149,7 @@ Parada pela regra h4 & cinco descartes em doze execuções na fase extra & retom
 Registros da política de fusão perdidos & o registro do servidor é apagado na recriação do \emph{cluster} & descritivos da política de fusão indisponíveis \\
 Sonda tardia no teto & uma execução da degradação com 309 candidatas para 306 & célula descritiva, sem violação \\
 CPU e energia com 4 de 12 blocos & medida de \emph{steal} ausente no início da janela & resultado oficial com 4 blocos e sensibilidade com 12 \\
+Correção dos secundários & a ferramenta de análise usou 11 hipóteses por efeito em vez das 9 pré-registradas & correção refeita com 9; nenhuma conclusão muda \\
 \hline
 \end{tabular}
 \fonte{O autor}

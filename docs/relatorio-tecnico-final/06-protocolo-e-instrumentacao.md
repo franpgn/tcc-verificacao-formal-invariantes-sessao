@@ -204,8 +204,9 @@ Fonte: `comparar_bracos.py` da *tag* (docstring, linhas 60 a 100; famílias em `
 | Δ_rec | da última operação iniciada depois do fim da falha que terminou em anomalia até o fim da falha; censura nos últimos 4 s antes do fim da carga | diferença | secundário |
 | Δ_conv | do fim da carga até a primeira de três rodadas seguidas sem divergência entre réplicas | diferença | secundário |
 | divergência persistente | 1 se o laço não convergiu em 600 s | diferença | secundário |
-| p99 sem espera, p99 por operação | o mesmo p99 sem a espera do portão (zero nesta campanha) e o p99 de cada operação com ao menos 1 000 eventos (só `Validate` passou) | log da razão | secundários |
+| p99 sem espera, p99 por operação | o mesmo p99 sem a espera do portão (zero nesta campanha) e o p99 de cada operação com ao menos 1 000 eventos (só `Validate` passou) | log da razão | descritivos pelo pré-registro (o *script* os pôs na família de Holm; ver abaixo) |
 | CPU e energia | CPU-s da VM por 1 000 ações úteis; energia estimada por 1 000 ações úteis com razão ociosa 0,3 (seção 6.8) | log da razão | secundários |
+| cada invariante em separado (I1, I4, I2 real) | contagem por invariante | diferença | descritivos |
 | sensibilidades | V sem a forma 2; taxas em razão sem zeros; energia com 0,5; Δ_rec pela linha de base binomial | | sem Holm |
 
 **Regra de sucesso, por efeito principal** (DT-027 §2.1): interseção-união, `p_IU` = máx(p_V, p_L); H_V rejeitada com
@@ -215,10 +216,18 @@ efeitos (m = 2): o menor `p_IU` precisa ficar abaixo de 0,025, o que exige k ≥
 não avaliável num efeito quando os braços de referência dele (PO e PL para a A1; PO e AO para o controlador) somam zero
 violação. A interação vai com IC e valor-p, sem Holm e fora da regra.
 
-**Secundários:** Holm dentro da família de cada efeito. A família tem 17 desfechos rotulados "secundario"; os p99 de
-seis operações saíram sem bloco (menos de 1 000 eventos), então o Holm usou **m = 11** por efeito (ENTREGA item 5 e
-`n_secundarios_holm` = 11 no JSON oficial). IC primário: t (decisão D3 de 27/10); *bootstrap* por blocos como
-sensibilidade.
+**Secundários: família de Holm de 9 hipóteses por efeito**, pelo pré-registro. São os 7 da DT-021 §5.3 (Δ_rec,
+Δ_conv, divergência persistente, taxa de erro, falhas percebidas, CPU por mil ações úteis e energia com ociosidade
+0,3; `wt-bench/docs/pre-registro-b40-avaliacao-2026-11-05.md` §5.3, "família fixa") mais perda permanente e exposição
+na janela (DT-027 §2.2). O pré-registro deixa o p99 por operação e cada invariante como **descritivos**, "para a
+família não crescer", e mandava ajustar o código se a família fosse outra. IC primário: t (decisão D3 de 27/10);
+*bootstrap* por blocos como sensibilidade.
+
+**Desvio da ferramenta (declarado no capítulo 8, D13).** O `comparar_bracos.py` oficial não foi ajustado: ele põe na
+família todo desfecho rotulado "secundario" que tenha valor-p, e chegou a **m = 11** por efeito, com o p99 sem espera e
+o p99 do `Validate` (os p99 das outras seis operações saíram sem bloco, com menos de 1 000 eventos; ENTREGA item 5 e
+`n_secundarios_holm` = 11 no JSON oficial). O desvio é conservador e não muda nenhuma conclusão; o capítulo 5 reporta
+o Holm da família de 9, com o valor do *script* ao lado (validação de 11/11, §4b).
 
 **W = 191 s, a janela da recuperação.** A fase de recuperação vai do fim da falha até máx(fim + 191 s, convergência)
 (`analysis/fases.py`). O valor 191 = 300 − 49 − 60 (duração − disparo − F1) e fica acima da janela de fusão de ~96 s
@@ -510,7 +519,7 @@ Análise & 08/11 & parâmetros e semente da análise, antes de rodá-la \\
 | `Metodologia.tex:333-335` (MET-42, MET-69) | "O método previsto"; exclusão só por *steal* > 5 % | **atualizar**: método executado; acrescentar a exclusão por *steal* sem medida e o efeito (4 de 12 blocos) | 6.8 |
 | `Metodologia.tex:347` (MET-43, MET-71) | dois braços, quatro células (sem falha, F2, F4, F1), oito blocos, SYNC de referência, ~80 execuções, 16 a 27 h | **errado**: fatorial na F2 com 12 blocos e quatro células descritivas de 4 blocos; sem SYNC; 90 execuções (~9,8 h de VM em três fases) | DT-027; 6.10 |
 | `Metodologia.tex:349` (MET-72) | oito blocos, 2⁸ = 256, menor p a partir de k = 6 | **corrigir**: 12 blocos, 2¹² = 4 096; com Holm m = 2, o menor `p_IU` exige k ≥ 7 | DT-027 §2.1 |
-| `Metodologia.tex:351` (MET-72) | Holm "das três células com falha"; braço A sem violação torna a célula não avaliável; lista de secundários | **corrigir** para efeitos; acrescentar perda permanente e exposição; m = 11 | DT-027 §2.2 e §7; ENTREGA item 5 |
+| `Metodologia.tex:351` (MET-72) | Holm "das três células com falha"; braço A sem violação torna a célula não avaliável; lista de secundários com p99 por operação e cada invariante | **corrigir** para efeitos; família de 9 por efeito (os 7 da DT-021 mais perda permanente e exposição); p99 por operação e cada invariante como descritivos; declarar que a ferramenta usou 11 | DT-021 §5.3; DT-027 §2.2 e §7; validação de 11/11 §4b |
 | `Metodologia.tex:353` (MET-43) | "Os limiares ... serão calibrados" | **corrigir**: calibrados duas vezes (X-18 e X-19), valores na DT-028 | capítulo 4 |
 | `Desenvolvimento.tex:92` (DES-83) | h4 e reposição "até um teto fixado para a campanha" | **mantém**; acrescentar teto de 20 blocos e a parada por 5 em 12 | DT-027 nota |
 | `Desenvolvimento.tex:101` (DES-35) | *caches* assíncronos "só será instalada na máquina virtual quando o *cluster* for recriado" | **atualizar**: nas campanhas S3 o *cluster* sobe sem *caches* e os seis são criados pela REST antes de cada execução, com o JSON do braço | TD-015; 6.3 |

@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Configuração do cluster Infinispan para o TCC, versão SEM caches (W-6, B-46), usada na calibração e na
+  avaliação S3 (scripts/run-campanha-s3.sh, cluster/podman-compose-sem-caches.yml). É o infinispan-cluster.xml
+  sem os elementos distributed-cache (ClusterSemCachesXmlTest confere nó a nó). Os caches da carga
+  ('sessions'/'counters' em DIST_SYNC e 'sessions-async'/'counters-async' em DIST_ASYNC, B-42.1) e os 'canario*'
+  do S_lag (W-4) são criados pela REST a partir de cluster/caches/<nome>.json, com a configuração do XML com
+  caches (CachesCargaJsonTest, CachesCanarioJsonTest). Motivo: P-30 do B-44.1b (cache do XML que teve atributo
+  mudado em execução impede o reinício do nó; cache criado pela REST não).
+-->
+<infinispan
+    xmlns="urn:infinispan:config:15.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="urn:infinispan:config:15.0 https://infinispan.org/schemas/infinispan-config-15.0.xsd">
+
+  <jgroups>
+    <stack-file name="cluster-stack" path="jgroups-tcp.xml"/>
+  </jgroups>
+
+  <cache-container name="default" statistics="true">
+    <transport cluster="cluster-tcc" stack="cluster-stack"/>
+    <!-- W-6 (B-46; contorno b do P-30 do B-44.1b, docs/acoes-controlador-cluster-2026-11-05.md secao 6): nenhum
+         cache declarado aqui. Os seis (sessions, counters, sessions-async, counters-async, canario e
+         canario-async) sao criados pela REST por scripts/cria-caches.sh a partir de cluster/caches/<nome>.json,
+         com a mesma configuracao do infinispan-cluster.xml (CachesCargaJsonTest, CachesCanarioJsonTest). -->
+  </cache-container>
+
+  <server xmlns="urn:infinispan:server:15.0">
+    <interfaces>
+      <interface name="public">
+        <inet-address value="${infinispan.bind.address:0.0.0.0}"/>
+      </interface>
+    </interfaces>
+    <socket-bindings default-interface="public" port-offset="${infinispan.socket.binding.port-offset:0}">
+      <socket-binding name="default" port="${infinispan.bind.port:11222}"/>
+    </socket-bindings>
+    <security>
+      <security-realms>
+        <security-realm name="default">
+          <properties-realm/>
+        </security-realm>
+      </security-realms>
+    </security>
+    <!--
+      O conector Hot Rod anuncia para o cliente um endereco externo
+      (external-host/external-port) em vez do IP interno do container
+      (10.89.x.x), que e inalcancavel a partir do host Windows/WSL2. Sem
+      isso, o cliente recebe a topologia com os IPs internos dos owners e
+      falha com ISPN004015 (Failed adding new server 10.89.x.x), gerando
+      ERROR_TRANSPORT em ~2/3 das chaves. Os valores sao parametrizados por
+      propriedade de sistema, definida por no no podman-compose.yml:
+        isn1 -> 127.0.0.1:11222, isn2 -> 127.0.0.1:11223, isn3 -> 127.0.0.1:11224
+    -->
+    <endpoints>
+      <endpoint socket-binding="default" security-realm="default">
+        <hotrod-connector
+            external-host="${infinispan.hotrod.external-host:127.0.0.1}"
+            external-port="${infinispan.hotrod.external-port:11222}"/>
+        <rest-connector/>
+      </endpoint>
+    </endpoints>
+  </server>
+</infinispan>

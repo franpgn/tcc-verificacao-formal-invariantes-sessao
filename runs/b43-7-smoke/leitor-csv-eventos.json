@@ -1,0 +1,9 @@
+{
+ "Q1/rep-001.csv": {"status": "OK", "eventos": 735033, "erros": 0, "por_codigo": {"COUNTED": 48943, "INVALID": 12866, "NONE": 196138, "OK": 122374, "VALID": 354712}},
+ "Q2/rep-001.csv": {"status": "OK", "eventos": 1088065, "erros": 0, "por_codigo": {"COUNTED": 10238, "INVALID": 49204, "NONE": 41072, "OK": 30882, "VALID": 956669}},
+ "Q3/rep-001.csv": {"status": "OK", "eventos": 984346, "erros": 0, "por_codigo": {"COUNTED": 66081, "INVALID": 17074, "NONE": 261839, "OK": 163709, "VALID": 475643}},
+ "Q4/rep-001.csv": {"status": "OK", "eventos": 1140910, "erros": 0, "por_codigo": {"COUNTED": 10824, "INVALID": 51435, "NONE": 43145, "OK": 32428, "VALID": 1003078}},
+ "L1/rep-001.csv": {"status": "OK", "eventos": 4011530, "erros": 0, "por_codigo": {"COUNTED": 268086, "INVALID": 70049, "NONE": 1069116, "OK": 667887, "VALID": 1936392}},
+ "L2/rep-001.csv": {"status": "OK", "eventos": 4652498, "erros": 0, "por_codigo": {"COUNTED": 310488, "INVALID": 80475, "NONE": 1240110, "OK": 774941, "VALID": 2246484}},
+ "L0/rep-001.csv": {"status": "OK", "eventos": 3422470, "erros": 0, "por_codigo": {"COUNTED": 228640, "INVALID": 972402, "NONE": 912579, "OK": 571198, "VALID": 737651}}
+}

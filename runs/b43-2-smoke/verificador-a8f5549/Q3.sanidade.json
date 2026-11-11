@@ -1,0 +1,77 @@
+{
+  "arquivo" : "C:/Users/Francesco/Development/tcc/wt-b43-2/runs/b43-2-smoke/Q3/rep-001.csv",
+  "sha256" : "12f7d4734217804f782d40761a286e32096995dd7310ba8627b2e644dc09dc55",
+  "cenario" : "S1",
+  "modo" : "strict",
+  "limiares" : {
+    "login_ok_min" : 0.95,
+    "validate_valid_min_exclusivo" : 0,
+    "validate_ausente_max" : 0.05,
+    "mistura_tolerancia_pp" : 2.0,
+    "status" : "PROVISORIOS (diagnostico 2026-10-22; aceitos pelo Gestor como provisorios)"
+  },
+  "contagens" : {
+    "fora" : {
+      "IncrementFailure" : {
+        "COUNTED" : 26230
+      },
+      "Login" : {
+        "OK" : 65723
+      },
+      "Logout" : {
+        "NONE" : 92457
+      },
+      "ResetFailures" : {
+        "NONE" : 13165
+      },
+      "Validate" : {
+        "VALID" : 196948
+      }
+    },
+    "dentro" : { }
+  },
+  "metricas" : {
+    "eventos_total" : 394523,
+    "eventos_fora" : 394523,
+    "eventos_dentro" : 0,
+    "login" : 65723,
+    "login_ok" : 65723,
+    "login_blocked" : 0,
+    "login_ok_frac" : 1.0,
+    "validate" : 196948,
+    "validate_valid" : 196948,
+    "validate_ausente" : 0,
+    "validate_ausente_frac" : 0.0,
+    "ops" : 263077,
+    "mistura" : {
+      "Validate" : {
+        "observado" : 0.4988083336817738,
+        "esperado" : 0.5,
+        "desvio_pp" : -0.11916663182262033
+      },
+      "Login" : {
+        "observado" : 0.24982419595783745,
+        "esperado" : 0.25,
+        "desvio_pp" : -0.017580404216255285
+      },
+      "Logout" : {
+        "observado" : 0.10162043812267892,
+        "esperado" : 0.1,
+        "desvio_pp" : 0.16204381226789105
+      },
+      "IncrementFailure" : {
+        "observado" : 0.0997046492091669,
+        "esperado" : 0.1,
+        "desvio_pp" : -0.02953507908331071
+      },
+      "ResetFailures" : {
+        "observado" : 0.050042383028542976,
+        "esperado" : 0.05,
+        "desvio_pp" : 0.004238302854297354
+      }
+    }
+  },
+  "veredito" : "OK",
+  "motivos" : [ ],
+  "versao" : "b43-3a-i/1"
+}

@@ -1,0 +1,1820 @@
+{
+ "Q1": {
+  "cenario": "S1",
+  "replicacao": "sync",
+  "mix": "v3",
+  "duracao_s": 120,
+  "exit": 0,
+  "linhas_csv": 735033,
+  "csv_operation_return_code": {
+   "IncrementFailure COUNTED": 48943,
+   "Login OK": 122374,
+   "Logout NONE": 171512,
+   "ResetFailures NONE": 24626,
+   "Validate INVALID": 12866,
+   "Validate VALID": 354712
+  },
+  "validate_isolados_csv": 245204,
+  "invalid_isolados_csv": 12866,
+  "frac_invalid_isolados_pct": 5.2471,
+  "tercos": [
+   {
+    "validate_isolados": 79195,
+    "invalid": 4142,
+    "frac_pct": 5.2301
+   },
+   {
+    "validate_isolados": 77001,
+    "invalid": 4015,
+    "frac_pct": 5.2142
+   },
+   {
+    "validate_isolados": 89008,
+    "invalid": 4709,
+    "frac_pct": 5.2905
+   }
+  ],
+  "decimos": [
+   {
+    "validate_isolados": 22750,
+    "invalid": 1186,
+    "frac_pct": 5.2132
+   },
+   {
+    "validate_isolados": 23154,
+    "invalid": 1207,
+    "frac_pct": 5.2129
+   },
+   {
+    "validate_isolados": 24540,
+    "invalid": 1285,
+    "frac_pct": 5.2363
+   },
+   {
+    "validate_isolados": 26651,
+    "invalid": 1398,
+    "frac_pct": 5.2456
+   },
+   {
+    "validate_isolados": 15040,
+    "invalid": 778,
+    "frac_pct": 5.1729
+   },
+   {
+    "validate_isolados": 25722,
+    "invalid": 1349,
+    "frac_pct": 5.2445
+   },
+   {
+    "validate_isolados": 27411,
+    "invalid": 1436,
+    "frac_pct": 5.2388
+   },
+   {
+    "validate_isolados": 25229,
+    "invalid": 1336,
+    "frac_pct": 5.2955
+   },
+   {
+    "validate_isolados": 27481,
+    "invalid": 1437,
+    "frac_pct": 5.2291
+   },
+   {
+    "validate_isolados": 27226,
+    "invalid": 1454,
+    "frac_pct": 5.3405
+   }
+  ],
+  "logout_isolados_csv_por_codigo": {
+   "NONE": 49137
+  },
+  "registrados": 735033,
+  "descartados_warmup": 114900,
+  "total_operacoes": 566667,
+  "login_ok_total": 141633,
+  "login_total": 141633,
+  "logout_noop_janela": 0,
+  "logout_noop_warmup": 0,
+  "logout_ok_janela": 171512,
+  "linha_mistura": "Mistura: mix=v3 q=0.05",
+  "linha_auditor": "Auditor: i1_concorrentes=127 i4_concorrentes=0",
+  "linha_desfechos": "Desfechos Validate: valid=354712 invalid=12866 not_found=0 erro=0",
+  "linha_carga": "Carga: mix=v3 cache=sessions slots=100000 entradas=200000 lotes=200 ms=1733",
+  "linha_reset": "Reset: reset_state=on caches=sessions,counters antes=0,0 depois=0,0 ms=23",
+  "contrato": "v2",
+  "violacoes_stdout": 0,
+  "mistura_v3_stdout": {
+   "validate_isolados": 245204,
+   "token_antigo": 12261,
+   "logout_isolados": 49137,
+   "reposicoes": 49137,
+   "reposicao_omitida": 0,
+   "reposicao_erro": 0
+  },
+  "violacoes_por_invariante": {},
+  "auditor_i1_concorrentes": 127,
+  "auditor_i4_concorrentes": 0,
+  "carga": {
+   "mix": "v3",
+   "replicacao": "sync",
+   "cache": "sessions",
+   "universo": 100000,
+   "entradas_por_slot": 2,
+   "entradas": 200000,
+   "tamanho_final": 200000,
+   "lotes": 200,
+   "duracao_ms": 1733,
+   "q": 0.05,
+   "veredito": "OK",
+   "motivo": null
+  },
+  "estado": {
+   "reset_state": "on",
+   "replicacao": "sync",
+   "caches": [
+    "sessions",
+    "counters"
+   ],
+   "tamanhos_antes": [
+    0,
+    0
+   ],
+   "tamanhos_depois": [
+    0,
+    0
+   ],
+   "duracao_ms": 23,
+   "veredito": "OK",
+   "motivo": null
+  },
+  "verificador_exit": 0,
+  "verificador_veredito": "OK",
+  "verificador_motivos": [],
+  "verificador_metricas": {
+   "eventos_total": 735033,
+   "eventos_fora": 735033,
+   "eventos_dentro": 0,
+   "login": 122374,
+   "login_ok": 122374,
+   "login_blocked": 0,
+   "login_ok_frac": 1.0,
+   "validate": 367578,
+   "validate_valid": 354712,
+   "validate_ausente": 0,
+   "validate_ausente_frac": 0.0,
+   "ops": 490285,
+   "mistura": {
+    "Validate": {
+     "observado": 0.5001254372456836,
+     "esperado": 0.5,
+     "desvio_pp": 0.01254372456835906
+    },
+    "Login": {
+     "observado": 0.24959768298030738,
+     "esperado": 0.25,
+     "desvio_pp": -0.04023170196926218
+    },
+    "Logout": {
+     "observado": 0.1002233394862172,
+     "esperado": 0.1,
+     "desvio_pp": 0.022333948621719446
+    },
+    "IncrementFailure": {
+     "observado": 0.09982561163404959,
+     "esperado": 0.1,
+     "desvio_pp": -0.01743883659504203
+    },
+    "ResetFailures": {
+     "observado": 0.05022792865374221,
+     "esperado": 0.05,
+     "desvio_pp": 0.022792865374220844
+    }
+   }
+  },
+  "leitor": {
+   "status": "OK",
+   "eventos": 735033,
+   "erros": 0,
+   "por_codigo": {
+    "COUNTED": 48943,
+    "INVALID": 12866,
+    "NONE": 196138,
+    "OK": 122374,
+    "VALID": 354712
+   }
+  },
+  "criterios": {
+   "C1": {
+    "terco1_pct": 5.2301,
+    "terco2_pct": 5.2142,
+    "terco3_pct": 5.2905,
+    "dif_1_3_pp": 0.0604,
+    "ok": true
+   },
+   "C2": {
+    "frac_pct": 5.2471,
+    "ok": true
+   },
+   "C3": {
+    "token_antigo_pct": 5.0003,
+    "validate_isolados_stdout": 245204,
+    "validate_isolados_csv": 245204,
+    "dif_stdout_csv": 0,
+    "ok": true
+   },
+   "C4": {
+    "validate_not_found": 0,
+    "login_ok_frac": 1.0,
+    "eventos_sobre_operacoes": 1.499881,
+    "eventos_menos_operacoes": 283266,
+    "dois_x_logins_ok": 283266,
+    "ok": true
+   },
+   "C5": {
+    "logout_isolados": 49137,
+    "reposicoes": 49137,
+    "reposicao_omitida": 0,
+    "reposicao_erro": 0,
+    "logout_isolados_csv": 49137,
+    "dif_stdout_csv": 0,
+    "dif_logout_menos_repos_omit": 0,
+    "logout_noop_janela_limite_superior": 0,
+    "logout_isolados_not_found_csv": 0,
+    "ok": true
+   },
+   "C6": {
+    "I1": 0,
+    "I4": 0,
+    "linha_auditor": "Auditor: i1_concorrentes=127 i4_concorrentes=0",
+    "ok": true
+   },
+   "C7": {
+    "exit": 0,
+    "veredito": "OK",
+    "ok": true
+   },
+   "C8": {
+    "tamanho_final": 200000,
+    "carga_ms": 1733,
+    "reset_antes_sessoes": 0,
+    "reset_ms": 23,
+    "ok": true
+   },
+   "C9": {
+    "exit": 0,
+    "ok": true
+   }
+  },
+  "todos_ok": true
+ },
+ "Q2": {
+  "cenario": "S2",
+  "replicacao": "sync",
+  "mix": "v3",
+  "duracao_s": 120,
+  "exit": 0,
+  "linhas_csv": 1088065,
+  "csv_operation_return_code": {
+   "IncrementFailure COUNTED": 10238,
+   "Login OK": 30882,
+   "Logout NONE": 41072,
+   "Validate INVALID": 49204,
+   "Validate VALID": 956669
+  },
+  "validate_isolados_csv": 974990,
+  "invalid_isolados_csv": 49204,
+  "frac_invalid_isolados_pct": 5.0466,
+  "tercos": [
+   {
+    "validate_isolados": 324411,
+    "invalid": 16389,
+    "frac_pct": 5.0519
+   },
+   {
+    "validate_isolados": 325649,
+    "invalid": 16423,
+    "frac_pct": 5.0432
+   },
+   {
+    "validate_isolados": 324930,
+    "invalid": 16392,
+    "frac_pct": 5.0448
+   }
+  ],
+  "decimos": [
+   {
+    "validate_isolados": 96950,
+    "invalid": 4886,
+    "frac_pct": 5.0397
+   },
+   {
+    "validate_isolados": 97884,
+    "invalid": 4946,
+    "frac_pct": 5.0529
+   },
+   {
+    "validate_isolados": 97321,
+    "invalid": 4926,
+    "frac_pct": 5.0616
+   },
+   {
+    "validate_isolados": 96995,
+    "invalid": 4895,
+    "frac_pct": 5.0467
+   },
+   {
+    "validate_isolados": 97600,
+    "invalid": 4930,
+    "frac_pct": 5.0512
+   },
+   {
+    "validate_isolados": 97971,
+    "invalid": 4930,
+    "frac_pct": 5.0321
+   },
+   {
+    "validate_isolados": 98179,
+    "invalid": 4963,
+    "frac_pct": 5.0551
+   },
+   {
+    "validate_isolados": 98111,
+    "invalid": 4948,
+    "frac_pct": 5.0433
+   },
+   {
+    "validate_isolados": 97070,
+    "invalid": 4901,
+    "frac_pct": 5.0489
+   },
+   {
+    "validate_isolados": 96909,
+    "invalid": 4879,
+    "frac_pct": 5.0346
+   }
+  ],
+  "logout_isolados_csv_por_codigo": {
+   "NONE": 10189
+  },
+  "registrados": 1088065,
+  "descartados_warmup": 168663,
+  "total_operacoes": 1185472,
+  "login_ok_total": 35628,
+  "login_total": 35628,
+  "logout_noop_janela": 0,
+  "logout_noop_warmup": 0,
+  "logout_ok_janela": 41072,
+  "linha_mistura": "Mistura: mix=v3 q=0.05",
+  "linha_auditor": "Auditor: i1_concorrentes=69 i4_concorrentes=0",
+  "linha_desfechos": "Desfechos Validate: valid=956669 invalid=49204 not_found=0 erro=0",
+  "linha_carga": "Carga: mix=v3 cache=sessions slots=100000 entradas=200000 lotes=200 ms=1892",
+  "linha_reset": "Reset: reset_state=on caches=sessions,counters antes=398352,36 depois=0,0 ms=38",
+  "contrato": "v2",
+  "violacoes_stdout": 0,
+  "mistura_v3_stdout": {
+   "validate_isolados": 974990,
+   "token_antigo": 48750,
+   "logout_isolados": 10189,
+   "reposicoes": 10189,
+   "reposicao_omitida": 0,
+   "reposicao_erro": 0
+  },
+  "violacoes_por_invariante": {},
+  "auditor_i1_concorrentes": 69,
+  "auditor_i4_concorrentes": 0,
+  "carga": {
+   "mix": "v3",
+   "replicacao": "sync",
+   "cache": "sessions",
+   "universo": 100000,
+   "entradas_por_slot": 2,
+   "entradas": 200000,
+   "tamanho_final": 200000,
+   "lotes": 200,
+   "duracao_ms": 1892,
+   "q": 0.05,
+   "veredito": "OK",
+   "motivo": null
+  },
+  "estado": {
+   "reset_state": "on",
+   "replicacao": "sync",
+   "caches": [
+    "sessions",
+    "counters"
+   ],
+   "tamanhos_antes": [
+    398352,
+    36
+   ],
+   "tamanhos_depois": [
+    0,
+    0
+   ],
+   "duracao_ms": 38,
+   "veredito": "OK",
+   "motivo": null
+  },
+  "verificador_exit": 0,
+  "verificador_veredito": "OK",
+  "verificador_motivos": [],
+  "verificador_metricas": {
+   "eventos_total": 1088065,
+   "eventos_fora": 1088065,
+   "eventos_dentro": 0,
+   "login": 30882,
+   "login_ok": 30882,
+   "login_blocked": 0,
+   "login_ok_frac": 1.0,
+   "validate": 1005873,
+   "validate_valid": 956669,
+   "validate_ausente": 0,
+   "validate_ausente_frac": 0.0,
+   "ops": 1026301,
+   "mistura": {
+    "Validate": {
+     "observado": 0.9500049205837274,
+     "esperado": 0.95,
+     "desvio_pp": 0.0004920583727474614
+    },
+    "Login": {
+     "observado": 0.03009058745923467,
+     "esperado": 0.03,
+     "desvio_pp": 0.009058745923467074
+    },
+    "Logout": {
+     "observado": 0.009928861026151198,
+     "esperado": 0.01,
+     "desvio_pp": -0.007113897384880205
+    },
+    "IncrementFailure": {
+     "observado": 0.009975630930886747,
+     "esperado": 0.01,
+     "desvio_pp": -0.0024369069113253095
+    },
+    "ResetFailures": {
+     "observado": 0.0,
+     "esperado": 0.0,
+     "desvio_pp": 0.0
+    }
+   }
+  },
+  "leitor": {
+   "status": "OK",
+   "eventos": 1088065,
+   "erros": 0,
+   "por_codigo": {
+    "COUNTED": 10238,
+    "INVALID": 49204,
+    "NONE": 41072,
+    "OK": 30882,
+    "VALID": 956669
+   }
+  },
+  "criterios": {
+   "C1": {
+    "terco1_pct": 5.0519,
+    "terco2_pct": 5.0432,
+    "terco3_pct": 5.0448,
+    "dif_1_3_pp": 0.0071,
+    "ok": true
+   },
+   "C2": {
+    "frac_pct": 5.0466,
+    "ok": true
+   },
+   "C3": {
+    "token_antigo_pct": 5.0001,
+    "validate_isolados_stdout": 974990,
+    "validate_isolados_csv": 974990,
+    "dif_stdout_csv": 0,
+    "ok": true
+   },
+   "C4": {
+    "validate_not_found": 0,
+    "login_ok_frac": 1.0,
+    "eventos_sobre_operacoes": 1.060108,
+    "eventos_menos_operacoes": 71256,
+    "dois_x_logins_ok": 71256,
+    "ok": true
+   },
+   "C5": {
+    "logout_isolados": 10189,
+    "reposicoes": 10189,
+    "reposicao_omitida": 0,
+    "reposicao_erro": 0,
+    "logout_isolados_csv": 10189,
+    "dif_stdout_csv": 0,
+    "dif_logout_menos_repos_omit": 0,
+    "logout_noop_janela_limite_superior": 0,
+    "logout_isolados_not_found_csv": 0,
+    "ok": true
+   },
+   "C6": {
+    "I1": 0,
+    "I4": 0,
+    "linha_auditor": "Auditor: i1_concorrentes=69 i4_concorrentes=0",
+    "ok": true
+   },
+   "C7": {
+    "exit": 0,
+    "veredito": "OK",
+    "ok": true
+   },
+   "C8": {
+    "tamanho_final": 200000,
+    "carga_ms": 1892,
+    "reset_antes_sessoes": 398352,
+    "reset_ms": 38,
+    "ok": true
+   },
+   "C9": {
+    "exit": 0,
+    "ok": true
+   }
+  },
+  "todos_ok": true
+ },
+ "Q3": {
+  "cenario": "S1",
+  "replicacao": "async",
+  "mix": "v3",
+  "duracao_s": 120,
+  "exit": 0,
+  "linhas_csv": 984346,
+  "csv_operation_return_code": {
+   "IncrementFailure COUNTED": 66081,
+   "Login OK": 163709,
+   "Logout NONE": 228988,
+   "ResetFailures NONE": 32851,
+   "Validate INVALID": 17074,
+   "Validate VALID": 475643
+  },
+  "validate_isolados_csv": 329008,
+  "invalid_isolados_csv": 17074,
+  "frac_invalid_isolados_pct": 5.1895,
+  "tercos": [
+   {
+    "validate_isolados": 109057,
+    "invalid": 5678,
+    "frac_pct": 5.2065
+   },
+   {
+    "validate_isolados": 110236,
+    "invalid": 5720,
+    "frac_pct": 5.1889
+   },
+   {
+    "validate_isolados": 109715,
+    "invalid": 5676,
+    "frac_pct": 5.1734
+   }
+  ],
+  "decimos": [
+   {
+    "validate_isolados": 33083,
+    "invalid": 1718,
+    "frac_pct": 5.193
+   },
+   {
+    "validate_isolados": 32085,
+    "invalid": 1676,
+    "frac_pct": 5.2236
+   },
+   {
+    "validate_isolados": 32736,
+    "invalid": 1703,
+    "frac_pct": 5.2022
+   },
+   {
+    "validate_isolados": 32912,
+    "invalid": 1722,
+    "frac_pct": 5.2321
+   },
+   {
+    "validate_isolados": 33213,
+    "invalid": 1725,
+    "frac_pct": 5.1937
+   },
+   {
+    "validate_isolados": 32830,
+    "invalid": 1690,
+    "frac_pct": 5.1477
+   },
+   {
+    "validate_isolados": 33421,
+    "invalid": 1733,
+    "frac_pct": 5.1854
+   },
+   {
+    "validate_isolados": 32648,
+    "invalid": 1692,
+    "frac_pct": 5.1826
+   },
+   {
+    "validate_isolados": 33125,
+    "invalid": 1712,
+    "frac_pct": 5.1683
+   },
+   {
+    "validate_isolados": 32955,
+    "invalid": 1703,
+    "frac_pct": 5.1677
+   }
+  ],
+  "logout_isolados_csv_por_codigo": {
+   "NONE": 65279
+  },
+  "registrados": 984346,
+  "descartados_warmup": 170168,
+  "total_operacoes": 770466,
+  "login_ok_total": 192024,
+  "login_total": 192024,
+  "logout_noop_janela": 0,
+  "logout_noop_warmup": 0,
+  "logout_ok_janela": 228988,
+  "linha_mistura": "Mistura: mix=v3 q=0.05",
+  "linha_auditor": "Auditor: i1_concorrentes=361 i4_concorrentes=0",
+  "linha_desfechos": "Desfechos Validate: valid=475643 invalid=17074 not_found=0 erro=0",
+  "linha_carga": "Carga: mix=v3 cache=sessions-async slots=100000 entradas=200000 lotes=200 ms=1356",
+  "linha_reset": "Reset: reset_state=on caches=sessions-async,counters-async antes=0,0 depois=0,0 ms=5",
+  "contrato": "v2",
+  "violacoes_stdout": 0,
+  "mistura_v3_stdout": {
+   "validate_isolados": 329008,
+   "token_antigo": 16450,
+   "logout_isolados": 65279,
+   "reposicoes": 65279,
+   "reposicao_omitida": 0,
+   "reposicao_erro": 0
+  },
+  "violacoes_por_invariante": {},
+  "auditor_i1_concorrentes": 361,
+  "auditor_i4_concorrentes": 0,
+  "carga": {
+   "mix": "v3",
+   "replicacao": "async",
+   "cache": "sessions-async",
+   "universo": 100000,
+   "entradas_por_slot": 2,
+   "entradas": 200000,
+   "tamanho_final": 200000,
+   "lotes": 200,
+   "duracao_ms": 1356,
+   "q": 0.05,
+   "veredito": "OK",
+   "motivo": null
+  },
+  "estado": {
+   "reset_state": "on",
+   "replicacao": "async",
+   "caches": [
+    "sessions-async",
+    "counters-async"
+   ],
+   "tamanhos_antes": [
+    0,
+    0
+   ],
+   "tamanhos_depois": [
+    0,
+    0
+   ],
+   "duracao_ms": 5,
+   "veredito": "OK",
+   "motivo": null
+  },
+  "verificador_exit": 0,
+  "verificador_veredito": "OK",
+  "verificador_motivos": [],
+  "verificador_metricas": {
+   "eventos_total": 984346,
+   "eventos_fora": 984346,
+   "eventos_dentro": 0,
+   "login": 163709,
+   "login_ok": 163709,
+   "login_blocked": 0,
+   "login_ok_frac": 1.0,
+   "validate": 492717,
+   "validate_valid": 475643,
+   "validate_ausente": 0,
+   "validate_ausente_frac": 0.0,
+   "ops": 656928,
+   "mistura": {
+    "Validate": {
+     "observado": 0.5008280968386185,
+     "esperado": 0.5,
+     "desvio_pp": 0.08280968386185084
+    },
+    "Login": {
+     "observado": 0.24920387013493106,
+     "esperado": 0.25,
+     "desvio_pp": -0.07961298650689397
+    },
+    "Logout": {
+     "observado": 0.09937009839738906,
+     "esperado": 0.1,
+     "desvio_pp": -0.06299016026109494
+    },
+    "IncrementFailure": {
+     "observado": 0.10059093233961712,
+     "esperado": 0.1,
+     "desvio_pp": 0.059093233961711455
+    },
+    "ResetFailures": {
+     "observado": 0.0500070022894442,
+     "esperado": 0.05,
+     "desvio_pp": 0.0007002289444196785
+    }
+   }
+  },
+  "leitor": {
+   "status": "OK",
+   "eventos": 984346,
+   "erros": 0,
+   "por_codigo": {
+    "COUNTED": 66081,
+    "INVALID": 17074,
+    "NONE": 261839,
+    "OK": 163709,
+    "VALID": 475643
+   }
+  },
+  "criterios": {
+   "C1": {
+    "terco1_pct": 5.2065,
+    "terco2_pct": 5.1889,
+    "terco3_pct": 5.1734,
+    "dif_1_3_pp": 0.0331,
+    "ok": true
+   },
+   "C2": {
+    "frac_pct": 5.1895,
+    "ok": true
+   },
+   "C3": {
+    "token_antigo_pct": 4.9999,
+    "validate_isolados_stdout": 329008,
+    "validate_isolados_csv": 329008,
+    "dif_stdout_csv": 0,
+    "ok": true
+   },
+   "C4": {
+    "validate_not_found": 0,
+    "login_ok_frac": 1.0,
+    "eventos_sobre_operacoes": 1.498462,
+    "eventos_menos_operacoes": 384048,
+    "dois_x_logins_ok": 384048,
+    "ok": true
+   },
+   "C5": {
+    "logout_isolados": 65279,
+    "reposicoes": 65279,
+    "reposicao_omitida": 0,
+    "reposicao_erro": 0,
+    "logout_isolados_csv": 65279,
+    "dif_stdout_csv": 0,
+    "dif_logout_menos_repos_omit": 0,
+    "logout_noop_janela_limite_superior": 0,
+    "logout_isolados_not_found_csv": 0,
+    "ok": true
+   },
+   "C6": {
+    "I1": 0,
+    "I4": 0,
+    "linha_auditor": "Auditor: i1_concorrentes=361 i4_concorrentes=0",
+    "ok": true
+   },
+   "C7": {
+    "exit": 0,
+    "veredito": "OK",
+    "ok": true
+   },
+   "C8": {
+    "tamanho_final": 200000,
+    "carga_ms": 1356,
+    "reset_antes_sessoes": 0,
+    "reset_ms": 5,
+    "ok": true
+   },
+   "C9": {
+    "exit": 0,
+    "ok": true
+   }
+  },
+  "todos_ok": true
+ },
+ "Q4": {
+  "cenario": "S2",
+  "replicacao": "async",
+  "mix": "v3",
+  "duracao_s": 120,
+  "exit": 0,
+  "linhas_csv": 1140910,
+  "csv_operation_return_code": {
+   "IncrementFailure COUNTED": 10824,
+   "Login OK": 32428,
+   "Logout NONE": 43145,
+   "Validate INVALID": 51435,
+   "Validate VALID": 1003078
+  },
+  "validate_isolados_csv": 1022086,
+  "invalid_isolados_csv": 51435,
+  "frac_invalid_isolados_pct": 5.0324,
+  "tercos": [
+   {
+    "validate_isolados": 345707,
+    "invalid": 17390,
+    "frac_pct": 5.0303
+   },
+   {
+    "validate_isolados": 346179,
+    "invalid": 17428,
+    "frac_pct": 5.0344
+   },
+   {
+    "validate_isolados": 330200,
+    "invalid": 16617,
+    "frac_pct": 5.0324
+   }
+  ],
+  "decimos": [
+   {
+    "validate_isolados": 105350,
+    "invalid": 5304,
+    "frac_pct": 5.0346
+   },
+   {
+    "validate_isolados": 104372,
+    "invalid": 5248,
+    "frac_pct": 5.0282
+   },
+   {
+    "validate_isolados": 101494,
+    "invalid": 5103,
+    "frac_pct": 5.0279
+   },
+   {
+    "validate_isolados": 103724,
+    "invalid": 5218,
+    "frac_pct": 5.0307
+   },
+   {
+    "validate_isolados": 102535,
+    "invalid": 5171,
+    "frac_pct": 5.0432
+   },
+   {
+    "validate_isolados": 104755,
+    "invalid": 5266,
+    "frac_pct": 5.027
+   },
+   {
+    "validate_isolados": 104182,
+    "invalid": 5240,
+    "frac_pct": 5.0297
+   },
+   {
+    "validate_isolados": 99937,
+    "invalid": 5039,
+    "frac_pct": 5.0422
+   },
+   {
+    "validate_isolados": 98713,
+    "invalid": 4967,
+    "frac_pct": 5.0318
+   },
+   {
+    "validate_isolados": 97024,
+    "invalid": 4879,
+    "frac_pct": 5.0287
+   }
+  ],
+  "logout_isolados_csv_por_codigo": {
+   "NONE": 10718
+  },
+  "registrados": 1140910,
+  "descartados_warmup": 192256,
+  "total_operacoes": 1257318,
+  "login_ok_total": 37924,
+  "login_total": 37924,
+  "logout_noop_janela": 0,
+  "logout_noop_warmup": 0,
+  "logout_ok_janela": 43145,
+  "linha_mistura": "Mistura: mix=v3 q=0.05",
+  "linha_auditor": "Auditor: i1_concorrentes=147 i4_concorrentes=0",
+  "linha_desfechos": "Desfechos Validate: valid=1003078 invalid=51435 not_found=0 erro=0",
+  "linha_carga": "Carga: mix=v3 cache=sessions-async slots=100000 entradas=200000 lotes=200 ms=1115",
+  "linha_reset": "Reset: reset_state=on caches=sessions-async,counters-async antes=468536,36 depois=0,0 ms=132",
+  "contrato": "v2",
+  "violacoes_stdout": 0,
+  "mistura_v3_stdout": {
+   "validate_isolados": 1022086,
+   "token_antigo": 51105,
+   "logout_isolados": 10718,
+   "reposicoes": 10718,
+   "reposicao_omitida": 0,
+   "reposicao_erro": 0
+  },
+  "violacoes_por_invariante": {},
+  "auditor_i1_concorrentes": 147,
+  "auditor_i4_concorrentes": 0,
+  "carga": {
+   "mix": "v3",
+   "replicacao": "async",
+   "cache": "sessions-async",
+   "universo": 100000,
+   "entradas_por_slot": 2,
+   "entradas": 200000,
+   "tamanho_final": 200000,
+   "lotes": 200,
+   "duracao_ms": 1115,
+   "q": 0.05,
+   "veredito": "OK",
+   "motivo": null
+  },
+  "estado": {
+   "reset_state": "on",
+   "replicacao": "async",
+   "caches": [
+    "sessions-async",
+    "counters-async"
+   ],
+   "tamanhos_antes": [
+    468536,
+    36
+   ],
+   "tamanhos_depois": [
+    0,
+    0
+   ],
+   "duracao_ms": 132,
+   "veredito": "OK",
+   "motivo": null
+  },
+  "verificador_exit": 0,
+  "verificador_veredito": "OK",
+  "verificador_motivos": [],
+  "verificador_metricas": {
+   "eventos_total": 1140910,
+   "eventos_fora": 1140910,
+   "eventos_dentro": 0,
+   "login": 32428,
+   "login_ok": 32428,
+   "login_blocked": 0,
+   "login_ok_frac": 1.0,
+   "validate": 1054513,
+   "validate_valid": 1003078,
+   "validate_ausente": 0,
+   "validate_ausente_frac": 0.0,
+   "ops": 1076054,
+   "mistura": {
+    "Validate": {
+     "observado": 0.9498454538526877,
+     "esperado": 0.95,
+     "desvio_pp": -0.015454614731225114
+    },
+    "Login": {
+     "observado": 0.030136034065204906,
+     "esperado": 0.03,
+     "desvio_pp": 0.01360340652049076
+    },
+    "Logout": {
+     "observado": 0.009959537346638738,
+     "esperado": 0.01,
+     "desvio_pp": -0.004046265336126245
+    },
+    "IncrementFailure": {
+     "observado": 0.010058974735468667,
+     "esperado": 0.01,
+     "desvio_pp": 0.00589747354686667
+    },
+    "ResetFailures": {
+     "observado": 0.0,
+     "esperado": 0.0,
+     "desvio_pp": 0.0
+    }
+   }
+  },
+  "leitor": {
+   "status": "OK",
+   "eventos": 1140910,
+   "erros": 0,
+   "por_codigo": {
+    "COUNTED": 10824,
+    "INVALID": 51435,
+    "NONE": 43145,
+    "OK": 32428,
+    "VALID": 1003078
+   }
+  },
+  "criterios": {
+   "C1": {
+    "terco1_pct": 5.0303,
+    "terco2_pct": 5.0344,
+    "terco3_pct": 5.0324,
+    "dif_1_3_pp": 0.0021,
+    "ok": true
+   },
+   "C2": {
+    "frac_pct": 5.0324,
+    "ok": true
+   },
+   "C3": {
+    "token_antigo_pct": 5.0001,
+    "validate_isolados_stdout": 1022086,
+    "validate_isolados_csv": 1022086,
+    "dif_stdout_csv": 0,
+    "ok": true
+   },
+   "C4": {
+    "validate_not_found": 0,
+    "login_ok_frac": 1.0,
+    "eventos_sobre_operacoes": 1.060325,
+    "eventos_menos_operacoes": 75848,
+    "dois_x_logins_ok": 75848,
+    "ok": true
+   },
+   "C5": {
+    "logout_isolados": 10718,
+    "reposicoes": 10718,
+    "reposicao_omitida": 0,
+    "reposicao_erro": 0,
+    "logout_isolados_csv": 10718,
+    "dif_stdout_csv": 0,
+    "dif_logout_menos_repos_omit": 0,
+    "logout_noop_janela_limite_superior": 0,
+    "logout_isolados_not_found_csv": 0,
+    "ok": true
+   },
+   "C6": {
+    "I1": 0,
+    "I4": 0,
+    "linha_auditor": "Auditor: i1_concorrentes=147 i4_concorrentes=0",
+    "ok": true
+   },
+   "C7": {
+    "exit": 0,
+    "veredito": "OK",
+    "ok": true
+   },
+   "C8": {
+    "tamanho_final": 200000,
+    "carga_ms": 1115,
+    "reset_antes_sessoes": 468536,
+    "reset_ms": 132,
+    "ok": true
+   },
+   "C9": {
+    "exit": 0,
+    "ok": true
+   }
+  },
+  "todos_ok": true
+ },
+ "L1": {
+  "cenario": "S1",
+  "replicacao": "sync",
+  "mix": "v3",
+  "duracao_s": 600,
+  "exit": 0,
+  "linhas_csv": 4011530,
+  "csv_operation_return_code": {
+   "IncrementFailure COUNTED": 268086,
+   "Login OK": 667887,
+   "Logout NONE": 935523,
+   "ResetFailures NONE": 133593,
+   "Validate INVALID": 70049,
+   "Validate VALID": 1936392
+  },
+  "validate_isolados_csv": 1338556,
+  "invalid_isolados_csv": 70049,
+  "frac_invalid_isolados_pct": 5.2332,
+  "tercos": [
+   {
+    "validate_isolados": 452440,
+    "invalid": 23711,
+    "frac_pct": 5.2407
+   },
+   {
+    "validate_isolados": 445173,
+    "invalid": 23285,
+    "frac_pct": 5.2306
+   },
+   {
+    "validate_isolados": 440943,
+    "invalid": 23053,
+    "frac_pct": 5.2281
+   }
+  ],
+  "decimos": [
+   {
+    "validate_isolados": 135680,
+    "invalid": 7113,
+    "frac_pct": 5.2425
+   },
+   {
+    "validate_isolados": 135570,
+    "invalid": 7104,
+    "frac_pct": 5.2401
+   },
+   {
+    "validate_isolados": 135739,
+    "invalid": 7114,
+    "frac_pct": 5.2409
+   },
+   {
+    "validate_isolados": 136083,
+    "invalid": 7136,
+    "frac_pct": 5.2439
+   },
+   {
+    "validate_isolados": 131136,
+    "invalid": 6860,
+    "frac_pct": 5.2312
+   },
+   {
+    "validate_isolados": 134454,
+    "invalid": 7048,
+    "frac_pct": 5.2419
+   },
+   {
+    "validate_isolados": 133494,
+    "invalid": 6948,
+    "frac_pct": 5.2047
+   },
+   {
+    "validate_isolados": 134526,
+    "invalid": 7012,
+    "frac_pct": 5.2124
+   },
+   {
+    "validate_isolados": 133291,
+    "invalid": 6986,
+    "frac_pct": 5.2412
+   },
+   {
+    "validate_isolados": 128583,
+    "invalid": 6728,
+    "frac_pct": 5.2324
+   }
+  ],
+  "logout_isolados_csv_por_codigo": {
+   "NONE": 267638
+  },
+  "registrados": 4011530,
+  "descartados_warmup": 654975,
+  "total_operacoes": 3112691,
+  "login_ok_total": 776907,
+  "login_total": 776907,
+  "logout_noop_janela": 0,
+  "logout_noop_warmup": 0,
+  "logout_ok_janela": 935523,
+  "linha_mistura": "Mistura: mix=v3 q=0.05",
+  "linha_auditor": "Auditor: i1_concorrentes=765 i4_concorrentes=0",
+  "linha_desfechos": "Desfechos Validate: valid=1936392 invalid=70049 not_found=0 erro=0",
+  "linha_carga": "Carga: mix=v3 cache=sessions slots=100000 entradas=200000 lotes=200 ms=1214",
+  "linha_reset": "Reset: reset_state=on caches=sessions,counters antes=247385,36 depois=0,0 ms=20",
+  "contrato": "v2",
+  "violacoes_stdout": 0,
+  "mistura_v3_stdout": {
+   "validate_isolados": 1338556,
+   "token_antigo": 66927,
+   "logout_isolados": 267638,
+   "reposicoes": 267638,
+   "reposicao_omitida": 0,
+   "reposicao_erro": 0
+  },
+  "violacoes_por_invariante": {},
+  "auditor_i1_concorrentes": 765,
+  "auditor_i4_concorrentes": 0,
+  "carga": {
+   "mix": "v3",
+   "replicacao": "sync",
+   "cache": "sessions",
+   "universo": 100000,
+   "entradas_por_slot": 2,
+   "entradas": 200000,
+   "tamanho_final": 200000,
+   "lotes": 200,
+   "duracao_ms": 1214,
+   "q": 0.05,
+   "veredito": "OK",
+   "motivo": null
+  },
+  "estado": {
+   "reset_state": "on",
+   "replicacao": "sync",
+   "caches": [
+    "sessions",
+    "counters"
+   ],
+   "tamanhos_antes": [
+    247385,
+    36
+   ],
+   "tamanhos_depois": [
+    0,
+    0
+   ],
+   "duracao_ms": 20,
+   "veredito": "OK",
+   "motivo": null
+  },
+  "verificador_exit": 0,
+  "verificador_veredito": "OK",
+  "verificador_motivos": [],
+  "verificador_metricas": {
+   "eventos_total": 4011530,
+   "eventos_fora": 4011530,
+   "eventos_dentro": 0,
+   "login": 667887,
+   "login_ok": 667887,
+   "login_blocked": 0,
+   "login_ok_frac": 1.0,
+   "validate": 2006441,
+   "validate_valid": 1936392,
+   "validate_ausente": 0,
+   "validate_ausente_frac": 0.0,
+   "ops": 2675756,
+   "mistura": {
+    "Validate": {
+     "observado": 0.5002526388803762,
+     "esperado": 0.5,
+     "desvio_pp": 0.02526388803761881
+    },
+    "Login": {
+     "observado": 0.24960684008556833,
+     "esperado": 0.25,
+     "desvio_pp": -0.03931599144316733
+    },
+    "Logout": {
+     "observado": 0.10002257305972592,
+     "esperado": 0.1,
+     "desvio_pp": 0.002257305972591661
+    },
+    "IncrementFailure": {
+     "observado": 0.10019074982920714,
+     "esperado": 0.1,
+     "desvio_pp": 0.019074982920713746
+    },
+    "ResetFailures": {
+     "observado": 0.04992719814512235,
+     "esperado": 0.05,
+     "desvio_pp": -0.007280185487765212
+    }
+   }
+  },
+  "leitor": {
+   "status": "OK",
+   "eventos": 4011530,
+   "erros": 0,
+   "por_codigo": {
+    "COUNTED": 268086,
+    "INVALID": 70049,
+    "NONE": 1069116,
+    "OK": 667887,
+    "VALID": 1936392
+   }
+  },
+  "criterios": {
+   "C1": {
+    "terco1_pct": 5.2407,
+    "terco2_pct": 5.2306,
+    "terco3_pct": 5.2281,
+    "dif_1_3_pp": 0.0126,
+    "decimos_max_menos_min_pp": 0.0392,
+    "ok": true
+   },
+   "C2": {
+    "frac_pct": 5.2332,
+    "ok": true
+   },
+   "C3": {
+    "token_antigo_pct": 4.9999,
+    "validate_isolados_stdout": 1338556,
+    "validate_isolados_csv": 1338556,
+    "dif_stdout_csv": 0,
+    "ok": true
+   },
+   "C4": {
+    "validate_not_found": 0,
+    "login_ok_frac": 1.0,
+    "eventos_sobre_operacoes": 1.499187,
+    "eventos_menos_operacoes": 1553814,
+    "dois_x_logins_ok": 1553814,
+    "ok": true
+   },
+   "C5": {
+    "logout_isolados": 267638,
+    "reposicoes": 267638,
+    "reposicao_omitida": 0,
+    "reposicao_erro": 0,
+    "logout_isolados_csv": 267638,
+    "dif_stdout_csv": 0,
+    "dif_logout_menos_repos_omit": 0,
+    "logout_noop_janela_limite_superior": 0,
+    "logout_isolados_not_found_csv": 0,
+    "ok": true
+   },
+   "C6": {
+    "I1": 0,
+    "I4": 0,
+    "linha_auditor": "Auditor: i1_concorrentes=765 i4_concorrentes=0",
+    "ok": true
+   },
+   "C7": {
+    "exit": 0,
+    "veredito": "OK",
+    "ok": true
+   },
+   "C8": {
+    "tamanho_final": 200000,
+    "carga_ms": 1214,
+    "reset_antes_sessoes": 247385,
+    "reset_ms": 20,
+    "ok": true
+   },
+   "C9": {
+    "exit": 0,
+    "ok": true
+   }
+  },
+  "todos_ok": true
+ },
+ "L2": {
+  "cenario": "S1",
+  "replicacao": "async",
+  "mix": "v3",
+  "duracao_s": 600,
+  "exit": 0,
+  "linhas_csv": 4652498,
+  "csv_operation_return_code": {
+   "IncrementFailure COUNTED": 310488,
+   "Login OK": 774941,
+   "Logout NONE": 1085211,
+   "ResetFailures NONE": 154899,
+   "Validate INVALID": 80475,
+   "Validate VALID": 2246484
+  },
+  "validate_isolados_csv": 1552017,
+  "invalid_isolados_csv": 80475,
+  "frac_invalid_isolados_pct": 5.1852,
+  "tercos": [
+   {
+    "validate_isolados": 555652,
+    "invalid": 28791,
+    "frac_pct": 5.1815
+   },
+   {
+    "validate_isolados": 532351,
+    "invalid": 27614,
+    "frac_pct": 5.1872
+   },
+   {
+    "validate_isolados": 464014,
+    "invalid": 24070,
+    "frac_pct": 5.1873
+   }
+  ],
+  "decimos": [
+   {
+    "validate_isolados": 166267,
+    "invalid": 8639,
+    "frac_pct": 5.1959
+   },
+   {
+    "validate_isolados": 166562,
+    "invalid": 8604,
+    "frac_pct": 5.1656
+   },
+   {
+    "validate_isolados": 167460,
+    "invalid": 8669,
+    "frac_pct": 5.1768
+   },
+   {
+    "validate_isolados": 165063,
+    "invalid": 8582,
+    "frac_pct": 5.1992
+   },
+   {
+    "validate_isolados": 161386,
+    "invalid": 8390,
+    "frac_pct": 5.1987
+   },
+   {
+    "validate_isolados": 162870,
+    "invalid": 8438,
+    "frac_pct": 5.1808
+   },
+   {
+    "validate_isolados": 148224,
+    "invalid": 7678,
+    "frac_pct": 5.18
+   },
+   {
+    "validate_isolados": 138317,
+    "invalid": 7177,
+    "frac_pct": 5.1888
+   },
+   {
+    "validate_isolados": 135790,
+    "invalid": 7032,
+    "frac_pct": 5.1786
+   },
+   {
+    "validate_isolados": 140078,
+    "invalid": 7266,
+    "frac_pct": 5.1871
+   }
+  ],
+  "logout_isolados_csv_por_codigo": {
+   "NONE": 310271
+  },
+  "registrados": 4652498,
+  "descartados_warmup": 814184,
+  "total_operacoes": 3644612,
+  "login_ok_total": 911035,
+  "login_total": 911035,
+  "logout_noop_janela": 0,
+  "logout_noop_warmup": 0,
+  "logout_ok_janela": 1085211,
+  "linha_mistura": "Mistura: mix=v3 q=0.05",
+  "linha_auditor": "Auditor: i1_concorrentes=1628 i4_concorrentes=0",
+  "linha_desfechos": "Desfechos Validate: valid=2246484 invalid=80475 not_found=0 erro=0",
+  "linha_carga": "Carga: mix=v3 cache=sessions-async slots=100000 entradas=200000 lotes=200 ms=1150",
+  "linha_reset": "Reset: reset_state=on caches=sessions-async,counters-async antes=250474,36 depois=0,0 ms=133",
+  "contrato": "v2",
+  "violacoes_stdout": 0,
+  "mistura_v3_stdout": {
+   "validate_isolados": 1552017,
+   "token_antigo": 77600,
+   "logout_isolados": 310271,
+   "reposicoes": 310271,
+   "reposicao_omitida": 0,
+   "reposicao_erro": 0
+  },
+  "violacoes_por_invariante": {},
+  "auditor_i1_concorrentes": 1628,
+  "auditor_i4_concorrentes": 0,
+  "carga": {
+   "mix": "v3",
+   "replicacao": "async",
+   "cache": "sessions-async",
+   "universo": 100000,
+   "entradas_por_slot": 2,
+   "entradas": 200000,
+   "tamanho_final": 200000,
+   "lotes": 200,
+   "duracao_ms": 1150,
+   "q": 0.05,
+   "veredito": "OK",
+   "motivo": null
+  },
+  "estado": {
+   "reset_state": "on",
+   "replicacao": "async",
+   "caches": [
+    "sessions-async",
+    "counters-async"
+   ],
+   "tamanhos_antes": [
+    250474,
+    36
+   ],
+   "tamanhos_depois": [
+    0,
+    0
+   ],
+   "duracao_ms": 133,
+   "veredito": "OK",
+   "motivo": null
+  },
+  "verificador_exit": 0,
+  "verificador_veredito": "OK",
+  "verificador_motivos": [],
+  "verificador_metricas": {
+   "eventos_total": 4652498,
+   "eventos_fora": 4652498,
+   "eventos_dentro": 0,
+   "login": 774941,
+   "login_ok": 774941,
+   "login_blocked": 0,
+   "login_ok_frac": 1.0,
+   "validate": 2326959,
+   "validate_valid": 2246484,
+   "validate_ausente": 0,
+   "validate_ausente_frac": 0.0,
+   "ops": 3102616,
+   "mistura": {
+    "Validate": {
+     "observado": 0.5002288391473518,
+     "esperado": 0.5,
+     "desvio_pp": 0.022883914735183364
+    },
+    "Login": {
+     "observado": 0.2497701939266735,
+     "esperado": 0.25,
+     "desvio_pp": -0.02298060733265106
+    },
+    "Logout": {
+     "observado": 0.10000270739272923,
+     "esperado": 0.1,
+     "desvio_pp": 0.0002707392729228708
+    },
+    "IncrementFailure": {
+     "observado": 0.10007297068022598,
+     "esperado": 0.1,
+     "desvio_pp": 0.00729706802259783
+    },
+    "ResetFailures": {
+     "observado": 0.049925288853019514,
+     "esperado": 0.05,
+     "desvio_pp": -0.007471114698048842
+    }
+   }
+  },
+  "leitor": {
+   "status": "OK",
+   "eventos": 4652498,
+   "erros": 0,
+   "por_codigo": {
+    "COUNTED": 310488,
+    "INVALID": 80475,
+    "NONE": 1240110,
+    "OK": 774941,
+    "VALID": 2246484
+   }
+  },
+  "criterios": {
+   "C1": {
+    "terco1_pct": 5.1815,
+    "terco2_pct": 5.1872,
+    "terco3_pct": 5.1873,
+    "dif_1_3_pp": 0.0058,
+    "decimos_max_menos_min_pp": 0.0336,
+    "ok": true
+   },
+   "C2": {
+    "frac_pct": 5.1852,
+    "ok": true
+   },
+   "C3": {
+    "token_antigo_pct": 4.9999,
+    "validate_isolados_stdout": 1552017,
+    "validate_isolados_csv": 1552017,
+    "dif_stdout_csv": 0,
+    "ok": true
+   },
+   "C4": {
+    "validate_not_found": 0,
+    "login_ok_frac": 1.0,
+    "eventos_sobre_operacoes": 1.499935,
+    "eventos_menos_operacoes": 1822070,
+    "dois_x_logins_ok": 1822070,
+    "ok": true
+   },
+   "C5": {
+    "logout_isolados": 310271,
+    "reposicoes": 310271,
+    "reposicao_omitida": 0,
+    "reposicao_erro": 0,
+    "logout_isolados_csv": 310271,
+    "dif_stdout_csv": 0,
+    "dif_logout_menos_repos_omit": 0,
+    "logout_noop_janela_limite_superior": 0,
+    "logout_isolados_not_found_csv": 0,
+    "ok": true
+   },
+   "C6": {
+    "I1": 0,
+    "I4": 0,
+    "linha_auditor": "Auditor: i1_concorrentes=1628 i4_concorrentes=0",
+    "ok": true
+   },
+   "C7": {
+    "exit": 0,
+    "veredito": "OK",
+    "ok": true
+   },
+   "C8": {
+    "tamanho_final": 200000,
+    "carga_ms": 1150,
+    "reset_antes_sessoes": 250474,
+    "reset_ms": 133,
+    "ok": true
+   },
+   "C9": {
+    "exit": 0,
+    "ok": true
+   }
+  },
+  "todos_ok": true
+ },
+ "L0": {
+  "cenario": "S1",
+  "replicacao": "sync",
+  "mix": "v2",
+  "duracao_s": 600,
+  "exit": 0,
+  "linhas_csv": 3422470,
+  "csv_operation_return_code": {
+   "IncrementFailure COUNTED": 228640,
+   "Login OK": 571198,
+   "Logout NONE": 799168,
+   "ResetFailures NONE": 113411,
+   "Validate INVALID": 972402,
+   "Validate VALID": 737651
+  },
+  "validate_isolados_csv": 1138855,
+  "invalid_isolados_csv": 972402,
+  "frac_invalid_isolados_pct": 85.3842,
+  "tercos": [
+   {
+    "validate_isolados": 359373,
+    "invalid": 289100,
+    "frac_pct": 80.4457
+   },
+   {
+    "validate_isolados": 388562,
+    "invalid": 334471,
+    "frac_pct": 86.0792
+   },
+   {
+    "validate_isolados": 390920,
+    "invalid": 348831,
+    "frac_pct": 89.2333
+   }
+  ],
+  "decimos": [
+   {
+    "validate_isolados": 88424,
+    "invalid": 68223,
+    "frac_pct": 77.1544
+   },
+   {
+    "validate_isolados": 116731,
+    "invalid": 93348,
+    "frac_pct": 79.9685
+   },
+   {
+    "validate_isolados": 114026,
+    "invalid": 93912,
+    "frac_pct": 82.3602
+   },
+   {
+    "validate_isolados": 109679,
+    "invalid": 92097,
+    "frac_pct": 83.9696
+   },
+   {
+    "validate_isolados": 120562,
+    "invalid": 103238,
+    "frac_pct": 85.6306
+   },
+   {
+    "validate_isolados": 120442,
+    "invalid": 104466,
+    "frac_pct": 86.7355
+   },
+   {
+    "validate_isolados": 115611,
+    "invalid": 101368,
+    "frac_pct": 87.6802
+   },
+   {
+    "validate_isolados": 119259,
+    "invalid": 105656,
+    "frac_pct": 88.5937
+   },
+   {
+    "validate_isolados": 119015,
+    "invalid": 106487,
+    "frac_pct": 89.4736
+   },
+   {
+    "validate_isolados": 115106,
+    "invalid": 103607,
+    "frac_pct": 90.0101
+   }
+  ],
+  "logout_isolados_csv_por_codigo": {
+   "NONE": 227969
+  },
+  "registrados": 3422470,
+  "descartados_warmup": 581368,
+  "total_operacoes": 2668124,
+  "login_ok_total": 667857,
+  "login_total": 667857,
+  "logout_noop_janela": 194616,
+  "logout_noop_warmup": 26063,
+  "logout_ok_janela": 604552,
+  "linha_mistura": "Mistura: mix=v2",
+  "linha_auditor": "Auditor: i1_concorrentes=1 i4_concorrentes=0",
+  "linha_desfechos": "Desfechos Validate: valid=737651 invalid=972402 not_found=0 erro=0",
+  "linha_carga": "Carga: mix=v2 cache=sessions sids=100000 lotes=100 ms=935",
+  "linha_reset": "Reset: reset_state=on caches=sessions,counters antes=1288457,36 depois=0,0 ms=113",
+  "contrato": "v2",
+  "violacoes_stdout": 0,
+  "mistura_v3_stdout": null,
+  "violacoes_por_invariante": {},
+  "auditor_i1_concorrentes": 1,
+  "auditor_i4_concorrentes": 0,
+  "carga": {
+   "mix": "v2",
+   "replicacao": "sync",
+   "cache": "sessions",
+   "universo": 100000,
+   "tamanho_final": 100000,
+   "lotes": 100,
+   "duracao_ms": 935,
+   "veredito": "OK",
+   "motivo": null
+  },
+  "estado": {
+   "reset_state": "on",
+   "replicacao": "sync",
+   "caches": [
+    "sessions",
+    "counters"
+   ],
+   "tamanhos_antes": [
+    1288457,
+    36
+   ],
+   "tamanhos_depois": [
+    0,
+    0
+   ],
+   "duracao_ms": 113,
+   "veredito": "OK",
+   "motivo": null
+  },
+  "verificador_exit": 0,
+  "verificador_veredito": "OK",
+  "verificador_motivos": [],
+  "verificador_metricas": {
+   "eventos_total": 3422470,
+   "eventos_fora": 3422470,
+   "eventos_dentro": 0,
+   "login": 571198,
+   "login_ok": 571198,
+   "login_blocked": 0,
+   "login_ok_frac": 1.0,
+   "validate": 1710053,
+   "validate_valid": 737651,
+   "validate_ausente": 0,
+   "validate_ausente_frac": 0.0,
+   "ops": 2280074,
+   "mistura": {
+    "Validate": {
+     "observado": 0.4994815957727688,
+     "esperado": 0.5,
+     "desvio_pp": -0.051840422723120616
+    },
+    "Login": {
+     "observado": 0.25051730777158987,
+     "esperado": 0.25,
+     "desvio_pp": 0.051730777158986996
+    },
+    "Logout": {
+     "observado": 0.09998359702360538,
+     "esperado": 0.1,
+     "desvio_pp": -0.0016402976394630508
+    },
+    "IncrementFailure": {
+     "observado": 0.10027744713548771,
+     "esperado": 0.1,
+     "desvio_pp": 0.02774471354877045
+    },
+    "ResetFailures": {
+     "observado": 0.04974005229654827,
+     "esperado": 0.05,
+     "desvio_pp": -0.025994770345173085
+    }
+   }
+  },
+  "leitor": {
+   "status": "OK",
+   "eventos": 3422470,
+   "erros": 0,
+   "por_codigo": {
+    "COUNTED": 228640,
+    "INVALID": 972402,
+    "NONE": 912579,
+    "OK": 571198,
+    "VALID": 737651
+   }
+  },
+  "contraste_v2": {
+   "frac_invalid_isolados_pct": 85.3842,
+   "ultimo_decimo_pct": 90.0101,
+   "primeiro_decimo_pct": 77.1544,
+   "logout_isolados_noop_ou_nf": {
+    "NONE": 227969
+   }
+  }
+ }
+}

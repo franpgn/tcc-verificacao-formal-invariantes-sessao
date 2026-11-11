@@ -1,0 +1,19 @@
+{
+ "workload": {
+  "commit": "2dca918",
+  "branch": "fix/b43-4-return-code-validate",
+  "origem": "git archive 2dca918 workload; mvn -o clean package -DskipTests",
+  "sha256": "d4c81f8c0d46f7e2d81faac6691c3f33a7086e292d8fce3028adeb183c83fc95"
+ },
+ "verificador": {
+  "commit": "a8f5549",
+  "branch": "fix/b43-3-guarda-sanidade-mistura",
+  "origem": "git archive a8f5549 workload; mvn -o clean package -DskipTests",
+  "sha256": "a35ef62d3b4472b3b1fbf157ed0a2998eb9c025d81f83a20144bdc06a441db61"
+ },
+ "java": "JDK 22.0.2 via $JAVA_HOME/bin/java",
+ "podman": "5.7.0, maquina WSL (parada antes e depois)",
+ "imagem": "quay.io/infinispan/server:15.0.21.Final",
+ "cluster": "podman-compose -p b434, containers b434-isn1..3, portas Hot Rod 12322..12324 (external-port igual)",
+ "comando": "--scenario <S1|S2> --replication <sync|async> --mix v2 --reset-state on --duration 60 --ops 0 --rep 1 --threads 4 --warmup-min-sec 10 --servers 127.0.0.1:12322,127.0.0.1:12323,127.0.0.1:12324 --csv-dir runs/b43-4-smoke/Qn"
+}

@@ -1,0 +1,18 @@
+TLC2 Version 2.19 of 08 August 2024 (rev: 5a47802)
+Running breadth-first search Model-Checking with fp 114 and seed 418853773459184569 with 4 workers on 20 cores with 2731MB heap and 64MB offheap memory [pid: 16392] (Windows 11 10.0 amd64, Oracle Corporation 17.0.2 x86_64, MSBDiskFPSet, DiskStateQueue).
+Parsing file C:\Users\Francesco\Development\tcc\wt-ta\spec\MCSession.tla
+Parsing file C:\Users\Francesco\Development\tcc\wt-ta\spec\SessionStore.tla
+Parsing file C:\Users\Francesco\AppData\Local\Temp\tlc-jtmp-zdgFNy\TLC.tla
+Parsing file C:\Users\Francesco\AppData\Local\Temp\tlc-jtmp-zdgFNy\Naturals.tla
+Parsing file C:\Users\Francesco\AppData\Local\Temp\tlc-jtmp-zdgFNy\Sequences.tla
+Parsing file C:\Users\Francesco\AppData\Local\Temp\tlc-jtmp-zdgFNy\FiniteSets.tla
+Semantic processing of module Naturals
+Semantic processing of module Sequences
+Semantic processing of module FiniteSets
+Semantic processing of module SessionStore
+Semantic processing of module TLC
+Semantic processing of module MCSession
+Starting... (2026-10-15 22:56:41)
+Computing initial states...
+Finished computing initial states: 1 distinct state generated at 2026-10-15 22:56:42.
+Progress(10) at 2026-10-15 22:56:45: 581,350 states generated (581,350 s/min), 87,893 distinct states found (87,893 ds/min), 70,135 states left on queue.

@@ -1,0 +1,78 @@
+{
+  "arquivo" : "C:/Users/Francesco/Development/tcc/wt-b43-9/runs/b43-9-smoke/Q6/rep-001.csv",
+  "sha256" : "fb68c4df46bca858b887f6fa942cf55f93ec125f6a814806d1c2ae63211026ae",
+  "cenario" : "S1",
+  "modo" : "strict",
+  "limiares" : {
+    "login_ok_min" : 0.95,
+    "validate_valid_min_exclusivo" : 0,
+    "validate_ausente_max" : 0.05,
+    "mistura_tolerancia_pp" : 2.0,
+    "status" : "PROVISORIOS (diagnostico 2026-10-22; aceitos pelo Gestor como provisorios)"
+  },
+  "contagens" : {
+    "fora" : {
+      "IncrementFailure" : {
+        "COUNTED" : 126274
+      },
+      "Login" : {
+        "OK" : 315177
+      },
+      "Logout" : {
+        "NONE" : 441699
+      },
+      "ResetFailures" : {
+        "NONE" : 63103
+      },
+      "Validate" : {
+        "INVALID" : 32879,
+        "VALID" : 913354
+      }
+    },
+    "dentro" : { }
+  },
+  "metricas" : {
+    "eventos_total" : 1892486,
+    "eventos_fora" : 1892486,
+    "eventos_dentro" : 0,
+    "login" : 315177,
+    "login_ok" : 315177,
+    "login_blocked" : 0,
+    "login_ok_frac" : 1.0,
+    "validate" : 946233,
+    "validate_valid" : 913354,
+    "validate_ausente" : 0,
+    "validate_ausente_frac" : 0.0,
+    "ops" : 1262132,
+    "mistura" : {
+      "Validate" : {
+        "observado" : 0.4999920768984544,
+        "esperado" : 0.5,
+        "desvio_pp" : -7.923101545626032E-4
+      },
+      "Login" : {
+        "observado" : 0.24971793758497526,
+        "esperado" : 0.25,
+        "desvio_pp" : -0.02820624150247364
+      },
+      "Logout" : {
+        "observado" : 0.10024466537572932,
+        "esperado" : 0.1,
+        "desvio_pp" : 0.02446653757293138
+      },
+      "IncrementFailure" : {
+        "observado" : 0.10004817245739749,
+        "esperado" : 0.1,
+        "desvio_pp" : 0.004817245739748011
+      },
+      "ResetFailures" : {
+        "observado" : 0.04999714768344357,
+        "esperado" : 0.05,
+        "desvio_pp" : -2.852316556431478E-4
+      }
+    }
+  },
+  "veredito" : "OK",
+  "motivos" : [ ],
+  "versao" : "b43-3a-i/1"
+}

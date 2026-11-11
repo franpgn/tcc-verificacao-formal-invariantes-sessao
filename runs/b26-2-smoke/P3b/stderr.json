@@ -1,0 +1,7 @@
+{
+ "fonte": "stderr da SondaTopologiaCli",
+ "linhas": [
+  "sonda-topologia replicacao=async caches=sessions-async,counters-async nos=3 periodo_ms=2000 prazo_ms=1500 duracao_s=180",
+  "custo curl_lancados=273 rodadas=90 cpu_jvm_ms=2437 erros_ouvinte=0"
+ ]
+}

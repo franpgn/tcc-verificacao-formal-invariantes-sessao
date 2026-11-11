@@ -1,0 +1,39 @@
+== S33: DT-027: --dry-run da matriz fatorial: fusao no plano, os dois JSON e o JAR conferidos, teto da fusao na linha ==
+PASS: S33 dry-run fatorial: exit 0
+PASS: S33 seis execucoes no plano (4 + 2)
+PASS: S33 fusao no plano: 4 pnn (PO, PL, A, B) e 2 a1 (AO, AL)
+PASS: S33 braco PO: controller=shadow fusao=pnn
+PASS: S33 braco PL: controller=active fusao=pnn
+PASS: S33 braco AO: controller=shadow fusao=a1
+PASS: S33 braco AL: controller=active fusao=a1
+PASS: S33 braco A: controller=shadow fusao=pnn
+PASS: S33 braco B: controller=active fusao=pnn
+PASS: S33 linha do programa com o teto da fusao depois do --sweep
+PASS: S33 os dois JSON da regra de fusao conferidos
+PASS: S33 o JSON da A1 com a classe
+PASS: S33 teto da fusao antes da varredura
+PASS: S33 JAR da extensao montado nos tres nos, SHA-256 conferido
+PASS: S33 matriz fatorial sem --sonda-replay -> exit 4
+PASS: S33 motivo: instrumentos da DT-026
+PASS: S33 matriz fatorial sem fusao_teto_s -> exit 4
+PASS: S33 motivo: fusao_teto_s
+PASS: S33 fusao_teto_s que passa do fim da carga (10 + 20 + 31 > 60) -> exit 4
+PASS: S33 SHA-256 do JAR da extensao errado -> exit 4
+PASS: S33 motivo: JAR da extensao
+PASS: S33 sem o sessions-async-a1.json -> exit 4
+PASS: S33 motivo cita o arquivo
+PASS: S33 sessions-async-a1.json com PREFERRED_NON_NULL -> exit 4
+PASS: S33 motivo: politica do arquivo
+PASS: S33 compose sem-jar com braco A1 -> exit 4
+PASS: S33 compose sem-jar: motivo extensao
+PASS: S33 compose dois-nos com braco A1 -> exit 4
+PASS: S33 compose dois-nos: motivo extensao
+PASS: S33 compose sem-arquivo com braco A1 -> exit 4
+PASS: S33 compose sem-arquivo: motivo extensao
+PASS: S33 bloco fatorial sem o AL -> exit 4
+PASS: S33 motivo pareamento
+PASS: S33 dry-runs nao chamam java/podman/sudo/curl
+PASS: S33 matriz de 13 colunas sem o JAR nem o JSON da A1: como antes (exit 0)
+PASS: S33 matriz de 13 colunas: sem fusao= no plano
+
+==== RESULTADO: 36 PASS, 0 FAIL ====

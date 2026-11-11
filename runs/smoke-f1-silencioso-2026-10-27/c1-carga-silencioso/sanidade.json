@@ -1,0 +1,82 @@
+{
+  "arquivo" : "C:/Users/Francesco/Development/tcc/wt-f1-kill/runs/smoke-f1-silencioso-2026-10-27/c1-carga-silencioso/csv/rep-001.csv",
+  "sha256" : "5e18de07664027e9a58d77feaef5517474c48edfae33337f442ca55e76089535",
+  "cenario" : "S1",
+  "modo" : "strict",
+  "limiares" : {
+    "login_ok_min" : 0.95,
+    "validate_valid_min_exclusivo" : 0,
+    "validate_ausente_max" : 0.05,
+    "mistura_tolerancia_pp" : 2.0,
+    "status" : "PROVISORIOS (diagnostico 2026-10-22; aceitos pelo Gestor como provisorios)"
+  },
+  "contagens" : {
+    "fora" : {
+      "IncrementFailure" : {
+        "COUNTED" : 15300,
+        "ERROR_TRANSPORT" : 4
+      },
+      "Login" : {
+        "ERROR_TRANSPORT" : 2,
+        "OK" : 38073
+      },
+      "Logout" : {
+        "ERROR_TRANSPORT" : 3,
+        "NONE" : 53486
+      },
+      "ResetFailures" : {
+        "ERROR_TRANSPORT" : 3,
+        "NONE" : 7618
+      },
+      "Validate" : {
+        "INVALID" : 4017,
+        "VALID" : 110679
+      }
+    },
+    "dentro" : { }
+  },
+  "metricas" : {
+    "eventos_total" : 229185,
+    "eventos_fora" : 229185,
+    "eventos_dentro" : 0,
+    "login" : 38075,
+    "login_ok" : 38073,
+    "login_blocked" : 0,
+    "login_ok_frac" : 1.0,
+    "validate" : 114696,
+    "validate_valid" : 110679,
+    "validate_ausente" : 0,
+    "validate_ausente_frac" : 0.0,
+    "ops" : 153039,
+    "mistura" : {
+      "Validate" : {
+        "observado" : 0.5006762981984985,
+        "esperado" : 0.5,
+        "desvio_pp" : 0.06762981984984595
+      },
+      "Login" : {
+        "observado" : 0.24879279137997504,
+        "esperado" : 0.25,
+        "desvio_pp" : -0.12072086200249632
+      },
+      "Logout" : {
+        "observado" : 0.10073249302465384,
+        "esperado" : 0.1,
+        "desvio_pp" : 0.07324930246538353
+      },
+      "IncrementFailure" : {
+        "observado" : 0.10000065342821111,
+        "esperado" : 0.1,
+        "desvio_pp" : 6.534282111086975E-5
+      },
+      "ResetFailures" : {
+        "observado" : 0.04979776396866158,
+        "esperado" : 0.05,
+        "desvio_pp" : -0.020223603133841944
+      }
+    }
+  },
+  "veredito" : "OK",
+  "motivos" : [ ],
+  "versao" : "b43-3a-i/1"
+}

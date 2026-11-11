@@ -1,0 +1,7 @@
+i	fase	rodada	posicao	celula	modo	falha	papel	bloco	braco	controlador	seed	repoe
+0	nucleo	1	0.0	ASYNC-none	async	none	descritiva	1	A	shadow	400100	-
+1	nucleo	1	0.1	ASYNC-none	async	none	descritiva	1	B	active	400100	-
+2	extra	2	0.0	ASYNC-F4	async	F4	teste	2	A	shadow	400200	-
+3	extra	2	0.1	ASYNC-F4	async	F4	teste	2	B	active	400200	-
+4	extra	2	1.0	ASYNC-F3	async	F3	descritiva	3	A	shadow	400300	-
+5	extra	2	1.1	ASYNC-F3	async	F3	descritiva	3	B	active	400300	-

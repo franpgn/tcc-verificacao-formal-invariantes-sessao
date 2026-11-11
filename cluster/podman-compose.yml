@@ -17,55 +17,71 @@ networks:
 
 services:
   isn1:
-    image: quay.io/infinispan/server:15.0
+    image: quay.io/infinispan/server:15.0.21.Final
     container_name: isn1
     hostname: isn1
+    command: ["-c", "infinispan.xml", "-Dinfinispan.hotrod.external-port=11222"]
     environment:
       - USER=admin
       - PASS=infinispan
       - INFINISPAN_CLUSTER_NAME=cluster-tcc
     volumes:
       - ./infinispan-cluster.xml:/opt/infinispan/server/conf/infinispan.xml:ro
+      - ./jgroups-tcp.xml:/opt/infinispan/server/conf/jgroups-tcp.xml:ro
     ports:
       - "11222:11222"
     networks:
       - infinispan-net
     healthcheck:
-      test: ["CMD", "curl", "-f", "-u", "admin:infinispan", "http://localhost:11222/rest/v2/cache-managers/default/health/status"]
+      test: ["CMD", "curl", "-f", "--digest", "-u", "admin:infinispan", "http://localhost:11222/rest/v2/cache-managers/default/health/status"]
       interval: 5s
       timeout: 3s
-      retries: 10
+      retries: 20
 
   isn2:
-    image: quay.io/infinispan/server:15.0
+    image: quay.io/infinispan/server:15.0.21.Final
     container_name: isn2
     hostname: isn2
+    command: ["-c", "infinispan.xml", "-Dinfinispan.hotrod.external-port=11223"]
     environment:
       - USER=admin
       - PASS=infinispan
       - INFINISPAN_CLUSTER_NAME=cluster-tcc
     volumes:
       - ./infinispan-cluster.xml:/opt/infinispan/server/conf/infinispan.xml:ro
+      - ./jgroups-tcp.xml:/opt/infinispan/server/conf/jgroups-tcp.xml:ro
     ports:
       - "11223:11222"
     networks:
       - infinispan-net
+    healthcheck:
+      test: ["CMD", "curl", "-f", "--digest", "-u", "admin:infinispan", "http://localhost:11222/rest/v2/cache-managers/default/health/status"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
     depends_on:
       - isn1
 
   isn3:
-    image: quay.io/infinispan/server:15.0
+    image: quay.io/infinispan/server:15.0.21.Final
     container_name: isn3
     hostname: isn3
+    command: ["-c", "infinispan.xml", "-Dinfinispan.hotrod.external-port=11224"]
     environment:
       - USER=admin
       - PASS=infinispan
       - INFINISPAN_CLUSTER_NAME=cluster-tcc
     volumes:
       - ./infinispan-cluster.xml:/opt/infinispan/server/conf/infinispan.xml:ro
+      - ./jgroups-tcp.xml:/opt/infinispan/server/conf/jgroups-tcp.xml:ro
     ports:
       - "11224:11222"
     networks:
       - infinispan-net
+    healthcheck:
+      test: ["CMD", "curl", "-f", "--digest", "-u", "admin:infinispan", "http://localhost:11222/rest/v2/cache-managers/default/health/status"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
     depends_on:
       - isn1

@@ -1,0 +1,4 @@
+semeado	queda	r3	I4F	VIOLADA	traco_de_5_estados	1778	440	2s
+semeado	queda	r3	I2Fb	VIOLADA	traco_de_3_estados	82	18	1s
+semeado	queda	r3	I4M	SEM_VIOLACAO_ATE_AQUI	limite_de_tempo_300s	20297926	2584308	300s
+semeado	queda	r3	I4Fp	VIOLADA	traco_de_5_estados	1778	440	1s

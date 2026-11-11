@@ -1,0 +1,4 @@
+{
+ "Q1/rep-001.csv": {"status": "OK", "eventos": 413394, "erros": 0, "por_codigo": {"COUNTED": 27727, "INVALID": 94733, "NONE": 110296, "OK": 69010, "VALID": 111628}},
+ "Q2/rep-001.csv": {"status": "OK", "eventos": 400719, "erros": 0, "por_codigo": {"COUNTED": 3814, "INVALID": 192161, "NONE": 14911, "OK": 11253, "VALID": 178580}}
+}

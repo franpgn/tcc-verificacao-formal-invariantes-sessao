@@ -1,0 +1,28 @@
+TLC2 Version 2.19 of 08 August 2024 (rev: 5a47802)
+Running breadth-first search Model-Checking with fp 88 and seed -7134604114197988954 with 6 workers on 20 cores with 2731MB heap and 64MB offheap memory [pid: 3644] (Windows 11 10.0 amd64, Oracle Corporation 17.0.2 x86_64, MSBDiskFPSet, DiskStateQueue).
+Parsing file C:\Users\Francesco\Development\tcc\wt-b32\spec\MCSession.tla
+Parsing file C:\Users\Francesco\Development\tcc\wt-b32\spec\SessionStore.tla
+Parsing file C:\Users\Francesco\AppData\Local\Temp\TLC.tla
+Parsing file C:\Users\Francesco\AppData\Local\Temp\Naturals.tla
+Parsing file C:\Users\Francesco\AppData\Local\Temp\Sequences.tla
+Parsing file C:\Users\Francesco\AppData\Local\Temp\FiniteSets.tla
+Semantic processing of module Naturals
+Semantic processing of module Sequences
+Semantic processing of module FiniteSets
+Semantic processing of module SessionStore
+Semantic processing of module TLC
+Semantic processing of module MCSession
+Starting... (2026-10-09 14:04:40)
+Computing initial states...
+Finished computing initial states: 1 distinct state generated at 2026-10-09 14:04:40.
+Progress(11) at 2026-10-09 14:04:43: 833,530 states generated (833,530 s/min), 59,463 distinct states found (59,463 ds/min), 36,306 states left on queue.
+Progress(17) at 2026-10-09 14:05:43: 39,510,732 states generated (38,677,202 s/min), 1,454,586 distinct states found (1,395,123 ds/min), 282,295 states left on queue.
+Model checking completed. No error has been found.
+  Estimates of the probability that TLC did not check all reachable states
+  because two distinct states had the same fingerprint:
+  calculated (optimistic):  val = 4.6E-6
+  based on the actual fingerprints:  val = 1.9E-7
+53541786 states generated, 1627731 distinct states found, 0 states left on queue.
+The depth of the complete state graph search is 19.
+The average outdegree of the complete state graph is 1 (minimum is 0, the maximum 12 and the 95th percentile is 3).
+Finished in 01min 23s at (2026-10-09 14:06:03)

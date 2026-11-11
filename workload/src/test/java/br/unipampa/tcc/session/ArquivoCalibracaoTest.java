@@ -1,0 +1,77 @@
+package br.unipampa.tcc.session;
+
+import br.unipampa.tcc.controle.ParametrosControlador;
+import br.unipampa.tcc.controle.ParametrosDefasagem;
+import br.unipampa.tcc.controle.ParametrosPolitica;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+
+import java.nio.file.Files;
+import java.nio.file.Path;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+/**
+ * W-4, decisoes do coordenador de 05/11 (itens 2 e 4): o arquivo de parametros provisorio da calibracao
+ * ({@code cluster/controlador/controlador-calibracao-s3.json}) declara {@code passoLeituraMs} = 20 ms com origem em
+ * {@code wada_consistency_cloud_2011} secao 2 (leitores a 50 leituras por segundo) e {@code lagInMs}/{@code lagOutMs}
+ * provisorios com {@code "origem": "provisorio-calibracao"} (no braco A so mudam as decisoes registradas; a calibracao
+ * usa o lag bruto). O prazo de leitura e o {@code --hotrod-timeout-ms} padrao (2000 ms), igual a
+ * {@code politica.tetoLagMs} (R7), e o custo sob falha e de ate prazo/passo = 100 leituras por par e rodada.
+ */
+class ArquivoCalibracaoTest {
+
+    static Path arquivo() {
+        return ClusterXmlIrmaosTest.localizarXml().getParent().resolve("controlador")
+                .resolve("controlador-calibracao-s3.json");
+    }
+
+    @Test
+    @DisplayName("o arquivo de calibracao carrega e declara a origem de passo, lagIn e lagOut")
+    void origemDeclarada() throws Exception {
+        assertTrue(Files.isRegularFile(arquivo()), "ausente: " + arquivo());
+        ParametrosControlador p = ParametrosControlador.deJson(arquivo());
+        assertTrue(p.versao().startsWith("provisorio-calibracao"), p.versao());
+        ParametrosDefasagem d = p.defasagem();
+        assertEquals(20, d.passoLeituraMs());
+        assertTrue(d.origem().get("passoLeituraMs").contains("wada_consistency_cloud_2011"), d.origem().toString());
+        assertEquals("provisorio-calibracao", d.origem().get("lagInMs"));
+        assertEquals("provisorio-calibracao", d.origem().get("lagOutMs"));
+        ParametrosPolitica q = p.politica();
+        assertEquals("provisorio-calibracao", q.origem().get("kLag"));
+        assertEquals(new S3Parametros().hotrodTimeoutMs, q.tetoLagMs(), "R7 com o --hotrod-timeout-ms padrao");
+    }
+
+    @Test
+    @DisplayName("os valores cabem no prazo de leitura e em W; custo sob falha = prazo/passo = 100 leituras por par")
+    void coerencia() throws Exception {
+        ParametrosControlador p = ParametrosControlador.deJson(arquivo());
+        long prazo = new S3Parametros().hotrodTimeoutMs;
+        p.defasagem().validarContra(prazo, p.wNs());
+        assertEquals(100, prazo / p.defasagem().passoLeituraMs());
+        assertTrue(p.defasagem().lagInMs() <= prazo);
+    }
+
+    @Test
+    @DisplayName("P-42: kLag viavel na calibracao, kLag * W + t_parada < 39,8 s (com W = 5 s e t_parada = 13,3 s, kLag <= 5)")
+    void kLagViavel() throws Exception {
+        ParametrosControlador p = ParametrosControlador.deJson(arquivo());
+        // t_parada sob corte: 13,1 s (SYNC) e 13,3 s (ASYNC) do pedido a primeira recusa, I-3 do B-44.2
+        // (docs/relatorio-b44-2-2026-11-05.md secao 7); 39,8 s: menor T_det da VM (relatorio-tb-v3, isn3 em +39,8 s)
+        long tParadaNs = 13_300_000_000L;
+        long tDetMinNs = 39_800_000_000L;
+        long kMax = (tDetMinNs - tParadaNs - 1) / p.wNs();
+        assertTrue(p.politica().kLag() * p.wNs() + tParadaNs < tDetMinNs,
+                "kLag = " + p.politica().kLag() + " com W = " + p.wNs() + " ns: o maior viavel e " + kMax);
+    }
+
+    @Test
+    @DisplayName("D-B: o arquivo da calibracao tem a P2 desabilitada (AC-2 fora do braco B), com a origem citada")
+    void p2ForaDoBracoB() throws Exception {
+        ParametrosPolitica q = ParametrosControlador.deJson(arquivo()).politica();
+        assertTrue(!q.p2Habilitada(), "a P2/AC-2 ficou exploratoria (D-B)");
+        String o = q.origem().get("p2Habilitada");
+        assertTrue(o != null && o.contains("D-B") && o.contains("P-39") && o.contains("P-40"), String.valueOf(o));
+    }
+}

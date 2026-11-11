@@ -1,0 +1,22 @@
+== S24: B2 da V-W6: fase com SYNC e ASYNC: referencia por perfil, --dry-run do programa em cada perfil ==
+PASS: S24 exit 0
+PASS: S24 SYNC e ASYNC ACEITA
+PASS: S24 carga SYNC com a referencia sync
+PASS: S24 carga ASYNC com a referencia async
+PASS: S24 pre-voo 4: --dry-run do programa nos dois perfis
+PASS: S24 execucao.json registra a referencia de cada perfil
+PASS: S24 bundle cobre a referencia sync
+PASS: S24 bundle cobre a referencia async
+PASS: S24 referencias trocadas -> exit 4 no pre-voo
+PASS: S24 motivo perfil
+PASS: S24 trocadas: sem compose nem carga
+PASS: S24 referencias trocadas -> exit 4 tambem no --dry-run (sem VM)
+PASS: S24 celula SYNC sem --referencia-sync -> exit 4
+PASS: S24 motivo cita --referencia-sync
+PASS: S24 sem referencia: sem compose nem carga
+PASS: S24 fase so ASYNC com so --referencia-async -> dry-run exit 0
+PASS: S24 --referencia unica (antiga) -> exit 2
+PASS: S24 motivo da opcao antiga
+
+==== RESULTADO: 18 PASS, 0 FAIL ====
+(CS_TESTE_MANTER: /tmp/tmp.EhKWQwxtyd mantido)

@@ -1,0 +1,6 @@
+== a1-s700400/servidores/isn1.log (1150 hex)
+ok classe=br.unipampa.tcc.session.SessionState id=e56ea42e-75e8-423a-8e18-4d226d1ceb08 identidade=s3-u-030 estado=INVALID motivo=LOGOUT versao=2 criadaEm=2026-11-06T17:01:21.538325600Z atualizadaEm=2026-11-06T17:01:26.453580200Z
+== a1-s701300/servidores/isn3.log (1150 hex)
+ok classe=br.unipampa.tcc.session.SessionState id=8d311d3b-39b1-44e2-b57b-17ed61d4b932 identidade=s3-u-001 estado=INVALID motivo=LOGOUT versao=2 criadaEm=2026-11-06T17:26:29.590640600Z atualizadaEm=2026-11-06T17:26:45.498624200Z
+== mecanismo-a1/servidores/isn1.log (1104 hex)
+ok classe=br.unipampa.tcc.session.SessionState id=9045e84b-b69e-4554-a0f3-ddb5d3ab2277 identidade=a1-m-1 estado=VALID motivo=NONE versao=1 criadaEm=2026-11-06T17:17:39.155466600Z atualizadaEm=2026-11-06T17:17:39.155466600Z

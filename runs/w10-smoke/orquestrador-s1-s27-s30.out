@@ -1,0 +1,34 @@
+run-campanha-s3.test.sh: Bourne-Again shell script, ASCII text executable
+run-campanha-s3.sh:      Bourne-Again shell script, ASCII text executable, with very long lines (370)
+PASS: S27c o mesmo i roda na retomada (semente 60000, uma carga)
+PASS: S27c ACEITA na retomada
+-- S27d: --swap-limite-kb invalido -> 2; /proc/meminfo sem Swap com limite -> 4 no pre-voo; dry-run mostra o limite
+PASS: S27d --swap-limite-kb 0 -> exit 2
+PASS: S27d --swap-limite-kb -5 -> exit 2
+PASS: S27d --swap-limite-kb abc -> exit 2
+PASS: S27d --swap-limite-kb 1.5 -> exit 2
+PASS: S27d meminfo sem Swap com limite -> exit 4
+PASS: S27d motivo meminfo
+PASS: S27d sem compose
+PASS: S27d dry-run exit 0
+PASS: S27d dry-run mostra as opcoes
+== S30: W-10: --sonda-replay acrescenta --s3-replay-probe --sweep a linha do jar; sem ela a linha e a de antes ==
+PASS: S30 dry-run sem a opcao: exit 0
+PASS: S30 sem a opcao: sonda_replay=nao nas opcoes
+PASS: S30 sem a opcao: plano sem --s3-replay-probe
+PASS: S30 sem a opcao: plano sem --sweep
+PASS: S30 dry-run com a opcao: exit 0
+PASS: S30 com a opcao: sonda_replay=sim nas opcoes
+PASS: S30 com a opcao: plano com --s3-replay-probe --sweep no fim
+PASS: S30 execucao com a opcao: exit 0, ACEITA
+PASS: S30 a carga e o pre-voo recebem --s3-replay-probe e --sweep
+PASS: S30 execucao.json com a linha do jar da sonda
+PASS: S30 retomada sem a opcao (bundle de opcoes mudou) -> exit 4
+
+==== RESULTADO: 70 PASS, 0 FAIL ====
+
+real	14m30.761s
+user	2m19.807s
+sys	5m45.410s
+
+[exited with code 0]

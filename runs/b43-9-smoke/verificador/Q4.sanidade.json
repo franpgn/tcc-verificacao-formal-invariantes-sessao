@@ -1,0 +1,78 @@
+{
+  "arquivo" : "C:/Users/Francesco/Development/tcc/wt-b43-9/runs/b43-9-smoke/Q4/rep-001.csv",
+  "sha256" : "d33edcb678c26fb113d4e82f6909c172ac47fbcb53ebdb8428ba02a2b31bcc90",
+  "cenario" : "S1",
+  "modo" : "strict",
+  "limiares" : {
+    "login_ok_min" : 0.95,
+    "validate_valid_min_exclusivo" : 0,
+    "validate_ausente_max" : 0.05,
+    "mistura_tolerancia_pp" : 2.0,
+    "status" : "PROVISORIOS (diagnostico 2026-10-22; aceitos pelo Gestor como provisorios)"
+  },
+  "contagens" : {
+    "fora" : {
+      "IncrementFailure" : {
+        "COUNTED" : 31019
+      },
+      "Login" : {
+        "OK" : 78664
+      },
+      "Logout" : {
+        "NONE" : 109512
+      },
+      "ResetFailures" : {
+        "NONE" : 15287
+      },
+      "Validate" : {
+        "INVALID" : 7878,
+        "VALID" : 227254
+      }
+    },
+    "dentro" : { }
+  },
+  "metricas" : {
+    "eventos_total" : 469614,
+    "eventos_fora" : 469614,
+    "eventos_dentro" : 0,
+    "login" : 78664,
+    "login_ok" : 78664,
+    "login_blocked" : 0,
+    "login_ok_frac" : 1.0,
+    "validate" : 235132,
+    "validate_valid" : 227254,
+    "validate_ausente" : 0,
+    "validate_ausente_frac" : 0.0,
+    "ops" : 312286,
+    "mistura" : {
+      "Validate" : {
+        "observado" : 0.5010407126800432,
+        "esperado" : 0.5,
+        "desvio_pp" : 0.10407126800432431
+      },
+      "Login" : {
+        "observado" : 0.25189729927054044,
+        "esperado" : 0.25,
+        "desvio_pp" : 0.18972992705404423
+      },
+      "Logout" : {
+        "observado" : 0.09878124539684777,
+        "esperado" : 0.1,
+        "desvio_pp" : -0.1218754603152239
+      },
+      "IncrementFailure" : {
+        "observado" : 0.09932882037619362,
+        "esperado" : 0.1,
+        "desvio_pp" : -0.06711796238063894
+      },
+      "ResetFailures" : {
+        "observado" : 0.04895192227637486,
+        "esperado" : 0.05,
+        "desvio_pp" : -0.10480777236251404
+      }
+    }
+  },
+  "veredito" : "OK",
+  "motivos" : [ ],
+  "versao" : "b43-3a-i/1"
+}

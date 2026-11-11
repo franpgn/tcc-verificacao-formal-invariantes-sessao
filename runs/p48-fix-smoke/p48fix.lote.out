@@ -1,0 +1,15 @@
+== 2026-11-06T05:58:09.198Z inicio base=3c57447 jar_sha256=31ef29ed867779386808a20a283376ae9639b8a2a0ef3718d21574ce31e2f2f7 xml_sha256=a7b18f2dac46095e468c43ae97c4cc51e411cbb54875606e898a20b6a7227c85
+== 2026-11-06T05:58:30.894Z cluster com 3 nos
+== 2026-11-06T05:58:45.879Z cria-caches rc=0
+== 2026-11-06T05:58:46.896Z saude ok
+== 2026-11-06T05:58:51.492Z A: F1 inicio (podman kill p48-isn2)
+== 2026-11-06T05:59:52.464Z A: F1 podman start p48-isn2
+== 2026-11-06T06:00:00.070Z A: F1 fim, saude ok
+== 2026-11-06T06:00:13.350Z A: sonda exit=0
+== 2026-11-06T06:00:15.219Z B: ancora vista; F1 a +25 s
+== 2026-11-06T06:00:41.059Z B: F1 inicio (podman kill p48-isn2)
+== 2026-11-06T06:01:12.029Z B: F1 podman start p48-isn2
+== 2026-11-06T06:01:22.712Z B: F1 fim, saude ok
+== 2026-11-06T06:03:48.313Z B: programa exit=0
+== 2026-11-06T06:04:07.109Z fim
+rc=0

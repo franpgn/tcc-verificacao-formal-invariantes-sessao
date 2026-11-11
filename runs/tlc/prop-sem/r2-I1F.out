@@ -1,0 +1,29 @@
+TLC2 Version 2.19 of 08 August 2024 (rev: 5a47802)
+Running breadth-first search Model-Checking with fp 4 and seed -1843953987755817486 with 4 workers on 20 cores with 2731MB heap and 64MB offheap memory [pid: 1588] (Windows 11 10.0 amd64, Oracle Corporation 17.0.2 x86_64, MSBDiskFPSet, DiskStateQueue).
+Parsing file C:\Users\Francesco\Development\tcc\wt-b32\spec\MCSession.tla
+Parsing file C:\Users\Francesco\Development\tcc\wt-b32\spec\SessionStore.tla
+Parsing file C:\Users\Francesco\AppData\Local\Temp\TLC.tla
+Parsing file C:\Users\Francesco\AppData\Local\Temp\Naturals.tla
+Parsing file C:\Users\Francesco\AppData\Local\Temp\Sequences.tla
+Parsing file C:\Users\Francesco\AppData\Local\Temp\FiniteSets.tla
+Semantic processing of module Naturals
+Semantic processing of module Sequences
+Semantic processing of module FiniteSets
+Semantic processing of module SessionStore
+Semantic processing of module TLC
+Semantic processing of module MCSession
+Starting... (2026-10-09 13:40:08)
+Computing initial states...
+Finished computing initial states: 1 distinct state generated at 2026-10-09 13:40:08.
+Progress(10) at 2026-10-09 13:40:11: 590,174 states generated (590,174 s/min), 89,383 distinct states found (89,383 ds/min), 63,601 states left on queue.
+Progress(14) at 2026-10-09 13:41:11: 23,087,739 states generated (22,497,565 s/min), 1,859,347 distinct states found (1,769,964 ds/min), 831,021 states left on queue.
+Progress(16) at 2026-10-09 13:42:11: 52,712,440 states generated (29,624,701 s/min), 2,845,374 distinct states found (986,027 ds/min), 440,772 states left on queue.
+Model checking completed. No error has been found.
+  Estimates of the probability that TLC did not check all reachable states
+  because two distinct states had the same fingerprint:
+  calculated (optimistic):  val = 9.7E-6
+  based on the actual fingerprints:  val = 1.3E-6
+63508237 states generated, 2968799 distinct states found, 0 states left on queue.
+The depth of the complete state graph search is 17.
+The average outdegree of the complete state graph is 1 (minimum is 0, the maximum 11 and the 95th percentile is 4).
+Finished in 02min 17s at (2026-10-09 13:42:25)

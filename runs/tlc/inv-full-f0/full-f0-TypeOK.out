@@ -1,0 +1,22 @@
+TLC2 Version 2.19 of 08 August 2024 (rev: 5a47802)
+Running breadth-first search Model-Checking with fp 75 and seed -2217703036432281931 with 20 workers on 20 cores with 7237MB heap and 64MB offheap memory (Windows 11 10.0 amd64, Oracle Corporation 1.8.0_503 x86_64, MSBDiskFPSet, DiskStateQueue).
+Parsing file C:\Users\Francesco\Development\tcc\tcc-desenvolvimento\spec\MCSession.tla
+Parsing file C:\Users\Francesco\Development\tcc\tcc-desenvolvimento\spec\SessionStore.tla
+Parsing file C:\Users\Francesco\AppData\Local\Temp\TLC.tla
+Parsing file C:\Users\Francesco\AppData\Local\Temp\Naturals.tla
+Parsing file C:\Users\Francesco\AppData\Local\Temp\Sequences.tla
+Parsing file C:\Users\Francesco\AppData\Local\Temp\FiniteSets.tla
+Semantic processing of module Naturals
+Semantic processing of module Sequences
+Semantic processing of module FiniteSets
+Semantic processing of module SessionStore
+Semantic processing of module TLC
+Semantic processing of module MCSession
+Starting... (2026-10-03 18:40:09)
+Computing initial states...
+Finished computing initial states: 1 distinct state generated at 2026-10-03 18:40:10.
+Progress(12) at 2026-10-03 18:40:13: 948,602 states generated (948,602 s/min), 54,760 distinct states found (54,760 ds/min), 38,377 states left on queue.
+Progress(15) at 2026-10-03 18:41:13: 22,717,717 states generated (21,769,115 s/min), 1,316,903 distinct states found (1,262,143 ds/min), 908,125 states left on queue.
+Progress(16) at 2026-10-03 18:42:13: 44,106,473 states generated (21,388,756 s/min), 2,485,114 distinct states found (1,168,211 ds/min), 1,690,648 states left on queue.
+Progress(16) at 2026-10-03 18:43:13: 66,251,042 states generated (22,144,569 s/min), 3,709,673 distinct states found (1,224,559 ds/min), 2,509,686 states left on queue.
+Progress(16) at 2026-10-03 18:44:13: 87,698,206 states generated (21,447,164 s/min), 4,795,635 distinct states found (1,085,962 ds/min), 3,187,925 states left on queue.

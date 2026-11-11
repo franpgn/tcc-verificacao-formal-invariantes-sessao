@@ -1,0 +1,15 @@
+== 2026-11-06T17:17:10.580Z inicio mecanismo-a1 condicao=a1 nsess=60 corte_dur_s=90 jar_sha256=7d5fc2fee76e84606384fe96dafa1e75ed8507baf83396dc00361fdc6d224707 extensao_sha256=6f1ed746f7142bed8ed2596eacfa1f8db9cc335bb448b40c72efbc37d49253b4 base=04719ee sessions_async_sha256=df3c290dfe424ab8ea4d3f3677c868b7a24078c9611e0ee3040ebc14db7f9a7a programa_sha256=298486bff4dcd0ddae4ca7344885ab78b8034c14965e82844f8e71a008b3e41c
+== 2026-11-06T17:17:25.301Z cluster com 3 nos
+== 2026-11-06T17:17:37.252Z cria-caches rc=0 (dir=caches-a1)
+== 2026-11-06T17:17:40.888Z criar: criadas=60
+== 2026-11-06T17:17:46.195Z corte-inicio isn3
+== 2026-11-06T17:17:48.995Z corte-fim isn3 rc=0
+== 2026-11-06T17:17:54.360Z logout pelo isn3: logout tentados=60 confirmados=26 nao_confirmados=34 instante=2026-11-06T17:17:53.645442700Z
+== 2026-11-06T17:19:19.082Z cura-inicio isn3
+== 2026-11-06T17:19:21.434Z cura-fim isn3 rc=0
+== 2026-11-06T17:20:17.194Z CR do sessions-async terminou
+== 2026-11-06T17:20:29.891Z ler isn1: RESUMO servidor=127.0.0.1:12801 VALID=0 INVALID=26 AUSENTE=0 ERRO=0
+== 2026-11-06T17:20:33.271Z ler isn2: RESUMO servidor=127.0.0.1:12802 VALID=0 INVALID=26 AUSENTE=0 ERRO=0
+== 2026-11-06T17:20:36.005Z ler isn3: RESUMO servidor=127.0.0.1:12803 VALID=0 INVALID=26 AUSENTE=0 ERRO=0
+== 2026-11-06T17:20:47.730Z fim mecanismo-a1 (cluster descido)
+rc=0

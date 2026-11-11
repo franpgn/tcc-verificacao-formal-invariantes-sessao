@@ -1,0 +1,82 @@
+{
+ "esquema": "campanha-s3/1",
+ "versao": "smoke-w6-integracao-2026-11-05",
+ "parametros": {
+  "duracao_s": {
+   "valor": 300,
+   "origem": "pre-registro da calibracao S3, secao 4.1 (docs/pre-registro-calibracao-s3-2026-11-05.md, branch docs/pre-registro-calibracao-s3, 2c8b7b8); provisorio para o --dry-run do smoke da integracao do W-6"
+  },
+  "warmup_min_s": {
+   "valor": 30,
+   "origem": "pre-registro da calibracao S3, secao 4.1 (docs/pre-registro-calibracao-s3-2026-11-05.md, branch docs/pre-registro-calibracao-s3, 2c8b7b8); provisorio para o --dry-run do smoke da integracao do W-6"
+  },
+  "inj_offset_s": {
+   "valor": 49,
+   "origem": "pre-registro da calibracao S3, secao 4.1 (docs/pre-registro-calibracao-s3-2026-11-05.md, branch docs/pre-registro-calibracao-s3, 2c8b7b8); provisorio para o --dry-run do smoke da integracao do W-6"
+  },
+  "f1_no": {
+   "valor": "isn2",
+   "origem": "pre-registro da calibracao S3, secao 4.1 (docs/pre-registro-calibracao-s3-2026-11-05.md, branch docs/pre-registro-calibracao-s3, 2c8b7b8); provisorio para o --dry-run do smoke da integracao do W-6"
+  },
+  "f1_dur_s": {
+   "valor": 60,
+   "origem": "pre-registro da calibracao S3, secao 4.1 (docs/pre-registro-calibracao-s3-2026-11-05.md, branch docs/pre-registro-calibracao-s3, 2c8b7b8); provisorio para o --dry-run do smoke da integracao do W-6"
+  },
+  "f2_no": {
+   "valor": "isn3",
+   "origem": "pre-registro da calibracao S3, secao 4.1 (docs/pre-registro-calibracao-s3-2026-11-05.md, branch docs/pre-registro-calibracao-s3, 2c8b7b8); provisorio para o --dry-run do smoke da integracao do W-6"
+  },
+  "f2_dur_s": {
+   "valor": 90,
+   "origem": "pre-registro da calibracao S3, secao 4.1 (docs/pre-registro-calibracao-s3-2026-11-05.md, branch docs/pre-registro-calibracao-s3, 2c8b7b8); provisorio para o --dry-run do smoke da integracao do W-6"
+  },
+  "f4_no": {
+   "valor": "isn3",
+   "origem": "pre-registro da calibracao S3, secao 4.1 (docs/pre-registro-calibracao-s3-2026-11-05.md, branch docs/pre-registro-calibracao-s3, 2c8b7b8); provisorio para o --dry-run do smoke da integracao do W-6"
+  },
+  "f4_severidade": {
+   "valor": "N3",
+   "origem": "pre-registro da calibracao S3, secao 4.1 (docs/pre-registro-calibracao-s3-2026-11-05.md, branch docs/pre-registro-calibracao-s3, 2c8b7b8); provisorio para o --dry-run do smoke da integracao do W-6"
+  },
+  "f4_direcao": {
+   "valor": "out",
+   "origem": "pre-registro da calibracao S3, secao 4.1 (docs/pre-registro-calibracao-s3-2026-11-05.md, branch docs/pre-registro-calibracao-s3, 2c8b7b8); provisorio para o --dry-run do smoke da integracao do W-6"
+  },
+  "f4_dur_s": {
+   "valor": 90,
+   "origem": "pre-registro da calibracao S3, secao 4.1 (docs/pre-registro-calibracao-s3-2026-11-05.md, branch docs/pre-registro-calibracao-s3, 2c8b7b8); provisorio para o --dry-run do smoke da integracao do W-6"
+  },
+  "hotrod_timeout_ms": {
+   "valor": 2000,
+   "origem": "pre-registro da calibracao S3, secao 4.1 (docs/pre-registro-calibracao-s3-2026-11-05.md, branch docs/pre-registro-calibracao-s3, 2c8b7b8); provisorio para o --dry-run do smoke da integracao do W-6"
+  },
+  "convergencia_teto_s": {
+   "valor": 600,
+   "origem": "pre-registro da calibracao S3, secao 4.1 (docs/pre-registro-calibracao-s3-2026-11-05.md, branch docs/pre-registro-calibracao-s3, 2c8b7b8); provisorio para o --dry-run do smoke da integracao do W-6"
+  },
+  "convergencia_periodo_s": {
+   "valor": 5,
+   "origem": "pre-registro da calibracao S3, secao 4.1 (docs/pre-registro-calibracao-s3-2026-11-05.md, branch docs/pre-registro-calibracao-s3, 2c8b7b8); provisorio para o --dry-run do smoke da integracao do W-6"
+  },
+  "w_recovery_s": {
+   "valor": 191,
+   "origem": "pre-registro da calibracao S3, secao 4.1 (docs/pre-registro-calibracao-s3-2026-11-05.md, branch docs/pre-registro-calibracao-s3, 2c8b7b8); provisorio para o --dry-run do smoke da integracao do W-6"
+  },
+  "religamento_prazo_s": {
+   "valor": 60,
+   "origem": "pre-registro da calibracao S3, secao 4.1 (docs/pre-registro-calibracao-s3-2026-11-05.md, branch docs/pre-registro-calibracao-s3, 2c8b7b8); provisorio para o --dry-run do smoke da integracao do W-6"
+  },
+  "exec_teto_s": {
+   "valor": 1010,
+   "origem": "pre-registro da calibracao S3, secao 4.1 (docs/pre-registro-calibracao-s3-2026-11-05.md, branch docs/pre-registro-calibracao-s3, 2c8b7b8); provisorio para o --dry-run do smoke da integracao do W-6"
+  },
+  "encerramento_folga_s": {
+   "valor": 2,
+   "origem": "pre-registro da calibracao S3, secao 4.1 (docs/pre-registro-calibracao-s3-2026-11-05.md, branch docs/pre-registro-calibracao-s3, 2c8b7b8); provisorio para o --dry-run do smoke da integracao do W-6"
+  },
+  "volume_exec_mb": {
+   "valor": 14,
+   "origem": "pre-registro da calibracao S3, secao 4.1 (docs/pre-registro-calibracao-s3-2026-11-05.md, branch docs/pre-registro-calibracao-s3, 2c8b7b8); provisorio para o --dry-run do smoke da integracao do W-6"
+  }
+ }
+}

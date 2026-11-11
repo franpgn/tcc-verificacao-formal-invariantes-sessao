@@ -1,0 +1,10 @@
+semeado	queda	r3	I1F	SEM_VIOLACAO_ATE_AQUI	limite_de_tempo_600s	188561497	22377840	601s
+semeado	queda	r3	I4F	VIOLADA	traco_de_5_estados	2033	482	1s
+semeado	queda	r3	I2Fb	VIOLADA	traco_de_4_estados	382	99	1s
+semeado	queda	r3	I2Fa	SEM_VIOLACAO_ATE_AQUI	limite_de_tempo_60s	734680	110313	61s
+semeado	queda	r3	I1M	SEM_VIOLACAO_ATE_AQUI	limite_de_tempo_60s	785287	115696	60s
+semeado	queda	r3	I4M	ERRO	rc=150	?	?	0s
+semeado	queda	r3	I1P	SEM_VIOLACAO_ATE_AQUI	limite_de_tempo_120s	15492100	1972331	120s
+semeado	queda	r3	I4M	SEM_VIOLACAO_ATE_AQUI	limite_de_tempo_60s	773116	114802	60s
+semeado	queda	r3	I4Fp	VIOLADA	traco_de_6_estados	1915	443	1s
+semeado	queda	r3	I4Mp	SEM_VIOLACAO_ATE_AQUI	limite_de_tempo_300s	65911283	8168945	300s

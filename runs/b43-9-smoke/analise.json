@@ -1,0 +1,1581 @@
+{
+ "Q1": {
+  "cenario": "S3",
+  "replicacao": "sync",
+  "duracao_s": 300,
+  "exit": 0,
+  "linha_configuracao": "Configuracao: Cli{scenario=S3, duracao=300s, ops=1000000, rep=1, threads=8, seed=43900, csvDir=C:\\Users\\Francesco\\Development\\tcc\\wt-b43-9\\runs\\b43-9-smoke\\Q1, warmupMin=60s, dryRun=false}",
+  "violacoes_stdout": 0,
+  "linha_auditor": "Auditor: i1_concorrentes=0 i4_concorrentes=0",
+  "linha_invalidacao": "Invalidacao: perdida=0 conflito_esgotado=0",
+  "linha_reset": "Reset: reset_state=on caches=sessions,counters antes=0,0 depois=0,0 ms=33",
+  "invalidacao_perdida": 0,
+  "conflito_esgotado": 0,
+  "i1_concorrentes": 0,
+  "i4_concorrentes": 0,
+  "linha_auditor_i2": "Auditor I2: concorrentes=0 janela_cascata=0 cascata_incompleta=0 sem_marco=0",
+  "linha_auditor_total": "Auditor total: i1_concorrentes=0 i4_concorrentes=0 i2_concorrentes=0",
+  "linha_login": "Login: revertido_por_bloqueio=0",
+  "auditor_i2": {
+   "concorrentes": 0,
+   "janela_cascata": 0,
+   "cascata_incompleta": 0,
+   "sem_marco": 0
+  },
+  "auditor_total": {
+   "i1_concorrentes": 0,
+   "i4_concorrentes": 0,
+   "i2_concorrentes": 0
+  },
+  "revertido_por_bloqueio": 0,
+  "linhas_s3": [
+   "S3 acao|Block|OK_NOOP = 5",
+   "S3 acao|IncrementFailure|OK_STATUS = 259",
+   "S3 acao|Login|BLOCKED = 61",
+   "S3 acao|Login|OK_LOGIN = 133",
+   "S3 acao|Logout|OK_NOOP = 84",
+   "S3 acao|ResetFailures|OK_NOOP = 31",
+   "S3 acao|Unblock|OK_NOOP = 36",
+   "S3 acao|Validate|OK_VALIDATE:INVALID = 380",
+   "S3 acao|Validate|OK_VALIDATE:VALID = 3066",
+   "S3 evento|AbandonoSilencioso = 37",
+   "S3 evento|SessaoEncerradaNoServidor = 5",
+   "S3 evento|SessaoOrfa = 37"
+  ],
+  "linha_varredura": "Varredura final: sessoes=133, identidades=30, achados=0; REAL={}; BLOCKED por motivo={ADMINISTRATIVO=0, POR_LIMITE=6, INCERTO=0, INEXPLICADO=0}",
+  "linha_warmup": "Warm-up ate +60s; medicao a partir de +72s; total 300s",
+  "csv_operation_return_code": {
+   "Block NONE": 4,
+   "IncrementFailure COUNTED": 189,
+   "Login BLOCKED": 44,
+   "Login OK": 93,
+   "Logout NONE": 66,
+   "ResetFailures NONE": 22,
+   "Unblock NONE": 34,
+   "Validate INVALID": 296,
+   "Validate VALID": 2268
+  },
+  "janela_csv_ns": [
+   1792730542621187450,
+   1792730770535182850
+  ],
+  "histogramas": {
+   "login_ok": {
+    "n": 93,
+    "descartados": 40,
+    "p50_ns": 3397631,
+    "p95_ns": 5423103,
+    "p99_ns": 6332415
+   },
+   "login_blocked": {
+    "n": 44,
+    "descartados": 17,
+    "p50_ns": 857599,
+    "p95_ns": 1503231,
+    "p99_ns": 1623039
+   },
+   "login_err": {
+    "n": 0,
+    "descartados": 0
+   },
+   "block_ok": {
+    "n": 4,
+    "descartados": 1,
+    "p50_ns": 16228351,
+    "p95_ns": 31391743,
+    "p99_ns": 31391743
+   },
+   "block_err": {
+    "n": 0,
+    "descartados": 0
+   }
+  },
+  "violacoes_colunas": null,
+  "violacoes_por_invariante": {},
+  "violacoes_por_invariante_e_classe": {},
+  "violacoes_por_fase": {},
+  "violacoes_amostra": [],
+  "varredura_achados": {},
+  "s3_resumo": {
+   "parametros": {
+    "modo_cliente": "pinned",
+    "admin_node": "isn1",
+    "usuarios": 20,
+    "contas_limite": 10,
+    "semente": 1043903,
+    "hotrod_timeout_ms": 2000,
+    "hotrod_retentativas": 1,
+    "app_retentativas": 2,
+    "idle_timeout_sec": 30.0,
+    "nota": "o resumo inclui o warm-up; acoes anteriores a medicao nao entram no CSV de eventos"
+   },
+   "total_acoes": 4055,
+   "contadores": {
+    "acao|Block|OK_NOOP": 5,
+    "acao|IncrementFailure|OK_STATUS": 259,
+    "acao|Login|BLOCKED": 61,
+    "acao|Login|OK_LOGIN": 133,
+    "acao|Logout|OK_NOOP": 84,
+    "acao|ResetFailures|OK_NOOP": 31,
+    "acao|Unblock|OK_NOOP": 36,
+    "acao|Validate|OK_VALIDATE:INVALID": 380,
+    "acao|Validate|OK_VALIDATE:VALID": 3066,
+    "evento|AbandonoSilencioso": 37,
+    "evento|SessaoEncerradaNoServidor": 5,
+    "evento|SessaoOrfa": 37
+   }
+  },
+  "i2_real_inline": 0,
+  "criterios": {
+   "exit": {
+    "v": 0,
+    "ok": true
+   },
+   "I4_inline": {
+    "v": 0,
+    "ok": true
+   },
+   "varredura_executada": {
+    "ok": true
+   },
+   "conflito_esgotado": {
+    "v": 0,
+    "ok": true
+   },
+   "linhas_b439": {
+    "ok": true
+   },
+   "sem_marco_0": {
+    "v": 0,
+    "ok": true
+   },
+   "I1_I4_sync": {
+    "inline": 0,
+    "varredura": 0,
+    "ok": true
+   },
+   "I2_REAL_sync": {
+    "v": 0,
+    "ok": true
+   }
+  },
+  "todos_ok": true,
+  "semente_pre_registrada": 43900
+ },
+ "Q2": {
+  "cenario": "S3",
+  "replicacao": "async",
+  "duracao_s": 300,
+  "exit": 0,
+  "linha_configuracao": "Configuracao: Cli{scenario=S3, duracao=300s, ops=1000000, rep=1, threads=8, seed=44000, csvDir=C:\\Users\\Francesco\\Development\\tcc\\wt-b43-9\\runs\\b43-9-smoke\\Q2, warmupMin=60s, dryRun=false}",
+  "violacoes_stdout": 0,
+  "linha_auditor": "Auditor: i1_concorrentes=0 i4_concorrentes=0",
+  "linha_invalidacao": "Invalidacao: perdida=0 conflito_esgotado=0",
+  "linha_reset": "Reset: reset_state=on caches=sessions-async,counters-async antes=0,0 depois=0,0 ms=15",
+  "invalidacao_perdida": 0,
+  "conflito_esgotado": 0,
+  "i1_concorrentes": 0,
+  "i4_concorrentes": 0,
+  "linha_auditor_i2": "Auditor I2: concorrentes=0 janela_cascata=0 cascata_incompleta=0 sem_marco=0",
+  "linha_auditor_total": "Auditor total: i1_concorrentes=0 i4_concorrentes=0 i2_concorrentes=0",
+  "linha_login": "Login: revertido_por_bloqueio=0",
+  "auditor_i2": {
+   "concorrentes": 0,
+   "janela_cascata": 0,
+   "cascata_incompleta": 0,
+   "sem_marco": 0
+  },
+  "auditor_total": {
+   "i1_concorrentes": 0,
+   "i4_concorrentes": 0,
+   "i2_concorrentes": 0
+  },
+  "revertido_por_bloqueio": 0,
+  "linhas_s3": [
+   "S3 acao|Block|OK_NOOP = 6",
+   "S3 acao|IncrementFailure|OK_STATUS = 294",
+   "S3 acao|Login|BLOCKED = 63",
+   "S3 acao|Login|OK_LOGIN = 135",
+   "S3 acao|Logout|OK_NOOP = 87",
+   "S3 acao|ResetFailures|OK_NOOP = 40",
+   "S3 acao|Unblock|OK_NOOP = 36",
+   "S3 acao|Validate|OK_VALIDATE:INVALID = 387",
+   "S3 acao|Validate|OK_VALIDATE:VALID = 2967",
+   "S3 evento|AbandonoSilencioso = 35",
+   "S3 evento|SessaoEncerradaNoServidor = 3",
+   "S3 evento|SessaoOrfa = 35"
+  ],
+  "linha_varredura": "Varredura final: sessoes=135, identidades=30, achados=0; REAL={}; BLOCKED por motivo={ADMINISTRATIVO=1, POR_LIMITE=7, INCERTO=0, INEXPLICADO=0}",
+  "linha_warmup": "Warm-up ate +60s; medicao a partir de +72s; total 300s",
+  "csv_operation_return_code": {
+   "Block NONE": 5,
+   "IncrementFailure COUNTED": 223,
+   "Login BLOCKED": 50,
+   "Login OK": 94,
+   "Logout NONE": 67,
+   "ResetFailures NONE": 32,
+   "Unblock NONE": 31,
+   "Validate INVALID": 306,
+   "Validate VALID": 2216
+  },
+  "janela_csv_ns": [
+   1792730845461802750,
+   1792731072874957650
+  ],
+  "histogramas": {
+   "login_ok": {
+    "n": 94,
+    "descartados": 41,
+    "p50_ns": 2269183,
+    "p95_ns": 4141055,
+    "p99_ns": 4677631
+   },
+   "login_blocked": {
+    "n": 50,
+    "descartados": 13,
+    "p50_ns": 1018367,
+    "p95_ns": 1901567,
+    "p99_ns": 2000895
+   },
+   "login_err": {
+    "n": 0,
+    "descartados": 0
+   },
+   "block_ok": {
+    "n": 5,
+    "descartados": 1,
+    "p50_ns": 10018815,
+    "p95_ns": 13328383,
+    "p99_ns": 13328383
+   },
+   "block_err": {
+    "n": 0,
+    "descartados": 0
+   }
+  },
+  "violacoes_colunas": null,
+  "violacoes_por_invariante": {},
+  "violacoes_por_invariante_e_classe": {},
+  "violacoes_por_fase": {},
+  "violacoes_amostra": [],
+  "varredura_achados": {},
+  "s3_resumo": {
+   "parametros": {
+    "modo_cliente": "pinned",
+    "admin_node": "isn1",
+    "usuarios": 20,
+    "contas_limite": 10,
+    "semente": 1044003,
+    "hotrod_timeout_ms": 2000,
+    "hotrod_retentativas": 1,
+    "app_retentativas": 2,
+    "idle_timeout_sec": 30.0,
+    "nota": "o resumo inclui o warm-up; acoes anteriores a medicao nao entram no CSV de eventos"
+   },
+   "total_acoes": 4015,
+   "contadores": {
+    "acao|Block|OK_NOOP": 6,
+    "acao|IncrementFailure|OK_STATUS": 294,
+    "acao|Login|BLOCKED": 63,
+    "acao|Login|OK_LOGIN": 135,
+    "acao|Logout|OK_NOOP": 87,
+    "acao|ResetFailures|OK_NOOP": 40,
+    "acao|Unblock|OK_NOOP": 36,
+    "acao|Validate|OK_VALIDATE:INVALID": 387,
+    "acao|Validate|OK_VALIDATE:VALID": 2967,
+    "evento|AbandonoSilencioso": 35,
+    "evento|SessaoEncerradaNoServidor": 3,
+    "evento|SessaoOrfa": 35
+   }
+  },
+  "i2_real_inline": 0,
+  "criterios": {
+   "exit": {
+    "v": 0,
+    "ok": true
+   },
+   "I4_inline": {
+    "v": 0,
+    "ok": true
+   },
+   "varredura_executada": {
+    "ok": true
+   },
+   "conflito_esgotado": {
+    "v": 0,
+    "ok": true
+   },
+   "linhas_b439": {
+    "ok": true
+   },
+   "sem_marco_0": {
+    "v": 0,
+    "ok": true
+   }
+  },
+  "todos_ok": true,
+  "semente_pre_registrada": 44000
+ },
+ "Q3": {
+  "cenario": "S1",
+  "replicacao": "sync",
+  "mix": "v3",
+  "duracao_s": 120,
+  "linhas_csv": 359044,
+  "csv_operation_return_code": {
+   "IncrementFailure COUNTED": 24092,
+   "Login OK": 59898,
+   "Logout NONE": 83857,
+   "ResetFailures NONE": 12069,
+   "Validate INVALID": 6091,
+   "Validate VALID": 173037
+  },
+  "validate_isolados_csv": 119230,
+  "invalid_isolados_csv": 6091,
+  "frac_invalid_isolados_pct": 5.1086,
+  "tercos": [
+   {
+    "validate_isolados": 39204,
+    "invalid": 2012,
+    "frac_pct": 5.1321
+   },
+   {
+    "validate_isolados": 39907,
+    "invalid": 2031,
+    "frac_pct": 5.0893
+   },
+   {
+    "validate_isolados": 40119,
+    "invalid": 2048,
+    "frac_pct": 5.1048
+   }
+  ],
+  "decimos": [
+   {
+    "validate_isolados": 11738,
+    "invalid": 605,
+    "frac_pct": 5.1542
+   },
+   {
+    "validate_isolados": 11819,
+    "invalid": 610,
+    "frac_pct": 5.1612
+   },
+   {
+    "validate_isolados": 11546,
+    "invalid": 595,
+    "frac_pct": 5.1533
+   },
+   {
+    "validate_isolados": 11942,
+    "invalid": 622,
+    "frac_pct": 5.2085
+   },
+   {
+    "validate_isolados": 11919,
+    "invalid": 616,
+    "frac_pct": 5.1682
+   },
+   {
+    "validate_isolados": 12058,
+    "invalid": 584,
+    "frac_pct": 4.8433
+   },
+   {
+    "validate_isolados": 12102,
+    "invalid": 587,
+    "frac_pct": 4.8504
+   },
+   {
+    "validate_isolados": 12238,
+    "invalid": 626,
+    "frac_pct": 5.1152
+   },
+   {
+    "validate_isolados": 11310,
+    "invalid": 608,
+    "frac_pct": 5.3758
+   },
+   {
+    "validate_isolados": 12558,
+    "invalid": 638,
+    "frac_pct": 5.0804
+   }
+  ],
+  "logout_isolados_csv_por_codigo": {
+   "NONE": 23958
+  },
+  "exit": 0,
+  "linha_configuracao": "Configuracao: Cli{scenario=S1, duracao=120s, ops=0, rep=1, threads=4, seed=44100, csvDir=C:\\Users\\Francesco\\Development\\tcc\\wt-b43-9\\runs\\b43-9-smoke\\Q3, warmupMin=10s, dryRun=false}",
+  "violacoes_stdout": 0,
+  "linha_auditor": "Auditor: i1_concorrentes=59 i4_concorrentes=0",
+  "linha_invalidacao": "Invalidacao: perdida=0 conflito_esgotado=0",
+  "linha_reset": "Reset: reset_state=on caches=sessions,counters antes=133,30 depois=0,0 ms=14",
+  "invalidacao_perdida": 0,
+  "conflito_esgotado": 0,
+  "i1_concorrentes": 59,
+  "i4_concorrentes": 0,
+  "linha_auditor_i2": "Auditor I2: concorrentes=0 janela_cascata=0 cascata_incompleta=0 sem_marco=0",
+  "linha_auditor_total": "Auditor total: i1_concorrentes=69 i4_concorrentes=0 i2_concorrentes=0",
+  "linha_login": "Login: revertido_por_bloqueio=0",
+  "auditor_i2": {
+   "concorrentes": 0,
+   "janela_cascata": 0,
+   "cascata_incompleta": 0,
+   "sem_marco": 0
+  },
+  "auditor_total": {
+   "i1_concorrentes": 69,
+   "i4_concorrentes": 0,
+   "i2_concorrentes": 0
+  },
+  "revertido_por_bloqueio": 0,
+  "registrados": 359044,
+  "descartados_warmup": 52657,
+  "total_operacoes": 274597,
+  "histogramas": {
+   "login_ok": {
+    "n": 59898,
+    "descartados": 8654,
+    "p50_ns": 1526783,
+    "p95_ns": 2081791,
+    "p99_ns": 2820095
+   },
+   "login_blocked": {
+    "n": 0,
+    "descartados": 0
+   },
+   "login_err": {
+    "n": 0,
+    "descartados": 0
+   },
+   "logout_noop": {
+    "n": 0,
+    "descartados": 0
+   },
+   "logout_ok": {
+    "n": 83857,
+    "descartados": 12252,
+    "p50_ns": 1161215,
+    "p95_ns": 1637375,
+    "p99_ns": 2185215
+   }
+  },
+  "linha_mistura": "Mistura v3: validate_isolados=119230 token_antigo=5835 logout_isolados=23959 reposicoes=23959 reposicao_omitida=0 reposicao_erro=0",
+  "linha_desfechos": "Desfechos Validate: valid=173037 invalid=6091 not_found=0 erro=0",
+  "linha_carga": "Carga: mix=v3 cache=sessions slots=100000 entradas=200000 lotes=200 ms=2323",
+  "mistura_v3_stdout": {
+   "validate_isolados": 119230,
+   "token_antigo": 5835,
+   "logout_isolados": 23959,
+   "reposicoes": 23959,
+   "reposicao_omitida": 0,
+   "reposicao_erro": 0
+  },
+  "violacoes_por_invariante": {},
+  "carga": {
+   "mix": "v3",
+   "replicacao": "sync",
+   "cache": "sessions",
+   "universo": 100000,
+   "entradas_por_slot": 2,
+   "entradas": 200000,
+   "tamanho_final": 200000,
+   "lotes": 200,
+   "duracao_ms": 2323,
+   "q": 0.05,
+   "veredito": "OK",
+   "motivo": null
+  },
+  "estado": {
+   "reset_state": "on",
+   "replicacao": "sync",
+   "caches": [
+    "sessions",
+    "counters"
+   ],
+   "tamanhos_antes": [
+    133,
+    30
+   ],
+   "tamanhos_depois": [
+    0,
+    0
+   ],
+   "duracao_ms": 14,
+   "veredito": "OK",
+   "motivo": null
+  },
+  "verificador_exit": 0,
+  "verificador_veredito": "OK",
+  "leitor": {
+   "status": "OK",
+   "eventos": 359044,
+   "erros": 0,
+   "por_codigo": {
+    "COUNTED": 24092,
+    "INVALID": 6091,
+    "NONE": 95926,
+    "OK": 59898,
+    "VALID": 173037
+   }
+  },
+  "criterios": {
+   "C1": {
+    "terco1_pct": 5.1321,
+    "terco2_pct": 5.0893,
+    "terco3_pct": 5.1048,
+    "dif_1_3_pp": 0.0273,
+    "ok": true
+   },
+   "C2": {
+    "frac_pct": 5.1086,
+    "ok": true
+   },
+   "C3": {
+    "k": 5835,
+    "n": 119230,
+    "n_csv": 119230,
+    "z": 3.2905,
+    "p0": 0.05,
+    "dif_stdout_csv": 0,
+    "margem_fronteira": 4,
+    "sanidade": null,
+    "frac_pct": 4.893902541306718,
+    "meia_largura_pp": 0.20769016338051638,
+    "desvio_pp": -0.1060974586932821,
+    "banda_pct": [
+     4.792309836619483,
+     5.207690163380517
+    ],
+    "ok_ic": true,
+    "ok_csv": true,
+    "ok": true
+   },
+   "C4": {
+    "validate_not_found": 0,
+    "login_ok_frac": 1.0,
+    "eventos_menos_operacoes": 137104,
+    "dois_x_logins_ok": 137104,
+    "ok": true
+   },
+   "C5": {
+    "logout_isolados": 23959,
+    "reposicoes": 23959,
+    "reposicao_omitida": 0,
+    "reposicao_erro": 0,
+    "logout_isolados_csv": 23958,
+    "dif_stdout_csv": 1,
+    "logout_noop_janela": 0,
+    "logout_isolados_not_found_csv": 0,
+    "ok": true
+   },
+   "C6": {
+    "I1": 0,
+    "I4": 0,
+    "ok": true
+   },
+   "C7": {
+    "exit": 0,
+    "veredito": "OK",
+    "ok": true
+   },
+   "C8": {
+    "tamanho_final": 200000,
+    "carga_ms": 2323,
+    "ok": true
+   },
+   "C9": {
+    "exit": 0,
+    "ok": true
+   },
+   "B438": {
+    "invalidacao_perdida": 0,
+    "conflito_esgotado": 0,
+    "ok": true
+   },
+   "linhas_b439": {
+    "ok": true
+   },
+   "sem_marco_0": {
+    "v": 0,
+    "ok": true
+   },
+   "B439_s1s2": {
+    "revertido_por_bloqueio": 0,
+    "auditor_i2": {
+     "concorrentes": 0,
+     "janela_cascata": 0,
+     "cascata_incompleta": 0,
+     "sem_marco": 0
+    },
+    "I2_qualquer_classe": 0,
+    "ok": true
+   }
+  },
+  "todos_ok": true,
+  "semente_pre_registrada": 44100,
+  "login_ok_referencia_b43_7b": {
+   "execucao": "R1",
+   "login_ok": {
+    "n": 135303,
+    "descartados": 19062,
+    "p50_ns": 519167,
+    "p95_ns": 712703,
+    "p99_ns": 949247
+   }
+  }
+ },
+ "Q4": {
+  "cenario": "S1",
+  "replicacao": "async",
+  "mix": "v3",
+  "duracao_s": 120,
+  "linhas_csv": 469614,
+  "csv_operation_return_code": {
+   "IncrementFailure COUNTED": 31019,
+   "Login OK": 78664,
+   "Logout NONE": 109512,
+   "ResetFailures NONE": 15287,
+   "Validate INVALID": 7878,
+   "Validate VALID": 227254
+  },
+  "validate_isolados_csv": 156469,
+  "invalid_isolados_csv": 7878,
+  "frac_invalid_isolados_pct": 5.0349,
+  "tercos": [
+   {
+    "validate_isolados": 52149,
+    "invalid": 2611,
+    "frac_pct": 5.0068
+   },
+   {
+    "validate_isolados": 51876,
+    "invalid": 2622,
+    "frac_pct": 5.0544
+   },
+   {
+    "validate_isolados": 52444,
+    "invalid": 2645,
+    "frac_pct": 5.0435
+   }
+  ],
+  "decimos": [
+   {
+    "validate_isolados": 14833,
+    "invalid": 753,
+    "frac_pct": 5.0765
+   },
+   {
+    "validate_isolados": 16063,
+    "invalid": 829,
+    "frac_pct": 5.1609
+   },
+   {
+    "validate_isolados": 15832,
+    "invalid": 773,
+    "frac_pct": 4.8825
+   },
+   {
+    "validate_isolados": 15970,
+    "invalid": 765,
+    "frac_pct": 4.7902
+   },
+   {
+    "validate_isolados": 15934,
+    "invalid": 822,
+    "frac_pct": 5.1588
+   },
+   {
+    "validate_isolados": 14994,
+    "invalid": 753,
+    "frac_pct": 5.022
+   },
+   {
+    "validate_isolados": 15617,
+    "invalid": 789,
+    "frac_pct": 5.0522
+   },
+   {
+    "validate_isolados": 15830,
+    "invalid": 815,
+    "frac_pct": 5.1485
+   },
+   {
+    "validate_isolados": 15719,
+    "invalid": 824,
+    "frac_pct": 5.2421
+   },
+   {
+    "validate_isolados": 15677,
+    "invalid": 755,
+    "frac_pct": 4.816
+   }
+  ],
+  "logout_isolados_csv_por_codigo": {
+   "NONE": 30849
+  },
+  "exit": 0,
+  "linha_configuracao": "Configuracao: Cli{scenario=S1, duracao=120s, ops=0, rep=1, threads=4, seed=44200, csvDir=C:\\Users\\Francesco\\Development\\tcc\\wt-b43-9\\runs\\b43-9-smoke\\Q4, warmupMin=10s, dryRun=false}",
+  "violacoes_stdout": 0,
+  "linha_auditor": "Auditor: i1_concorrentes=128 i4_concorrentes=0",
+  "linha_invalidacao": "Invalidacao: perdida=0 conflito_esgotado=0",
+  "linha_reset": "Reset: reset_state=on caches=sessions-async,counters-async antes=135,30 depois=0,0 ms=11",
+  "invalidacao_perdida": 0,
+  "conflito_esgotado": 0,
+  "i1_concorrentes": 128,
+  "i4_concorrentes": 0,
+  "linha_auditor_i2": "Auditor I2: concorrentes=0 janela_cascata=0 cascata_incompleta=0 sem_marco=0",
+  "linha_auditor_total": "Auditor total: i1_concorrentes=152 i4_concorrentes=0 i2_concorrentes=0",
+  "linha_login": "Login: revertido_por_bloqueio=0",
+  "auditor_i2": {
+   "concorrentes": 0,
+   "janela_cascata": 0,
+   "cascata_incompleta": 0,
+   "sem_marco": 0
+  },
+  "auditor_total": {
+   "i1_concorrentes": 152,
+   "i4_concorrentes": 0,
+   "i2_concorrentes": 0
+  },
+  "revertido_por_bloqueio": 0,
+  "registrados": 469614,
+  "descartados_warmup": 72308,
+  "total_operacoes": 360612,
+  "histogramas": {
+   "login_ok": {
+    "n": 78664,
+    "descartados": 11991,
+    "p50_ns": 1101823,
+    "p95_ns": 1425407,
+    "p99_ns": 2125823
+   },
+   "login_blocked": {
+    "n": 0,
+    "descartados": 0
+   },
+   "login_err": {
+    "n": 0,
+    "descartados": 0
+   },
+   "logout_noop": {
+    "n": 0,
+    "descartados": 0
+   },
+   "logout_ok": {
+    "n": 109512,
+    "descartados": 16837,
+    "p50_ns": 760319,
+    "p95_ns": 1007103,
+    "p99_ns": 1541119
+   }
+  },
+  "linha_mistura": "Mistura v3: validate_isolados=156469 token_antigo=7609 logout_isolados=30849 reposicoes=30849 reposicao_omitida=0 reposicao_erro=0",
+  "linha_desfechos": "Desfechos Validate: valid=227254 invalid=7878 not_found=0 erro=0",
+  "linha_carga": "Carga: mix=v3 cache=sessions-async slots=100000 entradas=200000 lotes=200 ms=2177",
+  "mistura_v3_stdout": {
+   "validate_isolados": 156469,
+   "token_antigo": 7609,
+   "logout_isolados": 30849,
+   "reposicoes": 30849,
+   "reposicao_omitida": 0,
+   "reposicao_erro": 0
+  },
+  "violacoes_por_invariante": {},
+  "carga": {
+   "mix": "v3",
+   "replicacao": "async",
+   "cache": "sessions-async",
+   "universo": 100000,
+   "entradas_por_slot": 2,
+   "entradas": 200000,
+   "tamanho_final": 200000,
+   "lotes": 200,
+   "duracao_ms": 2177,
+   "q": 0.05,
+   "veredito": "OK",
+   "motivo": null
+  },
+  "estado": {
+   "reset_state": "on",
+   "replicacao": "async",
+   "caches": [
+    "sessions-async",
+    "counters-async"
+   ],
+   "tamanhos_antes": [
+    135,
+    30
+   ],
+   "tamanhos_depois": [
+    0,
+    0
+   ],
+   "duracao_ms": 11,
+   "veredito": "OK",
+   "motivo": null
+  },
+  "verificador_exit": 0,
+  "verificador_veredito": "OK",
+  "leitor": {
+   "status": "OK",
+   "eventos": 469614,
+   "erros": 0,
+   "por_codigo": {
+    "COUNTED": 31019,
+    "INVALID": 7878,
+    "NONE": 124799,
+    "OK": 78664,
+    "VALID": 227254
+   }
+  },
+  "criterios": {
+   "C1": {
+    "terco1_pct": 5.0068,
+    "terco2_pct": 5.0544,
+    "terco3_pct": 5.0435,
+    "dif_1_3_pp": 0.0367,
+    "ok": true
+   },
+   "C2": {
+    "frac_pct": 5.0349,
+    "ok": true
+   },
+   "C3": {
+    "k": 7609,
+    "n": 156469,
+    "n_csv": 156469,
+    "z": 3.2905,
+    "p0": 0.05,
+    "dif_stdout_csv": 0,
+    "margem_fronteira": 4,
+    "sanidade": null,
+    "frac_pct": 4.86294409755287,
+    "meia_largura_pp": 0.18129864007662574,
+    "desvio_pp": -0.13705590244713003,
+    "banda_pct": [
+     4.818701359923375,
+     5.181298640076626
+    ],
+    "ok_ic": true,
+    "ok_csv": true,
+    "ok": true
+   },
+   "C4": {
+    "validate_not_found": 0,
+    "login_ok_frac": 1.0,
+    "eventos_menos_operacoes": 181310,
+    "dois_x_logins_ok": 181310,
+    "ok": true
+   },
+   "C5": {
+    "logout_isolados": 30849,
+    "reposicoes": 30849,
+    "reposicao_omitida": 0,
+    "reposicao_erro": 0,
+    "logout_isolados_csv": 30849,
+    "dif_stdout_csv": 0,
+    "logout_noop_janela": 0,
+    "logout_isolados_not_found_csv": 0,
+    "ok": true
+   },
+   "C6": {
+    "I1": 0,
+    "I4": 0,
+    "ok": true
+   },
+   "C7": {
+    "exit": 0,
+    "veredito": "OK",
+    "ok": true
+   },
+   "C8": {
+    "tamanho_final": 200000,
+    "carga_ms": 2177,
+    "ok": true
+   },
+   "C9": {
+    "exit": 0,
+    "ok": true
+   },
+   "B438": {
+    "invalidacao_perdida": 0,
+    "conflito_esgotado": 0,
+    "ok": true
+   },
+   "linhas_b439": {
+    "ok": true
+   },
+   "sem_marco_0": {
+    "v": 0,
+    "ok": true
+   },
+   "B439_s1s2": {
+    "revertido_por_bloqueio": 0,
+    "auditor_i2": {
+     "concorrentes": 0,
+     "janela_cascata": 0,
+     "cascata_incompleta": 0,
+     "sem_marco": 0
+    },
+    "I2_qualquer_classe": 0,
+    "ok": true
+   }
+  },
+  "todos_ok": true,
+  "semente_pre_registrada": 44200,
+  "login_ok_referencia_b43_7b": {
+   "execucao": "R2",
+   "login_ok": {
+    "n": 164304,
+    "descartados": 28426,
+    "p50_ns": 377855,
+    "p95_ns": 487935,
+    "p99_ns": 685055
+   }
+  }
+ },
+ "Q5": {
+  "cenario": "S2",
+  "replicacao": "sync",
+  "mix": "v3",
+  "duracao_s": 120,
+  "linhas_csv": 517181,
+  "csv_operation_return_code": {
+   "IncrementFailure COUNTED": 4749,
+   "Login OK": 14681,
+   "Logout NONE": 19418,
+   "Validate INVALID": 23476,
+   "Validate VALID": 454857
+  },
+  "validate_isolados_csv": 463653,
+  "invalid_isolados_csv": 23476,
+  "frac_invalid_isolados_pct": 5.0633,
+  "tercos": [
+   {
+    "validate_isolados": 155166,
+    "invalid": 7892,
+    "frac_pct": 5.0862
+   },
+   {
+    "validate_isolados": 155094,
+    "invalid": 7779,
+    "frac_pct": 5.0157
+   },
+   {
+    "validate_isolados": 153393,
+    "invalid": 7805,
+    "frac_pct": 5.0882
+   }
+  ],
+  "decimos": [
+   {
+    "validate_isolados": 45815,
+    "invalid": 2327,
+    "frac_pct": 5.0791
+   },
+   {
+    "validate_isolados": 46865,
+    "invalid": 2363,
+    "frac_pct": 5.0421
+   },
+   {
+    "validate_isolados": 46902,
+    "invalid": 2443,
+    "frac_pct": 5.2087
+   },
+   {
+    "validate_isolados": 46873,
+    "invalid": 2316,
+    "frac_pct": 4.941
+   },
+   {
+    "validate_isolados": 47083,
+    "invalid": 2402,
+    "frac_pct": 5.1016
+   },
+   {
+    "validate_isolados": 45614,
+    "invalid": 2314,
+    "frac_pct": 5.073
+   },
+   {
+    "validate_isolados": 46407,
+    "invalid": 2270,
+    "frac_pct": 4.8915
+   },
+   {
+    "validate_isolados": 46666,
+    "invalid": 2368,
+    "frac_pct": 5.0744
+   },
+   {
+    "validate_isolados": 44713,
+    "invalid": 2264,
+    "frac_pct": 5.0634
+   },
+   {
+    "validate_isolados": 46715,
+    "invalid": 2409,
+    "frac_pct": 5.1568
+   }
+  ],
+  "logout_isolados_csv_por_codigo": {
+   "NONE": 4738
+  },
+  "exit": 0,
+  "linha_configuracao": "Configuracao: Cli{scenario=S2, duracao=120s, ops=0, rep=1, threads=4, seed=44300, csvDir=C:\\Users\\Francesco\\Development\\tcc\\wt-b43-9\\runs\\b43-9-smoke\\Q5, warmupMin=10s, dryRun=false}",
+  "violacoes_stdout": 0,
+  "linha_auditor": "Auditor: i1_concorrentes=22 i4_concorrentes=0",
+  "linha_invalidacao": "Invalidacao: perdida=0 conflito_esgotado=0",
+  "linha_reset": "Reset: reset_state=on caches=sessions,counters antes=296109,36 depois=0,0 ms=53",
+  "invalidacao_perdida": 0,
+  "conflito_esgotado": 0,
+  "i1_concorrentes": 22,
+  "i4_concorrentes": 0,
+  "linha_auditor_i2": "Auditor I2: concorrentes=0 janela_cascata=0 cascata_incompleta=0 sem_marco=0",
+  "linha_auditor_total": "Auditor total: i1_concorrentes=27 i4_concorrentes=0 i2_concorrentes=0",
+  "linha_login": "Login: revertido_por_bloqueio=0",
+  "auditor_i2": {
+   "concorrentes": 0,
+   "janela_cascata": 0,
+   "cascata_incompleta": 0,
+   "sem_marco": 0
+  },
+  "auditor_total": {
+   "i1_concorrentes": 27,
+   "i4_concorrentes": 0,
+   "i2_concorrentes": 0
+  },
+  "revertido_por_bloqueio": 0,
+  "registrados": 517181,
+  "descartados_warmup": 81698,
+  "total_operacoes": 564857,
+  "histogramas": {
+   "login_ok": {
+    "n": 14681,
+    "descartados": 2330,
+    "p50_ns": 1526783,
+    "p95_ns": 1958911,
+    "p99_ns": 2363391
+   },
+   "login_blocked": {
+    "n": 0,
+    "descartados": 0
+   },
+   "login_err": {
+    "n": 0,
+    "descartados": 0
+   },
+   "logout_noop": {
+    "n": 0,
+    "descartados": 0
+   },
+   "logout_ok": {
+    "n": 19418,
+    "descartados": 3079,
+    "p50_ns": 1180671,
+    "p95_ns": 1531903,
+    "p99_ns": 1875967
+   }
+  },
+  "linha_mistura": "Mistura v3: validate_isolados=463653 token_antigo=23253 logout_isolados=4738 reposicoes=4738 reposicao_omitida=0 reposicao_erro=0",
+  "linha_desfechos": "Desfechos Validate: valid=454857 invalid=23476 not_found=0 erro=0",
+  "linha_carga": "Carga: mix=v3 cache=sessions slots=100000 entradas=200000 lotes=200 ms=1848",
+  "mistura_v3_stdout": {
+   "validate_isolados": 463653,
+   "token_antigo": 23253,
+   "logout_isolados": 4738,
+   "reposicoes": 4738,
+   "reposicao_omitida": 0,
+   "reposicao_erro": 0
+  },
+  "violacoes_por_invariante": {},
+  "carga": {
+   "mix": "v3",
+   "replicacao": "sync",
+   "cache": "sessions",
+   "universo": 100000,
+   "entradas_por_slot": 2,
+   "entradas": 200000,
+   "tamanho_final": 200000,
+   "lotes": 200,
+   "duracao_ms": 1848,
+   "q": 0.05,
+   "veredito": "OK",
+   "motivo": null
+  },
+  "estado": {
+   "reset_state": "on",
+   "replicacao": "sync",
+   "caches": [
+    "sessions",
+    "counters"
+   ],
+   "tamanhos_antes": [
+    296109,
+    36
+   ],
+   "tamanhos_depois": [
+    0,
+    0
+   ],
+   "duracao_ms": 53,
+   "veredito": "OK",
+   "motivo": null
+  },
+  "verificador_exit": 0,
+  "verificador_veredito": "OK",
+  "leitor": {
+   "status": "OK",
+   "eventos": 517181,
+   "erros": 0,
+   "por_codigo": {
+    "COUNTED": 4749,
+    "INVALID": 23476,
+    "NONE": 19418,
+    "OK": 14681,
+    "VALID": 454857
+   }
+  },
+  "criterios": {
+   "C1": {
+    "terco1_pct": 5.0862,
+    "terco2_pct": 5.0157,
+    "terco3_pct": 5.0882,
+    "dif_1_3_pp": 0.002,
+    "ok": true
+   },
+   "C2": {
+    "frac_pct": 5.0633,
+    "ok": true
+   },
+   "C3": {
+    "k": 23253,
+    "n": 463653,
+    "n_csv": 463653,
+    "z": 3.2905,
+    "p0": 0.05,
+    "dif_stdout_csv": 0,
+    "margem_fronteira": 4,
+    "sanidade": null,
+    "frac_pct": 5.015172984969363,
+    "meia_largura_pp": 0.10532031827569903,
+    "desvio_pp": 0.015172984969362424,
+    "banda_pct": [
+     4.894679681724301,
+     5.1053203182757
+    ],
+    "ok_ic": true,
+    "ok_csv": true,
+    "ok": true
+   },
+   "C4": {
+    "validate_not_found": 0,
+    "login_ok_frac": 1.0,
+    "eventos_menos_operacoes": 34022,
+    "dois_x_logins_ok": 34022,
+    "ok": true
+   },
+   "C5": {
+    "logout_isolados": 4738,
+    "reposicoes": 4738,
+    "reposicao_omitida": 0,
+    "reposicao_erro": 0,
+    "logout_isolados_csv": 4738,
+    "dif_stdout_csv": 0,
+    "logout_noop_janela": 0,
+    "logout_isolados_not_found_csv": 0,
+    "ok": true
+   },
+   "C6": {
+    "I1": 0,
+    "I4": 0,
+    "ok": true
+   },
+   "C7": {
+    "exit": 0,
+    "veredito": "OK",
+    "ok": true
+   },
+   "C8": {
+    "tamanho_final": 200000,
+    "carga_ms": 1848,
+    "ok": true
+   },
+   "C9": {
+    "exit": 0,
+    "ok": true
+   },
+   "B438": {
+    "invalidacao_perdida": 0,
+    "conflito_esgotado": 0,
+    "ok": true
+   },
+   "linhas_b439": {
+    "ok": true
+   },
+   "sem_marco_0": {
+    "v": 0,
+    "ok": true
+   },
+   "B439_s1s2": {
+    "revertido_por_bloqueio": 0,
+    "auditor_i2": {
+     "concorrentes": 0,
+     "janela_cascata": 0,
+     "cascata_incompleta": 0,
+     "sem_marco": 0
+    },
+    "I2_qualquer_classe": 0,
+    "ok": true
+   }
+  },
+  "todos_ok": true,
+  "semente_pre_registrada": 44300
+ },
+ "Q6": {
+  "cenario": "S1",
+  "replicacao": "sync",
+  "mix": "v3",
+  "duracao_s": 600,
+  "linhas_csv": 1892486,
+  "csv_operation_return_code": {
+   "IncrementFailure COUNTED": 126274,
+   "Login OK": 315177,
+   "Logout NONE": 441699,
+   "ResetFailures NONE": 63103,
+   "Validate INVALID": 32879,
+   "Validate VALID": 913354
+  },
+  "validate_isolados_csv": 631058,
+  "invalid_isolados_csv": 32879,
+  "frac_invalid_isolados_pct": 5.2101,
+  "tercos": [
+   {
+    "validate_isolados": 209518,
+    "invalid": 10835,
+    "frac_pct": 5.1714
+   },
+   {
+    "validate_isolados": 210796,
+    "invalid": 11058,
+    "frac_pct": 5.2458
+   },
+   {
+    "validate_isolados": 210744,
+    "invalid": 10986,
+    "frac_pct": 5.213
+   }
+  ],
+  "decimos": [
+   {
+    "validate_isolados": 63062,
+    "invalid": 3225,
+    "frac_pct": 5.114
+   },
+   {
+    "validate_isolados": 62814,
+    "invalid": 3208,
+    "frac_pct": 5.1071
+   },
+   {
+    "validate_isolados": 63051,
+    "invalid": 3281,
+    "frac_pct": 5.2037
+   },
+   {
+    "validate_isolados": 62724,
+    "invalid": 3347,
+    "frac_pct": 5.3361
+   },
+   {
+    "validate_isolados": 63382,
+    "invalid": 3299,
+    "frac_pct": 5.2049
+   },
+   {
+    "validate_isolados": 62551,
+    "invalid": 3312,
+    "frac_pct": 5.2949
+   },
+   {
+    "validate_isolados": 63639,
+    "invalid": 3297,
+    "frac_pct": 5.1808
+   },
+   {
+    "validate_isolados": 63548,
+    "invalid": 3294,
+    "frac_pct": 5.1835
+   },
+   {
+    "validate_isolados": 63804,
+    "invalid": 3387,
+    "frac_pct": 5.3084
+   },
+   {
+    "validate_isolados": 62483,
+    "invalid": 3229,
+    "frac_pct": 5.1678
+   }
+  ],
+  "logout_isolados_csv_por_codigo": {
+   "NONE": 126522
+  },
+  "exit": 0,
+  "linha_configuracao": "Configuracao: Cli{scenario=S1, duracao=600s, ops=0, rep=1, threads=4, seed=44400, csvDir=C:\\Users\\Francesco\\Development\\tcc\\wt-b43-9\\runs\\b43-9-smoke\\Q6, warmupMin=60s, dryRun=false}",
+  "violacoes_stdout": 0,
+  "linha_auditor": "Auditor: i1_concorrentes=289 i4_concorrentes=0",
+  "linha_invalidacao": "Invalidacao: perdida=0 conflito_esgotado=0",
+  "linha_reset": "Reset: reset_state=on caches=sessions,counters antes=222497,36 depois=0,0 ms=25",
+  "invalidacao_perdida": 0,
+  "conflito_esgotado": 0,
+  "i1_concorrentes": 289,
+  "i4_concorrentes": 0,
+  "linha_auditor_i2": "Auditor I2: concorrentes=0 janela_cascata=0 cascata_incompleta=0 sem_marco=0",
+  "linha_auditor_total": "Auditor total: i1_concorrentes=344 i4_concorrentes=0 i2_concorrentes=0",
+  "linha_login": "Login: revertido_por_bloqueio=0",
+  "auditor_i2": {
+   "concorrentes": 0,
+   "janela_cascata": 0,
+   "cascata_incompleta": 0,
+   "sem_marco": 0
+  },
+  "auditor_total": {
+   "i1_concorrentes": 344,
+   "i4_concorrentes": 0,
+   "i2_concorrentes": 0
+  },
+  "revertido_por_bloqueio": 0,
+  "registrados": 1892486,
+  "descartados_warmup": 312399,
+  "total_operacoes": 1470527,
+  "histogramas": {
+   "login_ok": {
+    "n": 315177,
+    "descartados": 52002,
+    "p50_ns": 1449983,
+    "p95_ns": 1973247,
+    "p99_ns": 2617343
+   },
+   "login_blocked": {
+    "n": 0,
+    "descartados": 0
+   },
+   "login_err": {
+    "n": 0,
+    "descartados": 0
+   },
+   "logout_noop": {
+    "n": 0,
+    "descartados": 0
+   },
+   "logout_ok": {
+    "n": 441699,
+    "descartados": 72868,
+    "p50_ns": 1100799,
+    "p95_ns": 1537023,
+    "p99_ns": 1998847
+   }
+  },
+  "linha_mistura": "Mistura v3: validate_isolados=631058 token_antigo=31460 logout_isolados=126523 reposicoes=126523 reposicao_omitida=0 reposicao_erro=0",
+  "linha_desfechos": "Desfechos Validate: valid=913354 invalid=32879 not_found=0 erro=0",
+  "linha_carga": "Carga: mix=v3 cache=sessions slots=100000 entradas=200000 lotes=200 ms=1712",
+  "mistura_v3_stdout": {
+   "validate_isolados": 631058,
+   "token_antigo": 31460,
+   "logout_isolados": 126523,
+   "reposicoes": 126523,
+   "reposicao_omitida": 0,
+   "reposicao_erro": 0
+  },
+  "violacoes_por_invariante": {},
+  "carga": {
+   "mix": "v3",
+   "replicacao": "sync",
+   "cache": "sessions",
+   "universo": 100000,
+   "entradas_por_slot": 2,
+   "entradas": 200000,
+   "tamanho_final": 200000,
+   "lotes": 200,
+   "duracao_ms": 1712,
+   "q": 0.05,
+   "veredito": "OK",
+   "motivo": null
+  },
+  "estado": {
+   "reset_state": "on",
+   "replicacao": "sync",
+   "caches": [
+    "sessions",
+    "counters"
+   ],
+   "tamanhos_antes": [
+    222497,
+    36
+   ],
+   "tamanhos_depois": [
+    0,
+    0
+   ],
+   "duracao_ms": 25,
+   "veredito": "OK",
+   "motivo": null
+  },
+  "verificador_exit": 0,
+  "verificador_veredito": "OK",
+  "leitor": {
+   "status": "OK",
+   "eventos": 1892486,
+   "erros": 0,
+   "por_codigo": {
+    "COUNTED": 126274,
+    "INVALID": 32879,
+    "NONE": 504802,
+    "OK": 315177,
+    "VALID": 913354
+   }
+  },
+  "criterios": {
+   "C1": {
+    "terco1_pct": 5.1714,
+    "terco2_pct": 5.2458,
+    "terco3_pct": 5.213,
+    "dif_1_3_pp": 0.0416,
+    "decimos_max_menos_min_pp": 0.229,
+    "ok": true
+   },
+   "C2": {
+    "frac_pct": 5.2101,
+    "ok": true
+   },
+   "C3": {
+    "k": 31460,
+    "n": 631058,
+    "n_csv": 631058,
+    "z": 3.2905,
+    "p0": 0.05,
+    "dif_stdout_csv": 0,
+    "margem_fronteira": 4,
+    "sanidade": null,
+    "frac_pct": 4.985278690706718,
+    "meia_largura_pp": 0.09027636454445506,
+    "desvio_pp": -0.014721309293282137,
+    "banda_pct": [
+     4.909723635455545,
+     5.090276364544455
+    ],
+    "ok_ic": true,
+    "ok_csv": true,
+    "ok": true
+   },
+   "C4": {
+    "validate_not_found": 0,
+    "login_ok_frac": 1.0,
+    "eventos_menos_operacoes": 734358,
+    "dois_x_logins_ok": 734358,
+    "ok": true
+   },
+   "C5": {
+    "logout_isolados": 126523,
+    "reposicoes": 126523,
+    "reposicao_omitida": 0,
+    "reposicao_erro": 0,
+    "logout_isolados_csv": 126522,
+    "dif_stdout_csv": 1,
+    "logout_noop_janela": 0,
+    "logout_isolados_not_found_csv": 0,
+    "ok": true
+   },
+   "C6": {
+    "I1": 0,
+    "I4": 0,
+    "ok": true
+   },
+   "C7": {
+    "exit": 0,
+    "veredito": "OK",
+    "ok": true
+   },
+   "C8": {
+    "tamanho_final": 200000,
+    "carga_ms": 1712,
+    "ok": true
+   },
+   "C9": {
+    "exit": 0,
+    "ok": true
+   },
+   "B438": {
+    "invalidacao_perdida": 0,
+    "conflito_esgotado": 0,
+    "ok": true
+   },
+   "linhas_b439": {
+    "ok": true
+   },
+   "sem_marco_0": {
+    "v": 0,
+    "ok": true
+   },
+   "B439_s1s2": {
+    "revertido_por_bloqueio": 0,
+    "auditor_i2": {
+     "concorrentes": 0,
+     "janela_cascata": 0,
+     "cascata_incompleta": 0,
+     "sem_marco": 0
+    },
+    "I2_qualquer_classe": 0,
+    "ok": true
+   }
+  },
+  "todos_ok": true,
+  "semente_pre_registrada": 44400
+ },
+ "_global": {
+  "sementes": {
+   "ok": true,
+   "pares": {
+    "Q1": [
+     43900,
+     1
+    ],
+    "Q2": [
+     44000,
+     1
+    ],
+    "Q3": [
+     44100,
+     1
+    ],
+    "Q4": [
+     44200,
+     1
+    ],
+    "Q5": [
+     44300,
+     1
+    ],
+    "Q6": [
+     44400,
+     1
+    ]
+   },
+   "repetidos": {},
+   "erros": [],
+   "conferem_pre_registro": true
+  },
+  "ISPN006010": {
+   "por_no": {
+    "isn1": 1,
+    "isn2": 1,
+    "isn3": 1
+   },
+   "ok": true
+  }
+ }
+}

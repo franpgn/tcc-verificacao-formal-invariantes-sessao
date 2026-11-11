@@ -1,0 +1,78 @@
+{
+  "arquivo" : "R5/rep-001.csv",
+  "sha256" : "8336d90161f5e07451aa04e10e3500bafd8cabd4005da6a7773f9f80c6809ac4",
+  "cenario" : "S1",
+  "modo" : "strict",
+  "limiares" : {
+    "login_ok_min" : 0.95,
+    "validate_valid_min_exclusivo" : 0,
+    "validate_ausente_max" : 0.05,
+    "mistura_tolerancia_pp" : 2.0,
+    "status" : "PROVISORIOS (diagnostico 2026-10-22; aceitos pelo Gestor como provisorios)"
+  },
+  "contagens" : {
+    "fora" : {
+      "IncrementFailure" : {
+        "COUNTED" : 264559
+      },
+      "Login" : {
+        "OK" : 659869
+      },
+      "Logout" : {
+        "NONE" : 923721
+      },
+      "ResetFailures" : {
+        "NONE" : 132031
+      },
+      "Validate" : {
+        "INVALID" : 69403,
+        "VALID" : 1914397
+      }
+    },
+    "dentro" : { }
+  },
+  "metricas" : {
+    "eventos_total" : 3963980,
+    "eventos_fora" : 3963980,
+    "eventos_dentro" : 0,
+    "login" : 659869,
+    "login_ok" : 659869,
+    "login_blocked" : 0,
+    "login_ok_frac" : 1.0,
+    "validate" : 1983800,
+    "validate_valid" : 1914397,
+    "validate_ausente" : 0,
+    "validate_ausente_frac" : 0.0,
+    "ops" : 2644242,
+    "mistura" : {
+      "Validate" : {
+        "observado" : 0.5006845061836247,
+        "esperado" : 0.5,
+        "desvio_pp" : 0.06845061836247002
+      },
+      "Login" : {
+        "observado" : 0.24954939827746478,
+        "esperado" : 0.25,
+        "desvio_pp" : -0.0450601722535221
+      },
+      "Logout" : {
+        "observado" : 0.09978360528272374,
+        "esperado" : 0.1,
+        "desvio_pp" : -0.02163947172762609
+      },
+      "IncrementFailure" : {
+        "observado" : 0.1000509786925705,
+        "esperado" : 0.1,
+        "desvio_pp" : 0.005097869257049414
+      },
+      "ResetFailures" : {
+        "observado" : 0.04993151156361634,
+        "esperado" : 0.05,
+        "desvio_pp" : -0.006848843638366381
+      }
+    }
+  },
+  "veredito" : "OK",
+  "motivos" : [ ],
+  "versao" : "b43-3a-i/1"
+}

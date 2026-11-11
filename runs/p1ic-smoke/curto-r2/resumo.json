@@ -1,0 +1,338 @@
+{
+ "execucao": "curto-r2",
+ "caso": "curto",
+ "alvo": "isn3",
+ "rotulo_alvo": "127.0.0.1:13003",
+ "fases_rel_s": [
+  [
+   -136.681,
+   "inicio curto-r2 caso=curto semente=83002 duracao=200 base=78a151d jar_sha256=ccdb05d7b3dd5"
+  ],
+  [
+   -100.944,
+   "parametros alvo=isn3 outros=isn1 isn2 "
+  ],
+  [
+   -98.075,
+   "origem o_ns=1793991111708823100"
+  ],
+  [
+   0.0,
+   "corte-inicio isn3"
+  ],
+  [
+   5.534,
+   "corte-fim rc=0"
+  ],
+  [
+   25.074,
+   "cura-inicio isn3"
+  ],
+  [
+   28.069,
+   "cura-fim rc=0"
+  ],
+  [
+   89.898,
+   "fim-sondas"
+  ],
+  [
+   113.464,
+   "carga exit=0"
+  ],
+  [
+   130.408,
+   "fim curto-r2"
+  ]
+ ],
+ "politica_nao_P0_ou_desfazer": [
+  {
+   "t_decisao_s": 20.252,
+   "perfil": "CONSERVADOR",
+   "politica": "P1",
+   "motivo": "isolar-suspeito",
+   "no": "127.0.0.1:13003",
+   "aplicar": [
+    "AC-7"
+   ],
+   "reverter": [],
+   "usadas_p1": 1
+  }
+ ],
+ "acoes": [
+  {
+   "operacao": "APLICAR",
+   "tipo": "AC-7",
+   "alvo": "127.0.0.1:13003",
+   "caches": [
+    "sessions-async"
+   ],
+   "origem": "POLITICA",
+   "resultado": "APLICADA",
+   "executada": true,
+   "t_pedido_s": 20.252,
+   "t_inicio_s": 20.253,
+   "duracao_ms": 1012.2,
+   "codigo_http": null,
+   "lido": "efeito_ms=37;guarda=limpa_42x_1010ms;post=pendente",
+   "erro": null
+  },
+  {
+   "operacao": "REVERTER",
+   "tipo": "AC-7",
+   "alvo": "127.0.0.1:13003",
+   "caches": [
+    "sessions-async"
+   ],
+   "origem": "GUARDA",
+   "resultado": "APLICADA",
+   "executada": true,
+   "t_pedido_s": 34.36,
+   "t_inicio_s": 34.36,
+   "duracao_ms": 13.5,
+   "codigo_http": 204,
+   "lido": "anterior=POST:204@13945ms;anterior=DELETE:204@4ms;rota=maioria@127.0.0.1:13001;127.0.0.1:13001=-;127.0.0.1:13002=-;127.0.0.1:13003=-",
+   "erro": null
+  }
+ ],
+ "transicoes": [
+  {
+   "t_s": 19.771,
+   "perfil": "CONSERVADOR",
+   "regra": "R2"
+  },
+  {
+   "t_s": 64.771,
+   "perfil": "NORMAL",
+   "regra": "R4"
+  }
+ ],
+ "fim_decisoes": {
+  "acoes_pedidas": 1,
+  "acoes_executadas": 1,
+  "acoes_falhas": 0,
+  "reversoes": 1,
+  "reversoes_falhas": 0,
+  "executor_no_prazo": true,
+  "prazo_encerramento_ns": 2000000000,
+  "linhas_perdidas": 0,
+  "perfil_final": "NORMAL"
+ },
+ "fim_observaveis": {
+  "eventos_descontados_sob_acao": 89,
+  "guarda_ac7_desfazeres": 1,
+  "eventos_fora_do_contrato": 0,
+  "linhas_perdidas": 0
+ },
+ "meta": {
+  "esquema": "decisoes-controlador/1.2",
+  "atuador": "por-tipo(AC-2=rest-infinispan,AC-5=rest-infinispan,AC-7=rest-ignored-caches)",
+  "modo": "active",
+  "acao_p1": "AC-7"
+ },
+ "sondas": {
+  "isn1/sessions-async": {
+   "recusas_cache_ignorado": 2,
+   "primeira_cache_ignorado_s": 34.285,
+   "ultima_cache_ignorado_s": 34.3,
+   "primeira_cache_ignorado_desde_acao_ms": 14031.8,
+   "puts_ok_iniciados_apos_acao_antes_da_recusa": 127,
+   "primeira_availability_s": null,
+   "primeiro_put_ok_desde_reverter_ms": 33.8,
+   "primeiro_put_ok_apos_reverter_s": 34.394,
+   "resultados_desde_acao": {
+    "get:CacheUnavailable": 1,
+    "get:OK": 540,
+    "get:TransportException": 1,
+    "put:CacheUnavailable": 1,
+    "put:OK": 632
+   }
+  },
+  "isn1/counters-async": {
+   "recusas_cache_ignorado": 0,
+   "primeira_cache_ignorado_s": null,
+   "ultima_cache_ignorado_s": null,
+   "primeira_cache_ignorado_desde_acao_ms": null,
+   "puts_ok_iniciados_apos_acao_antes_da_recusa": 633,
+   "primeira_availability_s": null,
+   "primeiro_put_ok_desde_reverter_ms": 49.3,
+   "primeiro_put_ok_apos_reverter_s": 34.409,
+   "resultados_desde_acao": {
+    "get:OK": 623,
+    "get:TransportException": 1,
+    "put:OK": 633
+   }
+  },
+  "isn2/sessions-async": {
+   "recusas_cache_ignorado": 2,
+   "primeira_cache_ignorado_s": 34.269,
+   "ultima_cache_ignorado_s": 34.3,
+   "primeira_cache_ignorado_desde_acao_ms": 14016.3,
+   "puts_ok_iniciados_apos_acao_antes_da_recusa": 124,
+   "primeira_availability_s": null,
+   "primeiro_put_ok_desde_reverter_ms": 18.2,
+   "primeiro_put_ok_apos_reverter_s": 34.378,
+   "resultados_desde_acao": {
+    "get:CacheUnavailable": 1,
+    "get:OK": 568,
+    "put:CacheUnavailable": 1,
+    "put:OK": 629
+   }
+  },
+  "isn2/counters-async": {
+   "recusas_cache_ignorado": 0,
+   "primeira_cache_ignorado_s": null,
+   "ultima_cache_ignorado_s": null,
+   "primeira_cache_ignorado_desde_acao_ms": null,
+   "puts_ok_iniciados_apos_acao_antes_da_recusa": 631,
+   "primeira_availability_s": null,
+   "primeiro_put_ok_desde_reverter_ms": 49.3,
+   "primeiro_put_ok_apos_reverter_s": 34.409,
+   "resultados_desde_acao": {
+    "get:OK": 559,
+    "put:OK": 631
+   }
+  },
+  "isn3/sessions-async": {
+   "recusas_cache_ignorado": 981,
+   "primeira_cache_ignorado_s": 20.28,
+   "ultima_cache_ignorado_s": 34.347,
+   "primeira_cache_ignorado_desde_acao_ms": 26.6,
+   "puts_ok_iniciados_apos_acao_antes_da_recusa": 0,
+   "primeira_availability_s": null,
+   "primeiro_put_ok_desde_reverter_ms": 10.2,
+   "primeiro_put_ok_apos_reverter_s": 34.37,
+   "resultados_desde_acao": {
+    "get:CacheUnavailable": 487,
+    "get:OK": 2066,
+    "put:CacheUnavailable": 494,
+    "put:OK": 2075
+   }
+  },
+  "isn3/counters-async": {
+   "recusas_cache_ignorado": 0,
+   "primeira_cache_ignorado_s": null,
+   "ultima_cache_ignorado_s": null,
+   "primeira_cache_ignorado_desde_acao_ms": null,
+   "puts_ok_iniciados_apos_acao_antes_da_recusa": 2570,
+   "primeira_availability_s": null,
+   "primeiro_put_ok_desde_reverter_ms": 11.2,
+   "primeiro_put_ok_apos_reverter_s": 34.371,
+   "resultados_desde_acao": {
+    "get:OK": 2099,
+    "get:TransportException": 11,
+    "put:OK": 2570
+   }
+  }
+ },
+ "ignorados_transicoes": [
+  [
+   "isn2",
+   -100.389,
+   "-"
+  ],
+  [
+   "isn3",
+   -100.389,
+   "-"
+  ],
+  [
+   "isn1",
+   -100.387,
+   "-"
+  ],
+  [
+   "isn3",
+   5.144,
+   "-"
+  ],
+  [
+   "isn2",
+   5.192,
+   "-"
+  ],
+  [
+   "isn3",
+   20.324,
+   "sessions-async"
+  ],
+  [
+   "isn2",
+   34.292,
+   "sessions-async"
+  ],
+  [
+   "isn1",
+   34.295,
+   "sessions-async"
+  ],
+  [
+   "isn3",
+   34.385,
+   "-"
+  ],
+  [
+   "isn1",
+   34.412,
+   "-"
+  ],
+  [
+   "isn2",
+   34.425,
+   "-"
+  ]
+ ],
+ "disponibilidade_transicoes": [
+  [
+   "isn2",
+   -100.446,
+   "sessions-async=AVAILABLE counters-async=AVAILABLE"
+  ],
+  [
+   "isn1",
+   -100.447,
+   "sessions-async=AVAILABLE counters-async=AVAILABLE"
+  ],
+  [
+   "isn3",
+   -100.412,
+   "sessions-async=AVAILABLE counters-async=AVAILABLE"
+  ],
+  [
+   "isn3",
+   3.851,
+   "sessions-async=AVAILABLE counters-async=erro:TimeoutError"
+  ],
+  [
+   "isn3",
+   5.383,
+   "sessions-async=AVAILABLE counters-async=AVAILABLE"
+  ]
+ ],
+ "carga_stdout": [
+  "Sonda replay: imediatas_agendadas=197 imediatas_lidas=196 imediatas_valid=2 imediatas_invalid=188 imediatas_not_found=1 imediatas_erro=5 imediatas_descartadas_fim=1 tardias_candidatas=76 tardias_amost",
+  "Controlador: modo=active janelas=32 transicoes=2 acoes_pedidas=1 acoes_executadas=1 reversoes=1 reversoes_falhas=0 executor_no_prazo=true eventos_antes_da_origem=1677 linhas_jsonl_perdidas=0",
+  "Fim da carga: rep=1 t_fim_carga_ns=1793991272807797400 ac5_alvo=-",
+  "Convergencia: convergiu=true, persistente=false, rodadas=3, t_convergencia=72541136300 ns",
+  "Varredura final: sessoes=272, identidades=50, achados=2; REAL={}; BLOCKED por motivo={ADMINISTRATIVO=0, POR_LIMITE=5, INCERTO=2, INEXPLICADO=0}",
+  "Total de operacoes: 7530",
+  "Violacoes detectadas: 86",
+  "Auditor: i1_concorrentes=0 i4_concorrentes=0",
+  "Auditor I2: concorrentes=0 janela_cascata=17 cascata_incompleta=67 sem_marco=0",
+  "Auditor total: i1_concorrentes=0 i4_concorrentes=0 i2_concorrentes=0"
+ ],
+ "carga_exit": "exit=0",
+ "violacoes_auditor": {
+  "I1": 2,
+  "I2_JANELA_CASCATA": 17,
+  "I2_CASCATA_INCOMPLETA": 67
+ },
+ "varredura_cabecalho": "invariante,chave,classificacao,detalhe",
+ "varredura_linhas": 2,
+ "vistas": [],
+ "servidor_ISPN005003_por_no": {
+  "isn1": 3,
+  "isn2": 2,
+  "isn3": 1068
+ }
+}

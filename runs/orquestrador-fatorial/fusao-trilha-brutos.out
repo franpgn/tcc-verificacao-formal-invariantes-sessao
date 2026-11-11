@@ -1,0 +1,19 @@
+P-61: campanha_s3_conferir.py fusao-trilha sobre os brutos completos (observaveis-rep-001.jsonl e marcadores.txt de cada F2)
+rc-20261106T144744Z exec-0001-SYNC-F2-A desde_end_s=44.132 periodo_amostras_s=2.0 amostras_apos_end=23 t_fusao_ns=1793965418791044494
+rc-20261106T144744Z exec-0004-ASYNC-F2-A desde_end_s=42.166 periodo_amostras_s=2.0 amostras_apos_end=22 t_fusao_ns=1793966610499406921
+rc-20261106T144744Z exec-0008-SYNC-F2-A desde_end_s=44.162 periodo_amostras_s=2.0 amostras_apos_end=23 t_fusao_ns=1793968192843358249
+rc-20261106T144744Z exec-0010-ASYNC-F2-A desde_end_s=44.172 periodo_amostras_s=2.0 amostras_apos_end=23 t_fusao_ns=1793968971316936996
+rc-20261106T144744Z exec-0013-ASYNC-F2-A desde_end_s=44.283 periodo_amostras_s=2.0 amostras_apos_end=23 t_fusao_ns=1793970148412228954
+rc-20261106T144744Z exec-0016-SYNC-F2-A desde_end_s=46.208 periodo_amostras_s=2.0 amostras_apos_end=24 t_fusao_ns=1793971344174223270
+rc-20261106T144744Z exec-0018-ASYNC-F2-A desde_end_s=44.152 periodo_amostras_s=2.0 amostras_apos_end=23 t_fusao_ns=1793972121349480330
+rc-20261106T144744Z exec-0022-ASYNC-F2-A desde_end_s=44.185 periodo_amostras_s=2.0 amostras_apos_end=23 t_fusao_ns=1793973700887761296
+rc-20261106T144744Z exec-0027-ASYNC-F2-A desde_end_s=46.101 periodo_amostras_s=2.0 amostras_apos_end=24 t_fusao_ns=1793975877425804478
+x18-20261106T050100Z exec-0001-SYNC-F2-A desde_end_s=44.124 periodo_amostras_s=2.0 amostras_apos_end=23 t_fusao_ns=1793930963826251073
+x18-20261106T050100Z exec-0005-ASYNC-F2-A desde_end_s=44.209 periodo_amostras_s=2.0 amostras_apos_end=23 t_fusao_ns=1793932534301249075
+x18-20261106T050100Z exec-0009-SYNC-F2-A desde_end_s=44.239 periodo_amostras_s=2.0 amostras_apos_end=23 t_fusao_ns=1793934114677457503
+x18-20261106T050100Z exec-0011-ASYNC-F2-A desde_end_s=44.101 periodo_amostras_s=2.0 amostras_apos_end=23 t_fusao_ns=1793934899259875929
+x18-20261106T050100Z exec-0013-SYNC-F2-A desde_end_s=44.152 periodo_amostras_s=2.0 amostras_apos_end=23 t_fusao_ns=1793935686028994986
+x18-20261106T050100Z exec-0015-ASYNC-F2-A desde_end_s=44.142 periodo_amostras_s=2.0 amostras_apos_end=23 t_fusao_ns=1793936472302396114
+x18-20261106T050100Z exec-0021-ASYNC-F2-A desde_end_s=46.172 periodo_amostras_s=2.0 amostras_apos_end=24 t_fusao_ns=1793938842288570354
+x18-20261106T050100Z exec-0022-ASYNC-F2-A desde_end_s=47.784 periodo_amostras_s=2.0 amostras_apos_end=24 t_fusao_ns=1793939233542630775
+x18-20261106T050100Z exec-0026-SYNC-F2-A desde_end_s=46.188 periodo_amostras_s=2.0 amostras_apos_end=24 t_fusao_ns=1793941063550904222

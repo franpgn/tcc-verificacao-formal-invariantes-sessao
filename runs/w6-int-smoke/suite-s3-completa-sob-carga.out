@@ -1,0 +1,349 @@
+== S1: --dry-run da calibracao e da avaliacao: plano, timeout -k 23s (21 + 2), nada executado ==
+PASS: S1 calibracao exit 0
+PASS: S1 calibracao: 3 linhas PLANO
+PASS: S1 timeout -k (T_enc pior caso 21 s + folga 2 s) e teto
+PASS: S1 comando S3 com controlador shadow, religamento e convergencia
+PASS: S1 --rejoin-timeout-sec do parametro
+PASS: S1 F2 com dead-man de 20 + 90 s
+PASS: S1 senha mascarada
+PASS: S1 senha nao aparece
+PASS: S1 nenhuma chamada a java/podman/sudo/curl
+PASS: S1 avaliacao exit 0
+PASS: S1 avaliacao: 2 blocos x 2 bracos
+PASS: S1 avaliacao: 2 active e 2 shadow
+PASS: S1 SHA-256 errado da matriz -> exit 4
+PASS: S1 dry-run da calibracao confere o controlador
+PASS: S1 dry-run: braco B sem bloco politica -> exit 4 (sem VM)
+PASS: S1 dry-run: motivo politica
+PASS: S1 dry-run: tetoLagMs != hotrod_timeout_ms -> exit 4
+PASS: S1 dry-run: p2Habilitada true na calibracao -> exit 4
+PASS: S1 dry-run: motivo p2Habilitada
+PASS: S1 dry-runs recusados nao chamam java/podman/sudo/curl/systemctl
+== S2: parametro sem origem, boot diferente, lock ocupado e controlador sem politica no braco B -> exit 4 ==
+PASS: S2 parametro sem origem -> exit 4
+PASS: S2 motivo cita o parametro
+PASS: S2 nenhum java
+PASS: S2 teto abaixo de duracao + T_enc + religamento + convergencia + periodo (M1 da V-W6) -> exit 4
+PASS: S2 M1: o minimo conta o T_enc do orquestrador
+PASS: S2 M1: o minimo conta um periodo da convergencia
+PASS: S2 timer tcc-heal-cs-* sobrando de outra invocacao -> exit 4 no pre-voo (S2 da V-W6)
+PASS: S2 motivo cita o timer
+PASS: S2 boot diferente -> exit 4
+PASS: S2 lock ocupado -> exit 4
+PASS: S2 braco B sem bloco politica -> exit 4
+PASS: S2 motivo politica
+PASS: S2 nenhum compose
+== S3: GO da fase e GO de rede (texto exato por tty, como no runner do rebaseline) ==
+PASS: S3 GO da fase errado -> exit 5
+PASS: S3 sem compose nem java
+PASS: S3 gates.json registra o recusado
+PASS: S3 GO de rede errado -> exit 5
+PASS: S3 nenhuma particao sem o GO de rede
+PASS: S3 GO de rede errado nao deixa o diretorio da F2
+== S4: calibracao none + F1 + F2: recriacao, seis caches, camada 3, K1, carga, falhas, marcadores, ACEITA ==
+PASS: S4 exit 0
+PASS: S4 ultima linha
+PASS: S4 tres ups
+PASS: S4 tres downs
+PASS: S4 seis caches criados por execucao (POST)
+PASS: S4 i=0 ACEITA
+PASS: S4 i=0 K1 ok
+PASS: S4 i=0 janela_h4 da linha do programa
+PASS: S4 i=0 encerramento K = 21 + 2
+PASS: S4 i=0 camada 3 antes sem divergencia
+PASS: S4 i=0 MANIFEST.sha256 da execucao
+PASS: S4 i=0 MANIFEST confere com os arquivos (stdout.log ja completo; S6 da V-W6)
+PASS: S4 i=0 stdout.log com a linha de fim da carga
+PASS: S4 i=0 caches.tsv com seis POST 200
+PASS: S4 i=1 ACEITA
+PASS: S4 i=1 K1 ok
+PASS: S4 i=1 janela_h4 da linha do programa
+PASS: S4 i=1 encerramento K = 21 + 2
+PASS: S4 i=1 camada 3 antes sem divergencia
+PASS: S4 i=1 MANIFEST.sha256 da execucao
+PASS: S4 i=1 MANIFEST confere com os arquivos (stdout.log ja completo; S6 da V-W6)
+PASS: S4 i=1 stdout.log com a linha de fim da carga
+PASS: S4 i=1 caches.tsv com seis POST 200
+PASS: S4 i=2 ACEITA
+PASS: S4 i=2 K1 ok
+PASS: S4 i=2 janela_h4 da linha do programa
+PASS: S4 i=2 encerramento K = 21 + 2
+PASS: S4 i=2 camada 3 antes sem divergencia
+PASS: S4 i=2 MANIFEST.sha256 da execucao
+PASS: S4 i=2 MANIFEST confere com os arquivos (stdout.log ja completo; S6 da V-W6)
+PASS: S4 i=2 stdout.log com a linha de fim da carga
+PASS: S4 i=2 caches.tsv com seis POST 200
+PASS: S4 F1: marcadores start e end do inject-crash.sh
+PASS: S4 F1: volta pela REST registrada (P-35)
+PASS: S4 F2: marcadores start e end
+PASS: S4 F2: dead-man armado antes da particao
+PASS: S4 F2: dead-man de 20 + 90 s com AccuracySec=1s
+PASS: S4 F2: dead-man cura com inject-partition.sh --heal
+PASS: S4 F2: nenhum timer sobrando
+PASS: S4 carga com timeout -k 23s e o teto
+PASS: S4 java recebe --scenario|S3
+PASS: S4 java recebe --marker|
+PASS: S4 java recebe --convergence|
+PASS: S4 java recebe --rejoin-timeout-sec|30
+PASS: S4 java recebe --hotrod-timeout-ms|2000
+PASS: S4 java recebe --controller-admin|http://127.0.0.1:11222,http://127.0.0.1:11223,http://127.0.0.1:11224
+PASS: S4 java recebe --w-recovery-sec|30
+PASS: S4 bundle cobre o collect-resources.sh (S4 da V-W6)
+PASS: S4 resumo.json
+PASS: S4 resumo.md
+PASS: S4 MANIFEST.sha256
+PASS: S4 ambiente.md
+PASS: S4 gates.json
+PASS: S4 progresso.json
+PASS: S4 bundle.sha256
+PASS: S4 h4 sem execucoes h4
+PASS: S4 h4 avaliou as tres
+PASS: S4 MANIFEST da fase cobre o stdout do F2
+== S5: bloco A/B com F2; AC-5 no braco B: podman start do no parado ao ler a linha de fim da carga ==
+FAIL: S5 exit 0 (esperado='0' obtido='6')
+ls: cannot access '/tmp/tmp.iT7yV3n4vz/s5/saida/exec-*-ASYNC-F2-A': No such file or directory
+Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+FileNotFoundError: [Errno 2] No such file or directory: 'C:/Program Files/Git/checagem.json'
+FAIL: S5 A ACEITA (esperado='ACEITA' obtido='')
+FAIL: S5 B ACEITA (esperado='ACEITA' obtido='DESCARTADA-INFRA')
+Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+  File "<string>", line 1, in <module>
+TypeError: 'NoneType' object is not subscriptable
+FAIL: S5 B: religamento de isn3 (esperado='isn3' obtido='')
+Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+FileNotFoundError: [Errno 2] No such file or directory: 'C:/Program Files/Git/execucao.json'
+FAIL: S5 A: sem religamento (esperado='None' obtido='')
+PASS: S5 o programa viu isn3 de volta (t_religamento_ns)
+Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+  File "<string>", line 1, in <module>
+TypeError: 'NoneType' object is not subscriptable
+PASS: S5 podman start isn3 depois da linha de fim da carga
+FAIL: S5 podman start dentro do prazo do religamento (< 30 s virtuais depois do sinal)
+Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+FileNotFoundError: [Errno 2] No such file or directory: 'C:/Users/FRANCE~1/AppData/Local/Temp/tmp.iT7yV3n4vz/s5/saida/exec-0000-ASYNC-F2-B/convergencia-resumo-rep-001.json'
+FAIL: S5 convergencia_estado do braco B (esperado='convergiu' obtido='')
+Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+FileNotFoundError: [Errno 2] No such file or directory: 'C:/Program Files/Git/execucao.json'
+FAIL: S5 mesma semente nos dois bracos do bloco (esperado='' obtido='70100')
+FAIL: S5 trilha e linha de fim concordam (esperado='trilha_ac5	127.0.0.1:11224' obtido='Recusa: AC-5 APLICADA na trilha = 127.0.0.1:11224, na linha de fim da carga = -')
+scripts/run-campanha-s3.test.sh: line 737: /tmp/tmp.iT7yV3n4vz/s5/saida/manifesto-bracos.tsv: No such file or directory
+scripts/run-campanha-s3.test.sh: line 45: test: : integer expected
+FAIL: S5 manifesto-bracos.tsv para o comparar_bracos.py
+head: cannot open '/tmp/tmp.iT7yV3n4vz/s5/saida/manifesto-bracos.tsv' for reading: No such file or directory
+FAIL: S5 cabecalho do manifesto (esperado='bloco	celula	braco	execucao' obtido='')
+== S6: braco B que nao atua (atuador nulo / politica nenhuma / sha diferente) -> carga parada, exit 6 ==
+PASS: S6 atuador: exit 6
+PASS: S6 atuador: motivo meta
+PASS: S6 atuador: uma execucao DESCARTADA-INFRA (a recusada)
+PASS: S6 atuador: carga morta antes do fim
+PASS: S6 politica: exit 6
+PASS: S6 politica: motivo meta
+PASS: S6 politica: uma execucao DESCARTADA-INFRA (a recusada)
+PASS: S6 politica: carga morta antes do fim
+PASS: S6 sha: exit 6
+PASS: S6 sha: motivo meta
+PASS: S6 sha: uma execucao DESCARTADA-INFRA (a recusada)
+PASS: S6 sha: carga morta antes do fim
+== S7: encerramento: TERM no orquestrador -> SIGTERM a carga, SIGKILL so depois de K = 23 s (virtuais) ==
+PASS: S7 carga lancada
+PASS: S7 orquestrador sai com 143
+PASS: S7 a carga recebeu SIGTERM
+   (TERM -> fim em 3978 ms reais; K = 23 s virtuais = 2300 ms reais)
+PASS: S7 SIGKILL nao veio antes de K = 2300 ms reais (o processo resistiu ao TERM ate o timeout matar)
+PASS: S7 nenhum java vivo
+PASS: S7 teto estourado: fase segue (exit 0)
+PASS: S7 teto estourado: RECUSADA
+PASS: S7 teto marcado
+== S8: P-35: inject-crash.sh sai com 0 mas isn2 nao volta -> conferido pela REST, exit 10 ==
+PASS: S8 exit 10
+PASS: S8 injetor saiu com 0
+PASS: S8 volta registrada como falha
+PASS: S8 motivo P-35
+PASS: S8 nenhuma carga depois da execucao F1 (posicao 2 na fila)
+== S9: resto de particao que o --heal nao remove -> exit 6, dead-man mantido; resto curado -> segue ==
+PASS: S9 resto nao curado -> exit 6
+PASS: S9 motivo
+PASS: S9 dead-man continua armado
+PASS: S9 resto curado pelo --heal -> exit 0
+PASS: S9 heal extra registrado
+PASS: S9 sem timer no fim
+== S10: DT-014: interrompida antes da carga (abortada, mesmo i) e depois (RECUSADA) ==
+PASS: S10 exit 0
+PASS: S10 antes da carga: diretorio .abortada-<UTC> mantido
+PASS: S10 o mesmo i=0 roda de novo (semente 60000)
+PASS: S10 depois da carga: RECUSADA sem relancar
+PASS: S10 motivo DT-014
+PASS: S10 MANIFEST cobre a abortada
+== S11: PARAR entre execucoes; retomada com o bundle alterado e recusada ==
+PASS: S11 PARAR -> exit 0 sem carga
+PASS: S11 motivo PARAR
+PASS: S11 bundle diferente do progresso -> exit 4
+PASS: S11 motivo bundle
+== S12: camada 3 (configuracao lida de volta diverge) e StartedAt anterior a recriacao -> exit 6 ==
+PASS: S12 leitura de volta divergente na criacao -> exit 6
+PASS: S12 motivo cria-caches
+PASS: S12 sem carga
+PASS: S12 disponibilidade != AVAILABLE antes da carga -> exit 6
+PASS: S12 motivo camada 3
+PASS: S12 StartedAt anterior a recriacao -> exit 6
+PASS: S12 motivo StartedAt
+== S13: h4 (C3): execucao h4 vira DESCARTADA-INFRA; 4 seguidas param a fase; unit inativa para antes ==
+PASS: S13 4 h4 seguidas -> parada (exit 10)
+PASS: S13 motivo parada h4
+PASS: S13 primeira execucao h4a
+PASS: S13 motivo h4a
+PASS: S13 unit do amostrador inativa -> exit 4 no pre-voo
+== S14: bloco perdido no primeiro braco -> o segundo braco e PULADA (o bloco inteiro e refeito) ==
+PASS: S14 exit 0
+PASS: S14 primeiro braco RECUSADA (carga saiu com 3)
+PASS: S14 segundo braco PULADA
+PASS: S14 so uma carga lancada
+PASS: S14 repor refaz o bloco inteiro
+== S15: limite de disco (livre < 1,5 x volume de uma execucao) -> exit 10 antes da carga ==
+PASS: S15 exit 10
+PASS: S15 motivo disco
+PASS: S15 sem carga
+PASS: S15 com 1,5 x exatos segue
+== S16: F4 com dead-man e marcadores; nenhum '|| true' em linha de carga, injetor ou analise ==
+PASS: S16 exit 0
+PASS: S16 ACEITA
+PASS: S16 marcadores F4
+PASS: S16 dead-man F4 cura com inject-netdegrade --heal
+PASS: S16 injetor F4 com severidade e direcao
+PASS: S16 nenhum '|| true' nas linhas que lancam carga, injetor, conferencia, h4 ou caches
+== S17: carga que termina sem a ancora antes dos 120 s -> RECUSADA 'sem ancora', sem injecao ==
+PASS: S17 exit 0
+PASS: S17 RECUSADA
+PASS: S17 motivo sem ancora
+PASS: S17 nenhuma injecao
+PASS: S17 janela_h4 nula
+== S18: D-B: p2Habilitada != false no controlador recusa no pre-voo; p2_habilitada != false na meta para a carga ==
+PASS: S18 p2Habilitada true -> exit 4 no pre-voo
+PASS: S18 motivo p2Habilitada
+PASS: S18 sem compose nem carga
+PASS: S18 sem bloco politica -> exit 4 (calibracao tambem exige p2Habilitada = false)
+PASS: S18 motivo do sem bloco
+PASS: S18 meta com p2_habilitada true -> exit 6
+PASS: S18 motivo p2_habilitada
+PASS: S18 carga parada
+PASS: S18 a primeira execucao (qualquer braco) e DESCARTADA-INFRA
+== S19: arquivo NUL (podman machine ssh no Git Bash) nunca fica em runs/ nem no manifesto ==
+PASS: S19 exit 0
+PASS: S19 nenhum NUL em saida/
+PASS: S19 nenhum NUL no MANIFEST da fase
+PASS: S19 nenhum NUL no MANIFEST da execucao
+PASS: S19 remocao registrada no log
+== S20: pareamento: bloco com sementes diferentes, celulas diferentes ou braco faltando -> exit 4 no pre-voo ==
+PASS: S20 semente: exit 4
+PASS: S20 semente: motivo pareamento
+PASS: S20 semente: sem compose nem carga
+PASS: S20 celula: exit 4
+PASS: S20 celula: motivo pareamento
+PASS: S20 celula: sem compose nem carga
+PASS: S20 braco: exit 4
+PASS: S20 braco: motivo pareamento
+PASS: S20 braco: sem compose nem carga
+== S21: convergencia sem rodada valida (no parado e nao religado) vira aviso na checagem ==
+PASS: S21 exit 0
+PASS: S21 ACEITA (o desfecho V nao depende da convergencia)
+PASS: S21 aviso sem_rodada_valida
+== S22: B1 da V-W6: injetor de F2/F4 sai com 1/6 porque o AC-5 parou o no da falha -> pendente, nao recusa ==
+PASS: S22 f2: exit 0 (a fase segue)
+PASS: S22 f2: o injetor do braco B saiu com 1 (duble fiel ao real)
+PASS: S22 f2: alvo parado registrado na execucao
+FAIL: S22 f2: braco B ACEITA (esperado='ACEITA' obtido='RECUSADA')
+PASS: S22 f2: aviso da falha efetiva ate o AC-5
+PASS: S22 f2: religamento de isn3 pela linha de fim
+Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+FileNotFoundError: [Errno 2] No such file or directory: 'C:/Users/FRANCE~1/AppData/Local/Temp/tmp.iT7yV3n4vz/s22-f2/saida/exec-0001-ASYNC-F2-A/execucao.json'
+FAIL: S22 f2: braco A (no de pe) com injetor 0 e ACEITA (esperado='0 ACEITA' obtido=' PULADA')
+Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+FileNotFoundError: [Errno 2] No such file or directory: 'C:/Users/FRANCE~1/AppData/Local/Temp/tmp.iT7yV3n4vz/s22-f2/saida/exec-0001-ASYNC-F2-A/execucao.json'
+FAIL: S22 f2: braco A sem alvo parado (esperado='None' obtido='')
+PASS: S22 f4: exit 0 (a fase segue)
+PASS: S22 f4: o injetor do braco B saiu com 6 (duble fiel ao real)
+PASS: S22 f4: alvo parado registrado na execucao
+FAIL: S22 f4: braco B ACEITA (esperado='ACEITA' obtido='RECUSADA')
+PASS: S22 f4: aviso da falha efetiva ate o AC-5
+PASS: S22 f4: religamento de isn3 pela linha de fim
+Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+FileNotFoundError: [Errno 2] No such file or directory: 'C:/Users/FRANCE~1/AppData/Local/Temp/tmp.iT7yV3n4vz/s22-f4/saida/exec-0001-ASYNC-F4-A/execucao.json'
+FAIL: S22 f4: braco A (no de pe) com injetor 0 e ACEITA (esperado='0 ACEITA' obtido=' PULADA')
+Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+FileNotFoundError: [Errno 2] No such file or directory: 'C:/Users/FRANCE~1/AppData/Local/Temp/tmp.iT7yV3n4vz/s22-f4/saida/exec-0001-ASYNC-F4-A/execucao.json'
+FAIL: S22 f4: braco A sem alvo parado (esperado='None' obtido='')
+PASS: S22 f2-sem-ok: exit 0 (a fase segue)
+PASS: S22 f2-sem-ok: o injetor do braco B saiu com 1 (duble fiel ao real)
+PASS: S22 f2-sem-ok: alvo parado registrado na execucao
+PASS: S22 f2-sem-ok: sem a linha OK do corte, a recusa de antes
+PASS: S22 f2-sem-ok: motivo cita a linha OK
+PASS: S22 negativo: exit 0
+PASS: S22 negativo: injetor 1 com o no de pe -> RECUSADA
+PASS: S22 negativo: motivo injetor
+PASS: S22 negativo: sem alvo parado
+PASS: S22 no parado sem AC-5: exit 0 (a fase segue)
+PASS: S22 no parado sem AC-5: injetor 1 com isn3 parado
+PASS: S22 no parado sem AC-5: DESCARTADA-INFRA (religamento do O8)
+PASS: S22 no parado sem AC-5: recusa do injetor mantida
+PASS: S22 no parado sem AC-5: motivo O8 marcado como infra
+PASS: S22 no parado sem AC-5: isn3 religado
+== S23: S3 da V-W6: carga sem a linha de fim depois de um AC-5 -> religa o no, DESCARTADA-INFRA, a fase segue ==
+PASS: S23 exit 0 (sem parada 10)
+PASS: S23 braco B DESCARTADA-INFRA
+PASS: S23 motivo sem a linha de fim com o religamento
+PASS: S23 isn3 de volta
+PASS: S23 podman start isn3 pelo orquestrador
+PASS: S23 a fase nao parou por cluster sem 3 HEALTHY
+== S24: B2 da V-W6: fase com SYNC e ASYNC: referencia por perfil, --dry-run do programa em cada perfil ==
+PASS: S24 exit 0
+PASS: S24 SYNC e ASYNC ACEITA
+PASS: S24 carga SYNC com a referencia sync
+PASS: S24 carga ASYNC com a referencia async
+PASS: S24 pre-voo 4: --dry-run do programa nos dois perfis
+PASS: S24 execucao.json registra a referencia de cada perfil
+PASS: S24 bundle cobre a referencia sync
+PASS: S24 bundle cobre a referencia async
+PASS: S24 referencias trocadas -> exit 4 no pre-voo
+PASS: S24 motivo perfil
+PASS: S24 trocadas: sem compose nem carga
+PASS: S24 referencias trocadas -> exit 4 tambem no --dry-run (sem VM)
+PASS: S24 celula SYNC sem --referencia-sync -> exit 4
+PASS: S24 motivo cita --referencia-sync
+PASS: S24 sem referencia: sem compose nem carga
+PASS: S24 fase so ASYNC com so --referencia-async -> dry-run exit 0
+PASS: S24 --referencia unica (antiga) -> exit 2
+PASS: S24 motivo da opcao antiga
+== S25: F1 ainda em curso na linha de fim da carga: o O8 nao religa o no do F1 (o inject-crash.sh religa) ==
+PASS: S25 exit 0
+PASS: S25 ACEITA
+PASS: S25 linha de fim sem outros parados
+PASS: S25 so o inject-crash.sh religou isn2 (um podman start)
+PASS: S25 marcadores do F1 completos
+== S26: I-1 da V-W6: meta da trilha 1 s depois da ancora (gravadora com fila do W-2b): releitura a cada 0,2 s ate 5 s ==
+PASS: S26 meta atrasada: exit 0 (a fase nao para)
+PASS: S26 meta atrasada: ACEITA
+PASS: S26 primeira leitura da meta saiu com 4 (arquivo ainda ausente)
+PASS: S26 ultima leitura da meta saiu com 0
+PASS: S26 carga nao foi parada
+PASS: S26 log da releitura
+== S26n: meta que nao chega em 5 s: carga parada, DESCARTADA-INFRA sem injecao, e a fase segue (exit 0, nao 6) ==
+PASS: S26n exit 0 (disco lento nao e erro de configuracao)
+PASS: S26n i=0 DESCARTADA-INFRA
+PASS: S26n i=0 motivo meta ausente
+PASS: S26n i=1 ACEITA (a fase seguiu)
+PASS: S26n uma carga parada (a de i=0)
+PASS: S26n i=0 releu a meta (mais de uma leitura com 4)
+PASS: S26n i=0 sem injecao (marcadores vazios)
+PASS: S26n um so podman kill (o F1 de i=1)
+
+==== RESULTADO: 266 PASS, 17 FAIL ====

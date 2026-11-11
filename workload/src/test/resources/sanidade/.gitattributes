@@ -1,0 +1,2 @@
+# Recorte versionado byte a byte (CRLF, como o original), para o SHA-256 do LEIAME continuar valendo.
+*.csv -text

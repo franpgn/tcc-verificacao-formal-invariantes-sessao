@@ -1,0 +1,29 @@
+== S32: D-1 da recalibracao: s3_replay_late_max/min_sec/max_sec do --parametros so com --sonda-replay, como --s3-replay-* na linha do jar ==
+PASS: S32 s3_replay_late_max=268 sem --sonda-replay: recusado no dry-run (exit 4)
+PASS: S32 s3_replay_late_max=268 sem --sonda-replay: motivo com o nome
+PASS: S32 s3_replay_late_max=268 sem --sonda-replay: motivo cita a opcao
+PASS: S32 s3_replay_min_sec=2 sem --sonda-replay: recusado no dry-run (exit 4)
+PASS: S32 s3_replay_min_sec=2 sem --sonda-replay: motivo com o nome
+PASS: S32 s3_replay_min_sec=2 sem --sonda-replay: motivo cita a opcao
+PASS: S32 s3_replay_max_sec=4 sem --sonda-replay: recusado no dry-run (exit 4)
+PASS: S32 s3_replay_max_sec=4 sem --sonda-replay: motivo com o nome
+PASS: S32 s3_replay_max_sec=4 sem --sonda-replay: motivo cita a opcao
+PASS: S32 late-max com --sonda-replay: dry-run exit 0
+PASS: S32 late-max com --sonda-replay: linha do jar
+PASS: S32 dry-run mostra o late-max na carga S3
+PASS: S32 carga e os tres da sonda: linha do jar na ordem do conferidor
+PASS: S32 s3_replay_late_max=-1 com --sonda-replay: recusado (exit 4)
+PASS: S32 s3_replay_late_max=-1: motivo com o nome
+PASS: S32 s3_replay_late_max=2.5 com --sonda-replay: recusado (exit 4)
+PASS: S32 s3_replay_late_max=2.5: motivo com o nome
+PASS: S32 s3_replay_min_sec=0 com --sonda-replay: recusado (exit 4)
+PASS: S32 s3_replay_min_sec=0: motivo com o nome
+PASS: S32 s3_replay_max_sec=0.5 com --sonda-replay: recusado (exit 4)
+PASS: S32 s3_replay_max_sec=0.5: motivo com o nome
+PASS: S32 execucao com late-max e --sonda-replay: exit 0, ACEITA
+PASS: S32 a carga e o pre-voo recebem --s3-replay-late-max 268
+PASS: S32 execucao.json: carga_s3 com o late-max
+PASS: S32 bundle com o late-max
+PASS: S32 bundle com a sonda nas opcoes
+
+==== RESULTADO: 26 PASS, 0 FAIL ====

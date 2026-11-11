@@ -1,0 +1,1071 @@
+{
+ "P1": {
+  "cenario": "S1",
+  "replicacao": "sync",
+  "mix": "v3",
+  "duracao_s": 120,
+  "linhas_csv": 811726,
+  "csv_operation_return_code": {
+   "IncrementFailure COUNTED": 53996,
+   "Login OK": 135239,
+   "Logout NONE": 189531,
+   "ResetFailures NONE": 26940,
+   "Validate INVALID": 14214,
+   "Validate VALID": 391806
+  },
+  "validate_isolados_csv": 270782,
+  "invalid_isolados_csv": 14214,
+  "frac_invalid_isolados_pct": 5.2492,
+  "tercos": [
+   {
+    "validate_isolados": 90510,
+    "invalid": 4750,
+    "frac_pct": 5.248
+   },
+   {
+    "validate_isolados": 89811,
+    "invalid": 4710,
+    "frac_pct": 5.2443
+   },
+   {
+    "validate_isolados": 90461,
+    "invalid": 4754,
+    "frac_pct": 5.2553
+   }
+  ],
+  "decimos": [
+   {
+    "validate_isolados": 26813,
+    "invalid": 1416,
+    "frac_pct": 5.281
+   },
+   {
+    "validate_isolados": 27513,
+    "invalid": 1440,
+    "frac_pct": 5.2339
+   },
+   {
+    "validate_isolados": 27057,
+    "invalid": 1416,
+    "frac_pct": 5.2334
+   },
+   {
+    "validate_isolados": 26850,
+    "invalid": 1400,
+    "frac_pct": 5.2142
+   },
+   {
+    "validate_isolados": 26107,
+    "invalid": 1380,
+    "frac_pct": 5.2859
+   },
+   {
+    "validate_isolados": 27645,
+    "invalid": 1456,
+    "frac_pct": 5.2668
+   },
+   {
+    "validate_isolados": 27346,
+    "invalid": 1426,
+    "frac_pct": 5.2147
+   },
+   {
+    "validate_isolados": 27547,
+    "invalid": 1444,
+    "frac_pct": 5.242
+   },
+   {
+    "validate_isolados": 26620,
+    "invalid": 1391,
+    "frac_pct": 5.2254
+   },
+   {
+    "validate_isolados": 27284,
+    "invalid": 1445,
+    "frac_pct": 5.2961
+   }
+  ],
+  "logout_isolados_csv_por_codigo": {
+   "NONE": 54293
+  },
+  "exit": 0,
+  "violacoes_stdout": 0,
+  "linha_auditor": "Auditor: i1_concorrentes=133 i4_concorrentes=0",
+  "linha_invalidacao": "Invalidacao: perdida=0 conflito_esgotado=0",
+  "linha_reset": "Reset: reset_state=on caches=sessions,counters antes=0,0 depois=0,0 ms=20",
+  "invalidacao_perdida": 0,
+  "conflito_esgotado": 0,
+  "i1_concorrentes": 133,
+  "i4_concorrentes": 0,
+  "registrados": 811726,
+  "descartados_warmup": 118729,
+  "total_operacoes": 620245,
+  "histogramas": {
+   "login_ok": {
+    "n": 135239,
+    "descartados": 19866,
+    "p50_ns": 519167,
+    "p95_ns": 715775,
+    "p99_ns": 935423
+   },
+   "login_blocked": {
+    "n": 0,
+    "descartados": 0
+   },
+   "login_err": {
+    "n": 0,
+    "descartados": 0
+   },
+   "logout_noop": {
+    "n": 0,
+    "descartados": 0
+   },
+   "logout_ok": {
+    "n": 189531,
+    "descartados": 27667,
+    "p50_ns": 525311,
+    "p95_ns": 721919,
+    "p99_ns": 927231
+   }
+  },
+  "linha_mistura": "Mistura v3: validate_isolados=270782 token_antigo=13541 logout_isolados=54293 reposicoes=54293 reposicao_omitida=0 reposicao_erro=0",
+  "linha_desfechos": "Desfechos Validate: valid=391806 invalid=14214 not_found=0 erro=0",
+  "linha_carga": "Carga: mix=v3 cache=sessions slots=100000 entradas=200000 lotes=200 ms=1719",
+  "mistura_v3_stdout": {
+   "validate_isolados": 270782,
+   "token_antigo": 13541,
+   "logout_isolados": 54293,
+   "reposicoes": 54293,
+   "reposicao_omitida": 0,
+   "reposicao_erro": 0
+  },
+  "violacoes_por_invariante": {},
+  "carga": {
+   "mix": "v3",
+   "replicacao": "sync",
+   "cache": "sessions",
+   "universo": 100000,
+   "entradas_por_slot": 2,
+   "entradas": 200000,
+   "tamanho_final": 200000,
+   "lotes": 200,
+   "duracao_ms": 1719,
+   "q": 0.05,
+   "veredito": "OK",
+   "motivo": null
+  },
+  "estado": {
+   "reset_state": "on",
+   "replicacao": "sync",
+   "caches": [
+    "sessions",
+    "counters"
+   ],
+   "tamanhos_antes": [
+    0,
+    0
+   ],
+   "tamanhos_depois": [
+    0,
+    0
+   ],
+   "duracao_ms": 20,
+   "veredito": "OK",
+   "motivo": null
+  },
+  "verificador_exit": 0,
+  "verificador_veredito": "OK",
+  "leitor": {
+   "status": "OK",
+   "eventos": 811726,
+   "erros": 0,
+   "por_codigo": {
+    "COUNTED": 53996,
+    "INVALID": 14214,
+    "NONE": 216471,
+    "OK": 135239,
+    "VALID": 391806
+   }
+  },
+  "criterios": {
+   "C1": {
+    "terco1_pct": 5.248,
+    "terco2_pct": 5.2443,
+    "terco3_pct": 5.2553,
+    "dif_1_3_pp": 0.0073,
+    "ok": true
+   },
+   "C2": {
+    "frac_pct": 5.2492,
+    "ok": true
+   },
+   "C3": {
+    "token_antigo_pct": 5.0007,
+    "dif_stdout_csv": 0,
+    "ok": true
+   },
+   "C4": {
+    "validate_not_found": 0,
+    "login_ok_frac": 1.0,
+    "eventos_menos_operacoes": 310210,
+    "dois_x_logins_ok": 310210,
+    "ok": true
+   },
+   "C5": {
+    "logout_isolados": 54293,
+    "reposicoes": 54293,
+    "reposicao_omitida": 0,
+    "reposicao_erro": 0,
+    "logout_isolados_csv": 54293,
+    "logout_noop_janela": 0,
+    "logout_isolados_not_found_csv": 0,
+    "ok": true
+   },
+   "C6": {
+    "I1": 0,
+    "I4": 0,
+    "ok": true
+   },
+   "C7": {
+    "exit": 0,
+    "veredito": "OK",
+    "ok": true
+   },
+   "C8": {
+    "tamanho_final": 200000,
+    "carga_ms": 1719,
+    "ok": true
+   },
+   "C9": {
+    "exit": 0,
+    "ok": true
+   },
+   "B438": {
+    "invalidacao_perdida": 0,
+    "conflito_esgotado": 0,
+    "ok": true
+   }
+  },
+  "todos_ok": true,
+  "latencia_logout": {
+   "stdout_logout_ok": {
+    "n": 189531,
+    "descartados": 27667,
+    "p50_ns": 525311,
+    "p95_ns": 721919,
+    "p99_ns": 927231
+   },
+   "csv_logout_isolado_p50_ns": 529000,
+   "csv_logout_isolado_p99_ns": 930600,
+   "csv_logout_isolado_n": 54293,
+   "referencia_b43_7": {
+    "execucao_b43_7": "Q1",
+    "stdout_logout_ok": {
+     "n": 171512,
+     "descartados": 26840,
+     "p50_ns": 521727,
+     "p95_ns": 715263,
+     "p99_ns": 917503
+    },
+    "csv_logout_isolado_p50_ns": 526100,
+    "csv_logout_isolado_p99_ns": 937000,
+    "csv_logout_isolado_n": 49137
+   }
+  }
+ },
+ "P2": {
+  "cenario": "S1",
+  "replicacao": "async",
+  "mix": "v3",
+  "duracao_s": 120,
+  "linhas_csv": 1016001,
+  "csv_operation_return_code": {
+   "IncrementFailure COUNTED": 67964,
+   "Login OK": 169404,
+   "Logout NONE": 237357,
+   "ResetFailures NONE": 33686,
+   "Validate INVALID": 17571,
+   "Validate VALID": 490019
+  },
+  "validate_isolados_csv": 338185,
+  "invalid_isolados_csv": 17571,
+  "frac_invalid_isolados_pct": 5.1957,
+  "tercos": [
+   {
+    "validate_isolados": 112940,
+    "invalid": 5888,
+    "frac_pct": 5.2134
+   },
+   {
+    "validate_isolados": 112951,
+    "invalid": 5844,
+    "frac_pct": 5.1739
+   },
+   {
+    "validate_isolados": 112294,
+    "invalid": 5839,
+    "frac_pct": 5.1997
+   }
+  ],
+  "decimos": [
+   {
+    "validate_isolados": 33404,
+    "invalid": 1733,
+    "frac_pct": 5.188
+   },
+   {
+    "validate_isolados": 33895,
+    "invalid": 1770,
+    "frac_pct": 5.222
+   },
+   {
+    "validate_isolados": 33964,
+    "invalid": 1777,
+    "frac_pct": 5.232
+   },
+   {
+    "validate_isolados": 34353,
+    "invalid": 1781,
+    "frac_pct": 5.1844
+   },
+   {
+    "validate_isolados": 33927,
+    "invalid": 1760,
+    "frac_pct": 5.1876
+   },
+   {
+    "validate_isolados": 33733,
+    "invalid": 1741,
+    "frac_pct": 5.1611
+   },
+   {
+    "validate_isolados": 33885,
+    "invalid": 1763,
+    "frac_pct": 5.2029
+   },
+   {
+    "validate_isolados": 33385,
+    "invalid": 1729,
+    "frac_pct": 5.179
+   },
+   {
+    "validate_isolados": 34177,
+    "invalid": 1787,
+    "frac_pct": 5.2287
+   },
+   {
+    "validate_isolados": 33462,
+    "invalid": 1730,
+    "frac_pct": 5.17
+   }
+  ],
+  "logout_isolados_csv_por_codigo": {
+   "NONE": 67951
+  },
+  "exit": 0,
+  "violacoes_stdout": 0,
+  "linha_auditor": "Auditor: i1_concorrentes=320 i4_concorrentes=0",
+  "linha_invalidacao": "Invalidacao: perdida=0 conflito_esgotado=0",
+  "linha_reset": "Reset: reset_state=on caches=sessions-async,counters-async antes=0,0 depois=0,0 ms=7",
+  "invalidacao_perdida": 0,
+  "conflito_esgotado": 0,
+  "i1_concorrentes": 320,
+  "i4_concorrentes": 0,
+  "registrados": 1016001,
+  "descartados_warmup": 162604,
+  "total_operacoes": 785393,
+  "histogramas": {
+   "login_ok": {
+    "n": 169404,
+    "descartados": 27202,
+    "p50_ns": 366591,
+    "p95_ns": 466943,
+    "p99_ns": 659967
+   },
+   "login_blocked": {
+    "n": 0,
+    "descartados": 0
+   },
+   "login_err": {
+    "n": 0,
+    "descartados": 0
+   },
+   "logout_noop": {
+    "n": 0,
+    "descartados": 0
+   },
+   "logout_ok": {
+    "n": 237357,
+    "descartados": 37927,
+    "p50_ns": 369663,
+    "p95_ns": 472575,
+    "p99_ns": 669695
+   }
+  },
+  "linha_mistura": "Mistura v3: validate_isolados=338185 token_antigo=16910 logout_isolados=67951 reposicoes=67951 reposicao_omitida=0 reposicao_erro=0",
+  "linha_desfechos": "Desfechos Validate: valid=490019 invalid=17571 not_found=0 erro=0",
+  "linha_carga": "Carga: mix=v3 cache=sessions-async slots=100000 entradas=200000 lotes=200 ms=1773",
+  "mistura_v3_stdout": {
+   "validate_isolados": 338185,
+   "token_antigo": 16910,
+   "logout_isolados": 67951,
+   "reposicoes": 67951,
+   "reposicao_omitida": 0,
+   "reposicao_erro": 0
+  },
+  "violacoes_por_invariante": {},
+  "carga": {
+   "mix": "v3",
+   "replicacao": "async",
+   "cache": "sessions-async",
+   "universo": 100000,
+   "entradas_por_slot": 2,
+   "entradas": 200000,
+   "tamanho_final": 200000,
+   "lotes": 200,
+   "duracao_ms": 1773,
+   "q": 0.05,
+   "veredito": "OK",
+   "motivo": null
+  },
+  "estado": {
+   "reset_state": "on",
+   "replicacao": "async",
+   "caches": [
+    "sessions-async",
+    "counters-async"
+   ],
+   "tamanhos_antes": [
+    0,
+    0
+   ],
+   "tamanhos_depois": [
+    0,
+    0
+   ],
+   "duracao_ms": 7,
+   "veredito": "OK",
+   "motivo": null
+  },
+  "verificador_exit": 0,
+  "verificador_veredito": "OK",
+  "leitor": {
+   "status": "OK",
+   "eventos": 1016001,
+   "erros": 0,
+   "por_codigo": {
+    "COUNTED": 67964,
+    "INVALID": 17571,
+    "NONE": 271043,
+    "OK": 169404,
+    "VALID": 490019
+   }
+  },
+  "criterios": {
+   "C1": {
+    "terco1_pct": 5.2134,
+    "terco2_pct": 5.1739,
+    "terco3_pct": 5.1997,
+    "dif_1_3_pp": 0.0137,
+    "ok": true
+   },
+   "C2": {
+    "frac_pct": 5.1957,
+    "ok": true
+   },
+   "C3": {
+    "token_antigo_pct": 5.0002,
+    "dif_stdout_csv": 0,
+    "ok": true
+   },
+   "C4": {
+    "validate_not_found": 0,
+    "login_ok_frac": 1.0,
+    "eventos_menos_operacoes": 393212,
+    "dois_x_logins_ok": 393212,
+    "ok": true
+   },
+   "C5": {
+    "logout_isolados": 67951,
+    "reposicoes": 67951,
+    "reposicao_omitida": 0,
+    "reposicao_erro": 0,
+    "logout_isolados_csv": 67951,
+    "logout_noop_janela": 0,
+    "logout_isolados_not_found_csv": 0,
+    "ok": true
+   },
+   "C6": {
+    "I1": 0,
+    "I4": 0,
+    "ok": true
+   },
+   "C7": {
+    "exit": 0,
+    "veredito": "OK",
+    "ok": true
+   },
+   "C8": {
+    "tamanho_final": 200000,
+    "carga_ms": 1773,
+    "ok": true
+   },
+   "C9": {
+    "exit": 0,
+    "ok": true
+   },
+   "B438": {
+    "invalidacao_perdida": 0,
+    "conflito_esgotado": 0,
+    "ok": true
+   }
+  },
+  "todos_ok": true,
+  "latencia_logout": {
+   "stdout_logout_ok": {
+    "n": 237357,
+    "descartados": 37927,
+    "p50_ns": 369663,
+    "p95_ns": 472575,
+    "p99_ns": 669695
+   },
+   "csv_logout_isolado_p50_ns": 372300,
+   "csv_logout_isolado_p99_ns": 673900,
+   "csv_logout_isolado_n": 67951,
+   "referencia_b43_7": {
+    "execucao_b43_7": "Q3",
+    "stdout_logout_ok": {
+     "n": 228988,
+     "descartados": 39548,
+     "p50_ns": 379903,
+     "p95_ns": 499199,
+     "p99_ns": 717311
+    },
+    "csv_logout_isolado_p50_ns": 382600,
+    "csv_logout_isolado_p99_ns": 720000,
+    "csv_logout_isolado_n": 65279
+   }
+  }
+ },
+ "P5": {
+  "cenario": "S1",
+  "replicacao": "sync",
+  "mix": "v3",
+  "duracao_s": 600,
+  "linhas_csv": 3975138,
+  "csv_operation_return_code": {
+   "IncrementFailure COUNTED": 265502,
+   "Login OK": 662752,
+   "Logout NONE": 927397,
+   "ResetFailures NONE": 133029,
+   "Validate INVALID": 69342,
+   "Validate VALID": 1917116
+  },
+  "validate_isolados_csv": 1323706,
+  "invalid_isolados_csv": 69342,
+  "frac_invalid_isolados_pct": 5.2385,
+  "tercos": [
+   {
+    "validate_isolados": 441350,
+    "invalid": 23090,
+    "frac_pct": 5.2317
+   },
+   {
+    "validate_isolados": 435117,
+    "invalid": 22769,
+    "frac_pct": 5.2328
+   },
+   {
+    "validate_isolados": 447239,
+    "invalid": 23483,
+    "frac_pct": 5.2507
+   }
+  ],
+  "decimos": [
+   {
+    "validate_isolados": 134265,
+    "invalid": 7039,
+    "frac_pct": 5.2426
+   },
+   {
+    "validate_isolados": 131901,
+    "invalid": 6915,
+    "frac_pct": 5.2426
+   },
+   {
+    "validate_isolados": 131280,
+    "invalid": 6844,
+    "frac_pct": 5.2133
+   },
+   {
+    "validate_isolados": 121041,
+    "invalid": 6317,
+    "frac_pct": 5.2189
+   },
+   {
+    "validate_isolados": 136078,
+    "invalid": 7126,
+    "frac_pct": 5.2367
+   },
+   {
+    "validate_isolados": 133149,
+    "invalid": 6971,
+    "frac_pct": 5.2355
+   },
+   {
+    "validate_isolados": 133404,
+    "invalid": 6987,
+    "frac_pct": 5.2375
+   },
+   {
+    "validate_isolados": 134342,
+    "invalid": 7057,
+    "frac_pct": 5.253
+   },
+   {
+    "validate_isolados": 134184,
+    "invalid": 7032,
+    "frac_pct": 5.2406
+   },
+   {
+    "validate_isolados": 134062,
+    "invalid": 7054,
+    "frac_pct": 5.2617
+   }
+  ],
+  "logout_isolados_csv_por_codigo": {
+   "NONE": 264645
+  },
+  "exit": 0,
+  "violacoes_stdout": 0,
+  "linha_auditor": "Auditor: i1_concorrentes=651 i4_concorrentes=0",
+  "linha_invalidacao": "Invalidacao: perdida=0 conflito_esgotado=0",
+  "linha_reset": "Reset: reset_state=on caches=sessions,counters antes=136,30 depois=0,0 ms=6",
+  "invalidacao_perdida": 0,
+  "conflito_esgotado": 0,
+  "i1_concorrentes": 651,
+  "i4_concorrentes": 0,
+  "registrados": 3975138,
+  "descartados_warmup": 690503,
+  "total_operacoes": 3110211,
+  "histogramas": {
+   "login_ok": {
+    "n": 662752,
+    "descartados": 114963,
+    "p50_ns": 524799,
+    "p95_ns": 730111,
+    "p99_ns": 977407
+   },
+   "login_blocked": {
+    "n": 0,
+    "descartados": 0
+   },
+   "login_err": {
+    "n": 0,
+    "descartados": 0
+   },
+   "logout_noop": {
+    "n": 0,
+    "descartados": 0
+   },
+   "logout_ok": {
+    "n": 927397,
+    "descartados": 160990,
+    "p50_ns": 530943,
+    "p95_ns": 737791,
+    "p99_ns": 981503
+   }
+  },
+  "linha_mistura": "Mistura v3: validate_isolados=1323706 token_antigo=66185 logout_isolados=264645 reposicoes=264645 reposicao_omitida=0 reposicao_erro=0",
+  "linha_desfechos": "Desfechos Validate: valid=1917116 invalid=69342 not_found=0 erro=0",
+  "linha_carga": "Carga: mix=v3 cache=sessions slots=100000 entradas=200000 lotes=200 ms=1237",
+  "mistura_v3_stdout": {
+   "validate_isolados": 1323706,
+   "token_antigo": 66185,
+   "logout_isolados": 264645,
+   "reposicoes": 264645,
+   "reposicao_omitida": 0,
+   "reposicao_erro": 0
+  },
+  "violacoes_por_invariante": {},
+  "carga": {
+   "mix": "v3",
+   "replicacao": "sync",
+   "cache": "sessions",
+   "universo": 100000,
+   "entradas_por_slot": 2,
+   "entradas": 200000,
+   "tamanho_final": 200000,
+   "lotes": 200,
+   "duracao_ms": 1237,
+   "q": 0.05,
+   "veredito": "OK",
+   "motivo": null
+  },
+  "estado": {
+   "reset_state": "on",
+   "replicacao": "sync",
+   "caches": [
+    "sessions",
+    "counters"
+   ],
+   "tamanhos_antes": [
+    136,
+    30
+   ],
+   "tamanhos_depois": [
+    0,
+    0
+   ],
+   "duracao_ms": 6,
+   "veredito": "OK",
+   "motivo": null
+  },
+  "verificador_exit": 0,
+  "verificador_veredito": "OK",
+  "leitor": {
+   "status": "OK",
+   "eventos": 3975138,
+   "erros": 0,
+   "por_codigo": {
+    "COUNTED": 265502,
+    "INVALID": 69342,
+    "NONE": 1060426,
+    "OK": 662752,
+    "VALID": 1917116
+   }
+  },
+  "criterios": {
+   "C1": {
+    "terco1_pct": 5.2317,
+    "terco2_pct": 5.2328,
+    "terco3_pct": 5.2507,
+    "dif_1_3_pp": 0.019,
+    "decimos_max_menos_min_pp": 0.0484,
+    "ok": true
+   },
+   "C2": {
+    "frac_pct": 5.2385,
+    "ok": true
+   },
+   "C3": {
+    "token_antigo_pct": 5.0,
+    "dif_stdout_csv": 0,
+    "ok": true
+   },
+   "C4": {
+    "validate_not_found": 0,
+    "login_ok_frac": 1.0,
+    "eventos_menos_operacoes": 1555430,
+    "dois_x_logins_ok": 1555430,
+    "ok": true
+   },
+   "C5": {
+    "logout_isolados": 264645,
+    "reposicoes": 264645,
+    "reposicao_omitida": 0,
+    "reposicao_erro": 0,
+    "logout_isolados_csv": 264645,
+    "logout_noop_janela": 0,
+    "logout_isolados_not_found_csv": 0,
+    "ok": true
+   },
+   "C6": {
+    "I1": 0,
+    "I4": 0,
+    "ok": true
+   },
+   "C7": {
+    "exit": 0,
+    "veredito": "OK",
+    "ok": true
+   },
+   "C8": {
+    "tamanho_final": 200000,
+    "carga_ms": 1237,
+    "ok": true
+   },
+   "C9": {
+    "exit": 0,
+    "ok": true
+   },
+   "B438": {
+    "invalidacao_perdida": 0,
+    "conflito_esgotado": 0,
+    "ok": true
+   }
+  },
+  "todos_ok": true,
+  "latencia_logout": {
+   "stdout_logout_ok": {
+    "n": 927397,
+    "descartados": 160990,
+    "p50_ns": 530943,
+    "p95_ns": 737791,
+    "p99_ns": 981503
+   },
+   "csv_logout_isolado_p50_ns": 535400,
+   "csv_logout_isolado_p99_ns": 983700,
+   "csv_logout_isolado_n": 264645,
+   "referencia_b43_7": {
+    "execucao_b43_7": "L1",
+    "stdout_logout_ok": {
+     "n": 935523,
+     "descartados": 152934,
+     "p50_ns": 528383,
+     "p95_ns": 734719,
+     "p99_ns": 972287
+    },
+    "csv_logout_isolado_p50_ns": 533300,
+    "csv_logout_isolado_p99_ns": 983800,
+    "csv_logout_isolado_n": 267638
+   }
+  }
+ },
+ "P3": {
+  "cenario": "S3",
+  "replicacao": "sync",
+  "duracao_s": 300,
+  "exit": 0,
+  "violacoes_stdout": 0,
+  "linha_auditor": "Auditor: i1_concorrentes=0 i4_concorrentes=0",
+  "linha_invalidacao": "Invalidacao: perdida=0 conflito_esgotado=0",
+  "linha_reset": "Reset: reset_state=on caches=sessions,counters antes=417198,36 depois=0,0 ms=47",
+  "invalidacao_perdida": 0,
+  "conflito_esgotado": 0,
+  "i1_concorrentes": 0,
+  "i4_concorrentes": 0,
+  "linhas_s3": [
+   "S3 acao|Block|OK_NOOP = 8",
+   "S3 acao|IncrementFailure|OK_STATUS = 270",
+   "S3 acao|Login|BLOCKED = 57",
+   "S3 acao|Login|OK_LOGIN = 136",
+   "S3 acao|Logout|OK_NOOP = 89",
+   "S3 acao|ResetFailures|OK_NOOP = 41",
+   "S3 acao|Unblock|OK_NOOP = 38",
+   "S3 acao|Validate|OK_VALIDATE:INVALID = 403",
+   "S3 acao|Validate|OK_VALIDATE:VALID = 3120",
+   "S3 evento|AbandonoSilencioso = 32",
+   "S3 evento|SessaoEncerradaNoServidor = 4",
+   "S3 evento|SessaoOrfa = 32"
+  ],
+  "linhas_varredura": [
+   "Varredura final: sessoes=136, identidades=30, achados=0; REAL={}; BLOCKED por motivo={ADMINISTRATIVO=0, POR_LIMITE=7, INCERTO=0, INEXPLICADO=0}"
+  ],
+  "csv_operation_return_code": {
+   "Block NONE": 6,
+   "IncrementFailure COUNTED": 189,
+   "Login BLOCKED": 40,
+   "Login OK": 96,
+   "Logout NONE": 66,
+   "ResetFailures NONE": 29,
+   "Unblock NONE": 35,
+   "Validate INVALID": 297,
+   "Validate VALID": 2317
+  },
+  "csv_logout_p50_ns": 1771700,
+  "csv_logout_p99_ns": 7291200,
+  "csv_logout_n": 66,
+  "toctou_exposicao": {
+   "janela_ns": 225032252100,
+   "block_medio_ns": 12793317,
+   "login_ok_medio_ns": 1741478,
+   "pares_login_block_mesma_identidade": 31,
+   "sobreposicoes_esperadas": 0.002002284714021518
+  },
+  "toctou": {
+   "blocks": 6,
+   "identidades_com_block": 5,
+   "logins_ok": 96,
+   "logins_ok_de_identidades_com_block": 24,
+   "block_p50_ns": 11030900,
+   "block_max_ns": 21857400,
+   "login_ok_p50_ns": 1671800,
+   "login_ok_max_ns": 4099400,
+   "login_sobreposto_a_block_mesma_identidade": 0,
+   "casos": []
+  },
+  "violacoes_colunas": null,
+  "violacoes_por_invariante": {},
+  "violacoes_amostra": [],
+  "varredura_achados": {},
+  "varredura_i2": [],
+  "s3_resumo": {
+   "parametros": {
+    "modo_cliente": "pinned",
+    "admin_node": "isn1",
+    "usuarios": 20,
+    "contas_limite": 10,
+    "semente": 1000045,
+    "hotrod_timeout_ms": 2000,
+    "hotrod_retentativas": 1,
+    "app_retentativas": 2,
+    "idle_timeout_sec": 30.0,
+    "nota": "o resumo inclui o warm-up; acoes anteriores a medicao nao entram no CSV de eventos"
+   },
+   "total_acoes": 4162,
+   "contadores": {
+    "acao|Block|OK_NOOP": 8,
+    "acao|IncrementFailure|OK_STATUS": 270,
+    "acao|Login|BLOCKED": 57,
+    "acao|Login|OK_LOGIN": 136,
+    "acao|Logout|OK_NOOP": 89,
+    "acao|ResetFailures|OK_NOOP": 41,
+    "acao|Unblock|OK_NOOP": 38,
+    "acao|Validate|OK_VALIDATE:INVALID": 403,
+    "acao|Validate|OK_VALIDATE:VALID": 3120,
+    "evento|AbandonoSilencioso": 32,
+    "evento|SessaoEncerradaNoServidor": 4,
+    "evento|SessaoOrfa": 32
+   }
+  },
+  "criterios": {
+   "exit": {
+    "v": 0,
+    "ok": true
+   },
+   "I4_inline": {
+    "v": 0,
+    "ok": true
+   },
+   "I4_varredura": {
+    "v": 0,
+    "ok": true
+   },
+   "conflito_esgotado": {
+    "v": 0,
+    "ok": true
+   },
+   "invalidacao_perdida_registrada": {
+    "v": 0,
+    "ok": true
+   },
+   "I1_sync": {
+    "v": 0,
+    "ok": true
+   }
+  },
+  "todos_ok": true
+ },
+ "P4": {
+  "cenario": "S3",
+  "replicacao": "async",
+  "duracao_s": 300,
+  "exit": 0,
+  "violacoes_stdout": 0,
+  "linha_auditor": "Auditor: i1_concorrentes=0 i4_concorrentes=0",
+  "linha_invalidacao": "Invalidacao: perdida=0 conflito_esgotado=0",
+  "linha_reset": "Reset: reset_state=on caches=sessions-async,counters-async antes=475284,36 depois=0,0 ms=20",
+  "invalidacao_perdida": 0,
+  "conflito_esgotado": 0,
+  "i1_concorrentes": 0,
+  "i4_concorrentes": 0,
+  "linhas_s3": [
+   "S3 acao|Block|OK_NOOP = 8",
+   "S3 acao|IncrementFailure|OK_STATUS = 271",
+   "S3 acao|Login|BLOCKED = 60",
+   "S3 acao|Login|OK_LOGIN = 134",
+   "S3 acao|Logout|OK_NOOP = 82",
+   "S3 acao|ResetFailures|OK_NOOP = 41",
+   "S3 acao|Unblock|OK_NOOP = 38",
+   "S3 acao|Validate|OK_VALIDATE:INVALID = 383",
+   "S3 acao|Validate|OK_VALIDATE:VALID = 3093",
+   "S3 evento|AbandonoSilencioso = 36",
+   "S3 evento|SessaoEncerradaNoServidor = 6",
+   "S3 evento|SessaoOrfa = 36"
+  ],
+  "linhas_varredura": [
+   "Varredura final: sessoes=134, identidades=30, achados=0; REAL={}; BLOCKED por motivo={ADMINISTRATIVO=0, POR_LIMITE=7, INCERTO=0, INEXPLICADO=0}"
+  ],
+  "csv_operation_return_code": {
+   "Block NONE": 6,
+   "IncrementFailure COUNTED": 190,
+   "Login BLOCKED": 40,
+   "Login OK": 93,
+   "Logout NONE": 60,
+   "ResetFailures NONE": 28,
+   "Unblock NONE": 35,
+   "Validate INVALID": 280,
+   "Validate VALID": 2290
+  },
+  "csv_logout_p50_ns": 1599600,
+  "csv_logout_p99_ns": 3657200,
+  "csv_logout_n": 60,
+  "toctou_exposicao": {
+   "janela_ns": 225987754900,
+   "block_medio_ns": 11965433,
+   "login_ok_medio_ns": 1313289,
+   "pares_login_block_mesma_identidade": 30,
+   "sobreposicoes_esperadas": 0.001762757798959641
+  },
+  "toctou": {
+   "blocks": 6,
+   "identidades_com_block": 5,
+   "logins_ok": 93,
+   "logins_ok_de_identidades_com_block": 24,
+   "block_p50_ns": 11032900,
+   "block_max_ns": 17779900,
+   "login_ok_p50_ns": 1277900,
+   "login_ok_max_ns": 4336600,
+   "login_sobreposto_a_block_mesma_identidade": 0,
+   "casos": []
+  },
+  "violacoes_colunas": null,
+  "violacoes_por_invariante": {},
+  "violacoes_amostra": [],
+  "varredura_achados": {},
+  "varredura_i2": [],
+  "s3_resumo": {
+   "parametros": {
+    "modo_cliente": "pinned",
+    "admin_node": "isn1",
+    "usuarios": 20,
+    "contas_limite": 10,
+    "semente": 1000045,
+    "hotrod_timeout_ms": 2000,
+    "hotrod_retentativas": 1,
+    "app_retentativas": 2,
+    "idle_timeout_sec": 30.0,
+    "nota": "o resumo inclui o warm-up; acoes anteriores a medicao nao entram no CSV de eventos"
+   },
+   "total_acoes": 4110,
+   "contadores": {
+    "acao|Block|OK_NOOP": 8,
+    "acao|IncrementFailure|OK_STATUS": 271,
+    "acao|Login|BLOCKED": 60,
+    "acao|Login|OK_LOGIN": 134,
+    "acao|Logout|OK_NOOP": 82,
+    "acao|ResetFailures|OK_NOOP": 41,
+    "acao|Unblock|OK_NOOP": 38,
+    "acao|Validate|OK_VALIDATE:INVALID": 383,
+    "acao|Validate|OK_VALIDATE:VALID": 3093,
+    "evento|AbandonoSilencioso": 36,
+    "evento|SessaoEncerradaNoServidor": 6,
+    "evento|SessaoOrfa": 36
+   }
+  },
+  "criterios": {
+   "exit": {
+    "v": 0,
+    "ok": true
+   },
+   "I4_inline": {
+    "v": 0,
+    "ok": true
+   },
+   "I4_varredura": {
+    "v": 0,
+    "ok": true
+   },
+   "conflito_esgotado": {
+    "v": 0,
+    "ok": true
+   },
+   "invalidacao_perdida_registrada": {
+    "v": 0,
+    "ok": true
+   }
+  },
+  "todos_ok": true
+ }
+}

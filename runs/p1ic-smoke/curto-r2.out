@@ -1,0 +1,12 @@
+== 2026-11-06T18:50:35.303Z inicio curto-r2 caso=curto semente=83002 duracao=200 base=78a151d jar_sha256=ccdb05d7b3dd516052b442a0d0869c2c7dadfb52b225cbe801874dd0bba5d6a6 cfg_sha256=0ff8714b217a50c10b44cf7e3a992650527692662cd4e9ae33554f1946253c8a compose_sha256=5ae07f7f9c76d129749e4376051c91461f08d113ed72528a170522b7b3bf670b
+cria-caches: rc=0
+== 2026-11-06T18:51:11.048Z parametros alvo=isn3 outros=isn1 isn2 
+== 2026-11-06T18:51:14.118Z origem o_ns=1793991111708823100
+== 2026-11-06T18:52:52.021Z corte-inicio isn3
+== 2026-11-06T18:52:57.518Z corte-fim rc=0
+== 2026-11-06T18:53:17.081Z cura-inicio isn3
+== 2026-11-06T18:53:20.256Z cura-fim rc=0
+== 2026-11-06T18:54:21.909Z fim-sondas
+== 2026-11-06T18:54:45.469Z carga exit=0
+== 2026-11-06T18:55:02.592Z fim curto-r2
+lote-pronto

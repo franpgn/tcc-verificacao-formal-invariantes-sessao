@@ -1,0 +1,12 @@
+== 2026-11-05T11:40:30.882Z inicio ativo-sem-religar modo=active teto_convergencia_s=120 semente=63001 jar_sha256=f47870e7f3d640abb4f6e4341dc66966aeb8fad9e1c2f0445c9f76b4e3dd3d59 cfg_sha256=0ff8714b217a50c10b44cf7e3a992650527692662cd4e9ae33554f1946253c8a base=65165ea
+cluster w2b: 3 nos
+cria-caches canario-async: rc=0
+== 2026-11-05T11:40:52.585Z origem_ns=1793878886219214300
+== 2026-11-05T11:41:56.361Z corte-inicio isn3
+== 2026-11-05T11:41:58.329Z corte-fim isn3 rc=0
+== 2026-11-05T11:42:52.133Z fim-da-carga-visto (linha Controlador:)
+== 2026-11-05T11:42:52.215Z cura-inicio isn3
+== 2026-11-05T11:42:54.183Z cura-fim isn3 rc=1
+== 2026-11-05T11:44:57.721Z carga exit=0
+== 2026-11-05T11:45:06.934Z fim ativo-sem-religar
+exit=0

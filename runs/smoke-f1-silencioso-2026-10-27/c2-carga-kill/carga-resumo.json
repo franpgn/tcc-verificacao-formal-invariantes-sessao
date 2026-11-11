@@ -1,0 +1,80 @@
+{
+ "janela_utc": [
+  "2026-10-28T05:25:25.325000Z",
+  "2026-10-28T05:26:32.937000Z"
+ ],
+ "return_code_janela": {
+  "IncrementFailure|COUNTED": 10439,
+  "Login|OK": 26602,
+  "Logout|NONE": 37088,
+  "ResetFailures|NONE": 5447,
+  "Validate|INVALID": 2818,
+  "Validate|VALID": 77141
+ },
+ "return_code_total": {
+  "IncrementFailure|COUNTED": 22887,
+  "Login|OK": 58191,
+  "Logout|NONE": 81150,
+  "ResetFailures|NONE": 11716,
+  "Validate|INVALID": 5995,
+  "Validate|VALID": 167874
+ },
+ "latencia_ms_janela": {
+  "IncrementFailure": {
+   "n": 10439,
+   "max": 2220.6,
+   "p99": 4.09
+  },
+  "Login": {
+   "n": 26602,
+   "max": 2709.7,
+   "p99": 5.16
+  },
+  "Logout": {
+   "n": 37088,
+   "max": 4919.0,
+   "p99": 3.77
+  },
+  "ResetFailures": {
+   "n": 5447,
+   "max": 2058.3,
+   "p99": 4.21
+  },
+  "Validate": {
+   "n": 79959,
+   "max": 859.1,
+   "p99": 2.9
+  }
+ },
+ "latencia_ms_total": {
+  "IncrementFailure": {
+   "n": 22887,
+   "max": 2666.2,
+   "p99": 3.24
+  },
+  "Login": {
+   "n": 58191,
+   "max": 2709.7,
+   "p99": 4.49
+  },
+  "Logout": {
+   "n": 81150,
+   "max": 4919.0,
+   "p99": 3.25
+  },
+  "ResetFailures": {
+   "n": 11716,
+   "max": 2707.7,
+   "p99": 3.3
+  },
+  "Validate": {
+   "n": 173869,
+   "max": 859.1,
+   "p99": 2.48
+  }
+ },
+ "sanidade": {
+  "veredito": "OK",
+  "motivos": []
+ }
+}

@@ -1,0 +1,44 @@
+{
+ "Q1_acoes_s3": {
+  "arquivo": "Q1/s3-acoes-rep-001.csv",
+  "sha256": "f8c0200a6dcf5c335043643ccde808504f12ba952ae6376b728fc84787736fb5",
+  "cabecalho_ok": true,
+  "linhas": 1170,
+  "colunas_10": true,
+  "t_fim_ge_t_ns": 1170,
+  "espera_zero": 1170,
+  "t_fim_gt_t_ns": 1170,
+  "duracao_ns_min": 744200,
+  "duracao_ns_max": 112978700,
+  "acoes_por_operacao": {
+   "Block": 1,
+   "IncrementFailure": 109,
+   "Login": 63,
+   "Logout": 28,
+   "ResetFailures": 19,
+   "Unblock": 8,
+   "Validate": 942
+  }
+ },
+ "Q1_stdout": {
+  "arquivo": "Q1/stdout.log",
+  "violacoes": "Violacoes detectadas: 0",
+  "auditor": "Auditor: i1_concorrentes=0 i4_concorrentes=0",
+  "auditor_total": "Auditor total: i1_concorrentes=0 i4_concorrentes=0 i2_concorrentes=0",
+  "total_operacoes": "Total de operacoes: 1170"
+ },
+ "Q2_stdout": {
+  "arquivo": "Q2/stdout.log",
+  "violacoes": "Violacoes detectadas: 0",
+  "auditor": "Auditor: i1_concorrentes=47 i4_concorrentes=0",
+  "auditor_total": "Auditor total: i1_concorrentes=49 i4_concorrentes=0 i2_concorrentes=0",
+  "total_operacoes": "Total de operacoes: 229230"
+ },
+ "criterios": {
+  "header_novo": true,
+  "t_fim_ge_t_ns_100pct": true,
+  "espera_zero_100pct": true,
+  "violacoes_zero_q1_q2": true
+ },
+ "nota": "Smoke local: latencias nao sao evidencia."
+}

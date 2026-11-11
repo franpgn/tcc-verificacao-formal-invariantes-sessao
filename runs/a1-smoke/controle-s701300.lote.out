@@ -1,0 +1,12 @@
+== 2026-11-06T17:31:45.206Z inicio controle-s701300 condicao=controle semente=701300 duracao_s=480 corte_apos_medicao_s=10 corte_dur_s=90 jar_sha256=7d5fc2fee76e84606384fe96dafa1e75ed8507baf83396dc00361fdc6d224707 extensao_sha256=6f1ed746f7142bed8ed2596eacfa1f8db9cc335bb448b40c72efbc37d49253b4 base=04719ee xml_sha256=a7b18f2dac46095e468c43ae97c4cc51e411cbb54875606e898a20b6a7227c85 jgroups_sha256=dd79343070cf9107571de238851d1117255ebdb1c7887075e23d76638d7bcf14 sessions_async_sha256=b68c3ca52433a1eec38f8aab9d7e5ff3ef14945a640e79468bc6da197af6154c
+== 2026-11-06T17:32:03.309Z cluster com 3 nos
+== 2026-11-06T17:32:17.067Z cria-caches rc=0 (dir=caches-controle)
+== 2026-11-06T17:32:18.050Z config lida nos tres nos:  3 "merge-policy":"PREFERRED_NON_NULL";
+== 2026-11-06T17:32:20.009Z ancora (linha Warm-up vista): Warm-up ate +48s; medicao a partir de +70s; total 480s
+== 2026-11-06T17:33:40.175Z corte-inicio isn3
+== 2026-11-06T17:33:42.690Z corte-fim isn3 rc=0
+== 2026-11-06T17:35:17.421Z cura-inicio isn3
+== 2026-11-06T17:35:25.594Z cura-fim isn3 rc=0
+== 2026-11-06T17:40:32.869Z carga exit=0
+== 2026-11-06T17:40:48.833Z fim controle-s701300 (cluster descido)
+rc=0

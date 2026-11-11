@@ -1,0 +1,321 @@
+[
+ {
+  "rotulo": "c1-carga-silencioso",
+  "modo": "silencioso",
+  "injetor_rc": 0,
+  "volta_s_desde_fim_injetor": 7.438,
+  "exitcode_injetor": "137",
+  "t_injecao_utc": "2026-10-28T05:21:37.059000+00:00",
+  "isolamento_ate_kill_ms": 35.0,
+  "estado_parado": "status=exited exitcode=137 finished=2026-10-28 02:21:37.132423138 -0300 -03",
+  "delta_det_s": {
+   "f1s-isn1": 41.915,
+   "f1s-isn3": 41.308
+  },
+  "vida_antiga": {
+   "ISPN000390": false,
+   "ISPN080002": false
+  },
+  "vida_nova": {
+   "ISPN000693": false,
+   "ISPN000389": true,
+   "ISPN080001": true
+  },
+  "podman_start_retorno_s": 0.395,
+  "healthy_desde_start_s": 7.833,
+  "isn2_ispn080001_desde_start_s": 7.207,
+  "lck": [
+   "___global.lck presente bytes=0",
+   "___global.state presente bytes=148"
+  ],
+  "ip_isn2_antes": "10.89.2.11",
+  "ip_isn2_depois": "10.89.2.12",
+  "ip_br_link_depois": "lo               UNKNOWN        00:00:00:00:00:00 <LOOPBACK,UP,LOWER_UP> \neth0@if38        UP             4a:6c:05:ee:24:d9 <BROADCAST,MULTICAST,UP,LOWER_UP>",
+  "events_died_exitcode": [
+   137
+  ]
+ },
+ {
+  "rotulo": "c1-carga-silencioso.invalido-portforward",
+  "modo": "silencioso",
+  "injetor_rc": 0,
+  "volta_s_desde_fim_injetor": 5.362,
+  "exitcode_injetor": "137",
+  "t_injecao_utc": "2026-10-28T05:08:13.024000+00:00",
+  "isolamento_ate_kill_ms": 17.0,
+  "estado_parado": "status=exited exitcode=137 finished=2026-10-28 02:08:13.052449299 -0300 -03",
+  "delta_det_s": {
+   "f1s-isn1": 46.439,
+   "f1s-isn3": 45.831
+  },
+  "vida_antiga": {
+   "ISPN000390": false,
+   "ISPN080002": false
+  },
+  "vida_nova": {
+   "ISPN000693": false,
+   "ISPN000389": true,
+   "ISPN080001": true
+  },
+  "podman_start_retorno_s": 0.103,
+  "healthy_desde_start_s": 5.465,
+  "isn2_ispn080001_desde_start_s": 4.437,
+  "lck": [
+   "___global.lck presente bytes=0",
+   "___global.state presente bytes=148"
+  ],
+  "ip_isn2_antes": "10.89.2.10",
+  "ip_isn2_depois": "10.89.2.11",
+  "ip_br_link_depois": "lo               UNKNOWN        00:00:00:00:00:00 <LOOPBACK,UP,LOWER_UP> \neth0@if37        UP             62:71:b7:ed:78:ab <BROADCAST,MULTICAST,UP,LOWER_UP>",
+  "events_died_exitcode": [
+   137
+  ]
+ },
+ {
+  "rotulo": "c2-carga-kill",
+  "modo": "kill",
+  "injetor_rc": 0,
+  "volta_s_desde_fim_injetor": 6.496,
+  "exitcode_injetor": "137",
+  "t_injecao_utc": "2026-10-28T05:25:25.325000+00:00",
+  "estado_parado": "status=exited exitcode=137 finished=2026-10-28 02:25:25.352420021 -0300 -03",
+  "delta_det_s": {
+   "f1s-isn1": 1.905,
+   "f1s-isn3": 1.34
+  },
+  "vida_antiga": {
+   "ISPN000390": false,
+   "ISPN080002": false
+  },
+  "vida_nova": {
+   "ISPN000693": false,
+   "ISPN000389": true,
+   "ISPN080001": true
+  },
+  "podman_start_retorno_s": 0.116,
+  "healthy_desde_start_s": 6.612,
+  "isn2_ispn080001_desde_start_s": 6.388,
+  "lck": [
+   "___global.lck presente bytes=0",
+   "___global.state presente bytes=148"
+  ],
+  "ip_isn2_antes": "10.89.2.12",
+  "ip_isn2_depois": "10.89.2.13",
+  "ip_br_link_depois": "lo               UNKNOWN        00:00:00:00:00:00 <LOOPBACK,UP,LOWER_UP> \neth0@if39        UP             76:09:77:f0:05:8f <BROADCAST,MULTICAST,UP,LOWER_UP>",
+  "events_died_exitcode": [
+   137
+  ]
+ },
+ {
+  "rotulo": "e1-stop",
+  "modo": "stop",
+  "injetor_rc": 0,
+  "volta_s_desde_fim_injetor": 5.511,
+  "exitcode_injetor": "0",
+  "t_injecao_utc": "2026-10-28T04:57:29.389000+00:00",
+  "estado_parado": "status=exited exitcode=0 finished=2026-10-28 01:57:31.192463634 -0300 -03",
+  "delta_det_s": {
+   "f1s-isn1": 1.209,
+   "f1s-isn3": 1.207
+  },
+  "vida_antiga": {
+   "ISPN000390": true,
+   "ISPN080002": true
+  },
+  "vida_nova": {
+   "ISPN000693": false,
+   "ISPN000389": true,
+   "ISPN080001": true
+  },
+  "podman_start_retorno_s": 51.045,
+  "healthy_desde_start_s": 56.556,
+  "isn2_ispn080001_desde_start_s": 55.673,
+  "lck": [
+   "___global.lck ausente (podman cp rc=125)",
+   "___global.state presente bytes=148"
+  ],
+  "ip_isn2_antes": "10.89.2.3",
+  "ip_isn2_depois": "10.89.2.5",
+  "ip_br_link_depois": "lo               UNKNOWN        00:00:00:00:00:00 <LOOPBACK,UP,LOWER_UP> \neth0@if31        UP             e2:e5:32:c9:e8:9d <BROADCAST,MULTICAST,UP,LOWER_UP>",
+  "events_died_exitcode": [
+   0
+  ]
+ },
+ {
+  "rotulo": "e2-kill",
+  "modo": "kill",
+  "injetor_rc": 0,
+  "volta_s_desde_fim_injetor": 4.306,
+  "exitcode_injetor": "137",
+  "t_injecao_utc": "2026-10-28T04:59:54.486000+00:00",
+  "estado_parado": "status=exited exitcode=137 finished=2026-10-28 01:59:54.502461349 -0300 -03",
+  "delta_det_s": {
+   "f1s-isn1": 1.034,
+   "f1s-isn3": 1.031
+  },
+  "vida_antiga": {
+   "ISPN000390": false,
+   "ISPN080002": false
+  },
+  "vida_nova": {
+   "ISPN000693": false,
+   "ISPN000389": true,
+   "ISPN080001": true
+  },
+  "podman_start_retorno_s": 0.367,
+  "healthy_desde_start_s": 4.673,
+  "isn2_ispn080001_desde_start_s": 4.005,
+  "lck": [
+   "___global.lck presente bytes=0",
+   "___global.state presente bytes=148"
+  ],
+  "ip_isn2_antes": "10.89.2.5",
+  "ip_isn2_depois": "10.89.2.6",
+  "ip_br_link_depois": "lo               UNKNOWN        00:00:00:00:00:00 <LOOPBACK,UP,LOWER_UP> \neth0@if32        UP             aa:2e:37:fb:94:42 <BROADCAST,MULTICAST,UP,LOWER_UP>",
+  "events_died_exitcode": [
+   137
+  ]
+ },
+ {
+  "rotulo": "e3-silencioso",
+  "modo": "silencioso",
+  "injetor_rc": 0,
+  "volta_s_desde_fim_injetor": 4.343,
+  "exitcode_injetor": "137",
+  "t_injecao_utc": "2026-10-28T05:01:21.522000+00:00",
+  "isolamento_ate_kill_ms": 19.0,
+  "estado_parado": "status=exited exitcode=137 finished=2026-10-28 02:01:21.552460177 -0300 -03",
+  "delta_det_s": {
+   "f1s-isn1": 40.691,
+   "f1s-isn3": 40.682
+  },
+  "vida_antiga": {
+   "ISPN000390": false,
+   "ISPN080002": false
+  },
+  "vida_nova": {
+   "ISPN000693": false,
+   "ISPN000389": true,
+   "ISPN080001": true
+  },
+  "podman_start_retorno_s": 0.311,
+  "healthy_desde_start_s": 4.654,
+  "isn2_ispn080001_desde_start_s": 3.892,
+  "lck": [
+   "___global.lck presente bytes=0",
+   "___global.state presente bytes=148"
+  ],
+  "ip_isn2_antes": "10.89.2.6",
+  "ip_isn2_depois": "10.89.2.7",
+  "ip_br_link_depois": "lo               UNKNOWN        00:00:00:00:00:00 <LOOPBACK,UP,LOWER_UP> \neth0@if33        UP             fe:a7:79:c5:63:92 <BROADCAST,MULTICAST,UP,LOWER_UP>",
+  "events_died_exitcode": [
+   137
+  ]
+ },
+ {
+  "rotulo": "e4-stop",
+  "modo": "stop",
+  "injetor_rc": 0,
+  "volta_s_desde_fim_injetor": 4.258,
+  "exitcode_injetor": "0",
+  "t_injecao_utc": "2026-10-28T05:02:48.667000+00:00",
+  "estado_parado": "status=exited exitcode=0 finished=2026-10-28 02:02:50.032457695 -0300 -03",
+  "delta_det_s": {
+   "f1s-isn1": 0.207,
+   "f1s-isn3": 0.205
+  },
+  "vida_antiga": {
+   "ISPN000390": true,
+   "ISPN080002": true
+  },
+  "vida_nova": {
+   "ISPN000693": false,
+   "ISPN000389": true,
+   "ISPN080001": true
+  },
+  "podman_start_retorno_s": 2.493,
+  "healthy_desde_start_s": 6.751,
+  "isn2_ispn080001_desde_start_s": 6.297,
+  "lck": [
+   "___global.lck ausente (podman cp rc=125)",
+   "___global.state presente bytes=148"
+  ],
+  "ip_isn2_antes": "10.89.2.7",
+  "ip_isn2_depois": "10.89.2.8",
+  "ip_br_link_depois": "lo               UNKNOWN        00:00:00:00:00:00 <LOOPBACK,UP,LOWER_UP> \neth0@if34        UP             02:2f:06:b5:7f:dc <BROADCAST,MULTICAST,UP,LOWER_UP>",
+  "events_died_exitcode": [
+   0
+  ]
+ },
+ {
+  "rotulo": "e5-kill",
+  "modo": "kill",
+  "injetor_rc": 0,
+  "volta_s_desde_fim_injetor": 3.22,
+  "exitcode_injetor": "137",
+  "t_injecao_utc": "2026-10-28T05:04:25.783000+00:00",
+  "estado_parado": "status=exited exitcode=137 finished=2026-10-28 02:04:25.792455617 -0300 -03",
+  "delta_det_s": {
+   "f1s-isn1": 1.03,
+   "f1s-isn3": 1.028
+  },
+  "vida_antiga": {
+   "ISPN000390": false,
+   "ISPN080002": false
+  },
+  "vida_nova": {
+   "ISPN000693": false,
+   "ISPN000389": true,
+   "ISPN080001": true
+  },
+  "podman_start_retorno_s": 0.088,
+  "healthy_desde_start_s": 3.308,
+  "isn2_ispn080001_desde_start_s": 2.822,
+  "lck": [
+   "___global.lck presente bytes=0",
+   "___global.state presente bytes=148"
+  ],
+  "ip_isn2_antes": "10.89.2.8",
+  "ip_isn2_depois": "10.89.2.9",
+  "ip_br_link_depois": "lo               UNKNOWN        00:00:00:00:00:00 <LOOPBACK,UP,LOWER_UP> \neth0@if35        UP             b6:1e:53:be:34:d3 <BROADCAST,MULTICAST,UP,LOWER_UP>",
+  "events_died_exitcode": [
+   137
+  ]
+ },
+ {
+  "rotulo": "e6-silencioso",
+  "modo": "silencioso",
+  "injetor_rc": 0,
+  "volta_s_desde_fim_injetor": 3.213,
+  "exitcode_injetor": "137",
+  "t_injecao_utc": "2026-10-28T05:05:57.682000+00:00",
+  "isolamento_ate_kill_ms": 17.0,
+  "estado_parado": "status=exited exitcode=137 finished=2026-10-28 02:05:57.712453508 -0300 -03",
+  "delta_det_s": {
+   "f1s-isn1": 36.532,
+   "f1s-isn3": 36.528
+  },
+  "vida_antiga": {
+   "ISPN000390": false,
+   "ISPN080002": false
+  },
+  "vida_nova": {
+   "ISPN000693": false,
+   "ISPN000389": true,
+   "ISPN080001": true
+  },
+  "podman_start_retorno_s": 0.098,
+  "healthy_desde_start_s": 3.311,
+  "isn2_ispn080001_desde_start_s": 2.827,
+  "lck": [
+   "___global.lck presente bytes=0",
+   "___global.state presente bytes=148"
+  ],
+  "ip_isn2_antes": "10.89.2.9",
+  "ip_isn2_depois": "10.89.2.10",
+  "ip_br_link_depois": "lo               UNKNOWN        00:00:00:00:00:00 <LOOPBACK,UP,LOWER_UP> \neth0@if36        UP             2a:e5:aa:34:33:20 <BROADCAST,MULTICAST,UP,LOWER_UP>",
+  "events_died_exitcode": [
+   137
+  ]
+ }
+]

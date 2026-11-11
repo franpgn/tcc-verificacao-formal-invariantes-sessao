@@ -1,0 +1,8 @@
+PASS durante a janela: isn2 so netem, isn3 so clsact (3 amostras validas de: +10s +45s +70s)
+PASS F2: injetor rc=0
+PASS F2: isn3 sem clsact apos a limpeza da particao
+PASS a limpeza da F2 NAO removeu o netem de isn2 (F3 ainda ativa)
+PASS F3: injetor rc=0
+PASS F3: isn2 sem netem apos a limpeza do jitter
+PASS F3: a limpeza do jitter nao tocou em isn3 (continua limpo)
+size=3 HEALTHY apos 45 s desde o fim da F2

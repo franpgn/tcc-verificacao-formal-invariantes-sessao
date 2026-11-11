@@ -1,0 +1,1 @@
+Erro: parametros da campanha recusados: Erro: s3_replay_late_max so vale com a sonda de replay (--sonda-replay do orquestrador): sem ela o programa nao le os --s3-replay-*, e o arquivo de parametros nao pode registrar um valor que nao valeu

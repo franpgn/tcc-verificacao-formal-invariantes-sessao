@@ -28,7 +28,7 @@ A Tabela 1 do Capítulo 3 §3.3.5 da monografia (*Parâmetros experimentais e fu
 | T14 | 10 min sem falha; 30 min com falha | `scripts/run-baseline.sh` |
 | T15 | MTU 1500 | `cluster/podman-compose.yml` |
 | T16 | FD\_ALL3 padrão (8 s / 40 s) | `cluster/infinispan-cluster.xml` |
-| T17 | F1: *crash* de 60 s | `scripts/inject-crash.sh` |
+| T17 | F1: *crash* silencioso de 60 s (isolamento do `eth0` + `podman kill --signal KILL`, detecção pelo FD\_ALL3) | `scripts/inject-crash.sh` |
 | T18 | F3: +50 ms p99 lognormal | `scripts/inject-jitter.sh` |
 | T19 | M1-M7 expostas via OpenMetrics | `cluster/` + `scripts/collect-metrics.sh` |
 | T20 | Endpoint OpenMetrics | nativo do Infinispan 15 |
@@ -70,13 +70,20 @@ podman ps --filter "label=infinispan" --format "table {{.Names}}\t{{.Status}}"
 ```bash
 cd workload
 mvn -q package
-java -jar target/session-workload-0.1.0-SNAPSHOT-shaded.jar \
+java -jar target/session-workload-0.1.0-SNAPSHOT.jar \
     --scenario S1 \
     --duration 600 \
-    --warmup 60 \
+    --warmup-min-sec 60 \
     --ops 1000000 \
-    --servers 127.0.0.1:11222,127.0.0.1:11223,127.0.0.1:11224
+    --servers 127.0.0.1:11222,127.0.0.1:11223,127.0.0.1:11224 \
+    --csv-dir runs/S1-none
 ```
+
+O *cluster* já foi validado de ponta a ponta: forma `cluster_size=3`
+HEALTHY (discovery TCPPING, imagem pinada `15.0.21.Final`) e o *workload*
+grava a trilha de eventos `op_id,operation,start_ns,end_ns,replica,return_code,key`
+consumida por `analysis/`. A bateria *baseline* S1/S2 × {none, F1} é
+orquestrada por `scripts/run-baseline.sh`.
 
 ### Rodar o *model checking* inicial
 
@@ -91,10 +98,61 @@ cd spec
 
 ```bash
 cd analysis
-python percentis.py ../runs/S1-sem-falha
-python bootstrap_ic.py ../runs/S1-sem-falha
-python compare_scenarios.py ../runs/S1-sem-falha ../runs/S1-F1
+python percentis.py ../runs/S1-none           # glob nao-recursivo: aponte para a pasta da rep
+python bootstrap_ic.py ../runs/S1-none
+python compare_scenarios.py ../runs/S1-none ../runs/S1-F1
 ```
+
+### Campanhas S3 do controlador (W-6, B-46; só na VM, com GO)
+
+Matriz (pré-registro fixa as sementes e o número de blocos; nada tem padrão):
+
+```bash
+python3 -I scripts/campanha_s3_matriz.py gerar --modo avaliacao \
+  --nucleo "ASYNC-F1:teste:8,ASYNC-F2:teste:8,ASYNC-none:descritiva:4,SYNC-F2:referencia:4" \
+  --extras "ASYNC-F4:teste:8,SYNC-F1:referencia:4,SYNC-F4:referencia:4" \
+  --ordem-seed <N> --s0 <N> --passo-semente <N> --i0 <N> --b0 <N> --saida runs/campanha-s3/matriz.tsv
+```
+
+Plano sem executar nada, depois a fase (dentro da VM, em `tmux`, com o amostrador h4 já iniciado):
+
+```bash
+scripts/run-campanha-s3.sh --dry-run --matriz <tsv> --matriz-sha256 <hex> --fase nucleo \
+  --parametros <campanha-s3.json> --parametros-sha256 <hex> --controlador <controlador.json> --controlador-sha256 <hex> \
+  --referencia-async <referencia-S3-async.json> --referencia-async-sha256 <hex> \
+  --referencia-sync <referencia-S3-sync.json> --referencia-sync-sha256 <hex> --saida runs/campanha-s3
+# mesma linha sem --dry-run e com --jar <jar> --jar-sha256 <hex> --boot-esperado <boot_id> --h4-id diag-<UTC>
+```
+
+Uma referência de p99 por modo de replicação presente na fase (o programa recusa a de outro perfil). O amostrador h4
+é iniciado com `--id diag-<UTC>` (o `amostrador-infra.sh` não muda enquanto o *rebaseline* não fechar).
+
+W-6c: a célula `ASYNC-F3` (*jitter* pelo `inject-jitter.sh`, sem mudança) exige o arquivo de parâmetros no esquema
+`campanha-s3/2` (`f3_no`, `f3_delay_ms`, `f3_jitter_ms`, `f3_distribuicao`, `f3_dur_s`, com origem); `--swap-limite-kb N`
+recria o *cluster* no portão quando o swap da VM chega a N kB (o `execucao.json` sempre traz `swap_usado_kb_k1`), e
+`--exigir-trilha-completa` descarta como infraestrutura a execução com a trilha de decisões sem `fim` ou com
+`linhas_perdidas` > 0. As duas opções entram no *bundle* da fase. Se o swap continuar ≥ N depois da recriação, a
+fase para com **exit 11** (parada de memória), sem rodar a execução; a retomada roda o mesmo i. Códigos de saída do
+orquestrador: `scripts/run-campanha-s3.sh --help`.
+
+Avaliação fatorial 2×2 (DT-027: regra de fusão do `sessions-async` × controlador). A matriz tem a coluna `fusao` no fim;
+na célula de teste cada bloco tem os braços PO, PL, AO e AL (P = `PREFERRED_NON_NULL`, A = A1; O = `shadow`,
+L = `active`), e nas descritivas A e B com a regra atual:
+
+```bash
+python3 -I scripts/campanha_s3_matriz.py gerar --modo fatorial \
+  --nucleo "ASYNC-F2:teste:12,ASYNC-none:descritiva:4,ASYNC-F3:descritiva:4" \
+  --extras "ASYNC-F1:descritiva:4,ASYNC-F4:descritiva:4" \
+  --ordem-seed <N> --s0 800000 --passo-semente 100 --i0 0 --b0 0 --saida runs/campanha-s3-fatorial/matriz.tsv
+python3 -I scripts/campanha_s3_conferir.py pareamento --matriz runs/campanha-s3-fatorial/matriz.tsv
+```
+
+Com essa matriz o orquestrador exige `--sonda-replay`, o `fusao_teto_s` no arquivo de parâmetros (teto da espera pela
+fusão antes da varredura; vai ao programa como `--sweep-merge-timeout-sec`), o `cluster/caches/sessions-async-a1.json` e,
+com o JAR da extensão montado no *compose*, `--extensao-sha256 <hex>` (o JAR é construído antes, com
+`mvn -f extensao-servidor/pom.xml package`). Detalhes: `docs/implementacao.md` (TD-023).
+
+Detalhes e porquês: `docs/implementacao.md` (TD-015); testes: `scripts/run-campanha-s3.test.sh` e `docs/testes.md`.
 
 ## Fluxo de desenvolvimento
 

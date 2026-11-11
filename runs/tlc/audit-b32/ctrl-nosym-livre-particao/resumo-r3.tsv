@@ -1,0 +1,5 @@
+livre	particao	r3	I1P	VIOLADA	traco_de_4_estados	1027	505	1s
+livre	particao	r3	I1F	VIOLADA	traco_de_5_estados	11763	4633	2s
+livre	particao	r3	I2Fa	VIOLADA	traco_de_4_estados	6399	2848	1s
+livre	particao	r3	I1M	VIOLADA	traco_de_5_estados	11763	4633	1s
+livre	particao	r3	MesclarPerdeChave	VIOLADA	traco_de_4_estados	1097	522	2s

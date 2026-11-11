@@ -1,0 +1,4 @@
+invariante,chave,classificacao,detalhe
+I1,4a17f363-fba2-4f6d-9d4f-cc6d76d20fb4,REAL,invalidacao confirmada (LOGOUT) e a sessao esta VALID
+I1,f487fb15-123f-4113-b014-44c782b93863,REAL,invalidacao confirmada (LOGOUT) e a sessao esta VALID
+I2,60adc53a-bb55-47be-a575-a4a120d318dd,INCERTA,sessao VALID de identidade s3-u-002 BLOCKED (BLOQUEIO-INCERTO)

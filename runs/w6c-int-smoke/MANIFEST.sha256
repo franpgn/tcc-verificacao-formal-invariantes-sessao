@@ -1,0 +1,8 @@
+f3d04cf5f118bc07d90092e9e9d935ece078c312a978c5fc42e5c7d8caa2ea5a *./comandos.md
+862c30b0aff446572a0fae031ea7e9468e61a72fcd0517d63c9c9c5712a70134 *./dry-run/comando.out
+ed9543b73d72c0b90ce67e4cced0c4abb118a984cb3bc1149d2f691ae163ffe4 *./dry-run/dry-run.out
+93ff7811a209e2a8479230bbb9b6bc19f7f311d3af383ec350c1db2a7e7d5494 *./dry-run/dry-run.rc
+c34b715c06cbf9b41447244ea228fcef888c4d6a1c7917957a19e103c542f3a1 *./dry-run/entradas.sha256
+ac9a745ec1d1c44e66d20163ce7adc56bfe9ca176fd61a81e37dfd2286397d1c *./dry-run/matriz.tsv
+dee90d6ccc8d9cc41e6115b233c09a62b8faf65de8b71eddc0a9fda8d6064987 *./dry-run/parametros-campanha-s3-2.json
+63e1b4f0952d436f74730aeebdecaf1f79ebcb4e2fc03b9d4b0d759db46ba5eb *./suite-s3.out

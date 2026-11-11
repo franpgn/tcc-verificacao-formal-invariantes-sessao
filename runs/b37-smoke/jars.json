@@ -1,0 +1,6 @@
+{"workload": {"arquivo": "session-workload-0.1.0-SNAPSHOT.jar", "commit": "c055399", "construcao": "mvn -q -o -f workload/pom.xml clean package -DskipTests na worktree wt-b37 (workload/ igual a c055399)", "sha256": "14faabcde0aeeb6ef68bc094318ecb0481f4aa28dbba03ccba550157d01218f1"},
+ "coletor": {"arquivo": "scripts/collect-resources.sh", "commit": "a855de3", "sha256": "d1d3581b7fe0ce12e4e33358698da287f3ac87e4d223689b91248d7fee9327c3"},
+ "java": "openjdk version 22.0.2 2024-07-16",
+ "podman": "podman-compose 1.5.0 -p b37, containers b37-isn1..3, portas 12537..12539; maquina WSL podman-machine-default (Podman 5.7.0, rootful, cgroup v1 hibrido); a maquina foi iniciada pelo Worker (estava parada) e NAO foi parada",
+ "imagem": "quay.io/infinispan/server:15.0.21.Final",
+ "aviso": "Smoke local: nao e medida de energia."}

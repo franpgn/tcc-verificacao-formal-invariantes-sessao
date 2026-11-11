@@ -1,0 +1,16 @@
+{
+ "workload": {
+  "commit": "f6eb886",
+  "branch": "feature/b27-portao-emissao",
+  "origem": "git archive f6eb886 workload; mvn -o clean package -DskipTests (scratchpad b27/jar)",
+  "sha256": "e0cb4ea893a959dc5921c9d78d36c663d88b9bd27f7ec438c9f98c783957ee46"
+ },
+ "verificador": "VerificadorSanidade do mesmo jar (java -cp <jar> br.unipampa.tcc.session.VerificadorSanidade --csv Q2/rep-001.csv --scenario S1)",
+ "java": "JDK 22.0.2 via $JAVA_HOME/bin/java",
+ "podman": "maquina WSL podman-machine-default (ligada antes e depois; nao foi parada nem reiniciada)",
+ "imagem": "quay.io/infinispan/server:15.0.21.Final",
+ "cluster": "podman-compose -p b27, containers b27-isn1..3, portas Hot Rod 12271..12273 (external-port igual)",
+ "Q1": "--servers 127.0.0.1:12271,127.0.0.1:12272,127.0.0.1:12273 --scenario S3 --replication sync --reset-state on --duration 90 --rep 1 --warmup-min-sec 10 --seed 27100 --csv-dir runs/b27-smoke/Q1",
+ "Q2": "--servers 127.0.0.1:12271,127.0.0.1:12272,127.0.0.1:12273 --scenario S1 --replication sync --mix v3 --threads 4 --ops 0 --reset-state on --duration 90 --rep 1 --warmup-min-sec 10 --seed 27200 --csv-dir runs/b27-smoke/Q2",
+ "nota": "Smoke local: latencias nao sao evidencia. Os mutantes do B-27 rodavam em paralelo na mesma maquina (CPU)."
+}

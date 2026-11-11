@@ -1,0 +1,146 @@
+{
+ "execucao": "controle-shadow",
+ "fases": {
+  "inicio": "inicio controle-shadow modo=shadow teto_convergencia_s=120 semente=63003 jar_sha256=f47870e7f3d640abb4f6e4341dc66966aeb8fad9e1c2f0445c9f76b4e3dd3d59 cfg_sha256=0ff8714b217a50c10b44cf7e3a992650527692662cd4e9ae33554f1946253c8a base=65165ea",
+  "origem_ns=1793879173823418250": "origem_ns=1793879173823418250",
+  "corte-inicio": "corte-inicio isn3",
+  "corte-fim": "corte-fim isn3 rc=0",
+  "fim-da-carga-visto": "fim-da-carga-visto (linha Controlador:)",
+  "cura-inicio": "cura-inicio isn3",
+  "cura-fim": "cura-fim isn3 rc=0",
+  "carga": "carga exit=0",
+  "fim": "fim controle-shadow"
+ },
+ "P1": [
+  {
+   "no": "127.0.0.1:12703",
+   "t_decisao_s": 13.361
+  }
+ ],
+ "AC5": [
+  {
+   "operacao": "APLICAR",
+   "executada": false,
+   "resultado": "PREVISTA",
+   "alvo": "127.0.0.1:12703",
+   "codigo_http": null,
+   "lido": null,
+   "erro": null,
+   "reversao": "orquestrador",
+   "t_pedido_s": 13.362,
+   "t_inicio_s": null,
+   "duracao_s": null,
+   "t_fim_s": null
+  }
+ ],
+ "saude_isn3": {
+  "amostras": 0,
+  "codigos": {},
+  "ultimo_200_s": null,
+  "primeiro_sem_200_depois_do_pedido_s": null
+ },
+ "hotrod_isn3": {
+  "eventos": 278,
+  "ultimo_sucesso_s": 39.941,
+  "primeiro_erro_depois_do_pedido_s": 13.56,
+  "codigos_depois_do_pedido": {
+   "VALID": 32,
+   "ERROR_TRANSPORT": 14,
+   "NONE": 2,
+   "INVALID": 8,
+   "OK": 3,
+   "ERROR_UNAVAILABLE": 60
+  }
+ },
+ "conteiner_isn3": {
+  "status_no_fim": "running",
+  "exit_code": 0,
+  "finished_at": "0001-01-01T00:00:00Z",
+  "started_at": "2026-11-05T08:45:30.445785304-03:00",
+  "finished_s": null
+ },
+ "instantes_s": {
+  "t_lag": 3.019,
+  "t_P1": 13.361,
+  "t_AC5_pedido": 13.362,
+  "t_AC5_fim": null,
+  "t_saude_isn3_parou": null,
+  "t_vista_maioria": 43.357,
+  "fim-da-carga-visto": 55.016,
+  "cura-fim": 56.934
+ },
+ "stdout": {
+  "leitura_por_replica": [
+   "Leitura por replica: prazo_sem_resposta_ms=2000 sessoes@127.0.0.1:12701=lida contadores@127.0.0.1:12701=lida sessoes@127.0.0.1:12702=lida contadores@127.0.0.1:12702=lida sessoes@127.0.0.1:12703=lida contadores@127.0.0.1:12703=lida"
+  ],
+  "convergencia": [
+   "Convergencia: convergiu=true, persistente=false, rodadas=11, t_convergencia=40096119800 ns"
+  ],
+  "controlador": [
+   "Controlador: modo=shadow janelas=17 transicoes=1 acoes_pedidas=1 acoes_executadas=0 reversoes=0 reversoes_falhas=0 executor_no_prazo=true eventos_antes_da_origem=516 linhas_jsonl_perdidas=0"
+  ],
+  "violacoes": [
+   "Violacoes detectadas: 0"
+  ],
+  "total_operacoes": [
+   "Total de operacoes: 1543"
+  ],
+  "erros_s3": [
+   "S3 acao|Block|ERROR_TRANSPORT = 1",
+   "S3 acao|IncrementFailure|ERROR_TRANSPORT = 1",
+   "S3 acao|IncrementFailure|ERROR_UNAVAILABLE = 5",
+   "S3 acao|Login|ERROR_UNAVAILABLE = 4",
+   "S3 acao|Logout|ERROR_TRANSPORT = 2",
+   "S3 acao|ResetFailures|ERROR_UNAVAILABLE = 1",
+   "S3 acao|Validate|ERROR_TRANSPORT = 2",
+   "S3 acao|Validate|ERROR_UNAVAILABLE = 13"
+  ]
+ },
+ "exit": "exit=0",
+ "convergencia_csv": {
+  "rodadas": 11,
+  "validas": 3,
+  "motivos": {
+   "topologia com 2 de 3 servidores": 8,
+   "": 3
+  },
+  "primeira_valida_s": 94.078,
+  "ultima_s": 104.175
+ },
+ "convergencia_resumo": {
+  "t_fim_ns": 1793879259787254450,
+  "convergiu": true,
+  "divergencia_persistente": false,
+  "t_convergencia_ns": 40096119800,
+  "t_convergencia_abs_ns": 1793879299883374250,
+  "rodadas": 11,
+  "rodadas_validas": 3,
+  "t_fim_carga_ns": 1793879259787254450,
+  "t_fim_controle_ns": 1793879259800402850
+ },
+ "arquivos": {
+  "convergencia-rep-001.csv": 661,
+  "convergencia-resumo-rep-001.json": 323,
+  "decisoes-rep-001.jsonl": 18371,
+  "estado-rep-001.json": 179,
+  "isn3-state.json": 2794,
+  "meta-csv-rep-001.json": 18,
+  "observaveis-rep-001.jsonl": 54466,
+  "rep-001.csv": 125481,
+  "resumo.json": 0,
+  "s3-acoes-rep-001.csv": 184438,
+  "s3-resumo-rep-001.json": 1606,
+  "saude-subida-isn1.json": 467,
+  "saude-subida-isn2.json": 467,
+  "saude-subida-isn3.json": 0,
+  "violacoes-rep-001.csv": 55
+ },
+ "jsonl_com_fim": {
+  "observaveis": true,
+  "decisoes": true
+ },
+ "violacoes": {
+  "total": 0,
+  "por_invariante": null
+ }
+}

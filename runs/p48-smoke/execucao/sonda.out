@@ -1,0 +1,47 @@
+2026-11-06T05:12:06.769994400Z T0 rcm principal depois da carga inicial cache=sessions-async topology_id=2135538279 num_segments=64 servidores=3 12901=43 12902=42 12903=43
+2026-11-06T05:12:06.769994400Z T0 rcm principal depois da carga inicial cache=counters-async topology_id=2135538279 num_segments=64 servidores=3 12901=43 12902=42 12903=43
+2026-11-06T05:12:06.769994400Z aguardando o F1 (gatilho f1-feito); nenhuma operacao no rcm principal ate la
+2026-11-06T05:13:28.112571900Z T1 rcm principal depois do F1, sem operacao cache=sessions-async topology_id=2135538279 num_segments=64 servidores=3 12901=43 12902=42 12903=43
+2026-11-06T05:13:28.112571900Z T2 cliente novo depois do F1 (a topologia de verdade) cache=sessions-async topology_id=-1218010633 num_segments=64 servidores=3 12901=44 12902=43 12903=41
+2026-11-06T05:13:28.112571900Z T1 rcm principal depois do F1, sem operacao cache=counters-async topology_id=2135538279 num_segments=64 servidores=3 12901=43 12902=42 12903=43
+2026-11-06T05:13:28.125118Z T2 cliente novo depois do F1 (a topologia de verdade) cache=counters-async topology_id=-1218010633 num_segments=64 servidores=3 12901=44 12902=43 12903=41
+2026-11-06T05:13:28.127671700Z LEITURA-F1 cache=sessions-async segmentos iguais por no: false
+2026-11-06T05:13:28.251626400Z LEITURA-F1 cache=sessions-async no=12901 segs_usada=43 segs_real=44 so_usada=8 so_real=9 | chaves lidas: usada=1347 real=1388 so_usada=245 so_real=286
+2026-11-06T05:13:28.251626400Z LEITURA-F1 cache=sessions-async no=12901 chaves que a leitura com a topologia usada perde=286 e acrescenta=245
+2026-11-06T05:13:28.363426100Z LEITURA-F1 cache=sessions-async no=12902 segs_usada=42 segs_real=43 so_usada=13 so_real=14 | chaves lidas: usada=1298 real=1340 so_usada=399 so_real=441
+2026-11-06T05:13:28.363426100Z LEITURA-F1 cache=sessions-async no=12902 chaves que a leitura com a topologia usada perde=441 e acrescenta=399
+2026-11-06T05:13:28.451664200Z LEITURA-F1 cache=sessions-async no=12903 segs_usada=43 segs_real=41 so_usada=8 so_real=6 | chaves lidas: usada=1355 real=1272 so_usada=257 so_real=174
+2026-11-06T05:13:28.452175500Z LEITURA-F1 cache=sessions-async no=12903 chaves que a leitura com a topologia usada perde=174 e acrescenta=257
+2026-11-06T05:13:28.454185500Z LEITURA-F1 cache=counters-async segmentos iguais por no: false
+2026-11-06T05:13:28.524617700Z LEITURA-F1 cache=counters-async no=12901 segs_usada=43 segs_real=44 so_usada=8 so_real=9 | chaves lidas: usada=1347 real=1388 so_usada=245 so_real=286
+2026-11-06T05:13:28.526629600Z LEITURA-F1 cache=counters-async no=12901 chaves que a leitura com a topologia usada perde=286 e acrescenta=245
+2026-11-06T05:13:28.599578400Z LEITURA-F1 cache=counters-async no=12902 segs_usada=42 segs_real=43 so_usada=13 so_real=14 | chaves lidas: usada=1298 real=1340 so_usada=399 so_real=441
+2026-11-06T05:13:28.599578400Z LEITURA-F1 cache=counters-async no=12902 chaves que a leitura com a topologia usada perde=441 e acrescenta=399
+2026-11-06T05:13:28.671335100Z LEITURA-F1 cache=counters-async no=12903 segs_usada=43 segs_real=41 so_usada=8 so_real=6 | chaves lidas: usada=1355 real=1272 so_usada=257 so_real=174
+2026-11-06T05:13:28.671335100Z LEITURA-F1 cache=counters-async no=12903 chaves que a leitura com a topologia usada perde=174 e acrescenta=257
+2026-11-06T05:13:28.679978600Z T3 rcm principal depois de um get cache=sessions-async topology_id=-1218010633 num_segments=64 servidores=3 12901=44 12902=43 12903=41
+2026-11-06T05:13:28.679978600Z T3 igual a T2 por no (cache=sessions-async): true
+2026-11-06T05:13:28.684306800Z T3 rcm principal depois de um get cache=counters-async topology_id=-1218010633 num_segments=64 servidores=3 12901=44 12902=43 12903=41
+2026-11-06T05:13:28.684306800Z T3 igual a T2 por no (cache=counters-async): true
+2026-11-06T05:13:28.693081500Z aguardando a F2 (gatilho f2-feito); nenhuma operacao no rcm principal ate la
+2026-11-06T05:15:15.414513100Z T4 rcm principal depois da F2 e da fusao, sem operacao cache=sessions-async topology_id=-1218010633 num_segments=64 servidores=3 12901=44 12902=43 12903=41
+2026-11-06T05:15:15.416016500Z T5 cliente novo depois da F2 cache=sessions-async topology_id=-1150225305 num_segments=64 servidores=3 12901=44 12902=43 12903=41
+2026-11-06T05:15:15.416016500Z T5 igual a T2 por no (a F2 sem reinicio volta a mesma distribuicao?) cache=sessions-async: true
+2026-11-06T05:15:15.416016500Z T4 rcm principal depois da F2 e da fusao, sem operacao cache=counters-async topology_id=-1218010633 num_segments=64 servidores=3 12901=44 12902=43 12903=41
+2026-11-06T05:15:15.418182500Z T5 cliente novo depois da F2 cache=counters-async topology_id=-1150225305 num_segments=64 servidores=3 12901=44 12902=43 12903=41
+2026-11-06T05:15:15.418182500Z T5 igual a T2 por no (a F2 sem reinicio volta a mesma distribuicao?) cache=counters-async: true
+2026-11-06T05:15:15.418182500Z LEITURA-F2 cache=sessions-async segmentos iguais por no: true
+2026-11-06T05:15:15.473449100Z LEITURA-F2 cache=sessions-async no=12901 segs_usada=44 segs_real=44 so_usada=0 so_real=0 | chaves lidas: usada=1388 real=1388 so_usada=0 so_real=0
+2026-11-06T05:15:15.473449100Z LEITURA-F2 cache=sessions-async no=12901 chaves que a leitura com a topologia usada perde=0 e acrescenta=0
+2026-11-06T05:15:15.531586900Z LEITURA-F2 cache=sessions-async no=12902 segs_usada=43 segs_real=43 so_usada=0 so_real=0 | chaves lidas: usada=1340 real=1340 so_usada=0 so_real=0
+2026-11-06T05:15:15.533593800Z LEITURA-F2 cache=sessions-async no=12902 chaves que a leitura com a topologia usada perde=0 e acrescenta=0
+2026-11-06T05:15:15.574341600Z LEITURA-F2 cache=sessions-async no=12903 segs_usada=41 segs_real=41 so_usada=0 so_real=0 | chaves lidas: usada=1272 real=1272 so_usada=0 so_real=0
+2026-11-06T05:15:15.574341600Z LEITURA-F2 cache=sessions-async no=12903 chaves que a leitura com a topologia usada perde=0 e acrescenta=0
+2026-11-06T05:15:15.574341600Z LEITURA-F2 cache=counters-async segmentos iguais por no: true
+2026-11-06T05:15:15.629609100Z LEITURA-F2 cache=counters-async no=12901 segs_usada=44 segs_real=44 so_usada=0 so_real=0 | chaves lidas: usada=1388 real=1388 so_usada=0 so_real=0
+2026-11-06T05:15:15.629609100Z LEITURA-F2 cache=counters-async no=12901 chaves que a leitura com a topologia usada perde=0 e acrescenta=0
+2026-11-06T05:15:15.686066400Z LEITURA-F2 cache=counters-async no=12902 segs_usada=43 segs_real=43 so_usada=0 so_real=0 | chaves lidas: usada=1340 real=1340 so_usada=0 so_real=0
+2026-11-06T05:15:15.688075800Z LEITURA-F2 cache=counters-async no=12902 chaves que a leitura com a topologia usada perde=0 e acrescenta=0
+2026-11-06T05:15:15.732268Z LEITURA-F2 cache=counters-async no=12903 segs_usada=41 segs_real=41 so_usada=0 so_real=0 | chaves lidas: usada=1272 real=1272 so_usada=0 so_real=0
+2026-11-06T05:15:15.732268Z LEITURA-F2 cache=counters-async no=12903 chaves que a leitura com a topologia usada perde=0 e acrescenta=0
+2026-11-06T05:15:15.741112400Z fim

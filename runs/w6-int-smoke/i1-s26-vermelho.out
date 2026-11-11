@@ -1,0 +1,18 @@
+== S26: I-1 da V-W6: meta da trilha 1 s depois da ancora (gravadora com fila do W-2b): releitura a cada 0,2 s ate 5 s ==
+FAIL: S26 meta atrasada: exit 0 (a fase nao para) (esperado='0' obtido='6')
+FAIL: S26 meta atrasada: ACEITA (esperado='ACEITA' obtido='DESCARTADA-INFRA')
+PASS: S26 primeira leitura da meta saiu com 4 (arquivo ainda ausente)
+FAIL: S26 ultima leitura da meta saiu com 0 (esperado='0' obtido='4')
+FAIL: S26 carga nao foi parada
+FAIL: S26 log da releitura (nao encontrou 'meta da trilha lida na leitura')
+== S26n: meta que nao chega em 5 s: carga parada, DESCARTADA-INFRA sem injecao, e a fase segue (exit 0, nao 6) ==
+FAIL: S26n exit 0 (disco lento nao e erro de configuracao) (esperado='0' obtido='6')
+PASS: S26n i=0 DESCARTADA-INFRA
+FAIL: S26n i=0 motivo meta ausente (nao encontrou 'meta da trilha ausente ou ilegivel')
+FAIL: S26n i=1 ACEITA (a fase seguiu) (esperado='ACEITA' obtido='')
+PASS: S26n uma carga parada (a de i=0)
+FAIL: S26n i=0 releu a meta (mais de uma leitura com 4)
+PASS: S26n i=0 sem injecao (marcadores vazios)
+FAIL: S26n um so podman kill (o F1 de i=1) (esperado='1' obtido='0')
+
+==== RESULTADO: 4 PASS, 10 FAIL ====

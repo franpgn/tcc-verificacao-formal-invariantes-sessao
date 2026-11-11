@@ -1,0 +1,75 @@
+{
+  "arquivo" : "C:/Users/Francesco/Development/tcc/wt-b43-9/runs/b43-9-smoke/Q5/rep-001.csv",
+  "sha256" : "55056528b222901120223593df7c4d57b5a3f2abd9c309fd18190c23b1da2265",
+  "cenario" : "S2",
+  "modo" : "strict",
+  "limiares" : {
+    "login_ok_min" : 0.95,
+    "validate_valid_min_exclusivo" : 0,
+    "validate_ausente_max" : 0.05,
+    "mistura_tolerancia_pp" : 2.0,
+    "status" : "PROVISORIOS (diagnostico 2026-10-22; aceitos pelo Gestor como provisorios)"
+  },
+  "contagens" : {
+    "fora" : {
+      "IncrementFailure" : {
+        "COUNTED" : 4749
+      },
+      "Login" : {
+        "OK" : 14681
+      },
+      "Logout" : {
+        "NONE" : 19418
+      },
+      "Validate" : {
+        "INVALID" : 23476,
+        "VALID" : 454857
+      }
+    },
+    "dentro" : { }
+  },
+  "metricas" : {
+    "eventos_total" : 517181,
+    "eventos_fora" : 517181,
+    "eventos_dentro" : 0,
+    "login" : 14681,
+    "login_ok" : 14681,
+    "login_blocked" : 0,
+    "login_ok_frac" : 1.0,
+    "validate" : 478333,
+    "validate_valid" : 454857,
+    "validate_ausente" : 0,
+    "validate_ausente_frac" : 0.0,
+    "ops" : 487819,
+    "mistura" : {
+      "Validate" : {
+        "observado" : 0.9504590842095121,
+        "esperado" : 0.95,
+        "desvio_pp" : 0.045908420951212836
+      },
+      "Login" : {
+        "observado" : 0.030095178744575346,
+        "esperado" : 0.03,
+        "desvio_pp" : 0.009517874457534714
+      },
+      "Logout" : {
+        "observado" : 0.009710568879030951,
+        "esperado" : 0.01,
+        "desvio_pp" : -0.028943112096904873
+      },
+      "IncrementFailure" : {
+        "observado" : 0.009735168166881568,
+        "esperado" : 0.01,
+        "desvio_pp" : -0.026483183311843198
+      },
+      "ResetFailures" : {
+        "observado" : 0.0,
+        "esperado" : 0.0,
+        "desvio_pp" : 0.0
+      }
+    }
+  },
+  "veredito" : "OK",
+  "motivos" : [ ],
+  "versao" : "b43-3a-i/1"
+}

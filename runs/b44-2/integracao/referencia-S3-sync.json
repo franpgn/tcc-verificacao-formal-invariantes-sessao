@@ -1,0 +1,1 @@
+{"esquema":"referencia-p99/1","cenario":"S3","perfil":"sync","p99_ns":{"Login":10000000000,"Validate":10000000000,"Logout":10000000000,"IncrementFailure":10000000000,"ResetFailures":10000000000,"Block":10000000000,"Unblock":10000000000}}

@@ -1,0 +1,62 @@
+== S36: DT-027/P-61: F2 no bloco fatorial: t_fusao_ns pela trilha de observaveis, conferido pela ISPN000093, e o instante da checagem a parte ==
+PASS: S36 exit 0
+PASS: S36 PO ACEITA
+PASS: S36 PO fusao do braco na checagem
+PASS: S36 PO vista de fusao (ISPN000093) 20 s depois do end
+PASS: S36 PO os tres nos com a linha
+PASS: S36 PO fonte da vista
+PASS: S36 PO driver de log
+PASS: S36 PO linhas ISPN000093 guardadas
+PASS: S36 PO t_fusao_ns = primeira amostra da trilha com os tres em 3 depois do end (end + 20,1 s)
+PASS: S36 PO fusao_trilha: 20,1 s depois do end
+PASS: S36 PO diferenca para a ISPN000093 (20,0 s): 0,1 s
+PASS: S36 PO t_vista_checagem_ns a parte (fusao-rep-001.json)
+PASS: S36 PO t_vista_checagem_ns inteiro
+PASS: S36 PL ACEITA
+PASS: S36 PL fusao do braco na checagem
+PASS: S36 PL vista de fusao (ISPN000093) 20 s depois do end
+PASS: S36 PL os tres nos com a linha
+PASS: S36 PL fonte da vista
+PASS: S36 PL driver de log
+PASS: S36 PL linhas ISPN000093 guardadas
+PASS: S36 PL t_fusao_ns = primeira amostra da trilha com os tres em 3 depois do end (end + 20,1 s)
+PASS: S36 PL fusao_trilha: 20,1 s depois do end
+PASS: S36 PL diferenca para a ISPN000093 (20,0 s): 0,1 s
+PASS: S36 PL t_vista_checagem_ns a parte (fusao-rep-001.json)
+PASS: S36 PL t_vista_checagem_ns inteiro
+PASS: S36 AO ACEITA
+PASS: S36 AO fusao do braco na checagem
+PASS: S36 AO vista de fusao (ISPN000093) 20 s depois do end
+PASS: S36 AO os tres nos com a linha
+PASS: S36 AO fonte da vista
+PASS: S36 AO driver de log
+PASS: S36 AO linhas ISPN000093 guardadas
+PASS: S36 AO t_fusao_ns = primeira amostra da trilha com os tres em 3 depois do end (end + 20,1 s)
+PASS: S36 AO fusao_trilha: 20,1 s depois do end
+PASS: S36 AO diferenca para a ISPN000093 (20,0 s): 0,1 s
+PASS: S36 AO t_vista_checagem_ns a parte (fusao-rep-001.json)
+PASS: S36 AO t_vista_checagem_ns inteiro
+PASS: S36 AL ACEITA
+PASS: S36 AL fusao do braco na checagem
+PASS: S36 AL vista de fusao (ISPN000093) 20 s depois do end
+PASS: S36 AL os tres nos com a linha
+PASS: S36 AL fonte da vista
+PASS: S36 AL driver de log
+PASS: S36 AL linhas ISPN000093 guardadas
+PASS: S36 AL t_fusao_ns = primeira amostra da trilha com os tres em 3 depois do end (end + 20,1 s)
+PASS: S36 AL fusao_trilha: 20,1 s depois do end
+PASS: S36 AL diferenca para a ISPN000093 (20,0 s): 0,1 s
+PASS: S36 AL t_vista_checagem_ns a parte (fusao-rep-001.json)
+PASS: S36 AL t_vista_checagem_ns inteiro
+PASS: S36 manifesto-bracos.tsv com os quatro bracos
+PASS: S36b sem a linha de fusao no log: exit 0, ACEITA (so registro)
+PASS: S36b instante da fusao nulo
+PASS: S36b motivo com o driver de log
+PASS: S36b sem fusao na trilha: t_fusao_ns ausente
+PASS: S36b fusao_trilha diz por que
+PASS: S36b sem a ISPN000093, sem diferenca
+PASS: S36b sem fusao na checagem do programa: t_vista_checagem_ns nulo
+PASS: S36b varredura-rep-001.erro.txt do programa guardado na execucao
+PASS: S36b registro da checagem no execucao.json
+
+==== RESULTADO: 59 PASS, 0 FAIL ====

@@ -1,0 +1,5 @@
+{"workload": {"arquivo": "session-workload-0.1.0-SNAPSHOT.jar", "commit": "f11ae8e", "construcao": "mvn -q -o -f workload/pom.xml clean package -DskipTests na worktree wt-b43-5 (git diff --quiet HEAD -- workload: arvore limpa)", "sha256": "34bcb955b3f9846f1630353da61b956946c853bedb060b384d9ff489c7f62012"},
+ "verificador_e_leitor": "o mesmo jar (VerificadorSanidade e LeitorCsvEventos inalterados no B-43.5); LerCsvV2.java executado como fonte unico (java -cp jar LerCsvV2.java ...)",
+ "java": "openjdk version 22.0.2 2024-07-16",
+ "podman": "podman 5.7.0, podman-compose 1.5.0 -p b435, containers b435-isn1..3, portas 12435..12437, rede b435_infinispan-net; maquina WSL podman-machine-default (parada antes, parada depois)",
+ "imagem": "quay.io/infinispan/server:15.0.21.Final"}

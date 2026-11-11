@@ -1,0 +1,31 @@
+controle_dir	prop	restricao	card	MaxCanal/MaxRelogio/Ev/LIMITE	ref_com_simetria	ref_workers	resultado_com_sim	traco_com_sim	distintos_com_sim	resultado_sem_sim	traco_sem_sim	distintos_sem_sim	razao_distintos	igual_veredito	igual_traco
+ctrl-nosym-lim6-particao	I2Fb	SoParticao	r3	3/5/2/6	prop-particao-lim6-w1/r3-I2Fb.out	1	VIOLADA	4	130	VIOLADA	4	417		SIM	SIM
+ctrl-nosym-lim6-queda	I2Fb	SoQueda	r3	3/5/2/6	prop-queda-lim6-w1/r3-I2Fb.out	1	VIOLADA	4	111	VIOLADA	4	352		SIM	SIM
+ctrl-nosym-lim6-sem	I2Fb	SemFalha	r3	3/5/2/6	prop-sem-lim6-w1/r3-I2Fb.out	1	VIOLADA	4	90	VIOLADA	4	285		SIM	SIM
+ctrl-nosym-livre-particao	I1F	SoParticao	r3	3/5/2/2	prop-livre-particao-w1/r3-I1F.out	1	VIOLADA	5	987	VIOLADA	5	4633		SIM	SIM
+ctrl-nosym-livre-particao	I1M	SoParticao	r3	3/5/2/2	prop-livre-particao-w1/r3-I1M.out	1	VIOLADA	5	987	VIOLADA	5	4633		SIM	SIM
+ctrl-nosym-livre-particao	I1P	SoParticao	r3	3/5/2/2	prop-livre-particao-w1/r3-I1P.out	1	VIOLADA	4	176	VIOLADA	4	505		SIM	SIM
+ctrl-nosym-livre-particao	I2Fa	SoParticao	r3	3/5/2/2	prop-livre-particao-w1/r3-I2Fa.out	1	VIOLADA	4	389	VIOLADA	4	2848		SIM	SIM
+ctrl-nosym-livre-particao	MesclarPerdeChave	SoParticao	r3	3/5/2/2	prop-livre-particao-w1/r3-MesclarPerdeChave.out	1	VIOLADA	4	185	VIOLADA	4	522		SIM	SIM
+ctrl-nosym-livre-queda	I1F	SoQueda	r3	3/5/2/2	prop-livre-queda-w1/r3-I1F.out	1	VIOLADA	7	22681	VIOLADA	7	182656		SIM	SIM
+ctrl-nosym-livre-queda	I1P	SoQueda	r3	3/5/2/2	prop-livre-queda-w1/r3-I1P.out	1	VIOLADA	4	150	VIOLADA	4	428		SIM	SIM
+ctrl-nosym-livre-sem	I1F	SemFalha	r3	3/5/2/2	prop-livre-sem-w1/r3-I1F.out	1	VIOLADA	7	13835	VIOLADA	7	112577		SIM	SIM
+ctrl-nosym-livre-sem	I1P	SemFalha	r3	3/5/2/2	prop-livre-sem-w1/r3-I1P.out	1	VIOLADA	4	122	VIOLADA	4	349		SIM	SIM
+ctrl-nosym-particao	I1F	SoParticao	r3	3/5/2/2	prop-particao-w1/r3-I1F.out	1	VIOLADA	4	162	VIOLADA	4	478		SIM	SIM
+ctrl-nosym-particao	I1M	SoParticao	r3	3/5/2/2	prop-particao-w1/r3-I1M.out	1	VIOLADA	4	162	VIOLADA	4	478		SIM	SIM
+ctrl-nosym-particao	I2Fa	SoParticao	r3	3/5/2/2	prop-particao-w1/r3-I2Fa.out	1	VIOLADA	4	363	VIOLADA	4	2608		SIM	SIM
+ctrl-nosym-particao	I2Fb	SoParticao	r3	3/5/2/2	prop-particao-w1/r3-I2Fb.out	1	VIOLADA	3	21	VIOLADA	3	134		SIM	SIM
+ctrl-nosym-particao	I4F	SoParticao	r3	3/5/2/2	prop-particao-w1/r3-I4F.out	1	VIOLADA	4	162	VIOLADA	4	478		SIM	SIM
+ctrl-nosym-particao	I4Fp	SoParticao	r3	3/5/2/2	prop-particao-w1/r3-I4Fp.out	1	VIOLADA	5	554	VIOLADA	5	3508		SIM	SIM
+ctrl-nosym-particao	I4M	SoParticao	r3	3/5/2/2	prop-particao-w1/r3-I4M.out	1	VIOLADA	4	162	VIOLADA	4	478		SIM	SIM
+ctrl-nosym-particao	I4Mp	SoParticao	r3	3/5/2/2	ctrl-sym-particao-w1/r3-I4Mp.out	1	VIOLADA	5	1423	VIOLADA	5	5073		SIM	SIM
+ctrl-nosym-queda	I2Fb	SoQueda	r3	3/5/2/2	prop-queda-w1/r3-I2Fb.out	1	VIOLADA	3	18	VIOLADA	3	113		SIM	SIM
+ctrl-nosym-queda	I4F	SoQueda	r3	3/5/2/2	prop-queda-w1/r3-I4F.out	1	VIOLADA	5	440	VIOLADA	5	2816		SIM	SIM
+ctrl-nosym-queda	I4Fp	SoQueda	r3	3/5/2/2	prop-queda-w1/r3-I4Fp.out	1	VIOLADA	5	440	VIOLADA	5	2816		SIM	SIM
+ctrl-nosym-queda-c2r3	I1F	SoQueda	r2	2/3/2/2	prop-queda-c2r3/r2-I1F.out	4	FECHOU		15690	FECHOU		51840	3.30	SIM	
+ctrl-nosym-sem	I2Fb	SemFalha	r3	3/5/2/2	prop-sem-w1/r3-I2Fb.out	1	VIOLADA	3	15	VIOLADA	3	92		SIM	SIM
+ctrl-nosym-sem	I4F	SemFalha	r3	3/5/2/2	prop-sem-w1/r3-I4F.out	1	VIOLADA	5	330	VIOLADA	5	2174		SIM	SIM
+ctrl-nosym-sem	I4Fp	SemFalha	r3	3/5/2/2	prop-sem-w1/r3-I4Fp.out	1	VIOLADA	5	330	VIOLADA	5	2174		SIM	SIM
+ctrl-nosym-sem-c2r3-I1F	I1F	SemFalha	r3	2/3/2/2	prop-sem-c2r3/r3-I1F.out	4	FECHOU		1627731	FECHOU		17315129	10.64	SIM	
+ctrl-nosym-sem-c2r3-I1P	I1P	SemFalha	r3	2/3/2/2	prop-sem-c2r3/r3-I1P.out	6	FECHOU		1627731	FECHOU		17315129	10.64	SIM	
+ctrl-nosym-sem-r2	I1F	SemFalha	r2	3/5/2/2	prop-sem/r2-I1F.out	4	FECHOU		2968799	FECHOU		11115255	3.74	SIM	

@@ -44,8 +44,18 @@ public class IdentityState implements Serializable {
         return new IdentityState(identidade, contadorFalhas, Status.BLOCKED, versao + 1, agora);
     }
 
+    /**
+     * O7, desbloqueio: remove a marca de bloqueio e ZERA o contador de falhas.
+     * Efeito exigido por Metodologia.tex (O7): "beta'(u).marca = Free,
+     * beta'(u).counter = 0" -- mesmo efeito que {@code spec/SessionStore.tla},
+     * ação {@code Unblock}, sempre implementou. Antes desta correção,
+     * {@code desbloquear()} preservava {@code contadorFalhas}, divergindo da
+     * especificação formal e da monografia (achado de validação registrado em
+     * docs/registro-de-problemas.md, 2026-10-02, item 4.2 do documento de
+     * validação do Senior).
+     */
     public IdentityState desbloquear(Instant agora) {
-        return new IdentityState(identidade, contadorFalhas, Status.OPEN, versao + 1, agora);
+        return new IdentityState(identidade, 0L, Status.OPEN, versao + 1, agora);
     }
 
     public String identidade() { return identidade; }

@@ -1,0 +1,11 @@
+== 2026-11-06T06:09:31.586Z inicio f2-sonda semente=610600 duracao_s=200 corte_apos_medicao_s=15 corte_dur_s=80 jar_sha256=19f30b45fdac51ba03c91c4527d76c33e06b0bf9db06d010e78229102446b39f base=6307230 xml_sha256=a7b18f2dac46095e468c43ae97c4cc51e411cbb54875606e898a20b6a7227c85 jgroups_sha256=dd79343070cf9107571de238851d1117255ebdb1c7887075e23d76638d7bcf14
+== 2026-11-06T06:09:49.245Z cluster com 3 nos
+== 2026-11-06T06:10:08.948Z cria-caches rc=0
+== 2026-11-06T06:10:11.363Z ancora (linha Warm-up vista): Warm-up ate +30s; medicao a partir de +39s; total 200s
+== 2026-11-06T06:11:05.449Z corte-inicio isn3
+== 2026-11-06T06:11:09.058Z corte-fim isn3 rc=0
+== 2026-11-06T06:12:30.976Z cura-inicio isn3
+== 2026-11-06T06:12:33.244Z cura-fim isn3 rc=0
+== 2026-11-06T06:13:45.042Z carga exit=0
+== 2026-11-06T06:13:59.710Z fim f2-sonda (cluster descido)
+rc=0

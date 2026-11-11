@@ -1,0 +1,9 @@
+Copias byte a byte de tres arquivos brutos do gate S7 (04 e 05/11), usados pelo teste 7 de
+analysis/test_h4.py (recalibracao da C3 §3.4). Origem: worktree wt-gate-v4, commit f3dc0b0,
+diretorio runs/vm-s7-2026-11-04/. Nao editar: o teste confere o SHA-256 de cada copia contra esta lista.
+
+Formato da lista: <sha256 de origem>  <copia>  <origem>  <ordem dos blocos separados por '|'>
+
+3ae4d0be629b9ff670856b0894c9e886b977a218d3adc452da59a97ed418fa63  vs7r-psi-cpu-io-mem.txt  vm-20261104T232939Z/coleta-paralela-coordenador/psi.txt  cpu|io|memory
+a8934fcc06b15a1171eaeb56d34742c1da342f74273da99f4c7d5b5a8d54d2a8  s7t-psi-io-cpu.txt  vm-20261105T012458Z/coleta-paralela-coordenador/psi.txt  io|cpu
+3e4cb77f23e60d96fb51b0b1c914ec127de37fae8ef5f7aae50c51c8c18736bf  diag2-psi-io-diskstats.txt  diag-io-2026-11-05/vm-psi-diskstats-depois-mitigacoes.txt  io|diskstats

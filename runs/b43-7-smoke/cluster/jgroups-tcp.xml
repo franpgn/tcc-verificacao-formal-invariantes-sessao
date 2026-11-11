@@ -1,0 +1,88 @@
+<config xmlns="urn:org:jgroups"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="urn:org:jgroups http://www.jgroups.org/schema/jgroups-5.3.xsd">
+   <!--
+     Stack TCP do cluster do TCC.
+
+     Derivado de default-configs/default-jgroups-tcp.xml do Infinispan
+     15.0.21.Final (infinispan-core-15.0.21.Final.jar). Unica alteracao
+     funcional: troca do discovery por multicast (MPING) por discovery
+     estatico unicast (TCPPING), porque o ambiente alvo (rede bridge do
+     Podman em WSL2) nao garante propagacao de multicast entre containers.
+
+     initial_hosts lista os 3 nos por nome de servico DNS da rede bridge
+     (isn1, isn2, isn3) na porta de transporte TCP 7800. num_initial_members=3
+     informa ao GMS quantos membros aguardar antes de eleger o coordenador,
+     o que torna a formacao do cluster size=3 deterministica.
+
+     bind_addr usa o simbolo SITE_LOCAL, que o JGroups resolve para o
+     endereco IPv4 privado da interface do container na rede bridge do
+     Podman (o literal 0.0.0.0 nao e aceito como bind_addr no TCP). O
+     bind_port e 7800.
+   -->
+   <TCP bind_addr="${jgroups.bind.address,jgroups.tcp.address:SITE_LOCAL}"
+        bind_port="${jgroups.bind.port,jgroups.tcp.port:7800}"
+        port_range="${jgroups.port_range:0}"
+
+        diag.enabled="${jgroups.diag.enabled:false}"
+        diag.enable_tcp="${jgroups.diag.enable_tcp:true}"
+        diag.enable_udp="${jgroups.diag.enable_udp:false}"
+
+        thread_naming_pattern="pl"
+        send_buf_size="640k"
+        sock_conn_timeout="300"
+        linger="${jgroups.tcp.linger:-1}"
+        tcp_nodelay="${jgroups.tcp_nodelay:true}"
+        bundler_type="${jgroups.bundler.type:transfer-queue}"
+        bundler.max_size="${jgroups.bundler.max_size:64000}"
+        non_blocking_sends="${jgroups.non_blocking_sends:false}"
+
+        thread_pool.min_threads="${jgroups.thread_pool.min_threads:0}"
+        thread_pool.max_threads="${jgroups.thread_pool.max_threads:200}"
+        thread_pool.keep_alive_time="60000"
+        thread_pool.thread_dumps_enabled="${jgroups.thread_dumps_enabled:false}"
+
+        use_virtual_threads="${jgroups.thread.virtual,org.infinispan.threads.virtual:false}"
+   />
+   <RED/>
+   <!--
+     num_initial_members foi removido de TCPPING no JGroups 5.x (a contagem
+     passou a ser derivada de initial_hosts). O numero de membros iniciais
+     esperados e governado pelo GMS via os 3 hosts estaticos abaixo.
+   -->
+   <TCPPING initial_hosts="${jgroups.tcpping.initial_hosts:isn1[7800],isn2[7800],isn3[7800]}"
+            port_range="0"
+   />
+   <MERGE3 min_interval="10000"
+           max_interval="30000"
+   />
+   <FD_SOCK2 offset="${jgroups.fd.port-offset:50000}"/>
+   <FD_ALL3/>
+   <VERIFY_SUSPECT2 timeout="1000"/>
+   <pbcast.NAKACK2 use_mcast_xmit="false"
+                   xmit_interval="200"
+                   xmit_table_num_rows="50"
+                   xmit_table_msgs_per_row="1024"
+                   xmit_table_max_compaction_time="30000"
+                   resend_last_seqno="true"
+   />
+   <UNICAST3 conn_close_timeout="5000"
+             xmit_interval="200"
+             xmit_table_num_rows="50"
+             xmit_table_msgs_per_row="1024"
+             xmit_table_max_compaction_time="30000"
+   />
+   <pbcast.STABLE desired_avg_gossip="5000"
+                  max_bytes="1M"
+   />
+   <pbcast.GMS print_local_addr="false"
+               join_timeout="${jgroups.join_timeout:2000}"
+   />
+   <UFC max_credits="${jgroups.max_credits:4m}"
+        min_threshold="0.40"
+   />
+   <MFC max_credits="${jgroups.max_credits:4m}"
+        min_threshold="0.40"
+   />
+   <FRAG4 frag_size="${jgroups.frag_size:60000}"/>
+</config>

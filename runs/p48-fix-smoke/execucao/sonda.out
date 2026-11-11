@@ -1,0 +1,29 @@
+2026-11-06T05:58:49.505339800Z T0 principal depois da carga inicial cache=sessions-async topology_id=-1585909148 12901=42 12902=43 12903=43
+2026-11-06T05:58:50.228159600Z T0 principal depois da carga inicial cache=counters-async topology_id=1821275022 12901=42 12902=43 12903=43
+2026-11-06T05:58:50.228159600Z aguardando o F1 (gatilho f1-feito); nenhuma operacao no principal ate la
+2026-11-06T06:00:11.432558800Z T1 principal depois do F1, sem operacao cache=sessions-async topology_id=-1585909148 12901=42 12902=43 12903=43
+2026-11-06T06:00:11.452581100Z T2 cliente novo (a topologia de verdade) cache=sessions-async topology_id=1465999904 12901=42 12902=43 12903=43
+2026-11-06T06:00:11.452581100Z T1 principal depois do F1, sem operacao cache=counters-async topology_id=1821275022 12901=42 12902=43 12903=43
+2026-11-06T06:00:11.466201400Z T2 cliente novo (a topologia de verdade) cache=counters-async topology_id=1043923152 12901=42 12902=43 12903=43
+2026-11-06T06:00:11.467809900Z ANTES cache=sessions-async segmentos iguais por no: false
+2026-11-06T06:00:11.590352400Z ANTES cache=sessions-async no=12901 chaves do no=1293 perde=155 (12.0%) acrescenta=159 (12.3%)
+2026-11-06T06:00:11.679912300Z ANTES cache=sessions-async no=12902 chaves do no=1357 perde=309 (22.8%) acrescenta=315 (23.2%)
+2026-11-06T06:00:11.789877700Z ANTES cache=sessions-async no=12903 chaves do no=1350 perde=228 (16.9%) acrescenta=218 (16.1%)
+2026-11-06T06:00:11.793622300Z ANTES cache=counters-async segmentos iguais por no: false
+2026-11-06T06:00:11.861070800Z ANTES cache=counters-async no=12901 chaves do no=1293 perde=155 (12.0%) acrescenta=159 (12.3%)
+2026-11-06T06:00:11.931284400Z ANTES cache=counters-async no=12902 chaves do no=1357 perde=309 (22.8%) acrescenta=315 (23.2%)
+2026-11-06T06:00:11.998318800Z ANTES cache=counters-async no=12903 chaves do no=1350 perde=228 (16.9%) acrescenta=218 (16.1%)
+2026-11-06T06:00:11.998318800Z CORRECAO: AtualizacaoTopologia.doPrincipal(rcm, caches, System.out::println).atualizar()
+2026-11-06T06:00:12.091442400Z   Topologia do principal: cache=sessions-async topology_id -1585909148 -> 1465999904 (P-48)
+2026-11-06T06:00:12.092959Z   Topologia do principal: cache=counters-async topology_id 1821275022 -> 1043923152 (P-48)
+2026-11-06T06:00:12.092959Z T3 principal depois da atualizacao cache=sessions-async topology_id=1465999904 12901=42 12902=43 12903=43
+2026-11-06T06:00:12.094471700Z T3 principal depois da atualizacao cache=counters-async topology_id=1043923152 12901=42 12902=43 12903=43
+2026-11-06T06:00:12.094471700Z DEPOIS cache=sessions-async segmentos iguais por no: true
+2026-11-06T06:00:12.155184900Z DEPOIS cache=sessions-async no=12901 chaves do no=1293 perde=0 (0.0%) acrescenta=0 (0.0%)
+2026-11-06T06:00:12.233087700Z DEPOIS cache=sessions-async no=12902 chaves do no=1357 perde=0 (0.0%) acrescenta=0 (0.0%)
+2026-11-06T06:00:12.288305500Z DEPOIS cache=sessions-async no=12903 chaves do no=1350 perde=0 (0.0%) acrescenta=0 (0.0%)
+2026-11-06T06:00:12.293112600Z DEPOIS cache=counters-async segmentos iguais por no: true
+2026-11-06T06:00:12.328362200Z DEPOIS cache=counters-async no=12901 chaves do no=1293 perde=0 (0.0%) acrescenta=0 (0.0%)
+2026-11-06T06:00:12.386778900Z DEPOIS cache=counters-async no=12902 chaves do no=1357 perde=0 (0.0%) acrescenta=0 (0.0%)
+2026-11-06T06:00:12.438453300Z DEPOIS cache=counters-async no=12903 chaves do no=1350 perde=0 (0.0%) acrescenta=0 (0.0%)
+2026-11-06T06:00:12.441744300Z RESULTADO erro total depois da correcao (chaves perdidas + acrescentadas, 3 nos x 2 caches) = 0

@@ -1,0 +1,126 @@
+== 1. Vereditos
+   ('ASYNC-F1', 'A', 'ACEITA') 3
+   ('ASYNC-F1', 'A', 'DESCARTADA-INFRA') 2
+   ('ASYNC-F1', 'B', 'ACEITA') 5
+   ('ASYNC-F1', 'B', 'DESCARTADA-INFRA') 3
+   ('ASYNC-F2', 'AL', 'ACEITA') 12
+   ('ASYNC-F2', 'AO', 'ACEITA') 12
+   ('ASYNC-F2', 'PL', 'ACEITA') 12
+   ('ASYNC-F2', 'PO', 'ACEITA') 12
+   ('ASYNC-F3', 'A', 'ACEITA') 4
+   ('ASYNC-F3', 'B', 'ACEITA') 4
+   ('ASYNC-F4', 'A', 'ACEITA') 4
+   ('ASYNC-F4', 'A', 'DESCARTADA-INFRA') 1
+   ('ASYNC-F4', 'B', 'ACEITA') 4
+   ('ASYNC-none', 'A', 'ACEITA') 4
+   ('ASYNC-none', 'B', 'ACEITA') 4
+   (None, None, 'PULADA') 4
+   ACEITA: 80 de 90
+
+== 2. Nucleo: regras, transicoes e primeira entrada em CONSERVADOR (ACEITA)
+   ('ASYNC-F1', 'A') execucoes 3 | regras {'NENHUMA': 133, 'R2': 3, 'R3': 53} | transicoes [1, 1, 1]
+      entrada (s desde o start; sem falha: desde a origem do controlador): min 2.44; mediana 2.46; max 2.46; n 3 | motivos {'TOPOLOGIA': 1, 'TOPOLOGIA+ERRO+LATENCIA': 2} | janelas em CONSERVADOR 62 a 62
+   ('ASYNC-F1', 'B') execucoes 5 | regras {'NENHUMA': 221, 'R2': 5, 'R3': 89} | transicoes [1, 1, 1, 1, 1]
+      entrada (s desde o start; sem falha: desde a origem do controlador): min 2.43; mediana 2.44; max 2.45; n 5 | motivos {'TOPOLOGIA+ERRO': 1, 'TOPOLOGIA': 1, 'TOPOLOGIA+ERRO+LATENCIA': 3} | janelas em CONSERVADOR 62 a 62
+   ('ASYNC-F2', 'AL') execucoes 12 | regras {'NENHUMA': 338, 'R2': 12, 'R3': 404, 'R1': 3} | transicoes [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
+      entrada (s desde o start; sem falha: desde a origem do controlador): min 2.10; mediana 7.81; max 10.12; n 12 | motivos {'DEFASAGEM+ERRO+LATENCIA': 10, 'DEFASAGEM': 1, 'LATENCIA': 1} | janelas em CONSERVADOR 60 a 62
+   ('ASYNC-F2', 'AO') execucoes 12 | regras {'NENHUMA': 338, 'R2': 12, 'R3': 401, 'R1': 5} | transicoes [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
+      entrada (s desde o start; sem falha: desde a origem do controlador): min 1.89; mediana 7.86; max 10.04; n 12 | motivos {'LATENCIA': 3, 'DEFASAGEM+ERRO+LATENCIA': 6, 'DEFASAGEM': 3} | janelas em CONSERVADOR 60 a 62
+   ('ASYNC-F2', 'PL') execucoes 12 | regras {'NENHUMA': 337, 'R2': 12, 'R3': 407} | transicoes [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
+      entrada (s desde o start; sem falha: desde a origem do controlador): min 1.89; mediana 7.85; max 10.09; n 12 | motivos {'DEFASAGEM+ERRO+LATENCIA': 5, 'DEFASAGEM': 3, 'LATENCIA': 4} | janelas em CONSERVADOR 60 a 62
+   ('ASYNC-F2', 'PO') execucoes 12 | regras {'NENHUMA': 342, 'R2': 12, 'R3': 399, 'R1': 4} | transicoes [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
+      entrada (s desde o start; sem falha: desde a origem do controlador): min 1.72; mediana 9.74; max 10.05; n 12 | motivos {'DEFASAGEM+ERRO+LATENCIA': 8, 'DEFASAGEM': 2, 'DEFASAGEM+ERRO': 1, 'LATENCIA': 1} | janelas em CONSERVADOR 60 a 62
+   ('ASYNC-F3', 'A') execucoes 4 | regras {'NENHUMA': 8, 'R2': 4, 'R3': 244} | transicoes [1, 1, 1, 1]
+      entrada (s desde o start; sem falha: desde a origem do controlador): min 6.37; mediana 6.38; max 6.51; n 4 | motivos {'DEFASAGEM+LATENCIA': 4} | janelas em CONSERVADOR 62 a 62
+   ('ASYNC-F3', 'B') execucoes 4 | regras {'NENHUMA': 7, 'R2': 4, 'R3': 245} | transicoes [1, 1, 1, 1]
+      entrada (s desde o start; sem falha: desde a origem do controlador): min 2.51; mediana 6.55; max 6.56; n 4 | motivos {'DEFASAGEM+LATENCIA': 3, 'LATENCIA': 1} | janelas em CONSERVADOR 62 a 63
+   ('ASYNC-F4', 'A') execucoes 4 | regras {'NENHUMA': 163, 'R2': 4, 'R3': 85} | transicoes [1, 1, 1, 1]
+      entrada (s desde o start; sem falha: desde a origem do controlador): min 5.81; mediana 5.95; max 9.81; n 4 | motivos {'LATENCIA': 4} | janelas em CONSERVADOR 60 a 61
+   ('ASYNC-F4', 'B') execucoes 4 | regras {'NENHUMA': 163, 'R2': 4, 'R3': 85} | transicoes [1, 1, 1, 1]
+      entrada (s desde o start; sem falha: desde a origem do controlador): min 5.95; mediana 5.98; max 9.93; n 4 | motivos {'LATENCIA': 4} | janelas em CONSERVADOR 60 a 61
+   ('ASYNC-none', 'A') execucoes 4 | regras {'NENHUMA': 252} | transicoes [0, 0, 0, 0]
+      entrada (s desde o start; sem falha: desde a origem do controlador): sem dados | motivos {} | janelas em CONSERVADOR 0 a 0
+   ('ASYNC-none', 'B') execucoes 4 | regras {'NENHUMA': 248, 'R2': 2, 'R3': 3} | transicoes [1, 1, 0, 0]
+      entrada (s desde o start; sem falha: desde a origem do controlador): min 8.00; mediana 22.00; max 36.00; n 2 | motivos {'LATENCIA': 2} | janelas em CONSERVADOR 0 a 62
+
+== 3. Linhas 'politica' (ACEITA)
+   ('ASYNC-F1', 'A') {'P0:sem-assinatura': 141, 'P0:p2-desabilitada': 45}
+   ('ASYNC-F1', 'B') {'P0:sem-assinatura': 235, 'P0:p2-desabilitada': 75}
+   ('ASYNC-F2', 'AL') {'P1:isolar-suspeito': 12, 'P0:cota-p1-esgotada': 102, 'P0:desfazer-alvo-sozinho': 12, 'P0:sem-assinatura': 602}
+   ('ASYNC-F2', 'AO') {'P0:sem-assinatura': 603, 'P1:isolar-suspeito': 12, 'P0:cota-p1-esgotada': 102, 'P0:desfazer-alvo-sozinho': 12}
+   ('ASYNC-F2', 'PL') {'P1:isolar-suspeito': 12, 'P0:cota-p1-esgotada': 103, 'P0:sem-assinatura': 603, 'P0:desfazer-alvo-sozinho': 12}
+   ('ASYNC-F2', 'PO') {'P1:isolar-suspeito': 12, 'P0:cota-p1-esgotada': 101, 'P0:desfazer-alvo-sozinho': 12, 'P0:sem-assinatura': 602}
+   ('ASYNC-F3', 'A') {'P0:sem-assinatura': 248}
+   ('ASYNC-F3', 'B') {'P0:sem-assinatura': 249}
+   ('ASYNC-F4', 'A') {'P0:sem-assinatura': 243}
+   ('ASYNC-F4', 'B') {'P0:sem-assinatura': 243}
+   ('ASYNC-none', 'A') {}
+   ('ASYNC-none', 'B') {'P0:sem-assinatura': 117}
+
+== 4. P1 e AC-7 na F2
+   bracos ('PL', 'AL')
+     acoes (operacao, resultado): {('APLICAR', 'APLICADA'): 24, ('REVERTER', 'APLICADA'): 24}
+     decisao P1: min 6.14; mediana 8.09; max 10.39; n 24
+     1a ISPN000306 vista pelo cliente: min 41.70; mediana 43.72; max 46.25; n 24
+     pedido do AC-7: min 6.14; mediana 8.09; max 10.39; n 24
+     1a ISPN000306 menos pedido do AC-7: min 31.55; mediana 36.12; max 38.46; n 24
+     efeito_ms: min 6.00; mediana 34.00; max 42.00; n 24 | guarda: {'limpa': 24}
+     duracao do aplicar (ms): min 1001.77; mediana 1013.23; max 1024.94; n 24
+     reverter: min 45.77; mediana 46.37; max 50.40; n 24 | rotas: {'alvo-sozinho': 23, 'maioria@127.0.0.1:11222+alvo': 1} | POST anterior (codigo, s): {('500', 15): 24}
+     reverter menos 1a ISPN000306: min 2.02; mediana 3.89; max 5.87; n 24
+     tempo ativo (reverter - aplicar, s): min 35.99; mediana 40.00; max 44.00; n 24
+     eventos descontados sob acao: min 133.00; mediana 209.50; max 248.00; n 24 | guarda_ac7_desfazeres: {0: 24}
+   bracos ('PO', 'AO')
+     acoes (operacao, resultado): {('APLICAR', 'PREVISTA'): 24, ('REVERTER', 'PREVISTA'): 24}
+     decisao P1: min 6.03; mediana 9.93; max 10.34; n 24
+     1a ISPN000306 vista pelo cliente: min 41.83; mediana 43.83; max 44.95; n 24
+
+== 5. isn3 de +50 s ate t_fusao_ns (F2, eventos do rep-001.csv)
+   exec-0000-ASYNC-F2-PO PO erros 392 sucessos 17 logouts_confirmados 0 fusao_desde_start 140.2 s
+   exec-0001-ASYNC-F2-AO AO erros 423 sucessos 3 logouts_confirmados 0 fusao_desde_start 140.2 s
+   exec-0002-ASYNC-F2-PL PL erros 401 sucessos 16 logouts_confirmados 0 fusao_desde_start 142.2 s
+   exec-0003-ASYNC-F2-AL AL erros 397 sucessos 4 logouts_confirmados 0 fusao_desde_start 140.2 s
+   exec-0008-ASYNC-F2-PO PO erros 496 sucessos 16 logouts_confirmados 0 fusao_desde_start 141.8 s
+   exec-0009-ASYNC-F2-PL PL erros 451 sucessos 10 logouts_confirmados 0 fusao_desde_start 142.2 s
+   exec-0010-ASYNC-F2-AO AO erros 414 sucessos 16 logouts_confirmados 0 fusao_desde_start 142.0 s
+   exec-0011-ASYNC-F2-AL AL erros 417 sucessos 3 logouts_confirmados 0 fusao_desde_start 142.2 s
+   exec-0020-ASYNC-F2-PO PO erros 449 sucessos 13 logouts_confirmados 0 fusao_desde_start 140.2 s
+   exec-0021-ASYNC-F2-AL AL erros 372 sucessos 5 logouts_confirmados 0 fusao_desde_start 140.3 s
+   exec-0022-ASYNC-F2-AO AO erros 459 sucessos 23 logouts_confirmados 0 fusao_desde_start 142.3 s
+   exec-0023-ASYNC-F2-PL PL erros 402 sucessos 6 logouts_confirmados 0 fusao_desde_start 140.2 s
+   exec-0024-ASYNC-F2-PO PO erros 484 sucessos 1 logouts_confirmados 0 fusao_desde_start 142.3 s
+   exec-0025-ASYNC-F2-AO AO erros 495 sucessos 6 logouts_confirmados 0 fusao_desde_start 140.1 s
+   exec-0026-ASYNC-F2-AL AL erros 494 sucessos 4 logouts_confirmados 0 fusao_desde_start 140.3 s
+   exec-0027-ASYNC-F2-PL PL erros 481 sucessos 8 logouts_confirmados 0 fusao_desde_start 140.3 s
+   exec-0032-ASYNC-F2-PL PL erros 493 sucessos 0 logouts_confirmados 0 fusao_desde_start 140.1 s
+   exec-0033-ASYNC-F2-AL AL erros 502 sucessos 6 logouts_confirmados 0 fusao_desde_start 140.4 s
+   exec-0034-ASYNC-F2-PO PO erros 460 sucessos 3 logouts_confirmados 0 fusao_desde_start 140.4 s
+   exec-0035-ASYNC-F2-AO AO erros 427 sucessos 24 logouts_confirmados 1 fusao_desde_start 140.2 s
+   exec-0036-ASYNC-F2-AO AO erros 395 sucessos 1 logouts_confirmados 0 fusao_desde_start 140.3 s
+   exec-0037-ASYNC-F2-AL AL erros 0 sucessos 1180 logouts_confirmados 30 fusao_desde_start 141.8 s
+   exec-0038-ASYNC-F2-PL PL erros 400 sucessos 11 logouts_confirmados 0 fusao_desde_start 142.4 s
+   exec-0039-ASYNC-F2-PO PO erros 422 sucessos 3 logouts_confirmados 0 fusao_desde_start 140.3 s
+   exec-0040-ASYNC-F2-PO PO erros 370 sucessos 50 logouts_confirmados 0 fusao_desde_start 142.3 s
+   exec-0041-ASYNC-F2-PL PL erros 435 sucessos 26 logouts_confirmados 0 fusao_desde_start 142.2 s
+   exec-0042-ASYNC-F2-AO AO erros 381 sucessos 14 logouts_confirmados 0 fusao_desde_start 140.2 s
+   exec-0043-ASYNC-F2-AL AL erros 427 sucessos 0 logouts_confirmados 0 fusao_desde_start 140.3 s
+   exec-0044-ASYNC-F2-PO PO erros 509 sucessos 15 logouts_confirmados 0 fusao_desde_start 142.2 s
+   exec-0045-ASYNC-F2-AL AL erros 475 sucessos 0 logouts_confirmados 0 fusao_desde_start 140.4 s
+   exec-0046-ASYNC-F2-PL PL erros 441 sucessos 3 logouts_confirmados 0 fusao_desde_start 140.2 s
+   exec-0047-ASYNC-F2-AO AO erros 484 sucessos 21 logouts_confirmados 0 fusao_desde_start 142.3 s
+   exec-0048-ASYNC-F2-PO PO erros 386 sucessos 4 logouts_confirmados 0 fusao_desde_start 140.2 s
+   exec-0049-ASYNC-F2-AL AL erros 426 sucessos 3 logouts_confirmados 0 fusao_desde_start 140.2 s
+   exec-0050-ASYNC-F2-PL PL erros 383 sucessos 2 logouts_confirmados 0 fusao_desde_start 140.1 s
+   exec-0051-ASYNC-F2-AO AO erros 400 sucessos 20 logouts_confirmados 0 fusao_desde_start 142.3 s
+   exec-0052-ASYNC-F2-AL AL erros 366 sucessos 14 logouts_confirmados 0 fusao_desde_start 142.2 s
+   exec-0053-ASYNC-F2-PO PO erros 479 sucessos 6 logouts_confirmados 0 fusao_desde_start 142.3 s
+   exec-0054-ASYNC-F2-AO AO erros 390 sucessos 0 logouts_confirmados 0 fusao_desde_start 140.3 s
+   exec-0055-ASYNC-F2-PL PL erros 364 sucessos 1 logouts_confirmados 0 fusao_desde_start 140.2 s
+   exec-0056-ASYNC-F2-AL AL erros 486 sucessos 5 logouts_confirmados 0 fusao_desde_start 140.4 s
+   exec-0057-ASYNC-F2-AO AO erros 458 sucessos 6 logouts_confirmados 0 fusao_desde_start 140.3 s
+   exec-0058-ASYNC-F2-PL PL erros 468 sucessos 9 logouts_confirmados 0 fusao_desde_start 142.4 s
+   exec-0059-ASYNC-F2-PO PO erros 477 sucessos 38 logouts_confirmados 4 fusao_desde_start 140.4 s
+   exec-0060-ASYNC-F2-AO AO erros 467 sucessos 11 logouts_confirmados 0 fusao_desde_start 140.2 s
+   exec-0061-ASYNC-F2-AL AL erros 399 sucessos 18 logouts_confirmados 0 fusao_desde_start 140.4 s
+   exec-0062-ASYNC-F2-PO PO erros 399 sucessos 6 logouts_confirmados 0 fusao_desde_start 140.0 s
+   exec-0063-ASYNC-F2-PL PL erros 440 sucessos 2 logouts_confirmados 0 fusao_desde_start 140.2 s

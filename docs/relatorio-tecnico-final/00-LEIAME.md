@@ -121,7 +121,17 @@ texto sugerido.
 | ConclusoesParciais :107, :109 | cronograma por cumprir | cronograma executado (`tab-cronograma-executado`) | 07 |
 | ApPlanoTCC2 :64 (APX-15) | desempate pendente | concluído em 06/11 | 03 |
 
-## 5. Decisões pendentes do autor
+## 5. Decisões do autor (11/11)
+
+**Respostas do autor em 11/11:**
+1. **Especificação TLA+ final:** vai ao `main` no fechamento do GitHub.
+2. **Nova medição de referência:** relatar como **parcial**, nas revisões e limitações, sem usá-la como
+   resultado.
+3. **Perguntas operacionais** da seção 1.2: **não usar** no texto.
+4. **Cópia dos brutos:** o autor copia `dados-vm/` para outro meio, e o coordenador confere pela lista
+   `dados-vm/MANIFEST-COPIA-20261111.sha256`.
+
+Os itens abaixo são as perguntas como foram feitas, mantidas para registro.
 
 1. **Especificação TLA+ final no `main`.** A versão com o desempate (commit `a2ce4c9`, branch
    `fix/b45-desempate-ts`) e a variante de fusão `MesclarJoin` (branch `feature/tla-mesclar-join`) estão fora da

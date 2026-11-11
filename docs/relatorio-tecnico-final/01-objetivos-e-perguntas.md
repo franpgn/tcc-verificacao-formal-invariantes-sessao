@@ -35,8 +35,11 @@ executado" é o que o Escritor pode afirmar; a coluna "Ressalva" é o que precis
 
 O texto tem uma questão central (`Introducao.tex:21`) e sete questões de mapeamento (`Metodologia.tex:16-36`, QM1 a
 QM7), que são da revisão da literatura. A parte prática não declarou perguntas numeradas. Ela respondeu à questão
-central por quatro perguntas operacionais, implícitas nos pré-registros. As formulações abaixo são deste relatório; o
-Escritor pode usá-las ou não, mas cada uma corresponde a um conjunto de execuções e a uma regra de decisão.
+central por quatro perguntas operacionais, implícitas nos pré-registros. As formulações abaixo são deste relatório.
+
+> **Decisão do autor (11/11): estas perguntas NÃO entram no texto da monografia.** O texto fica com o objetivo
+> geral, os objetivos específicos e as hipóteses já existentes. As perguntas servem só como mapa de leitura deste
+> relatório: cada uma corresponde a um conjunto de execuções e a uma regra de decisão.
 
 1. **Pergunta formal.** Quais invariantes de sessão o modelo do protocolo viola, sob quais falhas, e por qual
    mecanismo? Respondida pelo TLC (capítulo 3): sem falha e com queda, a irreversibilidade por réplica (I1F) não foi
@@ -341,7 +344,7 @@ objetivo, execução e ressalva. É a seção 1.1 condensada.
 | Tema | O que o texto diz (arquivo:linha) | Situação | O que fazer |
 |---|---|---|---|
 | Objetivo geral e específicos | `Introducao.tex:42` e `:49-55` | correto como objetivo | manter; acrescentar onde for preciso a leitura de (4) e (5) da seção 1.1 (o texto já faz isso para (3), (4) e (5) em `Desenvolvimento.tex:224`) |
-| Questão central | `Introducao.tex:21` | correta | manter; se quiser perguntas operacionais, usar a seção 1.2 |
+| Questão central | `Introducao.tex:21` | correta | manter; as perguntas operacionais da seção 1.2 não entram no texto (decisão do autor de 11/11) |
 | Definição de V | `Metodologia.tex:219` (MET-62) e `:349` (MET-72): "soma das violações de I1, das de I4 e das de I2 classificadas como reais, por mil ações" | **desatualizado** | trocar por pares distintos (chave, invariante), três origens, `ReplayValidate` fora do denominador (seção 1.3.1). O capítulo 5 (5.13) aponta o mesmo ponto |
 | Instrumentos de observação | ausentes; o texto só tem o auditor (`Metodologia.tex:219`, `Desenvolvimento.tex:14`) | **novo** | descrever sonda de *replay* e varredura final como instrumentos do método (capítulo 6) e as duas formas de I1 |
 | Número de blocos e arranjos | "oito blocos ... 2^8 = 256 arranjos ... k = 6" (`Metodologia.tex:347` e `:349`) | **desatualizado** | 12 blocos, 4096 arranjos; com Holm m = 2, k ≥ 7 para o primeiro efeito e k ≥ 6 para o segundo |

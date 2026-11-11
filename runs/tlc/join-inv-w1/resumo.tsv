@@ -1,0 +1,2 @@
+i1-particao-r3-I1F	58ecd38	MCSessionJoin	SpecSemeadaJoin	r3	SoParticao	3/5/2	I1F	invertida	S	1	VIOLADA	traco_de_4_estados	468	162	146	Initial,Logout,Particionar,MesclarJoin	2s
+i1-particao-r3-I1MJ	58ecd38	MCSessionJoin	SpecSemeadaJoin	r3	SoParticao	3/5/2	I1MJ	invertida	S	1	VIOLADA	traco_de_4_estados	468	162	146	Initial,Logout,Particionar,MesclarJoin	3s

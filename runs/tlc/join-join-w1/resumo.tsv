@@ -1,0 +1,6 @@
+j1-particao-r3-I1F	58ecd38	MCSessionJoin	SpecSemeadaJoin	r3	SoParticao	3/5/2	I1F	conteudo	S	1	SEM_VIOLACAO_ATE_AQUI	limite_de_tempo	18839424	3667251	2960845	-	301s
+j1-particao-r3-I1MJ	58ecd38	MCSessionJoin	SpecSemeadaJoin	r3	SoParticao	3/5/2	I1MJ	conteudo	S	1	SEM_VIOLACAO_ATE_AQUI	limite_de_tempo	10647963	2126772	1717314	-	301s
+j1-particao-r3-I4MJ	58ecd38	MCSessionJoin	SpecSemeadaJoin	r3	SoParticao	3/5/2	I4MJ	conteudo	S	1	VIOLADA	traco_de_5_estados	4562	1416	1267	Initial,Logout,Block,Particionar,MesclarJoin	2s
+j1-particao-r3-I4MpJ	58ecd38	MCSessionJoin	SpecSemeadaJoin	r3	SoParticao	3/5/2	I4MpJ	conteudo	S	1	VIOLADA	traco_de_5_estados	4562	1416	1267	Initial,Logout,Block,Particionar,MesclarJoin	2s
+j1-particao-r3-I2FaJ	58ecd38	MCSessionJoin	SpecSemeadaJoin	r3	SoParticao	3/5/2	I2FaJ	conteudo	S	1	VIOLADA	traco_de_4_estados	1096	363	325	Initial,Block,Particionar,MesclarJoin	1s
+j1-livre-particao-r3-MesclarPerdeChaveJ	58ecd38	MCSessionJoin	SpecJoin	r3	SoParticao	3/5/2	MesclarPerdeChaveJ	conteudo	S	1	SEM_VIOLACAO_ATE_AQUI	limite_de_tempo	11791854	2232602	1837128	-	301s

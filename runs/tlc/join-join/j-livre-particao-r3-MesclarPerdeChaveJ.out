@@ -1,0 +1,29 @@
+TLC2 Version 2.19 of 08 August 2024 (rev: 5a47802)
+Running breadth-first search Model-Checking with fp 49 and seed 7349896963238479626 with 4 workers on 20 cores with 2731MB heap and 64MB offheap memory [pid: 30872] (Windows 11 10.0 amd64, Oracle Corporation 17.0.2 x86_64, MSBDiskFPSet, DiskStateQueue).
+Parsing file C:\Users\Francesco\Development\tcc\wt-tla-join\spec\states\join\snap-58ecd38\MCSessionJoin.tla
+Parsing file C:\Users\Francesco\Development\tcc\wt-tla-join\spec\states\join\snap-58ecd38\MCSession.tla
+Parsing file C:\Users\Francesco\Development\tcc\wt-tla-join\spec\states\join\snap-58ecd38\SessionStore.tla
+Parsing file C:\Users\Francesco\Development\tcc\wt-tla-join\spec\states\join\jtmp\j-livre-particao-r3-MesclarPerdeChaveJ\TLC.tla
+Parsing file C:\Users\Francesco\Development\tcc\wt-tla-join\spec\states\join\jtmp\j-livre-particao-r3-MesclarPerdeChaveJ\Naturals.tla
+Parsing file C:\Users\Francesco\Development\tcc\wt-tla-join\spec\states\join\jtmp\j-livre-particao-r3-MesclarPerdeChaveJ\Sequences.tla
+Parsing file C:\Users\Francesco\Development\tcc\wt-tla-join\spec\states\join\jtmp\j-livre-particao-r3-MesclarPerdeChaveJ\FiniteSets.tla
+Semantic processing of module Naturals
+Semantic processing of module Sequences
+Semantic processing of module FiniteSets
+Semantic processing of module SessionStore
+Semantic processing of module TLC
+Semantic processing of module MCSession
+Semantic processing of module MCSessionJoin
+Starting... (2026-11-06 14:20:54)
+Computing initial states...
+Finished computing initial states: 1 distinct state generated at 2026-11-06 14:20:54.
+Progress(9) at 2026-11-06 14:20:57: 343,622 states generated (343,622 s/min), 74,727 distinct states found (74,727 ds/min), 63,356 states left on queue.
+Progress(11) at 2026-11-06 14:21:57: 6,093,497 states generated (5,749,875 s/min), 1,160,115 distinct states found (1,085,388 ds/min), 954,075 states left on queue.
+Progress(11) at 2026-11-06 14:23:05: 15,172,696 states generated (9,079,199 s/min), 2,801,300 distinct states found (1,641,185 ds/min), 2,287,589 states left on queue.
+Progress(11) at 2026-11-06 14:24:05: 23,441,270 states generated (8,268,574 s/min), 4,241,095 distinct states found (1,439,795 ds/min), 3,438,547 states left on queue.
+Progress(12) at 2026-11-06 14:25:05: 31,176,900 states generated (7,735,630 s/min), 5,527,383 distinct states found (1,286,288 ds/min), 4,456,676 states left on queue.
+Progress(12) at 2026-11-06 14:26:05: 39,135,685 states generated (7,958,785 s/min), 6,891,182 distinct states found (1,363,799 ds/min), 5,545,531 states left on queue.
+Progress(12) at 2026-11-06 14:27:05: 48,201,095 states generated (9,065,410 s/min), 8,358,511 distinct states found (1,467,329 ds/min), 6,698,447 states left on queue.
+Progress(12) at 2026-11-06 14:28:05: 58,191,499 states generated (9,990,404 s/min), 10,124,348 distinct states found (1,765,837 ds/min), 8,106,862 states left on queue.
+Progress(12) at 2026-11-06 14:29:05: 67,344,392 states generated (9,152,893 s/min), 11,623,813 distinct states found (1,499,465 ds/min), 9,302,774 states left on queue.
+Progress(12) at 2026-11-06 14:30:05: 75,802,141 states generated (8,457,749 s/min), 13,021,520 distinct states found (1,397,707 ds/min), 10,418,159 states left on queue.

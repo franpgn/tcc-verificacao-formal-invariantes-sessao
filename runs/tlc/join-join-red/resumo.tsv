@@ -1,0 +1,5 @@
+jr-particao-r2c2r3-I1MJ	58ecd38	MCSessionJoin	SpecSemeadaJoin	r2	SoParticao	2/3/2	I1MJ	conteudo	S	4	FECHOU	exaustivo	1308515	79224	0	-	10s
+jr-particao-r2c2r3-I1F	58ecd38	MCSessionJoin	SpecSemeadaJoin	r2	SoParticao	2/3/2	I1F	conteudo	S	4	FECHOU	exaustivo	1308515	79224	0	-	6s
+jr-livre-particao-r2c2r3-MesclarPerdeChaveJ	58ecd38	MCSessionJoin	SpecJoin	r2	SoParticao	2/3/2	MesclarPerdeChaveJ	conteudo	S	4	FECHOU	exaustivo	101971159	5210736	0	-	440s
+jr-particao-r2c2r3-I1MJ-inv	58ecd38	MCSessionJoin	SpecSemeadaJoin	r2	SoParticao	2/3/2	I1MJ	invertida	S	1	VIOLADA	traco_de_4_estados	264	78	63	Initial,Logout,Particionar,MesclarJoin	3s
+jx-particao-r2-I1F-I1MJ	682bc4b	MCSessionJoin	SpecSemeadaJoin	r2	SoParticao	3/5/2	I1F,I1MJ	conteudo	S	4	SEM_VIOLACAO_ATE_AQUI	limite_de_tempo	205708784	25801035	15100133	-	1206s

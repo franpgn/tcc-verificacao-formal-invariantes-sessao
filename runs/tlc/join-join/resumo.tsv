@@ -1,0 +1,3 @@
+j-particao-r3-I1F	58ecd38	MCSessionJoin	SpecSemeadaJoin	r3	SoParticao	3/5/2	I1F	conteudo	S	4	SEM_VIOLACAO_ATE_AQUI	limite_de_tempo	117309608	20458469	15790328	-	602s
+j-particao-r3-I1MJ	58ecd38	MCSessionJoin	SpecSemeadaJoin	r3	SoParticao	3/5/2	I1MJ	conteudo	S	4	SEM_VIOLACAO_ATE_AQUI	limite_de_tempo	55810253	10149316	7970555	-	600s
+j-livre-particao-r3-MesclarPerdeChaveJ	58ecd38	MCSessionJoin	SpecJoin	r3	SoParticao	3/5/2	MesclarPerdeChaveJ	conteudo	S	4	SEM_VIOLACAO_ATE_AQUI	limite_de_tempo	75802141	13021520	10418159	-	601s

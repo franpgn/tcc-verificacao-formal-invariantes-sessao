@@ -1,0 +1,13 @@
+id	jx-particao-r3c2r3-I1F-I1MJ
+rev	682bc4b
+modulo	MCSessionJoin
+spec	SpecSemeadaJoin
+ordem	conteudo
+workers	4
+timeout	2700
+coverage	5
+java	/c/Program Files/Java/jdk-17.0.2/bin/java.exe
+inicio	2026-11-06T14:51:54
+6555517911f228c1421a89a29f0ade6cf74980a4cd8482062a04fcb6c409c620 *./MCSession.tla
+a0913b45fca2789d738afc6d5a40c7b8c7efac1dc20a9af8a553eb14569dd8e8 *./MCSessionJoin.tla
+0d574db8183c10787b64585be53d80bb3dbc874730c3cc723f325d00657992a4 *./SessionStore.tla

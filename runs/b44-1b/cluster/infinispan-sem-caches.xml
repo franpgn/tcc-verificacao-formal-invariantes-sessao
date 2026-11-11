@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Configuração do cluster Infinispan para o TCC.
+  Caches 'sessions'/'counters' em DIST_SYNC (controle) e irmãos 'sessions-async'/
+  'counters-async' em DIST_ASYNC (alvo T1), B-42.1: numOwners=2, numSegments=64 e
+  partition-handling iguais nos quatro; statistics para captura por OpenMetrics.
+  O workload escolhe o par pela opção replication = sync|async (PerfilReplicacao.java);
+  ClusterXmlIrmaosTest falha se os irmãos divergirem em algo além de name/mode.
+-->
+<infinispan
+    xmlns="urn:infinispan:config:15.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="urn:infinispan:config:15.0 https://infinispan.org/schemas/infinispan-config-15.0.xsd">
+
+  <jgroups>
+    <stack-file name="cluster-stack" path="jgroups-tcp.xml"/>
+  </jgroups>
+
+  <cache-container name="default" statistics="true">
+    <transport cluster="cluster-tcc" stack="cluster-stack"/>
+    <!-- B-44.1b (contorno b do P-30): nenhum cache declarado aqui; os 4 caches sao criados pela REST
+         (scripts/cria-caches.sh) com a mesma configuracao do XML da base. -->
+  </cache-container>
+
+  <server xmlns="urn:infinispan:server:15.0">
+    <interfaces>
+      <interface name="public">
+        <inet-address value="${infinispan.bind.address:0.0.0.0}"/>
+      </interface>
+    </interfaces>
+    <socket-bindings default-interface="public" port-offset="${infinispan.socket.binding.port-offset:0}">
+      <socket-binding name="default" port="${infinispan.bind.port:11222}"/>
+    </socket-bindings>
+    <security>
+      <security-realms>
+        <security-realm name="default">
+          <properties-realm/>
+        </security-realm>
+      </security-realms>
+    </security>
+    <!--
+      O conector Hot Rod anuncia para o cliente um endereco externo
+      (external-host/external-port) em vez do IP interno do container
+      (10.89.x.x), que e inalcancavel a partir do host Windows/WSL2. Sem
+      isso, o cliente recebe a topologia com os IPs internos dos owners e
+      falha com ISPN004015 (Failed adding new server 10.89.x.x), gerando
+      ERROR_TRANSPORT em ~2/3 das chaves. Os valores sao parametrizados por
+      propriedade de sistema, definida por no no podman-compose.yml:
+        isn1 -> 127.0.0.1:11222, isn2 -> 127.0.0.1:11223, isn3 -> 127.0.0.1:11224
+    -->
+    <endpoints>
+      <endpoint socket-binding="default" security-realm="default">
+        <hotrod-connector
+            external-host="${infinispan.hotrod.external-host:127.0.0.1}"
+            external-port="${infinispan.hotrod.external-port:11222}"/>
+        <rest-connector/>
+      </endpoint>
+    </endpoints>
+  </server>
+</infinispan>

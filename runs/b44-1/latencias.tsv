@@ -1,0 +1,30 @@
+tipo	resultado	n	mediana_ms	min_ms	max_ms
+CLI alter cache	exit=0	6	2272.0	1647.0	3676.0
+CLI alter cache	exit=127	2	504.0	492.0	516.0
+CLI availability	exit=0	4	1861.5	1699.0	2123.0
+CLI availability caches	exit=0	1	2201.0	2201.0	2201.0
+CLI availability sessions	exit=0	1	2260.0	2260.0	2260.0
+CLI describe caches	exit=0	1	2208.0	2208.0	2208.0
+CLI rebalance enable	exit=0	2	2205.5	2161.0	2250.0
+GET /rest/v2/caches/sessions	200	1	18.2	18.2	18.2
+GET /rest/v2/container	200	9	14.3	9.6	509.2
+GET action=config	200	4	12.7	9.4	75.7
+GET action=distribution	200	6	19.5	10.4	508.0
+GET action=get-availability	200	20	9.5	6.0	13.1
+GET action=get-mutable-attribute	200	145	11.7	7.1	23.1
+GET action=get-mutable-attribute	400	7	7.6	7.0	8.9
+GET action=get-mutable-attributes	200	21	13.3	9.2	523.1
+GET action=get-mutable-attributes	401	1	8.1	8.1	8.1
+GET logging	200	1	8.2	8.2	8.2
+POST action=clear	204	1	5.8	5.8	5.8
+POST action=clear	500	1	8.3	8.3	8.3
+POST action=disable-rebalancing	204	2	17.3	14.1	20.5
+POST action=set-availability	204	7	10.1	6.8	15.9
+POST action=set-availability	401	1	4.6	4.6	4.6
+POST action=set-mutable-attribute	200	37	23.6	16.1	99.9
+POST action=set-mutable-attribute	400	16	30.5	8.0	1247.8
+POST action=set-mutable-attribute	500	4	7750.9	10.9	15016.2
+PUT /rest/v2/caches/sessions (corpo corpos/E	200	1	17.0	17.0	17.0
+PUT /rest/v2/caches/sessions (corpo corpos/E	400	6	20.1	17.1	33.6
+PUT /rest/v2/caches/sessions-async/b441-P6d-	204	1	10.5	10.5	10.5
+PUT logging	204	12	19.8	8.0	11796.6

@@ -1,0 +1,182 @@
+fase	no	marcador	n
+(antes da 1a fase)	isn1	rebal:counters	2
+(antes da 1a fase)	isn1	rebal:counters-async	2
+(antes da 1a fase)	isn1	rebal:sessions	2
+(antes da 1a fase)	isn1	rebal:sessions-async	2
+(antes da 1a fase)	isn1	start:counters	1
+(antes da 1a fase)	isn1	start:counters-async	1
+(antes da 1a fase)	isn1	start:sessions	1
+(antes da 1a fase)	isn1	start:sessions-async	1
+(antes da 1a fase)	isn1	visao	2
+(antes da 1a fase)	isn2	rebal:counters	4
+(antes da 1a fase)	isn2	rebal:counters-async	4
+(antes da 1a fase)	isn2	rebal:sessions	4
+(antes da 1a fase)	isn2	rebal:sessions-async	4
+(antes da 1a fase)	isn2	start:counters	1
+(antes da 1a fase)	isn2	start:counters-async	1
+(antes da 1a fase)	isn2	start:sessions	1
+(antes da 1a fase)	isn2	start:sessions-async	1
+(antes da 1a fase)	isn2	visao	3
+(antes da 1a fase)	isn3	rebal:counters	1
+(antes da 1a fase)	isn3	rebal:counters-async	1
+(antes da 1a fase)	isn3	rebal:sessions	1
+(antes da 1a fase)	isn3	rebal:sessions-async	1
+(antes da 1a fase)	isn3	start:counters	1
+(antes da 1a fase)	isn3	start:counters-async	1
+(antes da 1a fase)	isn3	start:sessions	1
+(antes da 1a fase)	isn3	start:sessions-async	1
+(antes da 1a fase)	isn3	visao	1
+INC1 fim: cluster recriado (counters com indexed-entities divergente)	isn1	rebal:counters	4
+INC1 fim: cluster recriado (counters com indexed-entities divergente)	isn1	rebal:counters-async	4
+INC1 fim: cluster recriado (counters com indexed-entities divergente)	isn1	rebal:sessions	4
+INC1 fim: cluster recriado (counters com indexed-entities divergente)	isn1	rebal:sessions-async	4
+INC1 fim: cluster recriado (counters com indexed-entities divergente)	isn1	start:counters	1
+INC1 fim: cluster recriado (counters com indexed-entities divergente)	isn1	start:counters-async	1
+INC1 fim: cluster recriado (counters com indexed-entities divergente)	isn1	start:sessions	1
+INC1 fim: cluster recriado (counters com indexed-entities divergente)	isn1	start:sessions-async	1
+INC1 fim: cluster recriado (counters com indexed-entities divergente)	isn1	visao	3
+INC1 fim: cluster recriado (counters com indexed-entities divergente)	isn2	rebal:counters	2
+INC1 fim: cluster recriado (counters com indexed-entities divergente)	isn2	rebal:counters-async	2
+INC1 fim: cluster recriado (counters com indexed-entities divergente)	isn2	rebal:sessions	2
+INC1 fim: cluster recriado (counters com indexed-entities divergente)	isn2	rebal:sessions-async	2
+INC1 fim: cluster recriado (counters com indexed-entities divergente)	isn2	start:counters	1
+INC1 fim: cluster recriado (counters com indexed-entities divergente)	isn2	start:counters-async	1
+INC1 fim: cluster recriado (counters com indexed-entities divergente)	isn2	start:sessions	1
+INC1 fim: cluster recriado (counters com indexed-entities divergente)	isn2	start:sessions-async	1
+INC1 fim: cluster recriado (counters com indexed-entities divergente)	isn2	visao	2
+INC1 fim: cluster recriado (counters com indexed-entities divergente)	isn3	rebal:counters	1
+INC1 fim: cluster recriado (counters com indexed-entities divergente)	isn3	rebal:counters-async	1
+INC1 fim: cluster recriado (counters com indexed-entities divergente)	isn3	rebal:sessions	1
+INC1 fim: cluster recriado (counters com indexed-entities divergente)	isn3	rebal:sessions-async	1
+INC1 fim: cluster recriado (counters com indexed-entities divergente)	isn3	start:counters	1
+INC1 fim: cluster recriado (counters com indexed-entities divergente)	isn3	start:counters-async	1
+INC1 fim: cluster recriado (counters com indexed-entities divergente)	isn3	start:sessions	1
+INC1 fim: cluster recriado (counters com indexed-entities divergente)	isn3	start:sessions-async	1
+INC1 fim: cluster recriado (counters com indexed-entities divergente)	isn3	visao	1
+P4 podman restart b441-isn3	isn1	rebal:counters	6
+P4 podman restart b441-isn3	isn1	rebal:counters-async	6
+P4 podman restart b441-isn3	isn1	rebal:sessions	6
+P4 podman restart b441-isn3	isn1	rebal:sessions-async	6
+P4 podman restart b441-isn3	isn1	visao	3
+P4 podman restart b441-isn3	isn2	rebal:counters	3
+P4 podman restart b441-isn3	isn2	rebal:counters-async	3
+P4 podman restart b441-isn3	isn2	rebal:sessions	3
+P4 podman restart b441-isn3	isn2	rebal:sessions-async	3
+P4 podman restart b441-isn3	isn2	visao	3
+P4 podman restart b441-isn3	isn3	rebal:counters	1
+P4 podman restart b441-isn3	isn3	rebal:counters-async	1
+P4 podman restart b441-isn3	isn3	rebal:sessions	1
+P4 podman restart b441-isn3	isn3	rebal:sessions-async	1
+P4 podman restart b441-isn3	isn3	start:counters	1
+P4 podman restart b441-isn3	isn3	start:counters-async	1
+P4 podman restart b441-isn3	isn3	start:sessions	1
+P4 podman restart b441-isn3	isn3	start:sessions-async	1
+P4 podman restart b441-isn3	isn3	visao	1
+P4 reparo: caches.xml vazio copiado para isn3 parado; podman start	isn1	rebal:counters	4
+P4 reparo: caches.xml vazio copiado para isn3 parado; podman start	isn1	rebal:counters-async	4
+P4 reparo: caches.xml vazio copiado para isn3 parado; podman start	isn1	rebal:sessions	4
+P4 reparo: caches.xml vazio copiado para isn3 parado; podman start	isn1	rebal:sessions-async	4
+P4 reparo: caches.xml vazio copiado para isn3 parado; podman start	isn1	visao	2
+P4 reparo: caches.xml vazio copiado para isn3 parado; podman start	isn2	rebal:counters	2
+P4 reparo: caches.xml vazio copiado para isn3 parado; podman start	isn2	rebal:counters-async	2
+P4 reparo: caches.xml vazio copiado para isn3 parado; podman start	isn2	rebal:sessions	2
+P4 reparo: caches.xml vazio copiado para isn3 parado; podman start	isn2	rebal:sessions-async	2
+P4 reparo: caches.xml vazio copiado para isn3 parado; podman start	isn2	visao	2
+P4 reparo: caches.xml vazio copiado para isn3 parado; podman start	isn3	rebal:counters	1
+P4 reparo: caches.xml vazio copiado para isn3 parado; podman start	isn3	rebal:counters-async	1
+P4 reparo: caches.xml vazio copiado para isn3 parado; podman start	isn3	rebal:sessions	1
+P4 reparo: caches.xml vazio copiado para isn3 parado; podman start	isn3	rebal:sessions-async	1
+P4 reparo: caches.xml vazio copiado para isn3 parado; podman start	isn3	rej500	2
+P4 reparo: caches.xml vazio copiado para isn3 parado; podman start	isn3	start:counters	1
+P4 reparo: caches.xml vazio copiado para isn3 parado; podman start	isn3	start:counters-async	1
+P4 reparo: caches.xml vazio copiado para isn3 parado; podman start	isn3	start:sessions	1
+P4 reparo: caches.xml vazio copiado para isn3 parado; podman start	isn3	start:sessions-async	1
+P4 reparo: caches.xml vazio copiado para isn3 parado; podman start	isn3	visao	1
+P4 reparo 2: remote-timeout de sessions volta a 17500 (valor do XML) no cluster de 2 nos; isn3 sobe de novo	isn1	rebal:counters	2
+P4 reparo 2: remote-timeout de sessions volta a 17500 (valor do XML) no cluster de 2 nos; isn3 sobe de novo	isn1	rebal:counters-async	2
+P4 reparo 2: remote-timeout de sessions volta a 17500 (valor do XML) no cluster de 2 nos; isn3 sobe de novo	isn1	rebal:sessions	2
+P4 reparo 2: remote-timeout de sessions volta a 17500 (valor do XML) no cluster de 2 nos; isn3 sobe de novo	isn1	rebal:sessions-async	2
+P4 reparo 2: remote-timeout de sessions volta a 17500 (valor do XML) no cluster de 2 nos; isn3 sobe de novo	isn1	visao	1
+P4 reparo 2: remote-timeout de sessions volta a 17500 (valor do XML) no cluster de 2 nos; isn3 sobe de novo	isn2	rebal:counters	1
+P4 reparo 2: remote-timeout de sessions volta a 17500 (valor do XML) no cluster de 2 nos; isn3 sobe de novo	isn2	rebal:counters-async	1
+P4 reparo 2: remote-timeout de sessions volta a 17500 (valor do XML) no cluster de 2 nos; isn3 sobe de novo	isn2	rebal:sessions	1
+P4 reparo 2: remote-timeout de sessions volta a 17500 (valor do XML) no cluster de 2 nos; isn3 sobe de novo	isn2	rebal:sessions-async	1
+P4 reparo 2: remote-timeout de sessions volta a 17500 (valor do XML) no cluster de 2 nos; isn3 sobe de novo	isn2	visao	1
+P4 reparo 2: remote-timeout de sessions volta a 17500 (valor do XML) no cluster de 2 nos; isn3 sobe de novo	isn3	rebal:counters	1
+P4 reparo 2: remote-timeout de sessions volta a 17500 (valor do XML) no cluster de 2 nos; isn3 sobe de novo	isn3	rebal:counters-async	1
+P4 reparo 2: remote-timeout de sessions volta a 17500 (valor do XML) no cluster de 2 nos; isn3 sobe de novo	isn3	rebal:sessions	1
+P4 reparo 2: remote-timeout de sessions volta a 17500 (valor do XML) no cluster de 2 nos; isn3 sobe de novo	isn3	rebal:sessions-async	1
+P4 reparo 2: remote-timeout de sessions volta a 17500 (valor do XML) no cluster de 2 nos; isn3 sobe de novo	isn3	start:counters	1
+P4 reparo 2: remote-timeout de sessions volta a 17500 (valor do XML) no cluster de 2 nos; isn3 sobe de novo	isn3	start:counters-async	1
+P4 reparo 2: remote-timeout de sessions volta a 17500 (valor do XML) no cluster de 2 nos; isn3 sobe de novo	isn3	start:sessions	1
+P4 reparo 2: remote-timeout de sessions volta a 17500 (valor do XML) no cluster de 2 nos; isn3 sobe de novo	isn3	start:sessions-async	1
+P4 reparo 2: remote-timeout de sessions volta a 17500 (valor do XML) no cluster de 2 nos; isn3 sobe de novo	isn3	visao	1
+P5 podman stop b441-isn3 (saida graciosa)	isn1	rebal:counters	2
+P5 podman stop b441-isn3 (saida graciosa)	isn1	rebal:counters-async	2
+P5 podman stop b441-isn3 (saida graciosa)	isn1	rebal:sessions-async	2
+P5 podman stop b441-isn3 (saida graciosa)	isn1	visao	1
+P5 podman stop b441-isn3 (saida graciosa)	isn2	rebal:counters	1
+P5 podman stop b441-isn3 (saida graciosa)	isn2	rebal:counters-async	1
+P5 podman stop b441-isn3 (saida graciosa)	isn2	rebal:sessions-async	1
+P5 podman stop b441-isn3 (saida graciosa)	isn2	visao	1
+P5 caches.xml vazio em isn3 e podman start (rebalanceamento de sessions desligado)	isn1	rebal:counters	2
+P5 caches.xml vazio em isn3 e podman start (rebalanceamento de sessions desligado)	isn1	rebal:counters-async	2
+P5 caches.xml vazio em isn3 e podman start (rebalanceamento de sessions desligado)	isn1	rebal:sessions-async	2
+P5 caches.xml vazio em isn3 e podman start (rebalanceamento de sessions desligado)	isn1	visao	1
+P5 caches.xml vazio em isn3 e podman start (rebalanceamento de sessions desligado)	isn2	rebal:counters	1
+P5 caches.xml vazio em isn3 e podman start (rebalanceamento de sessions desligado)	isn2	rebal:counters-async	1
+P5 caches.xml vazio em isn3 e podman start (rebalanceamento de sessions desligado)	isn2	rebal:sessions-async	1
+P5 caches.xml vazio em isn3 e podman start (rebalanceamento de sessions desligado)	isn2	visao	1
+P5 caches.xml vazio em isn3 e podman start (rebalanceamento de sessions desligado)	isn3	rebal:counters	1
+P5 caches.xml vazio em isn3 e podman start (rebalanceamento de sessions desligado)	isn3	rebal:counters-async	1
+P5 caches.xml vazio em isn3 e podman start (rebalanceamento de sessions desligado)	isn3	rebal:sessions-async	1
+P5 caches.xml vazio em isn3 e podman start (rebalanceamento de sessions desligado)	isn3	start:counters	1
+P5 caches.xml vazio em isn3 e podman start (rebalanceamento de sessions desligado)	isn3	start:counters-async	1
+P5 caches.xml vazio em isn3 e podman start (rebalanceamento de sessions desligado)	isn3	start:sessions	1
+P5 caches.xml vazio em isn3 e podman start (rebalanceamento de sessions desligado)	isn3	start:sessions-async	1
+P5 caches.xml vazio em isn3 e podman start (rebalanceamento de sessions desligado)	isn3	visao	1
+P5 enable-rebalancing sessions via CLI isn3	isn1	rebal:sessions	2
+P5 enable-rebalancing sessions via CLI isn3	isn2	rebal:sessions	1
+P5 enable-rebalancing sessions via CLI isn3	isn3	rebal:sessions	1
+P7 set-availability DEGRADED_MODE sessions pedido ao no isolado isn3 (antes da deteccao)	isn1	rebal:counters	2
+P7 set-availability DEGRADED_MODE sessions pedido ao no isolado isn3 (antes da deteccao)	isn1	rebal:counters-async	2
+P7 set-availability DEGRADED_MODE sessions pedido ao no isolado isn3 (antes da deteccao)	isn1	rebal:sessions	2
+P7 set-availability DEGRADED_MODE sessions pedido ao no isolado isn3 (antes da deteccao)	isn1	rebal:sessions-async	2
+P7 set-availability DEGRADED_MODE sessions pedido ao no isolado isn3 (antes da deteccao)	isn1	visao	1
+P7 set-availability DEGRADED_MODE sessions pedido ao no isolado isn3 (antes da deteccao)	isn2	rebal:counters	1
+P7 set-availability DEGRADED_MODE sessions pedido ao no isolado isn3 (antes da deteccao)	isn2	rebal:counters-async	1
+P7 set-availability DEGRADED_MODE sessions pedido ao no isolado isn3 (antes da deteccao)	isn2	rebal:sessions	1
+P7 set-availability DEGRADED_MODE sessions pedido ao no isolado isn3 (antes da deteccao)	isn2	rebal:sessions-async	1
+P7 set-availability DEGRADED_MODE sessions pedido ao no isolado isn3 (antes da deteccao)	isn2	visao	1
+P7 set-availability DEGRADED_MODE sessions pedido ao no isolado isn3 (antes da deteccao)	isn3	visao	1
+P7 CURA	isn1	rebal:counters	2
+P7 CURA	isn1	rebal:counters-async	2
+P7 CURA	isn1	rebal:sessions	2
+P7 CURA	isn1	rebal:sessions-async	2
+P7 CURA	isn2	rebal:counters	1
+P7 CURA	isn2	rebal:counters-async	1
+P7 CURA	isn2	rebal:sessions	1
+P7 CURA	isn2	rebal:sessions-async	1
+P7 CURA	isn3	rebal:counters	1
+P7 CURA	isn3	rebal:counters-async	1
+P7 CURA	isn3	rebal:sessions	1
+P7 CURA	isn3	rebal:sessions-async	1
+P8 confirmacao: podman restart b441-isn3 com caches.xml repovoado pelo rejoin (valores = XML)	isn1	rebal:counters	6
+P8 confirmacao: podman restart b441-isn3 com caches.xml repovoado pelo rejoin (valores = XML)	isn1	rebal:counters-async	6
+P8 confirmacao: podman restart b441-isn3 com caches.xml repovoado pelo rejoin (valores = XML)	isn1	rebal:sessions	6
+P8 confirmacao: podman restart b441-isn3 com caches.xml repovoado pelo rejoin (valores = XML)	isn1	rebal:sessions-async	6
+P8 confirmacao: podman restart b441-isn3 com caches.xml repovoado pelo rejoin (valores = XML)	isn1	visao	3
+P8 confirmacao: podman restart b441-isn3 com caches.xml repovoado pelo rejoin (valores = XML)	isn2	rebal:counters	3
+P8 confirmacao: podman restart b441-isn3 com caches.xml repovoado pelo rejoin (valores = XML)	isn2	rebal:counters-async	3
+P8 confirmacao: podman restart b441-isn3 com caches.xml repovoado pelo rejoin (valores = XML)	isn2	rebal:sessions	3
+P8 confirmacao: podman restart b441-isn3 com caches.xml repovoado pelo rejoin (valores = XML)	isn2	rebal:sessions-async	3
+P8 confirmacao: podman restart b441-isn3 com caches.xml repovoado pelo rejoin (valores = XML)	isn2	visao	3
+P8 confirmacao: podman restart b441-isn3 com caches.xml repovoado pelo rejoin (valores = XML)	isn3	rebal:counters	1
+P8 confirmacao: podman restart b441-isn3 com caches.xml repovoado pelo rejoin (valores = XML)	isn3	rebal:counters-async	1
+P8 confirmacao: podman restart b441-isn3 com caches.xml repovoado pelo rejoin (valores = XML)	isn3	rebal:sessions	1
+P8 confirmacao: podman restart b441-isn3 com caches.xml repovoado pelo rejoin (valores = XML)	isn3	rebal:sessions-async	1
+P8 confirmacao: podman restart b441-isn3 com caches.xml repovoado pelo rejoin (valores = XML)	isn3	start:counters	1
+P8 confirmacao: podman restart b441-isn3 com caches.xml repovoado pelo rejoin (valores = XML)	isn3	start:counters-async	1
+P8 confirmacao: podman restart b441-isn3 com caches.xml repovoado pelo rejoin (valores = XML)	isn3	start:sessions	1
+P8 confirmacao: podman restart b441-isn3 com caches.xml repovoado pelo rejoin (valores = XML)	isn3	start:sessions-async	1
+P8 confirmacao: podman restart b441-isn3 com caches.xml repovoado pelo rejoin (valores = XML)	isn3	visao	1

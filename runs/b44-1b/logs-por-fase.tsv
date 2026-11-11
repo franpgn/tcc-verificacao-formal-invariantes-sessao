@@ -1,0 +1,399 @@
+fase	no	marcador	n
+INCA inicio: XML da base (caches no XML)	isn1	rebal:counters	1
+INCA inicio: XML da base (caches no XML)	isn1	rebal:counters-async	1
+INCA inicio: XML da base (caches no XML)	isn1	rebal:sessions	1
+INCA inicio: XML da base (caches no XML)	isn1	rebal:sessions-async	1
+INCA inicio: XML da base (caches no XML)	isn1	start:counters	1
+INCA inicio: XML da base (caches no XML)	isn1	start:counters-async	1
+INCA inicio: XML da base (caches no XML)	isn1	start:sessions	1
+INCA inicio: XML da base (caches no XML)	isn1	start:sessions-async	1
+INCA inicio: XML da base (caches no XML)	isn1	visao	1
+INCA inicio: XML da base (caches no XML)	isn2	rebal:counters	2
+INCA inicio: XML da base (caches no XML)	isn2	rebal:counters-async	2
+INCA inicio: XML da base (caches no XML)	isn2	rebal:sessions	2
+INCA inicio: XML da base (caches no XML)	isn2	rebal:sessions-async	2
+INCA inicio: XML da base (caches no XML)	isn2	start:counters	1
+INCA inicio: XML da base (caches no XML)	isn2	start:counters-async	1
+INCA inicio: XML da base (caches no XML)	isn2	start:sessions	1
+INCA inicio: XML da base (caches no XML)	isn2	start:sessions-async	1
+INCA inicio: XML da base (caches no XML)	isn2	visao	2
+INCA inicio: XML da base (caches no XML)	isn3	rebal:counters	4
+INCA inicio: XML da base (caches no XML)	isn3	rebal:counters-async	4
+INCA inicio: XML da base (caches no XML)	isn3	rebal:sessions	4
+INCA inicio: XML da base (caches no XML)	isn3	rebal:sessions-async	4
+INCA inicio: XML da base (caches no XML)	isn3	start:counters	1
+INCA inicio: XML da base (caches no XML)	isn3	start:counters-async	1
+INCA inicio: XML da base (caches no XML)	isn3	start:sessions	1
+INCA inicio: XML da base (caches no XML)	isn3	start:sessions-async	1
+INCA inicio: XML da base (caches no XML)	isn3	visao	3
+INCA2 inicio	isn1	rebal:counters	4
+INCA2 inicio	isn1	rebal:counters-async	4
+INCA2 inicio	isn1	rebal:sessions	4
+INCA2 inicio	isn1	rebal:sessions-async	4
+INCA2 inicio	isn1	start:counters	1
+INCA2 inicio	isn1	start:counters-async	1
+INCA2 inicio	isn1	start:sessions	1
+INCA2 inicio	isn1	start:sessions-async	1
+INCA2 inicio	isn1	visao	3
+INCA2 inicio	isn2	rebal:counters	2
+INCA2 inicio	isn2	rebal:counters-async	2
+INCA2 inicio	isn2	rebal:sessions	2
+INCA2 inicio	isn2	rebal:sessions-async	2
+INCA2 inicio	isn2	start:counters	1
+INCA2 inicio	isn2	start:counters-async	1
+INCA2 inicio	isn2	start:sessions	1
+INCA2 inicio	isn2	start:sessions-async	1
+INCA2 inicio	isn2	visao	2
+INCA2 inicio	isn3	rebal:counters	1
+INCA2 inicio	isn3	rebal:counters-async	1
+INCA2 inicio	isn3	rebal:sessions	1
+INCA2 inicio	isn3	rebal:sessions-async	1
+INCA2 inicio	isn3	start:counters	1
+INCA2 inicio	isn3	start:counters-async	1
+INCA2 inicio	isn3	start:sessions	1
+INCA2 inicio	isn3	start:sessions-async	1
+INCA2 inicio	isn3	visao	1
+F1a INCA2 sem contorno: inject-crash --modo kill --duration 20 em b441-isn3	isn1	rebal:counters	6
+F1a INCA2 sem contorno: inject-crash --modo kill --duration 20 em b441-isn3	isn1	rebal:counters-async	6
+F1a INCA2 sem contorno: inject-crash --modo kill --duration 20 em b441-isn3	isn1	rebal:sessions	6
+F1a INCA2 sem contorno: inject-crash --modo kill --duration 20 em b441-isn3	isn1	rebal:sessions-async	6
+F1a INCA2 sem contorno: inject-crash --modo kill --duration 20 em b441-isn3	isn1	visao	3
+F1a INCA2 sem contorno: inject-crash --modo kill --duration 20 em b441-isn3	isn2	rebal:counters	2
+F1a INCA2 sem contorno: inject-crash --modo kill --duration 20 em b441-isn3	isn2	rebal:counters-async	3
+F1a INCA2 sem contorno: inject-crash --modo kill --duration 20 em b441-isn3	isn2	rebal:sessions	3
+F1a INCA2 sem contorno: inject-crash --modo kill --duration 20 em b441-isn3	isn2	rebal:sessions-async	3
+F1a INCA2 sem contorno: inject-crash --modo kill --duration 20 em b441-isn3	isn2	visao	3
+F1a INCA2 sem contorno: inject-crash --modo kill --duration 20 em b441-isn3	isn3	rebal:counters	1
+F1a INCA2 sem contorno: inject-crash --modo kill --duration 20 em b441-isn3	isn3	rebal:counters-async	1
+F1a INCA2 sem contorno: inject-crash --modo kill --duration 20 em b441-isn3	isn3	rebal:sessions	1
+F1a INCA2 sem contorno: inject-crash --modo kill --duration 20 em b441-isn3	isn3	rebal:sessions-async	1
+F1a INCA2 sem contorno: inject-crash --modo kill --duration 20 em b441-isn3	isn3	start:counters	1
+F1a INCA2 sem contorno: inject-crash --modo kill --duration 20 em b441-isn3	isn3	start:counters-async	1
+F1a INCA2 sem contorno: inject-crash --modo kill --duration 20 em b441-isn3	isn3	start:sessions	1
+F1a INCA2 sem contorno: inject-crash --modo kill --duration 20 em b441-isn3	isn3	start:sessions-async	1
+F1a INCA2 sem contorno: inject-crash --modo kill --duration 20 em b441-isn3	isn3	visao	1
+F1a resultado: injetor exit=0, isn3 exited	isn1	rebal:counters	2
+F1a resultado: injetor exit=0, isn3 exited	isn1	rebal:counters-async	2
+F1a resultado: injetor exit=0, isn3 exited	isn1	rebal:sessions	2
+F1a resultado: injetor exit=0, isn3 exited	isn1	rebal:sessions-async	2
+F1a resultado: injetor exit=0, isn3 exited	isn1	visao	1
+F1a resultado: injetor exit=0, isn3 exited	isn2	rebal:counters	1
+F1a resultado: injetor exit=0, isn3 exited	isn2	rebal:counters-async	1
+F1a resultado: injetor exit=0, isn3 exited	isn2	rebal:sessions	1
+F1a resultado: injetor exit=0, isn3 exited	isn2	rebal:sessions-async	1
+F1a resultado: injetor exit=0, isn3 exited	isn2	visao	1
+F1a resultado: injetor exit=0, isn3 exited	isn3	rebal:counters	1
+F1a resultado: injetor exit=0, isn3 exited	isn3	rebal:counters-async	1
+F1a resultado: injetor exit=0, isn3 exited	isn3	rebal:sessions	1
+F1a resultado: injetor exit=0, isn3 exited	isn3	rebal:sessions-async	1
+F1a resultado: injetor exit=0, isn3 exited	isn3	start:counters	1
+F1a resultado: injetor exit=0, isn3 exited	isn3	start:counters-async	1
+F1a resultado: injetor exit=0, isn3 exited	isn3	start:sessions	1
+F1a resultado: injetor exit=0, isn3 exited	isn3	start:sessions-async	1
+F1a resultado: injetor exit=0, isn3 exited	isn3	visao	1
+F1b contorno (a): inject-crash kill 30 s + limpeza de caches.xml na janela (remote-timeout sessions=17500)	isn1	rebal:counters	4
+F1b contorno (a): inject-crash kill 30 s + limpeza de caches.xml na janela (remote-timeout sessions=17500)	isn1	rebal:counters-async	4
+F1b contorno (a): inject-crash kill 30 s + limpeza de caches.xml na janela (remote-timeout sessions=17500)	isn1	rebal:sessions	4
+F1b contorno (a): inject-crash kill 30 s + limpeza de caches.xml na janela (remote-timeout sessions=17500)	isn1	rebal:sessions-async	4
+F1b contorno (a): inject-crash kill 30 s + limpeza de caches.xml na janela (remote-timeout sessions=17500)	isn1	visao	2
+F1b contorno (a): inject-crash kill 30 s + limpeza de caches.xml na janela (remote-timeout sessions=17500)	isn2	rebal:counters	2
+F1b contorno (a): inject-crash kill 30 s + limpeza de caches.xml na janela (remote-timeout sessions=17500)	isn2	rebal:counters-async	2
+F1b contorno (a): inject-crash kill 30 s + limpeza de caches.xml na janela (remote-timeout sessions=17500)	isn2	rebal:sessions	2
+F1b contorno (a): inject-crash kill 30 s + limpeza de caches.xml na janela (remote-timeout sessions=17500)	isn2	rebal:sessions-async	2
+F1b contorno (a): inject-crash kill 30 s + limpeza de caches.xml na janela (remote-timeout sessions=17500)	isn2	visao	2
+F1b contorno (a): inject-crash kill 30 s + limpeza de caches.xml na janela (remote-timeout sessions=17500)	isn3	rebal:counters	1
+F1b contorno (a): inject-crash kill 30 s + limpeza de caches.xml na janela (remote-timeout sessions=17500)	isn3	rebal:counters-async	1
+F1b contorno (a): inject-crash kill 30 s + limpeza de caches.xml na janela (remote-timeout sessions=17500)	isn3	rebal:sessions	1
+F1b contorno (a): inject-crash kill 30 s + limpeza de caches.xml na janela (remote-timeout sessions=17500)	isn3	rebal:sessions-async	1
+F1b contorno (a): inject-crash kill 30 s + limpeza de caches.xml na janela (remote-timeout sessions=17500)	isn3	start:counters	1
+F1b contorno (a): inject-crash kill 30 s + limpeza de caches.xml na janela (remote-timeout sessions=17500)	isn3	start:counters-async	1
+F1b contorno (a): inject-crash kill 30 s + limpeza de caches.xml na janela (remote-timeout sessions=17500)	isn3	start:sessions	1
+F1b contorno (a): inject-crash kill 30 s + limpeza de caches.xml na janela (remote-timeout sessions=17500)	isn3	start:sessions-async	1
+F1b contorno (a): inject-crash kill 30 s + limpeza de caches.xml na janela (remote-timeout sessions=17500)	isn3	visao	1
+F1c contorno (a): inject-crash kill 30 s + limpeza de caches.xml na janela (remote-timeout sessions=12000)	isn1	rebal:counters	6
+F1c contorno (a): inject-crash kill 30 s + limpeza de caches.xml na janela (remote-timeout sessions=12000)	isn1	rebal:counters-async	6
+F1c contorno (a): inject-crash kill 30 s + limpeza de caches.xml na janela (remote-timeout sessions=12000)	isn1	rebal:sessions	6
+F1c contorno (a): inject-crash kill 30 s + limpeza de caches.xml na janela (remote-timeout sessions=12000)	isn1	rebal:sessions-async	6
+F1c contorno (a): inject-crash kill 30 s + limpeza de caches.xml na janela (remote-timeout sessions=12000)	isn1	visao	3
+F1c contorno (a): inject-crash kill 30 s + limpeza de caches.xml na janela (remote-timeout sessions=12000)	isn2	rebal:counters	3
+F1c contorno (a): inject-crash kill 30 s + limpeza de caches.xml na janela (remote-timeout sessions=12000)	isn2	rebal:counters-async	3
+F1c contorno (a): inject-crash kill 30 s + limpeza de caches.xml na janela (remote-timeout sessions=12000)	isn2	rebal:sessions	3
+F1c contorno (a): inject-crash kill 30 s + limpeza de caches.xml na janela (remote-timeout sessions=12000)	isn2	rebal:sessions-async	3
+F1c contorno (a): inject-crash kill 30 s + limpeza de caches.xml na janela (remote-timeout sessions=12000)	isn2	visao	3
+F1c contorno (a): inject-crash kill 30 s + limpeza de caches.xml na janela (remote-timeout sessions=12000)	isn3	rebal:counters	1
+F1c contorno (a): inject-crash kill 30 s + limpeza de caches.xml na janela (remote-timeout sessions=12000)	isn3	rebal:counters-async	1
+F1c contorno (a): inject-crash kill 30 s + limpeza de caches.xml na janela (remote-timeout sessions=12000)	isn3	rebal:sessions	1
+F1c contorno (a): inject-crash kill 30 s + limpeza de caches.xml na janela (remote-timeout sessions=12000)	isn3	rebal:sessions-async	1
+F1c contorno (a): inject-crash kill 30 s + limpeza de caches.xml na janela (remote-timeout sessions=12000)	isn3	rej500	2
+F1c contorno (a): inject-crash kill 30 s + limpeza de caches.xml na janela (remote-timeout sessions=12000)	isn3	start:counters	1
+F1c contorno (a): inject-crash kill 30 s + limpeza de caches.xml na janela (remote-timeout sessions=12000)	isn3	start:counters-async	1
+F1c contorno (a): inject-crash kill 30 s + limpeza de caches.xml na janela (remote-timeout sessions=12000)	isn3	start:sessions	1
+F1c contorno (a): inject-crash kill 30 s + limpeza de caches.xml na janela (remote-timeout sessions=12000)	isn3	start:sessions-async	1
+F1c contorno (a): inject-crash kill 30 s + limpeza de caches.xml na janela (remote-timeout sessions=12000)	isn3	visao	1
+F1c resultado: isn3 exited	isn1	rebal:counters	2
+F1c resultado: isn3 exited	isn1	rebal:counters-async	2
+F1c resultado: isn3 exited	isn1	rebal:sessions	2
+F1c resultado: isn3 exited	isn1	rebal:sessions-async	2
+F1c resultado: isn3 exited	isn1	visao	1
+F1c resultado: isn3 exited	isn2	rebal:counters	1
+F1c resultado: isn3 exited	isn2	rebal:counters-async	1
+F1c resultado: isn3 exited	isn2	rebal:sessions	1
+F1c resultado: isn3 exited	isn2	rebal:sessions-async	1
+F1c resultado: isn3 exited	isn2	visao	1
+F1c resultado: isn3 exited	isn3	rebal:counters	1
+F1c resultado: isn3 exited	isn3	rebal:counters-async	1
+F1c resultado: isn3 exited	isn3	rebal:sessions	1
+F1c resultado: isn3 exited	isn3	rebal:sessions-async	1
+F1c resultado: isn3 exited	isn3	start:counters	1
+F1c resultado: isn3 exited	isn3	start:counters-async	1
+F1c resultado: isn3 exited	isn3	start:sessions	1
+F1c resultado: isn3 exited	isn3	start:sessions-async	1
+F1c resultado: isn3 exited	isn3	visao	1
+INCB inicio: XML sem caches (contorno b)	isn1	visao	3
+INCB inicio: XML sem caches (contorno b)	isn2	visao	2
+INCB inicio: XML sem caches (contorno b)	isn3	visao	1
+B0 criacao dos 4 caches pela REST (isn1)	isn1	rebal:counters-async	4
+B0 criacao dos 4 caches pela REST (isn1)	isn1	rebal:sessions	4
+B0 criacao dos 4 caches pela REST (isn1)	isn1	rebal:sessions-async	4
+B0 criacao dos 4 caches pela REST (isn1)	isn1	start:counters-async	1
+B0 criacao dos 4 caches pela REST (isn1)	isn1	start:sessions	1
+B0 criacao dos 4 caches pela REST (isn1)	isn1	start:sessions-async	1
+B0 criacao dos 4 caches pela REST (isn1)	isn2	rebal:counters-async	2
+B0 criacao dos 4 caches pela REST (isn1)	isn2	rebal:sessions	1
+B0 criacao dos 4 caches pela REST (isn1)	isn2	rebal:sessions-async	2
+B0 criacao dos 4 caches pela REST (isn1)	isn2	start:counters-async	1
+B0 criacao dos 4 caches pela REST (isn1)	isn2	start:sessions	1
+B0 criacao dos 4 caches pela REST (isn1)	isn2	start:sessions-async	1
+B0 criacao dos 4 caches pela REST (isn1)	isn3	rebal:counters-async	1
+B0 criacao dos 4 caches pela REST (isn1)	isn3	rebal:sessions	2
+B0 criacao dos 4 caches pela REST (isn1)	isn3	rebal:sessions-async	1
+B0 criacao dos 4 caches pela REST (isn1)	isn3	start:counters-async	1
+B0 criacao dos 4 caches pela REST (isn1)	isn3	start:sessions	1
+B0 criacao dos 4 caches pela REST (isn1)	isn3	start:sessions-async	1
+B0b counters (JSON sem envoltorio, remote-timeout 17500) e sessions volta a 17500	isn1	rebal:counters	4
+B0b counters (JSON sem envoltorio, remote-timeout 17500) e sessions volta a 17500	isn1	start:counters	1
+B0b counters (JSON sem envoltorio, remote-timeout 17500) e sessions volta a 17500	isn2	rebal:counters	1
+B0b counters (JSON sem envoltorio, remote-timeout 17500) e sessions volta a 17500	isn2	start:counters	1
+B0b counters (JSON sem envoltorio, remote-timeout 17500) e sessions volta a 17500	isn3	rebal:counters	2
+B0b counters (JSON sem envoltorio, remote-timeout 17500) e sessions volta a 17500	isn3	start:counters	1
+B2 inject-crash kill 20 s em isn3 (sessions remote-timeout=12000, criado com 17500)	isn1	rebal:counters	4
+B2 inject-crash kill 20 s em isn3 (sessions remote-timeout=12000, criado com 17500)	isn1	rebal:counters-async	4
+B2 inject-crash kill 20 s em isn3 (sessions remote-timeout=12000, criado com 17500)	isn1	rebal:sessions	4
+B2 inject-crash kill 20 s em isn3 (sessions remote-timeout=12000, criado com 17500)	isn1	rebal:sessions-async	4
+B2 inject-crash kill 20 s em isn3 (sessions remote-timeout=12000, criado com 17500)	isn1	visao	2
+B2 inject-crash kill 20 s em isn3 (sessions remote-timeout=12000, criado com 17500)	isn2	rebal:counters	2
+B2 inject-crash kill 20 s em isn3 (sessions remote-timeout=12000, criado com 17500)	isn2	rebal:counters-async	2
+B2 inject-crash kill 20 s em isn3 (sessions remote-timeout=12000, criado com 17500)	isn2	rebal:sessions	2
+B2 inject-crash kill 20 s em isn3 (sessions remote-timeout=12000, criado com 17500)	isn2	rebal:sessions-async	2
+B2 inject-crash kill 20 s em isn3 (sessions remote-timeout=12000, criado com 17500)	isn2	visao	2
+B2 inject-crash kill 20 s em isn3 (sessions remote-timeout=12000, criado com 17500)	isn3	rebal:counters	1
+B2 inject-crash kill 20 s em isn3 (sessions remote-timeout=12000, criado com 17500)	isn3	rebal:counters-async	1
+B2 inject-crash kill 20 s em isn3 (sessions remote-timeout=12000, criado com 17500)	isn3	rebal:sessions	1
+B2 inject-crash kill 20 s em isn3 (sessions remote-timeout=12000, criado com 17500)	isn3	rebal:sessions-async	1
+B2 inject-crash kill 20 s em isn3 (sessions remote-timeout=12000, criado com 17500)	isn3	start:counters	1
+B2 inject-crash kill 20 s em isn3 (sessions remote-timeout=12000, criado com 17500)	isn3	start:counters-async	1
+B2 inject-crash kill 20 s em isn3 (sessions remote-timeout=12000, criado com 17500)	isn3	start:sessions	1
+B2 inject-crash kill 20 s em isn3 (sessions remote-timeout=12000, criado com 17500)	isn3	start:sessions-async	1
+B2 inject-crash kill 20 s em isn3 (sessions remote-timeout=12000, criado com 17500)	isn3	visao	1
+B3 inject-crash kill 40 s; durante a queda: remote-timeout=10000 e cria sessions-sync2; apaga counters-async? nao	isn1	rebal:counters	6
+B3 inject-crash kill 40 s; durante a queda: remote-timeout=10000 e cria sessions-sync2; apaga counters-async? nao	isn1	rebal:counters-async	2
+B3 inject-crash kill 40 s; durante a queda: remote-timeout=10000 e cria sessions-sync2; apaga counters-async? nao	isn1	rebal:sessions	2
+B3 inject-crash kill 40 s; durante a queda: remote-timeout=10000 e cria sessions-sync2; apaga counters-async? nao	isn1	rebal:sessions-async	2
+B3 inject-crash kill 40 s; durante a queda: remote-timeout=10000 e cria sessions-sync2; apaga counters-async? nao	isn1	visao	3
+B3 inject-crash kill 40 s; durante a queda: remote-timeout=10000 e cria sessions-sync2; apaga counters-async? nao	isn2	rebal:counters	3
+B3 inject-crash kill 40 s; durante a queda: remote-timeout=10000 e cria sessions-sync2; apaga counters-async? nao	isn2	rebal:counters-async	1
+B3 inject-crash kill 40 s; durante a queda: remote-timeout=10000 e cria sessions-sync2; apaga counters-async? nao	isn2	rebal:sessions	1
+B3 inject-crash kill 40 s; durante a queda: remote-timeout=10000 e cria sessions-sync2; apaga counters-async? nao	isn2	rebal:sessions-async	1
+B3 inject-crash kill 40 s; durante a queda: remote-timeout=10000 e cria sessions-sync2; apaga counters-async? nao	isn2	visao	3
+B3 inject-crash kill 40 s; durante a queda: remote-timeout=10000 e cria sessions-sync2; apaga counters-async? nao	isn3	rebal:counters	1
+B3 inject-crash kill 40 s; durante a queda: remote-timeout=10000 e cria sessions-sync2; apaga counters-async? nao	isn3	rej500	2
+B3 inject-crash kill 40 s; durante a queda: remote-timeout=10000 e cria sessions-sync2; apaga counters-async? nao	isn3	start:counters	1
+B3 inject-crash kill 40 s; durante a queda: remote-timeout=10000 e cria sessions-sync2; apaga counters-async? nao	isn3	visao	1
+B5 segundo reinicio seguido (podman restart, analogo ao P8)	isn1	rebal:counters	2
+B5 segundo reinicio seguido (podman restart, analogo ao P8)	isn1	rebal:counters-async	2
+B5 segundo reinicio seguido (podman restart, analogo ao P8)	isn1	rebal:sessions	2
+B5 segundo reinicio seguido (podman restart, analogo ao P8)	isn1	rebal:sessions-async	2
+B5 segundo reinicio seguido (podman restart, analogo ao P8)	isn1	visao	1
+B5 segundo reinicio seguido (podman restart, analogo ao P8)	isn2	rebal:counters	1
+B5 segundo reinicio seguido (podman restart, analogo ao P8)	isn2	rebal:counters-async	1
+B5 segundo reinicio seguido (podman restart, analogo ao P8)	isn2	rebal:sessions	1
+B5 segundo reinicio seguido (podman restart, analogo ao P8)	isn2	rebal:sessions-async	1
+B5 segundo reinicio seguido (podman restart, analogo ao P8)	isn2	visao	1
+B5 segundo reinicio seguido (podman restart, analogo ao P8)	isn3	rebal:counters	1
+B5 segundo reinicio seguido (podman restart, analogo ao P8)	isn3	rebal:counters-async	1
+B5 segundo reinicio seguido (podman restart, analogo ao P8)	isn3	rebal:sessions	1
+B5 segundo reinicio seguido (podman restart, analogo ao P8)	isn3	rebal:sessions-async	1
+B5 segundo reinicio seguido (podman restart, analogo ao P8)	isn3	start:counters	1
+B5 segundo reinicio seguido (podman restart, analogo ao P8)	isn3	start:counters-async	1
+B5 segundo reinicio seguido (podman restart, analogo ao P8)	isn3	start:sessions	1
+B5 segundo reinicio seguido (podman restart, analogo ao P8)	isn3	start:sessions-async	1
+B5 segundo reinicio seguido (podman restart, analogo ao P8)	isn3	visao	1
+B6 repeticao de B3: kill 40 s, durante a queda remote-timeout=9000; depois 2o podman start	isn1	rebal:counters	6
+B6 repeticao de B3: kill 40 s, durante a queda remote-timeout=9000; depois 2o podman start	isn1	rebal:counters-async	2
+B6 repeticao de B3: kill 40 s, durante a queda remote-timeout=9000; depois 2o podman start	isn1	rebal:sessions	2
+B6 repeticao de B3: kill 40 s, durante a queda remote-timeout=9000; depois 2o podman start	isn1	rebal:sessions-async	2
+B6 repeticao de B3: kill 40 s, durante a queda remote-timeout=9000; depois 2o podman start	isn1	visao	3
+B6 repeticao de B3: kill 40 s, durante a queda remote-timeout=9000; depois 2o podman start	isn2	rebal:counters	3
+B6 repeticao de B3: kill 40 s, durante a queda remote-timeout=9000; depois 2o podman start	isn2	rebal:counters-async	1
+B6 repeticao de B3: kill 40 s, durante a queda remote-timeout=9000; depois 2o podman start	isn2	rebal:sessions	1
+B6 repeticao de B3: kill 40 s, durante a queda remote-timeout=9000; depois 2o podman start	isn2	rebal:sessions-async	1
+B6 repeticao de B3: kill 40 s, durante a queda remote-timeout=9000; depois 2o podman start	isn2	visao	3
+B6 repeticao de B3: kill 40 s, durante a queda remote-timeout=9000; depois 2o podman start	isn3	rebal:counters	1
+B6 repeticao de B3: kill 40 s, durante a queda remote-timeout=9000; depois 2o podman start	isn3	rej500	2
+B6 repeticao de B3: kill 40 s, durante a queda remote-timeout=9000; depois 2o podman start	isn3	start:counters	1
+B6 repeticao de B3: kill 40 s, durante a queda remote-timeout=9000; depois 2o podman start	isn3	visao	1
+B6 1o start: isn3 exited	isn1	rebal:counters	2
+B6 1o start: isn3 exited	isn1	rebal:counters-async	2
+B6 1o start: isn3 exited	isn1	rebal:sessions	2
+B6 1o start: isn3 exited	isn1	rebal:sessions-async	2
+B6 1o start: isn3 exited	isn1	visao	1
+B6 1o start: isn3 exited	isn2	rebal:counters	1
+B6 1o start: isn3 exited	isn2	rebal:counters-async	1
+B6 1o start: isn3 exited	isn2	rebal:sessions	1
+B6 1o start: isn3 exited	isn2	rebal:sessions-async	1
+B6 1o start: isn3 exited	isn2	visao	1
+B6 1o start: isn3 exited	isn3	rebal:counters	1
+B6 1o start: isn3 exited	isn3	rebal:counters-async	1
+B6 1o start: isn3 exited	isn3	rebal:sessions	1
+B6 1o start: isn3 exited	isn3	rebal:sessions-async	1
+B6 1o start: isn3 exited	isn3	start:counters	1
+B6 1o start: isn3 exited	isn3	start:counters-async	1
+B6 1o start: isn3 exited	isn3	start:sessions	1
+B6 1o start: isn3 exited	isn3	start:sessions-async	1
+B6 1o start: isn3 exited	isn3	visao	1
+B7 (b)+(a): kill 40 s, durante a queda remote-timeout=8000 e limpeza de caches.xml	isn1	rebal:counters	6
+B7 (b)+(a): kill 40 s, durante a queda remote-timeout=8000 e limpeza de caches.xml	isn1	rebal:counters-async	2
+B7 (b)+(a): kill 40 s, durante a queda remote-timeout=8000 e limpeza de caches.xml	isn1	rebal:sessions	2
+B7 (b)+(a): kill 40 s, durante a queda remote-timeout=8000 e limpeza de caches.xml	isn1	rebal:sessions-async	2
+B7 (b)+(a): kill 40 s, durante a queda remote-timeout=8000 e limpeza de caches.xml	isn1	visao	3
+B7 (b)+(a): kill 40 s, durante a queda remote-timeout=8000 e limpeza de caches.xml	isn2	rebal:counters	3
+B7 (b)+(a): kill 40 s, durante a queda remote-timeout=8000 e limpeza de caches.xml	isn2	rebal:counters-async	1
+B7 (b)+(a): kill 40 s, durante a queda remote-timeout=8000 e limpeza de caches.xml	isn2	rebal:sessions	1
+B7 (b)+(a): kill 40 s, durante a queda remote-timeout=8000 e limpeza de caches.xml	isn2	rebal:sessions-async	1
+B7 (b)+(a): kill 40 s, durante a queda remote-timeout=8000 e limpeza de caches.xml	isn2	visao	3
+B7 (b)+(a): kill 40 s, durante a queda remote-timeout=8000 e limpeza de caches.xml	isn3	rebal:counters	1
+B7 (b)+(a): kill 40 s, durante a queda remote-timeout=8000 e limpeza de caches.xml	isn3	rej500	2
+B7 (b)+(a): kill 40 s, durante a queda remote-timeout=8000 e limpeza de caches.xml	isn3	start:counters	1
+B7 (b)+(a): kill 40 s, durante a queda remote-timeout=8000 e limpeza de caches.xml	isn3	visao	1
+B7 foi repeticao involuntaria de B3 (limpeza falhou: funcao com caminho vazio); 2o start manual	isn1	rebal:counters	2
+B7 foi repeticao involuntaria de B3 (limpeza falhou: funcao com caminho vazio); 2o start manual	isn1	rebal:counters-async	2
+B7 foi repeticao involuntaria de B3 (limpeza falhou: funcao com caminho vazio); 2o start manual	isn1	rebal:sessions	2
+B7 foi repeticao involuntaria de B3 (limpeza falhou: funcao com caminho vazio); 2o start manual	isn1	rebal:sessions-async	2
+B7 foi repeticao involuntaria de B3 (limpeza falhou: funcao com caminho vazio); 2o start manual	isn1	visao	1
+B7 foi repeticao involuntaria de B3 (limpeza falhou: funcao com caminho vazio); 2o start manual	isn2	rebal:counters	1
+B7 foi repeticao involuntaria de B3 (limpeza falhou: funcao com caminho vazio); 2o start manual	isn2	rebal:counters-async	1
+B7 foi repeticao involuntaria de B3 (limpeza falhou: funcao com caminho vazio); 2o start manual	isn2	rebal:sessions	1
+B7 foi repeticao involuntaria de B3 (limpeza falhou: funcao com caminho vazio); 2o start manual	isn2	rebal:sessions-async	1
+B7 foi repeticao involuntaria de B3 (limpeza falhou: funcao com caminho vazio); 2o start manual	isn2	visao	1
+B7 foi repeticao involuntaria de B3 (limpeza falhou: funcao com caminho vazio); 2o start manual	isn3	rebal:counters	1
+B7 foi repeticao involuntaria de B3 (limpeza falhou: funcao com caminho vazio); 2o start manual	isn3	rebal:counters-async	1
+B7 foi repeticao involuntaria de B3 (limpeza falhou: funcao com caminho vazio); 2o start manual	isn3	rebal:sessions	1
+B7 foi repeticao involuntaria de B3 (limpeza falhou: funcao com caminho vazio); 2o start manual	isn3	rebal:sessions-async	1
+B7 foi repeticao involuntaria de B3 (limpeza falhou: funcao com caminho vazio); 2o start manual	isn3	start:counters	1
+B7 foi repeticao involuntaria de B3 (limpeza falhou: funcao com caminho vazio); 2o start manual	isn3	start:counters-async	1
+B7 foi repeticao involuntaria de B3 (limpeza falhou: funcao com caminho vazio); 2o start manual	isn3	start:sessions	1
+B7 foi repeticao involuntaria de B3 (limpeza falhou: funcao com caminho vazio); 2o start manual	isn3	start:sessions-async	1
+B7 foi repeticao involuntaria de B3 (limpeza falhou: funcao com caminho vazio); 2o start manual	isn3	visao	1
+B8 (b)+(a): kill 40 s, durante a queda remote-timeout=7000 e limpeza de caches.xml	isn1	rebal:counters	4
+B8 (b)+(a): kill 40 s, durante a queda remote-timeout=7000 e limpeza de caches.xml	isn1	rebal:counters-async	4
+B8 (b)+(a): kill 40 s, durante a queda remote-timeout=7000 e limpeza de caches.xml	isn1	rebal:sessions	4
+B8 (b)+(a): kill 40 s, durante a queda remote-timeout=7000 e limpeza de caches.xml	isn1	rebal:sessions-async	4
+B8 (b)+(a): kill 40 s, durante a queda remote-timeout=7000 e limpeza de caches.xml	isn1	visao	2
+B8 (b)+(a): kill 40 s, durante a queda remote-timeout=7000 e limpeza de caches.xml	isn2	rebal:counters	2
+B8 (b)+(a): kill 40 s, durante a queda remote-timeout=7000 e limpeza de caches.xml	isn2	rebal:counters-async	2
+B8 (b)+(a): kill 40 s, durante a queda remote-timeout=7000 e limpeza de caches.xml	isn2	rebal:sessions	2
+B8 (b)+(a): kill 40 s, durante a queda remote-timeout=7000 e limpeza de caches.xml	isn2	rebal:sessions-async	2
+B8 (b)+(a): kill 40 s, durante a queda remote-timeout=7000 e limpeza de caches.xml	isn2	visao	2
+B8 (b)+(a): kill 40 s, durante a queda remote-timeout=7000 e limpeza de caches.xml	isn3	rebal:counters	1
+B8 (b)+(a): kill 40 s, durante a queda remote-timeout=7000 e limpeza de caches.xml	isn3	rebal:counters-async	1
+B8 (b)+(a): kill 40 s, durante a queda remote-timeout=7000 e limpeza de caches.xml	isn3	rebal:sessions	1
+B8 (b)+(a): kill 40 s, durante a queda remote-timeout=7000 e limpeza de caches.xml	isn3	rebal:sessions-async	1
+B8 (b)+(a): kill 40 s, durante a queda remote-timeout=7000 e limpeza de caches.xml	isn3	start:counters	1
+B8 (b)+(a): kill 40 s, durante a queda remote-timeout=7000 e limpeza de caches.xml	isn3	start:counters-async	1
+B8 (b)+(a): kill 40 s, durante a queda remote-timeout=7000 e limpeza de caches.xml	isn3	start:sessions	1
+B8 (b)+(a): kill 40 s, durante a queda remote-timeout=7000 e limpeza de caches.xml	isn3	start:sessions-async	1
+B8 (b)+(a): kill 40 s, durante a queda remote-timeout=7000 e limpeza de caches.xml	isn3	visao	1
+INCB2 inicio (item 4): XML sem caches + cria-caches.sh	isn1	rebal:counters	3
+INCB2 inicio (item 4): XML sem caches + cria-caches.sh	isn1	rebal:counters-async	3
+INCB2 inicio (item 4): XML sem caches + cria-caches.sh	isn1	rebal:sessions	3
+INCB2 inicio (item 4): XML sem caches + cria-caches.sh	isn1	rebal:sessions-async	4
+INCB2 inicio (item 4): XML sem caches + cria-caches.sh	isn1	start:counters	1
+INCB2 inicio (item 4): XML sem caches + cria-caches.sh	isn1	start:counters-async	1
+INCB2 inicio (item 4): XML sem caches + cria-caches.sh	isn1	start:sessions	1
+INCB2 inicio (item 4): XML sem caches + cria-caches.sh	isn1	start:sessions-async	1
+INCB2 inicio (item 4): XML sem caches + cria-caches.sh	isn1	visao	3
+INCB2 inicio (item 4): XML sem caches + cria-caches.sh	isn2	rebal:counters	2
+INCB2 inicio (item 4): XML sem caches + cria-caches.sh	isn2	rebal:counters-async	2
+INCB2 inicio (item 4): XML sem caches + cria-caches.sh	isn2	rebal:sessions	2
+INCB2 inicio (item 4): XML sem caches + cria-caches.sh	isn2	rebal:sessions-async	2
+INCB2 inicio (item 4): XML sem caches + cria-caches.sh	isn2	start:counters	1
+INCB2 inicio (item 4): XML sem caches + cria-caches.sh	isn2	start:counters-async	1
+INCB2 inicio (item 4): XML sem caches + cria-caches.sh	isn2	start:sessions	1
+INCB2 inicio (item 4): XML sem caches + cria-caches.sh	isn2	start:sessions-async	1
+INCB2 inicio (item 4): XML sem caches + cria-caches.sh	isn2	visao	2
+INCB2 inicio (item 4): XML sem caches + cria-caches.sh	isn3	rebal:counters	2
+INCB2 inicio (item 4): XML sem caches + cria-caches.sh	isn3	rebal:counters-async	2
+INCB2 inicio (item 4): XML sem caches + cria-caches.sh	isn3	rebal:sessions	2
+INCB2 inicio (item 4): XML sem caches + cria-caches.sh	isn3	rebal:sessions-async	1
+INCB2 inicio (item 4): XML sem caches + cria-caches.sh	isn3	start:counters	1
+INCB2 inicio (item 4): XML sem caches + cria-caches.sh	isn3	start:counters-async	1
+INCB2 inicio (item 4): XML sem caches + cria-caches.sh	isn3	start:sessions	1
+INCB2 inicio (item 4): XML sem caches + cria-caches.sh	isn3	start:sessions-async	1
+INCB2 inicio (item 4): XML sem caches + cria-caches.sh	isn3	visao	1
+R1 KILL isn3 (inject-crash --modo kill --duration 60)	isn1	rebal:counters	4
+R1 KILL isn3 (inject-crash --modo kill --duration 60)	isn1	rebal:counters-async	4
+R1 KILL isn3 (inject-crash --modo kill --duration 60)	isn1	rebal:sessions-async	4
+R1 KILL isn3 (inject-crash --modo kill --duration 60)	isn1	visao	2
+R1 KILL isn3 (inject-crash --modo kill --duration 60)	isn2	rebal:counters	2
+R1 KILL isn3 (inject-crash --modo kill --duration 60)	isn2	rebal:counters-async	2
+R1 KILL isn3 (inject-crash --modo kill --duration 60)	isn2	rebal:sessions-async	2
+R1 KILL isn3 (inject-crash --modo kill --duration 60)	isn2	visao	2
+R1 KILL isn3 (inject-crash --modo kill --duration 60)	isn3	rebal:counters	1
+R1 KILL isn3 (inject-crash --modo kill --duration 60)	isn3	rebal:counters-async	1
+R1 KILL isn3 (inject-crash --modo kill --duration 60)	isn3	rebal:sessions-async	1
+R1 KILL isn3 (inject-crash --modo kill --duration 60)	isn3	start:counters	1
+R1 KILL isn3 (inject-crash --modo kill --duration 60)	isn3	start:counters-async	1
+R1 KILL isn3 (inject-crash --modo kill --duration 60)	isn3	start:sessions	1
+R1 KILL isn3 (inject-crash --modo kill --duration 60)	isn3	start:sessions-async	1
+R1 KILL isn3 (inject-crash --modo kill --duration 60)	isn3	visao	1
+R1 ENABLE rebalanceamento de sessions	isn1	rebal:sessions	2
+R1 ENABLE rebalanceamento de sessions	isn2	rebal:sessions	1
+R1 ENABLE rebalanceamento de sessions	isn3	rebal:sessions	1
+R2 KILL isn1 (inject-crash --modo kill --duration 60)	isn1	rebal:counters	1
+R2 KILL isn1 (inject-crash --modo kill --duration 60)	isn1	rebal:counters-async	1
+R2 KILL isn1 (inject-crash --modo kill --duration 60)	isn1	rebal:sessions	1
+R2 KILL isn1 (inject-crash --modo kill --duration 60)	isn1	rebal:sessions-async	1
+R2 KILL isn1 (inject-crash --modo kill --duration 60)	isn1	start:counters	1
+R2 KILL isn1 (inject-crash --modo kill --duration 60)	isn1	start:counters-async	1
+R2 KILL isn1 (inject-crash --modo kill --duration 60)	isn1	start:sessions	1
+R2 KILL isn1 (inject-crash --modo kill --duration 60)	isn1	start:sessions-async	1
+R2 KILL isn1 (inject-crash --modo kill --duration 60)	isn1	visao	1
+R2 KILL isn1 (inject-crash --modo kill --duration 60)	isn2	rebal:counters	4
+R2 KILL isn1 (inject-crash --modo kill --duration 60)	isn2	rebal:counters-async	4
+R2 KILL isn1 (inject-crash --modo kill --duration 60)	isn2	rebal:sessions	4
+R2 KILL isn1 (inject-crash --modo kill --duration 60)	isn2	rebal:sessions-async	4
+R2 KILL isn1 (inject-crash --modo kill --duration 60)	isn2	visao	2
+R2 KILL isn1 (inject-crash --modo kill --duration 60)	isn3	rebal:counters	2
+R2 KILL isn1 (inject-crash --modo kill --duration 60)	isn3	rebal:counters-async	2
+R2 KILL isn1 (inject-crash --modo kill --duration 60)	isn3	rebal:sessions	2
+R2 KILL isn1 (inject-crash --modo kill --duration 60)	isn3	rebal:sessions-async	2
+R2 KILL isn1 (inject-crash --modo kill --duration 60)	isn3	visao	2
+R3 KILL isn2 (inject-crash --modo kill --duration 60)	isn1	visao	2
+R3 KILL isn2 (inject-crash --modo kill --duration 60)	isn2	start:counters	1
+R3 KILL isn2 (inject-crash --modo kill --duration 60)	isn2	start:counters-async	1
+R3 KILL isn2 (inject-crash --modo kill --duration 60)	isn2	start:sessions	1
+R3 KILL isn2 (inject-crash --modo kill --duration 60)	isn2	start:sessions-async	1
+R3 KILL isn2 (inject-crash --modo kill --duration 60)	isn2	visao	1
+R3 KILL isn2 (inject-crash --modo kill --duration 60)	isn3	visao	2
+R3 ENABLE global	isn1	rebal:counters	1
+R3 ENABLE global	isn1	rebal:counters-async	1
+R3 ENABLE global	isn1	rebal:sessions	1
+R3 ENABLE global	isn1	rebal:sessions-async	1
+R3 ENABLE global	isn2	rebal:counters	1
+R3 ENABLE global	isn2	rebal:counters-async	1
+R3 ENABLE global	isn2	rebal:sessions	1
+R3 ENABLE global	isn2	rebal:sessions-async	1
+R3 ENABLE global	isn3	rebal:counters	2
+R3 ENABLE global	isn3	rebal:counters-async	2
+R3 ENABLE global	isn3	rebal:sessions	2
+R3 ENABLE global	isn3	rebal:sessions-async	2

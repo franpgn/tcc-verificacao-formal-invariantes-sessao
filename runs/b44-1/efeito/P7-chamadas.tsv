@@ -1,0 +1,1 @@
+2026-11-04T21:33:45.963Z	P7-set-degraded-isn3-isolado	org.infinispan.remoting.transport.jgroups.SuspectException: ISPN000400: Node isn1-38505 was suspected	500	41.606381

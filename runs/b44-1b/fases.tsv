@@ -1,0 +1,65 @@
+2026-11-04T21:56:34.433Z	INCA inicio: XML da base (caches no XML)
+2026-11-04T21:58:01.350Z	A1 escorva de sessions e sessions-async
+2026-11-04T21:58:01.960Z	A1 alias 'sessions' (nome de cache existente) em sessions-async
+2026-11-04T21:58:02.863Z	A1 alias sess-ativo em sessions-async
+2026-11-04T21:58:03.891Z	A1 alias sess-ativo tambem em sessions (sem tirar do async)
+2026-11-04T21:58:16.563Z	A1 limpeza: aliases de sessions = vazio
+2026-11-04T21:58:41.291Z	A1 reparo: aliases sessions-async vazio e de novo sess-ativo
+2026-11-04T21:58:59.469Z	INCA fim (aliases inconsistentes entre nos); recriando
+2026-11-04T21:59:15.004Z	INCA2 inicio
+2026-11-04T21:59:53.388Z	A2 escorva + alias sess-ativo em sessions-async
+2026-11-04T22:00:13.702Z	A2 TROCA 1/2: sessions-async aliases=sess-inativo
+2026-11-04T22:00:13.972Z	A2 TROCA 2/2: sessions aliases=sess-ativo
+2026-11-04T22:00:38.694Z	A2 cliente novo (RemoteCacheManager novo) depois da troca
+2026-11-04T22:01:22.579Z	A2 fim
+2026-11-04T22:02:28.886Z	C1 inicio: criar/remover cache pela REST sob carga S3 sync 80 s
+2026-11-04T22:02:45.350Z	C1 POST sessions-sync2 (SYNC, permanente) via isn2
+2026-11-04T22:02:59.603Z	C1 POST sessions-sync3 (SYNC, VOLATILE) via isn1
+2026-11-04T22:03:45.519Z	C1 DELETE sessions-sync2 e sessions-sync3
+2026-11-04T22:04:05.408Z	C1 fim
+2026-11-04T22:04:54.803Z	R0 reverter aliases para o XML (PUT da configuracao sem aliases)
+2026-11-04T22:05:07.489Z	F1a INCA2 sem contorno: inject-crash --modo kill --duration 20 em b441-isn3
+2026-11-04T22:05:42.943Z	F1a resultado: injetor exit=0, isn3 exited
+2026-11-04T22:06:06.655Z	F1b contorno (a): inject-crash kill 30 s + limpeza de caches.xml na janela (remote-timeout sessions=17500)
+2026-11-04T22:06:46.255Z	F1b resultado: isn3 ok
+2026-11-04T22:06:47.562Z	F1c contorno (a): inject-crash kill 30 s + limpeza de caches.xml na janela (remote-timeout sessions=12000)
+2026-11-04T22:07:29.822Z	F1c resultado: isn3 exited
+2026-11-04T22:08:12.827Z	INCA2 fim
+2026-11-04T22:08:38.139Z	INCB inicio: XML sem caches (contorno b)
+2026-11-04T22:08:53.550Z	B0 criacao dos 4 caches pela REST (isn1)
+2026-11-04T22:08:55.789Z	B1 primeira mudanca sem escorva: sessions remote-timeout=12000
+2026-11-04T22:09:17.902Z	B0b counters (JSON sem envoltorio, remote-timeout 17500) e sessions volta a 17500
+2026-11-04T22:09:39.329Z	B2 inject-crash kill 20 s em isn3 (sessions remote-timeout=12000, criado com 17500)
+2026-11-04T22:10:08.935Z	B2 resultado: isn3 ok
+2026-11-04T22:10:09.531Z	B3 inject-crash kill 40 s; durante a queda: remote-timeout=10000 e cria sessions-sync2; apaga counters-async? nao
+2026-11-04T22:12:05.188Z	B3 resultado: isn3 exited
+2026-11-04T22:12:06.574Z	B5 segundo reinicio seguido (podman restart, analogo ao P8)
+2026-11-04T22:12:23.555Z	B5 resultado: isn3 ok
+2026-11-04T22:12:46.062Z	B6 repeticao de B3: kill 40 s, durante a queda remote-timeout=9000; depois 2o podman start
+2026-11-04T22:13:56.411Z	B6 1o start: isn3 exited
+2026-11-04T22:14:03.723Z	B6 2o start: isn3 ok
+2026-11-04T22:14:22.750Z	B7 (b)+(a): kill 40 s, durante a queda remote-timeout=8000 e limpeza de caches.xml
+2026-11-04T22:15:14.506Z	B7 resultado: isn3 exited
+2026-11-04T22:15:23.734Z	B7 foi repeticao involuntaria de B3 (limpeza falhou: funcao com caminho vazio); 2o start manual
+2026-11-04T22:15:29.737Z	B8 (b)+(a): kill 40 s, durante a queda remote-timeout=7000 e limpeza de caches.xml
+2026-11-04T22:16:18.216Z	B8 resultado: isn3 ok
+2026-11-04T22:16:42.404Z	R0 povoamento: 3000 chaves em sessions e 3000 em counters via REST
+2026-11-04T22:18:39.209Z	INTERRUPCAO: bloco S5 da VM; cluster derrubado a pedido do coordenador (item 4 nao executado)
+2026-11-05T01:38:35.320Z	INCB2 inicio (item 4): XML sem caches + cria-caches.sh
+2026-11-05T01:38:57.128Z	R0b povoamento: 3000 chaves em sessions e em counters (REST, 16 em paralelo)
+2026-11-05T01:43:57.257Z	R1 inicio: rebalanceamento de sessions desligado (counters ligado, controle); sai isn3 (nao coordenador)
+2026-11-05T01:44:03.921Z	R1 KILL isn3 (inject-crash --modo kill --duration 60)
+2026-11-05T01:45:14.309Z	R1 isn3 de volta: ok
+2026-11-05T01:45:34.392Z	R1 ENABLE rebalanceamento de sessions
+2026-11-05T01:47:08.539Z	R1 fim
+2026-11-05T01:47:35.307Z	R2 inicio: rebalanceamento de sessions desligado; sai isn1 (COORDENADOR)
+2026-11-05T01:47:38.568Z	R2 KILL isn1 (inject-crash --modo kill --duration 60)
+2026-11-05T01:48:48.375Z	R2 isn1 de volta: ok
+2026-11-05T01:49:15.056Z	R2 ENABLE rebalanceamento de sessions
+2026-11-05T01:49:26.800Z	R2 fim
+2026-11-05T01:50:07.233Z	R3 inicio: rebalanceamento GLOBAL desligado; sai isn2 (COORDENADOR)
+2026-11-05T01:50:09.751Z	R3 KILL isn2 (inject-crash --modo kill --duration 60)
+2026-11-05T01:51:20.457Z	R3 isn2 de volta: ok
+2026-11-05T01:51:39.629Z	R3 ENABLE global
+2026-11-05T01:51:48.565Z	R3 fim
+2026-11-05T01:52:17.610Z	INCB2 fim: derrubado

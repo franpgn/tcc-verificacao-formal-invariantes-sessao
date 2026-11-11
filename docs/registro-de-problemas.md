@@ -1553,3 +1553,75 @@ retornam `BLOCKED` e `validate` retorna `NONE` (sem sessão criada).
 Isso é comportamento de domínio correto (códigos de sucesso, não erro) e
 produz dados válidos com `taxa_erro ~0`. Para variar mais o estado em
 baterias futuras, ampliar o universo de identidades.
+
+## 2026-11-04 — B-44.1: reconfiguração em tempo de execução do Infinispan 15.0.21 (`docs/b44-1-reconfiguracao-infinispan.md`)
+
+> Numeração: P-28 está na branch `docs/plano-implementacao-controlador`; estas entradas começam em P-29.
+> Brutos em `runs/b44-1/` (*cluster* local `b441`, sem VM).
+
+### P-29 — `set-mutable-attribute` num cache declarado no XML: a 1ª chamada falha e a 2ª pode valer só em parte dos nós
+
+- **Sintoma:** 1ª chamada → HTTP 400 `ISPN000500 Cannot create clustered configuration ... incompatible`, nenhum nó
+  aplica. 2ª chamada → 400 de novo, mas alguns nós aplicam (`Updated attribute ...` no `server.log`), outros não:
+  `counters-async` ficou com `acquire-timeout` 5000/15000/5000 em `isn1/isn2/isn3`. Em `indexing.indexed-entities`
+  a aplicação parcial travou toda mudança seguinte do cache (`ISPN000610`), e foi preciso recriar o *cluster*.
+- **Causa:** a atualização grava no cache de estado `org.infinispan.CONFIG`. Para um cache do XML não há entrada,
+  então a 1ª gravação chega aos ouvintes como criação (`GlobalConfigurationManagerImpl.java:286-293`) e conflita com
+  o cache existente. A validação de uma mudança roda por nó, sem atomicidade entre nós.
+- **Contorno verificado:** escorva (gravar o valor atual antes da primeira mudança). Os 4 caches responderam 200 e
+  leram igual nos 3 nós; depois disso todas as mudanças foram uniformes. Sempre ler de volta nos 3 nós.
+- **Status:** `ABERTO` (contorno para o B-44.2).
+
+### P-30 — depois de qualquer mudança de atributo, o nó não reinicia (`ISPN000438`); ao esvaziar `caches.xml`, só volta se o valor do *cluster* for igual ao do XML
+
+- **Sintoma:** `podman restart`/`podman start` do nó → `FATAL ISPN080028 ... ISPN000438: Cache with name
+  'sessions-async' is defined more than once!`. Com `data/caches.xml` esvaziado (`podman cp`): `ISPN000500` se o
+  *cluster* tem valor diferente do XML; com valor igual, volta (`HEALTHY 3` em 5 s), mas o *rejoin* repovoa o
+  `caches.xml` e o reinício seguinte falha de novo (P8).
+- **Causa:** a criação vinda do estado global é persistida em `data/caches.xml`
+  (`OverlayLocalConfigurationStorage.java:89-100`); no *boot*, XML + `caches.xml` têm o mesmo nome
+  (`CacheParser.java:900-911`).
+- **Impacto:** a recuperação do F1 (`scripts/inject-crash.sh`, `podman start` no mesmo container) falha em
+  qualquer execução que tenha tocado em atributo. `podman-compose down/up` limpa.
+- **Status:** `ABERTO`, decisão de arquitetura para o Gestor (limpar o arquivo antes do `start`, ou criar os caches
+  pela REST em vez do XML).
+
+### P-31 — `remote-timeout` curto em DIST_SYNC: escrita reportada como falha fica aplicada, às vezes só no *backup*
+
+- **Sintoma (P2a):** `remote-timeout`=3000, dono pausado 12 s, 8 PUTs: 4 × 500 `ISPN000476`. Depois da retomada,
+  2 dessas chaves estavam nos dois donos e 2 só no *backup* (`isn3`), não no primário (`isn2`): leituras por
+  `isn1`/`isn2` → 404, por `isn3` → valor.
+- **Diagnóstico:** observado, não explicado (caminho interno do protocolo de escrita não investigado).
+- **Impacto:** a ação AC-3 do plano não é só temporal (classe a); muda o resultado das escritas.
+- **Status:** `ABERTO`.
+
+### P-32 — `cli.sh -f` sai com código 0 quando o servidor recusa o comando
+
+- **Sintoma:** erros impressos (`Cannot convert ...`, `Not Found`, `ISPN000500`) com `exit=0` (E2, E3, P6a).
+- **Impacto:** o atuador não pode confiar no código de saída da CLI; usar REST (código HTTP) e leitura de volta.
+- **Status:** `ACEITO` (comportamento da ferramenta).
+
+## 2026-11-05 — B-44.1b (`docs/b44-1b-alias-criacao-p30-rebalanceamento.md`)
+
+### P-33 — aliases de cache não servem para trocar a política de replicação em tempo de execução
+
+- **Sintoma:** Hot Rod `getCache(alias)` devolve `null` (1842/1842 e 192/192 operações falharam); a REST continua no
+  cache antigo depois de uma troca de alias com 200 nos 3 nós; uma troca rejeitada (`ISPN000975`) seguida de
+  limpeza deixou o alias sem resolver em 2 de 3 nós; valor vazio cria o alias `""`.
+- **Causa:** `HotRodServer.java:429` só aceita nomes de `getCacheNames()`; `RestCacheManager.java:96-101` guarda a
+  resolução; `ConfigurationManager.removeAliases` remove pelo nome sem conferir o dono.
+- **Status:** `ACEITO` (fora do espaço de ação).
+
+### P-34 — `disable-rebalancing` por cache se perde quando o coordenador cai
+
+- **Sintoma (R2):** com `sessions` desligado, a queda do coordenador `isn1` levou o novo coordenador a rebalancear
+  `sessions` em 4,6 s. A forma global (R3) sobreviveu à queda do coordenador.
+- **Causa:** a recuperação agrega só o flag global (`ClusterTopologyManagerImpl.java:369`).
+- **Status:** `ABERTO` para o B-44.2: usar a forma global.
+
+### P-35 — `inject-crash.sh` sai com 0 quando o nó não consegue voltar
+
+- **Sintoma:** F1a, F1c, B3: `OK: F1 ... reentrada acionada`, exit 0, e o container sai segundos depois
+  (`ISPN000438`/`ISPN000500`).
+- **Impacto:** o *runner* precisa conferir a saúde do nó depois do injetor. Não alterei o injetor.
+- **Status:** `ABERTO`.

@@ -1,0 +1,12 @@
+2026-11-04T21:17:24.605Z	b441-P3-lock-a-1		204	0.013666
+2026-11-04T21:17:24.936Z	b441-P3-lock-a-1		204	0.029325
+2026-11-04T21:17:24.949Z	b441-P3-lock-a-2	ISPN000299: Unable to acquire lock after 2 seconds for key WrappedByteArray[\b\4\4\1\-\P\3\-\l\o\c\k\-\a\-\2 (16 bytes)] and requestor CommandInvocation:isn1-38505:166. Lock is held by CommandInvocation:isn1-38505:161	500	2.026877
+2026-11-04T21:17:24.963Z	b441-P3-lock-a-3	ISPN000299: Unable to acquire lock after 2 seconds for key WrappedByteArray[\b\4\4\1\-\P\3\-\l\o\c\k\-\a\-\3 (16 bytes)] and requestor CommandInvocation:isn1-38505:165. Lock is held by CommandInvocation:isn1-38505:162	500	2.016546
+2026-11-04T21:17:25.003Z	b441-P3-lock-a-5	ISPN000299: Unable to acquire lock after 2 seconds for key WrappedByteArray[\b\4\4\1\-\P\3\-\l\o\c\k\-\a\-\5 (16 bytes)] and requestor CommandInvocation:isn1-38505:167. Lock is held by CommandInvocation:isn1-38505:163	500	2.010633
+2026-11-04T21:17:24.645Z	b441-P3-lock-a-3		204	11.974896
+2026-11-04T21:17:24.623Z	b441-P3-lock-a-2		204	11.994245
+2026-11-04T21:17:24.713Z	b441-P3-lock-a-6		204	11.890449
+2026-11-04T21:17:24.652Z	b441-P3-lock-a-4		204	11.949964
+2026-11-04T21:17:25.023Z	b441-P3-lock-a-6		204	11.602762
+2026-11-04T21:17:24.977Z	b441-P3-lock-a-4		204	11.672580
+2026-11-04T21:17:24.711Z	b441-P3-lock-a-5		204	11.890250

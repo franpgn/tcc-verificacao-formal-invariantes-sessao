@@ -1,0 +1,5 @@
+rotulo	metodo	url	t_ini_epoch_ns	t_fim_epoch_ns	status	corpo
+ignorar	POST	http://127.0.0.1:12902/rest/v2/server/ignored-caches/sessions-async	1793983109803174800	1793983124822079400	500	ISPN000476: Timed out waiting for responses for request 976 from isn3-46735,isn1-9390 after 15 seconds
+ignorar	POST	http://127.0.0.1:12902/rest/v2/server/ignored-caches/counters-async	1793983109803174800	1793983156468553100	204	
+desfazer	DELETE	http://127.0.0.1:12902/rest/v2/server/ignored-caches/sessions-async	1793983269006636400	1793983270065893200	204	
+desfazer	DELETE	http://127.0.0.1:12902/rest/v2/server/ignored-caches/counters-async	1793983269007636200	1793983270068892800	204	

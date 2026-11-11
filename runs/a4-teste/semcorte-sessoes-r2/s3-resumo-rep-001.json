@@ -1,0 +1,39 @@
+{
+  "parametros" : {
+    "modo_cliente" : "pinned",
+    "admin_node" : "isn1",
+    "usuarios" : 20,
+    "contas_limite" : 10,
+    "semente" : 1075005,
+    "hotrod_timeout_ms" : 2000,
+    "hotrod_retentativas" : 1,
+    "app_retentativas" : 2,
+    "idle_timeout_sec" : 30.0,
+    "nota" : "o resumo inclui o warm-up; acoes anteriores a medicao nao entram no CSV de eventos"
+  },
+  "total_acoes" : 1268,
+  "contadores" : {
+    "acao|Block|ERROR_TRANSPORT" : 2,
+    "acao|Block|OK_NOOP" : 2,
+    "acao|IncrementFailure|OK_STATUS" : 98,
+    "acao|Login|BLOCKED" : 44,
+    "acao|Login|ERROR_TRANSPORT" : 8,
+    "acao|Login|OK_LOGIN" : 50,
+    "acao|Logout|ERROR_TRANSPORT" : 3,
+    "acao|Logout|OK_NOOP" : 21,
+    "acao|ResetFailures|OK_NOOP" : 6,
+    "acao|Unblock|OK_NOOP" : 12,
+    "acao|Validate|ERROR_TRANSPORT" : 42,
+    "acao|Validate|OK_VALIDATE:INVALID" : 98,
+    "acao|Validate|OK_VALIDATE:VALID" : 882,
+    "evento|AbandonoSilencioso" : 14,
+    "evento|BlockAdminSemConfirmacao" : 2,
+    "evento|LogoutFalhouSessaoOrfa" : 3,
+    "evento|SessaoEncerradaNoServidor" : 1,
+    "evento|SessaoOrfa" : 17,
+    "falha-percebida|Block" : 2,
+    "falha-percebida|Login" : 8,
+    "falha-percebida|Logout" : 3,
+    "falha-percebida|Validate" : 42
+  }
+}

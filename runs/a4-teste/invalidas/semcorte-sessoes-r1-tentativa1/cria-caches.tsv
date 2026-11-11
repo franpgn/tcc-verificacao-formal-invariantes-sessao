@@ -1,0 +1,9 @@
+2026-11-06T16:49:09.823Z	sessions	POST	http://127.0.0.1:12901/rest/v2/caches/sessions	200	0.276
+2026-11-06T16:49:10.329Z	sessions	GET	http://127.0.0.1:12901/rest/v2/caches/sessions?action=config	200	0.251
+2026-11-06T16:49:11.070Z	sessions	GET	http://127.0.0.1:12902/rest/v2/caches/sessions?action=config	200	0.286
+2026-11-06T16:49:11.799Z	sessions	GET	http://127.0.0.1:12903/rest/v2/caches/sessions?action=config	200	0.279
+2026-11-06T16:49:12.844Z	counters	POST	http://127.0.0.1:12901/rest/v2/caches/counters	200	0.494
+2026-11-06T16:49:13.561Z	counters	GET	http://127.0.0.1:12901/rest/v2/caches/counters?action=config	200	0.448
+2026-11-06T16:49:14.677Z	counters	GET	http://127.0.0.1:12902/rest/v2/caches/counters?action=config	200	0.649
+2026-11-06T16:49:15.930Z	counters	GET	http://127.0.0.1:12903/rest/v2/caches/counters?action=config	200	0.613
+2026-11-06T16:49:33.131Z	sessions-async	POST	http://127.0.0.1:12901/rest/v2/caches/sessions-async	500	15.949

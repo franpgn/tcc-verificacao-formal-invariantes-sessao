@@ -1,0 +1,1 @@
+{"cluster_health":{"cluster_name":"cluster-tcc","health_status":"HEALTHY","number_of_nodes":3,"node_names":["isn1-56338","isn2-50911","isn3-36001"]},"cache_health":[{"status":"HEALTHY","cache_name":"___protobuf_metadata"},{"status":"HEALTHY","cache_name":"___script_cache"}]}

@@ -1,0 +1,74 @@
+{
+ "execucao": "corte-sessoes-r1",
+ "caso": "corte-sessoes",
+ "alvo": "isn2",
+ "instantes_rel_pedido_s": {
+  "corte": null,
+  "pedido": null,
+  "cura": null,
+  "fusao_vista_harness": null,
+  "desfazer": null
+ },
+ "acoes": [],
+ "sondas": {},
+ "ignorados_transicoes": [
+  {
+   "no": "isn3",
+   "ini_s": null,
+   "fim_s": null,
+   "ignorados": "-"
+  },
+  {
+   "no": "isn2",
+   "ini_s": null,
+   "fim_s": null,
+   "ignorados": "-"
+  },
+  {
+   "no": "isn1",
+   "ini_s": null,
+   "fim_s": null,
+   "ignorados": "-"
+  },
+  {
+   "no": "isn2",
+   "ini_s": null,
+   "fim_s": null,
+   "ignorados": "erro:TimeoutError"
+  },
+  {
+   "no": "isn2",
+   "ini_s": null,
+   "fim_s": null,
+   "ignorados": "-"
+  }
+ ],
+ "cluster_transicoes": [
+  {
+   "no": "isn3",
+   "ini_s": null,
+   "estado": "size=3 coord=True sessions-async=AVAILABLE counters-async=AVAILABLE"
+  },
+  {
+   "no": "isn1",
+   "ini_s": null,
+   "estado": "size=3 coord=False sessions-async=AVAILABLE counters-async=AVAILABLE"
+  },
+  {
+   "no": "isn2",
+   "ini_s": null,
+   "estado": "size=3 coord=False sessions-async=AVAILABLE counters-async=AVAILABLE"
+  },
+  {
+   "no": "isn2",
+   "ini_s": null,
+   "estado": "erro:TimeoutError sessions-async=AVAILABLE counters-async=AVAILABLE"
+  }
+ ],
+ "carga_stdout": [],
+ "carga_exit": null,
+ "vistas": [],
+ "servidor_ISPN005003_por_no": {},
+ "servidor_ISPN000136_por_no": {},
+ "servidor_mensagens": []
+}

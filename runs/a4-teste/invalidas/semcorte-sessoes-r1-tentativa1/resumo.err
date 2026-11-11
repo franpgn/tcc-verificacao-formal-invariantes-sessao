@@ -1,0 +1,5 @@
+Traceback (most recent call last):
+  File "C:\Users\Francesco\Development\tcc\wt-a4\runs\a4-teste\scripts\analisar_a4.py", line 35, in <module>
+    alvo = re.search(r'alvo=(isn\d)', par).group(1)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'NoneType' object has no attribute 'group'

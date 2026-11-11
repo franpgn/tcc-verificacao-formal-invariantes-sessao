@@ -1,0 +1,28 @@
+t_ini_ns	t_fim_ns	no	estado
+1793983824831977500	1793983824892837400	isn3	size=3 coord=True sessions-async=AVAILABLE counters-async=AVAILABLE
+1793983824852987000	1793983824902862900	isn1	size=3 coord=False sessions-async=AVAILABLE counters-async=AVAILABLE
+1793983824852987000	1793983824915373500	isn2	size=3 coord=False sessions-async=AVAILABLE counters-async=AVAILABLE
+1793983858553611100	1793983859628684200	isn2	erro:TimeoutError sessions-async=AVAILABLE counters-async=AVAILABLE
+1793983860130001600	1793983862198248600	isn2	erro:TimeoutError sessions-async=AVAILABLE counters-async=erro:TimeoutError
+1793983862699190200	1793983865788274400	isn2	erro:TimeoutError sessions-async=erro:TimeoutError counters-async=erro:TimeoutError
+1793983866289225900	1793983867334511800	isn2	erro:500 sessions-async=erro:500 counters-async=erro:TimeoutError
+1793983867835381000	1793983867867918900	isn2	erro:401 sessions-async=erro:401 counters-async=erro:401
+1793983868368738100	1793983869386253700	isn2	erro:401 sessions-async=erro:TimeoutError counters-async=erro:401
+1793983869886927000	1793983869892444800	isn2	erro:401 sessions-async=erro:401 counters-async=erro:401
+1793983869886927000	1793983870934980200	isn1	erro:TimeoutError sessions-async=AVAILABLE counters-async=AVAILABLE
+1793983870393737600	1793983872409376400	isn2	erro:TimeoutError sessions-async=erro:401 counters-async=erro:TimeoutError
+1793983872910623400	1793983872925279400	isn2	erro:401 sessions-async=erro:401 counters-async=erro:401
+1793983873426425000	1793983874450217700	isn2	erro:401 sessions-async=erro:RemoteDisconnected counters-async=erro:RemoteDisconnected
+1793983874876717200	1793983874892488400	isn3	erro:RemoteDisconnected sessions-async=erro:RemoteDisconnected counters-async=erro:ConnectionAbortedError
+1793983875393435500	1793983875408439900	isn3	erro:RemoteDisconnected sessions-async=erro:ConnectionAbortedError counters-async=erro:RemoteDisconnected
+1793983875909413300	1793983875954188100	isn3	erro:ConnectionAbortedError sessions-async=erro:ConnectionAbortedError counters-async=erro:ConnectionAbortedError
+1793983876454968400	1793983876494915100	isn3	erro:RemoteDisconnected sessions-async=erro:ConnectionAbortedError counters-async=erro:ConnectionAbortedError
+1793983874951645700	1793983877607702800	isn2	erro:TimeoutError sessions-async=erro:ConnectionResetError counters-async=erro:URLError
+1793983876022274500	1793983878112913000	isn1	erro:TimeoutError sessions-async=erro:500 counters-async=erro:TimeoutError
+1793983876995763800	1793983879314559600	isn3	erro:TimeoutError sessions-async=erro:ConnectionResetError counters-async=erro:URLError
+1793983878613892300	1793983879670645900	isn1	erro:TimeoutError sessions-async=erro:500 counters-async=erro:500
+1793983878108904700	1793983881117584700	isn2	erro:URLError sessions-async=erro:URLError counters-async=erro:URLError
+1793983880172007000	1793983881218011700	isn1	erro:TimeoutError sessions-async=erro:500 counters-async=erro:401
+1793983881718856400	1793983881739514700	isn1	erro:401 sessions-async=erro:401 counters-async=erro:401
+1793983879815553400	1793983882837676800	isn3	erro:URLError sessions-async=erro:URLError counters-async=erro:URLError
+1793983882240154400	1793983883278680000	isn1	erro:401 sessions-async=erro:TimeoutError counters-async=erro:401

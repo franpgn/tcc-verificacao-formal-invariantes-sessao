@@ -1,0 +1,590 @@
+{
+ "execucao": "corte-sessoes-r3",
+ "caso": "corte-sessoes",
+ "alvo": "isn3",
+ "instantes_rel_pedido_s": {
+  "corte": -5.327,
+  "pedido": 0.0,
+  "cura": 85.011,
+  "fusao_vista_harness": 136.178,
+  "desfazer": 153.305
+ },
+ "acoes": [
+  {
+   "rotulo": "ignorar",
+   "metodo": "POST",
+   "url": "v2/server/ignored-caches/sessions-async",
+   "ini_s": 0.0,
+   "duracao_s": 15.013,
+   "status": "500",
+   "corpo": "ISPN000476: Timed out waiting for responses for request 849 from isn1-41246 after 15 seconds"
+  },
+  {
+   "rotulo": "desfazer",
+   "metodo": "DELETE",
+   "url": "v2/server/ignored-caches/sessions-async",
+   "ini_s": 153.305,
+   "duracao_s": 0.04,
+   "status": "204",
+   "corpo": ""
+  }
+ ],
+ "sondas": {
+  "isn1/sessions-async": {
+   "ops_antes_do_pedido": 582,
+   "recusas_nos_30s_antes": 0,
+   "primeira_cache_indisponivel": null,
+   "primeiro_put_recusado": null,
+   "puts_confirmados_iniciados_apos_pedido": 1394,
+   "ultimo_put_confirmado_iniciado_apos_pedido_fim_s": 153.219,
+   "ultima_op_servida_iniciada_apos_pedido_fim_s": 153.219,
+   "resultados_pedido_ate_fim_da_janela": {
+    "get:OK": 1135,
+    "get:TransportException": 2,
+    "put:OK": 1394
+   },
+   "mensagens_de_recusa": {
+    "TransportException: TransportException: java.net.SocketTimeoutException: GetOperation{sessions-async, key=* flags=0, connection=/127.0.0.1:12901} timed out after 1000 ms ": 2
+   },
+   "desfazer_primeiro_put_servido_fim_s_rel_desfazer": 0.024,
+   "desfazer_primeira_op_servida_fim_s_rel_desfazer": 0.009,
+   "desfazer_ultima_recusa_fim_s_rel_desfazer": null,
+   "resultados_apos_desfazer": {
+    "get:OK": 202,
+    "put:OK": 202
+   },
+   "resultados_da_fusao_ao_desfazer": {
+    "get:OK": 155,
+    "put:OK": 156
+   }
+  },
+  "isn1/counters-async": {
+   "ops_antes_do_pedido": 590,
+   "recusas_nos_30s_antes": 0,
+   "primeira_cache_indisponivel": null,
+   "primeiro_put_recusado": null,
+   "puts_confirmados_iniciados_apos_pedido": 1393,
+   "ultimo_put_confirmado_iniciado_apos_pedido_fim_s": 153.236,
+   "ultima_op_servida_iniciada_apos_pedido_fim_s": 153.267,
+   "resultados_pedido_ate_fim_da_janela": {
+    "get:OK": 1225,
+    "get:TransportException": 1,
+    "put:OK": 1393
+   },
+   "mensagens_de_recusa": {
+    "TransportException: TransportException: java.net.SocketTimeoutException: GetOperation{counters-async, key=* flags=0, connection=/127.0.0.1:12901} timed out after 1000 ms ": 1
+   },
+   "desfazer_primeiro_put_servido_fim_s_rel_desfazer": 0.04,
+   "desfazer_primeira_op_servida_fim_s_rel_desfazer": 0.04,
+   "desfazer_ultima_recusa_fim_s_rel_desfazer": null,
+   "resultados_apos_desfazer": {
+    "get:OK": 201,
+    "put:OK": 202
+   },
+   "resultados_da_fusao_ao_desfazer": {
+    "get:OK": 156,
+    "put:OK": 156
+   }
+  },
+  "isn2/sessions-async": {
+   "ops_antes_do_pedido": 590,
+   "recusas_nos_30s_antes": 0,
+   "primeira_cache_indisponivel": null,
+   "primeiro_put_recusado": null,
+   "puts_confirmados_iniciados_apos_pedido": 1398,
+   "ultimo_put_confirmado_iniciado_apos_pedido_fim_s": 153.299,
+   "ultima_op_servida_iniciada_apos_pedido_fim_s": 153.299,
+   "resultados_pedido_ate_fim_da_janela": {
+    "get:OK": 1233,
+    "get:TransportException": 1,
+    "put:OK": 1398
+   },
+   "mensagens_de_recusa": {
+    "TransportException: TransportException: java.net.SocketTimeoutException: GetOperation{sessions-async, key=* flags=0, connection=/127.0.0.1:12902} timed out after 1000 ms ": 1
+   },
+   "desfazer_primeiro_put_servido_fim_s_rel_desfazer": 0.101,
+   "desfazer_primeira_op_servida_fim_s_rel_desfazer": 0.024,
+   "desfazer_ultima_recusa_fim_s_rel_desfazer": null,
+   "resultados_apos_desfazer": {
+    "get:OK": 202,
+    "put:OK": 201
+   },
+   "resultados_da_fusao_ao_desfazer": {
+    "get:OK": 156,
+    "put:OK": 156
+   }
+  },
+  "isn2/counters-async": {
+   "ops_antes_do_pedido": 604,
+   "recusas_nos_30s_antes": 0,
+   "primeira_cache_indisponivel": null,
+   "primeiro_put_recusado": null,
+   "puts_confirmados_iniciados_apos_pedido": 1396,
+   "ultimo_put_confirmado_iniciado_apos_pedido_fim_s": 153.266,
+   "ultima_op_servida_iniciada_apos_pedido_fim_s": 153.266,
+   "resultados_pedido_ate_fim_da_janela": {
+    "get:OK": 1382,
+    "get:TransportException": 1,
+    "put:OK": 1396
+   },
+   "mensagens_de_recusa": {
+    "TransportException: TransportException: java.net.SocketTimeoutException: GetOperation{counters-async, key=* flags=0, connection=/127.0.0.1:12902} timed out after 1000 ms ": 1
+   },
+   "desfazer_primeiro_put_servido_fim_s_rel_desfazer": 0.07,
+   "desfazer_primeira_op_servida_fim_s_rel_desfazer": 0.054,
+   "desfazer_ultima_recusa_fim_s_rel_desfazer": null,
+   "resultados_apos_desfazer": {
+    "get:OK": 202,
+    "put:OK": 201
+   },
+   "resultados_da_fusao_ao_desfazer": {
+    "get:OK": 156,
+    "put:OK": 156
+   }
+  },
+  "isn3/sessions-async": {
+   "ops_antes_do_pedido": 2361,
+   "recusas_nos_30s_antes": 2,
+   "primeira_cache_indisponivel": {
+    "fim_s": 0.02,
+    "ini_s": 0.018,
+    "op": "put"
+   },
+   "primeiro_put_recusado": {
+    "fim_s": 0.02,
+    "ini_s": 0.018,
+    "resultado": "HotRodClientException",
+    "mensagem": "org.infinispan.server.hotrod.CacheUnavailableException"
+   },
+   "puts_confirmados_iniciados_apos_pedido": 0,
+   "ultimo_put_confirmado_iniciado_apos_pedido_fim_s": null,
+   "ultima_op_servida_iniciada_apos_pedido_fim_s": null,
+   "resultados_pedido_ate_fim_da_janela": {
+    "get:CacheUnavailable": 5650,
+    "put:CacheUnavailable": 5679
+   },
+   "mensagens_de_recusa": {
+    "HotRodClientException: org.infinispan.server.hotrod.CacheUnavailableException": 11329
+   },
+   "desfazer_primeiro_put_servido_fim_s_rel_desfazer": 0.028,
+   "desfazer_primeira_op_servida_fim_s_rel_desfazer": 0.028,
+   "desfazer_ultima_recusa_fim_s_rel_desfazer": 0.013,
+   "resultados_apos_desfazer": {
+    "get:CacheUnavailable": 1,
+    "get:OK": 833,
+    "put:CacheUnavailable": 1,
+    "put:OK": 834
+   },
+   "resultados_da_fusao_ao_desfazer": {
+    "get:CacheUnavailable": 639,
+    "put:CacheUnavailable": 640
+   }
+  },
+  "isn3/counters-async": {
+   "ops_antes_do_pedido": 2350,
+   "recusas_nos_30s_antes": 2,
+   "primeira_cache_indisponivel": null,
+   "primeiro_put_recusado": {
+    "fim_s": 38.857,
+    "ini_s": 38.856,
+    "resultado": "HotRodClientException",
+    "mensagem": "org.infinispan.partitionhandling.AvailabilityException: ISPN000306: Key 'WrappedByteArray[ACED0005\\t0018\\a\\4\\-\\i\\s\\n\\3\\-\\c\\o\\u\\n\\t\\e\\r\\s\\-\\a\\s\\y\\n\\c\\-\\4 (31 bytes)]' is not available. Not all owners a"
+   },
+   "puts_confirmados_iniciados_apos_pedido": 2127,
+   "ultimo_put_confirmado_iniciado_apos_pedido_fim_s": 153.29,
+   "ultima_op_servida_iniciada_apos_pedido_fim_s": 153.296,
+   "resultados_pedido_ate_fim_da_janela": {
+    "get:HotRodClientException": 3513,
+    "get:OK": 753,
+    "get:TransportException": 36,
+    "put:HotRodClientException": 3541,
+    "put:OK": 2127
+   },
+   "mensagens_de_recusa": {
+    "HotRodClientException: org.infinispan.partitionhandling.AvailabilityException: ISPN000306: Key 'WrappedByteArray[ACED0005\\t0018\\a\\4\\-\\i\\s\\n\\3\\-\\c\\o\\u\\n\\t\\e\\r\\s\\-\\a\\s\\y\\n\\c\\-": 7054,
+    "TransportException: TransportException: java.net.SocketTimeoutException: GetOperation{counters-async, key=* flags=0, connection=/127.0.0.1:12903} timed out after 1000 ms ": 36
+   },
+   "desfazer_primeiro_put_servido_fim_s_rel_desfazer": 0.012,
+   "desfazer_primeira_op_servida_fim_s_rel_desfazer": 0.012,
+   "desfazer_ultima_recusa_fim_s_rel_desfazer": null,
+   "resultados_apos_desfazer": {
+    "get:OK": 832,
+    "put:OK": 835
+   },
+   "resultados_da_fusao_ao_desfazer": {
+    "get:OK": 640,
+    "put:OK": 642
+   }
+  }
+ },
+ "ignorados_transicoes": [
+  {
+   "no": "isn3",
+   "ini_s": -37.229,
+   "fim_s": -37.211,
+   "ignorados": "-"
+  },
+  {
+   "no": "isn1",
+   "ini_s": -37.268,
+   "fim_s": -37.209,
+   "ignorados": "-"
+  },
+  {
+   "no": "isn2",
+   "ini_s": -37.258,
+   "fim_s": -37.206,
+   "ignorados": "-"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 0.097,
+   "fim_s": 0.101,
+   "ignorados": "sessions-async"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 153.332,
+   "fim_s": 153.359,
+   "ignorados": "-"
+  }
+ ],
+ "cluster_transicoes": [
+  {
+   "no": "isn1",
+   "ini_s": -37.258,
+   "estado": "sessions-async=AVAILABLE counters-async=AVAILABLE"
+  },
+  {
+   "no": "isn2",
+   "ini_s": -37.259,
+   "estado": "sessions-async=AVAILABLE counters-async=AVAILABLE"
+  },
+  {
+   "no": "isn3",
+   "ini_s": -37.229,
+   "estado": "sessions-async=AVAILABLE counters-async=AVAILABLE"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 38.835,
+   "estado": "sessions-async=DEGRADED_MODE counters-async=DEGRADED_MODE"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 134.796,
+   "estado": "sessions-async=AVAILABLE counters-async=AVAILABLE"
+  }
+ ],
+ "carga_por_janela": {
+  "30s_antes_do_pedido": {},
+  "pedido_ao_desfazer": {
+   "isn1": {
+    "COUNTED": 57,
+    "BLOCKED": 25,
+    "ERROR_TRANSPORT": 4,
+    "OK": 26,
+    "VALID": 390,
+    "NONE": 43,
+    "NOT_FOUND": 4,
+    "INVALID": 56
+   },
+   "isn3": {
+    "ERROR_TRANSPORT": 113,
+    "ERROR_UNAVAILABLE": 224,
+    "COUNTED": 6
+   },
+   "isn2": {
+    "BLOCKED": 6,
+    "VALID": 528,
+    "OK": 25,
+    "NOT_FOUND": 2,
+    "NONE": 20,
+    "INVALID": 89,
+    "COUNTED": 28
+   }
+  },
+  "30s_apos_desfazer": {
+   "isn2": {
+    "VALID": 132,
+    "OK": 4,
+    "NONE": 4,
+    "INVALID": 14,
+    "COUNTED": 5,
+    "BLOCKED": 1
+   },
+   "isn1": {
+    "VALID": 87,
+    "COUNTED": 1,
+    "OK": 3,
+    "BLOCKED": 3,
+    "INVALID": 15,
+    "NONE": 7
+   },
+   "isn3": {
+    "OK": 6,
+    "VALID": 87,
+    "NONE": 1,
+    "INVALID": 4
+   }
+  },
+  "pedido_a_cura": {
+   "isn1": {
+    "COUNTED": 32,
+    "BLOCKED": 11,
+    "ERROR_TRANSPORT": 4,
+    "OK": 16,
+    "VALID": 220,
+    "NONE": 22,
+    "NOT_FOUND": 4,
+    "INVALID": 32
+   },
+   "isn3": {
+    "ERROR_TRANSPORT": 75,
+    "ERROR_UNAVAILABLE": 102
+   },
+   "isn2": {
+    "BLOCKED": 4,
+    "VALID": 295,
+    "OK": 13,
+    "NOT_FOUND": 2,
+    "NONE": 8,
+    "INVALID": 31,
+    "COUNTED": 15
+   }
+  },
+  "cura_ao_fim": {
+   "isn3": {
+    "ERROR_UNAVAILABLE": 122,
+    "ERROR_TRANSPORT": 38,
+    "COUNTED": 24,
+    "OK": 12,
+    "VALID": 261,
+    "NONE": 6,
+    "INVALID": 23,
+    "BLOCKED": 3
+   },
+   "isn1": {
+    "INVALID": 50,
+    "BLOCKED": 29,
+    "VALID": 461,
+    "OK": 20,
+    "NONE": 42,
+    "COUNTED": 55
+   },
+   "isn2": {
+    "VALID": 556,
+    "INVALID": 104,
+    "NONE": 23,
+    "OK": 24,
+    "COUNTED": 28,
+    "BLOCKED": 6
+   }
+  }
+ },
+ "carga_stdout": [
+  "S3 acao|IncrementFailure|ERROR_TRANSPORT = 2",
+  "S3 acao|IncrementFailure|ERROR_UNAVAILABLE = 22",
+  "S3 acao|Login|ERROR_TRANSPORT = 23",
+  "S3 acao|Login|ERROR_UNAVAILABLE = 53",
+  "S3 acao|Logout|ERROR_TRANSPORT = 4",
+  "S3 acao|Validate|ERROR_TRANSPORT = 11",
+  "Total de operacoes: 3089",
+  "Violacoes detectadas: 2",
+  "Hot Rod ISPN004007: total=22 inteiras=2 contidas=20 chaves=2 | no=127.0.0.1:12903 motivo=SocketTimeoutException n=19 t_primeira_ns=1793986183771439900 t_ultima_",
+  "Hot Rod ISPN004005: total=374 inteiras=3 contidas=371 chaves=3 | no=desconhecido motivo=ISPN000306 n=237 t_primeira_ns=1793986220530977900 t_ultima_ns=179398631"
+ ],
+ "carga_exit": "exit=0",
+ "vistas": [
+  {
+   "no": "isn1",
+   "t_s": 38.651,
+   "cod": "ISPN000094",
+   "membros": "2"
+  },
+  {
+   "no": "isn1",
+   "t_s": 134.668,
+   "cod": "ISPN000093",
+   "membros": "3"
+  },
+  {
+   "no": "isn2",
+   "t_s": 38.647,
+   "cod": "ISPN000094",
+   "membros": "2"
+  },
+  {
+   "no": "isn2",
+   "t_s": 134.662,
+   "cod": "ISPN000093",
+   "membros": "3"
+  },
+  {
+   "no": "isn3",
+   "t_s": 38.831,
+   "cod": "ISPN000094",
+   "membros": "1"
+  },
+  {
+   "no": "isn3",
+   "t_s": 134.666,
+   "cod": "ISPN000093",
+   "membros": "3"
+  }
+ ],
+ "servidor_ISPN005003_por_no": {
+  "isn3": 18741
+ },
+ "servidor_ISPN000136_por_no": {
+  "isn1": 6,
+  "isn3": 7360
+ },
+ "servidor_mensagens": [
+  {
+   "no": "isn1",
+   "t_s": 38.653,
+   "linha": "\u001b[0m2026-11-06 17:30:20,338 INFO  [o.i.CLUSTER] [Scope=isn1-41246]ISPN100001: Node isn3-27773 left the cluster\u001b[m"
+  },
+  {
+   "no": "isn1",
+   "t_s": 38.653,
+   "linha": "\u001b[0m2026-11-06 17:30:20,338 INFO  [o.i.CLUSTER] [Scope=isn1-41246]ISPN100001: Node isn3-27773 left the cluster\u001b[m"
+  },
+  {
+   "no": "isn1",
+   "t_s": 134.669,
+   "linha": "\u001b[0m2026-11-06 17:31:56,354 INFO  [o.i.CLUSTER] [Scope=isn1-41246]ISPN100000: Node isn3-27773 joined the cluster\u001b[m"
+  },
+  {
+   "no": "isn1",
+   "t_s": 134.67,
+   "linha": "\u001b[0m2026-11-06 17:31:56,355 INFO  [o.i.CLUSTER] [Scope=isn1-41246]ISPN100000: Node isn3-27773 joined the cluster\u001b[m"
+  },
+  {
+   "no": "isn2",
+   "t_s": 38.648,
+   "linha": "\u001b[0m2026-11-06 17:30:20,333 INFO  [o.i.CLUSTER] [Scope=isn2-15369]ISPN100001: Node isn3-27773 left the cluster\u001b[m"
+  },
+  {
+   "no": "isn2",
+   "t_s": 38.648,
+   "linha": "\u001b[0m2026-11-06 17:30:20,333 INFO  [o.i.CLUSTER] [Scope=isn2-15369]ISPN100001: Node isn3-27773 left the cluster\u001b[m"
+  },
+  {
+   "no": "isn2",
+   "t_s": 134.663,
+   "linha": "\u001b[0m2026-11-06 17:31:56,348 INFO  [o.i.CLUSTER] [Scope=isn2-15369]ISPN100000: Node isn3-27773 joined the cluster\u001b[m"
+  },
+  {
+   "no": "isn2",
+   "t_s": 134.664,
+   "linha": "\u001b[0m2026-11-06 17:31:56,349 INFO  [o.i.CLUSTER] [Scope=isn2-15369]ISPN100000: Node isn3-27773 joined the cluster\u001b[m"
+  },
+  {
+   "no": "isn2",
+   "t_s": 134.683,
+   "linha": "\u001b[0m2026-11-06 17:31:56,368 INFO  [o.i.CLUSTER] [Context=counters]ISPN100012: Starting conflict resolution with members [isn2-15369, isn1-41246, isn3-27773], topology id 16\u001b[m"
+  },
+  {
+   "no": "isn2",
+   "t_s": 134.683,
+   "linha": "\u001b[0m2026-11-06 17:31:56,368 INFO  [o.i.CLUSTER] [Context=counters-async]ISPN100012: Starting conflict resolution with members [isn1-41246, isn2-15369, isn3-27773], topology id 16\u001b[m"
+  },
+  {
+   "no": "isn2",
+   "t_s": 134.683,
+   "linha": "\u001b[0m2026-11-06 17:31:56,368 INFO  [o.i.CLUSTER] [Context=canario-async]ISPN100012: Starting conflict resolution with members [isn2-15369, isn1-41246, isn3-27773], topology id 16\u001b[m"
+  },
+  {
+   "no": "isn2",
+   "t_s": 134.683,
+   "linha": "\u001b[0m2026-11-06 17:31:56,368 INFO  [o.i.CLUSTER] [Context=sessions]ISPN100012: Starting conflict resolution with members [isn2-15369, isn1-41246, isn3-27773], topology id 16\u001b[m"
+  },
+  {
+   "no": "isn2",
+   "t_s": 134.683,
+   "linha": "\u001b[0m2026-11-06 17:31:56,368 INFO  [o.i.CLUSTER] [Context=sessions-async]ISPN100012: Starting conflict resolution with members [isn2-15369, isn1-41246, isn3-27773], topology id 16\u001b[m"
+  },
+  {
+   "no": "isn2",
+   "t_s": 134.685,
+   "linha": "\u001b[0m2026-11-06 17:31:56,370 INFO  [o.i.CLUSTER] [Context=canario]ISPN100012: Starting conflict resolution with members [isn2-15369, isn1-41246, isn3-27773], topology id 16\u001b[m"
+  },
+  {
+   "no": "isn2",
+   "t_s": 134.991,
+   "linha": "\u001b[0m2026-11-06 17:31:56,676 INFO  [o.i.CLUSTER] [Context=canario-async]ISPN100013: Finished conflict resolution with members [isn2-15369, isn1-41246, isn3-27773], topology id 16\u001b[m"
+  },
+  {
+   "no": "isn2",
+   "t_s": 134.992,
+   "linha": "\u001b[0m2026-11-06 17:31:56,677 INFO  [o.i.CLUSTER] [Context=counters]ISPN100013: Finished conflict resolution with members [isn2-15369, isn1-41246, isn3-27773], topology id 16\u001b[m"
+  },
+  {
+   "no": "isn2",
+   "t_s": 134.997,
+   "linha": "\u001b[0m2026-11-06 17:31:56,682 INFO  [o.i.CLUSTER] [Context=sessions]ISPN100013: Finished conflict resolution with members [isn2-15369, isn1-41246, isn3-27773], topology id 16\u001b[m"
+  },
+  {
+   "no": "isn2",
+   "t_s": 135.016,
+   "linha": "\u001b[0m2026-11-06 17:31:56,701 INFO  [o.i.CLUSTER] [Context=canario]ISPN100013: Finished conflict resolution with members [isn2-15369, isn1-41246, isn3-27773], topology id 16\u001b[m"
+  },
+  {
+   "no": "isn2",
+   "t_s": 135.023,
+   "linha": "\u001b[0m2026-11-06 17:31:56,708 INFO  [o.i.CLUSTER] [Context=counters-async]ISPN100013: Finished conflict resolution with members [isn1-41246, isn2-15369, isn3-27773], topology id 16\u001b[m"
+  },
+  {
+   "no": "isn2",
+   "t_s": 135.027,
+   "linha": "\u001b[0m2026-11-06 17:31:56,712 INFO  [o.i.CLUSTER] [Context=sessions-async]ISPN100013: Finished conflict resolution with members [isn2-15369, isn1-41246, isn3-27773], topology id 16\u001b[m"
+  },
+  {
+   "no": "isn3",
+   "t_s": 15.012,
+   "linha": "\u001b[1;31m2026-11-06 17:29:56,697 ERROR [o.i.r.RestRequestHandler] ISPN012005: An error occurred while responding to the client java.util.concurrent.CompletionException: org.infinispan.commons.TimeoutExc"
+  },
+  {
+   "no": "isn3",
+   "t_s": 38.833,
+   "linha": "\u001b[0m2026-11-06 17:30:20,518 INFO  [o.i.CLUSTER] [Scope=isn3-27773]ISPN100001: Node isn2-15369 left the cluster\u001b[m"
+  },
+  {
+   "no": "isn3",
+   "t_s": 38.833,
+   "linha": "\u001b[0m2026-11-06 17:30:20,518 INFO  [o.i.CLUSTER] [Scope=isn3-27773]ISPN100001: Node isn1-41246 left the cluster\u001b[m"
+  },
+  {
+   "no": "isn3",
+   "t_s": 38.833,
+   "linha": "\u001b[0m2026-11-06 17:30:20,518 INFO  [o.i.CLUSTER] [Scope=isn3-27773]ISPN100001: Node isn2-15369 left the cluster\u001b[m"
+  },
+  {
+   "no": "isn3",
+   "t_s": 38.834,
+   "linha": "\u001b[0m2026-11-06 17:30:20,519 INFO  [o.i.CLUSTER] [Scope=isn3-27773]ISPN100001: Node isn1-41246 left the cluster\u001b[m"
+  },
+  {
+   "no": "isn3",
+   "t_s": 134.667,
+   "linha": "\u001b[0m2026-11-06 17:31:56,352 INFO  [o.i.CLUSTER] [Scope=isn3-27773]ISPN100000: Node isn2-15369 joined the cluster\u001b[m"
+  },
+  {
+   "no": "isn3",
+   "t_s": 134.668,
+   "linha": "\u001b[0m2026-11-06 17:31:56,353 INFO  [o.i.CLUSTER] [Scope=isn3-27773]ISPN100000: Node isn1-41246 joined the cluster\u001b[m"
+  },
+  {
+   "no": "isn3",
+   "t_s": 134.669,
+   "linha": "\u001b[0m2026-11-06 17:31:56,354 INFO  [o.i.CLUSTER] [Scope=isn3-27773]ISPN100000: Node isn2-15369 joined the cluster\u001b[m"
+  },
+  {
+   "no": "isn3",
+   "t_s": 134.669,
+   "linha": "\u001b[0m2026-11-06 17:31:56,354 INFO  [o.i.CLUSTER] [Scope=isn3-27773]ISPN100000: Node isn1-41246 joined the cluster\u001b[m"
+  }
+ ]
+}

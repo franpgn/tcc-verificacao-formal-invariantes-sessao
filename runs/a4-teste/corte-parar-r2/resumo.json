@@ -1,0 +1,2182 @@
+{
+ "execucao": "corte-parar-r2",
+ "caso": "corte-parar",
+ "alvo": "isn3",
+ "instantes_rel_pedido_s": {
+  "corte": -5.333,
+  "pedido": 0.0,
+  "cura": 86.966,
+  "fusao_vista_harness": null,
+  "desfazer": null
+ },
+ "acoes": [
+  {
+   "rotulo": "parar",
+   "metodo": "POST",
+   "url": "v2/server?action=stop",
+   "ini_s": 0.0,
+   "duracao_s": 0.022,
+   "status": "204",
+   "corpo": ""
+  }
+ ],
+ "sondas": {
+  "isn1/sessions-async": {
+   "ops_antes_do_pedido": 598,
+   "recusas_nos_30s_antes": 0,
+   "primeira_cache_indisponivel": null,
+   "primeiro_put_recusado": null,
+   "puts_confirmados_iniciados_apos_pedido": 1040,
+   "ultimo_put_confirmado_iniciado_apos_pedido_fim_s": 128.768,
+   "ultima_op_servida_iniciada_apos_pedido_fim_s": 128.768,
+   "resultados_pedido_ate_fim_da_janela": {
+    "get:OK": 774,
+    "put:OK": 776
+   },
+   "mensagens_de_recusa": {},
+   "resultados_da_fusao_ao_desfazer": {
+    "get:OK": 264,
+    "put:OK": 264
+   }
+  },
+  "isn1/counters-async": {
+   "ops_antes_do_pedido": 599,
+   "recusas_nos_30s_antes": 0,
+   "primeira_cache_indisponivel": null,
+   "primeiro_put_recusado": null,
+   "puts_confirmados_iniciados_apos_pedido": 1040,
+   "ultimo_put_confirmado_iniciado_apos_pedido_fim_s": 128.735,
+   "ultima_op_servida_iniciada_apos_pedido_fim_s": 128.752,
+   "resultados_pedido_ate_fim_da_janela": {
+    "get:OK": 776,
+    "put:OK": 775
+   },
+   "mensagens_de_recusa": {},
+   "resultados_da_fusao_ao_desfazer": {
+    "get:OK": 262,
+    "put:OK": 265
+   }
+  },
+  "isn2/sessions-async": {
+   "ops_antes_do_pedido": 585,
+   "recusas_nos_30s_antes": 0,
+   "primeira_cache_indisponivel": null,
+   "primeiro_put_recusado": null,
+   "puts_confirmados_iniciados_apos_pedido": 1054,
+   "ultimo_put_confirmado_iniciado_apos_pedido_fim_s": 128.751,
+   "ultima_op_servida_iniciada_apos_pedido_fim_s": 128.751,
+   "resultados_pedido_ate_fim_da_janela": {
+    "get:OK": 601,
+    "put:OK": 786
+   },
+   "mensagens_de_recusa": {},
+   "resultados_da_fusao_ao_desfazer": {
+    "get:OK": 267,
+    "put:OK": 268
+   }
+  },
+  "isn2/counters-async": {
+   "ops_antes_do_pedido": 586,
+   "recusas_nos_30s_antes": 0,
+   "primeira_cache_indisponivel": null,
+   "primeiro_put_recusado": null,
+   "puts_confirmados_iniciados_apos_pedido": 1048,
+   "ultimo_put_confirmado_iniciado_apos_pedido_fim_s": 128.72,
+   "ultima_op_servida_iniciada_apos_pedido_fim_s": 128.768,
+   "resultados_pedido_ate_fim_da_janela": {
+    "get:OK": 591,
+    "get:TransportException": 1,
+    "put:OK": 781
+   },
+   "mensagens_de_recusa": {
+    "TransportException: TransportException: java.net.SocketTimeoutException: GetOperation{counters-async, key=* flags=0, connection=/127.0.0.1:12902} timed out after 1000 ms ": 1
+   },
+   "resultados_da_fusao_ao_desfazer": {
+    "get:OK": 266,
+    "put:OK": 267
+   }
+  },
+  "isn3/sessions-async": {
+   "ops_antes_do_pedido": 2322,
+   "recusas_nos_30s_antes": 2,
+   "primeira_cache_indisponivel": null,
+   "primeiro_put_recusado": {
+    "fim_s": 13.151,
+    "ini_s": 13.145,
+    "resultado": "TransportException",
+    "mensagem": "TransportException: java.io.IOException: An established connection was aborted by the software in your host machine | causa IOException: An established connection was aborted by the software in your h"
+   },
+   "puts_confirmados_iniciados_apos_pedido": 470,
+   "ultimo_put_confirmado_iniciado_apos_pedido_fim_s": 13.118,
+   "ultima_op_servida_iniciada_apos_pedido_fim_s": 13.118,
+   "resultados_pedido_ate_fim_da_janela": {
+    "get:OK": 7,
+    "get:TransportException": 1910,
+    "put:OK": 470,
+    "put:TransportException": 1892
+   },
+   "mensagens_de_recusa": {
+    "TransportException: TransportException: org.infinispan.client.hotrod.exceptions.TransportException:: ISPN004071: Connection to /127.0.0.1:12903 was closed while waiting f": 3777,
+    "TransportException: TransportException: java.net.SocketTimeoutException: GetOperation{sessions-async, key=* flags=0, connection=/127.0.0.1:12903} timed out after 1000 ms ": 12,
+    "TransportException: TransportException: java.io.IOException: An established connection was aborted by the software in your host machine | causa IOException: An establishe": 12,
+    "TransportException: ISPN004071: Connection to 127.0.0.1/<unresolved>:12903 was closed while waiting for response.": 1
+   },
+   "resultados_da_fusao_ao_desfazer": {
+    "get:TransportException": 962,
+    "put:TransportException": 961
+   }
+  },
+  "isn3/counters-async": {
+   "ops_antes_do_pedido": 2338,
+   "recusas_nos_30s_antes": 2,
+   "primeira_cache_indisponivel": null,
+   "primeiro_put_recusado": {
+    "fim_s": 13.151,
+    "ini_s": 13.145,
+    "resultado": "TransportException",
+    "mensagem": "TransportException: org.infinispan.client.hotrod.exceptions.TransportException:: ISPN004071: Connection to /127.0.0.1:12903 was closed while waiting for response. | causa TransportException: ISPN00407"
+   },
+   "puts_confirmados_iniciados_apos_pedido": 472,
+   "ultimo_put_confirmado_iniciado_apos_pedido_fim_s": 13.118,
+   "ultima_op_servida_iniciada_apos_pedido_fim_s": 13.118,
+   "resultados_pedido_ate_fim_da_janela": {
+    "get:OK": 36,
+    "get:TransportException": 1908,
+    "put:OK": 472,
+    "put:TransportException": 1888
+   },
+   "mensagens_de_recusa": {
+    "TransportException: TransportException: org.infinispan.client.hotrod.exceptions.TransportException:: ISPN004071: Connection to /127.0.0.1:12903 was closed while waiting f": 3775,
+    "TransportException: TransportException: java.net.SocketTimeoutException: GetOperation{counters-async, key=* flags=0, connection=/127.0.0.1:12903} timed out after 1000 ms ": 11,
+    "TransportException: TransportException: java.io.IOException: An established connection was aborted by the software in your host machine | causa IOException: An establishe": 9,
+    "TransportException: ISPN004071: Connection to 127.0.0.1/<unresolved>:12903 was closed while waiting for response.": 1
+   },
+   "resultados_da_fusao_ao_desfazer": {
+    "get:TransportException": 955,
+    "put:TransportException": 958
+   }
+  }
+ },
+ "ignorados_transicoes": [
+  {
+   "no": "isn2",
+   "ini_s": -37.054,
+   "fim_s": -37.008,
+   "ignorados": "-"
+  },
+  {
+   "no": "isn1",
+   "ini_s": -37.063,
+   "fim_s": -37.008,
+   "ignorados": "-"
+  },
+  {
+   "no": "isn3",
+   "ini_s": -37.038,
+   "fim_s": -37.007,
+   "ignorados": "-"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 3.066,
+   "fim_s": 3.087,
+   "ignorados": "erro:500"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 3.801,
+   "fim_s": 3.804,
+   "ignorados": "erro:401"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 13.037,
+   "fim_s": 13.06,
+   "ignorados": "erro:ConnectionAbortedError"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 13.271,
+   "fim_s": 13.272,
+   "ignorados": "erro:RemoteDisconnected"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 13.373,
+   "fim_s": 13.39,
+   "ignorados": "erro:ConnectionAbortedError"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 13.491,
+   "fim_s": 13.493,
+   "ignorados": "erro:RemoteDisconnected"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 13.898,
+   "fim_s": 13.91,
+   "ignorados": "erro:ConnectionAbortedError"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 14.132,
+   "fim_s": 14.132,
+   "ignorados": "erro:RemoteDisconnected"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 14.233,
+   "fim_s": 14.25,
+   "ignorados": "erro:ConnectionAbortedError"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 14.476,
+   "fim_s": 14.51,
+   "ignorados": "erro:RemoteDisconnected"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 14.611,
+   "fim_s": 14.628,
+   "ignorados": "erro:ConnectionAbortedError"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 14.853,
+   "fim_s": 14.889,
+   "ignorados": "erro:RemoteDisconnected"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 15.561,
+   "fim_s": 15.581,
+   "ignorados": "erro:ConnectionAbortedError"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 15.793,
+   "fim_s": 15.794,
+   "ignorados": "erro:RemoteDisconnected"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 16.602,
+   "fim_s": 16.622,
+   "ignorados": "erro:ConnectionAbortedError"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 16.722,
+   "fim_s": 16.749,
+   "ignorados": "erro:RemoteDisconnected"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 16.85,
+   "fim_s": 16.873,
+   "ignorados": "erro:ConnectionAbortedError"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 16.974,
+   "fim_s": 16.975,
+   "ignorados": "erro:RemoteDisconnected"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 17.076,
+   "fim_s": 17.095,
+   "ignorados": "erro:ConnectionAbortedError"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 17.432,
+   "fim_s": 17.433,
+   "ignorados": "erro:RemoteDisconnected"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 17.636,
+   "fim_s": 17.659,
+   "ignorados": "erro:ConnectionAbortedError"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 17.76,
+   "fim_s": 17.761,
+   "ignorados": "erro:RemoteDisconnected"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 18.066,
+   "fim_s": 18.078,
+   "ignorados": "erro:ConnectionAbortedError"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 18.179,
+   "fim_s": 18.18,
+   "ignorados": "erro:RemoteDisconnected"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 18.383,
+   "fim_s": 18.405,
+   "ignorados": "erro:ConnectionAbortedError"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 18.506,
+   "fim_s": 18.507,
+   "ignorados": "erro:RemoteDisconnected"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 18.812,
+   "fim_s": 18.825,
+   "ignorados": "erro:ConnectionAbortedError"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 18.927,
+   "fim_s": 18.927,
+   "ignorados": "erro:RemoteDisconnected"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 19.335,
+   "fim_s": 19.356,
+   "ignorados": "erro:ConnectionAbortedError"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 19.457,
+   "fim_s": 19.459,
+   "ignorados": "erro:RemoteDisconnected"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 19.968,
+   "fim_s": 19.993,
+   "ignorados": "erro:ConnectionAbortedError"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 20.094,
+   "fim_s": 20.095,
+   "ignorados": "erro:RemoteDisconnected"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 20.4,
+   "fim_s": 20.413,
+   "ignorados": "erro:ConnectionAbortedError"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 20.514,
+   "fim_s": 20.515,
+   "ignorados": "erro:RemoteDisconnected"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 21.025,
+   "fim_s": 21.05,
+   "ignorados": "erro:ConnectionAbortedError"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 21.276,
+   "fim_s": 21.278,
+   "ignorados": "erro:RemoteDisconnected"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 21.582,
+   "fim_s": 21.592,
+   "ignorados": "erro:ConnectionAbortedError"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 21.693,
+   "fim_s": 21.695,
+   "ignorados": "erro:RemoteDisconnected"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 23.128,
+   "fim_s": 23.147,
+   "ignorados": "erro:ConnectionAbortedError"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 23.374,
+   "fim_s": 23.376,
+   "ignorados": "erro:RemoteDisconnected"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 23.886,
+   "fim_s": 23.907,
+   "ignorados": "erro:ConnectionAbortedError"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 24.008,
+   "fim_s": 24.01,
+   "ignorados": "erro:RemoteDisconnected"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 24.314,
+   "fim_s": 24.326,
+   "ignorados": "erro:ConnectionAbortedError"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 24.427,
+   "fim_s": 24.429,
+   "ignorados": "erro:RemoteDisconnected"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 24.66,
+   "fim_s": 24.683,
+   "ignorados": "erro:ConnectionAbortedError"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 24.784,
+   "fim_s": 24.809,
+   "ignorados": "erro:RemoteDisconnected"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 25.37,
+   "fim_s": 25.387,
+   "ignorados": "erro:ConnectionAbortedError"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 25.611,
+   "fim_s": 25.612,
+   "ignorados": "erro:RemoteDisconnected"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 25.816,
+   "fim_s": 25.832,
+   "ignorados": "erro:ConnectionAbortedError"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 25.933,
+   "fim_s": 25.935,
+   "ignorados": "erro:RemoteDisconnected"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 26.16,
+   "fim_s": 26.173,
+   "ignorados": "erro:ConnectionAbortedError"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 26.274,
+   "fim_s": 26.3,
+   "ignorados": "erro:RemoteDisconnected"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 26.401,
+   "fim_s": 26.425,
+   "ignorados": "erro:ConnectionAbortedError"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 26.526,
+   "fim_s": 26.527,
+   "ignorados": "erro:RemoteDisconnected"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 27.037,
+   "fim_s": 27.047,
+   "ignorados": "erro:ConnectionAbortedError"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 27.148,
+   "fim_s": 27.149,
+   "ignorados": "erro:RemoteDisconnected"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 27.556,
+   "fim_s": 27.578,
+   "ignorados": "erro:ConnectionAbortedError"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 27.679,
+   "fim_s": 27.679,
+   "ignorados": "erro:RemoteDisconnected"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 28.289,
+   "fim_s": 28.302,
+   "ignorados": "erro:ConnectionAbortedError"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 28.403,
+   "fim_s": 28.405,
+   "ignorados": "erro:RemoteDisconnected"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 30.376,
+   "fim_s": 30.386,
+   "ignorados": "erro:ConnectionAbortedError"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 30.487,
+   "fim_s": 30.488,
+   "ignorados": "erro:RemoteDisconnected"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 30.691,
+   "fim_s": 30.714,
+   "ignorados": "erro:ConnectionAbortedError"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 31.066,
+   "fim_s": 31.067,
+   "ignorados": "erro:RemoteDisconnected"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 33.87,
+   "fim_s": 33.895,
+   "ignorados": "erro:ConnectionAbortedError"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 33.996,
+   "fim_s": 33.998,
+   "ignorados": "erro:RemoteDisconnected"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 34.717,
+   "fim_s": 34.736,
+   "ignorados": "erro:ConnectionAbortedError"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 34.838,
+   "fim_s": 34.84,
+   "ignorados": "erro:RemoteDisconnected"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 35.775,
+   "fim_s": 35.8,
+   "ignorados": "erro:ConnectionAbortedError"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 35.902,
+   "fim_s": 35.903,
+   "ignorados": "erro:RemoteDisconnected"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 36.21,
+   "fim_s": 36.224,
+   "ignorados": "erro:ConnectionAbortedError"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 36.324,
+   "fim_s": 36.325,
+   "ignorados": "erro:RemoteDisconnected"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 36.427,
+   "fim_s": 36.443,
+   "ignorados": "erro:ConnectionAbortedError"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 36.545,
+   "fim_s": 36.547,
+   "ignorados": "erro:RemoteDisconnected"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 36.648,
+   "fim_s": 36.664,
+   "ignorados": "erro:ConnectionAbortedError"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 36.765,
+   "fim_s": 36.766,
+   "ignorados": "erro:RemoteDisconnected"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 36.867,
+   "fim_s": 36.885,
+   "ignorados": "erro:ConnectionAbortedError"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 37.112,
+   "fim_s": 37.113,
+   "ignorados": "erro:RemoteDisconnected"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 37.214,
+   "fim_s": 37.231,
+   "ignorados": "erro:ConnectionAbortedError"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 37.584,
+   "fim_s": 37.585,
+   "ignorados": "erro:RemoteDisconnected"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 37.686,
+   "fim_s": 37.702,
+   "ignorados": "erro:ConnectionAbortedError"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 37.803,
+   "fim_s": 37.805,
+   "ignorados": "erro:RemoteDisconnected"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 38.017,
+   "fim_s": 38.031,
+   "ignorados": "erro:ConnectionAbortedError"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 38.132,
+   "fim_s": 38.134,
+   "ignorados": "erro:RemoteDisconnected"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 38.44,
+   "fim_s": 38.458,
+   "ignorados": "erro:ConnectionAbortedError"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 38.559,
+   "fim_s": 38.561,
+   "ignorados": "erro:RemoteDisconnected"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 38.866,
+   "fim_s": 38.882,
+   "ignorados": "erro:ConnectionAbortedError"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 38.983,
+   "fim_s": 38.986,
+   "ignorados": "erro:RemoteDisconnected"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 39.395,
+   "fim_s": 39.41,
+   "ignorados": "erro:ConnectionAbortedError"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 39.511,
+   "fim_s": 39.513,
+   "ignorados": "erro:RemoteDisconnected"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 39.717,
+   "fim_s": 39.734,
+   "ignorados": "erro:ConnectionAbortedError"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 39.962,
+   "fim_s": 39.963,
+   "ignorados": "erro:RemoteDisconnected"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 40.166,
+   "fim_s": 40.19,
+   "ignorados": "erro:ConnectionAbortedError"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 40.544,
+   "fim_s": 40.544,
+   "ignorados": "erro:RemoteDisconnected"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 40.748,
+   "fim_s": 40.772,
+   "ignorados": "erro:ConnectionAbortedError"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 40.874,
+   "fim_s": 40.876,
+   "ignorados": "erro:RemoteDisconnected"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 41.385,
+   "fim_s": 41.4,
+   "ignorados": "erro:ConnectionAbortedError"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 41.502,
+   "fim_s": 41.504,
+   "ignorados": "erro:RemoteDisconnected"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 43.196,
+   "fim_s": 43.209,
+   "ignorados": "erro:ConnectionAbortedError"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 43.436,
+   "fim_s": 43.469,
+   "ignorados": "erro:RemoteDisconnected"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 43.571,
+   "fim_s": 43.59,
+   "ignorados": "erro:ConnectionAbortedError"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 43.692,
+   "fim_s": 43.72,
+   "ignorados": "erro:RemoteDisconnected"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 44.025,
+   "fim_s": 44.047,
+   "ignorados": "erro:ConnectionAbortedError"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 44.148,
+   "fim_s": 44.18,
+   "ignorados": "erro:RemoteDisconnected"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 45.553,
+   "fim_s": 45.572,
+   "ignorados": "erro:ConnectionAbortedError"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 46.08,
+   "fim_s": 46.082,
+   "ignorados": "erro:RemoteDisconnected"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 46.49,
+   "fim_s": 46.514,
+   "ignorados": "erro:ConnectionAbortedError"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 46.962,
+   "fim_s": 46.963,
+   "ignorados": "erro:RemoteDisconnected"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 47.064,
+   "fim_s": 47.082,
+   "ignorados": "erro:ConnectionAbortedError"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 47.183,
+   "fim_s": 47.185,
+   "ignorados": "erro:RemoteDisconnected"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 47.285,
+   "fim_s": 47.302,
+   "ignorados": "erro:ConnectionAbortedError"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 47.403,
+   "fim_s": 47.404,
+   "ignorados": "erro:RemoteDisconnected"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 47.709,
+   "fim_s": 47.73,
+   "ignorados": "erro:ConnectionAbortedError"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 49.107,
+   "fim_s": 49.108,
+   "ignorados": "erro:RemoteDisconnected"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 49.311,
+   "fim_s": 49.33,
+   "ignorados": "erro:ConnectionAbortedError"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 49.431,
+   "fim_s": 49.432,
+   "ignorados": "erro:RemoteDisconnected"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 50.458,
+   "fim_s": 50.476,
+   "ignorados": "erro:ConnectionAbortedError"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 50.577,
+   "fim_s": 50.579,
+   "ignorados": "erro:RemoteDisconnected"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 51.962,
+   "fim_s": 51.968,
+   "ignorados": "erro:ConnectionAbortedError"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 52.07,
+   "fim_s": 52.071,
+   "ignorados": "erro:RemoteDisconnected"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 52.273,
+   "fim_s": 52.285,
+   "ignorados": "erro:ConnectionAbortedError"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 53.355,
+   "fim_s": 53.356,
+   "ignorados": "erro:RemoteDisconnected"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 53.458,
+   "fim_s": 53.474,
+   "ignorados": "erro:ConnectionAbortedError"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 53.936,
+   "fim_s": 53.937,
+   "ignorados": "erro:RemoteDisconnected"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 54.897,
+   "fim_s": 54.915,
+   "ignorados": "erro:ConnectionAbortedError"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 55.374,
+   "fim_s": 55.409,
+   "ignorados": "erro:RemoteDisconnected"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 55.51,
+   "fim_s": 55.524,
+   "ignorados": "erro:ConnectionAbortedError"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 55.625,
+   "fim_s": 55.626,
+   "ignorados": "erro:RemoteDisconnected"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 55.727,
+   "fim_s": 55.728,
+   "ignorados": "erro:ConnectionAbortedError"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 55.83,
+   "fim_s": 55.831,
+   "ignorados": "erro:RemoteDisconnected"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 56.237,
+   "fim_s": 56.25,
+   "ignorados": "erro:ConnectionAbortedError"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 56.507,
+   "fim_s": 56.509,
+   "ignorados": "erro:RemoteDisconnected"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 56.61,
+   "fim_s": 56.63,
+   "ignorados": "erro:ConnectionAbortedError"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 56.981,
+   "fim_s": 56.983,
+   "ignorados": "erro:RemoteDisconnected"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 57.083,
+   "fim_s": 57.098,
+   "ignorados": "erro:ConnectionAbortedError"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 57.199,
+   "fim_s": 57.2,
+   "ignorados": "erro:RemoteDisconnected"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 57.403,
+   "fim_s": 57.425,
+   "ignorados": "erro:ConnectionAbortedError"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 57.526,
+   "fim_s": 57.526,
+   "ignorados": "erro:RemoteDisconnected"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 57.628,
+   "fim_s": 57.643,
+   "ignorados": "erro:ConnectionAbortedError"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 57.744,
+   "fim_s": 57.745,
+   "ignorados": "erro:RemoteDisconnected"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 57.947,
+   "fim_s": 57.971,
+   "ignorados": "erro:ConnectionAbortedError"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 58.525,
+   "fim_s": 58.525,
+   "ignorados": "erro:RemoteDisconnected"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 58.729,
+   "fim_s": 58.741,
+   "ignorados": "erro:ConnectionAbortedError"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 58.967,
+   "fim_s": 58.968,
+   "ignorados": "erro:RemoteDisconnected"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 59.273,
+   "fim_s": 59.29,
+   "ignorados": "erro:ConnectionAbortedError"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 59.516,
+   "fim_s": 59.516,
+   "ignorados": "erro:RemoteDisconnected"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 59.618,
+   "fim_s": 59.635,
+   "ignorados": "erro:ConnectionAbortedError"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 60.384,
+   "fim_s": 60.385,
+   "ignorados": "erro:RemoteDisconnected"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 60.587,
+   "fim_s": 60.596,
+   "ignorados": "erro:ConnectionAbortedError"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 61.887,
+   "fim_s": 61.887,
+   "ignorados": "erro:RemoteDisconnected"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 62.091,
+   "fim_s": 62.103,
+   "ignorados": "erro:ConnectionAbortedError"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 62.328,
+   "fim_s": 62.328,
+   "ignorados": "erro:RemoteDisconnected"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 62.632,
+   "fim_s": 62.652,
+   "ignorados": "erro:ConnectionAbortedError"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 63.129,
+   "fim_s": 63.132,
+   "ignorados": "erro:RemoteDisconnected"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 63.234,
+   "fim_s": 63.257,
+   "ignorados": "erro:ConnectionAbortedError"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 63.358,
+   "fim_s": 63.359,
+   "ignorados": "erro:RemoteDisconnected"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 63.46,
+   "fim_s": 63.479,
+   "ignorados": "erro:ConnectionAbortedError"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 63.58,
+   "fim_s": 63.582,
+   "ignorados": "erro:RemoteDisconnected"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 63.787,
+   "fim_s": 63.805,
+   "ignorados": "erro:ConnectionAbortedError"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 64.03,
+   "fim_s": 64.031,
+   "ignorados": "erro:RemoteDisconnected"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 64.235,
+   "fim_s": 64.257,
+   "ignorados": "erro:ConnectionAbortedError"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 64.717,
+   "fim_s": 64.718,
+   "ignorados": "erro:RemoteDisconnected"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 64.921,
+   "fim_s": 64.945,
+   "ignorados": "erro:ConnectionAbortedError"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 65.046,
+   "fim_s": 65.048,
+   "ignorados": "erro:RemoteDisconnected"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 65.148,
+   "fim_s": 65.165,
+   "ignorados": "erro:ConnectionAbortedError"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 65.265,
+   "fim_s": 65.266,
+   "ignorados": "erro:RemoteDisconnected"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 65.367,
+   "fim_s": 65.384,
+   "ignorados": "erro:ConnectionAbortedError"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 65.486,
+   "fim_s": 65.486,
+   "ignorados": "erro:RemoteDisconnected"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 65.587,
+   "fim_s": 65.605,
+   "ignorados": "erro:ConnectionAbortedError"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 65.706,
+   "fim_s": 65.708,
+   "ignorados": "erro:RemoteDisconnected"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 65.911,
+   "fim_s": 65.923,
+   "ignorados": "erro:ConnectionAbortedError"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 66.643,
+   "fim_s": 66.644,
+   "ignorados": "erro:RemoteDisconnected"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 66.746,
+   "fim_s": 66.761,
+   "ignorados": "erro:ConnectionAbortedError"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 67.46,
+   "fim_s": 67.461,
+   "ignorados": "erro:RemoteDisconnected"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 67.765,
+   "fim_s": 67.785,
+   "ignorados": "erro:ConnectionAbortedError"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 67.886,
+   "fim_s": 67.887,
+   "ignorados": "erro:RemoteDisconnected"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 68.089,
+   "fim_s": 68.111,
+   "ignorados": "erro:ConnectionAbortedError"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 68.683,
+   "fim_s": 68.685,
+   "ignorados": "erro:RemoteDisconnected"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 68.786,
+   "fim_s": 68.802,
+   "ignorados": "erro:ConnectionAbortedError"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 68.903,
+   "fim_s": 68.904,
+   "ignorados": "erro:RemoteDisconnected"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 69.005,
+   "fim_s": 69.022,
+   "ignorados": "erro:ConnectionAbortedError"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 69.249,
+   "fim_s": 69.249,
+   "ignorados": "erro:RemoteDisconnected"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 69.657,
+   "fim_s": 69.668,
+   "ignorados": "erro:ConnectionAbortedError"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 70.213,
+   "fim_s": 70.215,
+   "ignorados": "erro:RemoteDisconnected"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 70.317,
+   "fim_s": 70.34,
+   "ignorados": "erro:ConnectionAbortedError"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 70.567,
+   "fim_s": 70.568,
+   "ignorados": "erro:RemoteDisconnected"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 71.194,
+   "fim_s": 71.205,
+   "ignorados": "erro:ConnectionAbortedError"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 71.306,
+   "fim_s": 71.307,
+   "ignorados": "erro:RemoteDisconnected"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 71.408,
+   "fim_s": 71.427,
+   "ignorados": "erro:ConnectionAbortedError"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 71.654,
+   "fim_s": 71.654,
+   "ignorados": "erro:RemoteDisconnected"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 71.756,
+   "fim_s": 71.772,
+   "ignorados": "erro:ConnectionAbortedError"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 71.997,
+   "fim_s": 71.998,
+   "ignorados": "erro:RemoteDisconnected"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 72.406,
+   "fim_s": 72.43,
+   "ignorados": "erro:ConnectionAbortedError"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 72.899,
+   "fim_s": 72.9,
+   "ignorados": "erro:RemoteDisconnected"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 73.103,
+   "fim_s": 73.119,
+   "ignorados": "erro:ConnectionAbortedError"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 73.22,
+   "fim_s": 73.221,
+   "ignorados": "erro:RemoteDisconnected"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 73.627,
+   "fim_s": 73.638,
+   "ignorados": "erro:ConnectionAbortedError"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 73.864,
+   "fim_s": 73.865,
+   "ignorados": "erro:RemoteDisconnected"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 74.272,
+   "fim_s": 74.296,
+   "ignorados": "erro:ConnectionAbortedError"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 75.018,
+   "fim_s": 75.019,
+   "ignorados": "erro:RemoteDisconnected"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 75.325,
+   "fim_s": 75.344,
+   "ignorados": "erro:ConnectionAbortedError"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 76.055,
+   "fim_s": 76.056,
+   "ignorados": "erro:RemoteDisconnected"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 76.55,
+   "fim_s": 76.569,
+   "ignorados": "erro:ConnectionAbortedError"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 76.92,
+   "fim_s": 76.922,
+   "ignorados": "erro:RemoteDisconnected"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 77.023,
+   "fim_s": 77.041,
+   "ignorados": "erro:ConnectionAbortedError"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 77.142,
+   "fim_s": 77.143,
+   "ignorados": "erro:RemoteDisconnected"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 77.55,
+   "fim_s": 77.573,
+   "ignorados": "erro:ConnectionAbortedError"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 78.049,
+   "fim_s": 78.05,
+   "ignorados": "erro:RemoteDisconnected"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 78.65,
+   "fim_s": 78.672,
+   "ignorados": "erro:ConnectionAbortedError"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 78.898,
+   "fim_s": 78.899,
+   "ignorados": "erro:RemoteDisconnected"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 79.102,
+   "fim_s": 79.113,
+   "ignorados": "erro:ConnectionAbortedError"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 79.214,
+   "fim_s": 79.215,
+   "ignorados": "erro:RemoteDisconnected"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 79.316,
+   "fim_s": 79.331,
+   "ignorados": "erro:ConnectionAbortedError"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 79.558,
+   "fim_s": 79.559,
+   "ignorados": "erro:RemoteDisconnected"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 79.861,
+   "fim_s": 79.881,
+   "ignorados": "erro:ConnectionAbortedError"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 80.562,
+   "fim_s": 80.569,
+   "ignorados": "erro:RemoteDisconnected"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 80.874,
+   "fim_s": 80.898,
+   "ignorados": "erro:ConnectionAbortedError"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 81.25,
+   "fim_s": 81.251,
+   "ignorados": "erro:RemoteDisconnected"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 81.351,
+   "fim_s": 81.368,
+   "ignorados": "erro:ConnectionAbortedError"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 81.471,
+   "fim_s": 81.471,
+   "ignorados": "erro:RemoteDisconnected"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 81.675,
+   "fim_s": 81.699,
+   "ignorados": "erro:ConnectionAbortedError"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 82.162,
+   "fim_s": 82.163,
+   "ignorados": "erro:RemoteDisconnected"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 82.805,
+   "fim_s": 82.818,
+   "ignorados": "erro:ConnectionAbortedError"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 83.403,
+   "fim_s": 83.404,
+   "ignorados": "erro:RemoteDisconnected"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 83.607,
+   "fim_s": 83.617,
+   "ignorados": "erro:ConnectionAbortedError"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 83.718,
+   "fim_s": 83.718,
+   "ignorados": "erro:RemoteDisconnected"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 83.82,
+   "fim_s": 83.839,
+   "ignorados": "erro:ConnectionAbortedError"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 84.303,
+   "fim_s": 84.303,
+   "ignorados": "erro:RemoteDisconnected"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 85.937,
+   "fim_s": 85.958,
+   "ignorados": "erro:ConnectionAbortedError"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 86.545,
+   "fim_s": 86.546,
+   "ignorados": "erro:RemoteDisconnected"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 87.443,
+   "fim_s": 87.462,
+   "ignorados": "erro:ConnectionAbortedError"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 87.798,
+   "fim_s": 87.798,
+   "ignorados": "erro:RemoteDisconnected"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 88.097,
+   "fim_s": 89.105,
+   "ignorados": "erro:URLError"
+  }
+ ],
+ "cluster_transicoes": [
+  {
+   "no": "isn3",
+   "ini_s": -37.024,
+   "estado": "sessions-async=AVAILABLE counters-async=AVAILABLE"
+  },
+  {
+   "no": "isn2",
+   "ini_s": -37.045,
+   "estado": "sessions-async=AVAILABLE counters-async=AVAILABLE"
+  },
+  {
+   "no": "isn1",
+   "ini_s": -37.054,
+   "estado": "sessions-async=AVAILABLE counters-async=AVAILABLE"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 3.429,
+   "estado": "sessions-async=erro:500 counters-async=erro:500"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 5.015,
+   "estado": "sessions-async=erro:401 counters-async=erro:401"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 13.314,
+   "estado": "sessions-async=erro:RemoteDisconnected counters-async=erro:RemoteDisconnected"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 17.41,
+   "estado": "sessions-async=erro:RemoteDisconnected counters-async=erro:ConnectionAbortedError"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 17.926,
+   "estado": "sessions-async=erro:ConnectionAbortedError counters-async=erro:ConnectionAbortedError"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 18.454,
+   "estado": "sessions-async=erro:RemoteDisconnected counters-async=erro:RemoteDisconnected"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 18.958,
+   "estado": "sessions-async=erro:ConnectionAbortedError counters-async=erro:RemoteDisconnected"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 19.484,
+   "estado": "sessions-async=erro:RemoteDisconnected counters-async=erro:RemoteDisconnected"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 20.995,
+   "estado": "sessions-async=erro:ConnectionAbortedError counters-async=erro:ConnectionAbortedError"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 21.535,
+   "estado": "sessions-async=erro:RemoteDisconnected counters-async=erro:RemoteDisconnected"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 23.047,
+   "estado": "sessions-async=erro:ConnectionAbortedError counters-async=erro:RemoteDisconnected"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 23.571,
+   "estado": "sessions-async=erro:RemoteDisconnected counters-async=erro:RemoteDisconnected"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 24.58,
+   "estado": "sessions-async=erro:ConnectionAbortedError counters-async=erro:RemoteDisconnected"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 25.093,
+   "estado": "sessions-async=erro:RemoteDisconnected counters-async=erro:RemoteDisconnected"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 26.175,
+   "estado": "sessions-async=erro:ConnectionAbortedError counters-async=erro:RemoteDisconnected"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 26.691,
+   "estado": "sessions-async=erro:RemoteDisconnected counters-async=erro:RemoteDisconnected"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 27.195,
+   "estado": "sessions-async=erro:RemoteDisconnected counters-async=erro:ConnectionAbortedError"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 28.772,
+   "estado": "sessions-async=erro:RemoteDisconnected counters-async=erro:RemoteDisconnected"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 29.806,
+   "estado": "sessions-async=erro:ConnectionAbortedError counters-async=erro:RemoteDisconnected"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 30.331,
+   "estado": "sessions-async=erro:RemoteDisconnected counters-async=erro:RemoteDisconnected"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 30.835,
+   "estado": "sessions-async=erro:ConnectionAbortedError counters-async=erro:ConnectionAbortedError"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 31.372,
+   "estado": "sessions-async=erro:RemoteDisconnected counters-async=erro:ConnectionAbortedError"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 31.887,
+   "estado": "sessions-async=erro:RemoteDisconnected counters-async=erro:RemoteDisconnected"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 37.007,
+   "estado": "sessions-async=erro:RemoteDisconnected counters-async=erro:ConnectionAbortedError"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 37.528,
+   "estado": "sessions-async=erro:ConnectionAbortedError counters-async=erro:ConnectionAbortedError"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 38.062,
+   "estado": "sessions-async=erro:RemoteDisconnected counters-async=erro:RemoteDisconnected"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 38.565,
+   "estado": "sessions-async=erro:ConnectionAbortedError counters-async=erro:ConnectionAbortedError"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 39.101,
+   "estado": "sessions-async=erro:RemoteDisconnected counters-async=erro:RemoteDisconnected"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 39.606,
+   "estado": "sessions-async=erro:RemoteDisconnected counters-async=erro:ConnectionAbortedError"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 40.126,
+   "estado": "sessions-async=erro:ConnectionAbortedError counters-async=erro:RemoteDisconnected"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 40.645,
+   "estado": "sessions-async=erro:RemoteDisconnected counters-async=erro:ConnectionAbortedError"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 41.164,
+   "estado": "sessions-async=erro:RemoteDisconnected counters-async=erro:RemoteDisconnected"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 42.676,
+   "estado": "sessions-async=erro:RemoteDisconnected counters-async=erro:ConnectionAbortedError"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 43.192,
+   "estado": "sessions-async=erro:RemoteDisconnected counters-async=erro:RemoteDisconnected"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 44.232,
+   "estado": "sessions-async=erro:ConnectionAbortedError counters-async=erro:ConnectionAbortedError"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 44.993,
+   "estado": "sessions-async=erro:RemoteDisconnected counters-async=erro:ConnectionAbortedError"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 45.509,
+   "estado": "sessions-async=erro:RemoteDisconnected counters-async=erro:RemoteDisconnected"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 46.013,
+   "estado": "sessions-async=erro:RemoteDisconnected counters-async=erro:ConnectionAbortedError"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 46.575,
+   "estado": "sessions-async=erro:RemoteDisconnected counters-async=erro:RemoteDisconnected"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 47.418,
+   "estado": "sessions-async=erro:ConnectionAbortedError counters-async=erro:ConnectionAbortedError"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 47.945,
+   "estado": "sessions-async=erro:RemoteDisconnected counters-async=erro:RemoteDisconnected"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 49.507,
+   "estado": "sessions-async=erro:RemoteDisconnected counters-async=erro:ConnectionAbortedError"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 50.553,
+   "estado": "sessions-async=erro:RemoteDisconnected counters-async=erro:RemoteDisconnected"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 52.466,
+   "estado": "sessions-async=erro:ConnectionAbortedError counters-async=erro:RemoteDisconnected"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 53.322,
+   "estado": "sessions-async=erro:RemoteDisconnected counters-async=erro:RemoteDisconnected"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 54.329,
+   "estado": "sessions-async=erro:ConnectionAbortedError counters-async=erro:RemoteDisconnected"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 55.3,
+   "estado": "sessions-async=erro:RemoteDisconnected counters-async=erro:RemoteDisconnected"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 55.804,
+   "estado": "sessions-async=erro:RemoteDisconnected counters-async=erro:ConnectionAbortedError"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 56.324,
+   "estado": "sessions-async=erro:RemoteDisconnected counters-async=erro:RemoteDisconnected"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 56.908,
+   "estado": "sessions-async=erro:ConnectionAbortedError counters-async=erro:ConnectionAbortedError"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 57.442,
+   "estado": "sessions-async=erro:RemoteDisconnected counters-async=erro:ConnectionAbortedError"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 57.958,
+   "estado": "sessions-async=erro:RemoteDisconnected counters-async=erro:RemoteDisconnected"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 58.68,
+   "estado": "sessions-async=erro:ConnectionAbortedError counters-async=erro:ConnectionAbortedError"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 59.21,
+   "estado": "sessions-async=erro:RemoteDisconnected counters-async=erro:RemoteDisconnected"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 59.713,
+   "estado": "sessions-async=erro:RemoteDisconnected counters-async=erro:ConnectionAbortedError"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 60.785,
+   "estado": "sessions-async=erro:RemoteDisconnected counters-async=erro:RemoteDisconnected"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 62.175,
+   "estado": "sessions-async=erro:ConnectionAbortedError counters-async=erro:ConnectionAbortedError"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 62.713,
+   "estado": "sessions-async=erro:RemoteDisconnected counters-async=erro:RemoteDisconnected"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 64.225,
+   "estado": "sessions-async=erro:RemoteDisconnected counters-async=erro:ConnectionAbortedError"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 64.743,
+   "estado": "sessions-async=erro:RemoteDisconnected counters-async=erro:RemoteDisconnected"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 65.246,
+   "estado": "sessions-async=erro:RemoteDisconnected counters-async=erro:ConnectionAbortedError"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 65.76,
+   "estado": "sessions-async=erro:ConnectionAbortedError counters-async=erro:RemoteDisconnected"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 66.282,
+   "estado": "sessions-async=erro:RemoteDisconnected counters-async=erro:RemoteDisconnected"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 66.785,
+   "estado": "sessions-async=erro:ConnectionAbortedError counters-async=erro:RemoteDisconnected"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 68.348,
+   "estado": "sessions-async=erro:RemoteDisconnected counters-async=erro:ConnectionAbortedError"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 68.863,
+   "estado": "sessions-async=erro:ConnectionAbortedError counters-async=erro:RemoteDisconnected"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 69.384,
+   "estado": "sessions-async=erro:RemoteDisconnected counters-async=erro:RemoteDisconnected"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 69.886,
+   "estado": "sessions-async=erro:ConnectionAbortedError counters-async=erro:ConnectionAbortedError"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 72.21,
+   "estado": "sessions-async=erro:RemoteDisconnected counters-async=erro:ConnectionAbortedError"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 74.843,
+   "estado": "sessions-async=erro:ConnectionAbortedError counters-async=erro:ConnectionAbortedError"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 75.906,
+   "estado": "sessions-async=erro:RemoteDisconnected counters-async=erro:ConnectionAbortedError"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 76.424,
+   "estado": "sessions-async=erro:RemoteDisconnected counters-async=erro:RemoteDisconnected"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 76.953,
+   "estado": "sessions-async=erro:RemoteDisconnected counters-async=erro:ConnectionAbortedError"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 77.996,
+   "estado": "sessions-async=erro:RemoteDisconnected counters-async=erro:RemoteDisconnected"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 79.955,
+   "estado": "sessions-async=erro:ConnectionAbortedError counters-async=erro:RemoteDisconnected"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 81.352,
+   "estado": "sessions-async=erro:RemoteDisconnected counters-async=erro:ConnectionAbortedError"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 81.869,
+   "estado": "sessions-async=erro:ConnectionAbortedError counters-async=erro:ConnectionAbortedError"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 82.94,
+   "estado": "sessions-async=erro:RemoteDisconnected counters-async=erro:ConnectionAbortedError"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 83.976,
+   "estado": "sessions-async=erro:RemoteDisconnected counters-async=erro:RemoteDisconnected"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 85.282,
+   "estado": "sessions-async=erro:RemoteDisconnected counters-async=erro:ConnectionAbortedError"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 86.036,
+   "estado": "sessions-async=erro:ConnectionAbortedError counters-async=erro:ConnectionAbortedError"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 86.57,
+   "estado": "sessions-async=erro:ConnectionAbortedError counters-async=erro:RemoteDisconnected"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 87.09,
+   "estado": "sessions-async=erro:RemoteDisconnected counters-async=erro:RemoteDisconnected"
+  },
+  {
+   "no": "isn3",
+   "ini_s": 87.847,
+   "estado": "sessions-async=erro:URLError counters-async=erro:URLError"
+  }
+ ],
+ "carga_por_janela": {
+  "30s_antes_do_pedido": {
+   "isn3": {
+    "INVALID": 8,
+    "VALID": 45,
+    "NONE": 1,
+    "OK": 4,
+    "COUNTED": 5,
+    "ERROR_TRANSPORT": 1
+   },
+   "isn1": {
+    "VALID": 54,
+    "NONE": 2,
+    "COUNTED": 5,
+    "INVALID": 3,
+    "BLOCKED": 1,
+    "OK": 1
+   },
+   "isn2": {
+    "INVALID": 11,
+    "VALID": 26,
+    "COUNTED": 3,
+    "BLOCKED": 1,
+    "OK": 3,
+    "NONE": 2,
+    "NOT_FOUND": 1
+   }
+  },
+  "pedido_a_cura": {
+   "isn2": {
+    "VALID": 296,
+    "INVALID": 27,
+    "OK": 19,
+    "NOT_FOUND": 8,
+    "NONE": 8,
+    "BLOCKED": 11,
+    "COUNTED": 14
+   },
+   "isn1": {
+    "VALID": 223,
+    "INVALID": 26,
+    "ERROR_TRANSPORT": 11,
+    "NONE": 23,
+    "OK": 18,
+    "NOT_FOUND": 7,
+    "BLOCKED": 11,
+    "COUNTED": 27
+   },
+   "isn3": {
+    "VALID": 13,
+    "OK": 2,
+    "NOT_FOUND": 1,
+    "ERROR_TRANSPORT": 198,
+    "NONE": 2,
+    "INVALID": 4
+   }
+  },
+  "cura_ao_fim": {
+   "isn1": {
+    "VALID": 75,
+    "INVALID": 11,
+    "BLOCKED": 4,
+    "NONE": 5,
+    "OK": 3
+   },
+   "isn2": {
+    "VALID": 29,
+    "NONE": 3,
+    "INVALID": 11,
+    "BLOCKED": 5,
+    "COUNTED": 4,
+    "OK": 1
+   },
+   "isn3": {
+    "ERROR_TRANSPORT": 41
+   }
+  }
+ },
+ "carga_stdout": [
+  "S3 acao|Block|ERROR_TRANSPORT = 2",
+  "S3 acao|IncrementFailure|ERROR_TRANSPORT = 15",
+  "S3 acao|Login|ERROR_TRANSPORT = 53",
+  "S3 acao|Logout|ERROR_TRANSPORT = 5",
+  "S3 acao|Validate|ERROR_TRANSPORT = 9",
+  "Total de operacoes: 1598",
+  "Violacoes detectadas: 0",
+  "Hot Rod ISPN004007: total=246 inteiras=4 contidas=242 chaves=4 | no=127.0.0.1:12903 motivo=TransportException:ISPN004071 n=191 t_primeira_ns=1793985639588071200",
+  "Hot Rod ISPN004005: total=13 inteiras=1 contidas=12 chaves=1 | no=desconhecido motivo=ISPN000476 n=13 t_primeira_ns=1793985639501049800 t_ultima_ns=179398566457"
+ ],
+ "carga_exit": "exit=0",
+ "vistas": [
+  {
+   "no": "isn1",
+   "t_s": 44.505,
+   "cod": "ISPN000094",
+   "membros": "2"
+  },
+  {
+   "no": "isn2",
+   "t_s": 44.513,
+   "cod": "ISPN000094",
+   "membros": "2"
+  },
+  {
+   "no": "isn3",
+   "t_s": 44.508,
+   "cod": "ISPN000094",
+   "membros": "1"
+  }
+ ],
+ "servidor_ISPN005003_por_no": {},
+ "servidor_ISPN000136_por_no": {
+  "isn1": 12,
+  "isn3": 53
+ },
+ "servidor_mensagens": [
+  {
+   "no": "isn1",
+   "t_s": 44.507,
+   "linha": "\u001b[0m2026-11-06 17:21:10,958 INFO  [o.i.CLUSTER] [Scope=isn1-47543]ISPN100001: Node isn3-26867 left the cluster\u001b[m"
+  },
+  {
+   "no": "isn1",
+   "t_s": 44.508,
+   "linha": "\u001b[0m2026-11-06 17:21:10,959 INFO  [o.i.CLUSTER] [Scope=isn1-47543]ISPN100001: Node isn3-26867 left the cluster\u001b[m"
+  },
+  {
+   "no": "isn2",
+   "t_s": 44.516,
+   "linha": "\u001b[0m2026-11-06 17:21:10,967 INFO  [o.i.CLUSTER] [Scope=isn2-35338]ISPN100001: Node isn3-26867 left the cluster\u001b[m"
+  },
+  {
+   "no": "isn2",
+   "t_s": 44.519,
+   "linha": "\u001b[0m2026-11-06 17:21:10,970 INFO  [o.i.CLUSTER] [Scope=isn2-35338]ISPN100001: Node isn3-26867 left the cluster\u001b[m"
+  },
+  {
+   "no": "isn3",
+   "t_s": 3.022,
+   "linha": "\u001b[0m2026-11-06 17:20:29,473 INFO  [o.i.SERVER] ISPN080002: Infinispan Server stopping\u001b[m"
+  },
+  {
+   "no": "isn3",
+   "t_s": 44.51,
+   "linha": "\u001b[0m2026-11-06 17:21:10,961 INFO  [o.i.CLUSTER] ISPN100001: Node isn1-47543 left the cluster\u001b[m"
+  },
+  {
+   "no": "isn3",
+   "t_s": 44.511,
+   "linha": "\u001b[0m2026-11-06 17:21:10,962 INFO  [o.i.CLUSTER] ISPN100001: Node isn2-35338 left the cluster\u001b[m"
+  },
+  {
+   "no": "isn3",
+   "t_s": 44.511,
+   "linha": "\u001b[0m2026-11-06 17:21:10,962 INFO  [o.i.CLUSTER] ISPN100001: Node isn1-47543 left the cluster\u001b[m"
+  },
+  {
+   "no": "isn3",
+   "t_s": 44.511,
+   "linha": "\u001b[0m2026-11-06 17:21:10,962 INFO  [o.i.CLUSTER] ISPN100001: Node isn2-35338 left the cluster\u001b[m"
+  },
+  {
+   "no": "isn3",
+   "t_s": 44.533,
+   "linha": "\u001b[0m2026-11-06 17:21:10,984 INFO  [o.i.CLUSTER] ISPN000080: Disconnecting JGroups channel `cluster-tcc`\u001b[m"
+  }
+ ]
+}

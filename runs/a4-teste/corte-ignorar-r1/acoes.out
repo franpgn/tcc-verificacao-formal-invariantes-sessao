@@ -1,0 +1,4 @@
+ignorar POST http://127.0.0.1:12902/rest/v2/server/ignored-caches/sessions-async -> 500 em 15.019 s
+ignorar POST http://127.0.0.1:12902/rest/v2/server/ignored-caches/counters-async -> 204 em 46.665 s
+desfazer DELETE http://127.0.0.1:12902/rest/v2/server/ignored-caches/sessions-async -> 204 em 1.059 s
+desfazer DELETE http://127.0.0.1:12902/rest/v2/server/ignored-caches/counters-async -> 204 em 1.061 s

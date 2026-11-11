@@ -1,0 +1,15 @@
+== 2026-11-06T17:34:04.257Z inicio corte-controle-r1 caso=corte-controle semente=74001 duracao_carga=240 base=cc2b71c jar_sha256=1bf157dd89c8e680d99c30e76b8ad481d84874ca689acfec52644155010631a8 xml_sha256=a7b18f2dac46095e468c43ae97c4cc51e411cbb54875606e898a20b6a7227c85 compose_sha256=f7f790fa5a4b3d11c0acabec5ba09a02da2af3527820d9f0a0877ce2d8240347 sonda_sha256=e86cf485da264cc51ec5e02e217aed32fabf34f1eccc4f3f6dd05c0c4a82bb95
+cluster a4: 3 nos
+cria-caches: rc=0
+== 2026-11-06T17:35:32.421Z parametros alvo=isn3 outros=isn1 isn2  coordenador_isn1=False
+== 2026-11-06T17:35:34.888Z origem linha S3 o_ns=1793986534774073100
+== 2026-11-06T17:36:05.015Z corte-inicio isn3
+== 2026-11-06T17:36:07.880Z corte-fim rc=0
+== 2026-11-06T17:36:10.106Z sem-acao
+== 2026-11-06T17:37:35.733Z cura-inicio isn3
+== 2026-11-06T17:37:38.149Z cura-fim rc=0
+== 2026-11-06T17:38:29.788Z fusao vista (tamanho 3 no isn3 e no isn1)
+== 2026-11-06T17:38:46.606Z pos-fusao +15 s
+== 2026-11-06T17:38:46.715Z fim-sondas
+== 2026-11-06T17:39:38.115Z carga exit=0
+== 2026-11-06T17:40:09.109Z fim corte-controle-r1

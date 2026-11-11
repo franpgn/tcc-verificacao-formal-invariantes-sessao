@@ -20,3 +20,9 @@ a-sem-particao-r3-I5	ANTES	20805b0	MCSession	SpecSemeada	r3	SoParticao	I5	S	4	VI
 a-sem-particao-r3-I6	ANTES	20805b0	MCSession	SpecSemeada	r3	SoParticao	I6	S	4	VIOLADA	traco_de_6_estados	261547	63005	53365	3s
 d-sem-sem-r3-I5	DEPOIS	a2ce4c9	MCSession	SpecSemeada	r3	SemFalha	I5	S	4	SEM_VIOLACAO_ATE_AQUI	limite_de_tempo	242906941	19144012	13204056	601s
 d-sem-sem-r3-I6	DEPOIS	a2ce4c9	MCSession	SpecSemeada	r3	SemFalha	I6	S	4	SEM_VIOLACAO_ATE_AQUI	limite_de_tempo	11435535	10729172	7732882	601s
+d-sem-queda-r3-I5	DEPOIS	a2ce4c9	MCSession	SpecSemeada	r3	SoQueda	I5	S	4	SEM_VIOLACAO_ATE_AQUI	limite_de_tempo	72761007	20874259	15301099	602s
+d-sem-queda-r3-I6	DEPOIS	a2ce4c9	MCSession	SpecSemeada	r3	SoQueda	I6	S	4	SEM_VIOLACAO_ATE_AQUI	limite_de_tempo	170595243	19818143	14373702	605s
+d-sem-particao-r3-I5	DEPOIS	a2ce4c9	MCSession	SpecSemeada	r3	SoParticao	I5	S	4	VIOLADA	traco_de_6_estados	62209	15624	13373	7s
+d-sem-particao-r3-I6	DEPOIS	a2ce4c9	MCSession	SpecSemeada	r3	SoParticao	I6	S	4	VIOLADA	traco_de_6_estados	233826	56039	47330	4s
+f-sem-sem-r3-I5	FIFO	8f25803	MCFifo	SpecSemeada	r3	SemFalha	I5	S	4	VIOLADA	traco_de_7_estados	207357	21572	15950	2s
+f-sem-sem-r3-I6	FIFO	8f25803	MCFifo	SpecSemeada	r3	SemFalha	I6	S	4	VIOLADA	traco_de_7_estados	421729	40922	29384	3s

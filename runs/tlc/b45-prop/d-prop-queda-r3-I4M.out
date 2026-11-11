@@ -1,0 +1,18 @@
+TLC2 Version 2.19 of 08 August 2024 (rev: 5a47802)
+Running breadth-first search Model-Checking with fp 37 and seed -5258091005981076371 with 4 workers on 20 cores with 2731MB heap and 64MB offheap memory [pid: 30900] (Windows 11 10.0 amd64, Oracle Corporation 17.0.2 x86_64, MSBDiskFPSet, DiskStateQueue).
+Parsing file C:\Users\Francesco\Development\tcc\wt-b45\spec\states\b45\snap-a2ce4c9\MCSession.tla
+Parsing file C:\Users\Francesco\Development\tcc\wt-b45\spec\states\b45\snap-a2ce4c9\SessionStore.tla
+Parsing file C:\Users\Francesco\Development\tcc\wt-b45\spec\states\b45\jtmp\d-prop-queda-r3-I4M\TLC.tla
+Parsing file C:\Users\Francesco\Development\tcc\wt-b45\spec\states\b45\jtmp\d-prop-queda-r3-I4M\Naturals.tla
+Parsing file C:\Users\Francesco\Development\tcc\wt-b45\spec\states\b45\jtmp\d-prop-queda-r3-I4M\Sequences.tla
+Parsing file C:\Users\Francesco\Development\tcc\wt-b45\spec\states\b45\jtmp\d-prop-queda-r3-I4M\FiniteSets.tla
+Semantic processing of module Naturals
+Semantic processing of module Sequences
+Semantic processing of module FiniteSets
+Semantic processing of module SessionStore
+Semantic processing of module TLC
+Semantic processing of module MCSession
+Starting... (2026-11-06 15:58:06)
+Computing initial states...
+Finished computing initial states: 1 distinct state generated at 2026-11-06 15:58:06.
+Progress(10) at 2026-11-06 15:58:09: 825,642 states generated (825,642 s/min), 120,009 distinct states found (120,009 ds/min), 94,930 states left on queue.

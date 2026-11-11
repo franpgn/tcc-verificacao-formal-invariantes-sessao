@@ -1,0 +1,15 @@
+d-prop1-sem-r3-I4F	DEPOIS	a2ce4c9	MCSession	SpecSemeada	r3	SemFalha	I4F	S	1	VIOLADA	traco_de_4_estados	390	100	88	3s
+d-prop1-sem-r3-I2Fb	DEPOIS	a2ce4c9	MCSession	SpecSemeada	r3	SemFalha	I2Fb	S	1	VIOLADA	traco_de_3_estados	82	15	11	3s
+d-prop1-sem-r3-I4Fp	DEPOIS	a2ce4c9	MCSession	SpecSemeada	r3	SemFalha	I4Fp	S	1	VIOLADA	traco_de_4_estados	390	100	88	3s
+d-prop1-queda-r3-I4F	DEPOIS	a2ce4c9	MCSession	SpecSemeada	r3	SoQueda	I4F	S	1	VIOLADA	traco_de_4_estados	409	123	110	2s
+d-prop1-queda-r3-I2Fb	DEPOIS	a2ce4c9	MCSession	SpecSemeada	r3	SoQueda	I2Fb	S	1	VIOLADA	traco_de_3_estados	82	18	14	2s
+d-prop1-queda-r3-I4Fp	DEPOIS	a2ce4c9	MCSession	SpecSemeada	r3	SoQueda	I4Fp	S	1	VIOLADA	traco_de_4_estados	409	123	110	1s
+d-prop1-particao-r3-I1F	DEPOIS	a2ce4c9	MCSession	SpecSemeada	r3	SoParticao	I1F	S	1	VIOLADA	traco_de_4_estados	468	162	146	2s
+d-prop1-particao-r3-I4F	DEPOIS	a2ce4c9	MCSession	SpecSemeada	r3	SoParticao	I4F	S	1	VIOLADA	traco_de_4_estados	410	144	130	2s
+d-prop1-particao-r3-I2Fb	DEPOIS	a2ce4c9	MCSession	SpecSemeada	r3	SoParticao	I2Fb	S	1	VIOLADA	traco_de_3_estados	82	21	17	2s
+d-prop1-particao-r3-I2Fa	DEPOIS	a2ce4c9	MCSession	SpecSemeada	r3	SoParticao	I2Fa	S	1	VIOLADA	traco_de_4_estados	1096	363	325	3s
+d-prop1-particao-r3-I1M	DEPOIS	a2ce4c9	MCSession	SpecSemeada	r3	SoParticao	I1M	S	1	VIOLADA	traco_de_4_estados	468	162	146	3s
+d-prop1-particao-r3-I4M	DEPOIS	a2ce4c9	MCSession	SpecSemeada	r3	SoParticao	I4M	S	1	VIOLADA	traco_de_4_estados	468	162	146	2s
+d-prop1-particao-r3-I4Fp	DEPOIS	a2ce4c9	MCSession	SpecSemeada	r3	SoParticao	I4Fp	S	1	VIOLADA	traco_de_4_estados	410	144	130	2s
+d-prop1-particao-r3-I4Mp	DEPOIS	a2ce4c9	MCSession	SpecSemeada	r3	SoParticao	I4Mp	S	1	VIOLADA	traco_de_5_estados	4562	1422	1273	2s
+d-prop1-livre-particao-r3-MesclarPerdeChave	DEPOIS	a2ce4c9	MCSession	Spec	r3	SoParticao	MesclarPerdeChave	S	1	VIOLADA	traco_de_4_estados	531	185	168	2s

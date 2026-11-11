@@ -1,0 +1,29 @@
+TLC2 Version 2.19 of 08 August 2024 (rev: 5a47802)
+Running breadth-first search Model-Checking with fp 106 and seed 7728949787788833362 with 4 workers on 20 cores with 2731MB heap and 64MB offheap memory [pid: 13880] (Windows 11 10.0 amd64, Oracle Corporation 17.0.2 x86_64, MSBDiskFPSet, DiskStateQueue).
+Parsing file C:\Users\Francesco\Development\tcc\wt-b45\spec\states\b45\snap-a2ce4c9\MCSession.tla
+Parsing file C:\Users\Francesco\Development\tcc\wt-b45\spec\states\b45\snap-a2ce4c9\SessionStore.tla
+Parsing file C:\Users\Francesco\Development\tcc\wt-b45\spec\states\b45\jtmp\d-prop-queda-r2-I1F\TLC.tla
+Parsing file C:\Users\Francesco\Development\tcc\wt-b45\spec\states\b45\jtmp\d-prop-queda-r2-I1F\Naturals.tla
+Parsing file C:\Users\Francesco\Development\tcc\wt-b45\spec\states\b45\jtmp\d-prop-queda-r2-I1F\Sequences.tla
+Parsing file C:\Users\Francesco\Development\tcc\wt-b45\spec\states\b45\jtmp\d-prop-queda-r2-I1F\FiniteSets.tla
+Semantic processing of module Naturals
+Semantic processing of module Sequences
+Semantic processing of module FiniteSets
+Semantic processing of module SessionStore
+Semantic processing of module TLC
+Semantic processing of module MCSession
+Starting... (2026-11-06 16:11:07)
+Computing initial states...
+Finished computing initial states: 1 distinct state generated at 2026-11-06 16:11:08.
+Progress(10) at 2026-11-06 16:11:11: 916,810 states generated (916,810 s/min), 179,927 distinct states found (179,927 ds/min), 129,140 states left on queue.
+Progress(14) at 2026-11-06 16:12:11: 32,758,826 states generated (31,842,016 s/min), 4,508,894 distinct states found (4,328,967 ds/min), 2,515,728 states left on queue.
+Progress(15) at 2026-11-06 16:13:11: 65,595,800 states generated (32,836,974 s/min), 8,090,000 distinct states found (3,581,106 ds/min), 3,944,814 states left on queue.
+Progress(15) at 2026-11-06 16:14:11: 100,671,407 states generated (35,075,607 s/min), 11,472,376 distinct states found (3,382,376 ds/min), 4,946,267 states left on queue.
+Progress(16) at 2026-11-06 16:15:11: 136,277,052 states generated (35,605,645 s/min), 14,521,249 distinct states found (3,048,873 ds/min), 5,364,587 states left on queue.
+Checkpointing of run C:\Users\Francesco\Development\tcc\wt-b45\spec\states\b45\meta\d-prop-queda-r2-I1F\26-11-06-16-11-07
+Checkpointing completed at (2026-11-06 16:16:11)
+Progress(16) at 2026-11-06 16:16:11: 173,196,393 states generated (36,919,341 s/min), 17,443,515 distinct states found (2,922,266 ds/min), 5,494,884 states left on queue.
+Progress(17) at 2026-11-06 16:17:11: 210,109,635 states generated (36,913,242 s/min), 20,054,518 distinct states found (2,611,003 ds/min), 5,190,036 states left on queue.
+Progress(17) at 2026-11-06 16:18:11: 240,347,760 states generated (30,238,125 s/min), 22,023,859 distinct states found (1,969,341 ds/min), 4,758,729 states left on queue.
+Progress(18) at 2026-11-06 16:19:11: 272,399,394 states generated (32,051,634 s/min), 23,779,909 distinct states found (1,756,050 ds/min), 3,991,059 states left on queue.
+Progress(18) at 2026-11-06 16:20:11: 311,636,781 states generated (39,237,387 s/min), 25,546,502 distinct states found (1,766,593 ds/min), 2,789,178 states left on queue.

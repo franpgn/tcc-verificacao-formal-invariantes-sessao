@@ -18,12 +18,12 @@ sucesso pré-registrada (interseção-união, valor-p ajustado por Holm de 0,002
 vazão útil ficou dentro da margem de não inferioridade.
 
 O custo foi mais erro visível ao cliente, cerca de 12 % a mais de ações com falha percebida. Esse custo não
-foi significativo depois da correção de Holm (0,068), mas passa a ser quando se retira o bloco 13, cuja
-execução AL teve uma anomalia (seção 5.8).
+foi significativo depois da correção de Holm (0,055), mas passa a ser quando se retira o bloco 13, cuja
+execução AL teve uma anomalia (seção 5.10).
 
 A política de fusão A1 não reduziu a taxa de violações e por isso não atendeu à regra principal. Ela
 eliminou, porém, a perda permanente de invalidações: 20 sessões perdidas de vez sem a A1, nenhuma com ela
-(Holm 0,043). As duas intervenções agem em momentos diferentes do mesmo problema e não interagem.
+(Holm 0,035). As duas intervenções agem em momentos diferentes do mesmo problema e não interagem.
 
 Na queda de nó, no *jitter*, na degradação de rede com 20 % de perda e na execução sem falha, nenhuma violação
 foi observada em nenhum braço. O controlador não executou nenhuma ação nessas células. A energia estimada e o
@@ -91,17 +91,28 @@ p99 ficou entre 1,503 e 1,505 s (seção 5.6).
 
 ## 5.4 Desfechos secundários na partição
 
-Holm com m = 11 por efeito, como pré-registrado. "Diferença" é a média de y(ativo) − y(observando), ou
-y(A1) − y(regra atual). "Razão" é a média geométrica da razão.
+**Família de Holm.** O pré-registro fixa 9 secundários por efeito: os 7 da DT-021 §5.3 (Δ_rec, Δ_conv,
+divergência persistente, taxa de erro, falhas percebidas, CPU e energia com ociosidade 0,3) mais os 2 da
+DT-027 §2.2 (perda permanente e exposição na janela). O p99 por operação fica **descritivo**, "para a família
+não crescer" (`wt-bench/docs/pre-registro-b40-avaliacao-2026-11-05.md`, seção 5.3).
+
+O `comparar_bracos.py` da análise oficial pôs na família todo secundário com valor-p e chegou a 11,
+incluindo o p99 sem espera e o p99 do Validate. Esse é um **desvio da ferramenta**, conservador (capítulo 8).
+A tabela dá o p ajustado pela família pré-registrada de 9 e, entre parênteses, o do script, com 11.
+Nenhuma conclusão muda. O Holm de 9 foi recalculado em 11/11 a partir dos valores-p oficiais, e o desvio foi
+apontado pelo Senior da parte A do relatório.
+
+"Diferença" é a média de y(ativo) − y(observando), ou y(A1) − y(regra atual). "Razão" é a média geométrica da
+razão.
 
 | Desfecho | Escala | Controlador ativo (A4): estimativa [IC t 95 %]; p; p Holm | Regra A1: estimativa [IC t 95 %]; p; p Holm |
 |---|---|---|---|
-| Sessões expostas na janela da falha | diferença | −1,58 [−2,24; −0,92]; 0,0020; **0,0215** | +0,08 [−0,85; 1,02]; 0,92; 1,0 |
-| Sessões com invalidação perdida de vez | diferença | −0,08 [−0,44; 0,27]; 0,81; 1,0 | −0,83 [−1,27; −0,40]; 0,0039; **0,0430** |
-| Falhas percebidas por mil ações | diferença | +3,30 [1,32; 5,28]; 0,0068; 0,0684 | −0,85 [−2,51; 0,82]; 0,33; 1,0 |
-| Taxa de erro | diferença | +0,89 pp [0,34; 1,44]; 0,0068; 0,0684 | −0,24 pp [−0,72; 0,23]; 0,32; 1,0 |
-| p99 da ação S3 sem a espera do portão | razão | 0,972 [0,912; 1,035]; 1,0; 1,0 | 0,972 [0,912; 1,035]; 0,42; 1,0 |
-| p99 da validação (Validate) | razão | 0,868 [0,409; 1,842]; 0,88; 1,0 | 0,854 [0,403; 1,809]; 0,78; 1,0 |
+| Sessões expostas na janela da falha | diferença | −1,58 [−2,24; −0,92]; 0,0020; **0,018** (0,022) | +0,08 [−0,85; 1,02]; 0,92; 1,0 |
+| Sessões com invalidação perdida de vez | diferença | −0,08 [−0,44; 0,27]; 0,81; 1,0 | −0,83 [−1,27; −0,40]; 0,0039; **0,035** (0,043) |
+| Falhas percebidas por mil ações | diferença | +3,30 [1,32; 5,28]; 0,0068; 0,055 (0,068) | −0,85 [−2,51; 0,82]; 0,33; 1,0 |
+| Taxa de erro | diferença | +0,89 pp [0,34; 1,44]; 0,0068; 0,055 (0,068) | −0,24 pp [−0,72; 0,23]; 0,32; 1,0 |
+| p99 da ação S3 sem a espera do portão (descritivo) | razão | 0,972 [0,912; 1,035]; sem teste na família | 0,972 [0,912; 1,035]; sem teste na família |
+| p99 da validação, Validate (descritivo) | razão | 0,868 [0,409; 1,842]; sem teste na família | 0,854 [0,403; 1,809]; sem teste na família |
 | Tempo de recuperação Δ_rec (s) | diferença | −1,36 [−5,44; 2,72]; 0,77; 1,0 | −1,47 [−5,76; 2,81]; 0,81; 1,0 |
 | Tempo de convergência Δ_conv (s), 11 blocos | diferença | −0,0002 [−0,0016; 0,0013]; 0,83; 1,0 | +0,0006 [−0,0005; 0,0018]; 0,26; 1,0 |
 | Divergência persistente (I5/I6) | diferença | −0,04 [−0,13; 0,05]; 1,0; 1,0 | −0,04 [−0,13; 0,05]; 1,0; 1,0 |
@@ -172,7 +183,7 @@ controlador agiu e quanto antes da detecção do *cluster* estão no capítulo 4
 
 - **Custo.** O controlador troca exposição por erro visível. O cliente do nó isolado passa a receber recusa em
   vez de dado inconsistente. Resultado: +3,3 falhas percebidas por mil ações (+12 %) e +0,9 ponto percentual
-  na taxa de erro, ambos com p de 0,0068 sem correção e 0,068 com Holm.
+  na taxa de erro, ambos com p de 0,0068 sem correção e 0,055 com Holm.
 - **p99 preso no *backoff*.** Em 47 das 48 execuções da F2, o p99 co-principal ficou entre 1,503 e 1,505 s, o
   patamar das retentativas do cliente com espera. Por isso a razão do p99 fica perto de 1 e quase não
   discrimina os braços. A não inferioridade da latência foi demonstrada (limite superior 1,035), mas a cauda
@@ -233,7 +244,7 @@ Leitura da tabela:
 
 | Análise | Controlador ativo: Δ violações por mil [IC]; p | Controlador: regra de sucesso | A1: Δ violações; p | A1: Δ perda permanente; p |
 |---|---|---|---|---|
-| Oficial (12 blocos) | −0,189 [−0,268; −0,109]; 0,0005 | melhoria (Holm 0,0025) | +0,019; 0,72 | −0,83 [−1,27; −0,40]; 0,0039 (Holm 0,043) |
+| Oficial (12 blocos) | −0,189 [−0,268; −0,109]; 0,0005 | melhoria (Holm 0,0025) | +0,019; 0,72 | −0,83 [−1,27; −0,40]; 0,0039 (Holm 0,035) |
 | *Bootstrap* por blocos (pré-registrada) | IC [−0,258; −0,122] | | IC [−0,085; 0,110] | |
 | Sem a forma 2 de I1 (pré-registrada) | −0,071 [−0,130; −0,011]; 0,031 | | +0,032; 0,28 | |
 | Sem o bloco 13 (aprovada em 07/11) | −0,187 [−0,275; −0,098]; 0,0010 | melhoria (Holm 0,0020) | +0,002; 0,95 | −0,91 [−1,36; −0,46]; 0,0039 |
@@ -271,7 +282,7 @@ Os p dos secundários sem o bloco 13 não têm correção de Holm. Fontes: `comp
 | Pergunta | Resposta | Base |
 |---|---|---|
 | O controlador do *cluster* reduz violações sob partição sem piorar a cauda? | Sim, cerca de −50 % nos pares de violação, com p99 e vazão não inferiores | seção 5.3, regra de sucesso pré-registrada |
-| A que custo? | Mais erro visível: +12 % de falhas percebidas (Holm 0,068; p = 0,001 sem o bloco 13); energia e CPU sem diferença detectável (no máximo cerca de +5 %) | seções 5.4, 5.6 e 5.7 |
+| A que custo? | Mais erro visível: +12 % de falhas percebidas (Holm 0,055; p = 0,001 sem o bloco 13); energia e CPU sem diferença detectável (no máximo cerca de +5 %) | seções 5.4, 5.6 e 5.7 |
 | A regra de fusão A1 reduz violações? | Não na regra principal; elimina a perda permanente (20 → 0 sessões) | seções 5.3 a 5.5 |
 | Os dois se combinam? | Sim, sem interação; AL tem menos exposição e zero perda | seções 5.3 e 5.5 |
 | O controlador dispara à toa? | Nenhuma ação fora da partição, nas 30 execuções descritivas dos blocos completos; 2 entradas no perfil conservador sem falha, sem ação | seção 5.8 |
@@ -389,16 +400,16 @@ desfechos novos, da DT-027, e precisam ser definidos na Metodologia.
 \hline
 \textbf{Desfecho} & \textbf{Controlador ativo: estimativa (IC 95\,\%); valor-$p$ ajustado} & \textbf{Regra A1: estimativa (IC 95\,\%); valor-$p$ ajustado} \\
 \hline
-\raggedright Sessões expostas na janela & $-1{,}58$ ($-2{,}24$; $-0{,}92$); 0,022 & $+0{,}08$ ($-0{,}85$; 1,02); 1,0 \\
-\raggedright Sessões com invalidação perdida & $-0{,}08$ ($-0{,}44$; 0,27); 1,0 & $-0{,}83$ ($-1{,}27$; $-0{,}40$); 0,043 \\
-\raggedright Falhas percebidas por mil ações & $+3{,}30$ (1,32; 5,28); 0,068 & $-0{,}85$ ($-2{,}51$; 0,82); 1,0 \\
-\raggedright Taxa de erro (pontos percentuais) & $+0{,}89$ (0,34; 1,44); 0,068 & $-0{,}24$ ($-0{,}72$; 0,23); 1,0 \\
+\raggedright Sessões expostas na janela & $-1{,}58$ ($-2{,}24$; $-0{,}92$); 0,018 & $+0{,}08$ ($-0{,}85$; 1,02); 1,0 \\
+\raggedright Sessões com invalidação perdida & $-0{,}08$ ($-0{,}44$; 0,27); 1,0 & $-0{,}83$ ($-1{,}27$; $-0{,}40$); 0,035 \\
+\raggedright Falhas percebidas por mil ações & $+3{,}30$ (1,32; 5,28); 0,055 & $-0{,}85$ ($-2{,}51$; 0,82); 1,0 \\
+\raggedright Taxa de erro (pontos percentuais) & $+0{,}89$ (0,34; 1,44); 0,055 & $-0{,}24$ ($-0{,}72$; 0,23); 1,0 \\
 \raggedright Tempo de recuperação (s) & $-1{,}36$ ($-5{,}44$; 2,72); 1,0 & $-1{,}47$ ($-5{,}76$; 2,81); 1,0 \\
 \raggedright CPU por mil ações úteis (razão) & 1,038 (0,961; 1,121); 1,0 & 1,003 (0,957; 1,051); 1,0 \\
 \raggedright Energia estimada por mil ações úteis (razão) & 1,024 (0,945; 1,109); 1,0 & 1,000 (0,950; 1,053); 1,0 \\
 \hline
 \end{tabular}
-\fonte{O autor. Ajuste de \citet{holm_sequential_1979} entre os 11 desfechos secundários de cada efeito; CPU e energia com 4 dos 12 blocos}
+\fonte{O autor. Ajuste de \citet{holm_sequential_1979} entre os nove desfechos secundários pré-registrados de cada efeito; CPU e energia com 4 dos 12 blocos}
 \end{table}
 ```
 
@@ -432,7 +443,7 @@ desfechos novos, da DT-027, e precisam ser definidos na Metodologia.
 | Desenho | dois braços A e B em quatro células (sem falha, F2, F4 e F1), oito blocos cada, mais duas células de referência em `DIST_SYNC` com quatro blocos; cerca de 80 execuções (`Metodologia.tex:347`) | fatorial 2×2 na partição (regra de fusão × controlador) com 12 blocos; quatro células descritivas de 4 blocos (F1, F3, F4 e sem falha), F3 incluída; sem células `DIST_SYNC`; 90 execuções | **corrigir** (capítulo 6) |
 | Contagem da taxa de violações | "soma das violações de I1, das de I4 e das de I2 classificadas como reais, por mil ações S3" (`Metodologia.tex:219` e `349`) | **pares distintos** (sessão ou identidade, invariante) com ao menos uma detecção nas fases durante e recuperação, somando auditor online, sonda de *replay* e varredura final, por mil ações S3 | **corrigir** e explicar que a taxa mede exposição |
 | Holm na regra principal | "aos valores-p de interseção-união das células", três células com falha (`Metodologia.tex:351`) | entre os dois efeitos do fatorial (controlador e A1) na única célula de teste, m = 2 | **corrigir** |
-| Secundários | lista sem exposição e perda (`Metodologia.tex:351`) | mais exposição na janela e perda permanente (DT-027), Holm m = 11 por efeito | **acrescentar** |
+| Secundários | lista sem exposição e perda; p99 por operação e cada invariante como secundários com Holm (`Metodologia.tex:351`) | família de Holm de 9 por efeito: Δ_rec, Δ_conv, divergência, taxa de erro, falhas percebidas, CPU, energia, exposição e perda permanente; p99 por operação e cada invariante só descritivos (DT-021 §5.3, DT-027 §2.2); a ferramenta usou 11, desvio a declarar | **corrigir e acrescentar** |
 | Exclusão de CPU por *steal* | só *steal* acima de 5 % (`Metodologia.tex:335`) | também *steal* sem medida tira o bloco; na F2 sobraram 4 de 12 blocos (sensibilidade com 12 na seção 5.7) | **acrescentar** |
 | P1 e vazão | P1 para o nó, e a vazão útil pode cair por construção (`Metodologia.tex:342` e `353`) | P1 foi executada pelo AC-7 (o nó isolado ignora o *cache* de sessões, ação desfeita quando ele entra em modo degradado ou depois da fusão), aplicado e desfeito 24 vezes; vazão não inferior (0,982) | **corrigir** (capítulo 4) |
 | Resultados | inexistentes | este capítulo | **novo** |

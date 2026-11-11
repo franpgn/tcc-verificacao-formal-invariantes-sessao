@@ -41,7 +41,7 @@ varredura pela invalidação confirmada), perda permanente, exposição na janel
 | Diferenças por bloco das células F1, F3, F4 e sem falha (10 desfechos) | idênticas; número de ações por braço igual |
 | Efeitos A1, A4 e interação da F2 (estimativa, IC t, p de permutação exata) | idênticos nos 10 desfechos |
 | Regra interseção-união | A4: p_IU 0,0012, Holm 0,0025, **melhoria**; A1: p_IU 1,0, **sem melhoria** (igual) |
-| Holm dos 11 secundários por efeito | iguais (A1 perda permanente 0,0430; A4 exposição 0,0215; A4 falhas percebidas e taxa de erro 0,0684) |
+| Holm dos 11 secundários por efeito (família do script) | iguais (A1 perda permanente 0,0430; A4 exposição 0,0215; A4 falhas percebidas e taxa de erro 0,0684); ver a ressalva 2 na seção 4 |
 | Ações do controlador | AC-7 aplicado e revertido 12 vezes em PL e 12 em AL; nenhuma ação em PO, AO e nas células F1, F3, F4 e sem falha |
 
 Totais da F2 recalculados (12 blocos por braço):
@@ -100,6 +100,40 @@ J por 1000 ações úteis; CPU 7,18, 7,41, 7,26 e 7,43 s por 1000 ações úteis
 **Para o texto:** o resultado oficial é o de 4 blocos. A sensibilidade de 12 blocos pode ser citada como
 complemento descritivo, sempre identificada como não pré-registrada. Para o futuro, o coletor de recursos
 deve começar antes da carga, ou a janela do steal deve começar na primeira amostra.
+
+## 4b. Ressalva 2: família de Holm dos secundários
+
+Esta ressalva foi acrescentada depois da validação inicial, apontada pelo Senior da parte A do relatório
+técnico e conferida pelo coordenador.
+
+**A família pré-registrada tem 9 secundários por efeito.** São os 7 da DT-021 §5.3:
+- Δ_rec;
+- Δ_conv;
+- divergência persistente;
+- taxa de erro;
+- falhas percebidas;
+- CPU;
+- energia com ociosidade 0,3.
+
+A eles se somam os 2 da DT-027 §2.2, perda permanente e exposição. O pré-registro diz que o p99 por operação e
+cada invariante ficam descritivos "para a família não crescer" e que o código seria ajustado se a família fosse
+outra (`wt-bench/docs/pre-registro-b40-avaliacao-2026-11-05.md`, seção 5.3).
+
+**O que o script fez.** O `comparar_bracos.py` não foi ajustado. Ele põe na família todo secundário com
+valor-p, e chegou a 11 com o p99 sem espera e o p99 do Validate. O desvio é conservador.
+
+**Holm recalculado com a família de 9**, a partir dos valores-p oficiais (entre parênteses, o valor do
+script):
+
+| Efeito e desfecho | Família de 9 | Família de 11 (script) |
+|---|---|---|
+| A1, perda permanente | 0,0352 | 0,0430 |
+| A4, exposição | 0,0176 | 0,0215 |
+| A4, falhas percebidas | 0,0547 | 0,0684 |
+| A4, taxa de erro | 0,0547 | 0,0684 |
+
+Os demais ficam em 1,0. **Nenhuma conclusão muda.** O relatório técnico (capítulo 5) reporta a família
+pré-registrada e declara o desvio da ferramenta.
 
 ## 5. O que não foi recalculado de forma independente
 
